@@ -52,7 +52,7 @@ export default class VolumeCache {
     this.rootCachePath = config.cache.volumeCachePath;
     this.log = config.log;
     this.cache = {};
-    this.stats = config.stats;
+    this.monitor = config.monitor;
   }
 
   /**
@@ -189,14 +189,14 @@ export default class VolumeCache {
       logMessage = 'cache volume miss';
       instance = await this.add(cacheName);
       this.set(instance.key, {mounted: true});
-      this.stats.record('cacheMount', {name: cacheName, miss: 'true'});
+      this.monitor.count('cache.miss');
     } else {
       logMessage = 'cache volume hit';
       instance = {key: cacheName + KEY_DELIMITER + instanceId,
         path: this.cache[cacheName][instanceId].path,
         lastUsed: this.cache[cacheName][instanceId].lastUsed
       };
-      this.stats.record('cacheMount', {name: cacheName, miss: 'false'});
+      this.monitor.count('cache.hit');
     }
     this.log(logMessage, instance);
     return instance;

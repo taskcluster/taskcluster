@@ -13,27 +13,13 @@ suite('garbage collection tests', function () {
   var path = require('path');
   var rmrf = require('rimraf');
   var removeImage = require('../lib/util/remove_image').removeImage;
+  var base = require('taskcluster-base');
 
   var IMAGE = 'taskcluster/test-ubuntu';
 
   var localCacheDir = path.join(__dirname, 'tmp');
-
-  var imageManager = new ImageManager({
-    docker: docker,
-    dockerConfig: {
-      defaultRegistry: 'registry.hub.docker.com',
-      maxAttempts: 5,
-      delayFactor: 15 * 1000,
-      randomizationFactor: 0.25
-    },
-    log: logger(),
-    stats: {
-      timeGen: async function (series, fn) {
-        assert(typeof fn.then === 'function', 'Function does not appear to be a promise');
-        return await fn;
-      }
-    }
-  });
+  var monitor;
+  var imageManager;
 
   function* getImageId(docker, imageName) {
     var dockerImages = yield docker.listImages();
@@ -46,11 +32,31 @@ suite('garbage collection tests', function () {
     return imageId;
   }
 
+  setup(co(function* () {
+    monitor = yield base.monitor({
+        credentials: {},
+        project: 'docker-worker-tests',
+        mock: true
+    });
+
+    imageManager = new ImageManager({
+      docker: docker,
+      dockerConfig: {
+        defaultRegistry: 'registry.hub.docker.com',
+        maxAttempts: 5,
+        delayFactor: 15 * 1000,
+        randomizationFactor: 0.25
+      },
+      log: logger(),
+      monitor: monitor
+    });
+  })),
+
   teardown(function () {
     if (fs.existsSync(localCacheDir)) {
       rmrf.sync(localCacheDir);
     }
-  });
+  }),
 
   test('remove container', co(function* () {
     var imageId = yield imageManager.ensureImage(IMAGE, devnull());
@@ -62,6 +68,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 0 } },
+      monitor: monitor
     });
 
     var container = yield docker.createContainer({Image: imageId});
@@ -78,7 +85,7 @@ suite('garbage collection tests', function () {
 
     yield waitForEvent(gc, 'gc:sweep:stop');
     clearTimeout(gc.sweepTimeoutId);
- }));
+  })),
 
   test('remove running container', co(function* () {
     var imageId = yield imageManager.ensureImage(IMAGE, devnull());
@@ -88,6 +95,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 0 } },
+      monitor: monitor
     });
 
     var container = yield docker.createContainer({Image: imageId,
@@ -109,7 +117,7 @@ suite('garbage collection tests', function () {
 
     yield waitForEvent(gc, 'gc:sweep:stop');
     clearTimeout(gc.sweepTimeoutId);
-  }));
+  })),
 
   test('container removal retry limit exceeded', co(function* () {
     var imageId = yield imageManager.ensureImage(IMAGE, devnull());
@@ -119,6 +127,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 0 } },
+      monitor: monitor
     });
 
     var container = yield docker.createContainer({Image: imageId});
@@ -141,7 +150,7 @@ suite('garbage collection tests', function () {
 
     yield waitForEvent(gc, 'gc:sweep:stop');
     clearTimeout(gc.sweepTimeoutId);
-  }));
+  })),
 
   test('remove container that does not exist', co(function* () {
     var imageId = yield imageManager.ensureImage(IMAGE, devnull());
@@ -151,6 +160,7 @@ suite('garbage collection tests', function () {
       docker: docker,
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 0 } },
+      monitor: monitor
     });
 
     clearTimeout(gc.sweepTimeoutId);
@@ -167,7 +177,7 @@ suite('garbage collection tests', function () {
     var errorMessage = 'No such container. Will remove from marked ' +
                        'containers list.';
     assert.equal(error.container, container.id);
-    assert.equal(error.message, errorMessage),
+    assert.equal(error.message, errorMessage);
     assert.ok(!(error.container in gc.markedContainers),
               'Container does not exist anymore but has not been ' +
               'removed from the list of marked containers.');
@@ -186,7 +196,8 @@ suite('garbage collection tests', function () {
       taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 500000 * 100000000,
       imageExpiration: 5,
-      containerExpiration: 5
+      containerExpiration: 5,
+      monitor: monitor
     });
 
     clearTimeout(gc.sweepTimeoutId);
@@ -225,7 +236,8 @@ suite('garbage collection tests', function () {
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 1 * 100000000,
-      containerExpiration: 1
+      containerExpiration: 1,
+      monitor: monitor
     });
 
     clearTimeout(gc.sweepTimeoutId);
@@ -267,7 +279,8 @@ suite('garbage collection tests', function () {
         taskListener: { availableCapacity: async () => { return 1 } },
         diskspaceThreshold: 1 * 100000000,
         imageExpiration: 1,
-        containerExpiration: 1
+        containerExpiration: 1,
+        monitor: monitor
       });
 
       clearTimeout(gc.sweepTimeoutId);
@@ -305,7 +318,8 @@ suite('garbage collection tests', function () {
         interval: 2 * 1000,
         taskListener: { availableCapacity: async () => { return 1 } },
         diskspaceThreshold: 5000000 * 100000000,
-        imageExpiration: 1
+        imageExpiration: 1,
+        monitor: monitor
       });
 
       clearTimeout(gc.sweepTimeoutId);
@@ -339,7 +353,8 @@ suite('garbage collection tests', function () {
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 1 * 100000000,
-      imageExpiration: 5
+      imageExpiration: 5,
+      monitor: monitor
     });
 
     clearTimeout(gc.sweepTimeoutId);
@@ -373,26 +388,18 @@ suite('garbage collection tests', function () {
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 1 } },
       diskspaceThreshold: 500000 * 100000000,
-      imageExpiration: 5
+      imageExpiration: 5,
+      monitor: monitor
     });
 
     clearTimeout(gc.sweepTimeoutId);
-
-
-    var stats = {
-      record: function(stat) { return; },
-      timeGen: async (stat, fn) => {
-        assert(typeof fn.then === 'function', 'Function does not appear to be a promise');
-        await fn;
-      }
-    };
 
     var cache = new VolumeCache({
       cache: {
         volumeCachePath: localCacheDir
       },
       log: debug,
-      stats: stats
+      monitor: monitor
     });
 
     gc.addManager(cache);
@@ -426,7 +433,8 @@ suite('garbage collection tests', function () {
         docker: docker,
         interval: 2 * 1000,
         taskListener: { availableCapacity: async () => { return 0 } },
-        containerExpiration: containerExpiration
+        containerExpiration: containerExpiration,
+        monitor: monitor
       });
 
       clearTimeout(gc.sweepTimeoutId);
@@ -475,7 +483,8 @@ suite('garbage collection tests', function () {
       interval: 2 * 1000,
       taskListener: { availableCapacity: async () => { return 0 } },
       diskspaceThreshold: 500000 * 100000000,
-      imageExpiration: 5
+      imageExpiration: 5,
+      monitor: monitor
     });
 
     yield waitForEvent(gc, 'gc:diskspace:warning');

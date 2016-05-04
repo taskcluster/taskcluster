@@ -12,6 +12,7 @@ suite('volume cache test', function () {
   var rmrf = require('rimraf');
   var co = require('co');
   var cmd = require('./integration/helper/cmd');
+  var base = require('taskcluster-base');
 
   // Location on the machine running the test where the cache will live
   var localCacheDir = path.join('/tmp', 'test-cache');
@@ -24,11 +25,16 @@ suite('volume cache test', function () {
     workerType: 'test_worker_type'
   });
 
-  var stats = {
-    record: function(stat) { return; }
-  };
-
+  var monitor;
   var IMAGE = 'taskcluster/test-ubuntu';
+
+  setup(co(function* () {
+    monitor = yield base.monitor({
+        credentials: {},
+        project: 'docker-worker-tests',
+        mock: true
+    });
+  })),
 
   teardown(function () {
     if (fs.existsSync(localCacheDir)) {
@@ -42,7 +48,7 @@ suite('volume cache test', function () {
         volumeCachePath: localCacheDir
       },
       log: debug,
-      stats: stats
+      monitor: monitor
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
@@ -76,7 +82,7 @@ suite('volume cache test', function () {
         volumeCachePath: localCacheDir
       },
       log: debug,
-      stats: stats
+      monitor: monitor
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
@@ -108,7 +114,7 @@ suite('volume cache test', function () {
         volumeCachePath: localCacheDir
       },
       log: debug,
-      stats: stats
+      monitor: monitor
     });
 
     var gc = new GarbageCollector({
@@ -169,7 +175,7 @@ suite('volume cache test', function () {
         volumeCachePath: localCacheDir
       },
       log: debug,
-      stats: stats
+      monitor: monitor
     });
 
 
@@ -187,7 +193,7 @@ suite('volume cache test', function () {
         volumeCachePath: localCacheDir
       },
       log: debug,
-      stats: stats
+      monitor: monitor
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();

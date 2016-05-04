@@ -7,6 +7,7 @@ grants a particular permission level based on the task scopes.
 import Debug from 'debug';
 import http from 'http';
 import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
 import URL from 'url';
 
 import BulkLog from './bulk_log';
@@ -145,10 +146,8 @@ export default class TaskclusterLogs {
     let queue = task.queue;
 
     // Intentionally used the same expiration as the bulkLog
-    let expiration = new Date(
-      Math.min(Date.now() + task.runtime.logging.bulkLogExpires,
-      new Date(task.task.expires)));
-
+    let expiration = taskcluster.fromNow(task.runtime.logging.bulkLogExpires);
+    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
     // Create the redirect artifact...
     await queue.createArtifact(
@@ -194,9 +193,8 @@ export default class TaskclusterLogs {
 
     // Switch references to the new log file on s3 rather then the local worker
     // server...
-    let expiration = new Date(
-      Math.min(Date.now() + task.runtime.logging.bulkLogExpires,
-      new Date(task.task.expires)));
+    let expiration = taskcluster.fromNow(task.runtime.logging.bulkLogExpires);
+    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
     await task.queue.createArtifact(
       task.status.taskId,

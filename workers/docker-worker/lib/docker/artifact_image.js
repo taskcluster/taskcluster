@@ -6,10 +6,10 @@ import {Transform} from 'stream';
 import path from 'path';
 import tarfs from 'tar-fs';
 import taskcluster from 'taskcluster-client';
-import { scopeMatch } from 'taskcluster-base/utils';
+import {scopeMatch} from 'taskcluster-base/utils';
 
 import {makeDir, removeDir} from '../util/fs';
-import { fmtLog, fmtErrorLog } from '../log';
+import {fmtLog, fmtErrorLog} from '../log';
 import downloadArtifact from '../util/artifact_download';
 import sleep from '../util/sleep';
 
@@ -62,31 +62,30 @@ export default class ArtifactImage {
   }
 
   async _downloadArtifact() {
+    let start = Date.now();
     let downloadDir = path.join(this.runtime.dockerVolume, 'tmp-docker-images', slugid.nice());
     await makeDir(downloadDir);
 
     let originalTarball = path.join(downloadDir, 'image.tar');
 
     try {
-      await this.runtime.stats.timeGen('taskImageDownloadTime',
-        downloadArtifact(
+      await downloadArtifact(
           this.task.queue,
           this.stream,
           this.taskId,
           this.artifactPath,
           originalTarball,
           this.runtime.dockerConfig
-        )
       );
+      this.runtime.monitor.measure('task.taskImage.downloadTime', Date.now() - start);
     } catch(e) {
       await removeDir(downloadDir);
       debug(`Error loading docker image. ${e.stack}`);
       throw new Error(`Error loading docker image. ${e.message}`);
     }
 
-    await this.runtime.stats.timeGen('taskImageLoadTime',
-        this.renameAndLoad(this.imageName, originalTarball)
-    );
+    await this.renameAndLoad(this.imageName, originalTarball);
+    this.runtime.monitor.measure('task.taskImage.loadTime', Date.now() - start);
   }
 
   async renameAndLoad(imageName, originalTarball) {

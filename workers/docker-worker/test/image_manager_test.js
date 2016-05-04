@@ -3,6 +3,7 @@ import dockerUtils from 'dockerode-process/utils';
 import ImageManager from '../lib/docker/image_manager';
 import Docker from '../lib/docker';
 import {Index} from 'taskcluster-client';
+import base from 'taskcluster-base';
 import {createHash} from 'crypto';
 import slugid from 'slugid';
 import {createLogger} from '../lib/log';
@@ -10,6 +11,7 @@ import {NAMESPACE, TASK_ID} from './fixtures/image_artifacts';
 import taskcluster from 'taskcluster-client';
 
 let docker = Docker();
+let monitor;
 
 const DOCKER_CONFIG = {
   defaultRegistry: 'registry.hub.docker.com',
@@ -18,12 +20,14 @@ const DOCKER_CONFIG = {
   randomizationFactor: 0.25
 };
 
-async function timeGen(series, fn) {
-  assert(typeof fn.then === 'function', 'Function does not appear to be a promise');
-  return await fn;
-}
-
 suite('Image Manager', () => {
+  setup(async () => {
+    monitor = await base.monitor({
+        credentials: {},
+        project: 'docker-worker-tests',
+        mock: true
+    });
+  });
   test('download docker image from registry', async () => {
     let image = 'gliderlabs/alpine:latest';
     await dockerUtils.removeImageIfExists(docker, image);
@@ -31,9 +35,7 @@ suite('Image Manager', () => {
       docker: docker,
       dockerConfig: DOCKER_CONFIG,
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let im = new ImageManager(runtime);
@@ -61,9 +63,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -101,9 +101,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -139,9 +137,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -182,9 +178,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -219,9 +213,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -249,9 +241,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -285,9 +275,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {
@@ -320,9 +308,7 @@ suite('Image Manager', () => {
       dockerConfig: DOCKER_CONFIG,
       dockerVolume: '/tmp',
       log: createLogger(),
-      stats: {
-        timeGen: timeGen
-      }
+      monitor: monitor
     };
 
     let task = {

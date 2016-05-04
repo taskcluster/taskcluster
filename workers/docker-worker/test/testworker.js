@@ -9,7 +9,6 @@ var request = require('superagent-promise');
 var debug = require('debug')('docker-worker:test:testworker');
 var waitForEvent = require('../lib/wait_for_event');
 var split = require('split2');
-var loadConfig = require('taskcluster-base/config');
 var getArtifact = require('./integration/helper/get_artifact');
 
 var Task = require('taskcluster-task-factory/task');
@@ -19,6 +18,7 @@ var LocalWorker = require('./localworker');
 var Queue  = require('taskcluster-client').Queue;
 var Scheduler = require('taskcluster-client').Scheduler;
 var PulseListener = require('taskcluster-client').PulseListener;
+var base = require('taskcluster-base');
 var Promise = require('promise');
 var EventEmitter = require('events').EventEmitter;
 var getLogsLocationsFromTask = require('../lib/features/logs_location.js');
@@ -34,11 +34,10 @@ const DEFAULT_WORKER_PREFIX = 'dummy-worker';
 export default class TestWorker extends EventEmitter {
   constructor(Worker, workerType, workerId) {
     super();
-    // Load the test time configuration for all the components...
-    var config = loadConfig({
-      defaults: require('../config/defaults'),
-      profile: require('../config/test'),
-      filename: 'docker-worker-test'
+    var config = base.config({
+      files: [`${__dirname}/../config.yml`],
+      profile: 'test',
+      env: process.env
     });
 
     this.provisionerId = PROVISIONER_ID;
@@ -50,14 +49,14 @@ export default class TestWorker extends EventEmitter {
     this.workerId = workerId || `dummy-worker-${slugid.v4()}`.substring(0, 22);
     this.worker = new Worker(PROVISIONER_ID, this.workerType, this.workerId);
 
-    this.pulse = config.get('pulse');
+    this.pulse = config.pulse;
 
     this.queue = new Queue({
-      credentials: config.get('taskcluster')
+      credentials: config.taskcluster
     });
 
     this.scheduler = new Scheduler({
-      credentials: config.get('taskcluster')
+      credentials: config.taskcluster
     });
 
     var deadline = new Date();

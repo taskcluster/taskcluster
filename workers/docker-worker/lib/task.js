@@ -6,7 +6,6 @@ import Debug from 'debug';
 import DockerProc from 'dockerode-process';
 import util from 'util';
 import uuid from 'uuid';
-import { validator } from 'taskcluster-base';
 import { PassThrough } from 'stream';
 import States from './states';
 import fs from "mz/fs";
@@ -68,9 +67,9 @@ function taskEnvToDockerEnv(env) {
 Convert the feature flags into a state handler.
 
 @param {Object} task definition.
-@param {Stat} stats object, see stat.js
+@param {Monitor} monitor object implementing record/measure methods
 */
-function buildStateHandlers(task, stats) {
+function buildStateHandlers(task, monitor) {
   let handlers = [];
   let featureFlags = task.payload.features || {};
 
@@ -81,11 +80,11 @@ function buildStateHandlers(task, stats) {
     if (enabled) {
       handlers.push(new (features[flag].module)());
       debug(flag);
-      stats.record('taskFeature', flag);
+      monitor.count(`task.feature.${flag}`);
     }
   }
 
-  return new States(handlers, stats);
+  return new States(handlers);
 }
 
 /**
@@ -117,7 +116,7 @@ function runAsPrivileged(task, allowPrivilegedTasks) {
   let privilegedTask = taskCapabilities.privileged || false;
   if (!privilegedTask) return false;
 
-  if (!scopeMatch(task.scopes, ['docker-worker:capability:privileged'])) {
+  if (!scopeMatch(task.scopes, [['docker-worker:capability:privileged']])) {
     throw new Error(
       'Insufficient scopes to run task in privileged mode. Try ' +
       'adding docker-worker:capability:privileged to the .scopes array'
@@ -299,7 +298,7 @@ export class Task extends EventEmitter {
     this.stream = new PassThrough();
 
     // states actions.
-    this.states = buildStateHandlers(task, this.runtime.stats);
+    this.states = buildStateHandlers(task, this.runtime.monitor);
   }
 
   /**
@@ -498,13 +497,14 @@ export class Task extends EventEmitter {
    * establishing states, etc).  This will optionally write an error to the stream
    * and then write the footer and kill states.
    *
-   * @param {String} stat - Name of the current state to be used when generating stats for killing states
    * @param {String} error - Option error to write to the stream prior to aborting
    */
-  async abortRun(stat, error='') {
-    if (!this.isCanceled()) this.taskState = 'aborted';
+  async abortRun(error='') {
+    if (!this.isCanceled()) {
+      this.taskState = 'aborted';
+    }
 
-    this.runtime.stats.record('abortTask');
+    this.runtime.monitor.count('task.state.abort');
 
     this.runtime.log('task aborted', {
       taskId: this.status.taskId,
@@ -664,11 +664,10 @@ export class Task extends EventEmitter {
   }
 
   setRuntimeTimeout(maxRuntime) {
-    let stats = this.runtime.stats;
     let maxRuntimeMS = maxRuntime * 1000;
     let runtimeTimeoutId = setTimeout(function() {
       this.taskState = 'aborted';
-      stats.record('runTimeExceeded', maxRuntimeMS);
+      this.runtime.monitor.count('task.runtimeExceeded');
 
       this.runtime.log('task max runtime timeout', {
         maxRunTime: this.task.payload.maxRunTime,
@@ -783,7 +782,7 @@ export class Task extends EventEmitter {
   async run() {
     this.taskState = 'running';
     this.taskStart = new Date();
-    let stats = this.runtime.stats;
+    let monitor = this.runtime.monitor;
     this.hostname = getHostname(
       this.runtime,
       new Date(Date.now() + this.task.payload.maxRunTime * 1000)
@@ -793,22 +792,19 @@ export class Task extends EventEmitter {
     this.stream.cork();
 
     // Task log header.
-    this.writeLogHeader()
+    this.writeLogHeader();
     let linkInfo = {};
     try {
       // Build the list of container links... and base environment variables
       linkInfo = await this.states.link(this);
       // Hooks prior to running the task.
       await this.states.created(this);
-    }
-    catch (e) {
+    } catch (e) {
       return await this.abortRun(
-        'states_failed',
         fmtErrorLog(
           'Task was aborted because states could not be created ' +
           `successfully. ${e.message}`
-        ),
-        e
+        )
       );
     }
 
@@ -816,7 +812,7 @@ export class Task extends EventEmitter {
     this.stream.uncork();
 
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
 
     let payloadErrors = validatePayload(this.runtime.validator, this.task.payload, this.status, PAYLOAD_SCHEMA);
@@ -825,8 +821,8 @@ export class Task extends EventEmitter {
       // Inform the user that this task has failed due to some configuration
       // error on their part.
       this.taskException = 'malformed-payload';
+      monitor.count('task.validationFailure');
       return await this.abortRun(
-        'validation_failed',
         this.logSchemaErrors('`task.payload`', payloadErrors)
       );
     }
@@ -836,7 +832,7 @@ export class Task extends EventEmitter {
     // that their task has failed due to a image specific problem rather then
     // some general bug in taskcluster or the worker code.
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
 
     let imageId;
@@ -849,14 +845,14 @@ export class Task extends EventEmitter {
       this.runtime.gc.markImage(imageId);
     } catch (e) {
 
+      monitor.count('task.image.pullFailed');
       return await this.abortRun(
-        'pull_failed',
         fmtErrorLog(IMAGE_ERROR, JSON.stringify(this.task.payload.image), e.message)
       );
     }
 
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
 
     let dockerConfig;
@@ -866,11 +862,11 @@ export class Task extends EventEmitter {
       let error = fmtErrorLog('Docker configuration could not be ' +
         'created.  This may indicate an authentication error when validating ' +
         'scopes necessary for running the task. \n %s', e);
-      return await this.abortRun('docker_configuration', error);
+      return await this.abortRun(error);
     }
 
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
     let dockerProc = this.dockerProcess = new DockerProc(
       this.runtime.docker, dockerConfig);
@@ -882,22 +878,19 @@ export class Task extends EventEmitter {
     let runtimeTimeoutId = this.setRuntimeTimeout(this.task.payload.maxRunTime);
 
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
 
     // Call started hook when container is started
     dockerProc.once('container start', async (container) => {
       try {
         await this.states.started(this);
-      }
-      catch (e) {
+      } catch (e) {
         return await this.abortRun(
-          'states_failed',
           fmtErrorLog(
             'Task was aborted because states could not be started ' +
             `successfully. ${e}`
-          ),
-          e
+          )
         );
       }
     });
@@ -906,11 +899,13 @@ export class Task extends EventEmitter {
     this.stream.write(fmtLog('=== Task Starting ==='));
     let exitCode;
     try {
-      exitCode = await stats.timeGen('taskRunTime', dockerProc.run({
+      let taskStart = new Date();
+      exitCode = await dockerProc.run({
         // Do not pull the image as part of the docker run we handle it +
         // authentication above...
         pull: false
-      }));
+      });
+      monitor.measure('task.runtime', Date.now() - taskStart);
     } catch(error) {
       // Catch any errors starting the docker container.  This can be form an invalid
       // command being specified in the task payload, or a docker related issue.
@@ -944,7 +939,7 @@ export class Task extends EventEmitter {
     }
 
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
 
     // Extract any results from the hooks.
@@ -984,7 +979,7 @@ export class Task extends EventEmitter {
 
     // If the results validation failed we consider this task failure.
     if (this.isCanceled() || this.isAborted()) {
-      return await this.abortRun(this.taskState);
+      return await this.abortRun();
     }
     return success;
   }
@@ -1000,17 +995,6 @@ export class Task extends EventEmitter {
   createQueue(credentials, runtime) {
     return new taskcluster.Queue({
       credentials: credentials,
-      stats: base.stats.createAPIClientStatsHandler({
-        drain: runtime.stats.influx,
-        tags: {
-          component: 'docker-worker',
-          workerId: runtime.workerId,
-          workerGroup: runtime.workerGroup,
-          workerType: runtime.workerType,
-          instanceType: runtime.workerNodeType,
-          provisionerId: runtime.provisionerId
-        }
-      })
     });
   }
 }

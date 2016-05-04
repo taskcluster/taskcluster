@@ -78,7 +78,9 @@ export default class ImageManager {
         let exists = await imageHandler.imageExists();
 
         if (!exists) {
-          await this.runtime.stats.timeGen('imageLoadTimeTotal', imageHandler.download());
+          let start = Date.now();
+          await imageHandler.download();
+          this.runtime.monitor.measure('task.image.totalLoadTime', Date.now() - start);
         }
 
         return imageHandler.imageId;

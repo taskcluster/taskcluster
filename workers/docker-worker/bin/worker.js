@@ -1,6 +1,7 @@
 var Docker = require('../lib/docker/docker');
 var fs = require('fs');
 var os = require('os');
+var path = require('path');
 var program = require('commander');
 var taskcluster = require('taskcluster-client');
 var base = require('taskcluster-base');
@@ -11,7 +12,6 @@ var _ = require('lodash');
 var Runtime = require('../lib/runtime');
 var TaskListener = require('../lib/task_listener');
 var ShutdownManager = require('../lib/shutdown_manager');
-var Stats = require('../lib/stats/stat');
 var GarbageCollector = require('../lib/gc');
 var VolumeCache = require('../lib/volume_cache');
 var PrivateKey = require('../lib/private_key');
@@ -117,7 +117,7 @@ o('--worker-node-type <worker-node-type>', 'override the worker node type');
 program.parse(process.argv);
 
 // Main.
-async function main () {
+async () => {
   var profile = program.args[0];
 
   if (!profile) {
@@ -125,15 +125,11 @@ async function main () {
     return process.exit(1);
   }
 
-  var workerConf = base.config({
-    defaults: require('../config/defaults'),
-    profile: require('../config/' + profile),
-    filename: 'docker-worker'
+  var config = base.config({
+    files: [`${__dirname}/../config.yml`],
+    profile: profile,
+    env: process.env
   });
-
-  // Load all base configuration that is on disk / environment variables /
-  // flags.
-  var config = await workerConf.load();
 
   // Use a target specific configuration helper if available.
   var host;
@@ -176,41 +172,35 @@ async function main () {
   // level docker-worker components.
   config.docker = require('../lib/docker')();
 
-  // Wrapped stats helper to support generators, etc...
-  config.stats = new Stats(config);
-  config.stats.record('workerStart', Date.now()-os.uptime() * 1000);
-  debug('passed stats')
-
-  config.queue = new taskcluster.Queue({
+  let monitor = await base.monitor({
+    project: 'docker-worker',
     credentials: config.taskcluster,
-    stats: base.stats.createAPIClientStatsHandler({
-      drain: config.stats.influx,
-      tags: {
-        component: 'docker-worker',
-        workerId: config.workerId,
-        workerGroup: config.workerGroup,
-        workerType: config.workerType,
-        instanceType: config.workerNodeType,
-        provisionerId: config.provisionerId
-      }
-    })
+    mock: profile === 'test',
+    reportUsage: false
   });
 
-  config.validator = await base.validator();
-  config.validator.register(require('../schemas/payload'));
+  config.monitor = monitor.prefix(
+    `${config.provisionerId}.` +
+    `${config.workerGroup}.${config.workerType}.` +
+    `${config.workerNodeType.replace('.', '')}`
+  );
 
-  // Only catch these metrics when running on aws host.  Running within
-  // test environment causes numerous issues.
-  if (host === 'aws') {
-    base.stats.startProcessUsageReporting({
-      drain: config.stats.influx,
-      component: 'docker-worker',
-      process: 'docker-worker'
-    });
-  }
+  config.monitor.measure('workerStart', Date.now()-os.uptime());
+  config.monitor.count('workerStart');
+
+  config.queue = new taskcluster.Queue({
+    credentials: config.taskcluster
+  });
+
+  config.validator = await base.validator({
+    prefix: config.schema.path
+  });
 
   setInterval(
-    reportHostMetrics.bind(this, config),
+    reportHostMetrics.bind(this, {
+      stats: config.monitor,
+      dockerVolume: config.dockerVolume
+    }),
     config.metricsCollection.hostMetricsInterval
   );
 
@@ -295,7 +285,7 @@ async function main () {
 
   // Test only logic for clean shutdowns (this ensures our tests actually go
   // through the entire steps of running a task).
-  if (workerConf.get('testMode')) {
+  if (config.testMode) {
     // Gracefullyish close the connection.
     process.once('message', async (msg) => {
       if (msg.type !== 'halt') return;
@@ -310,10 +300,4 @@ async function main () {
       taskListener.once('idle', halt);
     });
   }
-}
-
-main().catch((err) => {
-  // Top level uncaught fatal errors!
-  console.error(err);
-  throw err; // nothing to do so show a message and crash
-});
+}();

@@ -7,39 +7,39 @@ auto pushing schema's tricky. For now this script does the uploads manually.
 */
 
 var aws = require('aws-sdk-promise');
+var fs = require('fs');
 
-var loadConfig = require('taskcluster-base/config');
-var config = loadConfig({
-  defaults: require('../config/defaults'),
-  profile: require('../config/production'),
-  filename: 'docker-worker'
+var base = require('taskcluster-base');
+var config = base.config({
+  files: [`${__dirname}/../config.yml`],
+  profile: 'production',
+  env: process.env
 });
 
 async function main () {
   var s3 = new aws.S3({
-    region: config.get('schema:region'),
+    region: config.schema.region,
     params: {
-      Bucket: config.get('schema:bucket')
+      Bucket: config.schema.bucket
     }
   });
 
-  var key = config.get('schema:path') + 'payload.json';
+  var key = config.schema.path + 'payload.json';
   console.log('uploading: %s', key);
   return await s3.putObject({
     Key: key,
     ContentType: 'application/json',
-    Body: new Buffer(JSON.stringify(require('../schemas/payload'), null, 2))
+    Body: new Buffer(fs.readFileSync('../schemas/payload.json'))
   }).promise();
 }
 
 main().then(() => {
-    console.log(
-      'Done uploading schemas to s3://%s%s',
-      config.get('schema:bucket'), config.get('schema:path')
-    );
-  }, (err) => {
+  console.log(
+    'Done uploading schemas to s3://%s%s',
+    config.schema.bucket, config.schema.path
+  );
+}, (err) => {
   if (err) {
-    console.error(err);
-    process.exit(1);
+    throw err;
   }
 });

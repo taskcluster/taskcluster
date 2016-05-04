@@ -86,13 +86,17 @@ export default class DockerImage {
       pullOptions.authconfig = this.credentials;
     }
 
-    return await this.runtime.stats.timeGen(
-        'dockerImageDownloadTime',
-        this.pullImageStreamTo(this.runtime.docker,
-                               dockerImageName,
-                               this.stream,
-                               pullOptions)
+    let start = Date.now();
+    let result = await this.pullImageStreamTo(this.runtime.docker,
+                                               dockerImageName,
+                                               this.stream,
+                                               pullOptions);
+    this.runtime.monitor.measure(
+      'task.dockerImage.downloadTime',
+      Date.now() - start
     );
+
+    return result;
   }
 
   async pullImageStreamTo(docker, image, stream, options={}) {

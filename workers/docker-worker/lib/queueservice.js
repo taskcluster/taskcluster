@@ -14,32 +14,31 @@ async function sleep(duration) {
 }
 
 async function makeRequest(method, url, retries, retryInterval, payload) {
-    method = method.toUpperCase();
-    while (--retries >= 0) {
-      try {
-        debug(`requesting: ${url}`);
-        let req = request(method, url);
+  method = method.toUpperCase();
+  while (--retries >= 0) {
+    try {
+      debug(`requesting: ${url}`);
+      let req = request(method, url);
 
-        if(payload) req.send(payload);
+      if (payload) req.send(payload);
 
-        let response = await req.buffer().end();
+      let response = await req.buffer().end();
 
-        if (!response.ok) {
-          let error = new Error(response.text);
-          error.statusCode = response.status;
-          throw error;
-        }
-
-        return response;
+      if (!response.ok) {
+        let error = new Error(response.text);
+        error.statusCode = response.status;
+        throw error;
       }
-      catch (e) {
-        debug(`Error requesting ${url}. ${e.stack || e} status code: ${e.statusCode} Retries left: ${retries}`);
-        if (retries === 0) {
-          throw new Error(`Could not complete request. status code: ${e.statusCode} ${e.stack || e}`);
-        }
+
+      return response;
+    } catch (e) {
+      debug(`Error requesting ${url}. ${e.stack || e} status code: ${e.statusCode} Retries left: ${retries}`);
+      if (retries === 0) {
+        throw new Error(`Could not complete request. status code: ${e.statusCode} ${e.stack || e}`);
       }
-      await sleep(retryInterval);
     }
+    await sleep(retryInterval);
+  }
 }
 
 /**
@@ -54,7 +53,6 @@ async function makeRequest(method, url, retries, retryInterval, payload) {
  *   provisionerID:     // ID of the provisioner used for this worker
  *   queue:             // Queue instance as provided by taskcluster-client
  *   log:               // Logger instance
- *   stats:             // Stats instance
  *   task: {
  *     dequeueCount:    // Times a task should be dequeued before permanently
  *                      // removing from the queue.
@@ -74,7 +72,6 @@ export default class TaskQueue {
     assert(config.provisionerId, 'Provisioner ID is required');
     assert(config.queue, 'Instance of taskcluster queue is required');
     assert(config.log, 'Logger is required');
-    assert(config.stats, 'Stats instance is required');
     assert(config.task.dequeueCount, 'Dequeue count is required');
     assert(config.taskQueue.expiration, 'Queue expiration time in miliseconds is required');
     this.queues = null;
@@ -83,7 +80,6 @@ export default class TaskQueue {
     this.provisionerId = config.provisionerId;
     this.client = config.queue;
     this.log = config.log;
-    this.stats = config.stats;
     this.dequeueCount = config.task.dequeueCount;
     this.queueExpiration = config.taskQueue.expiration;
     this.maxRetries = config.taskQueue.maxRetries || 5;

@@ -21,13 +21,11 @@ export default function (config) {
 
   let freeMem = os.freemem();
   let totalMem = os.totalmem();
-  stats.record('workerMemory', {
-    free: freeMem,
-    total: totalMem,
-    used: totalMem - freeMem
-  });
+  stats.measure('memory.free', freeMem);
+  stats.measure('memory.total', totalMem);
+  stats.measure('memory.used', totalMem - freeMem);
 
-  stats.record('workerUptime', os.uptime());
+  stats.measure('uptime', os.uptime());
 
   let cpuStats = getCPUStats();
   let totalCPUTime = 0;
@@ -40,13 +38,15 @@ export default function (config) {
     }
   });
 
-  stats.record('workerCPULoad', (loadTime/totalCPUTime) * 100);
+  stats.measure('cpu.used', (loadTime / totalCPUTime) * 100);
 
-  diskspace.check(dockerVolume, function (err, total, free) {
-    stats.record('workerHD', {
-      free: free,
-      used: total-free,
-      total: total
-    });
+  diskspace.check(dockerVolume, (err, total, free) => {
+    if (err) {
+      console.log(`Error checking free diskspace. ${err.message}`);
+      return;
+    }
+    stats.measure('hd.total', total);
+    stats.measure('hd.free', free);
+    stats.measure('hd.used', total - free);
   });
 }

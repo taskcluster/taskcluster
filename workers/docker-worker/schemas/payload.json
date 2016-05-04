@@ -1,24 +1,4 @@
-var features = require('../lib/features');
-
-// Create a schema out of the features list...
-var featureSchema = {
-  "title": "Feature flags",
-  "description": "Used to enable additional functionality.",
-  "type": "object",
-  "properties": {}
-
-};
-for (var key in features) {
-  var feature = features[key];
-  featureSchema.properties[key] = {
-    "type": "boolean",
-    "title": feature.title,
-    "description": feature.description,
-    "default": feature.default
-  };
-}
-
-module.exports = {
+{
   "id": "http://schemas.taskcluster.net/docker-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
@@ -28,7 +8,10 @@ module.exports = {
         "type": {
           "title": "Artifact upload type.",
           "type": "string",
-          "enum": ["file", "directory"]
+          "enum": [
+            "file",
+            "directory"
+          ]
         },
         "path": {
           "title": "Location of artifact in container.",
@@ -40,40 +23,53 @@ module.exports = {
           "format": "date-time"
         }
       },
-      "required": ["type", "path"]
+      "required": [
+        "type",
+        "path"
+      ]
     }
   },
   "title": "Docker worker payload",
   "description": "`.payload` field of the queue.",
   "type": "object",
-  "required": ["image", "maxRunTime"],
+  "required": [
+    "image",
+    "maxRunTime"
+  ],
   "properties": {
     "image": {
       "title": "Docker image.",
       "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
       "oneOf": [
         {
-          "type": "string",
+          "type": "string"
         },
         {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["docker-image"]
+              "enum": [
+                "docker-image"
+              ]
             },
             "name": {
               "type": "string"
             }
           },
-          "required": ["type", "name"]
+          "required": [
+            "type",
+            "name"
+          ]
         },
         {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["indexed-image"]
+              "enum": [
+                "indexed-image"
+              ]
             },
             "namespace": {
               "type": "string"
@@ -82,14 +78,20 @@ module.exports = {
               "type": "string"
             }
           },
-          "required": ["type", "namespace", "path"]
+          "required": [
+            "type",
+            "namespace",
+            "path"
+          ]
         },
         {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["task-image"]
+              "enum": [
+                "task-image"
+              ]
             },
             "taskId": {
               "type": "string"
@@ -98,14 +100,18 @@ module.exports = {
               "type": "string"
             }
           },
-          "required": ["type", "taskId", "path"]
+          "required": [
+            "type",
+            "taskId",
+            "path"
+          ]
         }
       ]
     },
     "cache": {
       "title": "Caches to mount point mapping.",
       "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
-      "type": "object",
+      "type": "object"
     },
     "capabilities": {
       "title": "Capabilities that must be available/enabled for the task container.",
@@ -137,7 +143,12 @@ module.exports = {
               "title": "Phone device",
               "description": "Phone device that will be created using Testdroid",
               "type": "object",
-              "required": ["type", "sims", "build", "memory"],
+              "required": [
+                "type",
+                "sims",
+                "build",
+                "memory"
+              ],
               "properties": {
                 "type": {
                   "title": "Phone Type",
@@ -192,7 +203,7 @@ module.exports = {
       "type": "number",
       "title": "Maximum run time in seconds",
       "description": "Maximum time the task container can run in seconds",
-      "multipleOf": 1.0,
+      "multipleOf": 1,
       "minimum": 1,
       "maximum": 86400
     },
@@ -218,6 +229,77 @@ module.exports = {
       "type": "string",
       "format": "url"
     },
-    "features": featureSchema
+    "features": {
+      "title": "Feature flags",
+      "description": "Used to enable additional functionality.",
+      "type": "object",
+      "properties": {
+        "localLiveLog": {
+          "type": "boolean",
+          "title": "Enable live logging (worker local)",
+          "description": "Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3"
+        },
+        "azureLiveLog": {
+          "type": "boolean",
+          "title": "Enable live logging (via azure blobs)",
+          "description": "Useful for situations where it is impossible to reach the worker and parsing the azure livelog is possible"
+        },
+        "bulkLog": {
+          "type": "boolean",
+          "title": "Bulk upload the task log into a single artifact",
+          "description": "Useful if live logging is not interesting but the overalllog is later on"
+        },
+        "taskclusterProxy": {
+          "type": "boolean",
+          "title": "Task cluster auth proxy service",
+          "description": "The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task."
+        },
+        "testdroidProxy": {
+          "type": "boolean",
+          "title": "Testdroid proxy service",
+          "description": ""
+        },
+        "balrogVPNProxy": {
+          "type": "boolean",
+          "title": "Balrog proxy service",
+          "description": "The Balrog proxy feature allows tasks to make requests to http://balrog which is a proxied connection through a vpn tunnel to production balrog update server."
+        },
+        "artifacts": {
+          "type": "boolean",
+          "title": "Artifact uploads",
+          "description": ""
+        },
+        "extendTaskGraph": {
+          "type": "boolean",
+          "title": "Task graph extensions",
+          "description": "The `.graphs` property in payload allows specifying paths which if present will be used to extend the task graph (Keeping it alive) this can be used for dynamic tests, bisections, any dynamic tasks, etc..."
+        },
+        "dind": {
+          "type": "boolean",
+          "title": "Docker in Docker",
+          "description": "Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts."
+        },
+        "relengAPIProxy": {
+          "type": "boolean",
+          "title": "Releng API proxy service",
+          "description": "The Releng API proxy service allows tasks to talk to releng api using an authorization token based on the task's scopes"
+        },
+        "dockerSave": {
+          "type": "boolean",
+          "title": "Docker save",
+          "description": "Uploads docker images as artifacts"
+        },
+        "interactive": {
+          "type": "boolean",
+          "title": "Docker Exec Interactive",
+          "description": "This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers."
+        },
+        "allowPtrace": {
+          "type": "boolean",
+          "title": "Allow ptrace within the container",
+          "description": "This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy. "
+        }
+      }
+    }
   }
 }

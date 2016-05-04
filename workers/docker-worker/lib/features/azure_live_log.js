@@ -5,6 +5,7 @@ is streamed from the task container and other writers...
 
 var azure = require('azure-storage');
 var streamClosed = require('../stream_closed');
+var taskcluster = require('taskcluster-client');
 
 var URL = require('url')
 var Promise = require('promise');
@@ -52,9 +53,8 @@ export default class LiveLog {
     var queue = task.queue;
 
     // Create date when this artifact should expire (see config).
-    var expiration = new Date(
-      Math.min(Date.now() + task.runtime.logging.liveLogExpires,
-      new Date(task.task.expires)));
+    let expiration = taskcluster.fromNow(task.runtime.logging.liveLogExpires);
+    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
 
     var options = {
       storageType: 'azure',

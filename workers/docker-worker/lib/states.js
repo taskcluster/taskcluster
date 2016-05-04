@@ -29,13 +29,11 @@ Each "state" in the lifetime is a well defined function:
 
 @constructor
 @param {Array[Object]} hooks for handling states in the task lifecycle.
-@param {Stat} stats object, see stat.js
 */
 export default class States {
-  constructor(hooks, stats) {
+  constructor(hooks) {
     assert.ok(Array.isArray(hooks), 'hooks is an array');
     this.hooks = hooks;
-    this.stats = stats;
   }
 
   /**
@@ -43,16 +41,11 @@ export default class States {
   @param {Task} task handler.
   */
   _invoke(method, task) {
-    debug("taskId: %s at state: %s", task.status.taskId, method);
+    debug('taskId: %s at state: %s', task.status.taskId, method);
     let hooks = this.hooks.filter(hasMethod.bind(this, method));
 
-    // XXX This stat is cumulative duration of all states being invoked, which
-    // is influenced by what states are being used within the task.  Investigate
-    // if this is actually useful.
     let errors = [];
-    return this.stats.timeGen(
-      'stateChange',
-      Promise.all(
+    return Promise.all(
         hooks.map(hook => {
           return hook[method](task)
             .then(info => { return info; })
@@ -60,8 +53,6 @@ export default class States {
               errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err.message}`));
             });
         })
-      ),
-      {state: method}
     ).then(results => {
       if (errors.length > 0) {
         throw new Error(errors.map(e => e.message).join(' | '));

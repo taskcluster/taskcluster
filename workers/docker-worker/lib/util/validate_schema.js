@@ -1,7 +1,7 @@
 export function validatePayload(validator, payload, status, schema) {
   let payloadErrors = [];
 
-  let err = validator.check(payload, schema);
+  let err = validator(payload, schema);
   if (err) { payloadErrors.push(err); }
 
   if (!payload.artifacts) {

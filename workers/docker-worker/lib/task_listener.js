@@ -160,7 +160,8 @@ export default class TaskListener extends EventEmitter {
       this.runtime.dockerVolume,
       this.runtime.capacityManagement.diskspaceThreshold,
       availableCapacity,
-      this.runtime.log
+      this.runtime.log,
+      this.runtime.monitor
     );
     // Do not claim tasks if not enough resources are available
     if (exceedsThreshold) return;
@@ -191,21 +192,22 @@ export default class TaskListener extends EventEmitter {
           interval: this.host.billingCycleInterval()
         };
         let remainder = stats.interval - (stats.uptime % stats.interval);
-        if(remainder * this.runtime.taskQueue.slowdownDivisor < stats.interval) {
+        if (remainder * this.runtime.taskQueue.slowdownDivisor < stats.interval) {
           //slow down the polling because it's nearing the end of the billing cycle
-          if(this.taskPollInterval === this.runtime.taskQueue.pollInterval) {
+          if (this.taskPollInterval === this.runtime.taskQueue.pollInterval) {
             this.taskPollInterval = this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier;
-            
-            this.runtime.log('polling', { message: 'polling interval adjusted',
+
+            this.runtime.log('polling', {
+              message: 'polling interval adjusted',
               oldInterval: this.runtime.taskQueue.pollInterval,
               newInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier
             });
           }
         } else {
           //speed it up
-          if(this.taskPollInterval !== this.runtime.taskQueue.pollInterval) {
+          if (this.taskPollInterval !== this.runtime.taskQueue.pollInterval) {
             this.taskPollInterval = this.runtime.taskQueue.pollInterval;
-            
+
             this.runtime.log('polling', { message: 'polling interval adjusted',
               oldInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier,
               newInterval: this.runtime.taskQueue.pollInterval
@@ -231,7 +233,7 @@ export default class TaskListener extends EventEmitter {
 
   async close() {
     clearTimeout(this.pollTimeoutId);
-    if(this.cancelListener) return await this.cancelListener.close();
+    if (this.cancelListener) return await this.cancelListener.close();
   }
 
   /**
@@ -239,7 +241,7 @@ export default class TaskListener extends EventEmitter {
   */
   async pause() {
     clearTimeout(this.pollTimeoutId);
-    if(this.cancelListener) return await this.cancelListener.pause();
+    if (this.cancelListener) return await this.cancelListener.pause();
   }
 
   /**
@@ -247,7 +249,7 @@ export default class TaskListener extends EventEmitter {
   */
   async resume() {
     this.scheduleTaskPoll();
-    if(this.cancelListener) return await this.cancelListener.resume();
+    if (this.cancelListener) return await this.cancelListener.resume();
   }
 
   isIdle() {
@@ -268,15 +270,20 @@ export default class TaskListener extends EventEmitter {
   }
 
   recordCapacity () {
-    if(this.lastKnownCapacity === undefined) {
+    if (this.lastKnownCapacity === undefined) {
       this.lastKnownCapacity = 0;
     }
-    this.runtime.stats.record('capacityOverTime', {
-      duration: Date.now() - this.lastTaskEvent,
-      idleCapacity: this.lastKnownCapacity,
-      runningTasks: this.runningTasks.length,
-      totalCapacity: this.lastKnownCapacity + this.runningTasks.length
-    });
+    this.runtime.monitor.measure(
+      'capacity.duration.lastTaskEvent',
+      Date.now() - this.lastTaskEvent
+    );
+
+    this.runtime.monitor.count('capacity.idle', this.lastKnownCapacity);
+    this.runtime.monitor.count('capacity.runningTasks', this.runningTasks.length);
+    this.runtime.monitor.count(
+      'capacity.total',
+      this.lastKnownCapacity + this.runningTasks.length
+    );
     this.lastTaskEvent = Date.now();
   }
 
@@ -438,7 +445,7 @@ export default class TaskListener extends EventEmitter {
       if (!claim.status.runs.length) {
         // Record a stat which is the time between when the task was created and
         // the first time a worker saw it.
-        this.runtime.stats.time('timeToFirstClaim', created);
+        this.runtime.monitor.measure('timeToFirstClaim', Date.now() - created);
       }
 
       let options = {};
@@ -487,6 +494,6 @@ export default class TaskListener extends EventEmitter {
       }
     }
 
-    this.runtime.stats.record('taskError');
+    this.runtime.monitor.count('task.error');
   }
 }
