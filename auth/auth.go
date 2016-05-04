@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 29 Apr 2016 at 10:27:00 UTC. The code was generated
+// Wed, 4 May 2016 at 19:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -315,7 +315,8 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, *tcclient.CallSummary, error)
 // a given `bucket` and `prefix` within that bucket.
 // The `level` parameter can be `read-write` or `read-only` and determines
 // which type of credentials are returned. Please note that the `level`
-// parameter is required in the scope guarding access.
+// parameter is required in the scope guarding access.  The bucket name must
+// not contain `.`, as recommended by Amazon.
 //
 // The credentials are set to expire after an hour, but this behavior is
 // subject to change. Hence, you should always read the `expires` property

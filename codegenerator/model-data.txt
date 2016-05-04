@@ -1,4 +1,4 @@
-Generated: 1461925655
+Generated: 1462390126
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -296,7 +296,8 @@ Entry 15    =
 a given `bucket` and `prefix` within that bucket.
 The `level` parameter can be `read-write` or `read-only` and determines
 which type of credentials are returned. Please note that the `level`
-parameter is required in the scope guarding access.
+parameter is required in the scope guarding access.  The bucket name must
+not contain `.`, as recommended by Amazon.
 
 The credentials are set to expire after an hour, but this behavior is
 subject to change. Hence, you should always read the `expires` property
