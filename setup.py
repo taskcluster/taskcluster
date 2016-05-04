@@ -19,8 +19,9 @@ tests_require = [
     'flake8==2.5.0',
     'psutil==2.1.3',
     'hypothesis',
-    'pgpy',
-    'coverage==4.0.3',
+    'pgpy>=0.4.0',
+    'tox==2.3.1',
+    'coverage==4.1b2',
 ]
 
 # requests has a policy of not breaking apis between major versions

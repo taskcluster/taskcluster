@@ -288,9 +288,7 @@ def _encrypt(message, keyFile):
     if not pgpy:
         raise RuntimeError("Install `pgpy' to use encryption")
     key, _ = pgpy.PGPKey.from_file(keyFile)
-    # force a bytearray here, until the upstream bug is fixed.
-    # https://github.com/SecurityInnovation/PGPy/issues/154
-    msg = pgpy.PGPMessage.new(bytearray(message, encoding="utf-8"))
+    msg = pgpy.PGPMessage.new(message)
     encrypted = key.encrypt(msg)
     if six.PY2:
         encrypted_bytes = encrypted.__bytes__()
@@ -323,11 +321,6 @@ def _decrypt(blob, privateKey):
     msg.parse(blob)
     decrypted = key.decrypt(msg)
     message = decrypted.message
-    # allow for bytearray until the upstream bug is fixed.
-    # https://github.com/SecurityInnovation/PGPy/issues/154
-    if isinstance(message, bytearray):
-        message = message.decode('utf-8')
-
     return message
 
 
