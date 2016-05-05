@@ -12,9 +12,6 @@ Supported authentication systems:
    supplies multi-factor auth and a host of other benefits.  This expects a
    `taskcluster-email` property in the SAML assertion, giving the user's
    LDAP email.  User identities are of the form `mozilla-ldap/<email>`.
- * LDAP - For users who cannot use Okta, this allows authentication using a
-   boring old username/password form, authenticated against Mozilla's LDAP.
-   User identities are of the form `mozilla-ldap/<email>`.
  * Persona - A very basic verification that the user owns an email address.
    User identities are of the form `persona/<email`.
 
