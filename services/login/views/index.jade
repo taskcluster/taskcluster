@@ -30,27 +30,6 @@ html(lang='en')
     // Script with various hacks for this page
     script(src='/assets/script.js')
   body.container
-    div.modal#ldap-modal(tabindex="-1", role="dialog")
-      div.modal-dialog.modal-open
-        div.modal-content
-          form(action='/ldap/login', method='post')
-            div.modal-header
-              button.close(type="button", data-dismiss="modal" aria-label="Close")
-                span(aria-hidden="true") &times
-              h4.modal-title Mozilla LDAP Sign-In
-            div.login-form.modal-body#ldap-form
-              label.sr-only(for="username") LDAP Email
-              input.form-control.top-element#username(name="username", type="email",
-                                          placeholder="LDAP Email", required)
-              label.sr-only(for="password") Password
-              input.form-control.bottom-element#password(name="password", type="password",
-                                          placeholder="Password", required)
-            div.modal-footer
-              button.btn.btn-default(data-dismiss="modal", type="button") Close
-              button.btn.btn-primary(type='submit')
-                i.glyphicon.glyphicon-circle-arrow-right
-                | &nbsp;Sign-in
-
     div.modal#manual-modal(tabindex="-1", role="dialog")
       div.modal-dialog.modal-open
         div.modal-content
@@ -91,21 +70,12 @@ html(lang='en')
                 | &nbsp;Sign-in with Okta
           div.col-md-8
             p
-              | If you are a&nbsp;
-              b Mozilla employee
+              | If you have a&nbsp;
+              b Mozilla LDAP Account
               | , sign in with Okta to maximize your
-              | permissions.  If you also have a Mozillians account, make sure your
-              | Okta email is included in your Mozillians profile.
-        div.row.login-option
-          div.col-md-4
-            button.btn.btn-block.btn-primary(data-toggle="modal", data-target="#ldap-modal")
-              i.glyphicon.glyphicon-circle-arrow-right
-              | &nbsp;Sign-in with LDAP
-          div.col-md-8
-            p
-              | If you are not a Mozilla employee, but&nbsp;
-              b have an LDAP account
-              | &nbsp;granting you commit access, sign in with your LDAP username and password.
+              | permissions.  You can use this option even if you are not an employee!
+              | If you also have a Mozillians account, make sure your
+              | LDAP email is included in your Mozillians profile.
         div.row.login-option
           div.col-md-4
             form#persona-form(action='/persona/login', method='post')
