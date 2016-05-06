@@ -219,7 +219,7 @@ async () => {
   gcConfig.dockerVolume = config.dockerVolume;
   gcConfig.docker = config.docker;
   gcConfig.log = config.log;
-
+  gcConfig.monitor = config.monitor;
 
   config.gc = new GarbageCollector(gcConfig);
 
