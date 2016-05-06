@@ -35,6 +35,7 @@ type (
 		WorkerId                   string `json:"workerId"`
 		WorkerType                 string `json:"workerType"`
 		UsersDir                   string `json:"usersDir"`
+		CleanUpTaskDirs            bool   `json:"cleanUpTaskDirs"`
 	}
 
 	// Used for modelling the xml we get back from Azure

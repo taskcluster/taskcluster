@@ -96,7 +96,10 @@ and reports back results to the queue.
                                             and setting appropriate values.
     --config CONFIG-FILE                    Json configuration file to use. See
                                             configuration section below to see what this
-                                            file should contain.
+                                            file should contain. When calling the install
+                                            target, this is the config file that the
+                                            installation should use, rather than the
+                                            config to use during install.
                                             [default: generic-worker.config]
     --help                                  Display this help text.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for
@@ -163,6 +166,12 @@ and reports back results to the queue.
                                             over https. If not set, http will be used.
           usersDir                          The location where user home directories should be
                                             created on the worker. [default: C:\Users]
+          cleanUpTaskDirs                   Whether to delete the home directories of the task
+                                            users after the task completes. Normally you would
+                                            want to do this to avoid filling up disk space,
+                                            but for one-off troubleshooting, it can be useful
+                                            to (temporarily) leave home directories in place.
+                                            Accepted values: true or false. [default: true]
 
     Here is an syntactically valid example configuration file:
 
@@ -245,6 +254,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
 		UsersDir:                   "C:\\Users",
+		CleanUpTaskDirs:            true,
 	}
 	// try to open config file...
 	configFile, err := os.Open(filename)
