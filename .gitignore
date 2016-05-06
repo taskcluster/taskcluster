@@ -31,3 +31,6 @@ test/public/logs
 
 # other
 latest.txt
+*.id_rsa
+*.log
+update_worker_type_*.sh
