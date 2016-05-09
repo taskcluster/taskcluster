@@ -182,7 +182,6 @@ export class Handler {
       timeScheduled: task.created,
       // TODO: add coalesced info
       jobKind: treeherderConfig.jobKind ? treeherderConfig.jobKind : 'other',
-      labels: treeherderConfig.labels ? treeherderConfig.labels : ['opt'],
       reason: treeherderConfig.reason || "scheduled",
       jobInfo: {
         summary: task.metadata.description,
@@ -208,6 +207,19 @@ export class Handler {
       job.origin.pullRequestID = pushInfo.pushId;
       job.origin.owner = pushInfo.owner;
     }
+
+    // Transform "collection" into an array of labels if task doesn't
+    // define "labels".
+    let labels = treeherderConfig.labels ? treeherderConfig.labels : [];
+    if (!labels.length) {
+      if (!treeherderConfig.collection) {
+        labels = ['opt'];
+      } else {
+        labels = Object.keys(treeherderConfig.collection);
+      }
+    }
+
+    job.labels = labels;
 
     let machine = treeherderConfig.machine || {};
     job.buildMachine = {
