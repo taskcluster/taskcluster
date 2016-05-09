@@ -1,7 +1,7 @@
 {
   "workerType": "win2012r2",
   "minCapacity": 0,
-  "maxCapacity": 1,
+  "maxCapacity": 4,
   "scalingRatio": 0,
   "minPrice": 0.5,
   "maxPrice": 2,
@@ -9,27 +9,45 @@
   "canUseSpot": true,
   "instanceTypes": [
     {
-      "instanceType": "m3.2xlarge",
       "capacity": 1,
-      "utility": 1,
-      "secrets": {},
+      "instanceType": "m3.2xlarge",
+      "launchSpec": {},
       "scopes": [],
+      "secrets": {},
       "userData": {},
-      "launchSpec": {}
+      "utility": 1
     }
   ],
   "regions": [
     {
-      "region": "us-west-2",
-      "secrets": {},
-      "scopes": [],
-      "userData": {},
       "launchSpec": {
-        "ImageId": "ami-dd3d20bc"
-      }
+        "ImageId": "ami-e075968d"
+      },
+      "region": "us-east-1",
+      "scopes": [],
+      "secrets": {},
+      "userData": {}
+    },
+    {
+      "launchSpec": {
+        "ImageId": "ami-62651c02"
+      },
+      "region": "us-west-1",
+      "scopes": [],
+      "secrets": {},
+      "userData": {}
+    },
+    {
+      "launchSpec": {
+        "ImageId": "ami-73708213"
+      },
+      "region": "us-west-2",
+      "scopes": [],
+      "secrets": {},
+      "userData": {}
     }
   ],
-  "lastModified": "2015-12-05T20:27:04.591Z",
+  "lastModified": "2016-05-09T13:57:28.815Z",
   "userData": {},
   "launchSpec": {
     "SecurityGroups": [
@@ -39,41 +57,43 @@
     ]
   },
   "secrets": {
-    "generic-worker": {
-      "config": {
-        "livelogExecutable": "C:\\generic-worker\\livelog.exe",
-        "livelogSecret": "*************************************************",
-        "subdomain": "taskcluster-worker.net",
-        "livelogCertificate": "C:\\generic-worker\\livelog.crt",
-        "livelogKey": "C:\\generic-worker\\livelog.key"
-      }
-    },
     "files": [
       {
+        "content": "*************************************************************",
         "description": "RelEng secrets",
-        "path": "C:\\builds",
-        "content": "************************************************************",
         "encoding": "base64",
-        "format": "zip"
+        "format": "zip",
+        "path": "C:\\builds"
       },
       {
+        "content": "*************************************************************",
         "description": "SSL certificate for livelog",
-        "path": "C:\\generic-worker\\livelog.crt",
-        "content": "************************************************************",
         "encoding": "base64",
-        "format": "file"
+        "format": "file",
+        "path": "C:\\generic-worker\\livelog.crt"
       },
       {
+        "content": "*************************************************************",
         "description": "SSL key for livelog",
-        "path": "C:\\generic-worker\\livelog.key",
-        "content": "************************************************************",
         "encoding": "base64",
-        "format": "file"
+        "format": "file",
+        "path": "C:\\generic-worker\\livelog.key"
       }
-    ]
+    ],
+    "generic-worker": {
+      "config": {
+        "livelogCertificate": "C:\\generic-worker\\livelog.crt",
+        "livelogExecutable": "C:\\generic-worker\\livelog.exe",
+        "livelogKey": "C:\\generic-worker\\livelog.key",
+        "livelogSecret": "*************************************************************",
+        "subdomain": "taskcluster-worker.net"
+      }
+    }
   },
   "scopes": [
     "assume:worker-type:aws-provisioner-v1/win2012r2",
     "assume:worker-id:*"
-  ]
+  ],
+  "description": "** WRITE THIS**",
+  "owner": "** WRITE THIS **"
 }
