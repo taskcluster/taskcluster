@@ -119,7 +119,7 @@ function process_region {
       echo "Public IP: ${PUBLIC_IP}"
       echo "Password:  ${PASSWORD}"
       echo "AMI:       ${IMAGE_ID}"
-  } > latest.txt
+  } > "${REGION}.secrets"
 
   echo
   echo "$(date): Starting instance ${INSTANCE_ID} back up..."
@@ -154,8 +154,9 @@ go get github.com/taskcluster/slugid-go/slug
 go install github.com/taskcluster/generic-worker/update-worker-type
 SLUGID=$("${GOPATH}/bin/slug")
 
-# sa-east-1 doesn't support everything we need
-aws ec2 describe-regions --query '{A:Regions[*].RegionName}' --output text | grep -v sa-east-1 | while read x REGION; do
+# aws ec2 describe-regions --query '{A:Regions[*].RegionName}' --output text | grep -v sa-east-1 | while read x REGION; do
+# (skip sa-east-1 since it doesn't support all the APIs we use in this script)
+for REGION in us-west-{1,2} us-east-1; do
   process_region "${REGION}" > "${REGION}.log" 2>&1 &
 done
 

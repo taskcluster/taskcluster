@@ -10,8 +10,9 @@ import (
 )
 
 func main() {
-	newAmi := os.Args[1]
-	workerType := os.Args[2]
+	region := os.Args[1]
+	newAmi := os.Args[2]
+	workerType := os.Args[3]
 
 	cd := &tcclient.ConnectionData{
 		Credentials: &tcclient.Credentials{
@@ -31,9 +32,9 @@ func main() {
 	oldAmi := ""
 	regions := wt["regions"].([]interface{})
 	for i, _ := range regions {
-		region := regions[i].(map[string]interface{})
-		if region["region"] == "us-west-2" {
-			launchSpec := region["launchSpec"].(map[string]interface{})
+		regionObj := regions[i].(map[string]interface{})
+		if regionObj["region"] == region {
+			launchSpec := regionObj["launchSpec"].(map[string]interface{})
 			oldAmi = launchSpec["ImageId"].(string)
 			launchSpec["ImageId"] = newAmi
 			found = true
