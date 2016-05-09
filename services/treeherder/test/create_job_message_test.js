@@ -31,15 +31,24 @@ suite('build job message', () => {
   });
 
   test('default opt label', async () => {
-    delete task.extra.treeherder.labels;
+    delete task.extra.treeherder.collection;
 
     let job = await handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
   test('alternative label', async () => {
-    task.extra.treeherder.labels = ['debug'];
+    task.extra.treeherder.collection = { debug: true };
     expected.labels = ['debug'];
+
+    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    assert.deepEqual(job, expected);
+  });
+
+  test('labels take precedence over collection', async () => {
+    task.extra.treeherder.collection = { debug: true };
+    task.extra.treeherder.labels = ['asan'];
+    expected.labels = ['asan'];
 
     let job = await handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
@@ -61,7 +70,7 @@ suite('build job message', () => {
   });
 
   test('rerun task', async () => {
-    delete task.extra.treeherder.labels;
+    delete task.extra.treeherder.collection;
 
     let job = await handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);

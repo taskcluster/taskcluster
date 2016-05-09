@@ -79,7 +79,9 @@ let taskDefinition = `
             "build": {
                 "platform": "b2g-emu-x86-kk"
             },
-            "labels": ["opt"],
+            "collection": {
+              "opt": true
+            },
             "groupName": "Reftest",
             "groupSymbol": "tc-R",
             "machine": {
