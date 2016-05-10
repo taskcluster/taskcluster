@@ -138,9 +138,7 @@ until aws --region "${REGION}" ec2 wait image-available --image-ids "${IMAGE_ID}
   sleep 30
 done
 
-echo '#!/bin/bash' > "update_worker_type_${REGION}.sh"
-echo "${GOPATH}/bin/update-worker-type" "${REGION}" "${IMAGE_ID}" "${WORKER_TYPE}" >> "update_worker_type_${REGION}.sh"
-chmod a+x "update_worker_type_${REGION}.sh"
+touch "${REGION}.${IMAGE_ID}.latest-ami"
 
 log ''
 log "The worker type has been proactively updated("'!'"):"

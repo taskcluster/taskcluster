@@ -33,4 +33,4 @@ test/public/logs
 *.secrets
 *.id_rsa
 *.log
-update_worker_type_*.sh
+*.latest-ami
