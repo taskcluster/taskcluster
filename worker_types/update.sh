@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+############ This script should be used for creating or updating a worker type
+############ (i.e. creating AMIs in AWS EC2, and calling the TaskCluster AWS
+############ Provisioner API to update the worker type definition with the
+############ newly generated AMIs).
+
 # TODO: [pmoore] submit a task after updating worker type
 # TODO: [pmoore] publish ssh key to secret store after generating it
 

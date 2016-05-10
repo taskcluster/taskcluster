@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+##### This script can be run to destroy objects in AWS (that cost money) associated with a worker type.
+##### Note: this currently does *NOT* delete the worker type, and does *NOT* delete the worker type subdirectories - that should be done manually for now.
+
 function process_region {
   REGION="${1}"
 
