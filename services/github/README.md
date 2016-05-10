@@ -21,4 +21,7 @@ Listens for WebHook triggered pulse messages and attempts to schedule TaskCluste
 
 ###Run Tests
 From the project's base run ``npm test``
-*note:* Initially, this will only run unit tests. To run integration tests add pulse credentals to ``user-config.yml``. An example is available at ``user-config-example.yml``.
+*note:* Initially, this will only run unit tests. To run integration tests add pulse credentials to ``user-config.yml``. An example is available at ``user-config-example.yml``.
+
+### Deploying
+This service will auto-deploy in Heroku once merged into master and CI runs are successful. If you need to force a deploy because we've broken CI in some way and this urgently needs to be deployed, you can do it from the [Heroku console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github). Once the new version has been deployed, you can verify it is working by making a throw-away pull request into this project. If it is tested and has the status updated by this service, it is working.
