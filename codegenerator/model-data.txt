@@ -1,4 +1,4 @@
-Generated: 1462804072
+Generated: 1462904914
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9509,7 +9509,9 @@ Entry 3     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'
     Entry Title       = 'List Secrets'
-    Entry Description = 'List the names of all visible secrets.'
+    Entry Description = 'List the names of all secrets that you would have access to read. In
+other words, secret name `<X>` will only be returned if a) a secret
+with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.'
 Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'

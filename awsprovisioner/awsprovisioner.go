@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 9 May 2016 at 14:27:00 UTC. The code was generated
+// Tue, 10 May 2016 at 18:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
