@@ -89,7 +89,7 @@ SECURITY_GROUP="$(aws --region ${REGION} ec2 create-security-group --group-name 
 # filter output, to get INSTANCE_ID
 INSTANCE_ID="$(aws --region ${REGION} ec2 run-instances --image-id "${AMI}" --key-name "${WORKER_TYPE}_${REGION}" --security-groups "rdp-only" "ssh-only" --user-data "$(cat userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${SLUGID}" | sed -n 's/^ *"InstanceId": "\(.*\)", */\1/p')"
 
-log "I've triggered the creation of instance ${INSTANCE_ID} - it can take a \x1B[4mVery Long Time™\x1B[0m for it to be created and bootstrapped..."
+log "I've triggered the creation of instance ${INSTANCE_ID} - it can take a \x1B[4mVery Long Time™\x1B[24m for it to be created and bootstrapped..."
 aws --region ${REGION} ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=${WORKER_TYPE}"
 log "I've tagged it with \"WorkerType\": \"${WORKER_TYPE}\""
 
@@ -120,7 +120,7 @@ log "To monitor the AMI creation process, see:"
 echo
 echo "             https://${REGION}.console.aws.amazon.com/ec2/v2/home?region=${REGION}#Images:visibility=owned-by-me;search=${IMAGE_ID};sort=desc:platform"
 
-log "I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait ~ an hour("'!'") for it to be created..."
+log "I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait a \x1B[4mVery Long Time™\x1B[24m for it to be created..."
 
 until aws --region ${REGION} ec2 wait image-available --image-ids "${IMAGE_ID}" >/dev/null 2>&1; do
   log "  Waiting for ${IMAGE_ID} availability..."
