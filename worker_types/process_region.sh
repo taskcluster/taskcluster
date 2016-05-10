@@ -85,13 +85,13 @@ fi
 # make sure we have an ssh security group in this region
 # note if we *try* to create a security group that already exists (regardless of whether it is successful or not), there will be a cloudwatch alarm, so avoid this
 # by checking first. not ideal as it isn't atomic, but better than triggering alarms...
-if ! aws --region "${REGION}" ec2 describe-security-groups --group-names ssh-only >/dev/null 2>&1
+if ! aws --region "${REGION}" ec2 describe-security-groups --group-names ssh-only >/dev/null 2>&1; then
   SECURITY_GROUP="$(aws --region "${REGION}" ec2 create-security-group --group-name ssh-only --description "SSH only" --output text 2>/dev/null || true)"
   aws --region "${REGION}" ec2 authorize-security-group-ingress --group-id "${SECURITY_GROUP}" --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}]'
 fi
 
 # make sure we have an rdp security group in this region
-if ! aws --region "${REGION}" ec2 describe-security-groups --group-names rdp-only >/dev/null 2>&1
+if ! aws --region "${REGION}" ec2 describe-security-groups --group-names rdp-only >/dev/null 2>&1; then
   SECURITY_GROUP="$(aws --region "${REGION}" ec2 create-security-group --group-name rdp-only --description "RDP only" --output text 2>/dev/null || true)"
   [ -n "${SECURITY_GROUP}" ] && aws --region "${REGION}" ec2 authorize-security-group-ingress --group-id "${SECURITY_GROUP}" --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 3389, "ToPort": 3389, "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}]'
 fi
