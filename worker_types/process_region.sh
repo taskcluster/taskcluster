@@ -122,14 +122,14 @@ log "The AMI is currently being created: ${IMAGE_ID}"
 PASSWORD="$(aws --region "${REGION}" ec2 get-password-data --instance-id "${INSTANCE_ID}" --priv-launch-key ${REGION}.id_rsa --output text --query PasswordData)"
 
 log "To connect to the template instance (please don't do so until AMI creation process is completed"'!'"):"
-echo
-echo "             Public IP: ${PUBLIC_IP}"
-echo "             Username:  Administrator"
-echo "             Password:  ${PASSWORD}"
-echo
+log ''
+log "             Public IP: ${PUBLIC_IP}"
+log "             Username:  Administrator"
+log "             Password:  ${PASSWORD}"
+log ''
 log "To monitor the AMI creation process, see:"
-echo
-echo "             https://${REGION}.console.aws.amazon.com/ec2/v2/home?region=${REGION}#Images:visibility=owned-by-me;search=${IMAGE_ID};sort=desc:platform"
+log ''
+log "             https://${REGION}.console.aws.amazon.com/ec2/v2/home?region=${REGION}#Images:visibility=owned-by-me;search=${IMAGE_ID};sort=desc:platform"
 
 log "I've triggered the snapshot of instance ${INSTANCE_ID} as ${IMAGE_ID} - but now we will need to wait a \x1B[4mVery Long Time™\x1B[24m for it to be created..."
 
@@ -142,10 +142,10 @@ echo '#!/bin/bash' > "update_worker_type_${REGION}.sh"
 echo "${GOPATH}/bin/update-worker-type" "${REGION}" "${IMAGE_ID}" "${WORKER_TYPE}" >> "update_worker_type_${REGION}.sh"
 chmod a+x "update_worker_type_${REGION}.sh"
 
-echo
+log ''
 log "The worker type has been proactively updated("'!'"):"
-echo
-echo "             https://tools.taskcluster.net/aws-provisioner/#${WORKER_TYPE}/edit"
+log ''
+log "             https://tools.taskcluster.net/aws-provisioner/#${WORKER_TYPE}/edit"
 
 {
     echo "Instance:  ${INSTANCE_ID}"
@@ -154,7 +154,7 @@ echo "             https://tools.taskcluster.net/aws-provisioner/#${WORKER_TYPE}
     echo "AMI:       ${IMAGE_ID}"
 } > "${REGION}.secrets"
 
-echo
+log ''
 log "Starting instance ${INSTANCE_ID} back up..."
 if aws --region "${REGION}" ec2 start-instances --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; then
   log "Done"
