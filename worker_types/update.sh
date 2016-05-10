@@ -36,7 +36,7 @@ export SLUGID=$("${GOPATH}/bin/slug")
 # aws ec2 describe-regions --query '{A:Regions[*].RegionName}' --output text | grep -v sa-east-1 | while read x REGION; do
 # (skip sa-east-1 since it doesn't support all the APIs we use in this script)
 
-echo us-west-{1,2} us-east-1 | xargs -P32 -n1 ../process_region.sh
+echo us-west-1 118 us-west-2 199 us-east-1 100 | xargs -P32 -n2 ../process_region.sh
 
 echo "$(date): ${WORKER_TYPE}: Updating worker type definition with new AMI ids..."
 find . -mindepth 1 -maxdepth 1 -name 'update_worker_type_*.sh' | while read script; do
