@@ -69,7 +69,8 @@ OLD_AMI="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --f
 # deregister old AMI
 if [ -n "${OLD_AMI}" ]; then
   log "Deregistering the old AMI (${OLD_AMI})..."
-  aws --region "${REGION}" ec2 deregister-image --image-id "${OLD_AMI}"
+  # note this can fail if it is already in process of being deregistered, so allow to fail...
+  aws --region "${REGION}" ec2 deregister-image --image-id "${OLD_AMI}" 2>/dev/null || true
 else
   log "No old AMI to deregister."
 fi
