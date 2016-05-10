@@ -147,7 +147,9 @@ api.declare({
   title:       'List Secrets',
   stability:    'stable',
   description: [
-    "List the names of all visible secrets."
+    "List the names of all secrets that you would have access to read. In",
+    "other words, secret name `<X>` will only be returned if a) a secret",
+    "with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`."
   ].join('\n')
 }, async function(req, res) {
   let secrets = [];
