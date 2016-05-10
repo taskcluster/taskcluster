@@ -26,6 +26,8 @@ echo "$(date): Starting"'!'
 
 # cd into directory containing script...
 cd "$(dirname "${0}")/${WORKER_TYPE}"
+# needed to not confuse the script later
+rm -f *.latest-ami
 
 # generate a random slugid for aws client token...
 go get github.com/taskcluster/slugid-go/slug

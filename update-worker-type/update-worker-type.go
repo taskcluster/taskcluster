@@ -21,17 +21,17 @@ func main() {
 		log.Fatal("Usage: " + os.Args[0] + " WORKER_TYPE_DIRECTORY")
 	}
 	workerTypeDir := os.Args[1]
-	workerType := filepath.Base(workerTypeDir)
-	secretName := "project/taskcluster/aws-provisioner-v1/" + workerType + "/ssh-keys"
+	absFile, err := filepath.Abs(workerTypeDir)
+	if err != nil {
+		log.Fatalf("File/directory '%v' could not be read due to '%s'", workerTypeDir, err)
+	}
 	files, err := ioutil.ReadDir(workerTypeDir)
 	if err != nil {
-		absFile, err2 := filepath.Abs(workerTypeDir)
-		if err2 != nil {
-			log.Fatalf("File/directory '%v' could not be read due to '%s'", workerTypeDir, err)
-		} else {
-			log.Fatalf("File/directory '%v' (%v) could not be read due to '%s'", workerTypeDir, absFile, err)
-		}
+		log.Fatalf("File/directory '%v' (%v) could not be read due to '%s'", workerTypeDir, absFile, err)
 	}
+
+	workerType := filepath.Base(absFile)
+	secretName := "project/taskcluster/aws-provisioner-v1/" + workerType + "/ssh-keys"
 
 	tcCreds := &tcclient.Credentials{
 		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
@@ -76,7 +76,7 @@ func main() {
 					launchSpec := regionObj["launchSpec"].(map[string]interface{})
 					oldAmi = launchSpec["ImageId"].(string)
 					launchSpec["ImageId"] = newAmi
-					newAMICount++
+					oldAMICount++
 				}
 			}
 			if newAMICount < oldAMICount {
