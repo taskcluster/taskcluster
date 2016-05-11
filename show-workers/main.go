@@ -1,7 +1,12 @@
 package main
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -27,7 +32,8 @@ func main() {
 	for _, name := range s.Secrets {
 		if strings.HasPrefix(name, "project/taskcluster/aws-provisioner-v1/") && strings.HasSuffix(name, "/ssh-keys") {
 			workerType := name[39 : len(name)-9]
-			log.Printf("Secret name: %v", name)
+			fmt.Printf("\nWorker type: %v\n", workerType)
+			fmt.Println(strings.Repeat("=", len(workerType)+13))
 			secret, _, err := mySecrets.Get(name)
 			if err != nil {
 				log.Fatalf("Could not read secret %v: '%v'", name, err)
@@ -38,9 +44,12 @@ func main() {
 				log.Fatalf("Could not unmarshal data %v: '%v'", string(secret.Secret), err)
 			}
 			for region, rsaKey := range data {
-				log.Printf("Worker Type: %v", workerType)
-				log.Printf("Region:      %v", region)
-				log.Printf("RSA Key:     %v", rsaKey)
+				fmt.Printf("Region: %v\n", region)
+				block, _ := pem.Decode([]byte(rsaKey.(string)))
+				key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+				if err != nil {
+					log.Fatalf("Could not interpret rsa key data '%v': '%v'", rsaKey, err)
+				}
 				svc := ec2.New(session.New(), &aws.Config{Region: aws.String(region)})
 				inst, err := svc.DescribeInstances(
 					&ec2.DescribeInstancesInput{
@@ -48,13 +57,7 @@ func main() {
 							&ec2.Filter{
 								Name: aws.String("tag:WorkerType"),
 								Values: []*string{
-									aws.String("aws-provisioner-v1/" + workerType),
-								},
-							},
-							&ec2.Filter{
-								Name: aws.String("instance-state-name"),
-								Values: []*string{
-									aws.String("running"),
+									aws.String(workerType),
 								},
 							},
 						},
@@ -63,7 +66,66 @@ func main() {
 				if err != nil {
 					log.Fatalf("Could not query AWS for instances in region %v for worker type %v: '%v'", region, workerType, err)
 				}
-				log.Printf("Instances: %#v", inst)
+				delimeter := ""
+				for _, r := range inst.Reservations {
+					for _, i := range r.Instances {
+						fmt.Printf("  Base instance: %v\n", *i.InstanceId)
+						p, err := svc.GetPasswordData(
+							&ec2.GetPasswordDataInput{
+								InstanceId: i.InstanceId,
+							},
+						)
+						if err != nil {
+							log.Fatalf("Could not query password for instance %v in region %v for worker type %v: '%v'", *i.InstanceId, region, workerType, err)
+						}
+						d, err := base64.StdEncoding.DecodeString(*p.PasswordData)
+						if err != nil {
+							log.Fatalf("Could not base64 decode encrypted password '%v': '%v'", *p.PasswordData, err)
+						}
+						b, err := rsa.DecryptPKCS1v15(
+							nil,
+							key,
+							d,
+						)
+						if err != nil {
+							log.Fatalf("Could not decrypt password for instance %v in region %v for worker type %v: '%v'", *i.InstanceId, region, workerType, err)
+						}
+						for _, ni := range i.NetworkInterfaces {
+							fmt.Printf("    ssh Administrator@%v # (password: '%v')\n  --------------------------\n", *ni.Association.PublicIp, string(b))
+						}
+						inst, err := svc.DescribeInstances(
+							&ec2.DescribeInstancesInput{
+								Filters: []*ec2.Filter{
+									&ec2.Filter{
+										Name: aws.String("tag:WorkerType"),
+										Values: []*string{
+											aws.String("aws-provisioner-v1/" + workerType),
+										},
+									},
+									&ec2.Filter{
+										Name: aws.String("instance-state-name"),
+										Values: []*string{
+											aws.String("running"),
+										},
+									},
+								},
+							},
+						)
+						if err != nil {
+							log.Fatalf("Could not query AWS for instances in region %v for worker type %v: '%v'", region, workerType, err)
+						}
+						for _, r := range inst.Reservations {
+							for _, i := range r.Instances {
+								delimeter = "  --------------------------\n"
+								fmt.Printf("  Worker instance: %v\n", *i.InstanceId)
+								for _, ni := range i.NetworkInterfaces {
+									fmt.Printf("    ssh Administrator@%v # (password: '%v')\n", *ni.Association.PublicIp, string(b))
+								}
+							}
+						}
+					}
+				}
+				fmt.Print(delimeter)
 			}
 		}
 	}
