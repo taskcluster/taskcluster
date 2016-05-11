@@ -8,7 +8,7 @@ function process_region {
 
   # query old instances
   echo "$(date): Querying old instances of ${WORKER_TYPE}..."
-  OLD_INSTANCES="$(aws --region ${REGION} ec2 describe-instances --filters Name=tag-key,Values=WorkerType "Name=tag-value,Values=${WORKER_TYPE}" --query 'Reservations[*].Instances[*].InstanceId' --output text)"
+  OLD_INSTANCES="$(aws --region ${REGION} ec2 describe-instances --filters "Name=tag:WorkerType,Values=aws-provisioner-v1/${WORKER_TYPE}" --query 'Reservations[*].Instances[*].InstanceId' --output text)"
 
   # now terminate them
   if [ -n "${OLD_INSTANCES}" ]; then
