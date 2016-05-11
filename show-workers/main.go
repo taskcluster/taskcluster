@@ -30,8 +30,8 @@ func main() {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
 	for _, name := range s.Secrets {
-		if strings.HasPrefix(name, "project/taskcluster/aws-provisioner-v1/") && strings.HasSuffix(name, "/ssh-keys") {
-			workerType := name[39 : len(name)-9]
+		if strings.HasPrefix(name, "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/") {
+			workerType := name[61:]
 			fmt.Printf("\nWorker type: %v\n", workerType)
 			fmt.Println(strings.Repeat("=", len(workerType)+13))
 			secret, _, err := mySecrets.Get(name)

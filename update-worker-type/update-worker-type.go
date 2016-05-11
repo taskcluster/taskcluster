@@ -31,7 +31,7 @@ func main() {
 	}
 
 	workerType := filepath.Base(absFile)
-	secretName := "project/taskcluster/aws-provisioner-v1/" + workerType + "/ssh-keys"
+	secretName := "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/" + workerType
 
 	tcCreds := &tcclient.Credentials{
 		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
