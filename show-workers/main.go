@@ -29,6 +29,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
+	if len(s.Secrets) == 0 {
+		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", tcCreds.ClientId)
+	}
 	for _, name := range s.Secrets {
 		if strings.HasPrefix(name, "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/") {
 			workerType := name[61:]
