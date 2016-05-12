@@ -58,9 +58,9 @@ func main() {
 					&ec2.DescribeInstancesInput{
 						Filters: []*ec2.Filter{
 							&ec2.Filter{
-								Name: aws.String("tag:Name"),
+								Name: aws.String("tag:WorkerType"),
 								Values: []*string{
-									aws.String(workerType),
+									aws.String("aws-provisioner-v1/" + workerType),
 								},
 							},
 							&ec2.Filter{
