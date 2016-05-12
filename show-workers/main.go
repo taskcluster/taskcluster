@@ -94,7 +94,11 @@ func main() {
 							log.Fatalf("Could not decrypt password for instance %v in region %v for worker type %v: '%v'", *i.InstanceId, region, workerType, err)
 						}
 						for _, ni := range i.NetworkInterfaces {
-							fmt.Printf("    ssh Administrator@%v # (password: '%v')\n  --------------------------\n", *ni.Association.PublicIp, string(b))
+							if ni.Association != nil {
+								fmt.Printf("    ssh Administrator@%v # (password: '%v')\n  --------------------------\n", *ni.Association.PublicIp, string(b))
+							} else {
+								fmt.Printf("    ssh Administrator@X.X.X.X # (No IP address assigned - is instance running? password: '%v')\n  --------------------------\n", string(b))
+							}
 						}
 						inst, err := svc.DescribeInstances(
 							&ec2.DescribeInstancesInput{
