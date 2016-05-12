@@ -100,36 +100,81 @@ func main() {
 								fmt.Printf("    ssh Administrator@X.X.X.X # (No IP address assigned - is instance running? password: '%v')\n  --------------------------\n", string(b))
 							}
 						}
-						inst, err := svc.DescribeInstances(
-							&ec2.DescribeInstancesInput{
-								Filters: []*ec2.Filter{
-									&ec2.Filter{
-										Name: aws.String("tag:WorkerType"),
-										Values: []*string{
-											aws.String("aws-provisioner-v1/" + workerType),
-										},
-									},
-									&ec2.Filter{
-										Name: aws.String("instance-state-name"),
-										Values: []*string{
-											aws.String("running"),
+
+						for _, bdm := range i.BlockDeviceMappings {
+							snapshots, err := svc.DescribeSnapshots(
+								&ec2.DescribeSnapshotsInput{
+									Filters: []*ec2.Filter{
+										&ec2.Filter{
+											Name: aws.String("volume-id"),
+											Values: []*string{
+												bdm.Ebs.VolumeId,
+											},
 										},
 									},
 								},
-							},
-						)
-						if err != nil {
-							log.Fatalf("Could not query AWS for instances in region %v for worker type %v: '%v'", region, workerType, err)
-						}
-						for _, r := range inst.Reservations {
-							for _, i := range r.Instances {
-								delimeter = "  --------------------------\n"
-								fmt.Printf("  Worker instance: %v\n", *i.InstanceId)
-								for _, ni := range i.NetworkInterfaces {
-									fmt.Printf("    ssh Administrator@%v # (password: '%v')\n", *ni.Association.PublicIp, string(b))
+							)
+							if err != nil {
+								log.Fatalf("Could not query snapshot for volume %v on instance %v in region %v for worker type %v: '%v'", *bdm.Ebs.VolumeId, *i.InstanceId, region, workerType, err)
+							}
+							for _, snap := range snapshots.Snapshots {
+								images, err := svc.DescribeImages(
+									&ec2.DescribeImagesInput{
+										Filters: []*ec2.Filter{
+											&ec2.Filter{
+												Name: aws.String("block-device-mapping.snapshot-id"),
+												Values: []*string{
+													snap.SnapshotId,
+												},
+											},
+										},
+									},
+								)
+								if err != nil {
+									log.Fatalf("Could not query images that use snapshot %v from volume %v on instance %v in region %v for worker type %v: '%v'", *snap.SnapshotId, *bdm.Ebs.VolumeId, *i.InstanceId, region, workerType, err)
+								}
+								for _, image := range images.Images {
+									inst, err := svc.DescribeInstances(
+										&ec2.DescribeInstancesInput{
+											Filters: []*ec2.Filter{
+												&ec2.Filter{
+													Name: aws.String("image-id"),
+													Values: []*string{
+														image.ImageId,
+													},
+												},
+												&ec2.Filter{
+													Name: aws.String("instance-state-name"),
+													Values: []*string{
+														aws.String("running"),
+													},
+												},
+											},
+										},
+									)
+									if err != nil {
+										log.Fatalf("Could not query AWS for instances in region %v for worker type %v: '%v'", region, workerType, err)
+									}
+									for _, r := range inst.Reservations {
+										for _, i := range r.Instances {
+											delimeter = "  --------------------------\n"
+											fmt.Printf("  Worker instance: %v (%v)\n", *i.InstanceId, *i.ImageId)
+											for _, ni := range i.NetworkInterfaces {
+												fmt.Printf("    ssh Administrator@%v # (password: '%v')\n", *ni.Association.PublicIp, string(b))
+											}
+										}
+									}
 								}
 							}
 						}
+
+						// aws ec2 --region us-west-2 describe-snapshots --filters "Name=volume-id,Values=vol-96e7d12f" --query 'Snapshots[*].SnapshotId' --output text
+						// snap-a88dd3f0
+						// aws ec2 --region us-west-2 describe-images --filters "Name=block-device-mapping.snapshot-id,Values=snap-a88dd3f0" --query 'Images[*].ImageId' --output text
+						// ami-b00af7d0
+						// aws ec2 --region us-west-2 describe-instances --filters 'Name=image-id,Values=ami-b00af7d0' --query 'Reservations[*].Instances[*].InstanceId' --output text
+						// i-0027f0d020da43a95
+
 					}
 				}
 				fmt.Print(delimeter)
