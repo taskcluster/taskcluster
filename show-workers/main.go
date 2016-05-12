@@ -97,7 +97,7 @@ func main() {
 							d,
 						)
 						if err != nil {
-							log.Fatalf("Could not decrypt password for instance %v in region %v for worker type %v: '%v'", *i.InstanceId, region, workerType, err)
+							log.Printf("Could not decrypt password - probably somebody is rebuilding AMIs and the keys in the secret store haven't been updated yet (key: %#v, encrpyted password: %#v) for instance %v in region %v for worker type %v: '%v'", rsaKey, *p.PasswordData, *i.InstanceId, region, workerType, err)
 						}
 						for _, ni := range i.NetworkInterfaces {
 							if ni.Association != nil {
