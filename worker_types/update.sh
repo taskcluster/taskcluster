@@ -26,6 +26,7 @@ echo "$(date): Starting"'!'
 
 # cd into directory containing script...
 cd "$(dirname "${0}")/${WORKER_TYPE}"
+
 # needed to not confuse the script later
 rm -f *.latest-ami
 
@@ -39,4 +40,5 @@ export SLUGID=$("${GOPATH}/bin/slug")
 
 echo us-west-1 118 us-west-2 199 us-east-1 100 | xargs -P32 -n2 ../process_region.sh
 
+go install ../update-worker-type
 "${GOPATH}/bin/update-worker-type" .

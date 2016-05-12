@@ -8,8 +8,7 @@
 # TODO: [pmoore] submit a task after updating worker type
 
 function log {
-  TEXT="${1}"
-  echo -e "\x1B[38;5;${COLOUR}m$(date): ${WORKER_TYPE}: ${REGION}: ${TEXT}\x1B[0m"
+  echo -e "\x1B[38;5;${COLOUR}m$(date): ${WORKER_TYPE}: ${REGION}: ${@}\x1B[0m"
 }
 
 REGION="${1}"
@@ -59,25 +58,29 @@ fi
 
 # find old ami
 log "Querying previous AMI..."
-OLD_SNAPSHOT="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=name,Values=${WORKER_TYPE} mozillabuild version*" --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
+OLD_SNAPSHOTS="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=name,Values=${WORKER_TYPE} mozillabuild version*" --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
 
 # find old snapshot
 log "Querying snapshot used in this previous AMI..."
-OLD_AMI="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=name,Values=${WORKER_TYPE} mozillabuild version*" --query 'Images[*].ImageId' --output text)"
+OLD_AMIS="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=name,Values=${WORKER_TYPE} mozillabuild version*" --query 'Images[*].ImageId' --output text)"
 
-# deregister old AMI
-if [ -n "${OLD_AMI}" ]; then
-  log "Deregistering the old AMI (${OLD_AMI})..."
+# deregister old AMIs
+if [ -n "${OLD_AMIS}" ]; then
+  log "Deregistering the old AMI(s) ("${OLD_AMIS}")..."
   # note this can fail if it is already in process of being deregistered, so allow to fail...
-  aws --region "${REGION}" ec2 deregister-image --image-id "${OLD_AMI}" 2>/dev/null || true
+  for image in ${OLD_AMIS}; do
+    aws --region "${REGION}" ec2 deregister-image --image-id "${image}" 2>/dev/null || true
+  done
 else
   log "No old AMI to deregister."
 fi
 
 # delete old snapshot
-if [ -n "${OLD_SNAPSHOT}" ]; then
-  log "Deleting the old snapshot (${OLD_SNAPSHOT})..."
-  aws --region "${REGION}" ec2 delete-snapshot --snapshot-id "${OLD_SNAPSHOT}"
+if [ -n "${OLD_SNAPSHOTS}" ]; then
+  log "Deleting the old snapshot(s) ("${OLD_SNAPSHOTS}")..."
+  for snapshot in ${OLD_SNAPSHOTS}; do
+    aws --region "${REGION}" ec2 delete-snapshot --snapshot-id ${snapshot}
+  done
 else
   log "No old snapshot to delete."
 fi
@@ -99,8 +102,8 @@ done
 INSTANCE_ID="$(aws --region "${REGION}" ec2 run-instances --image-id "${AMI}" --key-name "${WORKER_TYPE}_${REGION}" --security-groups "rdp-only" "ssh-only" --user-data "$(cat userdata)" --instance-type c4.2xlarge --block-device-mappings DeviceName=/dev/sda1,Ebs='{VolumeSize=75,DeleteOnTermination=true,VolumeType=gp2}' --instance-initiated-shutdown-behavior stop --client-token "${SLUGID}" --query 'Instances[*].InstanceId' --output text)"
 
 log "I've triggered the creation of instance ${INSTANCE_ID} - it can take a \x1B[4mVery Long Time™\x1B[24m for it to be created and bootstrapped..."
-aws --region "${REGION}" ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=${WORKER_TYPE}"
-log "I've tagged it with \"WorkerType\": \"${WORKER_TYPE}\""
+aws --region "${REGION}" ec2 create-tags --resources "${INSTANCE_ID}" --tags "Key=WorkerType,Value=aws-provisioner-v1/${WORKER_TYPE}" "Key=Name,Value=${WORKER_TYPE} base instance" "Key=TC-Windows-Base,Value=true"
+log "I've tagged it with \"WorkerType\": \"aws-provisioner-v1/${WORKER_TYPE}\""
 
 # grab public IP before it shuts down and loses it!
 PUBLIC_IP="$(aws --region "${REGION}" ec2 describe-instances --instance-id "${INSTANCE_ID}" --query 'Reservations[*].Instances[*].NetworkInterfaces[*].Association.PublicIp' --output text)"

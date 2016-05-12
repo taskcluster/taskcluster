@@ -60,7 +60,13 @@ func main() {
 							&ec2.Filter{
 								Name: aws.String("tag:WorkerType"),
 								Values: []*string{
-									aws.String(workerType),
+									aws.String("aws-provisioner-v1/" + workerType),
+								},
+							},
+							&ec2.Filter{
+								Name: aws.String("tag:TC-Windows-Base"),
+								Values: []*string{
+									aws.String("true"),
 								},
 							},
 						},
