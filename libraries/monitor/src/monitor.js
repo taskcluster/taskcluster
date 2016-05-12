@@ -5,6 +5,7 @@ let Promise = require('promise');
 let taskcluster = require('taskcluster-client');
 let raven = require('raven');
 let usage = require('usage');
+let utils = require('./utils');
 let Statsum = require('statsum');
 
 class Monitor {
@@ -92,65 +93,12 @@ class Monitor {
     );
   }
 
-  // Given a function that operates on a
-  // single message, this will time it and
-  // report to statsum.
   timedHandler (name, handler) {
-    return async (message) => {
-      let start = process.hrtime();
-      let success = 'success';
-      try {
-        await handler(message);
-      } catch (e) {
-        success = 'error';
-        throw e;
-      } finally {
-        let d = process.hrtime(start);
-        for (let stat of [success, 'all']) {
-          let k = [name, stat].join('.');
-          this.measure(k, d[0] * 1000 + d[1] / 1000000);
-          this.count(k);
-        }
-      }
-    };
+    return utils.timedHandler(this, name, handler);
   }
 
-  // Given an express api method, this will time it
-  // and report to statsum.
   expressMiddleware (name) {
-    return (req, res, next) => {
-      let sent = false;
-      let start = process.hrtime();
-      let send = () => {
-        try {
-          // Avoid sending twice
-          if (sent) {
-            return;
-          }
-          sent = true;
-
-          let d = process.hrtime(start);
-
-          let success = 'success';
-          if (res.statusCode >= 500) {
-            success = 'server-error';
-          } else if (res.statusCode >= 400) {
-            success = 'client-error';
-          }
-
-          for (let stat of [success, 'all']) {
-            let k = [name, stat].join('.');
-            this.measure(k, d[0] * 1000 + d[1] / 1000000);
-            this.count(k);
-          }
-        } catch (e) {
-          debug('Error while compiling response times: %s, %j', err, err, err.stack);
-        }
-      };
-      res.once('finish', send);
-      res.once('close', send);
-      next();
-    };
+    return utils.expressMiddleware(this, name);
   }
 }
 
@@ -212,6 +160,14 @@ class MockMonitor {
       this.measures,
       this.errors
     );
+  }
+
+  timedHandler (name, handler) {
+    return utils.timedHandler(this, name, handler);
+  }
+
+  expressMiddleware (name) {
+    return utils.expressMiddleware(this, name);
   }
 }
 
