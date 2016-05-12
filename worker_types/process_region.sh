@@ -6,7 +6,6 @@
 ############ newly generated AMIs).
 
 # TODO: [pmoore] submit a task after updating worker type
-# TODO: [pmoore] publish ssh key to secret store after generating it
 
 function log {
   TEXT="${1}"
