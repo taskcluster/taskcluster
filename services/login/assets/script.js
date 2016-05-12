@@ -56,8 +56,7 @@ if (typeof(query.target) === 'string' && /^http/.test(query.target) &&
     typeof(query.description) === 'string') {
   var a = document.createElement('a');
   a.href = query.target;
-  if (a.protocol === 'https:' || a.hostname === 'localhost' ||
-      a.hostname === 'docs.taskcluster.net') {
+  if (a.protocol === 'https:' || a.hostname === 'localhost') {
     localStorage.setItem('grant-request', JSON.stringify({
       target: query.target,
       description: query.description
