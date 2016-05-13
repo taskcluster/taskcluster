@@ -9,9 +9,7 @@ let message = `
         "jobSymbol": "R3",
         "groupSymbol": "tc-R",
         "jobName": "[TC] Dummy Task",
-        "groupName": "Reftest",
-        "chunkId": 3,
-        "chunkCount": 40
+        "groupName": "Reftest"
     },
     "state": "pending",
     "result": "unknown",

@@ -237,11 +237,6 @@ export class Handler {
       job.display.groupName = treeherderConfig.groupName;
     }
 
-    if (task.extra.chunks) {
-      job.display.chunkCount = task.extra.chunks.total;
-      job.display.chunkId = task.extra.chunks.current;
-    }
-
     return job;
   }
 
