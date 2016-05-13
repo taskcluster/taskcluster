@@ -45,46 +45,38 @@ func deleteHomeDir(path string, user string) error {
 		return nil
 	}
 
-	adminDeleteHomeDir := func(path string) error {
-		log.Println("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
-		err := os.RemoveAll(path)
-		if err != nil {
-			log.Println("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
-			log.Printf("%v", err)
-			return err
-		}
-		return nil
-	}
-
 	// first try using task user
 	passwordFile := filepath.Join(filepath.Dir(path), user, "_Passw0rd")
 	password, err := ioutil.ReadFile(passwordFile)
-	if err != nil || string(password) == "" {
-		log.Printf("%#v", err)
-		log.Printf("Failed to read password file %v, (to delete dir %v) trying to remove with generic worker account...", passwordFile, path)
-		err = adminDeleteHomeDir(path)
+
+	if err == nil && string(password) != "" {
+		log.Println("Trying to remove directory '" + path + "' via del command as task user...")
+		err = runCommands(false, user, string(password), []string{
+			"del", "/s", "/q", "/f", path,
+		})
 		if err == nil {
 			return nil
 		}
+		log.Printf("Failed to execute del command as task user: %#v", err)
+	} else {
+		log.Printf("%#v", err)
+		log.Printf("Failed to read password file %v, (to delete dir %v as task user)", passwordFile, path)
 	}
-	err = runCommands(false, user, string(password), []string{
-		"del /s /q /f",
-		path,
-	})
-	// just to be sure, run against as generic worker user...
-	err1 := runCommands(false, "", "", []string{
-		"del /s /q /f",
-		path,
+	log.Println("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
+	err := os.RemoveAll(path)
+	if err == nil {
+		return nil
+	}
+	log.Println("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
+	log.Printf("%v", err)
+	log.Println("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
+	err := runCommands(false, "", "", []string{
+		"del", "/s", "/q", "/f", path,
 	})
 	if err != nil {
 		log.Printf("%#v", err)
-		return err
 	}
-	if err1 != nil {
-		log.Printf("%#v", err1)
-		return err1
-	}
-	return nil
+	return err
 }
 
 func createNewTaskUser() error {
