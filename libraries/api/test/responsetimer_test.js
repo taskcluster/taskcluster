@@ -74,9 +74,9 @@ suite("api/responsetimer", function() {
 
         // Create router
         var router = api.router({
-          validator:      validator,
-          authBaseUrl:    'http://localhost:23243',
-          monitor,
+          validator: validator,
+          authBaseUrl: 'http://localhost:23243',
+          monitor: monitor.prefix('api'),
         });
 
         // Create application
