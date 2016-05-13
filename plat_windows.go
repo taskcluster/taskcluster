@@ -52,7 +52,7 @@ func deleteHomeDir(path string, user string) error {
 	if err == nil && string(password) != "" {
 		log.Println("Trying to remove directory '" + path + "' via del command as task user...")
 		err = runCommands(false, user, string(password), []string{
-			"del", "/s", "/q", "/f", path,
+			"cmd", "/c", "del", "/s", "/q", "/f", path,
 		})
 		if err == nil {
 			return nil
@@ -71,7 +71,7 @@ func deleteHomeDir(path string, user string) error {
 	log.Printf("%v", err)
 	log.Println("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
 	err = runCommands(false, "", "", []string{
-		"del", "/s", "/q", "/f", path,
+		"cmd", "/c", "del", "/s", "/q", "/f", path,
 	})
 	if err != nil {
 		log.Printf("%#v", err)
