@@ -162,7 +162,8 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	// if user existed, these commands can fail
 	// if it didn't, they can't
 	err = runCommands(userExisted, "", "",
-		[]string{"icacls", user.HomeDir, "/grant:r", user.Name + ":(CI)F", "SYSTEM:(CI)F", "Administrators:(CI)F"},
+		[]string{"icacls", user.HomeDir, "/grant:r", user.Name + ":(OI)(CI)F", "SYSTEM:(OI)(CI)F", "Administrators:(OI)(CI)F"},
+		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
 		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
 	)
 	if !userExisted {
@@ -395,9 +396,8 @@ func install(arguments map[string]interface{}) (err error) {
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
 
-	user.HomeDir = "C:\\genworkerhome" // TODO: temporary hack!!
+	user.HomeDir = "C:\\Users\\GenericWorker"
 	err = user.ensureUserAccount()
-	user.HomeDir = "C:\\generic-worker" // TODO: temporary hack!!
 	if err != nil {
 		return err
 	}
