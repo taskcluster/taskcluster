@@ -56,11 +56,11 @@ else
   log "No previous instances to terminate."
 fi
 
-# find old ami
+# find old amis
 log "Querying previous AMI..."
 OLD_SNAPSHOTS="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=name,Values=${WORKER_TYPE} mozillabuild version*" --query 'Images[*].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)"
 
-# find old snapshot
+# find old snapshots
 log "Querying snapshot used in this previous AMI..."
 OLD_AMIS="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=name,Values=${WORKER_TYPE} mozillabuild version*" --query 'Images[*].ImageId' --output text)"
 
