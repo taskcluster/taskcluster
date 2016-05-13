@@ -63,14 +63,14 @@ func deleteHomeDir(path string, user string) error {
 		log.Printf("Failed to read password file %v, (to delete dir %v as task user)", passwordFile, path)
 	}
 	log.Println("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
-	err := os.RemoveAll(path)
+	err = os.RemoveAll(path)
 	if err == nil {
 		return nil
 	}
 	log.Println("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
 	log.Println("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
-	err := runCommands(false, "", "", []string{
+	err = runCommands(false, "", "", []string{
 		"del", "/s", "/q", "/f", path,
 	})
 	if err != nil {
