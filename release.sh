@@ -9,4 +9,4 @@ git grep -l 'alpha' | while read file; do
 done
 git commit -m "Version bump to ${1}"
 git tag v${1}
-echo "git push; git push --tags"
+git push; git push --tags
