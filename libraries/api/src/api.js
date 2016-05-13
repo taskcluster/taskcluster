@@ -19,7 +19,6 @@ var cryptiles     = require('cryptiles');
 var taskcluster   = require('taskcluster-client');
 var Ajv           = require('ajv');
 var errors        = require('./errors');
-var monitoring    = require('./monitoring');
 var typeis        = require('type-is');
 
 // Default baseUrl for authentication server
@@ -715,7 +714,7 @@ API.prototype.router = function(options) {
 
   var monitor = null;
   if (options.monitor) {
-    monitor = options.monitor.prefix('api');
+    monitor = options.monitor;
   }
 
   // Create router
@@ -753,7 +752,7 @@ API.prototype.router = function(options) {
     var middleware = [entry.route];
 
     if (monitor) {
-      middleware.push(monitoring.createReporter(entry.name, monitor));
+      middleware.push(monitor.expressMiddleware(entry.name));
     }
 
     // Add authentication, schema validation and handler
