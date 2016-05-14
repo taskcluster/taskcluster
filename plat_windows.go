@@ -21,6 +21,17 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+func exceptionOrFailure(errCommand error) *CommandExecutionError {
+	switch errCommand.(type) {
+	case *exec.ExitError:
+		return &CommandExecutionError{
+			Cause:      errCommand,
+			TaskStatus: Failed,
+		}
+	}
+	return WorkerShutdown(errCommand)
+}
+
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
 	out, err := exec.Command(prog, options...).Output()
 	if err != nil {

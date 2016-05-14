@@ -10,7 +10,19 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
+
+func exceptionOrFailure(errCommand error) *CommandExecutionError {
+	switch errCommand.(type) {
+	case *exec.ExitError:
+		return &CommandExecutionError{
+			Cause:      errCommand,
+			TaskStatus: Failed,
+		}
+	}
+	return WorkerShutdown(errCommand)
+}
 
 func startup() error {
 	log.Printf("Detected %s platform", runtime.GOOS)
@@ -44,4 +56,21 @@ func taskCleanup() error {
 
 func install(arguments map[string]interface{}) (err error) {
 	return nil
+}
+
+func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
+	workerEnv := os.Environ()
+	taskEnv := make([]string, 0)
+	for _, j := range workerEnv {
+		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
+			log.Printf("Setting env var: %v", j)
+			taskEnv = append(taskEnv, j)
+		}
+	}
+	for i, j := range task.Payload.Env {
+		log.Printf("Setting env var: %v=%v", i, j)
+		taskEnv = append(taskEnv, i+"="+j)
+	}
+	cmd.Env = taskEnv
+	log.Printf("Environment: %v", taskEnv)
 }

@@ -20,7 +20,6 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/generic-worker/livelog"
-	"github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
@@ -795,15 +794,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	errCommand := task.Commands[index].osCommand.Wait()
 	err = task.uploadLog(task.Commands[index].logFile)
 	if errCommand != nil {
-		switch errCommand.(type) {
-		case *exec.ExitError:
-			return &CommandExecutionError{
-				Cause:      errCommand,
-				TaskStatus: Failed,
-			}
-		default:
-			return WorkerShutdown(errCommand)
-		}
+		return exceptionOrFailure(errCommand)
 	}
 	if err != nil {
 		return WorkerShutdown(err)
@@ -947,23 +938,6 @@ func (task *TaskRun) postTaskActions() error {
 	}
 	// will only upload if log concatenation succeeded
 	return task.uploadLog("public/logs/all_commands.log")
-}
-
-func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
-	workerEnv := os.Environ()
-	taskEnv := make([]string, 0)
-	for _, j := range workerEnv {
-		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
-			log.Printf("Setting env var: %v", j)
-			taskEnv = append(taskEnv, j)
-		}
-	}
-	for i, j := range task.Payload.Env {
-		log.Printf("Setting env var: %v=%v", i, j)
-		taskEnv = append(taskEnv, i+"="+j)
-	}
-	cmd.Env = taskEnv
-	log.Printf("Environment: %v", taskEnv)
 }
 
 // writes config to json file
