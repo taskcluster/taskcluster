@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -21,6 +20,7 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/generic-worker/livelog"
+	"github.com/taskcluster/generic-worker/os/exec"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
