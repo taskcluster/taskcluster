@@ -71,7 +71,7 @@ var app = function(options) {
   assert(options,                           "options are required");
   assert(typeof(options.port) === 'number', "Port must be a number");
   assert(options.env == 'development' ||
-         options.env == 'production',       "env must be prod... or dev...");
+         options.env == 'production',       "env must be production or development");
   assert(options.forceSSL !== undefined,    "forceSSL must be defined");
   assert(options.trustProxy !== undefined,  "trustProxy must be defined");
 
