@@ -52,3 +52,8 @@ the `<target>` URL may obtain the temporary TaskCluster credentials. This is
 meant to facilitate a decent login flow for various web-based tools, even CLI
 based tools can use by opening a small web-server on localhost and sending the
 user to a browser.
+
+If you want to verify these credentials, such as to present the user with
+appropriate error messages, you can call the
+[auth.currentScopes](https://docs.taskcluster.net/reference/platform/auth/api-docs#currentScopes)
+method.
