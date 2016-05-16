@@ -5,6 +5,8 @@
  * a function so that the real and fake classes can share
  * them.
  */
+let debug = require('debug')('taskcluster-lib-monitor');
+let usage = require('usage');
 
 /**
  * Given an express api method, this will time it
@@ -69,4 +71,26 @@ export function timedHandler (monitor, name, handler) {
       }
     }
   };
+}
+
+/**
+ * Given a process name, this will report basic
+ * OS-level usage statistics like CPU and Memory
+ * on a minute-by-minute basis.
+ *
+ * Returns a function that can be used to stop monitoring.
+ */
+export function resources (monitor, proc, seconds) {
+  let interval = setInterval(() => {
+    usage.lookup(process.pid, {keepHistory: true}, (err, result) => {
+      if (err) {
+        debug('Failed to get usage statistics, err: %s, %j',  err, err, err.stack);
+        return;
+      }
+      monitor.measure('process.' + proc + '.cpu', result.cpu);
+      monitor.measure('process.' + proc + '.mem', result.memory);
+    });
+  }, seconds * 1000);
+
+  return () => clearInterval(interval);
 }

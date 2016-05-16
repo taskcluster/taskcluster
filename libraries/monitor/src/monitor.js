@@ -4,7 +4,6 @@ let assert = require('assert');
 let Promise = require('promise');
 let taskcluster = require('taskcluster-client');
 let raven = require('raven');
-let usage = require('usage');
 let utils = require('./utils');
 let Statsum = require('statsum');
 
@@ -15,36 +14,6 @@ class Monitor {
     this._auth = authClient;
     this._sentry = sentry; // This must be a Promise that resolves to {client, expires}
     this._statsum = statsumClient;
-
-    if (!opts.isPrefixed && opts.reportStatsumErrors) {
-      this._statsum.on('error', err => this.reportError(err, 'warning'));
-    }
-
-    if (!opts.isPrefixed && opts.patchGlobal) {
-      process.on('uncaughtException', (err) => {
-        console.log(err.stack);
-        this.reportError(err);
-        process.exit(1);
-      });
-      process.on('unhandledRejection', (reason, p) => {
-        let err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
-        console.log(err);
-        this.reportError(err, 'warning');
-      });
-    }
-
-    if (!opts.isPrefixed && opts.reportUsage) {
-      setInterval(() => {
-        usage.lookup(process.pid, {keepHistory: true}, (err, result) => {
-          if (err) {
-            debug('Failed to get usage statistics, err: %s, %j',  err, err, err.stack);
-            return;
-          }
-          this.measure('cpu', result.cpu);
-          this.measure('mem', result.memory);
-        });
-      }, 60 * 1000);
-    }
   }
 
   async reportError (err, level='error') {
@@ -84,7 +53,6 @@ class Monitor {
 
   prefix (prefix) {
     let newopts = _.cloneDeep(this._opts);
-    newopts.isPrefixed = true;
     return new Monitor(
       this._auth,
       this._sentry,
@@ -99,6 +67,10 @@ class Monitor {
 
   expressMiddleware (name) {
     return utils.expressMiddleware(this, name);
+  }
+
+  resources (process, interval = 10) {
+    return utils.resources(this, process, interval);
   }
 }
 
@@ -169,6 +141,10 @@ class MockMonitor {
   expressMiddleware (name) {
     return utils.expressMiddleware(this, name);
   }
+
+  resources (process, interval = 10) {
+    return utils.resources(this, process, interval);
+  }
 }
 
 async function monitor (options) {
@@ -177,16 +153,14 @@ async function monitor (options) {
   let opts = _.defaults(options, {
     patchGlobal: true,
     reportStatsumErrors: true,
-    reportUsage: true,
-    isPrefixed: false,
   });
 
-  if (options.mock) {
+  if (opts.mock) {
     return new MockMonitor(opts);
   }
 
   let authClient = new taskcluster.Auth({
-    credentials: options.credentials,
+    credentials: opts.credentials,
   });
 
   let statsumClient = new Statsum(
@@ -199,7 +173,26 @@ async function monitor (options) {
 
   let sentry = Promise.resolve({client: null, expires: new Date(0)});
 
-  return new Monitor(authClient, sentry, statsumClient, opts);
+  let m = new Monitor(authClient, sentry, statsumClient, opts);
+
+  if (opts.reportStatsumErrors) {
+    statsumClient.on('error', err => m.reportError(err, 'warning'));
+  }
+
+  if (opts.patchGlobal) {
+    process.on('uncaughtException', (err) => {
+      console.log(err.stack);
+      m.reportError(err);
+      process.exit(1);
+    });
+    process.on('unhandledRejection', (reason, p) => {
+      let err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
+      console.log(err);
+      m.reportError(err, 'warning');
+    });
+  }
+
+  return m;
 };
 
 module.exports = monitor;
