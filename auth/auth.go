@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 10 May 2016 at 18:28:00 UTC. The code was generated
+// Mon, 16 May 2016 at 15:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -317,6 +317,38 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, *tcclient.CallSummary, error)
 // which type of credentials are returned. Please note that the `level`
 // parameter is required in the scope guarding access.  The bucket name must
 // not contain `.`, as recommended by Amazon.
+//
+// This method can only allow access to a whitelisted set of buckets.  To add
+// a bucket to that whitelist, contact the TaskCluster team, who will add it to
+// the appropriate IAM policy.  If the bucket is in a different AWS account, you
+// will also need to add a bucket policy allowing access from the TaskCluster
+// account.  That policy should look like this:
+//
+// ```js
+// {
+//   "Version": "2012-10-17",
+//   "Statement": [
+//     {
+//       "Sid": "allow-taskcluster-auth-to-delegate-access",
+//       "Effect": "Allow",
+//       "Principal": {
+//         "AWS": "arn:aws:iam::692406183521:root"
+//       },
+//       "Action": [
+//         "s3:ListBucket",
+//         "s3:GetObject",
+//         "s3:PutObject",
+//         "s3:DeleteObject",
+//         "s3:GetBucketLocation"
+//       ],
+//       "Resource": [
+//         "arn:aws:s3:::<bucket>",
+//         "arn:aws:s3:::<bucket>/*"
+//       ]
+//     }
+//   ]
+// }
+// ```
 //
 // The credentials are set to expire after an hour, but this behavior is
 // subject to change. Hence, you should always read the `expires` property
