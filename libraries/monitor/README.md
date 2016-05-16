@@ -4,8 +4,11 @@ TaskCluster Metrics and Monitoring Library
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-monitor.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-monitor)
 
 A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics with Statsum and report errors with Sentry.
-By default it will report cpu and memory usage of a running process once a minute, report any errors that cause the process to exit, and report
-as warnings any errors that cause stats writing to not work. To disable any of these, you can see the Options and Defaults section below.
+By default it will report any errors that cause the process to exit, and report as warnings any errors that cause stats writing to not work. To
+disable any of these, you can see the Options and Defaults section below.
+
+Process monitoring can be turned on by using the `monitor.resources(<process name>)` function where `<process name>` will generally end up
+being something like `web` or `worker`.
 
 Taskcluster has some generic concepts that are able to be monitored easily using utility functions in this package. The Usage section lists these
 cases and shows how to use this package to measure them.
@@ -28,12 +31,18 @@ let monitor = await monitoring({
   credentials: {clientId: 'test-client', accessToken: 'test'},
 });
 
+// Begin monitoring CPU & Memory
+let stopMonitor = monitor.resources('web');
+
 monitor.measure('foo', 10);
 monitor.count('bar', 4);
 monitor.count('bar'); // only passing in a key defaults the value to 1
 await monitor.flush();
 
 monitor.reportError('Something went wrong!');
+
+// Gracefully shut down resource monitoring.
+stopMonitor();
 ```
 
 More details on the usage of measure and count can be found at [the Statsum client](https://github.com/taskcluster/node-statsum#statsum-client-for-nodejs).
@@ -93,9 +102,6 @@ patchGlobal: true
 
 // If true, any errors reporting to Statsum will be reported to Sentry.
 reportStatsumErrors: true
-
-// If true, cpu and memory usage of the process will be reported on an interval.
-reportUsage: true
 
 // If true, the monitoring object will be a fake that stores data for testing
 mock: false
