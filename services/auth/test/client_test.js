@@ -82,6 +82,11 @@ suite('api (client)', function() {
 
   test("auth.listClients", async() => {
     let suffixes = ['/aa', '/bb', '/bb/1', '/bb/2'];
+
+    await Promise.all(suffixes.map(suffix =>
+      helper.auth.deleteClient(CLIENT_ID + suffix)
+    ));
+
     await Promise.all(suffixes.map(suffix => 
       helper.auth.createClient(CLIENT_ID + suffix, {
         expires: taskcluster.fromNow('1 hour'),
