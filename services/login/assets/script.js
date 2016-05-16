@@ -45,6 +45,12 @@ jQuery.extend({
   }
 });
 
+// List of pre-approved targets that we will redirect to without asking for
+// people to click the "grant-access" button.
+var TRUSTED_TARGETS = [
+  'https://tools.taskcluster.net/login/'
+];
+
 // Okay, this isn't pretty... But we have to store the stuff we got from the
 // query string in local storage, as we grant carry the query string with us
 // through all the login steps (particular SSO)
@@ -154,6 +160,10 @@ function showGrant(credentials) {
     // redirect to target...
     window.location = redirectTarget;
   };
+
+  if (TRUSTED_TARGETS.indexOf(query.target) !== -1) {
+    return gotoRedirectTarget();
+  }
 
   // Set hostname
   $('.grant-hostname').text(hostname);
