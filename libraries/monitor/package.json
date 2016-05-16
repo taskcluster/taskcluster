@@ -34,7 +34,7 @@
     "mock-aws-s3": "^2.1.0",
     "nock": "^8.0.0",
     "source-map-support": "^0.4.0",
-    "taskcluster-lib-testing": "^0.11.1",
+    "taskcluster-lib-testing": "^1.0.0",
     "eslint-config-taskcluster": "^1.0.0",
     "eslint-plugin-taskcluster": "^1.0.0"
   },
