@@ -13,6 +13,10 @@ being something like `web` or `worker`.
 Taskcluster has some generic concepts that are able to be monitored easily using utility functions in this package. The Usage section lists these
 cases and shows how to use this package to measure them.
 
+Changelog
+---------
+View the changelog on the [releases page](https://github.com/taskcluster/taskcluster-lib-monitor/releases).
+
 Requirements
 ------------
 
@@ -111,6 +115,12 @@ Testing
 -------
 
 `npm install` and `npm test`. You can set `DEBUG=taskcluster-lib-monitor,test` if you want to see what's going on. There are no keys required to test this library.
+
+Hacking
+-------
+
+New releases should be tested on Travis to allow for all supported versions of Node to be tested. Once satisfied that it works, new versions should be created with
+`npm version` rather than by manually editing `package.json` and tags should be pushed to Github. Make sure to update [the changelog](https://github.com/taskcluster/taskcluster-lib-monitor/releases)!
 
 License
 -------
