@@ -10,10 +10,12 @@
     "url": "https://github.com/taskcluster/taskcluster-login.git"
   },
   "scripts": {
-    "compile": "babel-compile -c taskcluster-lib-rules/babel src:lib",
+    "compile": "babel-compile -c taskcluster-lib-rules/babel src:lib test:.test",
+    "test": "npm run compile && ./test/runtests.sh",
     "postinstall": "npm run compile"
   },
   "dependencies": {
+    "assume": "https://registry.npmjs.org/assume/-/assume-1.4.1.tgz",
     "babel-compile": "^0.0.3",
     "babel-runtime": "^5.8.25",
     "body-parser": "^1.14.1",
@@ -31,11 +33,22 @@
     "passport-persona": "jonasfj/passport-persona",
     "passport-saml": "^0.13.0",
     "promise": "^7.0.4",
+    "raven": "^0.11.0",
     "source-map-support": "^0.3.2",
-    "taskcluster-client": "^0.23.12",
+    "taskcluster-client": "^0.23.16",
+    "taskcluster-lib-api": "^1.0.0",
+    "taskcluster-lib-app": "^1.0.0",
     "taskcluster-lib-config": "^0.9.1",
     "taskcluster-lib-loader": "^0.1.1",
     "taskcluster-lib-rules": "^1.0.3",
-    "taskcluster-lib-scopes": "^0.8.8"
+    "taskcluster-lib-scopes": "^0.8.8",
+    "taskcluster-lib-validate": "^1.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.4.5",
+    "taskcluster-lib-testing": "^1.0.0"
+  },
+  "engines": {
+    "node": "5"
   }
 }
