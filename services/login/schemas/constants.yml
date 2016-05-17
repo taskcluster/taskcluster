@@ -1,0 +1,2 @@
+access-token-pattern:     "^[a-zA-Z0-9_-]{22,66}$"
+clientId: "^[A-Za-z0-9@/:._-]+$"
