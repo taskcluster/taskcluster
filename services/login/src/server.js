@@ -112,6 +112,9 @@ let load = loader({
       // Create application
       let app = tcApp(cfg.server);
 
+      // setup "trust proxy", which tc-lib-app does not do
+      app.set('trust proxy', cfg.server.trustProxy);
+
       // Setup API
       app.use('/v1', router);
 
