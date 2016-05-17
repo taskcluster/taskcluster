@@ -1,45 +1,51 @@
 [
     {
         "url": "http://references.taskcluster.net/auth/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/auth/api-docs"
+        "docroot": "https://docs.taskcluster.net/reference/platform/auth/api-docs"
+    }, {
+        "url": "http://references.taskcluster.net/auth/v1/exchanges.json",
+        "docroot": "https://docs.taskcluster.net/reference/platform/auth/exchanges"
     }, {
         "url": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/aws-provisioner/api-docs"
+        "docroot": "https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs"
     }, {
         "url": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
-        "docroot": "http://docs.taskcluster.net/aws-provisioner/events"
+        "docroot": "https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges"
     }, {
         "url": "http://references.taskcluster.net/github/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/services/taskcluster-github"
+        "docroot": "https://docs.taskcluster.net/reference/core/github/api-docs"
     }, {
         "url": "http://references.taskcluster.net/github/v1/exchanges.json",
-        "docroot": "http://docs.taskcluster.net/services/taskcluster-github"
+        "docroot": "https://docs.taskcluster.net/reference/core/github/exchanges"
     }, {
         "url": "http://references.taskcluster.net/hooks/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/services/hooks"
+        "docroot": "https://docs.taskcluster.net/reference/core/hooks/api-docs"
     }, {
         "url": "http://references.taskcluster.net/index/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/services/index"
+        "docroot": "https://docs.taskcluster.net/reference/core/index/api-docs"
+    }, {
+        "url": "http://references.taskcluster.net/login/v1/api.json",
+        "docroot": "https://docs.taskcluster.net/reference/core/login/api-docs"
     }, {
         "url": "http://references.taskcluster.net/purge-cache/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/services/purge-cache"
+        "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/api-docs"
     }, {
         "url": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
-        "docroot": "http://docs.taskcluster.net/services/purge-cache"
+        "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/exchanges"
     }, {
         "url": "http://references.taskcluster.net/queue/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/queue/api-docs"
+        "docroot": "https://docs.taskcluster.net/reference/platform/queue/api-docs"
     }, {
         "url": "http://references.taskcluster.net/queue/v1/exchanges.json",
-        "docroot": "http://docs.taskcluster.net/queue/exchanges"
+        "docroot": "https://docs.taskcluster.net/reference/platform/queue/exchanges"
     }, {
         "url": "http://references.taskcluster.net/scheduler/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/scheduler/api-docs"
+        "docroot": "https://docs.taskcluster.net/reference/platform/scheduler/api-docs"
     }, {
         "url": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
-        "docroot": "http://docs.taskcluster.net/scheduler/events"
+        "docroot": "https://docs.taskcluster.net/reference/platform/scheduler/exchanges"
     }, {
         "url": "http://references.taskcluster.net/secrets/v1/api.json",
-        "docroot": "http://docs.taskcluster.net/services/secrets"
+        "docroot": "https://docs.taskcluster.net/reference/core/secrets/api-docs"
     }
 ]
