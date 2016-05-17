@@ -14,6 +14,7 @@ class Monitor {
     this._auth = authClient;
     this._sentry = sentry; // This must be a Promise that resolves to {client, expires}
     this._statsum = statsumClient;
+    this._resourceInterval = null;
   }
 
   async reportError (err, level='error') {
@@ -72,6 +73,10 @@ class Monitor {
   resources (process, interval = 10) {
     return utils.resources(this, process, interval);
   }
+
+  stopResourceMonitoring () {
+    clearInterval(this._resourceInterval);
+  }
 }
 
 class MockMonitor {
@@ -80,6 +85,7 @@ class MockMonitor {
     this.counts = counts;
     this.measures = measures;
     this.errors = errors;
+    this._resourceInterval = null;
   }
 
   async reportError (err, level='error') {
@@ -145,6 +151,10 @@ class MockMonitor {
   resources (process, interval = 10) {
     return utils.resources(this, process, interval);
   }
+
+  stopResourceMonitoring () {
+    clearInterval(this._resourceInterval);
+  }
 }
 
 async function monitor (options) {
@@ -153,6 +163,7 @@ async function monitor (options) {
   let opts = _.defaults(options, {
     patchGlobal: true,
     reportStatsumErrors: true,
+    resourceInterval: 10 * 1000,
   });
 
   if (opts.mock) {
@@ -190,6 +201,10 @@ async function monitor (options) {
       console.log(err);
       m.reportError(err, 'warning');
     });
+  }
+
+  if (opts.process) {
+    utils.resources(m, opts.process, opts.resourceInterval);
   }
 
   return m;

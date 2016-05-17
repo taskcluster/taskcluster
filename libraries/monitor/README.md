@@ -107,6 +107,10 @@ patchGlobal: true
 // If true, any errors reporting to Statsum will be reported to Sentry.
 reportStatsumErrors: true
 
+// If set to a string that identifies this process, cpu and memory usage of the process will be reported on an interval
+// Note: This can also be turned on by monitor.resources(...) later if wanted. That allows for gracefully stopping as well.
+process: null
+
 // If true, the monitoring object will be a fake that stores data for testing
 mock: false
 ```
