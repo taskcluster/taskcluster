@@ -19,14 +19,14 @@
     "babel-runtime": "^6.6.1",
     "debug": "^2.2.0",
     "lodash": "^4.11.1",
+    "mocha": "^2.4.5",
     "promise": "^7.1.1",
     "slugid": "^1.1.0",
+    "source-map-support": "^0.3.3",
     "superagent": "^1.8.3",
     "superagent-promise": "^1.1.0",
-    "taskcluster-base": "^0.13.0",
-    "taskcluster-client": "^0.23.17",
-    "mocha": "^2.4.5",
-    "source-map-support": "^0.3.3"
+    "taskcluster-base": "^2.1.0",
+    "taskcluster-client": "^0.23.17"
   },
   "engines": {
     "node": "^5.8.0",

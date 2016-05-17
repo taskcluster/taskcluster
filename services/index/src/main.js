@@ -57,12 +57,13 @@ var load = base.loader({
   },
 
   monitor: {
-    requires: ['profile', 'cfg'],
-    setup: ({profile, cfg}) => base.monitor({
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => base.monitor({
       project: 'taskcluster-index',
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
-    })
+      process,
+    }),
   },
 
   api: {
@@ -80,20 +81,15 @@ var load = base.loader({
       referencePrefix:  'index/v1/api.json',
       aws:              cfg.aws,
       validator,
-      monitor,
+      monitor:          monitor.prefix('api'),
     })
   },
 
   server: {
     requires: ['cfg', 'api'],
     setup: async ({cfg, api}) => {
-      // Create app
       let app = base.app(cfg.server);
-
-      // Mount API router
       app.use('/v1', api);
-
-      // Create server
       return app.createServer();
     }
   },
@@ -116,7 +112,7 @@ var load = base.loader({
       return handlers.setup();
     }
   },
-}, ['profile']);
+}, ['process', 'profile']);
 
 // If server.js is executed start the server
 if (!module.parent) {
