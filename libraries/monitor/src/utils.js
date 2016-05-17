@@ -81,6 +81,10 @@ export function timedHandler (monitor, name, handler) {
  * Returns a function that can be used to stop monitoring.
  */
 export function resources (monitor, proc, seconds) {
+  if (monitor._resourceInterval) {
+    clearInterval(monitor._resourceInterval);
+  }
+
   let interval = setInterval(() => {
     usage.lookup(process.pid, {keepHistory: true}, (err, result) => {
       if (err) {
@@ -92,5 +96,6 @@ export function resources (monitor, proc, seconds) {
     });
   }, seconds * 1000);
 
+  monitor._resourceInterval = interval;
   return () => clearInterval(interval);
 }
