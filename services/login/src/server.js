@@ -13,6 +13,10 @@ import loader from 'taskcluster-lib-loader'
 import taskcluster from 'taskcluster-client'
 import flash from 'connect-flash'
 import scanner from './scanner'
+import v1 from './v1'
+import tcApp from 'taskcluster-lib-app'
+import validator from 'taskcluster-lib-validate'
+import raven from 'raven'
 
 require('source-map-support').install();
 
@@ -65,19 +69,50 @@ let load = loader({
     },
   },
 
-  app: {
-    requires: ['cfg', 'authenticators'],
-    setup: ({cfg, authenticators}) => {
-      // Create application
-      let app = express();
-
-      // Trust proxy
-      app.set('trust proxy', cfg.server.trustProxy);
-
-      // ForceSSL if required suggested
-      if (cfg.server.forceSSL) {
-        app.use(sslify.HTTPS(cfg.server.trustProxy));
+  raven: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      if (cfg.raven.sentryDSN) {
+        return new raven.Client(cfg.raven.sentryDSN);
       }
+      return null;
+    }
+  },
+
+  validator: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      return validator({
+        prefix: 'login/v1/',
+        aws: cfg.aws,
+      });
+    }
+  },
+
+  router: {
+    requires: ['cfg', 'validator', 'raven'],
+    setup: ({cfg, validator, raven}) => {
+      return v1.setup({
+        context: {},
+        validator,
+        authBaseUrl:      cfg.authBaseUrl,
+        publish:          cfg.app.publishMetaData,
+        baseUrl:          cfg.server.publicUrl + '/v1',
+        referencePrefix:  'login/v1/api.json',
+        aws:              cfg.aws,
+        raven:            raven,
+      });
+    },
+  },
+
+  app: {
+    requires: ['cfg', 'authenticators', 'router'],
+    setup: ({cfg, authenticators, router}) => {
+      // Create application
+      let app = tcApp(cfg.server);
+
+      // Setup API
+      app.use('/v1', router);
 
       // Setup views and assets
       app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
@@ -142,15 +177,7 @@ let load = loader({
     requires: ['cfg', 'app'],
     setup: async ({cfg, app}) => {
       // Create server and start listening
-      let server = http.createServer(app);
-      await new Promise((accept, reject) => {
-        server.listen(cfg.server.port);
-        server.once('listening', () => {
-          console.log("Listening on port: " + cfg.server.port);
-        });
-        server.once('error', reject);
-        server.once('listening', accept);
-      });
+      return app.createServer();
     },
   },
 

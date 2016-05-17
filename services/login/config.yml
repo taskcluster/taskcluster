@@ -28,6 +28,18 @@ Defaults:
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
+    authBaseUrl:      https://auth.taskcluster.net/v1
+    publishMetaData:  false
+  raven:
+    # This can be grabbed from the settings of the sentry project
+    # and is a string that looks like:
+    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
+    sentryDSN:                 !env SENTRY_DSN
+  aws:
+    # Credentials with access to artifact buckets and
+    # references/schemas.taskcluster.net if you wish to publish meta-data
+    accessKeyId:      !env AWS_ACCESS_KEY_ID
+    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
   mozillians:
     # NOTE: this API key needs to have the "Mozillians" level in order to access
     # non-public profiles; see https://bugzilla.mozilla.org/show_bug.cgi?id=1259059
@@ -47,12 +59,15 @@ Defaults:
   server:
     port:       !env:number PORT
     forceSSL:   !env:flag FORCE_SSL
+    env:        !env NODE_ENV
     trustProxy: !env:flag TRUST_PROXY
     publicUrl:  !env PUBLIC_URL
 Profiles:
   production:
     server:
       forceSSL: true
+    app:
+      publishMetaData:  false
   test:
     app:
       cookieSecrets: ['Shhh']
@@ -65,8 +80,10 @@ Profiles:
     server:
       port: 60174
       publicUrl: http://localhost:60174
+      env: development
       forceSSL: false
     ldap:
+      url: ldaps://example.com
       allowedGroups: ['releng', 'shipit', 'Everyone', 'team_moco', 'shipitdev']
     sso:
       issuer: taskcluster-login.ngrok.io
@@ -142,3 +159,4 @@ Profiles:
       publicUrl: https://taskcluster-login.ngrok.io
       forceSSL:   true
       trustProxy: true
+      env: development
