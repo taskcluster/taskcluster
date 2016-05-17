@@ -84,6 +84,7 @@ let load = loader({
     setup: ({cfg}) => {
       return validator({
         prefix: 'login/v1/',
+        publish: cfg.app.publishMetaData,
         aws: cfg.aws,
       });
     }
@@ -96,7 +97,7 @@ let load = loader({
         context: {},
         validator,
         authBaseUrl:      cfg.authBaseUrl,
-        publish:          false, //cfg.app.publishMetaData,
+        publish:          cfg.app.publishMetaData,
         baseUrl:          cfg.server.publicUrl + '/v1',
         referencePrefix:  'login/v1/api.json',
         aws:              cfg.aws,
