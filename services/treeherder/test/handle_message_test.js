@@ -5,7 +5,25 @@ import base from 'taskcluster-base';
 
 suite('handle message', () => {
   test('invalid message - more than one matching route', async () => {
-    let handler = new Handler({prefix: 'foo'});
+    let handler = new Handler({
+      prefix: 'foo',
+      queue: {
+        task: (taskId) => {
+          return {
+            payload: {
+              image: 'foo:latest'
+            },
+            extra: {
+              treeherder: {
+                reason: "scheduled",
+                tier: 1
+              }
+            }
+          };
+        }
+      }
+    });
+
     let err;
 
     try {
@@ -25,29 +43,26 @@ suite('handle message', () => {
     assert(err.message.includes("Could not determine treeherder route"));
   });
 
-  test('message is a rerun', async () => {
-    let handler = new Handler({prefix: 'foo'});
-    let err;
-
-    try {
-      await handler.handleMessage({
-        routes: ['foo.bar', 'foo.thing'],
-        payload: {
-          status: {
-            taskId: 'abc',
-          }
-        }
-      })
-    } catch(e) {
-      err = e;
-    }
-
-    assert(err, 'Error was not thrown');
-    assert(err.message.includes("Could not determine treeherder route"));
-  });
 
   test('invalid message - no matching route', async () => {
-    let handler = new Handler({prefix: 'foo'});
+    let handler = new Handler({
+      prefix: 'foo',
+      queue: {
+        task: (taskId) => {
+          return {
+            payload: {
+              image: 'foo:latest'
+            },
+            extra: {
+              treeherder: {
+                reason: "scheduled",
+                tier: 1
+              }
+            }
+          };
+        }
+      }
+    });
     let err;
 
     try {

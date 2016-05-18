@@ -9,7 +9,7 @@ let taskDefinition = `
     ],
     "requires": "all-completed",
     "routes": [
-        "treeherder.dummyproject.dummya98d9bed366c133ebdf1feb5cf365a3c3703a337.123"
+        "treeherder.v2.dummyproject.dummya98d9bed366c133ebdf1feb5cf365a3c3703a337.123"
     ],
     "priority": "normal",
     "retries": 5,
