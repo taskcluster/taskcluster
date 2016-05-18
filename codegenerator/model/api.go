@@ -132,10 +132,45 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 	content += "//  	Certificate: os.Getenv(\"TASKCLUSTER_CERTIFICATE\"),\n"
 	content += "//  }\n"
 
-	content += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(creds) " + strings.Repeat(" ", 27+len(apiName)-len(api.apiDef.PackageName)) + "  // set credentials\n"
-	content += "//  " + exampleVarName + ".Authenticate = false             " + strings.Repeat(" ", len(apiName)) + "           // disable authentication (creds above are now ignored)\n"
-	content += "//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"   // alternative API endpoint (production by default)\n"
-	content += exampleCall + strings.Repeat(" ", 48-len(exampleCall)+len(apiName)+len(exampleVarName)) + " // for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...\n"
+	// Here we want to add spaces between commands and comments, such that the comments line up, e.g.:
+	//
+	//  myQueue := queue.New(creds)                             // set credentials
+	//  myQueue.Authenticate = false                            // disable authentication (creds above are now ignored)
+	//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"  // alternative API endpoint (production by default)
+	//  data, callSummary, err := myQueue.Task(.....)           // for example, call the Task(.....) API endpoint (described further down)...
+	//
+	// We do this by generating the code, then calculating the max length of one of the code lines,
+	// and then padding with spaces based on max line length and adding comments.
+
+	commentedSection := [][]string{
+		[]string{
+			"//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(creds)",
+			"// set credentials",
+		},
+		[]string{
+			"//  " + exampleVarName + ".Authenticate = false",
+			"// disable authentication (creds above are now ignored)",
+		},
+		[]string{
+			"//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"",
+			"// alternative API endpoint (production by default)",
+		},
+		[]string{
+			exampleCall,
+			"// for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...",
+		},
+	}
+
+	maxLength := 0
+	for _, j := range commentedSection {
+		if len(j[0]) > maxLength {
+			maxLength = len(j[0])
+		}
+	}
+	for _, j := range commentedSection {
+		content += j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n"
+	}
+
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
