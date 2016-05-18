@@ -1,4 +1,5 @@
 import assert from 'assert';
+import _ from 'lodash';
 import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
 import parseRoute from './util/route_parser';
@@ -58,19 +59,28 @@ function createLogReference(queue, taskId, run) {
 // Filters the task routes for the treeherder specific route.  Once found,
 // the route is parsed into distinct parts used for constructing the
 // Treeherder job message.
-function parseRouteInfo(prefix, taskId, routes) {
-  let route = routes.filter((r) => {
+function parseRouteInfo(prefix, taskId, routes, task) {
+  let matchingRoutes = routes.filter((r) => {
     return r.split('.')[0] === prefix;
   });
 
-  if (route.length != 1) {
+  if (matchingRoutes.length != 1) {
     throw new Error(
       `Could not determine treeherder route.  Either there is no route, ` +
       `or more than one matching route exists.  Task ID: ${taskId} Routes: ${routes}`
     );
   }
 
-  return parseRoute(route[0]);
+  let parsedRoute = parseRoute(matchingRoutes[0]);
+  // During a transition period, some tasks might contain a revision within
+  // the task definition that should override the revision in the routing key.
+  let revision = _.get(task, 'extra.treeherder.revision');
+
+  if (revision) {
+    parsedRoute.revision = revision;
+  }
+
+  return parsedRoute;
 }
 
 
@@ -113,9 +123,9 @@ export class Handler {
   // treeherder job information in task.extra.treeherder are accepted
   async handleMessage(message) {
     let taskId = message.payload.status.taskId;
-    let parsedRoute = parseRouteInfo(this.prefix, taskId, message.routes);
-
     let task = await this.queue.task(taskId);
+    let parsedRoute = parseRouteInfo(this.prefix, taskId, message.routes, task);
+
     validateTask(this.validator, taskId, task, TASK_TREEHERDER_SCHEMA);
 
     switch (EVENT_MAP[message.exchange]) {
