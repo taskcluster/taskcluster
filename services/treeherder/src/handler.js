@@ -291,10 +291,17 @@ export class Handler {
       task.schedulerId === 'task-graph-scheduler' &&
       task.taskGroupId
     ) {
-      let taskInfo = await this.scheduler.inspectTask(task.taskGroupId, message.status.taskId);
-      if (taskInfo.reruns > message.runId) {
-        // Simply allow the rerun handle to update the task...
-        return;
+      try {
+        let taskInfo = await this.scheduler.inspectTask(task.taskGroupId, taskId);
+        if (taskInfo.reruns > payload.runId) {
+          // Simply allow the rerun handle to update the task...
+          return;
+        }
+      } catch(e) {
+        debug(
+          `Could not retrieve task graph information for ${task.taskGroupId}, ` +
+          `assuming task is part of a task group not scheduled through task-graph-scheduler.`
+        );
       }
     }
 
