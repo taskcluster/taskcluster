@@ -1,1 +1,1 @@
-handlers: node lib/main.js production
+handlers: node lib/main.js server
