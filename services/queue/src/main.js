@@ -152,7 +152,7 @@ let load = base.loader({
       let TaskGroupMember = data.TaskGroupMember.setup({
         table:            cfg.app.taskGroupMemberTableName,
         credentials:      cfg.azure,
-        monitor: monitor.prefix('tabel.taskgroupmembers'),
+        monitor: monitor.prefix('table.taskgroupmembers'),
       });
       await TaskGroupMember.ensureTable();
       return TaskGroupMember;
