@@ -21,33 +21,11 @@ Development
 -----------
 
 To run tests you'll need a configuration file with access credentials for S3
-and Azure Blob and Table Storage, as well as pulse credentials and an influx db
-account. To do this, create a local configuration file
-`taskcluster-queue.conf.json` in the root directory of the taskcluster-queue
-project, populated with your credentials like this:
-
-```
-{
-  "aws": {
-    "accessKeyId":        "xxx",
-    "secretAccessKey":    "xxx",
-    "region":             "us-west-2"
-  },
-  "azure": {
-    "accountName":        "xxx",
-    "accountKey":         "xxx"
-  },
-  "pulse": {
-    "username":           "xxx",
-    "password":           "xxx"
-  },
-  "influx": {
-    "connectionString":   "https://xxx:xxx@xxx.influxdb.com:8087/db/xxx"
-  }
-}
-```
-
-For safety reasons, this file is added to the `.gitignore` file.
+and Azure Blob and Table Storage, as well as pulse credentials.
+To do this, create a local configuration file
+`user-config.yml` in the root directory of the taskcluster-queue
+project. For safety reasons, this file is added to the `.gitignore` file. There
+is an example `user-config-example.yml` to use for initial setup.
 
 For S3 we have a dummy bucket called `test-bucket-for-any-garbage` which stores
 objects for 24 hours. Mozilla developers can get access from a taskcluster
@@ -77,11 +55,14 @@ On heroku these are configured using the scheduler.
 
 Monitoring
 ----------
-This server will print log messages it is recommend run with `DEBUG` as
+Taskcluster-queue writes to both Sentry and Statsum via the
+`taskcluster-lib-monitor` library. Errors will be automatically reported
+and alerted upon.
+
+In addition, this server will print log messages it is recommend run with `DEBUG` as
 `"* -superagent -babel -mocha:* -express:*"`.
 Notice that messages printed containing the substring `[alert-operator]` should
-be monitored by the maintainer. It's recommended that an email alert it setup
-to alert the maintainer of these messages.
+be monitored by the maintainer.
 
 Messages labeled `[not-a-bug]` should not be confused with errors or bugs. It's
 simply special conditions that can arise. Sometimes they can be useful to
