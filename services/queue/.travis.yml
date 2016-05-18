@@ -16,9 +16,6 @@ env:
   global:
   - CXX=g++-4.8
   - DEBUG='queue:*'
-before_install:
-- openssl aes-256-cbc -K $encrypted_e05971c47e30_key -iv $encrypted_e05971c47e30_iv
-  -in user-config.yml.enc -out user-config.yml -d
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094

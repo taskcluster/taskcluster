@@ -3,7 +3,6 @@ let debug               = require('debug')('app:main');
 let base                = require('taskcluster-base');
 let _                   = require('lodash');
 let assert              = require('assert');
-let raven               = require('raven');
 let path                = require('path');
 let Promise             = require('promise');
 let taskcluster         = require('taskcluster-client');
@@ -26,30 +25,13 @@ let load = base.loader({
     setup: ({profile}) => base.config({profile}),
   },
 
-  influx: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.influx.connectionString) {
-        return new base.stats.Influx(cfg.influx);
-      }
-      return new base.stats.NullDrain();
-    }
-  },
-  raven: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.raven.sentryDSN) {
-        return new raven.Client(cfg.raven.sentryDSN);
-      }
-      return null;
-    }
-  },
   monitor: {
-    requires: ['cfg', 'influx', 'process'],
-    setup: ({cfg, influx, process}) => base.stats.startProcessUsageReporting({
-      drain:      influx,
-      component:  cfg.app.statsComponent,
-      process:    process
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => base.monitor({
+      project: 'taskcluster-queue',
+      credentials: cfg.taskcluster.credentials,
+      mock: profile === 'test',
+      process,
     })
   },
 
@@ -62,17 +44,15 @@ let load = base.loader({
     })
   },
   publisher: {
-    requires: ['cfg', 'validator', 'influx', 'process'],
-    setup: ({cfg, validator, influx, process}) => exchanges.setup({
+    requires: ['cfg', 'validator', 'monitor'],
+    setup: ({cfg, validator, monitor}) => exchanges.setup({
       credentials:        cfg.pulse,
       exchangePrefix:     cfg.app.exchangePrefix,
       validator:          validator,
       referencePrefix:    'queue/v1/exchanges.json',
       publish:            cfg.app.publishMetaData,
       aws:                cfg.aws,
-      drain:              influx,
-      component:          cfg.app.statsComponent,
-      process:            process
+      monitor:            monitor.prefix('publisher'),
     })
   },
 
@@ -118,7 +98,7 @@ let load = base.loader({
   // Create artifacts table
   Artifact: {
     requires: [
-      'cfg', 'influx', 'process',
+      'cfg', 'monitor', 'process',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
     ],
     setup: async (ctx) => {
@@ -130,9 +110,7 @@ let load = base.loader({
           publicBucket:   ctx.publicArtifactBucket,
           privateBucket:  ctx.privateArtifactBucket
         },
-        drain:            ctx.influx,
-        component:        ctx.cfg.app.statsComponent,
-        process:          ctx.process
+        monitor: ctx.monitor.prefix('table.artifacts'),
       });
       await Artifact.ensureTable();
       return Artifact;
@@ -141,14 +119,12 @@ let load = base.loader({
 
   // Create task table
   Task: {
-    requires: ['cfg', 'influx', 'process'],
-    setup: async ({cfg, influx, process}) => {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
       let Task = data.Task.setup({
         table:            cfg.app.taskTableName,
         credentials:      cfg.azure,
-        drain:            influx,
-        component:        cfg.app.statsComponent,
-        process:          process
+        monitor: monitor.prefix('table.tasks'),
       });
       await Task.ensureTable();
       return Task;
@@ -157,14 +133,12 @@ let load = base.loader({
 
   // Create task-group table
   TaskGroup: {
-    requires: ['cfg', 'influx', 'process'],
-    setup: async ({cfg, influx, process}) => {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
       let TaskGroup = data.TaskGroup.setup({
         table:            cfg.app.taskGroupTableName,
         credentials:      cfg.azure,
-        drain:            influx,
-        component:        cfg.app.statsComponent,
-        process:          process
+        monitor: monitor.prefix('table.taskgroups'),
       });
       await TaskGroup.ensureTable();
       return TaskGroup;
@@ -173,14 +147,12 @@ let load = base.loader({
 
   // Create task-group member table
   TaskGroupMember: {
-    requires: ['cfg', 'influx', 'process'],
-    setup: async ({cfg, influx, process}) => {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
       let TaskGroupMember = data.TaskGroupMember.setup({
         table:            cfg.app.taskGroupMemberTableName,
         credentials:      cfg.azure,
-        drain:            influx,
-        component:        cfg.app.statsComponent,
-        process:          process
+        monitor: monitor.prefix('tabel.taskgroupmembers'),
       });
       await TaskGroupMember.ensureTable();
       return TaskGroupMember;
@@ -189,14 +161,12 @@ let load = base.loader({
 
   // Create TaskRequirement table
   TaskRequirement: {
-    requires: ['cfg', 'influx', 'process'],
-    setup: async ({cfg, influx, process}) => {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
       let TaskRequirement = data.TaskRequirement.setup({
         table:            cfg.app.taskRequirementTableName,
         credentials:      cfg.azure,
-        drain:            influx,
-        component:        cfg.app.statsComponent,
-        process:          process
+        monitor: monitor.prefix('table.taskrequirements'),
       });
       await TaskRequirement.ensureTable();
       return TaskRequirement;
@@ -205,14 +175,12 @@ let load = base.loader({
 
   // Create TaskDependency table
   TaskDependency: {
-    requires: ['cfg', 'influx', 'process'],
-    setup: async ({cfg, influx, process}) => {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
       let TaskDependency = data.TaskDependency.setup({
         table:            cfg.app.taskDependencyTableName,
         credentials:      cfg.azure,
-        drain:            influx,
-        component:        cfg.app.statsComponent,
-        process:          process
+        monitor: monitor.prefix('table.taskdependencies'),
       });
       await TaskDependency.ensureTable();
       return TaskDependency;
@@ -258,7 +226,7 @@ let load = base.loader({
       'cfg', 'publisher', 'validator',
       'Task', 'Artifact', 'TaskGroup', 'TaskGroupMember', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
-      'regionResolver', 'raven', 'influx', 'dependencyTracker'
+      'regionResolver', 'monitor', 'dependencyTracker'
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -282,14 +250,12 @@ let load = base.loader({
         artifactRegion:   ctx.cfg.aws.region,
       },
       validator:        ctx.validator,
-      raven:            ctx.raven,
       authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
       publish:          ctx.cfg.app.publishMetaData,
       baseUrl:          ctx.cfg.server.publicUrl + '/v1',
       referencePrefix:  'queue/v1/api.json',
       aws:              ctx.cfg.aws,
-      component:        ctx.cfg.app.statsComponent,
-      drain:            ctx.influx
+      monitor:          ctx.monitor.prefix('api'),
     })
   },
 
@@ -353,8 +319,8 @@ let load = base.loader({
 
   // Create the artifact expiration process (periodic job)
   'expire-artifacts': {
-    requires: ['cfg', 'Artifact', 'monitor', 'influx'],
-    setup: async ({cfg, Artifact, influx}) => {
+    requires: ['cfg', 'Artifact', 'monitor'],
+    setup: async ({cfg, Artifact, monitor}) => {
       // Find an artifact expiration delay
       let now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
       assert(!_.isNaN(now), "Can't have NaN as now");
@@ -363,30 +329,30 @@ let load = base.loader({
       let count = await Artifact.expire(now);
       debug("Expired %s artifacts", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-artifacts.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
   // Create the queue expiration process (periodic job)
   'expire-queues': {
-    requires: ['cfg', 'queueService', 'monitor', 'influx'],
-    setup: async ({cfg, queueService, influx}) => {
+    requires: ['cfg', 'queueService', 'monitor'],
+    setup: async ({cfg, queueService, monitor}) => {
       debug("Expiring queues at: %s", new Date());
       let count = await queueService.deleteUnusedWorkerQueues();
       debug("Expired %s queues", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-queues.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
   // Create the task expiration process (periodic job)
   'expire-tasks': {
-    requires: ['cfg', 'Task', 'monitor', 'influx'],
-    setup: async ({cfg, Task, influx}) => {
+    requires: ['cfg', 'Task', 'monitor'],
+    setup: async ({cfg, Task, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
       assert(!_.isNaN(now), "Can't have NaN as now");
 
@@ -395,16 +361,16 @@ let load = base.loader({
       let count = await Task.expire(now);
       debug("Expired %s tasks", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-tasks.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
   // Create the task-group expiration process (periodic job)
   'expire-task-groups': {
-    requires: ['cfg', 'TaskGroup', 'monitor', 'influx'],
-    setup: async ({cfg, TaskGroup, influx}) => {
+    requires: ['cfg', 'TaskGroup', 'monitor'],
+    setup: async ({cfg, TaskGroup, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
       assert(!_.isNaN(now), "Can't have NaN as now");
 
@@ -413,16 +379,16 @@ let load = base.loader({
       let count = await TaskGroup.expire(now);
       debug("Expired %s task-groups", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-task-groups.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
   // Create the task-group membership expiration process (periodic job)
   'expire-task-group-members': {
-    requires: ['cfg', 'TaskGroupMember', 'monitor', 'influx'],
-    setup: async ({cfg, TaskGroupMember, influx}) => {
+    requires: ['cfg', 'TaskGroupMember', 'monitor'],
+    setup: async ({cfg, TaskGroupMember, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
       assert(!_.isNaN(now), "Can't have NaN as now");
 
@@ -432,16 +398,16 @@ let load = base.loader({
       let count = await TaskGroupMember.expire(now);
       debug("Expired %s task-group members", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-task-group-members.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
   // Create the task-dependency expiration process (periodic job)
   'expire-task-dependency': {
-    requires: ['cfg', 'TaskDependency', 'monitor', 'influx'],
-    setup: async ({cfg, TaskDependency, influx}) => {
+    requires: ['cfg', 'TaskDependency', 'monitor'],
+    setup: async ({cfg, TaskDependency, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
       assert(!_.isNaN(now), "Can't have NaN as now");
 
@@ -450,16 +416,16 @@ let load = base.loader({
       let count = await TaskDependency.expire(now);
       debug("Expired %s task-dependency", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-task-dependency.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
    // Create the task-requirement expiration process (periodic job)
   'expire-task-requirement': {
-    requires: ['cfg', 'TaskRequirement', 'monitor', 'influx'],
-    setup: async ({cfg, TaskRequirement, influx}) => {
+    requires: ['cfg', 'TaskRequirement', 'monitor'],
+    setup: async ({cfg, TaskRequirement, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
       assert(!_.isNaN(now), "Can't have NaN as now");
 
@@ -468,9 +434,9 @@ let load = base.loader({
       let count = await TaskRequirement.expire(now);
       debug("Expired %s task-requirement", count);
 
-      // Stop recording statistics and send any stats that we have
-      base.stats.stopProcessUsageReporting();
-      return influx.close();
+      monitor.count("expire-task-requirement.done");
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     }
   },
 
