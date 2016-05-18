@@ -14,7 +14,7 @@ defaults:
     prefetch:   200
     queueName:  null
   treeherder:
-    routePrefix: 'treeherder-garndt'
+    routePrefix: 'tc-treeherder'
   aws:
     # Credentials with access to artifact buckets and
     # references/schemas.taskcluster.net if you wish to publish meta-data
@@ -22,3 +22,7 @@ defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           us-west-2
     apiVersion:       2014-01-01
+
+staging:
+  treeherder:
+    routePrefix: 'tc-treeherder-stage'
