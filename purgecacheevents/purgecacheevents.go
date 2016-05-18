@@ -15,7 +15,7 @@
 // This document describes the exchange offered for workers by the
 // cache-purge service.
 //
-// See: http://docs.taskcluster.net/services/purge-cache
+// See: https://docs.taskcluster.net/reference/core/purge-cache/exchanges
 //
 // How to use this package
 //
@@ -49,7 +49,7 @@ import (
 // exchange with designated `provisionerId` and `workerType` in the
 // routing-key and the name of the `cacheFolder` as payload
 //
-// See http://docs.taskcluster.net/services/purge-cache/#purgeCache
+// See https://docs.taskcluster.net/reference/core/purge-cache/exchanges/#purgeCache
 type PurgeCache struct {
 	RoutingKeyKind string `mwords:"*"`
 	ProvisionerID  string `mwords:"*"`

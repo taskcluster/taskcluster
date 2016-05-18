@@ -1,4 +1,4 @@
-Generated: 1463412528
+Generated: 1463570037
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1413,6 +1413,156 @@ Title                  = 'Test Authenticate Response'
 Type                   = 'object'
 TypeName               = 'TestAuthenticateResponse'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#'
+
+
+http://references.taskcluster.net/auth/v1/exchanges.json
+========================================================
+Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
+Title           = 'Auth Pulse Exchanges'
+Description     = 'The auth service, typically available at `auth.taskcluster.net`
+is responsible for storing credentials, managing assignment of scopes,
+and validation of request signatures from other services.
+
+These exchanges provides notifications when credentials or roles are
+updated. This is mostly so that multiple instances of the auth service
+can purge their caches and synchronize state. But you are of course
+welcome to use these for other purposes, monitoring changes for example.'
+Exchange Prefix = 'exchange/taskcluster-auth/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'client-created'
+    Entry Name        = 'clientCreated'
+    Entry Title       = 'Client Created Messages'
+    Entry Description = 'Message that a new client has been created.'
+    Routing Key Element 0     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/auth/v1/client-message.json#'
+Entry 1     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'client-updated'
+    Entry Name        = 'clientUpdated'
+    Entry Title       = 'Client Updated Messages'
+    Entry Description = 'Message that a new client has been updated.'
+    Routing Key Element 0     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/auth/v1/client-message.json#'
+Entry 2     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'client-deleted'
+    Entry Name        = 'clientDeleted'
+    Entry Title       = 'Client Deleted Messages'
+    Entry Description = 'Message that a new client has been deleted.'
+    Routing Key Element 0     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/auth/v1/client-message.json#'
+Entry 3     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'role-created'
+    Entry Name        = 'roleCreated'
+    Entry Title       = 'Role Created Messages'
+    Entry Description = 'Message that a new role has been created.'
+    Routing Key Element 0     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/auth/v1/role-message.json#'
+Entry 4     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'role-updated'
+    Entry Name        = 'roleUpdated'
+    Entry Title       = 'Role Updated Messages'
+    Entry Description = 'Message that a new role has been updated.'
+    Routing Key Element 0     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/auth/v1/role-message.json#'
+Entry 5     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'role-deleted'
+    Entry Name        = 'roleDeleted'
+    Entry Title       = 'Role Deleted Messages'
+    Entry Description = 'Message that a new role has been deleted.'
+    Routing Key Element 0     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/auth/v1/role-message.json#'
+
+
+http://schemas.taskcluster.net/auth/v1/client-message.json#
+===========================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a client has changed
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/client-message.json#'
+Properties
+  Property 'clientId' =
+    Description            = '`clientId` of the client that was changed
+    '
+    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Type                   = 'string'
+    TypeName               = 'ClientID'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/client-message.json#/properties/clientId'
+  Property 'version' =
+    Description            = 'Message version number'
+    Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Version'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/client-message.json#/properties/version'
+Required               = '[version clientId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Client Message'
+Type                   = 'object'
+TypeName               = 'ClientMessage'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/client-message.json#'
+
+
+http://schemas.taskcluster.net/auth/v1/role-message.json#
+=========================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a role has changed
+'
+ID                     = 'http://schemas.taskcluster.net/auth/v1/role-message.json#'
+Properties
+  Property 'roleId' =
+    Description            = '`roleId` of the role that was changed
+    '
+    Pattern                = '^[\x20-\x7e]+$'
+    Type                   = 'string'
+    TypeName               = 'RoleID'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/role-message.json#/properties/roleId'
+  Property 'version' =
+    Description            = 'Message version number'
+    Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Version'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/role-message.json#/properties/version'
+Required               = '[version roleId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Role Message'
+Type                   = 'object'
+TypeName               = 'RoleMessage'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/role-message.json#'
 
 
 http://references.taskcluster.net/aws-provisioner/v1/api.json
@@ -4092,6 +4242,90 @@ Title                  = 'List Tasks Response'
 Type                   = 'object'
 TypeName               = 'ListTasksResponse'
 SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'
+
+
+http://references.taskcluster.net/login/v1/api.json
+===================================================
+Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
+Title       = 'Login API'
+Description = 'The Login service serves as the interface between external authentication
+systems and TaskCluster credentials.  It acts as the server side of
+https://tools.taskcluster.net.  If you are working on federating logins
+with TaskCluster, this is probably *not* the service you are looking for.
+Instead, use the federated login support in the tools site.
+
+The API methods described here issue temporary credentials based on
+an assertion.  The assertion identifies the user, usually with an
+email-like string.  This string is then passed through a series of
+authorizers, each of which may supply scopes to be included in the
+credentials. Finally, the service generates temporary credentials based
+on those scopes.
+
+The generated credentials include scopes to create new, permanent clients
+with names based on the user's identifier.  These credentials are
+periodically scanned for scopes that the user does not posess, and disabled
+if such scopes are discovered.  Thus users can create long-lived credentials
+that are only usable until the user's access level is reduced.'
+Base URL    = 'https://login.taskcluster.net/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/persona'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'credentialsFromPersonaAssertion'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/login/v1/credentials-response.json'
+    Entry Title       = 'Get TaskCluster credentials given a Persona assertion'
+    Entry Description = 'Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup#Step_4_Verify_the_user%E2%80%99s_credentials), return
+an appropriate set of temporary credentials.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/login/v1/credentials-response.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'A response containing temporary credentials.
+'
+ID                     = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
+Properties
+  Property 'accessToken' =
+    Pattern                = '^[a-zA-Z0-9_-]{22,66}$'
+    Type                   = 'string'
+    TypeName               = 'AccessToken'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/accessToken'
+  Property 'certificate' =
+    Type                   = 'string'
+    TypeName               = 'Certificate'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/certificate'
+  Property 'clientId' =
+    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Type                   = 'string'
+    TypeName               = 'ClientID'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/clientId'
+Required               = '[clientId accessToken certificate]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Credentials Response'
+Type                   = 'object'
+TypeName               = 'CredentialsResponse'
+SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
 
 
 http://references.taskcluster.net/purge-cache/v1/api.json

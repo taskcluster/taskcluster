@@ -15,7 +15,7 @@
 // This document describes the API end-point for consuming GitHub
 // web hooks
 //
-// See: http://docs.taskcluster.net/services/taskcluster-github
+// See: https://docs.taskcluster.net/reference/core/github/api-docs
 //
 // How to use this package
 //
@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 16 May 2016 at 15:28:00 UTC. The code was generated
+// Wed, 18 May 2016 at 11:13:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -55,10 +55,10 @@ type Github tcclient.ConnectionData
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
-//  myGithub := github.New(creds)                              // set credentials
-//  myGithub.Authenticate = false                              // disable authentication (creds above are now ignored)
-//  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"   // alternative API endpoint (production by default)
-//  callSummary, err := myGithub.GithubWebHookConsumer(.....)  // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
+//  myGithub := github.New(creds)                               // set credentials
+//  myGithub.Authenticate = false                               // disable authentication (creds above are now ignored)
+//  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"    // alternative API endpoint (production by default)
+//  callSummary, err := myGithub.GithubWebHookConsumer(.....)   // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -76,7 +76,7 @@ func New(credentials *tcclient.Credentials) *Github {
 // Capture a GitHub event and publish it via pulse, if it's a push
 // or pull request.
 //
-// See http://docs.taskcluster.net/services/taskcluster-github/#githubWebHookConsumer
+// See https://docs.taskcluster.net/reference/core/github/api-docs/#githubWebHookConsumer
 func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
@@ -89,7 +89,7 @@ func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
 //
 // **Warning** this api end-point is **not stable**.
 //
-// See http://docs.taskcluster.net/services/taskcluster-github/#ping
+// See https://docs.taskcluster.net/reference/core/github/api-docs/#ping
 func (myGithub *Github) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)

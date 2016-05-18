@@ -34,7 +34,7 @@
 // task-graph scheduler is hardcoded to `_`. This is done to preserve
 // positional equivalence with exchanges offered by the queue.
 //
-// See: http://docs.taskcluster.net/scheduler/events
+// See: https://docs.taskcluster.net/reference/platform/scheduler/exchanges
 //
 // How to use this package
 //
@@ -68,7 +68,7 @@ import (
 // message is posted on this exchange to indicate that a task-graph have
 // been submitted.
 //
-// See http://docs.taskcluster.net/scheduler/events/#taskGraphRunning
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphRunning
 type TaskGraphRunning struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -99,7 +99,7 @@ func (binding TaskGraphRunning) NewPayloadObject() interface{} {
 // are monitoring a task-graph and what to track states of the individual
 // tasks in the task-graph.
 //
-// See http://docs.taskcluster.net/scheduler/events/#taskGraphExtended
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphExtended
 type TaskGraphExtended struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -134,7 +134,7 @@ func (binding TaskGraphExtended) NewPayloadObject() interface{} {
 // The message features the `taskId` of the task that caused the task-graph
 // to become blocked.
 //
-// See http://docs.taskcluster.net/scheduler/events/#taskGraphBlocked
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphBlocked
 type TaskGraphBlocked struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -164,7 +164,7 @@ func (binding TaskGraphBlocked) NewPayloadObject() interface{} {
 // task-graph is declared to be finished, and a message is posted to this
 // exchange.
 //
-// See http://docs.taskcluster.net/scheduler/events/#taskGraphFinished
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphFinished
 type TaskGraphFinished struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`

@@ -16,7 +16,7 @@
 // longer be read.  This is useful for short-term secrets such as a temporary
 // service credential or a one-time signing key.
 //
-// See: http://docs.taskcluster.net/services/secrets
+// See: https://docs.taskcluster.net/reference/core/secrets/api-docs
 //
 // How to use this package
 //
@@ -36,7 +36,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 16 May 2016 at 15:28:00 UTC. The code was generated
+// Wed, 18 May 2016 at 11:13:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -83,7 +83,7 @@ func New(credentials *tcclient.Credentials) *Secrets {
 // Required scopes:
 //   * secrets:set:<name>
 //
-// See http://docs.taskcluster.net/services/secrets/#set
+// See https://docs.taskcluster.net/reference/core/secrets/api-docs/#set
 func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	_, callSummary, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(name), nil, nil)
@@ -95,7 +95,7 @@ func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSumma
 // Required scopes:
 //   * secrets:set:<name>
 //
-// See http://docs.taskcluster.net/services/secrets/#remove
+// See https://docs.taskcluster.net/reference/core/secrets/api-docs/#remove
 func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(name), nil, nil)
@@ -110,7 +110,7 @@ func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
 // Required scopes:
 //   * secrets:get:<name>
 //
-// See http://docs.taskcluster.net/services/secrets/#get
+// See https://docs.taskcluster.net/reference/core/secrets/api-docs/#get
 func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
@@ -132,7 +132,7 @@ func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*u
 // other words, secret name `<X>` will only be returned if a) a secret
 // with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
 //
-// See http://docs.taskcluster.net/services/secrets/#list
+// See https://docs.taskcluster.net/reference/core/secrets/api-docs/#list
 func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), nil)
@@ -144,7 +144,7 @@ func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
 // Respond without doing anything.  This endpoint is used to check that
 // the service is up.
 //
-// See http://docs.taskcluster.net/services/secrets/#ping
+// See https://docs.taskcluster.net/reference/core/secrets/api-docs/#ping
 func (mySecrets *Secrets) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*mySecrets)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
