@@ -35,9 +35,6 @@ defaults:
     # schedulerId inside a task-group where all tasks are about to expire.
     taskGroupExpiresExtension:     6220800 # 3 days as seconds
 
-    # Component property in the responseTime and process statistics
-    statsComponent:               queue
-
     # Prefix for azure queues (at most 6 characters)
     queuePrefix:                  queue
 
@@ -111,17 +108,6 @@ defaults:
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
 
-  influx:
-    connectionString:         !env INFLUX_CONNECTION
-    maxDelay:                 300
-    maxPendingPoints:         300
-
-  raven:
-    # This can be grabbed from the settings of the sentry project
-    # and is a string that looks like:
-    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
-    sentryDSN:                 !env SENTRY_DSN
-
   aws:
     # Credentials with access to artifact buckets and
     # references/schemas.taskcluster.net if you wish to publish meta-data
@@ -163,7 +149,6 @@ test:
     publicArtifactBucket:         'test-bucket-for-any-garbage'
     privateArtifactBucket:        'test-bucket-for-any-garbage2'
     artifactContainer:            'artifacts'
-    statsComponent:               'test-queue'
     queuePrefix:                  'hacks'
     queuePrefix2:                 'hacks2' # For testing deletion of queues
     taskTableName:                'TestTasks2'
