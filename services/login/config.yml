@@ -42,6 +42,9 @@ Defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           us-west-2
     apiVersion:       2014-01-01
+  persona:
+    allowedAudiences:
+      - https://tools.taskcluster.net:443
   mozillians:
     # NOTE: this API key needs to have the "Mozillians" level in order to access
     # non-public profiles; see https://bugzilla.mozilla.org/show_bug.cgi?id=1259059
@@ -118,6 +121,9 @@ Profiles:
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
+    persona:
+      allowedAudiences:
+        - https://taskcluster-tools.ngrok.io:443
     mozillians:
       allowedGroups: ['taskcluster-users']
     ldap:

@@ -4,7 +4,7 @@ import User from './user'
 import _ from 'lodash'
 var debug = require('debug')('scanner');
 
-export default async function scanner(cfg, authorizers) {
+export default async function scanner(cfg, authorizer) {
   // * get the set of identityProviderIds
   // * for each:
   //   * fetch all clients, sort by identity
@@ -18,8 +18,7 @@ export default async function scanner(cfg, authorizers) {
   let auth = new taskcluster.Auth({credentials: cfg.app.credentials});
 
   // gather all identityProviderIds used in any authorizer
-  let identityProviders = new Set(
-      authorizers.map(authz => authz.identityProviders).reduce((a,b) => a.concat(b)))
+  let identityProviders = authorizer.identityProviders;
 
   // enumerate all clients for any of those identity providers
   let clients = [];
@@ -47,11 +46,7 @@ export default async function scanner(cfg, authorizers) {
       user = new User();
       user.identity = clientIdentity;
 
-      await Promise.all(authorizers.map(authz => {
-        if (authz.identityProviders.indexOf(user.identityProviderId) !== -1) {
-          return authz.authorize(user)
-        }
-      }));
+      await authorizer.authorize(user);
 
       userScopes = (await auth.expandScopes({scopes: user.scopes()})).scopes;
       // allow the implicit 'assume:client-id:<clientId> auth adds for each client
