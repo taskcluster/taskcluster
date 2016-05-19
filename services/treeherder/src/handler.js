@@ -1,10 +1,12 @@
 import assert from 'assert';
+import Debug from 'debug';
 import _ from 'lodash';
 import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
 import parseRoute from './util/route_parser';
 
 let events = new taskcluster.QueueEvents();
+let debug = Debug('taskcluster-treeherder:handler');
 
 const TASK_TREEHERDER_SCHEMA = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/task-treeherder-config.json#';
 const EVENT_MAP = {
@@ -106,6 +108,7 @@ export class Handler {
 
   // Starts up the message handler and listens for messages
   async start() {
+    debug('Starting handler');
     this.listener.on('message', async (message) => {
       try {
         await this.handleMessage(message);
@@ -114,6 +117,7 @@ export class Handler {
       };
     });
     await this.listener.resume();
+    debug('Handler Started');
   }
 
   // Listens for Task event messages and invokes the appropriate handler
@@ -125,6 +129,7 @@ export class Handler {
     let taskId = message.payload.status.taskId;
     let task = await this.queue.task(taskId);
     let parsedRoute = parseRouteInfo(this.prefix, taskId, message.routes, task);
+    debug(`message received for task ${taskId} with route ${message.routes}`);
 
     validateTask(this.validator, taskId, task, TASK_TREEHERDER_SCHEMA);
 
