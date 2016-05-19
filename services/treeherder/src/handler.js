@@ -150,7 +150,7 @@ export class Handler {
         return await this.handleTaskCompleted(parsedRoute, task, message.payload)
       case 'failed':
         return await this.handleTaskFailed(parsedRoute, task, message.payload)
-      case 'exception'.exchange:
+      case 'exception':
         return await this.handleTaskException(parsedRoute, task, message.payload)
       default:
         throw new Error(`Unknown exchange: ${message.exchange}`);
