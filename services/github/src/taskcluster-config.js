@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import yaml from 'yaml-js';
+import yaml from 'js-yaml';
 import Promise from 'promise';
 import slugid from 'slugid';
 import tc from 'taskcluster-client';
@@ -85,7 +85,7 @@ taskclusterConfig.processConfig = function (params) {
   let payload = params.payload;
   return new Promise(function (accept, reject) {
     try {
-      let taskclusterConfig = yaml.load(params.taskclusterConfig);
+      let taskclusterConfig = yaml.safeLoad(params.taskclusterConfig);
       // Validate the config file
       let errors = params.validator(taskclusterConfig, params.schema);
       if (errors) {
