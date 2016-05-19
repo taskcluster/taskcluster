@@ -1,8 +1,11 @@
+import Debug from 'debug';
 import path from 'path';
 import base from 'taskcluster-base';
 import taskcluster from 'taskcluster-client';
 import { Handler } from './handler';
 import exchanges from './exchanges';
+
+let debug = Debug('taskcluster-treeherder:main');
 
 let load = base.loader({
   cfg: {
@@ -20,17 +23,21 @@ let load = base.loader({
 
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => base.validator({
-      folder: path.join(__dirname, '..', 'schemas'),
-      prefix:       'taskcluster-treeherder/v1/',
-      aws:           cfg.aws
-    })
+    setup: ({cfg}) => {
+      debug('Configuring validator');
+      return base.validator({
+        folder: path.join(__dirname, '..', 'schemas'),
+        prefix:       'taskcluster-treeherder/v1/',
+        aws:           cfg.aws
+      });
+    }
   },
 
   publisher: {
     requires: ['cfg', 'validator', 'drain', 'process'],
-    setup: ({cfg, validator, drain, process}) =>
-      exchanges.setup({
+    setup: ({cfg, validator, drain, process}) => {
+      debug('Configuring exchanges');
+      return exchanges.setup({
         credentials:      cfg.pulse.credentials,
         exchangePrefix:   cfg.app.exchangePrefix,
         validator:        validator,
@@ -41,11 +48,13 @@ let load = base.loader({
         component:        cfg.app.statsComponent,
         process,
       })
+    }
   },
 
   server: {
     requires: ['cfg', 'publisher', 'validator'],
     setup: async ({cfg, publisher, validator}) => {
+      debug('Configuring handler');
       let queue = new taskcluster.Queue();
       let scheduler = new taskcluster.Scheduler();
       let queueEvents = new taskcluster.QueueEvents();
@@ -53,6 +62,7 @@ let load = base.loader({
       // TODO add queue name for durable queues
       let listener = new taskcluster.PulseListener({
         credentials: cfg.pulse.credentials,
+        queueName: cfg.pulse.queueName
       });
 
       let prefix = cfg.treeherder.routePrefix;
