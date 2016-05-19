@@ -29,6 +29,7 @@ export default class User {
   }
 
   addRole(role) {
+    assert(this._identity !== undefined);
     if (this.roles.indexOf(role) === -1) {
       this.roles.push(role);
     }

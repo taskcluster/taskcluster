@@ -1,6 +1,6 @@
-var API         = require('taskcluster-lib-api');
-var debug       = require('debug')('login:routes:v1');
-var _           = require('lodash');
+import API from 'taskcluster-lib-api'
+import User from './user'
+import _ from 'lodash'
 
 var api = new API({
   title:         "Login API",
@@ -24,7 +24,8 @@ var api = new API({
     "if such scopes are discovered.  Thus users can create long-lived credentials",
     "that are only usable until the user's access level is reduced.",
   ].join('\n'),
-  schemaPrefix:  'http://schemas.taskcluster.net/login/v1/'
+  schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
+  context: ['authorizer', 'personaVerifier', 'temporaryCredentials'],
 });
 
 // Export api
@@ -35,16 +36,39 @@ api.declare({
   route:      '/persona',
   name:       'credentialsFromPersonaAssertion',
   idempotent: false,
+  input:      'persona-request.json',
   output:     'credentials-response.json',
   title:      'Get TaskCluster credentials given a Persona assertion',
   stability:  API.stability.experimental,
   description: [
     "Given an [assertion](https://developer.mozilla.org/en-US/Persona/" +
-    "Quick_setup#Step_4_Verify_the_user%E2%80%99s_credentials), return",
-    "an appropriate set of temporary credentials.",
+    "Quick_setup), return an appropriate set of temporary credentials.",
+    "",
+    "The supplied audience must be on a whitelist of TaskCluster-related",
+    "sites configured in the login service.  This is not a general-purpose",
+    "assertion-verification service!",
   ].join('\n')
 }, async function(req, res) {
-  return res.status(501).json({error: "not implemented yet"});
+  // verify the assertion with the persona service
+  let email;
+  try {
+    email = await this.personaVerifier.verify(req.body.assertion, req.body.audience);
+  } catch(err) {
+    // translate PersonaErrors into 400's; everything else is a 500
+    if (err.code == "PersonaError") {
+      res.reportError('InputError', err.message, err);
+    }
+    throw err;
+  }
+
+  // create and authorize a User
+  let user = new User();
+  user.identity = 'persona/' + email;
+  this.authorizer.authorize(user);
+
+  // create and return temporary credentials
+  let credentials = user.createCredentials(this.temporaryCredentials);
+  return res.reply(credentials);
 });
 
 api.declare({
