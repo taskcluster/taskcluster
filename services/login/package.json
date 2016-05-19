@@ -19,6 +19,7 @@
     "babel-compile": "^0.0.3",
     "babel-runtime": "^5.8.25",
     "body-parser": "^1.14.1",
+    "browserid-verify": "^0.1.2",
     "connect-flash": "^0.1.1",
     "cookie-session": "^1.2.0",
     "debug": "^2.2.0",
