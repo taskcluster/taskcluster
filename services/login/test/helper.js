@@ -1,4 +1,5 @@
 var taskcluster = require('taskcluster-client');
+var assume      = require('assume');
 var testing     = require('taskcluster-lib-testing');
 var v1          = require('../lib/v1');
 var load        = require('../lib/server');
@@ -9,12 +10,48 @@ var cfg = config({profile: 'test'});
 
 var helper = module.exports = {};
 
-helper.loadOptions = {profile: 'test', process: 'test-helper'};
+class FakeAuthorizer {
+  async authorize(user) {
+    this.identitiesSeen.push(user.identity);
+    user.addRole('fake-authorizer:' + user.identityId);
+  }
+
+  get identityProviders() {
+    return ['fake-authorizer'];
+  }
+}
+
+class FakePersonaVerifier {
+  constructor() {
+    this.error = null;
+    this.expectedAssertion = "abcd";
+    this.expectedAudience = "https://tools.taskcluster.net:443";
+  }
+
+  async verify(assertion, audience) {
+    assume(assertion).to.equal(this.expectedAssertion);
+    assume(audience).to.equal(this.expectedAudience);
+    if (this.error) {
+      throw this.error;
+    }
+    return "nobody@persona.org";
+  }
+}
 
 // Call this in suites or tests that make API calls, etc; it will set up
 // what's required to respond to those calls.
-helper.setup = function() {
+helper.setup = function(options) {
+  options = options || {};
   var webServer = null;
+
+  helper.authorizer = new FakeAuthorizer();
+  helper.personaVerifier = new FakePersonaVerifier();
+  var loadOptions = {
+    profile: 'test',
+    process: 'test-helper',
+    authorizer: helper.authorizer,
+    personaVerifier: helper.personaVerifier,
+  };
 
   // Setup before tests
   suiteSetup(async () => {
@@ -24,7 +61,7 @@ helper.setup = function() {
 
     webServer = await load('server', _.defaults({
       authenticators: [],
-    }, helper.loadOptions));
+    }, loadOptions));
 
     // Create client for working with API
     helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
@@ -41,7 +78,6 @@ helper.setup = function() {
           clientId:       'test-client',
           accessToken:    'none'
         },
-        //authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
         authorizedScopes: (scopes.length > 0 ? scopes : undefined)
       });
     };
@@ -49,6 +85,7 @@ helper.setup = function() {
 
   // Setup before each test
   setup(async () => {
+    helper.authorizer.identitiesSeen = [];
     // Setup client with all scopes
     helper.scopes();
   });
