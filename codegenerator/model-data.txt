@@ -1,4 +1,4 @@
-Generated: 1463570037
+Generated: 1463689771
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4277,11 +4277,14 @@ Entry 0     =
     Entry Name        = 'credentialsFromPersonaAssertion'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
-    Entry Input       = ''
+    Entry Input       = 'http://schemas.taskcluster.net/login/v1/persona-request.json'
     Entry Output      = 'http://schemas.taskcluster.net/login/v1/credentials-response.json'
     Entry Title       = 'Get TaskCluster credentials given a Persona assertion'
-    Entry Description = 'Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup#Step_4_Verify_the_user%E2%80%99s_credentials), return
-an appropriate set of temporary credentials.'
+    Entry Description = 'Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.
+
+The supplied audience must be on a whitelist of TaskCluster-related
+sites configured in the login service.  This is not a general-purpose
+assertion-verification service!'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -4326,6 +4329,33 @@ Title                  = 'Credentials Response'
 Type                   = 'object'
 TypeName               = 'CredentialsResponse'
 SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
+
+
+http://schemas.taskcluster.net/login/v1/persona-request.json#
+=============================================================
+Additional Properties  = 'false'
+ID                     = 'http://schemas.taskcluster.net/login/v1/persona-request.json#'
+Properties
+  Property 'assertion' =
+    Description            = 'The Persona assertion from `navigator.id.get`
+    '
+    Type                   = 'string'
+    TypeName               = 'Assertion'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/persona-request.json#/properties/assertion'
+  Property 'audience' =
+    Description            = 'The audience against which to verify the assertion, in the format
+    `https://site.com:443`.  This must be from a whitelist of sites
+    configured in the login service.
+    '
+    Type                   = 'string'
+    TypeName               = 'Audience'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/persona-request.json#/properties/audience'
+Required               = '[assertion audience]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Persona Assertion Request'
+Type                   = 'object'
+TypeName               = 'PersonaAssertionRequest'
+SourceURL              = 'http://schemas.taskcluster.net/login/v1/persona-request.json#'
 
 
 http://references.taskcluster.net/purge-cache/v1/api.json

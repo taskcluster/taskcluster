@@ -47,7 +47,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 18 May 2016 at 11:13:00 UTC. The code was generated
+// Thu, 19 May 2016 at 20:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 
@@ -85,13 +85,16 @@ func New(credentials *tcclient.Credentials) *Login {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup#Step_4_Verify_the_user%E2%80%99s_credentials), return
-// an appropriate set of temporary credentials.
+// Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.
+//
+// The supplied audience must be on a whitelist of TaskCluster-related
+// sites configured in the login service.  This is not a general-purpose
+// assertion-verification service!
 //
 // See https://docs.taskcluster.net/reference/core/login/api-docs/#credentialsFromPersonaAssertion
-func (myLogin *Login) CredentialsFromPersonaAssertion() (*CredentialsResponse, *tcclient.CallSummary, error) {
+func (myLogin *Login) CredentialsFromPersonaAssertion(payload *PersonaAssertionRequest) (*CredentialsResponse, *tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*myLogin)
-	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/persona", new(CredentialsResponse), nil)
+	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/persona", new(CredentialsResponse), nil)
 	return responseObject.(*CredentialsResponse), callSummary, err
 }
 
