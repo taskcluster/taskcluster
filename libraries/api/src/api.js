@@ -313,13 +313,14 @@ var createRemoteSignatureValidator = function(options) {
  * Note that `deferAuth` will not perform authorization unless, `req.satisfies({})`
  * is called either without arguments or with an object as first argument.
  *
- * The `req.scopes()` method returns a promise for the set of scopes the caller
+ * The `req.scopes()` method returns a Promise for the set of scopes the caller
  * has. Please, note that `req.scopes()` returns `[]` if there was an
  * authentication error.
  *
- * The `req.clientId` property contains the requesting clientId, or the reason no
- * clientId is known (e.g., `(auth-failed)`).  This value can be used for logging
- * and auditing, but should **never** be used for access control.
+ * The `req.clientId` function returns (via Promise) the requesting clientId,
+ * or the reason no clientId is known (`auth-failed:status`).  This value can
+ * be used for logging and auditing, but should **never** be used for access
+ * control.
  *
  * Reports 401 if authentication fails.
  */
