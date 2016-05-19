@@ -22,3 +22,13 @@ defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           us-west-2
     apiVersion:       2014-01-01
+staging:
+  statsComponent: taskcluster-treeherder-staging
+  pulse:
+    queueName: taskcluster-treeherder-staging
+production:
+  statsComponent: taskcluster-treeherder
+  pulse:
+    queueName: taskcluster-treeherder
+
+
