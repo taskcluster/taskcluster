@@ -4,6 +4,7 @@ import github from './github';
 import utils from './utils';
 import taskcluster from 'taskcluster-client';
 import slugid from 'slugid';
+import yaml from 'js-yaml';
 import _ from 'lodash';
 
 let debug = Debug('taskcluster-github:worker');
@@ -16,73 +17,76 @@ const INSPECTOR_URL = 'https://tools.taskcluster.net/task-graph-inspector/#';
  * graph config, and submit it to the scheduler.
  **/
 worker.webHookHandler = async function(message, context) {
+  // We must attempt to convert the sanitized fields back to normal here. 
+  // Further discussion of how to deal with this cleanly is in
+  // https://github.com/taskcluster/taskcluster-github/issues/52
+  message.payload.organization = message.payload.organization.replace('%', '.');
+  message.payload.repository = message.payload.repository.replace('%', '.');
+
   debug('handling webhook: ', message);
   let taskclusterConfig = undefined;
-  try {
-    // Try to fetch a .taskcluster.yml file for every request
-    taskclusterConfig = await context.github.repos(
-      message.payload.organization, message.payload.repository
-    ).contents('.taskcluster.yml').read({
-      ref: message.payload.details['event.base.repo.branch'],
-    });
 
-    // Check if this is meant to be built by tc-github at all.
-    // This is a bit of a hack, but is needed for bug 1274077 for now
-    let c = yaml.safeLoad(taskclusterConfig);
-    c.tasks = (c.tasks || []).filter((task) => _.has(task, 'extra.github'));
-    if (c.tasks.length === 0) {
-      return;
-    }
+  // Try to fetch a .taskcluster.yml file for every request
+  taskclusterConfig = await context.github.repos(
+    message.payload.organization, message.payload.repository
+  ).contents('.taskcluster.yml').read({
+    ref: message.payload.details['event.base.repo.branch'],
+  });
 
-    // Decide if a user has permissions to run tasks.
-    let login = message.payload.details['event.head.user.login'];
-    let isCollaborator = false;
+  // Check if this is meant to be built by tc-github at all.
+  // This is a bit of a hack, but is needed for bug 1274077 for now
+  let c = yaml.safeLoad(taskclusterConfig);
+  c.tasks = (c.tasks || []).filter((task) => _.has(task, 'extra.github'));
+  if (c.tasks.length === 0) {
+    debug('Skipping tasks because no task with "extra.github" exists!');
+    debug(`Repository: ${message.payload.organization}/${message.payload.repository}`);
+    return;
+  }
 
-    if (login == message.payload.organization) {
+  // Decide if a user has permissions to run tasks.
+  let login = message.payload.details['event.head.user.login'];
+  let isCollaborator = false;
+
+  if (login == message.payload.organization) {
+    isCollaborator = true;
+  }
+
+  if (!isCollaborator) {
+    isCollaborator = await context.github.orgs(
+      message.payload.organization
+    ).members.contains(login);
+  }
+
+  if (!isCollaborator) {
+    // GithubAPI's collaborator check returns an error if a user isn't
+    // listed as a collaborator.
+    try {
+      await context.github.repos(
+        message.payload.organization, message.payload.repository
+      ).collaborators(login).fetch();
+      // No error, the user is a collaborator
       isCollaborator = true;
-    }
-
-    if (!isCollaborator) {
-      isCollaborator = await context.github.orgs(
-        message.payload.organization
-      ).members.contains(login);
-    }
-
-    if (!isCollaborator) {
-      // GithubAPI's collaborator check returns an error if a user isn't
-      // listed as a collaborator.
-      try {
-        await context.github.repos(
-          message.payload.organization, message.payload.repository
-        ).collaborators(login).fetch();
-        // No error, the user is a collaborator
-        isCollaborator = true;
-      } catch (e) {
-        if (e.status == 404) {
-          // Only a 404 error means the user isn't a collaborator
-          // anything else should just throw like normal
-          debug(e.message);
-        } else {
-          throw e;
-        }
+    } catch (e) {
+      if (e.status == 404) {
+        // Only a 404 error means the user isn't a collaborator
+        // anything else should just throw like normal
+      } else {
+        throw e;
       }
     }
+  }
 
-    // If all of the collaborator checks fail, we should post to the commit
-    // and ignore the request
-    if (!isCollaborator) {
-      let msg = `@${login} does not have permission to trigger tasks.`;
-      await github.addCommitComment(
-        context.github,
-        message.payload.organization,
-        message.payload.repository,
-        message.payload.details['event.head.sha'],
-        'TaskCluster: ' + msg);
-      throw new Error(msg);
-    }
-  } catch (e) {
-    debug(e);
-    throw e;
+  // If all of the collaborator checks fail, we should post to the commit
+  // and ignore the request
+  if (!isCollaborator) {
+    let msg = `@${login} does not have permission to trigger tasks.`;
+    await github.addCommitComment(
+      context.github,
+      message.payload.organization,
+      message.payload.repository,
+      message.payload.details['event.head.sha'],
+      'TaskCluster: ' + msg);
+    throw new Error(msg);
   }
 
   // Now we can try processing the config and kicking off a task.
@@ -108,7 +112,6 @@ worker.webHookHandler = async function(message, context) {
       debug('graphConfig compiled with zero tasks: skipping');
     }
   } catch (e) {
-    debug(e);
     let errorMessage = e.message;
     let errorBody = e.errors || e.body.error;
     // Let's prettify any objects
@@ -123,6 +126,7 @@ worker.webHookHandler = async function(message, context) {
       message.payload.details['event.head.sha'],
       'Submitting the task to TaskCluster failed. ' + errorMessage
       + 'Details:\n\n```js\n' +  errorBody + '\n```');
+    throw e;
   }
 };
 
@@ -142,7 +146,8 @@ worker.graphStateChangeHandler = async function(message, context) {
     await github.updateStatus(context.github, route[1], route[2], route[3],
        statusMessage);
   } catch (e) {
-    debug('Failed to update GitHub commit status: ', e);
+    debug('Failed to update GitHub commit status!');
+    throw e;
   }
 };
 

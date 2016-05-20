@@ -8,9 +8,6 @@ defaults:
     # Prefix for exchanges declared
     exchangePrefix:               'v1/'
 
-    # Component property in the responseTime and process statistics
-    statsComponent:               'github'
-
   # TaskCluster configuration
   taskcluster:
     # TaskCluster credentials for this server, these must have scopes:
@@ -90,9 +87,6 @@ production:
 test:
   webhook:
     secret:                       'c-etait-un-secret'
-
-  exports:
-    statsComponent:               'test-queue'
 
   taskcluster:
     credentials:
