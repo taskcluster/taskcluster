@@ -125,9 +125,9 @@
       "resolved": "https://registry.npmjs.org/async/-/async-1.5.2.tgz"
     },
     "aws-sdk": {
-      "version": "2.3.13",
+      "version": "2.3.14",
       "from": "aws-sdk@>=2.1.5 <3.0.0",
-      "resolved": "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.3.13.tgz"
+      "resolved": "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.3.14.tgz"
     },
     "aws-sdk-promise": {
       "version": "0.0.2",
@@ -152,9 +152,9 @@
       "resolved": "https://registry.npmjs.org/aws-sign2/-/aws-sign2-0.5.0.tgz"
     },
     "azure-entities": {
-      "version": "0.9.1",
-      "from": "azure-entities@>=0.9.1 <0.10.0",
-      "resolved": "https://registry.npmjs.org/azure-entities/-/azure-entities-0.9.1.tgz",
+      "version": "1.0.0",
+      "from": "azure-entities@>=1.0.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/azure-entities/-/azure-entities-1.0.0.tgz",
       "dependencies": {
         "babel-runtime": {
           "version": "5.8.38",
@@ -753,9 +753,9 @@
       "resolved": "https://registry.npmjs.org/diff/-/diff-1.4.0.tgz"
     },
     "doctrine": {
-      "version": "1.2.1",
+      "version": "1.2.2",
       "from": "doctrine@>=1.2.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/doctrine/-/doctrine-1.2.1.tgz",
+      "resolved": "https://registry.npmjs.org/doctrine/-/doctrine-1.2.2.tgz",
       "dependencies": {
         "esutils": {
           "version": "1.1.6",
@@ -1273,7 +1273,7 @@
     },
     "js-yaml": {
       "version": "3.6.1",
-      "from": "js-yaml@latest",
+      "from": "js-yaml@>=3.6.1 <4.0.0",
       "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.6.1.tgz"
     },
     "jsesc": {
@@ -1409,9 +1409,9 @@
       "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-2.7.3.tgz"
     },
     "lsmod": {
-      "version": "0.0.3",
-      "from": "lsmod@>=0.0.3 <0.1.0",
-      "resolved": "https://registry.npmjs.org/lsmod/-/lsmod-0.0.3.tgz"
+      "version": "1.0.0",
+      "from": "lsmod@1.0.0",
+      "resolved": "https://registry.npmjs.org/lsmod/-/lsmod-1.0.0.tgz"
     },
     "map-obj": {
       "version": "1.0.1",
@@ -1754,9 +1754,8 @@
       "resolved": "https://registry.npmjs.org/pruddy-error/-/pruddy-error-1.0.0.tgz"
     },
     "pulse-publisher": {
-      "version": "0.9.1",
-      "from": "pulse-publisher@>=0.9.0 <0.10.0",
-      "resolved": "https://registry.npmjs.org/pulse-publisher/-/pulse-publisher-0.9.1.tgz",
+      "version": "1.0.1",
+      "from": "pulse-publisher@>=1.0.1 <2.0.0",
       "dependencies": {
         "amqplib": {
           "version": "0.3.2",
@@ -1807,6 +1806,40 @@
           "version": "1.1.14",
           "from": "readable-stream@>=1.0.0 <2.0.0 >=1.1.9",
           "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.1.14.tgz"
+        },
+        "taskcluster-lib-monitor": {
+          "version": "1.0.1",
+          "from": "taskcluster-lib-monitor@>=1.0.0 <2.0.0",
+          "dependencies": {
+            "asap": {
+              "version": "2.0.3",
+              "from": "asap@>=2.0.3 <2.1.0"
+            },
+            "babel-runtime": {
+              "version": "6.9.0",
+              "from": "babel-runtime@>=6.0.0 <7.0.0"
+            },
+            "core-js": {
+              "version": "2.4.0",
+              "from": "core-js@>=2.4.0 <3.0.0"
+            },
+            "debug": {
+              "version": "2.2.0",
+              "from": "debug@>=2.2.0 <3.0.0"
+            },
+            "lodash": {
+              "version": "4.12.0",
+              "from": "lodash@>=4.5.1 <5.0.0"
+            },
+            "ms": {
+              "version": "0.7.1",
+              "from": "ms@0.7.1"
+            },
+            "promise": {
+              "version": "7.1.1",
+              "from": "promise@>=7.0.4 <8.0.0"
+            }
+          }
         }
       }
     },
@@ -1826,9 +1859,9 @@
       "resolved": "https://registry.npmjs.org/range-parser/-/range-parser-1.0.3.tgz"
     },
     "raven": {
-      "version": "0.10.0",
-      "from": "raven@>=0.10.0 <0.11.0",
-      "resolved": "https://registry.npmjs.org/raven/-/raven-0.10.0.tgz",
+      "version": "0.11.0",
+      "from": "raven@>=0.11.0 <0.12.0",
+      "resolved": "https://registry.npmjs.org/raven/-/raven-0.11.0.tgz",
       "dependencies": {
         "cookie": {
           "version": "0.1.0",
@@ -2188,19 +2221,13 @@
       "resolved": "https://registry.npmjs.org/table/-/table-3.7.8.tgz"
     },
     "taskcluster-base": {
-      "version": "0.12.3",
-      "from": "taskcluster-base@>=0.12.3 <0.13.0",
-      "resolved": "https://registry.npmjs.org/taskcluster-base/-/taskcluster-base-0.12.3.tgz",
+      "version": "2.1.0",
+      "from": "taskcluster-base@>=2.1.0 <3.0.0",
       "dependencies": {
         "asap": {
           "version": "1.0.0",
           "from": "asap@>=1.0.0 <1.1.0",
           "resolved": "https://registry.npmjs.org/asap/-/asap-1.0.0.tgz"
-        },
-        "lodash": {
-          "version": "3.10.1",
-          "from": "lodash@>=3.10.1 <4.0.0",
-          "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz"
         },
         "promise": {
           "version": "6.1.0",
@@ -2210,7 +2237,14 @@
         "taskcluster-client": {
           "version": "0.23.4",
           "from": "taskcluster-client@0.23.4",
-          "resolved": "https://registry.npmjs.org/taskcluster-client/-/taskcluster-client-0.23.4.tgz"
+          "resolved": "https://registry.npmjs.org/taskcluster-client/-/taskcluster-client-0.23.4.tgz",
+          "dependencies": {
+            "lodash": {
+              "version": "3.10.1",
+              "from": "lodash@>=3.6.0 <4.0.0",
+              "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz"
+            }
+          }
         }
       }
     },
@@ -2237,9 +2271,8 @@
       }
     },
     "taskcluster-lib-api": {
-      "version": "0.11.0",
-      "from": "taskcluster-lib-api@>=0.11.0 <0.12.0",
-      "resolved": "https://registry.npmjs.org/taskcluster-lib-api/-/taskcluster-lib-api-0.11.0.tgz",
+      "version": "1.0.0",
+      "from": "taskcluster-lib-api@>=1.0.0 <2.0.0",
       "dependencies": {
         "accepts": {
           "version": "1.1.4",
@@ -3015,9 +3048,8 @@
       }
     },
     "taskcluster-lib-monitor": {
-      "version": "0.2.1",
-      "from": "taskcluster-lib-monitor@>=0.2.1 <0.3.0",
-      "resolved": "https://registry.npmjs.org/taskcluster-lib-monitor/-/taskcluster-lib-monitor-0.2.1.tgz"
+      "version": "2.1.0",
+      "from": "taskcluster-lib-monitor@>=2.1.0 <3.0.0"
     },
     "taskcluster-lib-scopes": {
       "version": "0.8.8",
@@ -3711,7 +3743,7 @@
     },
     "usage": {
       "version": "0.7.1",
-      "from": "usage@>=0.7.0 <0.8.0",
+      "from": "usage@>=0.7.1 <0.8.0",
       "resolved": "https://registry.npmjs.org/usage/-/usage-0.7.1.tgz",
       "dependencies": {
         "nan": {

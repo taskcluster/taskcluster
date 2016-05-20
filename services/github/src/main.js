@@ -17,16 +17,14 @@ let load = base.loader({
     setup: ({profile}) => base.config({profile}),
   },
 
-  drain: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      try {
-        return new base.stats.Influx(cfg.influx);
-      } catch (e) {
-        debug('Missing influx connection string: stats collection disabled.');
-      }
-      return new base.stats.NullDrain();
-    },
+  monitor: {
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => base.monitor({
+      project: 'taskcluster-github',
+      credentials: cfg.taskcluster.credentials,
+      mock: profile === 'test',
+      process,
+    }),
   },
 
   validator: {
@@ -38,8 +36,8 @@ let load = base.loader({
   },
 
   publisher: {
-    requires: ['cfg', 'drain', 'validator', 'process', 'mockPublisher'],
-    setup: async ({cfg, drain, validator, process, mockPublisher}) => {
+    requires: ['cfg', 'monitor', 'validator', 'mockPublisher'],
+    setup: async ({cfg, monitor, validator, mockPublisher}) => {
       if (mockPublisher) {
         return {
           push: data => Promise.resolve(data),
@@ -53,9 +51,7 @@ let load = base.loader({
           referencePrefix:    'github/v1/exchanges.json',
           publish:            cfg.taskclusterGithub.publishMetaData,
           aws:                cfg.aws,
-          drain:              drain,
-          component:          cfg.taskclusterGithub.statsComponent,
-          process,
+          monitor:            monitor.prefix('publisher'),
         });
       }
     },
@@ -67,29 +63,22 @@ let load = base.loader({
   },
 
   api: {
-    requires: ['cfg', 'drain', 'validator', 'github', 'publisher'],
-    setup: ({cfg, drain, validator, github, publisher}) => api.setup({
+    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher'],
+    setup: ({cfg, monitor, validator, github, publisher}) => api.setup({
       context:          {publisher, cfg, github},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.taskclusterGithub.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'github/v1/api.json',
       aws:              cfg.aws,
-      component:        cfg.taskclusterGithub.statsComponent,
+      monitor:          monitor.prefix('api'),
       validator,
-      drain,
     }),
   },
 
   server: {
-    requires: ['cfg', 'drain', 'api'],
-    setup: ({cfg, drain, api}) => {
-
-      base.stats.startProcessUsageReporting({
-        component:  cfg.taskclusterGithub.statsComponent,
-        process:    'server',
-        drain,
-      });
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => {
 
       debug('Launching server.');
       let app = base.app(cfg.server);
@@ -123,14 +112,8 @@ let load = base.loader({
   },
 
   worker: {
-    requires: ['cfg', 'github', 'drain', 'scheduler', 'validator', 'reference', 'webhooks'],
-    setup: async ({cfg, github, drain, scheduler, validator, reference, webhooks}) => {
-
-      base.stats.startProcessUsageReporting({
-        component:  cfg.taskclusterGithub.statsComponent,
-        process:    'worker',
-        drain,
-      });
+    requires: ['cfg', 'github', 'monitor', 'scheduler', 'validator', 'reference', 'webhooks'],
+    setup: async ({cfg, github, monitor, scheduler, validator, reference, webhooks}) => {
 
       let context = {cfg, github, scheduler, validator};
       let GitHubEvents = taskcluster.createClient(reference);
@@ -156,7 +139,7 @@ let load = base.loader({
       // exchange names to a regular expression
       let webHookHandlerExp = RegExp('(.*pull-request|.*push)', 'i');
       let graphChangeHandlerExp = RegExp('exchange/taskcluster-scheduler/.*', 'i');
-      webhooks.on('message', function (message) {
+      webhooks.on('message', monitor.timedHandler('message-handler', function (message) {
         if (webHookHandlerExp.test(message.exchange)) {
           worker.webHookHandler(message, context);
         } else if (graphChangeHandlerExp.test(message.exchange)) {
@@ -164,7 +147,7 @@ let load = base.loader({
         } else {
           debug('Ignoring message from unsupported exchange:', message.exchange);
         }
-      });
+      }));
       await webhooks.resume();
     },
   },
