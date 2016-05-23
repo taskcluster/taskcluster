@@ -6,6 +6,7 @@ let _             = require('lodash');
 let base          = require('taskcluster-base');
 let data          = require('./data');
 let QueueService  = require('./queueservice');
+let events        = require('events');
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class
@@ -13,7 +14,7 @@ let QueueService  = require('./queueservice');
  *
  * This is just to offload dependency resolution to a background worker.
  */
-class DependencyResolver {
+class DependencyResolver extends events.EventEmitter {
   /**
    * options:
    * {
@@ -22,9 +23,12 @@ class DependencyResolver {
    *   pollingDelay:        // Number of ms to sleep between polling
    *   parallelism:         // Number of polling loops to run in parallel
    *                        // Each handles up to 32 messages in parallel
+   *   monitor:             // base.monitor instance
    * }
    */
   constructor(options = {}) {
+    super();
+
     assert(options,                   'options are required');
     assert(options.dependencyTracker, 'Expected options.dependencyTracker');
     assert(options.queueService,      'Expected options.queueService');
@@ -32,10 +36,12 @@ class DependencyResolver {
            "Expected pollingDelay to be a number");
     assert(typeof(options.parallelism) === 'number',
            "Expected parallelism to be a number");
+    assert(options.monitor !== null, 'options.monitor required!');
 
     // Remember options
     this.dependencyTracker = options.dependencyTracker;
     this.queueService = options.queueService;
+    this.monitor = options.monitor;
 
     // Set polling delay and parallelism
     this._pollingDelay  = options.pollingDelay;
@@ -63,8 +69,7 @@ class DependencyResolver {
 
     // Create promise that we're done looping
     this._done = Promise.all(loops).catch((err) => {
-      debug("Error: %s, as JSON: %j", err, err, err.stack);
-      throw err;
+      this.emit('error', err); // This should crash the process
     }).then(() => {
       this._done = null;
     });
@@ -88,9 +93,10 @@ class DependencyResolver {
         try {
           await this.dependencyTracker.resolveTask(m.taskId, m.resolution);
           await m.remove();
+          this.monitor.count('handled-messages-success', 1);
         } catch (err) {
-          debug("[alert-operator] Failed to handle message: %j" +
-                ", with err: %s, as JSON: %j", message, err, err, err.stack);
+          this.monitor.count('handled-messages-error', 1);
+          this.monitor.reportError(err, 'warning');
         }
       }));
 

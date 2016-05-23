@@ -305,12 +305,13 @@ let load = base.loader({
 
   // Create the dependency-resolver process
   'dependency-resolver': {
-    requires: ['cfg', 'queueService', 'dependencyTracker'],
-    setup: ({cfg, queueService, dependencyTracker}) => {
+    requires: ['cfg', 'queueService', 'dependencyTracker', 'monitor'],
+    setup: ({cfg, queueService, dependencyTracker, monitor}) => {
       let resolver = new DependencyResolver({
         queueService, dependencyTracker,
-        pollingDelay:   cfg.app.dependencyResolver.pollingDelay,
-        parallelism:    cfg.app.dependencyResolver.parallelism
+        pollingDelay: cfg.app.dependencyResolver.pollingDelay,
+        parallelism:  cfg.app.dependencyResolver.parallelism,
+        monitor:      monitor.prefix('dependency-resolver'),
       });
       resolver.start();
       return resolver;
