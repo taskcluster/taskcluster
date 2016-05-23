@@ -129,27 +129,10 @@ var makeRequest = function(client, method, url, payload, query) {
  *   baseUrl:         'http://.../v1'   // baseUrl for API requests
  *   exchangePrefix:  'queue/v1/'       // exchangePrefix prefix
  *   retries:         5,                // Maximum number of retries
- *   stats:           function(obj) {}  // Callback for reporting statistics
+ *   monitor:         await Monitor()   // From taskcluster-lib-monitor
  * }
  *
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
- *
- * `options.stats` is an optional function that takes an object with the
- * following properties:
- * ```js
- * {
- *   duration:     0,              // API call time (ms) including all retries
- *   retries:      0,              // Number of retries
- *   method:       'createTask',   // Name of method called
- *   success:      0 || 1,         // Success or error
- *   resolution:   'http-201',     // Status code
- *   target:       'queue',        // Name of target, unknown if not known
- *   baseUrl:      'https://...',  // Server baseUrl
- * }
- * ```
- * The `options.stats` callback is currently only called for `API` calls.
- * **Notice** the `taskcluster-base` module, under `base.stats` contains
- * utilities to facilitate reporting to influxdb.
  */
 exports.createClient = function(reference, name) {
   if (!name || typeof(name) !== 'string') {
@@ -163,9 +146,8 @@ exports.createClient = function(reference, name) {
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
 
-    // Validate options.stats
-    if (this._options.stats && !(this._options.stats instanceof Function)) {
-      throw new Error("options.stats must be a function if specified");
+    if (this._options.stats) {
+      throw new Error("options.stats is now deprecated! Use options.monitor instead.");
     }
 
     if (this._options.randomizationFactor < 0 ||
@@ -286,21 +268,9 @@ exports.createClient = function(reference, name) {
       var attempts = 0;
       var that = this;
 
-      // Build method to record and report statistics
-      var reportStats = null;
-      if (this._options.stats) {
-        var start = Date.now();
-        reportStats = function(success, resolution) {
-          that._options.stats({
-            duration:   Date.now() - start,
-            retries:    attempts - 1,
-            method:     entry.name,
-            success:    success ? 1 : 0,
-            resolution: resolution,
-            target:     name,
-            baseUrl:    that._options.baseUrl
-          });
-        };
+      var monitor = this._options.monitor;
+      if (monitor) {
+        var start = process.hrtime();
       }
 
       // Retry the request, after a delay depending on number of retries
@@ -319,8 +289,10 @@ exports.createClient = function(reference, name) {
             // If request was successful, accept the result
             debug("Success calling: %s, (%s retries)",
                   entry.name, attempts - 1);
-            if (reportStats) {
-              reportStats(true, 'http-' + res.status);
+            if (monitor) {
+              var d = process.hrtime(start);
+              monitor.measure([entry.name, 'success'], d[0] * 1000 + d[1] / 1000000);
+              monitor.count([entry.name, 'success']);
             }
             if(!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
               debug("Empty response from server: call: %s, method: %s",entry.name,entry.method);
@@ -353,8 +325,15 @@ exports.createClient = function(reference, name) {
               err.body = res.body;
               err.code = res.body.code || 'UnknownError';
               err.statusCode = res.status;
-              if (reportStats) {
-                reportStats(false, 'http-' + res.status);
+              if (monitor) {
+                var d = process.hrtime(start);
+
+                var state = 'client-error';
+                if (res.statusCode >= 500) {
+                  state = 'server-error';
+                }
+                monitor.measure([entry.name, state], d[0] * 1000 + d[1] / 1000000);
+                monitor.count([entry.name, state]);
               }
               throw err;
             }
@@ -367,12 +346,10 @@ exports.createClient = function(reference, name) {
             }
             debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
                   entry.name, err, err);
-            if (reportStats) {
-              var errCode = err.code || err.name;
-              if (!errCode || typeof(errCode) !== 'string') {
-                errCode = 'Error';
-              }
-              reportStats(false, errCode);
+            if (monitor) {
+              var d = process.hrtime(start);
+              monitor.measure([entry.name, 'connection-error'], d[0] * 1000 + d[1] / 1000000);
+              monitor.count([entry.name, 'connection-error']);
             }
             throw err;
           });
