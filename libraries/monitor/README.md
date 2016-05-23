@@ -45,6 +45,11 @@ await monitor.flush();
 
 monitor.reportError('Something went wrong!');
 
+// Report error (from catch-block or something like that)
+monitor.reportError(new Error("..."));
+// Report error as a warning
+monitor.reportError(new Error("..."), 'warning');
+
 // Gracefully shut down resource monitoring.
 stopMonitor();
 ```
