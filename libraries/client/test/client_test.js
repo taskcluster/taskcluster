@@ -312,53 +312,43 @@ suite('client requests/responses', function() {
   });
 
   test('Report stats', async () => {
-    let record = null;
+    let monitor = await base.monitor({
+      project: 'tc-client',
+      credentials: {},
+      mock: true,
+    });
     let client = new Fake({
       credentials: {
         clientId:     'tester',
         accessToken:  'secret'
       },
-      stats: function(r) {
-        assert(record === null, "Got two stats records!");
-        record = r;
-      }
+      monitor,
     });
     // Inspect the credentials
     nock('https://fake.taskcluster.net').get('/v1/get-test')
       .reply(200, {})
     await client.get();
-    assert(record.duration > 0, "Error in record.duration");
-    assert(record.retries === 0, "Error in record.retries");
-    assert(record.method === 'get', "Error in record.method");
-    assert(record.success === 1, "Error in record.success");
-    assert(record.resolution === 'http-200', "Error in record.resolution");
-    assert(record.target === 'Unknown', "Error in record.target");
-    assert(record.baseUrl, "Error in record.baseUrl");
+    assert(_.keys(monitor.counts).length > 0);
   });
 
   test('Report stats (unauthorized)', async () => {
-    let record = null;
+    let monitor = await base.monitor({
+      project: 'tc-client',
+      credentials: {},
+      mock: true,
+    });
     let client = new Fake({
       credentials: {
         clientId:     'tester',
         accessToken:  'wrong'
       },
-      stats: function(r) {
-        assert(record === null, "Got two stats records!");
-        record = r;
-      }
+      monitor,
     });
     // Inspect the credentials
     nock('https://fake.taskcluster.net').get('/v1/get-test')
       .reply(401, authFailedError);
     await expectError(client.get(), 'AuthorizationFailed');
-    assert(record.duration > 0, "Error in record.duration");
-    assert(record.retries === 0, "Error in record.retries");
-    assert(record.method === 'get', "Error in record.method");
-    assert(record.success === 0, "Error in record.success");
-    assert(record.resolution === 'http-401', "Error in record.resolution");
-    assert(record.target === 'Unknown', "Error in record.target");
-    assert(record.baseUrl, "Error in record.baseUrl");
+    assert(_.keys(monitor.counts).length > 0);
   });
 
   let assertBewitUrl = function(url, expected) {
