@@ -83,23 +83,13 @@ exchanges.declare({
   CCBuilder:          function(msg, rk, cc) { return cc || []; }
 });
 
-// Create validator to validate schema
-var validator = new base.validator.Validator();
-validator.register({
-  "id":           "http://localhost:1203/test-schema.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "type":         "object"
+exchanges.configure({
+  validator:              (x) => null,
+  connectionString:       connectionString,
+  exchangePrefix:         'taskcluster-client/test/',
 });
 
 // Configure exchanges for testing
-exchanges.configure({
-  validator:              validator,
-  connectionString:       connectionString,
-  exchangePrefix:         'taskcluster-client/test/',
-  drain:                  new base.stats.NullDrain(),
-  component:              'taskcluster-client',
-  process:                'mocha'
-});
 
 // Export exchanges
 module.exports = exchanges;
