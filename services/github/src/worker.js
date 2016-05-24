@@ -27,11 +27,19 @@ worker.webHookHandler = async function(message, context) {
   let taskclusterConfig = undefined;
 
   // Try to fetch a .taskcluster.yml file for every request
-  taskclusterConfig = await context.github.repos(
-    message.payload.organization, message.payload.repository
-  ).contents('.taskcluster.yml').read({
-    ref: message.payload.details['event.base.repo.branch'],
-  });
+  try {
+    taskclusterConfig = await context.github.repos(
+      message.payload.organization, message.payload.repository
+    ).contents('.taskcluster.yml').read({
+      ref: message.payload.details['event.head.sha'],
+    });
+  } catch (e) {
+    if (e.status === 404) {
+      debug(`${message.payload.organization}/${message.payload.repository} has no '.taskcluster.yml'. Skipping.`);
+      return;
+    }
+    throw e;
+  }
 
   // Check if this is meant to be built by tc-github at all.
   // This is a bit of a hack, but is needed for bug 1274077 for now
