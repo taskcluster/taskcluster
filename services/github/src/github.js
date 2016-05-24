@@ -27,19 +27,33 @@ github.compareSignatures = function (sOne, sTwo) {
 /**
  * Update the status of some commit with Task Status info:
  * https://developer.github.com/v3/repos/statuses/
- * Returns a promise.
  **/
-github.updateStatus = function (api, user, repo, sha, params) {
-  return api.repos(user, repo).statuses(sha).create(params);
+github.updateStatus = async function (api, user, repo, sha, params) {
+  try {
+    await api.repos(user, repo).statuses(sha).create(params);
+  } catch (e) {
+    if (e.status === 404) {
+      debug(`Could not post status to ${user}/${repo}@${sha}`);
+      return;
+    }
+    throw e;
+  }
 };
 
 /**
  * Comment on some commit:
  * https://developer.github.com/v3/repos/comments/#create-a-commit-comment
- * Returns a promise.
  **/
-github.addCommitComment = function (api, user, repo, sha, body) {
-  return api.repos(user, repo).commits(sha).comments.create({body});
+github.addCommitComment = async function (api, user, repo, sha, body) {
+  try {
+    await api.repos(user, repo).commits(sha).comments.create({body});
+  } catch (e) {
+    if (e.status === 404) {
+      debug(`Could add comment to to ${user}/${repo}@${sha}`);
+      return;
+    }
+    throw e;
+  }
 };
 
 /**
