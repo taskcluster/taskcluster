@@ -229,5 +229,8 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 			return err
 		}
 	}
+	if c.IdleShutdownTimeoutSecs == 0 {
+		c.IdleShutdownTimeoutSecs = 3600
+	}
 	return nil
 }

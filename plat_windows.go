@@ -21,6 +21,14 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+func immediateShutdown() {
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func exceptionOrFailure(errCommand error) *CommandExecutionError {
 	switch errCommand.(type) {
 	case *exec.ExitError:

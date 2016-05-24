@@ -36,6 +36,7 @@ type (
 		WorkerType                 string `json:"workerType"`
 		UsersDir                   string `json:"usersDir"`
 		CleanUpTaskDirs            bool   `json:"cleanUpTaskDirs"`
+		IdleShutdownTimeoutSecs    int    `json:"idleShutdownTimeoutSecs"`
 	}
 
 	// Used for modelling the xml we get back from Azure

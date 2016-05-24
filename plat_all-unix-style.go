@@ -24,6 +24,14 @@ func exceptionOrFailure(errCommand error) *CommandExecutionError {
 	return WorkerShutdown(errCommand)
 }
 
+func immediateShutdown() {
+	cmd := exec.Command("shutdown", "now")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func startup() error {
 	log.Printf("Detected %s platform", runtime.GOOS)
 	return nil

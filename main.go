@@ -171,6 +171,11 @@ and reports back results to the queue.
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
+          idleShutdownTimeoutSecs           How many seconds to wait without getting a new
+                                            task to perform, before shutting down the computer.
+                                            An integer, >= 0. A value of 0 means "do not shut
+                                            the computer down" - i.e. continue running
+                                            indefinitely.
 
     Here is an syntactically valid example configuration file:
 
@@ -218,8 +223,6 @@ func main() {
 			os.Exit(64)
 		}
 		runWorker()
-		// this returns immediately, as you can runworker in background, so
-		// let's wait for a never-arriving message, to avoid exiting program
 		forever := make(chan bool)
 		<-forever
 	case arguments["install"]:
@@ -254,6 +257,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		RefreshUrlsPrematurelySecs: 310,
 		UsersDir:                   "C:\\Users",
 		CleanUpTaskDirs:            true,
+		IdleShutdownTimeoutSecs:    0,
 	}
 	// try to open config file...
 	configFile, err := os.Open(filename)
@@ -333,14 +337,23 @@ func runWorker() chan<- bool {
 		taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
 
 		// loop forever claiming and running tasks!
+		lastActive := time.Now()
 		for {
 			// make sure at least 1 second passes between iterations
 			waitASec := time.NewTimer(time.Second * 1)
 			taskFound := FindAndRunTask()
 			if !taskFound {
-				log.Println("No task claimed from any Azure queue...")
+				log.Println("No task claimed...")
+				if config.IdleShutdownTimeoutSecs > 0 {
+					idleTime := time.Now().Sub(lastActive)
+					if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
+						immediateShutdown()
+						break
+					}
+				}
 			} else {
 				taskCleanup()
+				lastActive = time.Now()
 			}
 			// To avoid hammering queue, make sure there is at least a second
 			// between consecutive requests. Note we do this even if a task ran,
