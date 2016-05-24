@@ -1,5 +1,8 @@
 <powershell>
 
+# capture env
+Get-ChildItem Env: | Out-File "c:\install_env.txt"
+
 # needed for making http requests
 $client = New-Object system.net.WebClient
 $shell = new-object -com shell.application
@@ -63,8 +66,15 @@ $client.DownloadFile("https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/
 # run mozilla-build installer in silent (/S) mode
 Start-Process "C:\MozillaBuildSetup.exe" -ArgumentList "/S" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild_install.log" -RedirectStandardError "C:\MozillaBuild_install.err"
 
+# Create C:\builds and give full access to all users (for hg-shared, tooltool_cache, etc)
+md "C:\builds"
+$acl = Get-Acl -Path "C:\builds"
+$ace = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","Full","ContainerInherit,ObjectInherit","None","Allow")
+$acl.AddAccessRule($ace)
+Set-Acl "C:\builds" $acl
+
 # download tooltool
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\builds\tooltool.py")
 
 # download generic-worker
 md C:\generic-worker
@@ -80,7 +90,13 @@ $env:DEBUG = "*"
 Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # initial clone of mozilla-central
-Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
+# Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
+
+# https://bugzil.la/1274844 download BinScope
+$client.DownloadFile("https://download.microsoft.com/download/2/6/A/26AAA1DE-D060-4246-93B5-7D7C877E4F8F/BinScopeSetup.msi", "C:\BinScopeSetup.msi")
+
+# install BinScope
+Start-Process "msiexec" -ArgumentList "/i C:\BinScopeSetup.msi /quiet" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\binscope-install.log" -RedirectStandardError "C:\binscope-install.err"
 
 # open up firewall for livelog (both PUT and GET interfaces)
 New-NetFirewallRule -DisplayName "Allow livelog PUT requests" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
@@ -91,8 +107,8 @@ md "C:\gopath"
 Expand-ZIPFile -File "C:\go1.6.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.6.windows-amd64.zip"
 
 # install PSTools
-md "C:\PSTools"
-Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
+# md "C:\PSTools"
+# Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
 
 # install git
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
@@ -102,6 +118,9 @@ Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassTh
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
 [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd", "Machine")
 [Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "User")
+
+# upgrade python libraries
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.1 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
 
 # set env vars for the currently running process
 $env:GOROOT = "C:\go"
@@ -138,9 +157,6 @@ $client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/ma
 
 # run bash setup script
 Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setup.sh; ./setup.sh'" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\Administrator_cygwin_setup.log" -RedirectStandardError "C:\Administrator_cygwin_setup.err"
-
-# upgrade python libraries
-Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.1 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
 
 # now shutdown, in preparation for creating an image
 Stop-Computer
