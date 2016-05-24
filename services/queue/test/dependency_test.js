@@ -51,6 +51,17 @@ suite('task.dependencies', function() {
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
 
+    debug('### listTaskDependents');
+    {
+      let d1 = await helper.queue.listDependentTasks(taskIdA);
+      assume(d1.taskId).equals(taskIdA);
+      assume(d1.tasks).has.length(1);
+      assume(d1.tasks[0].status.taskId).equals(taskIdB);
+      let d2 = await helper.queue.listDependentTasks(taskIdB);
+      assume(d2.taskId).equals(taskIdB);
+      assume(d2.tasks).has.length(0);
+    }
+
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup:    'my-worker-group',
@@ -68,6 +79,17 @@ suite('task.dependencies', function() {
       workerId:       'my-worker'
     });
     await helper.queue.reportCompleted(taskIdB, 0);
+
+    debug('### listTaskDependents');
+    {
+      let d1 = await helper.queue.listDependentTasks(taskIdA);
+      assume(d1.taskId).equals(taskIdA);
+      assume(d1.tasks).has.length(1);
+      assume(d1.tasks[0].status.taskId).equals(taskIdB);
+      let d2 = await helper.queue.listDependentTasks(taskIdB);
+      assume(d2.taskId).equals(taskIdB);
+      assume(d2.tasks).has.length(0);
+    }
   });
 
   test('taskA <- taskB, taskC, taskD, taskE', async () => {
@@ -104,12 +126,28 @@ suite('task.dependencies', function() {
       ),
     ]);
 
-    debug('### Create taskA, taskB, taskC, taskD, taskE');
+    debug('### Create taskA');
     await helper.queue.createTask(taskIdA, taskA);
+
+    debug('### listTaskDependents');
+    let d1 = await helper.queue.listDependentTasks(taskIdA);
+    assume(d1.taskId).equals(taskIdA);
+    assume(d1.tasks).has.length(0);
+
+    debug('### Create taskB, taskC, taskD, taskE')
     await helper.queue.createTask(taskIdB, taskB);
     await helper.queue.createTask(taskIdC, taskC);
     await helper.queue.createTask(taskIdD, taskD);
     await helper.queue.createTask(taskIdE, taskE);
+
+    debug('### listTaskDependents');
+    let d2 = await helper.queue.listDependentTasks(taskIdA);
+    assume(d2.taskId).equals(taskIdA);
+    assume(d2.tasks).has.length(4);
+    assume(d2.tasks.map(t => t.status.taskId)).contains(taskIdB);
+    assume(d2.tasks.map(t => t.status.taskId)).contains(taskIdC);
+    assume(d2.tasks.map(t => t.status.taskId)).contains(taskIdD);
+    assume(d2.tasks.map(t => t.status.taskId)).contains(taskIdE);
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
@@ -125,6 +163,22 @@ suite('task.dependencies', function() {
       helper.events.waitFor('d-pending'),
       helper.events.waitFor('e-pending'),
     ]);
+
+    debug('### listTaskDependents, limit = 2');
+    let d3 = await helper.queue.listDependentTasks(taskIdA, {limit: 2});
+    assume(d3.tasks).has.length(2);
+    assume(d3).ownProperty('continuationToken');
+    let d4 = await helper.queue.listDependentTasks(taskIdA, {
+      limit: 2,
+      continuationToken: d3.continuationToken,
+    });
+    assume(d4.tasks).has.length(2);
+    assume(d4).not.has.ownProperty('continuationToken');
+    let tids = _.flatten([d3.tasks, d4.tasks]).map(t => t.status.taskId);
+    assume(tids).contains(taskIdB);
+    assume(tids).contains(taskIdC);
+    assume(tids).contains(taskIdD);
+    assume(tids).contains(taskIdE);
   });
 
   test('taskA, taskB <- taskC && taskA <- taskD', async () => {

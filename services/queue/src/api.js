@@ -102,22 +102,23 @@ var api = new base.API({
     InputError:       400,  // Any hand coded validation errors
   },
   context: [
-    'Task',
-    'Artifact',
-    'TaskGroup',
-    'taskGroupExpiresExtension',
-    'TaskGroupMember',
-    'publicBucket',
-    'privateBucket',
-    'blobStore',
-    'publisher',
-    'validator',
-    'claimTimeout',
-    'queueService',
-    'regionResolver',
-    'publicProxies',
-    'credentials',
-    'dependencyTracker',
+    'Task',             // data.Task instance
+    'Artifact',         // data.Artifact instance
+    'TaskGroup',        // data.TaskGroup instance
+    'taskGroupExpiresExtension', // Time delay before expiring a task-group
+    'TaskGroupMember',  // data.TaskGroupMember instance
+    'TaskDependency',   // data.TaskDependency instance
+    'publicBucket',     // bucket instance for public artifacts
+    'privateBucket',    // bucket instance for private artifacts
+    'blobStore',        // BlobStore for azure artifacts
+    'publisher',        // publisher from base.Exchanges
+    'validator',        // base.validator
+    'claimTimeout',     // Number of seconds before a claim expires
+    'queueService',     // Azure QueueService object from queueservice.js
+    'regionResolver',   // Instance of EC2RegionResolver,
+    'publicProxies',    // Mapping from EC2 region to host for publicBucket
+    'credentials',      // TC credentials for issuing temp creds on claim
+    'dependencyTracker',// Instance of DependencyTracker
   ],
 });
 
@@ -214,15 +215,15 @@ api.declare({
     "List tasks sharing the same `taskGroupId`.",
     "",
     "As a task-group may contain an unbounded number of tasks, this end-point",
-    "may return a `continuationToken`. To continue listing tasks you must",
-    "`listTaskGroup` again with the `continuationToken` as the query-string",
-    "option `continuationToken`.",
+    "may return a `continuationToken`. To continue listing tasks you must call",
+    "the `listTaskGroup` again with the `continuationToken` as the",
+    "query-string option `continuationToken`.",
     "",
     "By default this end-point will try to return up to 1000 members in one",
     "request. But it **may return less**, even if more tasks are available.",
     "It may also return a `continuationToken` even though there are no more",
     "results. However, you can only be sure to have seen all results if you",
-    "keep calling `listTaskGroup` with the last `continationToken` until you",
+    "keep calling `listTaskGroup` with the last `continuationToken` until you",
     "get a result without a `continuationToken`.",
     "",
     "If you're not interested in listing all the members at once, you may",
@@ -280,6 +281,88 @@ api.declare({
 
   return res.reply(result);
 });
+
+
+
+
+/** List tasks dependents */
+api.declare({
+  method:     'get',
+  route:      '/task/:taskId/dependents',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name:       'listDependentTasks',
+  stability:  base.API.stability.stable,
+  output:     'list-dependent-tasks-response.json#',
+  title:      "List Dependent Tasks",
+  description: [
+    "List tasks that depend on the given `taskId`.",
+    "",
+    "As many tasks from different task-groups may dependent on a single tasks,",
+    "this end-point may return a `continuationToken`. To continue listing",
+    "tasks you must call `listDependentTasks` again with the",
+    "`continuationToken` as the query-string option `continuationToken`.",
+    "",
+    "By default this end-point will try to return up to 1000 tasks in one",
+    "request. But it **may return less**, even if more tasks are available.",
+    "It may also return a `continuationToken` even though there are no more",
+    "results. However, you can only be sure to have seen all results if you",
+    "keep calling `listDependentTasks` with the last `continuationToken` until",
+    "you get a result without a `continuationToken`.",
+    "",
+    "If you're not interested in listing all the tasks at once, you may",
+    "use the query-string option `limit` to return fewer.",
+  ].join('\n')
+}, async function(req, res) {
+  let taskId        = req.params.taskId;
+  let continuation  = req.query.continuationToken || null;
+  let limit         = parseInt(req.query.limit || 1000);
+
+  // Find task and list dependents
+  let [
+    task,
+    dependents,
+  ] = await Promise.all([
+    this.Task.load({taskId}, true),
+    this.TaskDependency.query({
+      taskId,
+      expires: base.Entity.op.greaterThanOrEqual(new Date()),
+    }, {continuation, limit}),
+  ]);
+
+  // Check if task exists
+  if (!task) {
+    return res.reportError(
+      'ResourceNotFound',
+      "Task with taskId: {{taskId}} was not found",
+      {taskId}
+    );
+  }
+
+  // Load tasks
+  let tasks = (await Promise.all(dependents.entries.map(dependent => {
+    return this.Task.load({taskId: dependent.dependentTaskId}, true);
+  }))).filter(task => task != null);
+
+  // Build result
+  let result = {
+    taskId,
+    tasks: await Promise.all(tasks.map(async (task) => {
+      return {
+        status: task.status(),
+        task:   await task.definition(),
+      };
+    })),
+  };
+  if (dependents.continuation) {
+    result.continuationToken = dependents.continuation;
+  }
+
+  return res.reply(result);
+});
+
 
 
 /** Construct default values and validate dates */
