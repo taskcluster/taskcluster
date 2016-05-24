@@ -31,7 +31,7 @@ function getPullRequestDetails (eventData) {
 };
 
 function getPushDetails (eventData) {
-  let ref = eventData.ref || eventData.head_commit.ref;
+  let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
   // to get a branch name
   let branch = ref.split('/')[2];
@@ -39,9 +39,9 @@ function getPushDetails (eventData) {
     'event.type': 'push',
     'event.base.repo.branch': branch,
     'event.head.repo.branch': branch,
-    'event.head.user.login': eventData.head_commit.author.username,
+    'event.head.user.login': eventData.sender.login,
     'event.head.repo.url': eventData.repository.clone_url,
-    'event.head.sha': eventData.head_commit.id,
+    'event.head.sha': eventData.after,
     'event.head.ref': ref,
   };
 };
