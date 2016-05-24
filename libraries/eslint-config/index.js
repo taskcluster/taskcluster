@@ -23,7 +23,7 @@ module.exports = {
     "quote-props": [2, "as-needed"],
     "keyword-spacing": [2, {"before": true, "after": true, "overrides": {}}],
     "space-before-blocks": 2,
-    "space-before-function-paren": [2, "always"],
+    "space-before-function-paren": [2, "never"],
     "object-curly-spacing": [2, "never"],
     "array-bracket-spacing": [2, "never"],
     "computed-property-spacing": [2, "never"],
