@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 19 May 2016 at 20:29:00 UTC. The code was generated
+// Tue, 24 May 2016 at 02:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -102,15 +102,15 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.Call
 // List tasks sharing the same `taskGroupId`.
 //
 // As a task-group may contain an unbounded number of tasks, this end-point
-// may return a `continuationToken`. To continue listing tasks you must
-// `listTaskGroup` again with the `continuationToken` as the query-string
-// option `continuationToken`.
+// may return a `continuationToken`. To continue listing tasks you must call
+// the `listTaskGroup` again with the `continuationToken` as the
+// query-string option `continuationToken`.
 //
 // By default this end-point will try to return up to 1000 members in one
 // request. But it **may return less**, even if more tasks are available.
 // It may also return a `continuationToken` even though there are no more
 // results. However, you can only be sure to have seen all results if you
-// keep calling `listTaskGroup` with the last `continationToken` until you
+// keep calling `listTaskGroup` with the last `continuationToken` until you
 // get a result without a `continuationToken`.
 //
 // If you're not interested in listing all the members at once, you may
@@ -124,6 +124,33 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
 	return responseObject.(*ListTaskGroupResponse), callSummary, err
+}
+
+// List tasks that depend on the given `taskId`.
+//
+// As many tasks from different task-groups may dependent on a single tasks,
+// this end-point may return a `continuationToken`. To continue listing
+// tasks you must call `listDependentTasks` again with the
+// `continuationToken` as the query-string option `continuationToken`.
+//
+// By default this end-point will try to return up to 1000 tasks in one
+// request. But it **may return less**, even if more tasks are available.
+// It may also return a `continuationToken` even though there are no more
+// results. However, you can only be sure to have seen all results if you
+// keep calling `listDependentTasks` with the last `continuationToken` until
+// you get a result without a `continuationToken`.
+//
+// If you're not interested in listing all the tasks at once, you may
+// use the query-string option `limit` to return fewer.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs/#listDependentTasks
+func (myQueue *Queue) ListDependentTasks(taskId, continuationToken, limit string) (*ListDependentTasksResponse, *tcclient.CallSummary, error) {
+	v := url.Values{}
+	v.Add("continuationToken", continuationToken)
+	v.Add("limit", limit)
+	cd := tcclient.ConnectionData(*myQueue)
+	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/dependents", new(ListDependentTasksResponse), v)
+	return responseObject.(*ListDependentTasksResponse), callSummary, err
 }
 
 // Create a new task, this is an **idempotent** operation, so repeat it if
