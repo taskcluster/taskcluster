@@ -6,6 +6,7 @@ let _             = require('lodash');
 let base          = require('taskcluster-base');
 let data          = require('./data');
 let QueueService  = require('./queueservice');
+let events        = require('events');
 
 /** State that are considered resolved */
 const RESOLVED_STATES = [
@@ -24,7 +25,7 @@ const RESOLVED_STATES = [
  * Notice, that the task may not exists. Or the task may have different
  * `deadline`, we shall only handle task if the `deadline` match.
  */
-class DeadlineResolver {
+class DeadlineResolver extends events.EventEmitter {
   /**
    * Create DeadlineResolver instance.
    *
@@ -40,6 +41,8 @@ class DeadlineResolver {
    * }
    */
   constructor(options) {
+    super();
+
     assert(options, "options must be given");
     assert(options.Task.prototype instanceof data.Task,
            "Expected data.Task instance");
@@ -78,8 +81,7 @@ class DeadlineResolver {
     }
     // Create promise that we're done looping
     this.done = Promise.all(loops).catch((err) => {
-      debug("Error: %s, as JSON: %j", err, err, err.stack);
-      throw err;
+      this.emit('error', err); // This should crash the process
     }).then(() => {
       this.done = null;
     });
