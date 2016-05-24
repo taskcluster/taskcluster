@@ -6,6 +6,7 @@ let _             = require('lodash');
 let base          = require('taskcluster-base');
 let data          = require('./data');
 let QueueService  = require('./queueservice');
+let events        = require('events');
 
 /** State that are considered resolved */
 const RESOLVED_STATES = [
@@ -27,7 +28,7 @@ const RESOLVED_STATES = [
  * ignored as it implies a failed request (which wasn't retried) or a run
  * that was reclaimed.
  */
-class ClaimResolver {
+class ClaimResolver extends events.EventEmitter {
   /**
    * Create ClaimResolver instance.
    *
@@ -43,6 +44,8 @@ class ClaimResolver {
    * }
    */
   constructor(options) {
+    super();
+
     assert(options, "options must be given");
     assert(options.Task.prototype instanceof data.Task,
            "Expected data.Task instance");
@@ -81,8 +84,7 @@ class ClaimResolver {
     }
     // Create promise that we're done looping
     this.done = Promise.all(loops).catch((err) => {
-      debug("Error: %s, as JSON: %j", err, err, err.stack);
-      throw err;
+      this.emit('error', err); // This should crash the process
     }).then(() => {
       this.done = null;
     });
