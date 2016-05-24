@@ -1,0 +1,43 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "List Dependent Tasks Response"
+description: |
+  Response from a `listDependentTasks` request.
+type:               object
+properties:
+  taskId:
+    title:          "Task Identifier"
+    description: |
+      Identifier for the task whose dependents are being listed.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+  tasks:
+    type:           array
+    title:          "Tasks that depends on `taskId`"
+    description: |
+      List of tasks that have `taskId` in the `task.dependencies` property.
+    items:
+      type:         object
+      title:        "Task definition and status"
+      description: |
+        Task Definition and task status structure.
+      properties:
+        task:   {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
+        status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+      additionalProperties: false
+      required:
+        - task
+        - status
+  continuationToken:
+    type:             string
+    title:            "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of dependent tasks.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listDependentTasks` with
+      `continuationToken` until you get a result without a `continuationToken`.
+required:
+ - taskId
+ - tasks
