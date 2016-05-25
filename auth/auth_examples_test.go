@@ -17,14 +17,14 @@ func Example_scopes() {
 	// credentials for API calls that require them.
 	myAuth := auth.New(
 		&tcclient.Credentials{
-			ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 	)
 
 	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
-	resp, _, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
+	resp, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
 
 	// Handle any errors...
 	if err != nil {
@@ -57,7 +57,7 @@ func Example_updateClient() {
 	myAuth.BaseURL = "http://localhost:60024/v1"
 
 	// Update client id "b2g-power-tests" with new description and expiry...
-	client, cs, err := myAuth.UpdateClient(
+	client, err := myAuth.UpdateClient(
 		"b2g-power-tests",
 		&auth.CreateClientRequest{
 			Description: "Grant access to download artifacts for `flame-kk-eng`",
@@ -80,7 +80,4 @@ func Example_updateClient() {
 	fmt.Printf("Last Date Used:   %v\n", client.LastDateUsed)
 	fmt.Printf("Last Modified:    %v\n", client.LastModified)
 	fmt.Printf("Last Rotated:     %v\n", client.LastRotated)
-
-	// if we want, we can also show the raw json that was returned...
-	fmt.Println(cs.HttpResponseBody)
 }
