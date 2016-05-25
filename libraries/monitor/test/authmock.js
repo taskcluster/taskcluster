@@ -12,7 +12,7 @@ exports.setup = () => {
   nock('https://auth.taskcluster.net')
     .persist()
     .get(/v1\/sentry\/tc-lib-monitor\/dsn/)
-    .reply(200, function (uri) {
+    .reply(200, function(uri) {
       debug('Responding to request for:', uri);
       return {
         project: 'tc-lib-monitor',
@@ -24,7 +24,7 @@ exports.setup = () => {
       };
     })
     .get(/v1\/statsum\/tc-lib-monitor\/token/)
-    .reply(200, function (uri) {
+    .reply(200, function(uri) {
       debug('Responding to request for:', uri);
       return {
         project: 'tc-lib-monitor',

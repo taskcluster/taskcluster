@@ -36,7 +36,7 @@ suite('Sentry', () => {
         done();
       });
 
-    setTimeout(function () {
+    setTimeout(function() {
       sentryScope.done();
     }, 2000);
 

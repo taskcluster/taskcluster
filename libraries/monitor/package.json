@@ -35,7 +35,7 @@
     "nock": "^8.0.0",
     "source-map-support": "^0.4.0",
     "taskcluster-lib-testing": "^1.0.0",
-    "eslint-config-taskcluster": "^1.0.0",
+    "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.0"
   },
   "main": "./lib/monitor.js"
