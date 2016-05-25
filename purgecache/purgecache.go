@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 24 May 2016 at 20:28:00 UTC. The code was generated
+// Wed, 25 May 2016 at 08:09:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -84,7 +84,7 @@ func New(credentials *tcclient.Credentials) *PurgeCache {
 // Required scopes:
 //   * purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs/#purgeCache
+// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
@@ -97,7 +97,7 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 //
 // **Warning** this api end-point is **not stable**.
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs/#ping
+// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#ping
 func (purgeCache *PurgeCache) Ping() (*tcclient.CallSummary, error) {
 	cd := tcclient.ConnectionData(*purgeCache)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
