@@ -20,6 +20,7 @@ type (
 		//   * "labeled"
 		//   * "unlabeled"
 		//   * "opened"
+		//   * "edited"
 		//   * "closed"
 		//   * "reopened"
 		//   * "synchronize"
