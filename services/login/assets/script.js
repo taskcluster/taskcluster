@@ -13,10 +13,6 @@ $(function() {
     }
   });
 
-  $('#ldap-modal').on('shown.bs.modal', function() {
-    $('#ldap-modal input[name="username"]').focus();
-  });
-
   $('#manual-form').submit(function(e) {
     e.preventDefault();
     showCredentials({
