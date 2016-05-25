@@ -12,7 +12,7 @@ let usage = require('usage');
  * Given an express api method, this will time it
  * and report via the monitor.
  */
-export function expressMiddleware (monitor, name) {
+export function expressMiddleware(monitor, name) {
   return (req, res, next) => {
     let sent = false;
     let start = process.hrtime();
@@ -53,7 +53,7 @@ export function expressMiddleware (monitor, name) {
  * single message, this will time it and
  * report via the monitor.
  */
-export function timedHandler (monitor, name, handler) {
+export function timedHandler(monitor, name, handler) {
   return async (message) => {
     let start = process.hrtime();
     let success = 'success';
@@ -80,7 +80,7 @@ export function timedHandler (monitor, name, handler) {
  *
  * Returns a function that can be used to stop monitoring.
  */
-export function resources (monitor, proc, seconds) {
+export function resources(monitor, proc, seconds) {
   if (monitor._resourceInterval) {
     clearInterval(monitor._resourceInterval);
   }

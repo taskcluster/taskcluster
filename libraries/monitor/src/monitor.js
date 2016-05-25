@@ -9,7 +9,7 @@ let Statsum = require('statsum');
 
 class Monitor {
 
-  constructor (authClient, sentry, statsumClient, opts) {
+  constructor(authClient, sentry, statsumClient, opts) {
     this._opts = opts;
     this._auth = authClient;
     this._sentry = sentry; // This must be a Promise that resolves to {client, expires}
@@ -17,7 +17,7 @@ class Monitor {
     this._resourceInterval = null;
   }
 
-  async reportError (err, level='error') {
+  async reportError(err, level='error') {
     this._sentry = this._sentry.then(async (sentry) => {
       if (!sentry.expires || Date.parse(sentry.expires) <= Date.now()) {
         let sentryInfo = await this._auth.sentryDSN(this._opts.project);
@@ -36,23 +36,23 @@ class Monitor {
 
   // captureError is an alias for reportError to match up
   // with the raven api better.
-  async captureError (err, level='error') {
+  async captureError(err, level='error') {
     this.reportError(err, level);
   }
 
-  count (key, val) {
+  count(key, val) {
     this._statsum.count(key, val || 1);
   }
 
-  measure (key, val) {
+  measure(key, val) {
     this._statsum.measure(key, val);
   }
 
-  async flush () {
+  async flush() {
     await this._statsum.flush();
   }
 
-  prefix (prefix) {
+  prefix(prefix) {
     let newopts = _.cloneDeep(this._opts);
     return new Monitor(
       this._auth,
@@ -62,25 +62,25 @@ class Monitor {
     );
   }
 
-  timedHandler (name, handler) {
+  timedHandler(name, handler) {
     return utils.timedHandler(this, name, handler);
   }
 
-  expressMiddleware (name) {
+  expressMiddleware(name) {
     return utils.expressMiddleware(this, name);
   }
 
-  resources (process, interval = 10) {
+  resources(process, interval = 10) {
     return utils.resources(this, process, interval);
   }
 
-  stopResourceMonitoring () {
+  stopResourceMonitoring() {
     clearInterval(this._resourceInterval);
   }
 }
 
 class MockMonitor {
-  constructor (opts, counts = {}, measures = {}, errors = []) {
+  constructor(opts, counts = {}, measures = {}, errors = []) {
     this._opts = opts;
     this.counts = counts;
     this.measures = measures;
@@ -88,36 +88,36 @@ class MockMonitor {
     this._resourceInterval = null;
   }
 
-  async reportError (err, level='error') {
+  async reportError(err, level='error') {
     this.errors.push(err);
   }
 
-  async captureError (err, level='error') {
+  async captureError(err, level='error') {
     this.reportError(err, level);
   }
 
-  count (key, val) {
+  count(key, val) {
     let k = this._key(key);
     this.counts[k] = (this.counts[k] || 0) + (val || 1);
   }
 
-  measure (key, val) {
+  measure(key, val) {
     let k = this._key(key);
     assert(typeof val === 'number', 'Measurement value must be a number');
     this.measures[k] = (this.measures[k] || []).concat(val);
   }
 
-  timedHandler (name, handler) {
+  timedHandler(name, handler) {
     return async (message) => { await handler(message); };
   }
 
-  expressMiddleware (name) {
+  expressMiddleware(name) {
     return (req, res, next) => {
       next();
     };
   }
 
-  _key (key) {
+  _key(key) {
     let p = '.';
     if (this._opts.prefix) {
       p = this._opts.prefix + '.';
@@ -125,11 +125,11 @@ class MockMonitor {
     return this._opts.project + p + key;
   }
 
-  async flush () {
+  async flush() {
     // Do nothing.
   }
 
-  prefix (prefix) {
+  prefix(prefix) {
     let newopts = _.cloneDeep(this._opts);
     newopts.prefix = (this._opts.prefix || '')  + '.' + prefix;
     return new MockMonitor(
@@ -140,24 +140,24 @@ class MockMonitor {
     );
   }
 
-  timedHandler (name, handler) {
+  timedHandler(name, handler) {
     return utils.timedHandler(this, name, handler);
   }
 
-  expressMiddleware (name) {
+  expressMiddleware(name) {
     return utils.expressMiddleware(this, name);
   }
 
-  resources (process, interval = 10) {
+  resources(process, interval = 10) {
     return utils.resources(this, process, interval);
   }
 
-  stopResourceMonitoring () {
+  stopResourceMonitoring() {
     clearInterval(this._resourceInterval);
   }
 }
 
-async function monitor (options) {
+async function monitor(options) {
   assert(options.credentials, 'Must provide taskcluster credentials!');
   assert(options.project, 'Must provide a project name!');
   let opts = _.defaults(options, {
