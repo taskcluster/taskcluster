@@ -287,7 +287,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	}
 	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
-	comment += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
+	comment += fmt.Sprintf("// See %v#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
 
 	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
 
