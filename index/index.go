@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 May 2016 at 08:09:00 UTC. The code was generated
+// Wed, 25 May 2016 at 12:15:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -165,10 +165,10 @@ func New(credentials *tcclient.Credentials) *Index {
 // API end-point respond `404`.
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#findTask
-func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *tcclient.CallSummary, error) {
+func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, error) {
 	cd := tcclient.ConnectionData(*myIndex)
-	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
-	return responseObject.(*IndexedTaskResponse), callSummary, err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
+	return responseObject.(*IndexedTaskResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -183,10 +183,10 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, *tcclien
 // services, as that makes little sense.
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#listNamespaces
-func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, *tcclient.CallSummary, error) {
+func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, error) {
 	cd := tcclient.ConnectionData(*myIndex)
-	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
-	return responseObject.(*ListNamespacesResponse), callSummary, err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
+	return responseObject.(*ListNamespacesResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -201,10 +201,10 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 // services, as that makes little sense.
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#listTasks
-func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, *tcclient.CallSummary, error) {
+func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, error) {
 	cd := tcclient.ConnectionData(*myIndex)
-	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
-	return responseObject.(*ListTasksResponse), callSummary, err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
+	return responseObject.(*ListTasksResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -216,10 +216,10 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 //   * index:insert-task:<namespace>
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#insertTask
-func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, *tcclient.CallSummary, error) {
+func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
 	cd := tcclient.ConnectionData(*myIndex)
-	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
-	return responseObject.(*IndexedTaskResponse), callSummary, err
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
+	return responseObject.(*IndexedTaskResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -232,10 +232,10 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //   * queue:get-artifact:<name>
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#findArtifactFromTask
-func (myIndex *Index) FindArtifactFromTask(namespace, name string) (*tcclient.CallSummary, error) {
+func (myIndex *Index) FindArtifactFromTask(namespace, name string) error {
 	cd := tcclient.ConnectionData(*myIndex)
-	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
-	return callSummary, err
+	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+	return err
 }
 
 // Returns a signed URL for FindArtifactFromTask, valid for the specified duration.
@@ -256,8 +256,8 @@ func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string, dur
 // **Warning** this api end-point is **not stable**.
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#ping
-func (myIndex *Index) Ping() (*tcclient.CallSummary, error) {
+func (myIndex *Index) Ping() error {
 	cd := tcclient.ConnectionData(*myIndex)
-	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return callSummary, err
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
