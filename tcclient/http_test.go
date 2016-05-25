@@ -18,7 +18,7 @@ func TestExtHeaderPermAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
 		&Credentials{
-			ClientId:         "abc",
+			ClientID:         "abc",
 			AccessToken:      "def",
 			AuthorizedScopes: []string{"a", "b", "c"},
 		},
@@ -34,7 +34,7 @@ func TestExtHeaderPermNilAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
 		&Credentials{
-			ClientId:    "abc",
+			ClientID:    "abc",
 			AccessToken: "def",
 		},
 		"",
@@ -48,7 +48,7 @@ func TestExtHeaderPermNoAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
 		&Credentials{
-			ClientId:         "abc",
+			ClientID:         "abc",
 			AccessToken:      "def",
 			AuthorizedScopes: []string{},
 		},
@@ -64,7 +64,7 @@ func TestExtHeaderTempAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
 		&Credentials{
-			ClientId:         "abc",
+			ClientID:         "abc",
 			AccessToken:      "def",
 			AuthorizedScopes: []string{"a", "b", "c"},
 		},
@@ -78,7 +78,7 @@ func TestExtHeaderTempNilAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
 		&Credentials{
-			ClientId:    "abc",
+			ClientID:    "abc",
 			AccessToken: "def",
 		},
 	)
@@ -91,7 +91,7 @@ func TestExtHeaderTempNoAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
 		&Credentials{
-			ClientId:         "abc",
+			ClientID:         "abc",
 			AccessToken:      "def",
 			AuthorizedScopes: []string{},
 		},

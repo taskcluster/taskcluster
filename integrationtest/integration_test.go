@@ -1,10 +1,9 @@
 package integrationtest
 
 import (
-	"bytes"
 	"encoding/json"
+	"net/url"
 	"os"
-	"regexp"
 	"testing"
 	"time"
 
@@ -25,12 +24,12 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	creds := &tcclient.Credentials{}
 	Index := index.New(creds)
 	Queue := queue.New(creds)
-	itr, _, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
+	itr, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 	taskID := itr.TaskID
-	td, _, err := Queue.Task(taskID)
+	td, err := Queue.Task(taskID)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -56,11 +55,11 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 
 func permaCreds(t *testing.T) *tcclient.Credentials {
 	permaCreds := &tcclient.Credentials{
-		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
-	if permaCreds.ClientId == "" || permaCreds.AccessToken == "" {
+	if permaCreds.ClientID == "" || permaCreds.AccessToken == "" {
 		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
 	return permaCreds
@@ -110,23 +109,21 @@ func TestDefineTask(t *testing.T) {
 		WorkerType:  "win2008-worker",
 	}
 
-	tsr, cs, err := myQueue.DefineTask(taskID, td)
+	cd := tcclient.ConnectionData(*myQueue)
+	resp, cs, err := (&cd).APICall(td, "POST", "/task/"+url.QueryEscape(taskID)+"/define", new(queue.TaskStatusResponse), nil)
+	tsr := resp.(*queue.TaskStatusResponse)
 
 	//////////////////////////////////
 	// And now validate results.... //
 	//////////////////////////////////
 
 	if err != nil {
-		b := bytes.Buffer{}
-		cs.HttpRequest.Header.Write(&b)
-		headers := regexp.MustCompile(`(mac|nonce)="[^"]*"`).ReplaceAllString(b.String(), `$1="***********"`)
-		t.Logf("\n\nRequest sent:\n\nURL: %s\nMethod: %s\nHeaders:\n%v\nBody: %s", cs.HttpRequest.URL, cs.HttpRequest.Method, headers, cs.HttpRequestBody)
-		t.Fatalf("\n\nResponse received:\n\n%s", err)
+		t.Fatalf("%s", err)
 	}
 
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskID)
 
-	if provisionerID := cs.HttpRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
+	if provisionerID := cs.HTTPRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
 		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerID)
 	}
 	if schedulerID := tsr.Status.SchedulerID; schedulerID != "go-test-test-scheduler" {
@@ -138,11 +135,11 @@ func TestDefineTask(t *testing.T) {
 	if state := tsr.Status.State; state != "unscheduled" {
 		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
-	submittedPayload := cs.HttpRequestBody
+	submittedPayload := cs.HTTPRequestBody
 
 	// only the contents is relevant below - the formatting and order of properties does not matter
 	// since a json comparison is done, not a string comparison...
-	expectedJson := []byte(`
+	expectedJSON := []byte(`
 	{
 	  "created":  "` + created.UTC().Format("2006-01-02T15:04:05.000Z") + `",
 	  "deadline": "` + deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
@@ -190,9 +187,9 @@ func TestDefineTask(t *testing.T) {
 	}
 	`)
 
-	jsonCorrect, formattedExpected, formattedActual, err := jsontest.JsonEqual(expectedJson, []byte(submittedPayload))
+	jsonCorrect, formattedExpected, formattedActual, err := jsontest.JsonEqual(expectedJSON, []byte(submittedPayload))
 	if err != nil {
-		t.Fatalf("Exception thrown formatting json data!\n%s\n\nStruggled to format either:\n%s\n\nor:\n\n%s", err, string(expectedJson), submittedPayload)
+		t.Fatalf("Exception thrown formatting json data!\n%s\n\nStruggled to format either:\n%s\n\nor:\n\n%s", err, string(expectedJSON), submittedPayload)
 	}
 
 	if !jsonCorrect {
@@ -208,9 +205,8 @@ func TestDefineTask(t *testing.T) {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
 	myQueue = queue.New(tempCreds)
-	_, cs, err = myQueue.CancelTask(taskID)
+	_, err = myQueue.CancelTask(taskID)
 	if err != nil {
-		t.Logf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
-		t.Fatalf("\n\n%s\n", cs.HttpRequest.Header)
+		t.Fatalf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
 	}
 }

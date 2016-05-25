@@ -12,6 +12,7 @@ import (
 //
 ////////////////////////////////////////////////////////////////////////
 
+// Exchange represents the set of AMQP interfaces for a TaskCluster service
 type Exchange struct {
 	Description    string          `json:"description"`
 	Entries        []ExchangeEntry `json:"entries"`
@@ -24,7 +25,7 @@ type Exchange struct {
 }
 
 func (exchange *Exchange) String() string {
-	var result string = fmt.Sprintf(
+	result := fmt.Sprintf(
 		"Version         = '%v'\n"+
 			"Schema          = '%v'\n"+
 			"Title           = '%v'\n"+
@@ -50,6 +51,7 @@ func (exchange *Exchange) setAPIDefinition(apiDef *APIDefinition) {
 	exchange.apiDef = apiDef
 }
 
+// ExchangeEntry represents a single AMQP interface of a TaskCluster service
 type ExchangeEntry struct {
 	Description string         `json:"description"`
 	Exchange    string         `json:"exchange"`
@@ -67,7 +69,7 @@ func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
 }
 
 func (entry *ExchangeEntry) String() string {
-	var result string = fmt.Sprintf(
+	result := fmt.Sprintf(
 		"    Entry Type        = '%v'\n"+
 			"    Entry Exchange    = '%v'\n"+
 			"    Entry Name        = '%v'\n"+
@@ -82,6 +84,7 @@ func (entry *ExchangeEntry) String() string {
 	return result
 }
 
+// RouteElement represents an element of am AMQP routing key
 type RouteElement struct {
 	Constant      string `json:"constant"`
 	MultipleWords bool   `json:"multipleWords"`

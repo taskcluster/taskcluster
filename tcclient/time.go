@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-// Wraps time.Time in order that json serialisation/deserialisation can be adapted.
-// Marshaling time.Time types results in RFC3339 dates with nanosecond precision
-// in the user's timezone. In order that the json date representation is consistent
-// between what we send in json payloads, and what taskcluster services return,
-// we wrap time.Time into type tcclient.Time which marshals instead
-// to the same format used by the TaskCluster services; UTC based, with millisecond
-// precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
+// Time wraps time.Time in order that json serialisation/deserialisation can be
+// adapted. Marshaling time.Time types results in RFC3339 dates with nanosecond
+// precision in the user's timezone. In order that the json date representation
+// is consistent between what we send in json payloads, and what taskcluster
+// services return, we wrap time.Time into type tcclient.Time which marshals
+// instead to the same format used by the TaskCluster services; UTC based, with
+// millisecond precision, using 'Z' timezone, e.g. 2015-10-27T20:36:19.255Z.
 type Time time.Time
 
 // MarshalJSON implements the json.Marshaler interface.

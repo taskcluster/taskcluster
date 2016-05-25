@@ -14,6 +14,7 @@ import (
 //
 //////////////////////////////////////////////////////////////////
 
+// API represents the HTTP interface of a TaskCluster service
 type API struct {
 	BaseURL     string      `json:"baseUrl"`
 	Description string      `json:"description"`
@@ -26,7 +27,7 @@ type API struct {
 }
 
 func (api *API) String() string {
-	var result string = fmt.Sprintf(
+	result := fmt.Sprintf(
 		"Version     = '%v'\n"+
 			"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
@@ -193,6 +194,8 @@ func (api *API) setAPIDefinition(apiDef *APIDefinition) {
 	api.apiDef = apiDef
 }
 
+// APIEntry represents an individual HTTP API call
+// of a TaskCluster service
 type APIEntry struct {
 	Args        []string   `json:"args"`
 	Description string     `json:"description"`
@@ -302,9 +305,9 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 		}
 	}
 
-	responseType := "(*tcclient.CallSummary, error)"
+	responseType := "error"
 	if entry.Output != "" {
-		responseType = "(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + ", *tcclient.CallSummary, error)"
+		responseType = "(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + ", error)"
 	}
 
 	content := comment
@@ -312,11 +315,11 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	content += queryCode
 	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.Output != "" {
-		content += "\tresponseObject, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), " + queryExpr + ")\n"
-		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), callSummary, err\n"
+		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), " + queryExpr + ")\n"
+		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), err\n"
 	} else {
-		content += "\t_, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
-		content += "\treturn callSummary, err\n"
+		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
+		content += "\treturn err\n"
 	}
 	content += "}\n"
 	content += "\n"

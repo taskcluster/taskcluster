@@ -29,6 +29,7 @@ var (
 	downloadedTime time.Time
 )
 
+// SortedAPIDefs is a sorted array of APIDefinitions
 type SortedAPIDefs []APIDefinition
 
 // needed so that SortedAPIDefs can implement sort.Interface
@@ -36,6 +37,9 @@ func (a SortedAPIDefs) Len() int           { return len(a) }
 func (a SortedAPIDefs) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a SortedAPIDefs) Less(i, j int) bool { return a[i].URL < a[j].URL }
 
+// APIModel represents an abstract structured model of an API
+// Currently there are two implementations - HTTP APIs and
+// AMQP APIs.
 type APIModel interface {
 	String() string
 	postPopulate(apiDef *APIDefinition)
@@ -65,11 +69,11 @@ func exitOnFail(err error) {
 	}
 }
 
-func (a *APIDefinition) generateAPICode() string {
-	return a.Data.generateAPICode(a.Name)
+func (apiDef *APIDefinition) generateAPICode() string {
+	return apiDef.Data.generateAPICode(apiDef.Name)
 }
 
-func (apiDef *APIDefinition) loadJson(reader io.Reader) {
+func (apiDef *APIDefinition) loadJSON(reader io.Reader) {
 	b := new(bytes.Buffer)
 	_, err := b.ReadFrom(reader)
 	exitOnFail(err)
@@ -105,10 +109,10 @@ func (apiDef *APIDefinition) loadJson(reader io.Reader) {
 //
 // When LoadAPIs returns, all json schemas and sub schemas should have been
 // read and unmarhsalled into go objects.
-func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
-	resp, err := http.Get(apiManifestUrl)
+func LoadAPIs(apiManifestURL, supplementaryDataFile string) []APIDefinition {
+	resp, err := http.Get(apiManifestURL)
 	if err != nil {
-		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestUrl)
+		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestURL)
 	}
 	exitOnFail(err)
 	supDataReader, err := os.Open(supplementaryDataFile)
@@ -137,7 +141,7 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		} else {
 			fmt.Printf(
 				"\nFATAL: Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...\n\n",
-				apiManifestUrl, i, apiMan[i], supplementaryDataFile)
+				apiManifestURL, i, apiMan[i], supplementaryDataFile)
 			os.Exit(64)
 		}
 	}
@@ -145,7 +149,7 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		if apiDefs[i].Name == "" {
 			fmt.Printf(
 				"\nFATAL: Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...\n\n",
-				apiManifestUrl, apiDefs[i].URL, supplementaryDataFile)
+				apiManifestURL, apiDefs[i].URL, supplementaryDataFile)
 			os.Exit(65)
 		}
 	}
@@ -155,23 +159,23 @@ func LoadAPIs(apiManifestUrl, supplementaryDataFile string) []APIDefinition {
 		resp, err = http.Get(apiDefs[i].URL)
 		exitOnFail(err)
 		defer resp.Body.Close()
-		apiDefs[i].loadJson(resp.Body)
+		apiDefs[i].loadJSON(resp.Body)
 
 		// check that the json schema is valid!
-		validateJson(apiDefs[i].SchemaURL, apiDefs[i].URL)
+		validateJSON(apiDefs[i].SchemaURL, apiDefs[i].URL)
 	}
 	return apiDefs
 }
 
-func validateJson(schemaUrl, docUrl string) {
-	schemaLoader := gojsonschema.NewReferenceLoader(schemaUrl)
-	docLoader := gojsonschema.NewReferenceLoader(docUrl)
+func validateJSON(schemaURL, docURL string) {
+	schemaLoader := gojsonschema.NewReferenceLoader(schemaURL)
+	docLoader := gojsonschema.NewReferenceLoader(docURL)
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	exitOnFail(err)
 	if result.Valid() {
-		fmt.Printf("Document '%v' is valid against '%v'.\n", docUrl, schemaUrl)
+		fmt.Printf("Document '%v' is valid against '%v'.\n", docURL, schemaURL)
 	} else {
-		fmt.Printf("Document '%v' is INVALID against '%v'.\n", docUrl, schemaUrl)
+		fmt.Printf("Document '%v' is INVALID against '%v'.\n", docURL, schemaURL)
 		for _, desc := range result.Errors() {
 			fmt.Println("")
 			fmt.Printf("- %s\n", desc)

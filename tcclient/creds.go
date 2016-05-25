@@ -15,8 +15,9 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
+// Credentials represents the set of credentials required to access protected TaskCluster HTTP APIs.
 type Credentials struct {
-	ClientId    string `json:"clientId"`
+	ClientID    string `json:"clientId"`
 	AccessToken string `json:"accessToken"`
 	// Certificate used only for temporary credentials
 	Certificate string `json:"certificate"`
@@ -34,16 +35,16 @@ type Credentials struct {
 func (creds *Credentials) String() string {
 	return fmt.Sprintf(
 		"ClientId: %q\nAccessToken: %q\nCertificate: %q\nAuthorizedScopes: %q",
-		creds.ClientId,
+		creds.ClientID,
 		text.StarOut(creds.AccessToken),
 		text.StarOut(creds.Certificate),
 		creds.AuthorizedScopes,
 	)
 }
 
-// The entry point into all the functionality in this package is to create a
-// ConnectionData object. It contains authentication credentials, and a service
-// endpoint, which are required for all HTTP operations.
+// ConnectionData is the entry point into all the functionality in this
+// package. It contains authentication credentials, and a service endpoint,
+// which are required for all HTTP operations.
 type ConnectionData struct {
 	Credentials *Credentials
 	// The URL of the API endpoint to hit.
@@ -57,6 +58,8 @@ type ConnectionData struct {
 	Authenticate bool
 }
 
+// Certificate represents the certificate used in Temporary Credentials. See
+// https://docs.taskcluster.net/manual/apis/temporary-credentials
 type Certificate struct {
 	Version   int      `json:"version"`
 	Scopes    []string `json:"scopes"`
@@ -75,7 +78,7 @@ type Certificate struct {
 // temporary credentials, but will not be restricted via the certificate.
 //
 // See http://docs.taskcluster.net/auth/temporary-credentials/
-func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
+func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
 		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")
 	}
@@ -84,7 +87,7 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId stri
 	start := now.Add(time.Minute * -5) // subtract 5 min for clock drift
 	expiry := now.Add(duration)
 
-	if permaCreds.ClientId == "" {
+	if permaCreds.ClientID == "" {
 		return nil, errors.New("Temporary credentials cannot be created from credentials that have an empty ClientId")
 	}
 	if permaCreds.AccessToken == "" {
@@ -103,11 +106,11 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId stri
 		Signature: "", // gets set in updateSignature() method below
 	}
 	// include the issuer iff this is a named credential
-	if tempClientId != "" {
-		cert.Issuer = permaCreds.ClientId
+	if tempClientID != "" {
+		cert.Issuer = permaCreds.ClientID
 	}
 
-	cert.updateSignature(permaCreds.AccessToken, tempClientId)
+	cert.updateSignature(permaCreds.AccessToken, tempClientID)
 
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
@@ -120,13 +123,13 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId stri
 	}
 
 	tempCreds = &Credentials{
-		ClientId:         permaCreds.ClientId,
+		ClientID:         permaCreds.ClientID,
 		AccessToken:      tempAccessToken,
 		Certificate:      string(certBytes),
 		AuthorizedScopes: permaCreds.AuthorizedScopes,
 	}
-	if tempClientId != "" {
-		tempCreds.ClientId = tempClientId
+	if tempClientID != "" {
+		tempCreds.ClientID = tempClientID
 	}
 
 	return
@@ -138,12 +141,12 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 	return permaCreds.CreateNamedTemporaryCredentials("", duration, scopes...)
 }
 
-func (cert *Certificate) updateSignature(accessToken string, tempClientId string) (err error) {
+func (cert *Certificate) updateSignature(accessToken string, tempClientID string) (err error) {
 	lines := []string{"version:" + strconv.Itoa(cert.Version)}
 	// iff this is a named credential, include clientId and issuer
 	if cert.Issuer != "" {
 		lines = append(lines,
-			"clientId:"+tempClientId,
+			"clientId:"+tempClientID,
 			"issuer:"+cert.Issuer,
 		)
 	}
@@ -174,11 +177,11 @@ func generateTemporaryAccessToken(permAccessToken, seed string) (tempAccessToken
 	return
 }
 
-// Attempts to parse the certificate string to return it as an object. If the
-// certificate is an empty string (e.g. in the case of permanent credentials)
-// then a nil pointer is returned for the certificate. If a certificate has
-// been specified but cannot be parsed, an error is returned, and cert is an
-// empty certificate (rather than nil).
+// Cert attempts to parse the certificate string to return it as an object. If
+// the certificate is an empty string (e.g. in the case of permanent
+// credentials) then a nil pointer is returned for the certificate. If a
+// certificate has been specified but cannot be parsed, an error is returned,
+// and cert is an empty certificate (rather than nil).
 func (creds *Credentials) Cert() (cert *Certificate, err error) {
 	if creds.Certificate != "" {
 		cert = new(Certificate)

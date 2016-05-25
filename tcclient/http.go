@@ -20,23 +20,23 @@ import (
 // CallSummary provides information about the underlying http request and
 // response issued for a given API call.
 type CallSummary struct {
-	HttpRequest *http.Request
+	HTTPRequest *http.Request
 	// Keep a copy of request body in addition to the *http.Request, since
 	// accessing the Body via the *http.Request object, you get a io.ReadCloser
 	// - and after the request has been made, the body will have been read, and
 	// the data lost... This way, it is still available after the api call
 	// returns.
-	HttpRequestBody string
+	HTTPRequestBody string
 	// The Go Type which is marshaled into json and used as the http request
 	// body.
-	HttpRequestObject interface{}
-	HttpResponse      *http.Response
+	HTTPRequestObject interface{}
+	HTTPResponse      *http.Response
 	// Keep a copy of response body in addition to the *http.Response, since
 	// accessing the Body via the *http.Response object, you get a
 	// io.ReadCloser - and after the response has been read once (to unmarshal
 	// json into native go types) the data is lost... This way, it is still
 	// available after the api call returns.
-	HttpResponseBody string
+	HTTPResponseBody string
 	// Keep a record of how many http requests were attempted
 	Attempts int
 }
@@ -53,9 +53,13 @@ func setURL(connectionData *ConnectionData, route string, query url.Values) (u *
 	return
 }
 
+// Request is the underlying method that makes a raw API request, without
+// performing any json marshaling/unmarshaling of requests/responses. It is
+// useful if you wish to handle raw payloads and/or raw http response bodies,
+// rather than calling APICall which translates []byte to/from go types.
 func (connectionData *ConnectionData) Request(rawPayload []byte, method, route string, query url.Values) (*CallSummary, error) {
 	callSummary := new(CallSummary)
-	callSummary.HttpRequestBody = string(rawPayload)
+	callSummary.HTTPRequestBody = string(rawPayload)
 
 	httpClient := &http.Client{}
 
@@ -63,7 +67,7 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 	// have exponential backoff in case of intermittent failures (e.g. network
 	// blips or HTTP 5xx errors)
 	httpCall := func() (*http.Response, error, error) {
-		var ioReader io.Reader = nil
+		var ioReader io.Reader
 		ioReader = bytes.NewReader(rawPayload)
 		u, err := setURL(connectionData, route, query)
 		if err != nil {
@@ -74,12 +78,12 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), connectionData.BaseURL, err)
 		}
 		httpRequest.Header.Set("Content-Type", "application/json")
-		callSummary.HttpRequest = httpRequest
+		callSummary.HTTPRequest = httpRequest
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
 		if connectionData.Authenticate {
 			credentials := &hawk.Credentials{
-				ID:   connectionData.Credentials.ClientId,
+				ID:   connectionData.Credentials.ClientID,
 				Key:  connectionData.Credentials.AccessToken,
 				Hash: sha256.New,
 			}
@@ -101,13 +105,13 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 
 	// Make HTTP API calls using an exponential backoff algorithm...
 	var err error
-	callSummary.HttpResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
+	callSummary.HTTPResponse, callSummary.Attempts, err = httpbackoff.Retry(httpCall)
 
 	// read response into memory, so that we can return the body
-	if callSummary.HttpResponse != nil {
-		body, err2 := ioutil.ReadAll(callSummary.HttpResponse.Body)
+	if callSummary.HTTPResponse != nil {
+		body, err2 := ioutil.ReadAll(callSummary.HTTPResponse.Body)
 		if err2 == nil {
-			callSummary.HttpResponseBody = string(body)
+			callSummary.HTTPResponseBody = string(body)
 		}
 	}
 
@@ -124,18 +128,18 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 		rawPayload, err = json.Marshal(payload)
 		if err != nil {
-			return result, &CallSummary{HttpRequestObject: payload}, err
+			return result, &CallSummary{HTTPRequestObject: payload}, err
 		}
 	}
 	callSummary, err := connectionData.Request(rawPayload, method, route, query)
-	callSummary.HttpRequestObject = payload
+	callSummary.HTTPRequestObject = payload
 	if err != nil {
 		return result, callSummary, err
 	}
 	// if result is passed in as nil, it means the API defines no response body
 	// json
 	if reflect.ValueOf(result).IsValid() && !reflect.ValueOf(result).IsNil() {
-		err = json.Unmarshal([]byte(callSummary.HttpResponseBody), &result)
+		err = json.Unmarshal([]byte(callSummary.HTTPResponseBody), &result)
 	}
 
 	return result, callSummary, err
@@ -151,7 +155,7 @@ func (connectionData *ConnectionData) SignedURL(route string, query url.Values, 
 		return
 	}
 	credentials := &hawk.Credentials{
-		ID:   connectionData.Credentials.ClientId,
+		ID:   connectionData.Credentials.ClientID,
 		Key:  connectionData.Credentials.AccessToken,
 		Hash: sha256.New,
 	}
@@ -199,12 +203,12 @@ func getExtHeader(credentials *Credentials) (header string, err error) {
 	if credentials.AuthorizedScopes != nil {
 		ext.AuthorizedScopes = &credentials.AuthorizedScopes
 	}
-	extJson, err := json.Marshal(ext)
+	extJSON, err := json.Marshal(ext)
 	if err != nil {
 		return "", err
 	}
-	if string(extJson) != "{}" {
-		return base64.StdEncoding.EncodeToString(extJson), nil
+	if string(extJSON) != "{}" {
+		return base64.StdEncoding.EncodeToString(extJSON), nil
 	}
 	return "", nil
 }
