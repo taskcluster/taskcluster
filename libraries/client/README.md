@@ -109,7 +109,7 @@ listener.bind(queueEvents.taskCompleted(RawRoutingPattern);
 
 For advanced queue usage the `connect` method can be used to
 create and bind the queue and return an associated
-[amqplib](http://www.squaremobius.net/amqp.node/doc/channel_api.html) channel:
+[amqplib](http://www.squaremobius.net/amqp.node/channel_api.html) channel:
 
 ```js
 var taskcluster = require('taskcluster-client');
@@ -120,7 +120,7 @@ var listener = new taskcluster.PulseListener({
   password:     '...'
 });
 
-// See: http://www.squaremobius.net/amqp.node/doc/channel_api.html
+// See: http://www.squaremobius.net/amqp.node/channel_api.html
 var channel = listener.connect().then(function(channel) {
   return channel.consume(function(msg) {
     channel.ack(msg);
@@ -583,11 +583,25 @@ var listener = new taskcluster.PulseListener({
   maxLength:          0,            // Max allowed queue size
 });
 
+listener.bind({exchange, routingKeyPattern}).then(...);
+                                    // bind to an exchange; note that for
+                                    // TaskCluster components the argument
+                                    // can be created by Client; see above.
 listener.connect().then(...);       // Setup listener and bind queue
 listener.resume().then(...);        // Start getting new messages
 listener.pause().then(...);         // Pause retrieval of new messages
 listener.deleteQueue();             // Delete named queue and disconnect
 listener.close();                   // Disconnect from pulse
+```
+
+To actually receive messages, subscribe to the listener's `message` event:
+
+```js
+listener.on('message', (message) => async {
+  message.exchange
+  message.payload
+  .. etc. (see "Listening for Events", above)
+});
 ```
 
 **Using `PulseConnection`**, instead of giving a `username` and `password` it
