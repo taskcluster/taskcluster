@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 // This function is called in a dedicated go routine to both serve signed urls
@@ -20,7 +19,6 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 	prematurity := config.RefreshUrlsPrematurelySecs
 	// signedURLs is the variable where we store the current valid signed urls
 	var signedURLs *queue.PollTaskUrlsResponse
-	var callSummary *tcclient.CallSummary
 	var err error
 	// updateMe is a channel to send a message to when we need to update signed
 	// urls because either we don't have any yet (i.e. first time) or they are
@@ -31,12 +29,10 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// When a worker wants to poll for pending tasks it must call
 		// `queue.pollTaskUrls(provisionerId, workerType)` which then returns
 		// an array of objects on the form `{signedPollUrl, signedDeleteUrl}`.
-		signedURLs, callSummary, err = Queue.PollTaskUrls(config.ProvisionerId, config.WorkerType)
+		signedURLs, err = Queue.PollTaskUrls(config.ProvisionerId, config.WorkerType)
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
 		if err != nil {
-			log.Println("Http response was:")
-			log.Println(callSummary.HttpResponseBody)
 			panic(err)
 		}
 		// Set reminder to update signed urls again when they are

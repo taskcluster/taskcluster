@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -48,7 +49,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 	reportException := func(task *TaskRun, reason string) error {
 		ter := queue.TaskExceptionRequest{Reason: reason}
-		tsr, _, err := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
+		tsr, err := Queue.ReportException(task.TaskId, strconv.FormatInt(int64(task.RunId), 10), &ter)
 		if err != nil {
 			log.Printf("Not able to report exception for task %v:", task.TaskId)
 			log.Printf("%v", err)
@@ -60,7 +61,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 	}
 
 	reportFailed := func(task *TaskRun) error {
-		tsr, _, err := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+		tsr, err := Queue.ReportFailed(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
 		if err != nil {
 			log.Printf("Not able to report failed completion for task %v:", task.TaskId)
 			log.Printf("%v", err)
@@ -73,7 +74,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 	reportCompleted := func(task *TaskRun) error {
 		log.Println("Command finished successfully!")
-		tsr, _, err := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
+		tsr, err := Queue.ReportCompleted(task.TaskId, strconv.FormatInt(int64(task.RunId), 10))
 		if err != nil {
 			log.Printf("Not able to report successful completion for task %v:", task.TaskId)
 			log.Printf("%v", err)
@@ -92,22 +93,24 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		}
 		// Using the taskId and runId from the <MessageText> tag, the worker
 		// must call queue.claimTask().
-		tcrsp, callSummary, err := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
-		task.ClaimCallSummary = *callSummary
+		tcrsp, err := Queue.ClaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId), &task.TaskClaimRequest)
 		// check if an error occurred...
 		if err != nil {
 			// If the queue.claimTask() operation fails with a 4xx error, the
 			// worker must delete the messages from the Azure queue (except 401).
-			switch {
-			case callSummary.HttpResponse.StatusCode == 401:
-				log.Printf("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskId)
-			case callSummary.HttpResponse.StatusCode/100 == 4:
-				// attempt to delete, but if it fails, log and continue
-				// nothing we can do, and better to return the first 4xx error
-				err := task.deleteFromAzure()
-				if err != nil {
-					log.Printf("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskId, callSummary.HttpResponse.StatusCode)
-					log.Printf("%v", err)
+			switch err := err.(type) {
+			case httpbackoff.BadHttpResponseCode:
+				switch {
+				case err.HttpResponseCode == 401:
+					log.Printf("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskId)
+				case err.HttpResponseCode/100 == 4:
+					// attempt to delete, but if it fails, log and continue
+					// nothing we can do, and better to return the first 4xx error
+					errDelete := task.deleteFromAzure()
+					if errDelete != nil {
+						log.Printf("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskId, err.HttpResponseCode)
+						log.Printf("%v", errDelete)
+					}
 				}
 			}
 			log.Println(task.String())
@@ -122,8 +125,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 	reclaim := func(task *TaskRun) error {
 		log.Printf("Reclaiming task %v...", task.TaskId)
-		tcrsp, callSummary, err := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
-		task.ClaimCallSummary = *callSummary
+		tcrsp, err := Queue.ReclaimTask(task.TaskId, fmt.Sprintf("%d", task.RunId))
 
 		// check if an error occurred...
 		if err != nil {
@@ -132,7 +134,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		}
 
 		task.TaskReclaimResponse = *tcrsp
-		log.Printf("Reclaimed task %v successfully (http response code %v).", task.TaskId, callSummary.HttpResponse.StatusCode)
+		log.Printf("Reclaimed task %v successfully.", task.TaskId)
 		return nil
 	}
 

@@ -20,24 +20,24 @@ import (
 
 func main() {
 	tcCreds := &tcclient.Credentials{
-		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
 	mySecrets := secrets.New(tcCreds)
-	s, _, err := mySecrets.List()
+	s, err := mySecrets.List()
 	if err != nil {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
 	if len(s.Secrets) == 0 {
-		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", tcCreds.ClientId)
+		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", tcCreds.ClientID)
 	}
 	for _, name := range s.Secrets {
 		if strings.HasPrefix(name, "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/") {
 			workerType := name[61:]
 			fmt.Printf("\nWorker type: %v\n", workerType)
 			fmt.Println(strings.Repeat("=", len(workerType)+13))
-			secret, _, err := mySecrets.Get(name)
+			secret, err := mySecrets.Get(name)
 			if err != nil {
 				log.Fatalf("Could not read secret %v: '%v'", name, err)
 			}
