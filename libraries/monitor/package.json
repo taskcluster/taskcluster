@@ -29,7 +29,7 @@
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^2.0.1",
     "babel-eslint": "^6.0.0",
-    "mocha": "2.4.5",
+    "mocha": "2.5.3",
     "mocha-eslint": "^2.0.1",
     "mock-aws-s3": "^2.1.0",
     "nock": "^8.0.0",
