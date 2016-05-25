@@ -40,9 +40,9 @@ func (self *Routes) setHeaders(res http.ResponseWriter) {
 		return
 	}
 	if cert == nil {
-		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
+		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientID))
 	} else {
-		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", fmt.Sprintf("%s", self.Credentials.ClientId))
+		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", fmt.Sprintf("%s", self.Credentials.ClientID))
 		jsonTempScopes, err := json.Marshal(cert.Scopes)
 		if err == nil {
 			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", string(jsonTempScopes))
@@ -108,7 +108,7 @@ func (self *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Reques
 
 	self.lock.Lock()
 	defer self.lock.Unlock()
-	self.Credentials.ClientId = credentials.ClientId
+	self.Credentials.ClientID = credentials.ClientId
 	self.Credentials.AccessToken = credentials.AccessToken
 	self.Credentials.Certificate = credentials.Certificate
 
@@ -172,13 +172,13 @@ func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Map the headers from the proxy back into our proxyResponse
-	for key, _ := range cs.HttpResponse.Header {
-		res.Header().Set(key, cs.HttpResponse.Header.Get(key))
+	for key, _ := range cs.HTTPResponse.Header {
+		res.Header().Set(key, cs.HTTPResponse.Header.Get(key))
 	}
 
 	// Write the proxyResponse headers and status.
-	res.WriteHeader(cs.HttpResponse.StatusCode)
+	res.WriteHeader(cs.HTTPResponse.StatusCode)
 
 	// Proxy the proxyResponse body from the endpoint to our response.
-	res.Write([]byte(cs.HttpResponseBody))
+	res.Write([]byte(cs.HTTPResponseBody))
 }

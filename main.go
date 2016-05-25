@@ -81,7 +81,7 @@ func main() {
 	}
 
 	creds := &tcclient.Credentials{
-		ClientId:    clientId.(string),
+		ClientID:    clientId.(string),
 		AccessToken: accessToken.(string),
 		Certificate: certificate.(string),
 	}
@@ -89,7 +89,7 @@ func main() {
 	myQueue := queue.New(creds)
 
 	// Fetch the task to get the scopes we should be using...
-	task, _, err := myQueue.Task(taskId)
+	task, err := myQueue.Task(taskId)
 	if err != nil {
 		log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
 	}

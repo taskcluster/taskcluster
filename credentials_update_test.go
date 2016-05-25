@@ -53,11 +53,11 @@ func TestCredentialsUpdate(t *testing.T) {
 		t.Fatal("Request error %d: %s", response.Code, string(content))
 	}
 
-	if routes.Credentials.ClientId != newCreds.ClientId {
+	if routes.Credentials.ClientID != newCreds.ClientId {
 		t.Errorf(
 			"ClientId should be \"%s\", but got \"%s\"",
 			newCreds.ClientId,
-			routes.Credentials.ClientId,
+			routes.Credentials.ClientID,
 		)
 	}
 
@@ -101,7 +101,7 @@ func NewRoutesTest(t *testing.T) *RoutesTest {
 			ConnectionData: tcclient.ConnectionData{
 				Authenticate: true,
 				Credentials: &tcclient.Credentials{
-					ClientId:    "clientId",
+					ClientID:    "clientId",
 					AccessToken: "accessToken",
 					Certificate: `{"version":1,"scopes":["scope2"]}`,
 				},
