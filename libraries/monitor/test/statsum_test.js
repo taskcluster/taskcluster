@@ -17,7 +17,7 @@ suite('Statsum', () => {
       .post(/v1\/project\/tc-lib-monitor/, '*')
       .reply(200, 'OK');
 
-    setTimeout(function () {
+    setTimeout(function() {
       statsumScope.done();
     }, 2000);
 
@@ -27,7 +27,7 @@ suite('Statsum', () => {
       patchGlobal: false,
       reportStatsumErrors: false,
     });
-    setTimeout(function () {
+    setTimeout(function() {
       sentryNock.done();
     }, 2000);
   });
