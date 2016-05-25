@@ -153,10 +153,10 @@ log "             https://tools.taskcluster.net/aws-provisioner/#${WORKER_TYPE}/
     echo "AMI:       ${IMAGE_ID}"
 } > "${REGION}.secrets"
 
-log ''
-log "Starting instance ${INSTANCE_ID} back up..."
-if aws --region "${REGION}" ec2 start-instances --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; then
-  log "Done"
-else
-  log "Could not start up instance ${INSTANCE_ID}"
-fi
+# log ''
+# log "Starting instance ${INSTANCE_ID} back up..."
+# if aws --region "${REGION}" ec2 start-instances --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1; then
+#   log "Done"
+# else
+#   log "Could not start up instance ${INSTANCE_ID}"
+# fi
