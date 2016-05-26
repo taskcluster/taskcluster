@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 May 2016 at 12:15:00 UTC. The code was generated
+// Thu, 26 May 2016 at 19:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -171,6 +171,9 @@ func (myQueue *Queue) ListDependentTasks(taskId, continuationToken, limit string
 // `route.<route>`. This is useful if you want another component to listen
 // for completed tasks you have posted.  The caller must have scope
 // `queue:route:<route>` for each route.
+//
+// **Dependencies**, any tasks referenced in `task.dependencies` must have
+// already been created at the time of this call.
 //
 // **Important** Any scopes the task requires are also required for creating
 // the task. Please see the Request Payload (Task Definition) for details.

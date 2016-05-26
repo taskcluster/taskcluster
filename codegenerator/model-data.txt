@@ -1,4 +1,4 @@
-Generated: 1464178503
+Generated: 1464290988
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4642,6 +4642,9 @@ published, the message will be CC'ed with the routing-key:
 `route.<route>`. This is useful if you want another component to listen
 for completed tasks you have posted.  The caller must have scope
 `queue:route:<route>` for each route.
+
+**Dependencies**, any tasks referenced in `task.dependencies` must have
+already been created at the time of this call.
 
 **Important** Any scopes the task requires are also required for creating
 the task. Please see the Request Payload (Task Definition) for details.'
