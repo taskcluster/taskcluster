@@ -142,7 +142,7 @@ let load = loader({
         secureProxy: cfg.server.trustProxy,
         httpOnly: true,
         signed: true,
-        maxAge: 3 * 24 * 60 * 60 * 1000
+        maxAge: 5 * 60 * 1000
       }));
 
       // Set up message flashing
