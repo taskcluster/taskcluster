@@ -43,12 +43,20 @@ monitor.count('bar', 4);
 monitor.count('bar'); // only passing in a key defaults the value to 1
 await monitor.flush();
 
+// Report error as a string, without a stacktrace
 monitor.reportError('Something went wrong!');
-
 // Report error (from catch-block or something like that)
 monitor.reportError(new Error("..."));
 // Report error as a warning
 monitor.reportError(new Error("..."), 'warning');
+// Report error as info
+monitor.reportError(new Error("..."), 'info');
+// Report error as debug
+monitor.reportError(new Error("..."), 'debug');
+// Report an error with tags
+monitor.reportError(new Error("..."), {foo: 'bar'});
+// Report a warningr with tags
+monitor.reportError(new Error("..."), 'warning', {foo: 'bar'});
 
 // Gracefully shut down resource monitoring.
 stopMonitor();
