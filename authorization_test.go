@@ -20,7 +20,7 @@ import (
 
 var (
 	permCredentials = &tcclient.Credentials{
-		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 	}
 )
@@ -41,7 +41,7 @@ func newTestClient() *httpbackoff.Client {
 type IntegrationTest func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder
 
 func skipIfNoPermCreds(t *testing.T) {
-	if permCredentials.ClientId == "" {
+	if permCredentials.ClientID == "" {
 		t.Skip("TASKCLUSTER_CLIENT_ID not set - skipping test")
 	}
 	if permCredentials.AccessToken == "" {
@@ -62,7 +62,7 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		res,
 		map[string]string{
 			"X-Taskcluster-Proxy-Version":       version,
-			"X-Taskcluster-Proxy-Perm-ClientId": permCredentials.ClientId,
+			"X-Taskcluster-Proxy-Perm-ClientId": permCredentials.ClientID,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
 			"X-Taskcluster-Proxy-Temp-ClientId": "",
@@ -199,7 +199,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 				ConnectionData: tcclient.ConnectionData{
 					Authenticate: true,
 					Credentials: &tcclient.Credentials{
-						ClientId:         creds.ClientId,
+						ClientID:         creds.ClientID,
 						AccessToken:      creds.AccessToken,
 						Certificate:      creds.Certificate,
 						AuthorizedScopes: scopes,
@@ -394,7 +394,7 @@ func TestBadCredsReturns500(t *testing.T) {
 		ConnectionData: tcclient.ConnectionData{
 			Authenticate: true,
 			Credentials: &tcclient.Credentials{
-				ClientId:    "abc",
+				ClientID:    "abc",
 				AccessToken: "def",
 				Certificate: "ghi", // baaaad certificate
 			},
