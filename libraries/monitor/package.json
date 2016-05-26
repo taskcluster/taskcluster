@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^2.0.1",
+    "babel-preset-taskcluster": "^2.3.0",
     "babel-eslint": "^6.0.0",
     "mocha": "2.5.3",
     "mocha-eslint": "^2.0.1",
