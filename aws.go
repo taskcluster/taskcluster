@@ -192,9 +192,9 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		Authenticate: false,
 		BaseURL:      userData.ProvisionerBaseUrl,
 	}
-	secToken, _, getErr := awsprov.GetSecret(userData.SecurityToken)
+	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
 	// remove secrets even if we couldn't retrieve them!
-	_, removeErr := awsprov.RemoveSecret(userData.SecurityToken)
+	removeErr := awsprov.RemoveSecret(userData.SecurityToken)
 	if getErr != nil {
 		return err
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/xml"
 	"fmt"
 	"net"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 type ExecCommand interface {
@@ -64,7 +62,6 @@ type (
 		RunId               uint                         `json:"runId"`
 		QueueMessage        QueueMessage                 `json:"-"`
 		SignedURLPair       SignedURLPair                `json:"-"`
-		ClaimCallSummary    tcclient.CallSummary         `json:"-"`
 		TaskClaimRequest    queue.TaskClaimRequest       `json:"-"`
 		TaskClaimResponse   queue.TaskClaimResponse      `json:"-"`
 		TaskReclaimResponse queue.TaskReclaimResponse    `json:"-"`
@@ -129,22 +126,6 @@ func (c *azureTimeFormat) UnmarshalXML(d *xml.Decoder, start xml.StartElement) e
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskId)
 	response += fmt.Sprintf("Run Id:                  %v\n", task.RunId)
-	response += fmt.Sprintf("==========================================\n")
-	response += fmt.Sprintf("Claim URL:               %v\n", task.ClaimCallSummary.HttpRequest.URL.String())
-	response += fmt.Sprintf("Claim Method:            %v\n", task.ClaimCallSummary.HttpRequest.Method)
-	response += fmt.Sprintf("Claim Request Headers:\n")
-	buffer := new(bytes.Buffer)
-	task.ClaimCallSummary.HttpRequest.Header.Write(buffer)
-	response += buffer.String()
-	response += fmt.Sprintf("Claim Request Body:      %v\n", task.ClaimCallSummary.HttpRequestBody)
-	response += fmt.Sprintf("==========================================\n")
-	response += fmt.Sprintf("Claim Response Headers:\n")
-	buffer = new(bytes.Buffer)
-	task.ClaimCallSummary.HttpResponse.Header.Write(buffer)
-	response += buffer.String()
-	response += fmt.Sprintf("Claim Response Body:     %v\n", task.ClaimCallSummary.HttpResponseBody)
-	response += fmt.Sprintf("Claim Response Code:     %v\n", task.ClaimCallSummary.HttpResponse.StatusCode)
-	response += fmt.Sprintf("==========================================\n")
 	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
 	response += fmt.Sprintf("Message Id:              %v\n", task.QueueMessage.MessageId)
 	response += fmt.Sprintf("Insertion Time:          %v\n", task.QueueMessage.InsertionTime)

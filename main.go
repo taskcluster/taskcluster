@@ -322,7 +322,7 @@ func runWorker() chan<- bool {
 		// Queue is the object we will use for accessing queue api
 		Queue = queue.New(
 			&tcclient.Credentials{
-				ClientId:    config.ClientId,
+				ClientID:    config.ClientId,
 				AccessToken: config.AccessToken,
 				Certificate: config.Certificate,
 			},

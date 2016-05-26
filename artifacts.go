@@ -313,7 +313,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		return err
 	}
 	par := queue.PostArtifactRequest(json.RawMessage(payload))
-	parsp, callSummary, err := Queue.CreateArtifact(
+	parsp, err := Queue.CreateArtifact(
 		task.TaskId,
 		strconv.Itoa(int(task.RunId)),
 		artifact.Base().CanonicalPath,
@@ -321,22 +321,9 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	)
 	if err != nil {
 		log.Printf("Could not upload artifact: %v", artifact)
-		log.Printf("%v", callSummary)
 		log.Printf("%v", parsp)
-		log.Println("Request Headers")
-		callSummary.HttpRequest.Header.Write(os.Stdout)
-		log.Println("Request Body")
-		log.Println(callSummary.HttpRequestBody)
-		log.Println("Response Headers")
-		callSummary.HttpResponse.Header.Write(os.Stdout)
-		log.Println("Response Body")
-		log.Println(callSummary.HttpResponseBody)
 		return err
 	}
-	log.Println("Response body RAW")
-	log.Println(callSummary.HttpResponseBody)
-	log.Println("Response body INTERPRETED")
-	log.Println(string(*parsp))
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
 	err = json.Unmarshal(json.RawMessage(*parsp), resp)

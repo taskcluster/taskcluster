@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/streadway/amqp"
+	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/pulse-go/pulse"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -311,7 +313,7 @@ func TestUpload(t *testing.T) {
 	// create dummy task
 	myQueue := queue.New(
 		&tcclient.Credentials{
-			ClientId:    clientId,
+			ClientID:    clientId,
 			AccessToken: accessToken,
 			Certificate: certificate,
 		},
@@ -370,7 +372,7 @@ func TestUpload(t *testing.T) {
 		WorkerType:    workerType,
 	}
 
-	_, _, err := myQueue.CreateTask(taskId, td)
+	_, err := myQueue.CreateTask(taskId, td)
 
 	if err != nil {
 		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", err)
@@ -410,12 +412,20 @@ func TestUpload(t *testing.T) {
 
 	// now check content was uploaded to Amazon, and is correct
 	for artifact, content := range expectedArtifacts {
-		cs, err := myQueue.GetLatestArtifact(taskId, artifact)
+		url, err := myQueue.GetLatestArtifact_SignedURL(taskId, artifact, 10*time.Minute)
 		if err != nil {
 			t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
 		}
-		if cs.HttpResponseBody != content {
-			t.Errorf("Artifact '%s': Was expecting content '%s' but found '%s'", artifact, content, cs.HttpResponseBody)
+		resp, _, err := httpbackoff.Get(url.String())
+		if err != nil {
+			t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
+		}
+		bytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
+		}
+		if string(bytes) != content {
+			t.Errorf("Artifact '%s': Was expecting content '%s' but found '%s'", artifact, content, string(bytes))
 		}
 	}
 }

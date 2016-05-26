@@ -34,7 +34,7 @@ func main() {
 	secretName := "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/" + workerType
 
 	tcCreds := &tcclient.Credentials{
-		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
@@ -106,7 +106,7 @@ func main() {
 		log.Fatalf("Could not convert secret %#v to json: %v", sshSecret, err)
 	}
 
-	_, err = mySecrets.Set(
+	err = mySecrets.Set(
 		secretName,
 		&secrets.Secret{
 			Expires: tcclient.Time(time.Now().AddDate(1, 0, 0)),
@@ -116,7 +116,7 @@ func main() {
 	if err != nil {
 		log.Printf("Problem publishing new secrets: %v", err)
 	}
-	s, _, err := mySecrets.Get(secretName)
+	s, err := mySecrets.Get(secretName)
 	if err != nil {
 		log.Fatalf("Error retrieving secret: %v", err)
 	}
