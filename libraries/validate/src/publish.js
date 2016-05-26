@@ -1,7 +1,7 @@
 let debug = require('debug')('taskcluster-lib-validate');
 let Promise = require('promise');
 
-function publish (s3, bucket, prefix, name, content) {
+function publish(s3, bucket, prefix, name, content) {
   return new Promise((accept, reject) => {
     debug('Publishing schema %s', name);
     content = JSON.stringify(content, undefined, 4);

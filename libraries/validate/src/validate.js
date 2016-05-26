@@ -13,7 +13,7 @@ let publish = require('./publish');
 let render = require('./render');
 let rootdir = require('app-root-dir');
 
-async function validator (options) {
+async function validator(options) {
   let schemas = [];
   let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
 
