@@ -73,4 +73,39 @@ suite('MockMonitor', () => {
       done(e);
     }
   });
+
+  test('montor.timer(k, value)', async () => {
+    let v = monitor.timer('k', 45);
+    assert(v == 45);
+    // Sleep so that the promise handler can be handled before we check that
+    // something was recorded...
+    await new Promise(accept => setTimeout(accept, 10));
+    assert(monitor.measures['mm.k'].length === 1);
+  });
+
+  test('montor.timer(k, () => value)', async () => {
+    let v = monitor.timer('k', () => 45);
+    assert(v == 45);
+    assert(monitor.measures['mm.k'].length === 1);
+  });
+
+  test('montor.timer(k, async () => value)', async () => {
+    let v = await monitor.timer('k', async () => {
+      await new Promise(accept => setTimeout(accept, 100));
+      return 45;
+    });
+    assert(v == 45);
+    assert(monitor.measures['mm.k'].length === 1);
+  });
+
+  test('montor.timer(k, () => {throw new Error()})', async () => {
+    try {
+      monitor.timer('k', () => {throw new Error();});
+    } catch (err) {
+      await new Promise(accept => setTimeout(accept, 10));
+      assert(monitor.measures['mm.k'].length === 1);
+      return;
+    }
+    assert(false);
+  });
 });

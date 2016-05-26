@@ -7,6 +7,7 @@
  */
 let debug = require('debug')('taskcluster-lib-monitor');
 let usage = require('usage');
+let Promise = require('promise');
 
 /**
  * Given an express api method, this will time it
@@ -98,4 +99,23 @@ export function resources(monitor, proc, seconds) {
 
   monitor._resourceInterval = interval;
   return () => clearInterval(interval);
+}
+
+export function timer(monitor, prefix, funcOrPromise) {
+  let start = process.hrtime();
+  let done = () => {
+    let d = process.hrtime(start);
+    monitor.measure(prefix, d[0] * 1000 + d[1] / 1000000);
+  };
+  if (funcOrPromise instanceof Function) {
+    try {
+      funcOrPromise = funcOrPromise();
+    } finally {
+      // If this is a sync function that throws, we let it...
+      // We just remember to call done() afterwards
+      done();
+    }
+  }
+  Promise.resolve(funcOrPromise).then(done, done);
+  return funcOrPromise;
 }
