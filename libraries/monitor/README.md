@@ -98,7 +98,7 @@ assert(task.workerType == '...'); // task is the task definition response
 
 ```
 
-Rejected promises and errors will be allowed bubble up, and the time will
+Rejected promises and errors will bubble up, and the time will
 measured and recoded just like successful functions or promises.
 
 ### Timing Handlers
