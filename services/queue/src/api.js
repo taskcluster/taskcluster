@@ -637,10 +637,8 @@ api.declare({
     task      = await this.Task.load({taskId: taskId});
     let def   = await task.definition();
 
-    // Compare the two task definitions and ensure there is a at-least one run
-    // otherwise the task would have been created with defineTask, and we don't
-    // offer an idempotent operation in that case
-    if (!_.isEqual(taskDef, def) || task.runs.length === 0) {
+    // Compare the two task definitions
+    if (!_.isEqual(taskDef, def)) {
       return res.reportError('RequestConflict', [
         "taskId {{taskId}} already used by another task.",
         "This could be the result of faulty idempotency!",
