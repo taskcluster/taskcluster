@@ -39,6 +39,8 @@ export function expressMiddleware(monitor, name) {
           monitor.measure(k, d[0] * 1000 + d[1] / 1000000);
           monitor.count(k);
         }
+        monitor.measure(['all', success], d[0] * 1000 + d[1] / 1000000);
+        monitor.count(['all', success]);
       } catch (e) {
         debug('Error while compiling response times: %s, %j', err, err, err.stack);
       }
