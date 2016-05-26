@@ -2,7 +2,7 @@ let debug = require('debug')('taskcluster-lib-validate');
 let _ = require('lodash');
 
 /** Render {$const: <key>} into JSON schema */
-function render (schema, constants) {
+function render(schema, constants) {
   // Replace val with constant, if it is an {$const: <key>} schema
   let substitute = (val) => {
     // Primitives and arrays shouldn't event be considered
