@@ -56,6 +56,51 @@ stopMonitor();
 
 More details on the usage of measure and count can be found at [the Statsum client](https://github.com/taskcluster/node-statsum#statsum-client-for-nodejs).
 
+### Timing Functions/Promises
+
+Often we wish to measure how long time an operation takes, synchronous or
+asynchronous, this can done using the `monitor.timer(key, funcOrPromise)`
+method. It takes a `key` (as name of the metric) and a function or promise to
+measure the time of. If the function returns a promise, it'll include the time
+it takes for the promise to resolve.
+
+The following examples are valid usages:
+```js
+let monitor = await monitoring({
+  project: 'tc-stats-collector',
+  credentials: {clientId: 'test-client', accessToken: 'test'},
+});
+
+
+// Timing a synchronous operation
+let root = monitor.timer('compute-sqrt', () => {
+  return Math.sqrt(25);
+})
+assert(root === 5);
+
+// Timing a single asynchronous function (promise)
+let task = monitor.timer('load-task', queue.task(taskId));
+assert(task.workerType == '...'); // task is the task definition response
+
+// Timing an asynchronous function
+let task = monitor.timer('poll-for-task', async () => {
+  while (true) {
+    try {
+      return await queue.task(taskId);
+    } catch (err) {
+      // Ignore error and try again
+      // In the real would you want a maximum time before you stop polling
+      // And probably some sleeping between each polling attempt...
+    }
+  }
+});
+assert(task.workerType == '...'); // task is the task definition response
+
+```
+
+Rejected promises and errors will be allowed bubble up, and the time will
+measured and recoded just like successful functions or promises.
+
 ### Timing Handlers
 
 A common pattern in Taskcluster projects is to have handler functions in a worker that take a message as an argument and perform some action. These
