@@ -5,7 +5,7 @@
   "description": "taskcluster-lib-app",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -c tc-rules/babel src:lib test:.test",
+    "compile": "eslint ./src ./test && babel-compile -p taskcluster src:lib test:.test",
     "prepublish": "npm run compile",
     "pretest": "npm run compile",
     "test": "mocha .test/*_test.js"
@@ -17,21 +17,25 @@
   "dependencies": {
     "babel-runtime": "^6.0.14",
     "debug": "^2.2.0",
-    "express": "4.9.0",
-    "express-sslify": "0.1.0",
+    "express": "4.13.4",
+    "express-sslify": "1.0.1",
     "hsts": "^1.0.0",
-    "lodash": "2.4.1",
+    "lodash": "4.13.1",
     "morgan-debug": "^1.0.0",
     "promise": "^7.0.4",
-    "superagent": "^0.18.2",
-    "superagent-promise": "^0.1.2"
+    "superagent": "^1.8.3",
+    "superagent-promise": "^1.1.0"
   },
   "devDependencies": {
-    "babel-compile": "^0.1.0",
-    "babel-core": "^5.8.33",
-    "mocha": "2.0.1",
-    "taskcluster-lib-config": "^0.8.8",
-    "tc-rules": "^1.0.6"
+    "babel-compile": "^2.0.0",
+    "babel-core": "^6.9.0",
+    "babel-eslint": "^6.0.4",
+    "babel-preset-taskcluster": "^2.3.0",
+    "eslint": "^2.10.2",
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2",
+    "mocha": "2.5.3",
+    "source-map-support": "^0.4.0"
   },
   "main": "./lib/app.js"
 }
