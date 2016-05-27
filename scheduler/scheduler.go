@@ -29,7 +29,7 @@
 //
 // and then call one or more of myScheduler's methods, e.g.:
 //
-//  data, callSummary, err := myScheduler.CreateTaskGraph(.....)
+//  data, err := myScheduler.CreateTaskGraph(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -66,7 +66,7 @@ type Scheduler tcclient.ConnectionData
 //  myScheduler := scheduler.New(creds)                              // set credentials
 //  myScheduler.Authenticate = false                                 // disable authentication (creds above are now ignored)
 //  myScheduler.BaseURL = "http://localhost:1234/api/Scheduler/v1"   // alternative API endpoint (production by default)
-//  data, callSummary, err := myScheduler.CreateTaskGraph(.....)     // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
+//  data, err := myScheduler.CreateTaskGraph(.....)                  // for example, call the CreateTaskGraph(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

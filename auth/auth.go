@@ -53,7 +53,7 @@
 //
 // and then call one or more of myAuth's methods, e.g.:
 //
-//  data, callSummary, err := myAuth.ListClients(.....)
+//  data, err := myAuth.ListClients(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -91,7 +91,7 @@ type Auth tcclient.ConnectionData
 //  myAuth := auth.New(creds)                              // set credentials
 //  myAuth.Authenticate = false                            // disable authentication (creds above are now ignored)
 //  myAuth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  data, callSummary, err := myAuth.ListClients(.....)    // for example, call the ListClients(.....) API endpoint (described further down)...
+//  data, err := myAuth.ListClients(.....)                 // for example, call the ListClients(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

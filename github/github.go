@@ -25,7 +25,7 @@
 //
 // and then call one or more of myGithub's methods, e.g.:
 //
-//  callSummary, err := myGithub.GithubWebHookConsumer(.....)
+//  err := myGithub.GithubWebHookConsumer(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -55,10 +55,10 @@ type Github tcclient.ConnectionData
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
-//  myGithub := github.New(creds)                               // set credentials
-//  myGithub.Authenticate = false                               // disable authentication (creds above are now ignored)
-//  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"    // alternative API endpoint (production by default)
-//  callSummary, err := myGithub.GithubWebHookConsumer(.....)   // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
+//  myGithub := github.New(creds)                              // set credentials
+//  myGithub.Authenticate = false                              // disable authentication (creds above are now ignored)
+//  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"   // alternative API endpoint (production by default)
+//  err := myGithub.GithubWebHookConsumer(.....)               // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

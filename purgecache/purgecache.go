@@ -25,7 +25,7 @@
 //
 // and then call one or more of purgeCache's methods, e.g.:
 //
-//  callSummary, err := purgeCache.PurgeCache(.....)
+//  err := purgeCache.PurgeCache(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -62,7 +62,7 @@ type PurgeCache tcclient.ConnectionData
 //  purgeCache := purgecache.New(creds)                              // set credentials
 //  purgeCache.Authenticate = false                                  // disable authentication (creds above are now ignored)
 //  purgeCache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
-//  callSummary, err := purgeCache.PurgeCache(.....)                 // for example, call the PurgeCache(.....) API endpoint (described further down)...
+//  err := purgeCache.PurgeCache(.....)                              // for example, call the PurgeCache(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

@@ -108,7 +108,7 @@
 //
 // and then call one or more of myIndex's methods, e.g.:
 //
-//  data, callSummary, err := myIndex.FindTask(.....)
+//  data, err := myIndex.FindTask(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -146,7 +146,7 @@ type Index tcclient.ConnectionData
 //  myIndex := index.New(creds)                              // set credentials
 //  myIndex.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myIndex.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
-//  data, callSummary, err := myIndex.FindTask(.....)        // for example, call the FindTask(.....) API endpoint (described further down)...
+//  data, err := myIndex.FindTask(.....)                     // for example, call the FindTask(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

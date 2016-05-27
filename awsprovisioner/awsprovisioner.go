@@ -46,7 +46,7 @@
 //
 // and then call one or more of awsProvisioner's methods, e.g.:
 //
-//  data, callSummary, err := awsProvisioner.ListWorkerTypeSummaries(.....)
+//  data, err := awsProvisioner.ListWorkerTypeSummaries(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -81,10 +81,10 @@ type AwsProvisioner tcclient.ConnectionData
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
-//  awsProvisioner := awsprovisioner.New(creds)                               // set credentials
-//  awsProvisioner.Authenticate = false                                       // disable authentication (creds above are now ignored)
-//  awsProvisioner.BaseURL = "http://localhost:1234/api/AwsProvisioner/v1"    // alternative API endpoint (production by default)
-//  data, callSummary, err := awsProvisioner.ListWorkerTypeSummaries(.....)   // for example, call the ListWorkerTypeSummaries(.....) API endpoint (described further down)...
+//  awsProvisioner := awsprovisioner.New(creds)                              // set credentials
+//  awsProvisioner.Authenticate = false                                      // disable authentication (creds above are now ignored)
+//  awsProvisioner.BaseURL = "http://localhost:1234/api/AwsProvisioner/v1"   // alternative API endpoint (production by default)
+//  data, err := awsProvisioner.ListWorkerTypeSummaries(.....)               // for example, call the ListWorkerTypeSummaries(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

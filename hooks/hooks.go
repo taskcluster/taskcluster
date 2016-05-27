@@ -33,7 +33,7 @@
 //
 // and then call one or more of myHooks's methods, e.g.:
 //
-//  data, callSummary, err := myHooks.ListHookGroups(.....)
+//  data, err := myHooks.ListHookGroups(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -67,10 +67,10 @@ type Hooks tcclient.ConnectionData
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
-//  myHooks := hooks.New(creds)                               // set credentials
-//  myHooks.Authenticate = false                              // disable authentication (creds above are now ignored)
-//  myHooks.BaseURL = "http://localhost:1234/api/Hooks/v1"    // alternative API endpoint (production by default)
-//  data, callSummary, err := myHooks.ListHookGroups(.....)   // for example, call the ListHookGroups(.....) API endpoint (described further down)...
+//  myHooks := hooks.New(creds)                              // set credentials
+//  myHooks.Authenticate = false                             // disable authentication (creds above are now ignored)
+//  myHooks.BaseURL = "http://localhost:1234/api/Hooks/v1"   // alternative API endpoint (production by default)
+//  data, err := myHooks.ListHookGroups(.....)               // for example, call the ListHookGroups(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

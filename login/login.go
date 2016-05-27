@@ -37,7 +37,7 @@
 //
 // and then call one or more of myLogin's methods, e.g.:
 //
-//  data, callSummary, err := myLogin.CredentialsFromPersonaAssertion(.....)
+//  data, err := myLogin.CredentialsFromPersonaAssertion(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -67,10 +67,10 @@ type Login tcclient.ConnectionData
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
-//  myLogin := login.New(creds)                                                // set credentials
-//  myLogin.Authenticate = false                                               // disable authentication (creds above are now ignored)
-//  myLogin.BaseURL = "http://localhost:1234/api/Login/v1"                     // alternative API endpoint (production by default)
-//  data, callSummary, err := myLogin.CredentialsFromPersonaAssertion(.....)   // for example, call the CredentialsFromPersonaAssertion(.....) API endpoint (described further down)...
+//  myLogin := login.New(creds)                                   // set credentials
+//  myLogin.Authenticate = false                                  // disable authentication (creds above are now ignored)
+//  myLogin.BaseURL = "http://localhost:1234/api/Login/v1"        // alternative API endpoint (production by default)
+//  data, err := myLogin.CredentialsFromPersonaAssertion(.....)   // for example, call the CredentialsFromPersonaAssertion(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

@@ -28,7 +28,7 @@
 //
 // and then call one or more of myQueue's methods, e.g.:
 //
-//  data, callSummary, err := myQueue.Task(.....)
+//  data, err := myQueue.Task(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -66,7 +66,7 @@ type Queue tcclient.ConnectionData
 //  myQueue := queue.New(creds)                              // set credentials
 //  myQueue.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
-//  data, callSummary, err := myQueue.Task(.....)            // for example, call the Task(.....) API endpoint (described further down)...
+//  data, err := myQueue.Task(.....)                         // for example, call the Task(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }

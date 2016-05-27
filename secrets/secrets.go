@@ -26,7 +26,7 @@
 //
 // and then call one or more of mySecrets's methods, e.g.:
 //
-//  callSummary, err := mySecrets.Set(.....)
+//  err := mySecrets.Set(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -64,7 +64,7 @@ type Secrets tcclient.ConnectionData
 //  mySecrets := secrets.New(creds)                              // set credentials
 //  mySecrets.Authenticate = false                               // disable authentication (creds above are now ignored)
 //  mySecrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
-//  callSummary, err := mySecrets.Set(.....)                     // for example, call the Set(.....) API endpoint (described further down)...
+//  err := mySecrets.Set(.....)                                  // for example, call the Set(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
