@@ -2,6 +2,8 @@ TaskCluster Validation Library
 ==============================
 
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-validate.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-validate)
+[![npm](https://img.shields.io/npm/v/taskcluster-lib-validate.svg?maxAge=2592000)](https://www.npmjs.com/package/taskcluster-lib-validate)
+[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 A single purpose library to wrap up all of the logic for ensuring that
 content matches established schemas. This is a replacement for
