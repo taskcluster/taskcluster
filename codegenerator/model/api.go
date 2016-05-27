@@ -66,9 +66,9 @@ func (api *API) generateAPICode(apiName string) string {
 	// here we choose an example API method to call, just the first one in the list of api.Entries
 	// We need to first see if it returns one or two variables...
 	if api.Entries[0].Output == "" {
-		exampleCall = "//  callSummary, err := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+		exampleCall = "//  err := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
 	} else {
-		exampleCall = "//  data, callSummary, err := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
+		exampleCall = "//  data, err := " + exampleVarName + "." + api.Entries[0].MethodName + "(.....)"
 	}
 	comment := ""
 	if api.Description != "" {
@@ -138,7 +138,7 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 	//  myQueue := queue.New(creds)                             // set credentials
 	//  myQueue.Authenticate = false                            // disable authentication (creds above are now ignored)
 	//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"  // alternative API endpoint (production by default)
-	//  data, callSummary, err := myQueue.Task(.....)           // for example, call the Task(.....) API endpoint (described further down)...
+	//  data, err := myQueue.Task(.....)                        // for example, call the Task(.....) API endpoint (described further down)...
 	//
 	// We do this by generating the code, then calculating the max length of one of the code lines,
 	// and then padding with spaces based on max line length and adding comments.
