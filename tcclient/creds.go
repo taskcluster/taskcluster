@@ -28,7 +28,7 @@ type Credentials struct {
 	// to nil is not the same as setting to an empty array. If AuthorizedScopes
 	// is set to an empty array rather than nil, this is equivalent to having
 	// no scopes at all.
-	// See http://docs.taskcluster.net/auth/authorized-scopes
+	// See https://docs.taskcluster.net/manual/apis/authorized-scopes
 	AuthorizedScopes []string `json:"authorizedScopes"`
 }
 
@@ -77,7 +77,7 @@ type Certificate struct {
 // the permanent credentials will be passed through as authorized scopes to the
 // temporary credentials, but will not be restricted via the certificate.
 //
-// See http://docs.taskcluster.net/auth/temporary-credentials/
+// See https://docs.taskcluster.net/manual/apis/temporary-credentials
 func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
 		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")

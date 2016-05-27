@@ -187,8 +187,8 @@ func (connectionData *ConnectionData) SignedURL(route string, query url.Values, 
 // string as meaning the ext header is not needed.
 //
 // See:
-//   * http://docs.taskcluster.net/auth/authorized-scopes
-//   * http://docs.taskcluster.net/auth/temporary-credentials
+//   * https://docs.taskcluster.net/manual/apis/authorized-scopes
+//   * https://docs.taskcluster.net/manual/apis/temporary-credentials
 func getExtHeader(credentials *Credentials) (header string, err error) {
 	ext := &ExtHeader{}
 	if credentials.Certificate != "" {
