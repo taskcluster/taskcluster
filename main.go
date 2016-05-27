@@ -31,7 +31,7 @@ var (
 	// Platform specific data should be managed in plat_<platform>.go files
 	TaskUser OSUser
 	// Queue is the object we will use for accessing queue api. See
-	// http://docs.taskcluster.net/queue/api-docs/
+	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue *queue.Queue
 	// See SignedURLsManager() for more information:
 	// signedURsRequestChan is the channel you can pass a channel to, to get
