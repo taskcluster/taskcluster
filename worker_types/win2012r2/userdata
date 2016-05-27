@@ -158,6 +158,14 @@ $client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/ma
 # run bash setup script
 Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setup.sh; ./setup.sh'" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\Administrator_cygwin_setup.log" -RedirectStandardError "C:\Administrator_cygwin_setup.err"
 
+# install dependencywalker (useful utility for troubleshooting, not required)
+md "C:\DependencyWalker"
+Expand-ZIPFile -File "C:\depends22_x64.zip" -Destination "C:\DependencyWalker" -Url "http://dependencywalker.com/depends22_x64.zip"
+
+# install ProcessExplorer (useful utility for troubleshooting, not required)
+md "C:\ProcessExplorer"
+Expand-ZIPFile -File "C:\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
+
 # now shutdown, in preparation for creating an image
 Stop-Computer
 </powershell>
