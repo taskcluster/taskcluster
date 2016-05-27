@@ -1,27 +1,25 @@
 language: node_js
 sudo: false
 node_js:
-  - '0.12'
-  - '4'
-  - '5'
-  - '6'
+- '0.12'
+- '4'
+- '5'
+- '6'
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - g++-4.8
+    - g++-4.8
 script: npm test
 env:
   global:
-    - DEBUG='taskcluster-lib-monitor test'
-    - CXX=g++-4.8
-
+  - DEBUG='taskcluster-lib-monitor test'
+  - CXX=g++-4.8
 notifications:
   irc:
     channels:
-      # encrpyted string was "irc.mozilla.org#taskcluster-bots"
-      - secure: "Jr+3ft8ZZknJ0Zr1xKwCNEgqMyrFwkMkfJEJo7q8cHvGvRK3iw+GDGj10wjSk8Juf19MkFsICkldHdQEZfCrjAuOhINmqe4mLfkn+RJo/UgVk8K1BcniJdegnZn7laYTpj9Sjs0MySqUJps+UWVIe6kq4dB4Yjrl/2zyLbcwUkQPaYpnfWAm6KoQXuim7Qrsn0isQRj577TzSj2x5IUJ66F8ZbubP8CDIo1RBkfB9ZIeAjrJf5FL7U+/+rZketOVjqDOptrriTJ/eytd14LI5Iw9oZKdX3SXXsPmz3+alG5xb2Jy7lzU96mV6OYD723VQkSnpLQJ+UORfJJhYkXNupfLveFhMiIMWeybGghxUd2s5vZ7prXlC/ldx4fDMkCuEVcXkr7icqvzhEFOYqn+khsrDiQmFNLmOxocyxhG7KtzhUEr+m1XRTqZ+kE5YRG/DGJJNN4kt6+z3+ytLhyXNX0wwV035dUN8UhrKk8+2pE6OvlpaaaD+pb46Q+GT2prloC6j4w5A4I5wQwBByerihb4clO5vOlBtZamgsn5dqSW74ERuZi44hguFQUGBE3wWYdtHYqJo/gX0z+F1wXXWKlozQdkmaVT9z2oiRMgtN/vs8qG4/13M1LVqkmogzNZKBfMuh5BoQkhKOtzeA6+ioHNUfer6DrLxJzT3AALCCs="
+    - secure: Jr+3ft8ZZknJ0Zr1xKwCNEgqMyrFwkMkfJEJo7q8cHvGvRK3iw+GDGj10wjSk8Juf19MkFsICkldHdQEZfCrjAuOhINmqe4mLfkn+RJo/UgVk8K1BcniJdegnZn7laYTpj9Sjs0MySqUJps+UWVIe6kq4dB4Yjrl/2zyLbcwUkQPaYpnfWAm6KoQXuim7Qrsn0isQRj577TzSj2x5IUJ66F8ZbubP8CDIo1RBkfB9ZIeAjrJf5FL7U+/+rZketOVjqDOptrriTJ/eytd14LI5Iw9oZKdX3SXXsPmz3+alG5xb2Jy7lzU96mV6OYD723VQkSnpLQJ+UORfJJhYkXNupfLveFhMiIMWeybGghxUd2s5vZ7prXlC/ldx4fDMkCuEVcXkr7icqvzhEFOYqn+khsrDiQmFNLmOxocyxhG7KtzhUEr+m1XRTqZ+kE5YRG/DGJJNN4kt6+z3+ytLhyXNX0wwV035dUN8UhrKk8+2pE6OvlpaaaD+pb46Q+GT2prloC6j4w5A4I5wQwBByerihb4clO5vOlBtZamgsn5dqSW74ERuZi44hguFQUGBE3wWYdtHYqJo/gX0z+F1wXXWKlozQdkmaVT9z2oiRMgtN/vs8qG4/13M1LVqkmogzNZKBfMuh5BoQkhKOtzeA6+ioHNUfer6DrLxJzT3AALCCs=
     on_success: change
     on_failure: always
     template:
@@ -29,3 +27,11 @@ notifications:
     - 'Change view : %{compare_url}'
     - 'Build details : %{build_url}'
     - 'Commit message : %{commit_message}'
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  api_key:
+    secure: OowWlp/O7mx4bL5rxVIdCubwTHxrAFSR+l7ozbior5pfnRpdsqkaNq7m9J3+nr8bhjwlG+yD5GFemMLfq+BO188CMabyLH8kw2CrOGdBYtJDSWCf5SFQv3eKksN/WM8WXRm8Q/ghHf/YAlueSuLXiGj8/eMOxFBsFB+VIdJx7vAi6cm0+OJi9K4Qq5eApxGIlGHC128YNet3QnuPFU7bgjHD6is4pTMaCdObBN0WSVNYe8v4OTjL1KAIB3R14rp/TaGnYgebg2tvMJFq+mlOfMugl5cJq2RaOpmSbA15B/p52TDFWIIVIpo0hua+QAdS7fJPsFYVybFLFnFb9hTJakR8JumnRkVzbfsu6s8f5JWVCUNg7/BjPqtKyVKtWeoLq1LISSRQcSWlxQ+K5sKxF5ca9iP+rOyT60RG7nJAbcQ3hTRSbiQU7SHFeF8gfqeart04GN3zksqaH5kEsdoHM04ROMGrr2joDteL675QdzAqliB27wEua7ZQM7ysgOGiVKcCRKA/1Ar/oEMsDmoCzYEY71VHC+WAMJcjoYvUrmGWuf/6NXpro8+Hn36dEAyZ5azaE4QydphmZxFtMEfVICFOHdWEeMh9z/TewKvDN8psBDmwkhtJg64uWHyxzUanj/pFn+SGZglKi+z6kd6qJlhLt9NarW271Uf7slqzzrw=
+  on:
+    tags: true
+    repo: taskcluster/taskcluster-lib-monitor
