@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-See [formal definitions](http://docs.taskcluster.net/presentations/scopes/#/definitions)
+See [formal definitions](https://docs.taskcluster.net/presentations/scopes/#/definitions)
 for more information about scope satisfaction.
 
 ## Contributing

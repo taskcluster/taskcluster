@@ -1,7 +1,7 @@
 // Package scopes provides utilities for manipulating and interpreting
 // Taskcluster scopes.
 //
-// See http://docs.taskcluster.net/presentations/scopes/#/definitions for
+// See https://docs.taskcluster.net/presentations/scopes/#/definitions for
 // formal definitions.
 package scopes
 
