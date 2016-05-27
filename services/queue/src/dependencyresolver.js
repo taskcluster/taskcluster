@@ -85,6 +85,8 @@ class DependencyResolver extends events.EventEmitter {
   async _pollResolvedTasks() {
     while(!this._stopping) {
       let messages = await this.queueService.pollResolvedQueue();
+      this.monitor.count('resolved-queue-poll-requests', 1);
+      this.monitor.count('resolved-queue-polled-messages', messages.length);
       debug("Fetched %s messages", messages.length);
 
       await Promise.all(messages.map(async (m) => {
