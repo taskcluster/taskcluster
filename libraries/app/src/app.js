@@ -1,8 +1,6 @@
-"use strict";
-
 var express         = require('express');
 var _               = require('lodash');
-var debug           = require('debug')("base:app");
+var debug           = require('debug')('base:app');
 var assert          = require('assert');
 var morganDebug     = require('morgan-debug');
 var Promise         = require('promise');
@@ -15,21 +13,21 @@ var notifyLocalAppInParentProcess = function(port) {
   // If there is a parent process post a message to notify it that the app is
   // ready and running on specified port. This is useful for automated
   // testing and hopefully won't cause pain anywhere else.
-  if(process.send) {
+  if (process.send) {
     process.send({
       ready:  true,
       port:   port,
-      appId:  process.env.LOCAL_APP_IDENTIFIER
+      appId:  process.env.LOCAL_APP_IDENTIFIER,
     });
   }
 };
 
 /** Create server from app */
 var createServer = function() {
-  var app = this;
+  var that = this;
   return new Promise(function(accept, reject) {
     // Launch HTTP server
-    var server = http.createServer(app);
+    var server = http.createServer(that);
 
     // Add a little method to help kill the server
     server.terminate = function() {
@@ -44,12 +42,12 @@ var createServer = function() {
     server.once('error', reject);
 
     // Listen
-    server.listen(app.get('port'), function() {
-      debug('Server listening on port ' + app.get('port'));
+    server.listen(that.get('port'), function() {
+      debug('Server listening on port ' + that.get('port'));
       accept(server);
     });
   }).then(function(server) {
-    notifyLocalAppInParentProcess(app.get('port'));
+    notifyLocalAppInParentProcess(that.get('port'));
     return server;
   });
 };
@@ -68,12 +66,12 @@ var createServer = function() {
  *   - `createServer`   (Creates an server)
  */
 var app = function(options) {
-  assert(options,                           "options are required");
-  assert(typeof(options.port) === 'number', "Port must be a number");
+  assert(options,                           'options are required');
+  assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env == 'development' ||
-         options.env == 'production',       "env must be production or development");
-  assert(options.forceSSL !== undefined,    "forceSSL must be defined");
-  assert(options.trustProxy !== undefined,  "trustProxy must be defined");
+         options.env == 'production',       'env must be production or development');
+  assert(options.forceSSL !== undefined,    'forceSSL must be defined');
+  assert(options.trustProxy !== undefined,  'trustProxy must be defined');
 
   // Create application
   var app = express();
