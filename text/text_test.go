@@ -57,12 +57,12 @@ func ExampleIndent_nested() {
 }
 
 func ExampleUnderline_basic() {
-	fmt.Println(text.Underline("TaskCluster Client") + "Please see http://docs.taskcluster.net/tools/clients")
+	fmt.Println(text.Underline("TaskCluster Client") + "Please see https://docs.taskcluster.net/manual/tools/clients")
 
 	// Output:
 	// TaskCluster Client
 	// ==================
-	// Please see http://docs.taskcluster.net/tools/clients
+	// Please see https://docs.taskcluster.net/manual/tools/clients
 }
 
 func ExampleUnderline_multiline() {
