@@ -11,7 +11,7 @@ content matches established schemas. This is a replacement for
 Requirements
 ------------
 
-This is tested on and should run on any of node `{0.12, 4, 5}`.
+This is tested on and should run on any of node `{0.12, 4, 5, 6}`.
 
 Usage
 -----
