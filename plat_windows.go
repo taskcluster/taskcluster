@@ -166,8 +166,7 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	log.Println("Creating Windows User " + user.Name + "...")
 	userExisted, err := allowError(
 		"The account already exists",
-		// "net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/profilepath:"+user.HomeDir, "/y",
-		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
+		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/profilepath:"+user.HomeDir, "/y",
 	)
 	if err != nil {
 		return err
