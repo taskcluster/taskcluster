@@ -112,15 +112,15 @@ func createNewTaskUser() error {
 	if err != nil {
 		return err
 	}
-	// store password
-	err = ioutil.WriteFile(filepath.Join(TaskUser.HomeDir, "_Passw0rd"), []byte(TaskUser.Password), 0666)
+	// run md command as new user, to trigger profile creation
+	err = runCommands(false, userName, password, []string{
+		"cmd", "/c", "md", filepath.Join(TaskUser.HomeDir, "public", "logs"),
+	})
 	if err != nil {
 		return err
 	}
-	// run md command as new user, to trigger profile creation
-	return runCommands(false, userName, password, []string{
-		"cmd", "/c", "md", filepath.Join(TaskUser.HomeDir, "public", "logs"),
-	})
+	// store password
+	return ioutil.WriteFile(filepath.Join(TaskUser.HomeDir, "_Passw0rd"), []byte(TaskUser.Password), 0666)
 	// return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0777)
 }
 
