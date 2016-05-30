@@ -10,12 +10,13 @@
 
 echo "$(date): Checking inputs..."
 
-if [ "${#}" -ne 1 ]; then
-  echo "Please provide a worker type, e.g. ./create.sh win2012r2" >&2
+if [ "${#}" -ne 2 ]; then
+  echo "Please provide a worker type and action, e.g. ./update.sh win2012r2 update" >&2
   exit 64
 fi
 
 export WORKER_TYPE="${1}"
+export ACTION="${2}"
 
 if [ ! -d "$(dirname "${0}")/${WORKER_TYPE}" ]; then
   echo "ERROR: No directory for worker type: '$(dirname "${0}")/${WORKER_TYPE}'"
@@ -40,5 +41,7 @@ export SLUGID=$("${GOPATH}/bin/slug")
 
 echo us-west-1 118 us-west-2 199 us-east-1 100 | xargs -P32 -n2 ../process_region.sh
 
-go install ../../update-worker-type
-"${GOPATH}/bin/update-worker-type" .
+if [ "${ACTION}" == "update" ]; then
+  go install ../../update-worker-type
+  "${GOPATH}/bin/update-worker-type" .
+fi
