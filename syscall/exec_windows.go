@@ -8,6 +8,7 @@ package syscall
 
 import (
 	"fmt"
+	"log"
 	"os/user"
 	"syscall"
 	"unicode/utf16"
@@ -257,6 +258,7 @@ func CreateLocalProfile(username string) error {
 		return err
 	}
 	var profilePath *uint16
+	log.Printf("SID: %#v, Username: %#v", u.Uid, username)
 	return CreateProfile(
 		syscall.StringToUTF16Ptr(u.Uid),
 		syscall.StringToUTF16Ptr(username),
