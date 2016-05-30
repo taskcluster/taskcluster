@@ -200,7 +200,7 @@ It should look something like this:
 
 Go to https://tools.taskcluster.net/task-creator/ and create a task to run on your generic worker.
 
-Use [this example](task-definition-example.json) as a template, but make sure to edit `provisionerId` and `workerType` values so that they match what you set in your config file.
+Use [this example](worker_types/win2012r2/task-definition.json) as a template, but make sure to edit `provisionerId` and `workerType` values so that they match what you set in your config file.
 
 Please note you should *NOT* use the default value of `aws-provisioner` for the `provisionerId` since then the production aws provisioner may start spawning ec2 instances, and the docker-worker may try to run the job. By specifying something unique for your local environment, the aws provisioner and docker workers will leave this task alone, and only your machine will claim the task.
 
