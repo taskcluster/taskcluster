@@ -182,11 +182,15 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
 		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
 	)
-	if !userExisted {
+	if !userExisted && err != nil {
 		return err
 	}
 	log.Println("Creating local profile...")
-	return syscall.CreateLocalProfile(user.Name)
+	err = syscall.CreateLocalProfile(user.Name)
+	if userExisted {
+		return nil
+	}
+	return err
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
