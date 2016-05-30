@@ -117,7 +117,11 @@ func createNewTaskUser() error {
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0777)
+	// run md command as new user, to trigger profile creation
+	return runCommands(false, userName, password, []string{
+		"cmd", "/c", "md", filepath.Join(TaskUser.HomeDir, "public", "logs"),
+	})
+	// return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {
@@ -125,44 +129,45 @@ func (user *OSUser) createNewOSUser() error {
 }
 
 func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
-	log.Println("Forcefully creating directory " + filepath.Dir(user.HomeDir) + "...")
-	// MkdirAll doesn't fail if dir already exists, therefore
-	// call MkdirAll on parent dir, and then Mkdir
-	err := os.MkdirAll(filepath.Dir(user.HomeDir), 0755)
-	// this error is unrecoverable, regardless of `okIfExists` so return...
-	if err != nil {
-		return err
-	}
-	// note: Mkdir, not MkdirAll, so we get a failure if it exists...
-	// note: we can't get a failure for parent directory not existing
-	// as we just created it successfully
-	err = os.Mkdir(user.HomeDir, 0755)
-	homeDirExisted := false
-	if err != nil {
-		switch err.(type) {
-		case *os.PathError:
-			// regardless of `okIfExists` we probably never want to return an error
-			// for creating a directory that exists, but it is important to
-			// know that it existed for next steps...
-			homeDirExisted = true
-		default:
-			return err
-		}
-	}
-	// if home dir existed, these are allowed to fail
-	// if it didn't, they aren't!
-	err = runCommands(homeDirExisted, "", "",
-		[]string{"icacls", user.HomeDir, "/remove:g", "Users"},
-		[]string{"icacls", user.HomeDir, "/remove:g", "Everyone"},
-		[]string{"icacls", user.HomeDir, "/inheritance:r"},
-	)
-	if !homeDirExisted && err != nil {
-		return err
-	}
+	// log.Println("Forcefully creating directory " + filepath.Dir(user.HomeDir) + "...")
+	// // MkdirAll doesn't fail if dir already exists, therefore
+	// // call MkdirAll on parent dir, and then Mkdir
+	// err := os.MkdirAll(filepath.Dir(user.HomeDir), 0755)
+	// // this error is unrecoverable, regardless of `okIfExists` so return...
+	// if err != nil {
+	// 	return err
+	// }
+	// // note: Mkdir, not MkdirAll, so we get a failure if it exists...
+	// // note: we can't get a failure for parent directory not existing
+	// // as we just created it successfully
+	// err = os.Mkdir(user.HomeDir, 0755)
+	// homeDirExisted := false
+	// if err != nil {
+	// 	switch err.(type) {
+	// 	case *os.PathError:
+	// 		// regardless of `okIfExists` we probably never want to return an error
+	// 		// for creating a directory that exists, but it is important to
+	// 		// know that it existed for next steps...
+	// 		homeDirExisted = true
+	// 	default:
+	// 		return err
+	// 	}
+	// }
+	// // if home dir existed, these are allowed to fail
+	// // if it didn't, they aren't!
+	// err = runCommands(homeDirExisted, "", "",
+	// 	[]string{"icacls", user.HomeDir, "/remove:g", "Users"},
+	// 	[]string{"icacls", user.HomeDir, "/remove:g", "Everyone"},
+	// 	[]string{"icacls", user.HomeDir, "/inheritance:r"},
+	// )
+	// if !homeDirExisted && err != nil {
+	// 	return err
+	// }
 	log.Println("Creating Windows User " + user.Name + "...")
 	userExisted, err := allowError(
 		"The account already exists",
-		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/profilepath:"+user.HomeDir, "/y",
+		// "net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/profilepath:"+user.HomeDir, "/y",
+		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
 	)
 	if err != nil {
 		return err
@@ -173,7 +178,7 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	// if user existed, these commands can fail
 	// if it didn't, they can't
 	err = runCommands(userExisted, "", "",
-		[]string{"icacls", user.HomeDir, "/grant:r", user.Name + ":(OI)(CI)F", "SYSTEM:(OI)(CI)F", "Administrators:(OI)(CI)F"},
+		// []string{"icacls", user.HomeDir, "/grant:r", user.Name + ":(OI)(CI)F", "SYSTEM:(OI)(CI)F", "Administrators:(OI)(CI)F"},
 		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
 		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
 	)
