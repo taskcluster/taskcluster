@@ -31,8 +31,8 @@ fi
 
 cd "$(dirname "${0}")/${WORKER_TYPE}"
 
-if [ "${ACTION}" == "add" ]; then
-  . ../add.sh
+if [ "${ACTION}" == "update" ]; then
+  . ../update.sh
 elif [ "${ACTION}" == "delete" ]; then
   . ../delete.sh
 else
