@@ -185,8 +185,8 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	if !userExisted {
 		return err
 	}
-	syscall.CreateLocalProfile(user.Name)
-	return nil
+	log.Println("Creating local profile...")
+	return syscall.CreateLocalProfile(user.Name)
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
