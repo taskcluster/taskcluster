@@ -14,9 +14,11 @@ var _ unsafe.Pointer
 var (
 	modadvapi32 = syscall.NewLazyDLL("advapi32.dll")
 	modkernel32 = syscall.NewLazyDLL("kernel32.dll")
+	moduserenv  = syscall.NewLazyDLL("userenv.dll")
 
 	procCreateProcessWithLogonW = modadvapi32.NewProc("CreateProcessWithLogonW")
 	procCreateProcessW          = modkernel32.NewProc("CreateProcessW")
+	procCreateProfile           = moduserenv.NewProc("CreateProfile")
 )
 
 const LOGON_WITH_PROFILE = 0x00000001
@@ -79,7 +81,8 @@ func CreateProcess(
 	} else {
 		_p0 = 0
 	}
-	r1, _, e1 := syscall.Syscall12(procCreateProcessW.Addr(),
+	r1, _, e1 := syscall.Syscall12(
+		procCreateProcessW.Addr(),
 		10,
 		uintptr(unsafe.Pointer(appName)),
 		uintptr(unsafe.Pointer(commandLine)),
@@ -91,6 +94,32 @@ func CreateProcess(
 		uintptr(unsafe.Pointer(currentDir)),
 		uintptr(unsafe.Pointer(startupInfo)),
 		uintptr(unsafe.Pointer(outProcInfo)),
+		0,
+		0,
+	)
+	if r1 == 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func CreateProfile(
+	userSID *uint16,
+	username *uint16,
+	profilePath *uint16,
+	profilePathCharSize uint32,
+) (err error) {
+	r1, _, e1 := syscall.Syscall6(
+		procCreateProfile.Addr(),
+		4,
+		uintptr(unsafe.Pointer(userSID)),
+		uintptr(unsafe.Pointer(username)),
+		uintptr(unsafe.Pointer(profilePath)),
+		uintptr(profilePathCharSize),
 		0,
 		0,
 	)

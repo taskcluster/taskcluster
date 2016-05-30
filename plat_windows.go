@@ -17,6 +17,7 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/os/exec"
+	"github.com/taskcluster/generic-worker/syscall"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	"golang.org/x/sys/windows/registry"
 )
@@ -184,6 +185,7 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	if !userExisted {
 		return err
 	}
+	syscall.CreateLocalProfile(user.Name)
 	return nil
 }
 
