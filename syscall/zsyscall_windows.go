@@ -106,29 +106,3 @@ func CreateProcess(
 	}
 	return
 }
-
-func CreateProfile(
-	userSID *uint16,
-	username *uint16,
-	profilePath *uint16,
-	profilePathCharSize uint32,
-) (err error) {
-	r1, _, e1 := syscall.Syscall6(
-		procCreateProfile.Addr(),
-		4,
-		uintptr(unsafe.Pointer(userSID)),
-		uintptr(unsafe.Pointer(username)),
-		uintptr(unsafe.Pointer(profilePath)),
-		uintptr(profilePathCharSize),
-		0,
-		0,
-	)
-	if r1 == 0 {
-		if e1 != 0 {
-			err = error(e1)
-		} else {
-			err = syscall.EINVAL
-		}
-	}
-	return
-}

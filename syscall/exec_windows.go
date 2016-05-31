@@ -8,8 +8,6 @@ package syscall
 
 import (
 	"fmt"
-	"log"
-	"os/user"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
@@ -250,19 +248,4 @@ func createEnvBlock(envv []string) *uint16 {
 	copy(b[i:i+1], []byte{0})
 
 	return &utf16.Encode([]rune(string(b)))[0]
-}
-
-func CreateLocalProfile(username string) error {
-	u, err := user.Lookup(username)
-	if err != nil {
-		return err
-	}
-	var profilePath *uint16
-	log.Printf("SID: %#v, Username: %#v", u.Uid, username)
-	return CreateProfile(
-		syscall.StringToUTF16Ptr(u.Uid),
-		syscall.StringToUTF16Ptr(username),
-		profilePath,
-		200,
-	)
 }
