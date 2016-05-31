@@ -94,7 +94,7 @@ worker.webHookHandler = async function(message, context) {
       message.payload.repository,
       message.payload.details['event.head.sha'],
       'TaskCluster: ' + msg);
-    throw new Error(msg);
+    debug(msg + ' skipping.');
   }
 
   // Now we can try processing the config and kicking off a task.

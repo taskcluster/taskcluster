@@ -1,6 +1,8 @@
 import crypto from 'crypto';
+import Debug from 'debug';
 
 let github = module.exports = {};
+let debug = Debug('taskcluster-github');
 
 /**
  * Hashes a payload by some secret, using the same algorithm that
