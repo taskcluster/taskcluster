@@ -78,7 +78,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/m
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v2.0.0alpha41/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v2.0.0alpha38/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # download livelog
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v0.0.6/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -157,6 +157,14 @@ $client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/ma
 
 # run bash setup script
 Start-Process "C:\cygwin\bin\bash.exe" -ArgumentList "--login -c 'chmod a+x setup.sh; ./setup.sh'" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\Administrator_cygwin_setup.log" -RedirectStandardError "C:\Administrator_cygwin_setup.err"
+
+# install dependencywalker (useful utility for troubleshooting, not required)
+md "C:\DependencyWalker"
+Expand-ZIPFile -File "C:\depends22_x64.zip" -Destination "C:\DependencyWalker" -Url "http://dependencywalker.com/depends22_x64.zip"
+
+# install ProcessExplorer (useful utility for troubleshooting, not required)
+md "C:\ProcessExplorer"
+Expand-ZIPFile -File "C:\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
 
 # now shutdown, in preparation for creating an image
 Stop-Computer
