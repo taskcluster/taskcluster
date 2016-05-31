@@ -54,7 +54,7 @@ var (
 	config             *Config
 	configFile         string
 
-	version = "generic-worker 2.0.0alpha42"
+	version = "generic-worker 2.0.0alpha43"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
