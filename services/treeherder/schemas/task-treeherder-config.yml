@@ -112,6 +112,7 @@ properties:
       of "ME" would have all jobs with that group symbol appear as
       ME(symbol 1, symbol 2, ...).
     type: "string"
+    pattern: "^[\\w/?-]+$"
     minLength: 1
     maxLength: 25
   productName:
