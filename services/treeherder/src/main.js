@@ -62,7 +62,8 @@ let load = base.loader({
       // TODO add queue name for durable queues
       let listener = new taskcluster.PulseListener({
         credentials: cfg.pulse.credentials,
-        queueName: cfg.pulse.queueName
+        queueName: cfg.pulse.queueName,
+        prefetch: cfg.pulse.prefetch,
       });
 
       let prefix = cfg.treeherder.routePrefix;
