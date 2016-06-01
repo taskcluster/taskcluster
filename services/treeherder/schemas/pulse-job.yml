@@ -11,7 +11,7 @@ properties:
       This could just be what was formerly submitted as a job_guid in the
       REST API.
     type: "string"
-    pattern: "^[A-Za-z0-9_/+-]+$"
+    pattern: "^[A-Za-z0-9/+-]+$"
     minLength: 1
     maxLength: 50
   retryId:
@@ -38,7 +38,7 @@ properties:
             enum: ['hg.mozilla.org']
           project:
             type: "string"
-            pattern: "^[A-Za-z0-9_-]+$"
+            pattern: "^[\\w-]+$"
             minLength: 1
             maxLength: 50
           revision:
@@ -60,14 +60,12 @@ properties:
               This could be the organization or the individual git username
               depending on who owns the repo.
             type: "string"
-            pattern: "^[A-Za-z0-9_-]+$"
+            pattern: "^[\\w-]+$"
             minLength: 1
             maxLength: 50
-          # NOTE: changes projectName to project
           project:
             type: "string"
-            # Note, changed pattern to match hg.m.o project name
-            pattern: "^[A-Za-z0-9_-]+$"
+            pattern: "^[\\w-]+$"
             minLength: 1
             maxLength: 50
           revision:
@@ -85,7 +83,7 @@ properties:
         title: "jobSymbol"
         type: "string"
         # spaces and "?" are not valid for job symbols
-        pattern: "^[A-Za-z0-9._-]+$"
+        pattern: "^$|^[\\w.-]+$"
         minLength: 0
         maxLength: 25
       chunkId:
@@ -99,17 +97,21 @@ properties:
       groupSymbol:
         title: "group symbol"
         type: "string"
+        # spaces not valid for group symbols
+        pattern: "^[\\w/?-]+$"
         minLength: 1
         maxLength: 25
       # could do without these if we require job type and group to exist prior
       jobName:
         title: "job name"
         type: "string"
+        pattern: "^[A-Za-z0-9\\s_,\\+\\[\\]\\(\\)-]+$"
         minLength: 1
         maxLength: 100
       groupName:
         title: "group name"
         type: "string"
+        pattern: "^[\\w,\\+\\s\\[\\]\\(\\)-]+$"
         minLength: 1
         maxLength: 100
     required:
@@ -145,7 +147,6 @@ properties:
       - fail
       - exception
       - canceled
-      - retry
       - unknown
   jobKind:
     type: "string"
@@ -159,7 +160,6 @@ properties:
     minimum: 1
     maximum: 3
 
-  # TODO later
   coalesced:
     description: The job guids that were coalesced to this job.
     title: "coalesced"
@@ -167,7 +167,7 @@ properties:
     items:
       title: "job guid"
       type: "string"
-      pattern: "^[A-Za-z0-9_/+-]+$"
+      pattern: "^[\\w/+-]+$"
       minLength: 1
       maxLength: 50
 
@@ -205,7 +205,7 @@ properties:
       type: "string"
       minLength: 1
       maxLength: 50
-      pattern: "^[A-Za-z0-9_-]+$"
+      pattern: "^[\\w-]+$"
 
   owner:
     description: |
@@ -236,10 +236,12 @@ properties:
     type: "string"
     minLength: 1
     maxLength: 125
+
   buildMachine:
     $ref: "#/definitions/machine"
   runMachine:
     $ref: "#/definitions/machine"
+
   jobInfo:
     description: |
       Definition of the Job Info for a job.  These are extra data
@@ -361,6 +363,7 @@ properties:
     description: Extra information that Treeherder reads on a best-effort basis
   version: {$const: message-version}
 
+
 additionalProperties: false
 required:
   - taskId
@@ -376,26 +379,26 @@ definitions:
     properties:
       name:
         type: "string"
-        pattern: "^[A-Za-z0-9_-]+$"
+        pattern: "^[\\w-]+$"
         minLength: 1
         maxLength: 50
       platform:
         type: "string"
-        pattern: "^[A-Za-z0-9_-]+$"
+        pattern: "^[\\w-]+$"
         minLength: 1
         maxLength: 100
       os:
         type: "string"
-        pattern: "^[A-Za-z0-9_-]+$"
+        pattern: "^[\\w-]+$"
         minLength: 1
         maxLength: 25
       architecture:
         type: "string"
-        pattern: "^[A-Za-z0-9_-]+$"
+        pattern: "^[\\w-]+$"
         minLength: 1
         maxLength: 25
     required:
-      - name
       - platform
       - os
       - architecture
+
