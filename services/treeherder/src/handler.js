@@ -161,7 +161,9 @@ export class Handler {
   // Publishes the Treeherder job message to pulse.
   async publishJobMessage(pushInfo, job) {
     try {
+      console.log(`Publishing message for ${pushInfo.project} with task ID ${job.taskId}`);
       await this.publisher.jobs(job, {project:pushInfo.project, destination: pushInfo.destination});
+      console.log(`Published message for ${pushInfo.project} with task ID ${job.taskId}`);
     } catch(err) {
       throw new Error(
         `Could not publish job message. ${err.message}. \n` +
