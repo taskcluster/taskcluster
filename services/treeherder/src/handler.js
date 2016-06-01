@@ -159,14 +159,14 @@ export class Handler {
   }
 
   // Publishes the Treeherder job message to pulse.
-  async publishJobMessage(pushInfo, job) {
+  async publishJobMessage(pushInfo, job, taskId) {
     try {
-      console.log(`Publishing message for ${pushInfo.project} with job ID ${job.taskId}`);
+      console.log(`Publishing message for ${pushInfo.project} with task ID ${taskId}`);
       await this.publisher.jobs(job, {project:pushInfo.project, destination: pushInfo.destination});
-      console.log(`Published message for ${pushInfo.project} with job ID ${job.taskId}`);
+      console.log(`Published message for ${pushInfo.project} with task ID ${taskId}`);
     } catch(err) {
       throw new Error(
-        `Could not publish job message. ${err.message}. \n` +
+        `Could not publish job message for ${pushInfo.project} with task ID ${taskId}. ${err.message}. \n` +
         `Job: ${JSON.stringify(job, null, 4)}`);
     }
   }
@@ -259,7 +259,7 @@ export class Handler {
 
   async handleTaskPending(pushInfo, task, message) {
     let job = this.buildMessage(pushInfo, task, message.runId, message);
-    await this.publishJobMessage(pushInfo, job);
+    await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
   async handleTaskRerun(pushInfo, task, message) {
@@ -269,7 +269,7 @@ export class Handler {
     job.result = 'fail';
     job.isRetried = true;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
-    await this.publishJobMessage(pushInfo, job);
+    await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
   async handleTaskRunning(pushInfo, task, message) {
@@ -277,7 +277,7 @@ export class Handler {
     let job = this.buildMessage(pushInfo, task, message.runId, message);
     job.timeStarted = message.status.runs[message.runId].started;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
-    await this.publishJobMessage(pushInfo, job);
+    await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
   async handleTaskCompleted(pushInfo, task, message) {
@@ -287,7 +287,7 @@ export class Handler {
     job.timeStarted = run.started;
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
-    await this.publishJobMessage(pushInfo, job);
+    await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
   async handleTaskFailed(pushInfo, task, message) {
@@ -317,7 +317,7 @@ export class Handler {
     job.timeStarted = run.started;
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
-    await this.publishJobMessage(pushInfo, job);
+    await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
   async handleTaskException(pushInfo, task, message) {
@@ -332,6 +332,6 @@ export class Handler {
     job.timeStarted = run.started;
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
-    await this.publishJobMessage(pushInfo, job);
+    await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 }
