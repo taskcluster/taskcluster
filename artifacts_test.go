@@ -379,7 +379,7 @@ func TestUpload(t *testing.T) {
 	}
 
 	expectedArtifacts := map[string]string{
-		"public/logs/all_commands.log":   "hello world!\n",
+		"public/logs/live_backing.log":   "hello world!\n",
 		"public/logs/command_000000.log": "hello world!\n",
 		"SampleArtifacts/_/X.txt":        "test artifact\n",
 	}
