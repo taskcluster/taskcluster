@@ -14,6 +14,7 @@
   "dependencies": {
     "babel-compile": "^1.0.2",
     "babel-plugin-array-includes": "^2.0.3",
+    "babel-plugin-source-map-support": "0.0.1",
     "babel-plugin-syntax-async-functions": "^6.5.0",
     "babel-plugin-syntax-trailing-function-commas": "^6.5.0",
     "babel-plugin-transform-async-to-generator": "^6.5.0",
@@ -25,6 +26,7 @@
     "lodash": "^4.12.0",
     "promise": "^7.0.4",
     "slugid": "^1.1.0",
+    "source-map-support": "^0.4.0",
     "superagent": "^1.1.0",
     "superagent-promise": "^0.2.0",
     "taskcluster-base": "^0.12.2",
