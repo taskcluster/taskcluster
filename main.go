@@ -813,15 +813,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		return WorkerShutdown(err)
 	}
 
-	// the duration until the expiry is precisely -1 *
-	// the amount of time since the expiry
-	duration := -time.Since(time.Time(task.Definition.Expires))
-	commandLogURL, err := Queue.GetArtifact_SignedURL(
-		task.TaskId,
-		fmt.Sprintf("%v", task.RunId),
-		task.Commands[index].logFile,
-		duration,
-	)
+	commandLogURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskId, task.RunId, url.QueryEscape(task.Commands[index].logFile))
 
 	if err != nil {
 		return WorkerShutdown(err)
@@ -835,7 +827,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 				Expires: task.Definition.Expires,
 			},
 			MimeType: "text/plain; charset=utf-8",
-			URL:      commandLogURL.String(),
+			URL:      commandLogURL,
 		},
 	)
 	if err != nil {
