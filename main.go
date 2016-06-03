@@ -812,6 +812,27 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	if err != nil {
 		return WorkerShutdown(err)
 	}
+
+	commandLogURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskId, task.RunId, url.QueryEscape(task.Commands[index].logFile))
+
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+
+	err = task.uploadArtifact(
+		RedirectArtifact{
+			BaseArtifact: BaseArtifact{
+				CanonicalPath: task.Commands[index].logFile + ".live",
+				// same expiry as underlying log it points to
+				Expires: task.Definition.Expires,
+			},
+			MimeType: "text/plain; charset=utf-8",
+			URL:      commandLogURL,
+		},
+	)
+	if err != nil {
+		return WorkerShutdown(err)
+	}
 	return nil
 }
 
