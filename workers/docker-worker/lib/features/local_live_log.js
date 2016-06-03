@@ -1,8 +1,9 @@
 /**
-This module handles the creation of the "taskcluster" proxy container which
-allows tasks to talk directly to taskcluster services over a http proxy which
-grants a particular permission level based on the task scopes.
-*/
+ * This module handles the creation and exposure of a live log endpoint useful
+ * for seeing a stream of the task output while the task is running.
+ * Upon completion of the task, the live log will terminate and be redirected
+ * to a file artifact with the entirety of the task output.
+ */
 
 import Debug from 'debug';
 import http from 'http';
