@@ -922,7 +922,7 @@ func (task *TaskRun) run() error {
 }
 
 func (task *TaskRun) postTaskActions() error {
-	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "all_commands.log"))
+	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log"))
 	if err != nil {
 		return err
 	}
@@ -950,7 +950,7 @@ func (task *TaskRun) postTaskActions() error {
 		}
 	}
 	// will only upload if log concatenation succeeded
-	return task.uploadLog("public/logs/all_commands.log")
+	return task.uploadLog("public/logs/live_backing.log")
 }
 
 // writes config to json file

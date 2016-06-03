@@ -31,6 +31,11 @@ func TestLiveLog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not write test line to livelog:\n%s", err)
 	}
+	// This is required since livelog does not open the GET port until it first
+	// writes data to it, which probably should be fixed in the livelog
+	// codebase. Ideally it would serve both ports on initialisation, not
+	// requiring data to be PUT first.
+	waitForPortToBeActive(60023)
 	resp, err := http.Get(ll.GetURL)
 	if err != nil {
 		t.Fatalf("Could not GET livelog from URL %s:\n%s", ll.GetURL, err)

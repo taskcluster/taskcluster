@@ -5,9 +5,11 @@ package livelog
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
@@ -68,6 +70,10 @@ func New(liveLogExecutable, sslCert, sslKey string) (*LiveLog, error) {
 	}
 	l.setRequestURLs()
 	err = l.connectInputStream()
+	// Note we can't wait for GET port to be active before returning
+	// since livelog will only serve from that port once some content is
+	// sent - so no good to execute waitForPortToBeActive(60023) here...
+	// We would need to fix this in livelog codebase not here...
 	return l, err
 }
 
@@ -97,13 +103,25 @@ func (l *LiveLog) connectInputStream() error {
 	}
 	client := new(http.Client)
 	go func() {
-		// TODO: this is a HORRENDOUS hack - need to fix this Basically we need
-		// to wait until put port is opened which is some time after the
+		// We need to wait until put port is opened which is some time after the
 		// livelog process has started...
-		time.Sleep(500 * time.Millisecond)
+		waitForPortToBeActive(60022)
 		// since we waited so long, maybe livelog service isn't running now, so
 		// ignore any error and response we get back...
 		client.Do(req)
 	}()
 	return nil
+}
+
+func waitForPortToBeActive(port int) {
+	deadline := time.Now().Add(60 * time.Second)
+	for time.Now().Before(deadline) {
+		conn, err := net.DialTimeout("tcp", "localhost:"+strconv.Itoa(port), 60*time.Second)
+		if err != nil {
+			time.Sleep(100 * time.Millisecond)
+		} else {
+			_ = conn.Close()
+			break
+		}
+	}
 }
