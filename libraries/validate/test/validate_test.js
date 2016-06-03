@@ -2,6 +2,8 @@ suite('Valid Schema Tests', () => {
   let assert = require('assert');
   let validator = require('../');
   let debug = require('debug')('test');
+  let _ = require('lodash');
+
   let validate = null;
 
   suiteSetup(async () => {
@@ -115,6 +117,12 @@ suite('Valid Schema Tests', () => {
         {value: 42},
         'http://localhost:1203/auto-named-schema#');
     assert.equal(error, null);
+  });
+
+  test('schemas available', () => {
+    let schemas = validate.schemas;
+    assert.equal(schemas.length, 9);
+    assert(_.includes(_.join(schemas, ''), 'default-schema.json'));
   });
 
 });

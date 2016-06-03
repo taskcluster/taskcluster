@@ -4,11 +4,6 @@ let Promise = require('promise');
 function publish(s3, bucket, prefix, name, content) {
   return new Promise((accept, reject) => {
     debug('Publishing schema %s', name);
-    content = JSON.stringify(content, undefined, 4);
-    if (!content) {
-      debug('Schema %s has invalid content!', name);
-      return reject();
-    }
     s3.putObject({
       Bucket: bucket,
       Key: prefix + name,

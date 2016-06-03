@@ -67,7 +67,11 @@ async function validator(options) {
     try {
       ajv.addSchema(schema);
       debug('Loaded schema with id of "%s"', schema.id);
-      schemas.push({name: name, schema: schema});
+      let content = JSON.stringify(schema, undefined, 4);
+      if (!content) {
+        throw new Error('Schema %s has invalid content!', name);
+      }
+      schemas.push({name: name, content});
     } catch (err) {
       debug('failed to load schema at %s', path.resolve(root, name));
       throw err;
@@ -92,12 +96,12 @@ async function validator(options) {
         cfg.bucket,
         cfg.prefix,
         entry.name,
-        entry.schema
+        entry.content
       );
     }));
   }
 
-  return (obj, id) => {
+  let validate = (obj, id) => {
     id = id.replace(/#$/, '');
     id = id.replace(/\.ya?ml$/, '.json');
     if (!_.endsWith(id, '.json')) {
@@ -116,6 +120,12 @@ async function validator(options) {
     }
     return null;
   };
+
+  // Add a utility function that can be used to get all of the
+  // schemas that have been loaded.
+  validate.schemas = _.map(schemas, 'content');
+
+  return validate;
 };
 
 module.exports = validator;

@@ -23,13 +23,18 @@ You can view the tests to see more in-detail usage of most features of this libr
 ```javascript
 let doc = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
 
-// This creates a validator for you to use
+// Create a validator for you to use
 validate = await validator({ constants: {'my-constant': 42} });
 
-// This checks whatever object you wish against whichever schema you wish
+// The loaded schemas are easily accessible
+console.log(validate.schemas)
+// ↳ {'name-of-a-schema.json': '{json representation of the schema}', ...}
+
+// Check whatever object you wish against whichever schema you wish
 let error = validate(
-    doc,
-    'http://schemas.taskcluster.net/a-schema-you-wish-to-validate-against');
+  doc,
+  'http://schemas.taskcluster.net/a-schema-you-wish-to-validate-against'
+);
 
 // Finally, ensure that there are no errors and continue however you see fit
 if (!error) {
