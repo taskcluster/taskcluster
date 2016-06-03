@@ -286,8 +286,11 @@ func TestUpload(t *testing.T) {
 			case *queueevents.ArtifactCreatedMessage:
 				a := message.(*queueevents.ArtifactCreatedMessage)
 				artifactCreatedMessages[a.Artifact.Name] = a
-				// finish after 3 artifacts have been created
-				if len(artifactCreatedMessages) == 3 {
+				// Finish after 4 artifacts have been created. Note: the second
+				// publish of the livelog artifact (for redirecting to the
+				// underlying file rather than the livelog stream) doesn't
+				// cause a new pulse message, hence this is 4 not 5.
+				if len(artifactCreatedMessages) == 4 {
 					// killWorkerChan <- true
 					// pulseConn.AMQPConn.Close()
 					artifactsCreatedChan <- true
@@ -379,9 +382,10 @@ func TestUpload(t *testing.T) {
 	}
 
 	expectedArtifacts := map[string]string{
-		"public/logs/live_backing.log":   "hello world!\n",
-		"public/logs/command_000000.log": "hello world!\n",
-		"SampleArtifacts/_/X.txt":        "test artifact\n",
+		"public/logs/live_backing.log":        "hello world!\n",
+		"public/logs/command_000000.log":      "hello world!\n",
+		"public/logs/command_000000.log.live": "hello world!\n",
+		"SampleArtifacts/_/X.txt":             "test artifact\n",
 	}
 
 	// wait for task to complete, so we know artifact upload also completed
