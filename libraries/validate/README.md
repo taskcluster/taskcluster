@@ -28,7 +28,7 @@ validate = await validator({ constants: {'my-constant': 42} });
 
 // The loaded schemas are easily accessible
 console.log(validate.schemas)
-// ↳ {'name-of-a-schema.json': '{json representation of the schema}', ...}
+// ↳ [{'id': 'first/schema', ...}, {'id': 'second/schema', ...}, ...]
 
 // Check whatever object you wish against whichever schema you wish
 let error = validate(
