@@ -1,4 +1,4 @@
-Generated: 1464290988
+Generated: 1465223282
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2113,7 +2113,7 @@ Properties
         Property 'region' =
           Description            = 'The Amazon AWS Region being configured.  Example: us-west-1
           '
-          Enum                   = '[us-west-2 us-east-1 us-west-1]'
+          Enum                   = '[us-west-2 us-east-1 us-west-1 eu-central-1]'
           Type                   = 'string'
           TypeName               = 'Region'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/region'

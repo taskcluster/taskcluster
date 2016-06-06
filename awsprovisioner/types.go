@@ -155,6 +155,7 @@ type (
 			//   * "us-west-2"
 			//   * "us-east-1"
 			//   * "us-west-1"
+			//   * "eu-central-1"
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/region
 			Region string `json:"region"`
