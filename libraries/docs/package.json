@@ -1,0 +1,25 @@
+{
+  "name": "taskcluster-lib-docs",
+  "version": "0.1.0",
+  "author": "Kristel Teng <kteng@mozilla.com>",
+  "description": "Find and upload documents for taskcluster projects",
+  "license": "MPL-2.0",
+  "scripts": {
+    "test": "mocha .test/lint.js .test/*_test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taskcluster/taskcluster-lib-docs.git"
+  },
+  "devDependencies": {
+    "babel-compile": "^2.0.0",
+    "babel-preset-taskcluster": "^2.3.0",
+    "babel-eslint": "^6.0.4",
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2",
+    "mocha": "^2.5.3",
+    "mocha-eslint": "^2.0.2",
+    "source-map-support": "^0.4.0"
+  },
+  "main": ""
+}
