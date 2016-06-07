@@ -185,6 +185,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 				} else {
 					// current status is such that we shouldn't update to new
 					// status, so just report that no error occurred...
+					log.Printf("Not able to update status to %v - current status %v, allowed current status for update: %v", update.Status, update.Task.Status, update.IfStatusIn)
 					e <- nil
 				}
 			case <-d:
