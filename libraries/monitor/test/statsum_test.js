@@ -27,9 +27,6 @@ suite('Statsum', () => {
       patchGlobal: false,
       reportStatsumErrors: false,
     });
-    setTimeout(function() {
-      sentryNock.done();
-    }, 2000);
   });
 
   teardown(async () => {
