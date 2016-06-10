@@ -11,7 +11,7 @@ A hooks service for triggering tasks from events.
 
 API Documentation
 -----------------
-Please see http://docs.taskcluster.net/services/hooks/.
+Please see https://docs.taskcluster.net/reference/core/hooks/api-docs.
 
 Testing
 -------
