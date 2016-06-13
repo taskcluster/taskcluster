@@ -3,9 +3,20 @@ import path from 'path';
 import { Handler } from '../lib/handler';
 import base from 'taskcluster-base';
 
+let monitor;
+
 suite('handle message', () => {
+  suiteSetup(async () => {
+    monitor = await base.monitor({
+      project: 'tc-treeherder-test',
+      credentials: {},
+      mock: true
+    });
+  })
+
   test('invalid message - more than one matching route', async () => {
     let handler = new Handler({
+      monitor: monitor,
       prefix: 'foo',
       queue: {
         task: (taskId) => {
@@ -46,6 +57,7 @@ suite('handle message', () => {
 
   test('invalid message - no matching route', async () => {
     let handler = new Handler({
+      monitor: monitor,
       prefix: 'foo',
       queue: {
         task: (taskId) => {
@@ -85,6 +97,7 @@ suite('handle message', () => {
   test('invalid message - missing treeherder configuration', async () => {
     let called;
     let handler = new Handler({
+      monitor: monitor,
       prefix: 'foo',
       queue: {
         task: (taskId) => {
@@ -114,13 +127,13 @@ suite('handle message', () => {
 
     assert(err, 'Error was not thrown');
     assert(called, 'Task was not retrieved by the queue');
-    console.log(err);
     assert(err.message.includes("Message is missing Treeherder job configuration"));
   });
 
   test('invalid message - invalid treeherder config', async () => {
     let called;
     let handler = new Handler({
+      monitor: monitor,
       prefix: 'foo',
       queue: {
         task: (taskId) => {

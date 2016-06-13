@@ -104,6 +104,7 @@ export class Handler {
     this.prefix = options.prefix;
     this.publisher = options.publisher;
     this.validator = options.validator;
+    this.monitor = options.monitor;
   }
 
   // Starts up the message handler and listens for messages
@@ -111,8 +112,10 @@ export class Handler {
     debug('Starting handler');
     this.listener.on('message', async (message) => {
       try {
-        await this.handleMessage(message);
+        this.monitor.timer('handle-message.time', this.handleMessage(message));
+        this.monitor.timer('handle-message.success');
       } catch(err) {
+        this.monitor.timer('handle-message.failure');
         console.log(`Error caught when processing message. ${err.message}. ${err.stack}`);
       };
     });
@@ -126,10 +129,12 @@ export class Handler {
   // Only messages that contain the properly formatted routing key and contains
   // treeherder job information in task.extra.treeherder are accepted
   async handleMessage(message) {
+    this.monitor.count('handle-message');
     let taskId = message.payload.status.taskId;
     let task = await this.queue.task(taskId);
     let parsedRoute = parseRouteInfo(this.prefix, taskId, message.routes, task);
     debug(`message received for task ${taskId} with route ${message.routes}`);
+    this.monitor.count(`${parsedRoute.project}.handle-message`);
 
     validateTask(this.validator, taskId, task, TASK_TREEHERDER_SCHEMA);
 
@@ -164,7 +169,9 @@ export class Handler {
       console.log(`Publishing message for ${pushInfo.project} with task ID ${taskId}`);
       await this.publisher.jobs(job, {project:pushInfo.project, destination: pushInfo.destination});
       console.log(`Published message for ${pushInfo.project} with task ID ${taskId}`);
+      this.monitor.count(`${pushInfo.project}.publish-message.success`);
     } catch(err) {
+      this.monitor.count(`${pushInfo.project}.publish-message.failure`);
       throw new Error(
         `Could not publish job message for ${pushInfo.project} with task ID ${taskId}. ${err.message}. \n` +
         `Job: ${JSON.stringify(job, null, 4)}`);
