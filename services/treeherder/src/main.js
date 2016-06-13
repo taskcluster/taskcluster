@@ -13,14 +13,6 @@ let load = base.loader({
     setup: ({profile}) => base.config({profile}),
   },
 
-  // TODO add statsum client
-  drain: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      return new base.stats.NullDrain();
-    }
-  },
-
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => {
@@ -33,9 +25,18 @@ let load = base.loader({
     }
   },
 
+  monitor: {
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => base.monitor({
+      project: cfg.monitor.component,
+      credentials: cfg.taskcluster.credentials,
+      mock: profile === 'test',
+    }),
+  },
+
   publisher: {
-    requires: ['cfg', 'validator', 'drain', 'process'],
-    setup: ({cfg, validator, drain, process}) => {
+    requires: ['cfg', 'validator', 'process', 'monitor'],
+    setup: ({cfg, validator, process, monitor}) => {
       debug('Configuring exchanges');
       return exchanges.setup({
         credentials:      cfg.pulse.credentials,
@@ -44,16 +45,15 @@ let load = base.loader({
         referencePrefix:  'taskcluster-treeherder/v1/exchanges.json',
         publish:          cfg.app.publishMetaData,
         aws:              cfg.aws,
-        drain:            drain,
-        component:        cfg.app.statsComponent,
+        monitor: monitor.prefix('publisher'),
         process,
       })
     }
   },
 
   server: {
-    requires: ['cfg', 'publisher', 'validator'],
-    setup: async ({cfg, publisher, validator}) => {
+    requires: ['cfg', 'publisher', 'validator', 'monitor'],
+    setup: async ({cfg, publisher, validator, monitor}) => {
       debug('Configuring handler');
       let queue = new taskcluster.Queue();
       let scheduler = new taskcluster.Scheduler();
@@ -82,7 +82,8 @@ let load = base.loader({
         listener,
         prefix,
         publisher,
-        validator
+        validator,
+        monitor
       });
       handler.start();
     }
