@@ -4,9 +4,6 @@ defaults:
     publishMetaData:  !env:bool PUBLISH_METADATA
     # Exchange prefix for exchanges declared
     exchangePrefix:   v1/
-
-    # Name of component in statistics
-    statsComponent: taskcluster-treeherder
   pulse:
     credentials:
       username: !env PULSE_USERNAME
@@ -15,6 +12,10 @@ defaults:
     queueName:  null
   treeherder:
     routePrefix: !env TREEHERDER_ROUTE_PREFIX
+  taskcluster:
+    credentials:
+      clientId: !env TASKCLUSTER_CLIENT_ID
+      accessToken: !env TASKCLUSTER_ACCESS_TOKEN
   aws:
     # Credentials with access to artifact buckets and
     # references/schemas.taskcluster.net if you wish to publish meta-data
@@ -22,13 +23,17 @@ defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           us-west-2
     apiVersion:       2014-01-01
+  monitor:
+    component: 'tc-treeherder-default'
 staging:
-  statsComponent: taskcluster-treeherder-staging
   pulse:
     queueName: taskcluster-treeherder-staging
+  monitor:
+    component: 'tc-treeherder-staging'
 production:
-  statsComponent: taskcluster-treeherder
   pulse:
     queueName: taskcluster-treeherder
+  monitor:
+    component: 'tc-treeherder'
 
 
