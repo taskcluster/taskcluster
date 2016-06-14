@@ -221,9 +221,14 @@ export class Handler {
 
     job.origin = {
         kind: pushInfo.origin,
-        project: pushInfo.project,
-        revision: pushInfo.revision
+        project: pushInfo.project
     };
+
+    if (pushInfo.revision) {
+      job.origin.revision = pushInfo.revision;
+    } else {
+      job.origin.revision_hash = pushInfo.revision_hash;
+    }
 
     if (pushInfo.origin === 'hg.mozilla.org') {
       job.origin.pushLogID = pushInfo.pushId;
@@ -251,7 +256,7 @@ export class Handler {
         platform: machine.platform || task.workerType,
         os: machine.os || "-",
         architecture: machine.architecture || "-"
-    }
+    };
 
     if (treeherderConfig.productName) {
       job.productName = treeherderConfig.productName;

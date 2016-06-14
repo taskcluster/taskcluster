@@ -51,6 +51,29 @@ properties:
         required: [kind, project, revision]
 
       - type: "object"
+        description: |
+          BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
+          Some repos like mozilla-beta have not yet merged in the code that
+          allows them access to the revision.
+        properties:
+          kind:
+            type: "string"
+            enum: ['hg.mozilla.org']
+          project:
+            type: "string"
+            pattern: "^[\\w-]+$"
+            minLength: 1
+            maxLength: 50
+          revision_hash:
+            type: "string"
+            pattern: "^[0-9a-f]+$"
+            minLength: 40
+            maxLength: 40
+          pushLogID:
+            type: "integer"
+        required: [kind, project, revision_hash]
+
+      - type: "object"
         properties:
           kind:
             type: "string"
