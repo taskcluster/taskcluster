@@ -7,7 +7,7 @@
 // [4] Pull Request ID (github) or Push Log ID (hg.mozilla.org) of the push
 //     Note: pushes ot a branch on github would not have a PR ID
 export default function parseRoute(route) {
-  let project, revision, pushId, version, owner, parsedProject;
+  let project, revision, revision_hash, pushId, version, owner, parsedProject;
   let parsedRoute = route.split('.');
   let destination = parsedRoute[0];
   // Assume it's a version 1 routing key
@@ -20,7 +20,7 @@ export default function parseRoute(route) {
   switch (version) {
     case 'v1':
       project = parsedRoute[1];
-      revision = parsedRoute[2];
+      revision_hash = parsedRoute[2];
       parsedProject = project;
       break;
     case 'v2':
@@ -47,10 +47,14 @@ export default function parseRoute(route) {
 
   let x = {
     destination: destination,
-    revision: revision,
     pushId: pushId ? parseInt(pushId) : undefined,
     project: parsedProject
   };
+  if (revision) {
+    x.revision = revision;
+  } else {
+    x.revision_hash = revision_hash;
+  }
 
   // If both user and a project exist, treat as github, otherwise hg.mozilla.org
   if (owner && parsedProject) {
