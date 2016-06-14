@@ -6,11 +6,11 @@ suite("route parsing", () => {
     assert.deepEqual(
       parseRoute('treeherder.try.XYZ'),
       {
-        destination:  'treeherder',
-        origin:       'hg.mozilla.org',
-        project:      'try',
-        revision:     'XYZ',
-        pushId:       undefined
+        destination:   'treeherder',
+        origin:        'hg.mozilla.org',
+        project:       'try',
+        revision_hash: 'XYZ',
+        pushId:        undefined
       }
     );
   });
