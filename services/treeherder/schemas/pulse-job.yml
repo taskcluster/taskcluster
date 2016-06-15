@@ -5,6 +5,16 @@ description: |
   Project is determined by the routing key, so we don't need to specify it here.
 type: "object"
 properties:
+  buildSystem:
+    description: |
+      The name of the build system that initiated this content.  Some examples
+      are "buildbot" and "taskcluster".  But this could be any name.  This
+      value will be used in the routing key for retriggering jobs in the
+      publish-job-action task.
+    type: "string"
+    pattern: "^[\\w-]+$"
+    minLength: 1
+    maxLength: 25
   taskId:
     title: "taskId"
     description: |

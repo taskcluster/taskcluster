@@ -1,5 +1,6 @@
 let message = `
 {
+    "buildSystem": "taskcluster",
     "owner": "dummy-taskcluster-tests@mozilla.com",
     "reason": "scheduled",
     "taskId": "e5431347-3804-4851-b706-7f24081c31c5/0",

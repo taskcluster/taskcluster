@@ -188,6 +188,7 @@ export class Handler {
     let run = message.status.runs[runId];
     let treeherderConfig = task.extra.treeherder;
     let job = {
+      buildSystem: 'taskcluster',
       owner: task.metadata.owner,
       taskId: `${slugid.decode(taskId)}/${runId}`,
       retryId: runId,
