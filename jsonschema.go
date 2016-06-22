@@ -277,7 +277,7 @@ func (p Properties) String() string {
 	return result
 }
 
-func (p *Properties) postPopulate(job *Job) {
+func (p *Properties) postPopulate(job *Job) error {
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
@@ -286,7 +286,10 @@ func (p *Properties) postPopulate(job *Job) {
 			// subscehams need to have SourceURL set
 			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
 			// subschemas also need to be triggered to postPopulate...
-			p.Properties[propertyName].postPopulate(job)
+			err := p.Properties[propertyName].postPopulate(job)
+			if err != nil {
+				return err
+			}
 		}
 		sort.Strings(p.SortedPropertyNames)
 		members := make(stringSet, len(p.SortedPropertyNames))
@@ -294,6 +297,7 @@ func (p *Properties) postPopulate(job *Job) {
 			p.Properties[j].TypeName = text.GoIdentifierFrom(j, true, members)
 		}
 	}
+	return nil
 }
 
 func (p *Properties) setSourceURL(url string) {
@@ -332,13 +336,17 @@ func (items Items) String() string {
 	return result
 }
 
-func (items *Items) postPopulate(job *Job) {
+func (items *Items) postPopulate(job *Job) error {
 	for i := range *items {
 		(*items)[i].setSourceURL(itemsMap[items] + "[" + strconv.Itoa(i) + "]")
-		(*items)[i].postPopulate(job)
+		err := (*items)[i].postPopulate(job)
+		if err != nil {
+			return err
+		}
 		// add to schemas so we get a type generated for it in source code
 		job.add((*items)[i].SourceURL, &(*items)[i])
 	}
+	return nil
 }
 
 func (job *Job) add(url string, subSchema *JsonSubSchema) {
@@ -380,28 +388,50 @@ func describe(name string, value interface{}) string {
 }
 
 type canPopulate interface {
-	postPopulate(*Job)
+	postPopulate(*Job) error
 	setSourceURL(string)
 }
 
-func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string) {
+func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string) error {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
 			canPopulate.setSourceURL(subSchema.SourceURL + suffix)
-			canPopulate.postPopulate(job)
+			err := canPopulate.postPopulate(job)
+			if err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
-func (subSchema *JsonSubSchema) postPopulate(job *Job) {
-	subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf")
-	subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf")
-	subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf")
-	subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items")
-	subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties")
+func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
+	err = subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf")
+	if err != nil {
+		return err
+	}
+	err = subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf")
+	if err != nil {
+		return err
+	}
+	err = subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf")
+	if err != nil {
+		return err
+	}
+	err = subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items")
+	if err != nil {
+		return err
+	}
+	err = subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties")
+	if err != nil {
+		return err
+	}
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
-	subSchema.RefSubSchema = job.cacheJsonSchema(subSchema.Ref)
+	subSchema.RefSubSchema, err = job.cacheJsonSchema(subSchema.Ref)
+	if err != nil {
+		return err
+	}
 	// Find and tag subschema properties that are in required list
 	for _, req := range subSchema.Required {
 		if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
@@ -410,54 +440,74 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) {
 			panic(fmt.Sprintf("Schema %v has a required property %v but this property definition cannot be found", subSchema.SourceURL, req))
 		}
 	}
+	return nil
 }
 
 func (subSchema *JsonSubSchema) setSourceURL(url string) {
 	subSchema.SourceURL = url
 }
 
-func (job *Job) loadJsonSchema(URL string) *JsonSubSchema {
+func (job *Job) loadJsonSchema(URL string) (*JsonSubSchema, error) {
 	var resp *http.Response
 	u, err := url.Parse(URL)
-	exitOnFail(err)
+	if err != nil {
+		return nil, err
+	}
 	var body io.ReadCloser
 	// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
 	switch u.Scheme {
 	case "http", "https":
 		resp, err = http.Get(URL)
-		exitOnFail(err)
+		if err != nil {
+			return nil, err
+		}
 		body = resp.Body
 	case "file":
 		body, err = os.Open(u.Path)
-		exitOnFail(err)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
 		fmt.Printf("URL: '%s'\n", URL)
 	}
 	defer body.Close()
 	data, err := ioutil.ReadAll(body)
-	exitOnFail(err)
+	if err != nil {
+		return nil, err
+	}
 	// json is valid YAML, so we can safely convert, even if it is already json
 	j, err := yaml.YAMLToJSON(data)
-	exitOnFail(err)
+	if err != nil {
+		return nil, err
+	}
 	m := new(JsonSubSchema)
 	err = json.Unmarshal(j, m)
-	exitOnFail(err)
+	if err != nil {
+		return nil, err
+	}
 	m.SourceURL = sanitizeURL(URL)
-	m.postPopulate(job)
-	return m
+	err = m.postPopulate(job)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
-func (job *Job) cacheJsonSchema(url *string) *JsonSubSchema {
+func (job *Job) cacheJsonSchema(url *string) (*JsonSubSchema, error) {
 	// if url is not provided, there is nothing to download
 	if url == nil || *url == "" {
-		return nil
+		return nil, nil
 	}
 	// only fetch if we haven't fetched already...
 	if _, ok := job.result.SchemaSet.set[*url]; !ok {
-		job.add(*url, job.loadJsonSchema(*url))
+		schema, err := job.loadJsonSchema(*url)
+		if err != nil {
+			return nil, err
+		}
+		job.add(*url, schema)
 	}
-	return job.result.SchemaSet.SubSchema(*url)
+	return job.result.SchemaSet.SubSchema(*url), nil
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
@@ -508,7 +558,10 @@ func (job *Job) Execute() (*Result, error) {
 		typeNames: make(stringSet),
 	}
 	for _, URL := range job.URLs {
-		job.cacheJsonSchema(&URL)
+		_, err := job.cacheJsonSchema(&URL)
+		if err != nil {
+			return nil, err
+		}
 	}
 	types, extraPackages, rawMessageTypes := generateGoTypes(job.result.SchemaSet)
 	content := `// This source code file is AUTO-GENERATED by github.com/taskcluster/jsonschema2go
