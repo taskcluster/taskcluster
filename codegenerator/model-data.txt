@@ -1,4 +1,4 @@
-Generated: 1465223282
+Generated: 1466627773
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9967,5 +9967,695 @@ Title                  = 'Secret'
 Type                   = 'object'
 TypeName               = 'Secret'
 SourceURL              = 'http://schemas.taskcluster.net/secrets/v1/secret.json#'
+
+
+http://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json
+==========================================================================
+Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
+Title           = 'Taskcluster-treeherder Pulse Exchange'
+Description     = 'The taskcluster-treeherder service is responsible for processing
+task events published by TaskCluster Queue and producing job messages
+that are consumable by Treeherder.
+
+This exchange provides that job messages to be consumed by any queue that
+attached to the exchange.  This could be a production Treeheder instance,
+a local development environment, or a custom dashboard.'
+Exchange Prefix = 'exchange/taskcluster-treeherder/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'jobs'
+    Entry Name        = 'jobs'
+    Entry Title       = 'Job Messages'
+    Entry Description = 'When a task run is scheduled or resolved, a message is posted to
+this exchange in a Treeherder consumable format.'
+    Routing Key Element 0     = 
+        Element Name      = 'destination'
+        Element Summary   = 'destination'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'project'
+        Element Summary   = 'project'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'
+
+
+http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#
+========================================================================
+Additional Properties  = 'false'
+Description            = 'Definition of a single job that can be added to Treeherder
+Project is determined by the routing key, so we don't need to specify it here.
+'
+ID                     = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'
+Properties
+  Property 'buildMachine' =
+    Ref                    = '#/definitions/machine'
+    TypeName               = 'BuildMachine'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/buildMachine'
+  Property 'buildSystem' =
+    Description            = 'The name of the build system that initiated this content.  Some examples
+    are "buildbot" and "taskcluster".  But this could be any name.  This
+    value will be used in the routing key for retriggering jobs in the
+    publish-job-action task.
+    '
+    MaxLength              = '25'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'BuildSystem'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/buildSystem'
+  Property 'coalesced' =
+    Description            = 'The job guids that were coalesced to this job.'
+    Items
+      MaxLength              = '50'
+      MinLength              = '1'
+      Pattern                = '^[\w/+-]+$'
+      Title                  = 'job guid'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/coalesced/items'
+    Title                  = 'coalesced'
+    Type                   = 'array'
+    TypeName               = 'Coalesced'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/coalesced'
+  Property 'display' =
+    Properties
+      Property 'chunkCount' =
+        Minimum                = '1'
+        Title                  = 'chunkCount'
+        Type                   = 'integer'
+        TypeName               = 'ChunkCount'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkCount'
+      Property 'chunkId' =
+        Minimum                = '1'
+        Title                  = 'chunkId'
+        Type                   = 'integer'
+        TypeName               = 'ChunkID'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkId'
+      Property 'groupName' =
+        MaxLength              = '100'
+        MinLength              = '1'
+        Pattern                = '^[\w,\+\s\[\]\(\)-]+$'
+        Title                  = 'group name'
+        Type                   = 'string'
+        TypeName               = 'GroupName'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/groupName'
+      Property 'groupSymbol' =
+        MaxLength              = '25'
+        MinLength              = '1'
+        Pattern                = '^[\w/?-]+$'
+        Title                  = 'group symbol'
+        Type                   = 'string'
+        TypeName               = 'GroupSymbol'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/groupSymbol'
+      Property 'jobName' =
+        MaxLength              = '100'
+        MinLength              = '1'
+        Pattern                = '^[A-Za-z0-9\s_,\+\[\]\(\)-]+$'
+        Title                  = 'job name'
+        Type                   = 'string'
+        TypeName               = 'JobName'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/jobName'
+      Property 'jobSymbol' =
+        MaxLength              = '25'
+        MinLength              = '0'
+        Pattern                = '^$|^[\w.-]+$'
+        Title                  = 'jobSymbol'
+        Type                   = 'string'
+        TypeName               = 'JobSymbol'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/jobSymbol'
+    Required               = '[jobName jobSymbol groupSymbol]'
+    Type                   = 'object'
+    TypeName               = 'Display'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display'
+  Property 'extra' =
+    Description            = 'Extra information that Treeherder reads on a best-effort basis'
+    Type                   = 'object'
+    TypeName               = 'Extra'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/extra'
+  Property 'isRetried' =
+    Description            = 'True indicates this job has been retried.'
+    Type                   = 'boolean'
+    TypeName               = 'IsRetried'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/isRetried'
+  Property 'jobInfo' =
+    Additional Properties  = 'false'
+    Description            = 'Definition of the Job Info for a job.  These are extra data
+    fields that go along with a job that will be displayed in
+    the details panel within Treeherder.
+    '
+    ID                     = 'jobInfo'
+    Properties
+      Property 'links' =
+        Items
+          Additional Properties  = 'false'
+          Description            = 'List of URLs shown as key/value pairs.  Shown as:
+          "<label>: <linkText>" where linkText will be a link to the url.
+          '
+          Properties
+            Property 'label' =
+              MaxLength              = '50'
+              MinLength              = '1'
+              Type                   = 'string'
+              TypeName               = 'Label'
+              SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label'
+            Property 'linkText' =
+              MaxLength              = '50'
+              MinLength              = '1'
+              Type                   = 'string'
+              TypeName               = 'LinkText'
+              SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText'
+            Property 'url' =
+              Format                 = 'url'
+              Type                   = 'string'
+              TypeName               = 'URL'
+              SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url'
+          Required               = '[url linkText label]'
+          Type                   = 'object'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items'
+        Type                   = 'array'
+        TypeName               = 'Links'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links'
+      Property 'summary' =
+        Description            = 'Plain text description of the job and its state.  Submitted with
+        the final message about a task.
+        '
+        Type                   = 'string'
+        TypeName               = 'Summary'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/summary'
+    Type                   = 'object'
+    TypeName               = 'JobInfo'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo'
+  Property 'jobKind' =
+    Default                = 'other'
+    Enum                   = '[build test other]'
+    Type                   = 'string'
+    TypeName               = 'JobKind'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobKind'
+  Property 'labels' =
+    Description            = 'Labels are a dimension of a platform.  The values here can vary wildly,
+    so most strings are valid for this.  The list of labels that are used
+    is maleable going forward.
+    
+    These were formerly known as "Options" within "Option Collections" but
+    calling labels now so they can be understood to be just strings that
+    denotes a characteristic of the job.
+    
+    Some examples of labels that have been used:
+      opt    Optimize Compiler GCC optimize flags
+      debug  Debug flags passed in
+      pgo    Profile Guided Optimization - Like opt, but runs with profiling, then builds again using that profiling
+      asan   Address Sanitizer
+      tsan   Thread Sanitizer Build
+    '
+    Items
+      MaxLength              = '50'
+      MinLength              = '1'
+      Pattern                = '^[\w-]+$'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/labels/items'
+    Title                  = 'labels'
+    Type                   = 'array'
+    TypeName               = 'Labels'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/labels'
+  Property 'logs' =
+    Items
+      Additional Properties  = 'false'
+      Properties
+        Property 'errorsTruncated' =
+          Description            = 'If true, indicates that the number of errors in the log was too
+          large and not all of those lines are indicated here.
+          '
+          Type                   = 'boolean'
+          TypeName               = 'ErrorsTruncated'
+          SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated'
+        Property 'name' =
+          MaxLength              = '50'
+          MinLength              = '1'
+          Type                   = 'string'
+          TypeName               = 'Name'
+          SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/name'
+        Property 'steps' =
+          Description            = 'This object defines what is seen in the Treeherder Log Viewer.
+          These values can be submitted here, or they will be generated
+          by Treeherder's internal log parsing process from the
+          submitted log.  If this value is submitted, Treeherder will
+          consider the log already parsed and skip parsing.
+          '
+          Items
+            Properties
+              Property 'errors' =
+                Items
+                  Additional Properties  = 'false'
+                  Properties
+                    Property 'line' =
+                      MaxLength              = '255'
+                      MinLength              = '1'
+                      Type                   = 'string'
+                      TypeName               = 'Line'
+                      SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line'
+                    Property 'linenumber' =
+                      Minimum                = '0'
+                      Type                   = 'integer'
+                      TypeName               = 'Linenumber'
+                      SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber'
+                  Type                   = 'object'
+                  TypeName               = ''
+                  SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items'
+                Type                   = 'array'
+                TypeName               = 'Errors'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors'
+              Property 'lineFinished' =
+                Minimum                = '0'
+                Type                   = 'integer'
+                TypeName               = 'LineFinished'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished'
+              Property 'lineStarted' =
+                Minimum                = '0'
+                Type                   = 'integer'
+                TypeName               = 'LineStarted'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted'
+              Property 'name' =
+                MaxLength              = '255'
+                MinLength              = '1'
+                Type                   = 'string'
+                TypeName               = 'Name'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/name'
+              Property 'result' =
+                Enum                   = '[success fail exception canceled unknown]'
+                Type                   = 'string'
+                TypeName               = 'Result'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/result'
+              Property 'timeFinished' =
+                Format                 = 'date-time'
+                Type                   = 'string'
+                TypeName               = 'TimeFinished'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeFinished'
+              Property 'timeStarted' =
+                Format                 = 'date-time'
+                Type                   = 'string'
+                TypeName               = 'TimeStarted'
+                SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted'
+            Required               = '[name timeStarted lineStarted lineFinished timeFinished result]'
+            Type                   = 'object'
+            TypeName               = ''
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items'
+          Type                   = 'array'
+          TypeName               = 'Steps'
+          SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps'
+        Property 'url' =
+          Format                 = 'uri'
+          MaxLength              = '255'
+          MinLength              = '1'
+          Type                   = 'string'
+          TypeName               = 'URL'
+          SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/url'
+      Required               = '[url name]'
+      Type                   = 'object'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items'
+    Type                   = 'array'
+    TypeName               = 'Logs'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs'
+  Property 'origin' =
+    OneOf
+      Item '0' =
+        Properties
+          Property 'kind' =
+            Enum                   = '[hg.mozilla.org]'
+            Type                   = 'string'
+            TypeName               = 'Kind'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind'
+          Property 'project' =
+            MaxLength              = '50'
+            MinLength              = '1'
+            Pattern                = '^[\w-]+$'
+            Type                   = 'string'
+            TypeName               = 'Project'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project'
+          Property 'pushLogID' =
+            Type                   = 'integer'
+            TypeName               = 'PushLogID'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID'
+          Property 'revision' =
+            MaxLength              = '40'
+            MinLength              = '40'
+            Pattern                = '^[0-9a-f]+$'
+            Type                   = 'string'
+            TypeName               = 'Revision'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision'
+        Required               = '[kind project revision]'
+        Type                   = 'object'
+        TypeName               = 'Var'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]'
+      Item '1' =
+        Description            = 'BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
+        Some repos like mozilla-beta have not yet merged in the code that
+        allows them access to the revision.
+        '
+        Properties
+          Property 'kind' =
+            Enum                   = '[hg.mozilla.org]'
+            Type                   = 'string'
+            TypeName               = 'Kind'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind'
+          Property 'project' =
+            MaxLength              = '50'
+            MinLength              = '1'
+            Pattern                = '^[\w-]+$'
+            Type                   = 'string'
+            TypeName               = 'Project'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project'
+          Property 'pushLogID' =
+            Type                   = 'integer'
+            TypeName               = 'PushLogID'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pushLogID'
+          Property 'revision_hash' =
+            MaxLength              = '40'
+            MinLength              = '40'
+            Pattern                = '^[0-9a-f]+$'
+            Type                   = 'string'
+            TypeName               = 'Revision_Hash'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision_hash'
+        Required               = '[kind project revision_hash]'
+        Type                   = 'object'
+        TypeName               = 'Var1'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]'
+      Item '2' =
+        Properties
+          Property 'kind' =
+            Enum                   = '[github.com]'
+            Type                   = 'string'
+            TypeName               = 'Kind'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/kind'
+          Property 'owner' =
+            Description            = 'This could be the organization or the individual git username
+            depending on who owns the repo.
+            '
+            MaxLength              = '50'
+            MinLength              = '1'
+            Pattern                = '^[\w-]+$'
+            Type                   = 'string'
+            TypeName               = 'Owner'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/owner'
+          Property 'project' =
+            MaxLength              = '50'
+            MinLength              = '1'
+            Pattern                = '^[\w-]+$'
+            Type                   = 'string'
+            TypeName               = 'Project'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/project'
+          Property 'pullRequestID' =
+            Type                   = 'integer'
+            TypeName               = 'PullRequestID'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/pullRequestID'
+          Property 'revision' =
+            MaxLength              = '40'
+            MinLength              = '40'
+            Type                   = 'string'
+            TypeName               = 'Revision'
+            SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/revision'
+        Required               = '[kind project revision]'
+        Type                   = 'object'
+        TypeName               = 'Var2'
+        SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Origin'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin'
+  Property 'owner' =
+    Description            = 'Description of who submitted the job: gaia | scheduler name | username | email
+    '
+    MaxLength              = '50'
+    MinLength              = '1'
+    Title                  = 'owner'
+    Type                   = 'string'
+    TypeName               = 'Owner'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/owner'
+  Property 'productName' =
+    Description            = 'Examples include:
+    -  'b2g'
+    -  'firefox'
+    -  'taskcluster'
+    -  'xulrunner'
+    '
+    MaxLength              = '125'
+    MinLength              = '1'
+    Type                   = 'string'
+    TypeName               = 'ProductName'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/productName'
+  Property 'reason' =
+    Description            = 'Examples include:
+    - scheduled
+    - scheduler
+    - Self-serve: Rebuilt by foo@example.com
+    - Self-serve: Requested by foo@example.com
+    - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+    - unknown
+    '
+    MaxLength              = '125'
+    MinLength              = '1'
+    Type                   = 'string'
+    TypeName               = 'Reason'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/reason'
+  Property 'result' =
+    Description            = 'fail: A failure
+    exception: An infrastructure error/exception
+    success: Build/Test executed without error or failure
+    canceled: The job was cancelled by a user
+    unknown: When the job is not yet completed
+    '
+    Enum                   = '[success fail exception canceled unknown]'
+    Title                  = 'result'
+    Type                   = 'string'
+    TypeName               = 'Result'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/result'
+  Property 'retryId' =
+    Default                = '0'
+    Description            = 'The infrastructure retry iteration on this job.  The number of times this
+    job has been retried by the infrastructure.
+    If it's the 1st time running, then it should be 0. If this is the first
+    retry, it will be 1, etc.
+    '
+    Minimum                = '0'
+    Title                  = 'retryId'
+    Type                   = 'integer'
+    TypeName               = 'RetryID'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/retryId'
+  Property 'runMachine' =
+    Ref                    = '#/definitions/machine'
+    TypeName               = 'RunMachine'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/runMachine'
+  Property 'state' =
+    Description            = 'unscheduled: not yet scheduled
+    pending: not yet started
+    running: currently in progress
+    completed: Job ran through to completion
+    '
+    Enum                   = '[unscheduled pending running completed]'
+    Title                  = 'state'
+    Type                   = 'string'
+    TypeName               = 'State'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/state'
+  Property 'taskId' =
+    Description            = 'This could just be what was formerly submitted as a job_guid in the
+    REST API.
+    '
+    MaxLength              = '50'
+    MinLength              = '1'
+    Pattern                = '^[A-Za-z0-9/+-]+$'
+    Title                  = 'taskId'
+    Type                   = 'string'
+    TypeName               = 'TaskID'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/taskId'
+  Property 'tier' =
+    Maximum                = '3'
+    Minimum                = '1'
+    Type                   = 'integer'
+    TypeName               = 'Tier'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/tier'
+  Property 'timeCompleted' =
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'TimeCompleted'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeCompleted'
+  Property 'timeScheduled' =
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'TimeScheduled'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeScheduled'
+  Property 'timeStarted' =
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'TimeStarted'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeStarted'
+  Property 'version' =
+    Description            = 'Message version'
+    Type                   = 'integer'
+    TypeName               = 'Version'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/version'
+Required               = '[taskId origin display state jobKind version]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Job Definition'
+Type                   = 'object'
+TypeName               = 'JobDefinition'
+SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'
+
+
+http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
+============================================================================================
+Properties
+  Property 'architecture' =
+    MaxLength              = '25'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Architecture'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture'
+  Property 'name' =
+    MaxLength              = '50'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Name'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/name'
+  Property 'os' =
+    MaxLength              = '25'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'OS'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/os'
+  Property 'platform' =
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Platform'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/platform'
+Required               = '[platform os architecture]'
+Type                   = 'object'
+TypeName               = 'Machine'
+SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine'
+
+
+http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
+===================================================================================================
+Properties
+  Property 'kind' =
+    Enum                   = '[hg.mozilla.org]'
+    Type                   = 'string'
+    TypeName               = 'Kind'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind'
+  Property 'project' =
+    MaxLength              = '50'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Project'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project'
+  Property 'pushLogID' =
+    Type                   = 'integer'
+    TypeName               = 'PushLogID'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID'
+  Property 'revision' =
+    MaxLength              = '40'
+    MinLength              = '40'
+    Pattern                = '^[0-9a-f]+$'
+    Type                   = 'string'
+    TypeName               = 'Revision'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision'
+Required               = '[kind project revision]'
+Type                   = 'object'
+TypeName               = 'Var'
+SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]'
+
+
+http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
+===================================================================================================
+Description            = 'BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
+Some repos like mozilla-beta have not yet merged in the code that
+allows them access to the revision.
+'
+Properties
+  Property 'kind' =
+    Enum                   = '[hg.mozilla.org]'
+    Type                   = 'string'
+    TypeName               = 'Kind'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind'
+  Property 'project' =
+    MaxLength              = '50'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Project'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project'
+  Property 'pushLogID' =
+    Type                   = 'integer'
+    TypeName               = 'PushLogID'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pushLogID'
+  Property 'revision_hash' =
+    MaxLength              = '40'
+    MinLength              = '40'
+    Pattern                = '^[0-9a-f]+$'
+    Type                   = 'string'
+    TypeName               = 'Revision_Hash'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision_hash'
+Required               = '[kind project revision_hash]'
+Type                   = 'object'
+TypeName               = 'Var1'
+SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]'
+
+
+http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]
+===================================================================================================
+Properties
+  Property 'kind' =
+    Enum                   = '[github.com]'
+    Type                   = 'string'
+    TypeName               = 'Kind'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/kind'
+  Property 'owner' =
+    Description            = 'This could be the organization or the individual git username
+    depending on who owns the repo.
+    '
+    MaxLength              = '50'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Owner'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/owner'
+  Property 'project' =
+    MaxLength              = '50'
+    MinLength              = '1'
+    Pattern                = '^[\w-]+$'
+    Type                   = 'string'
+    TypeName               = 'Project'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/project'
+  Property 'pullRequestID' =
+    Type                   = 'integer'
+    TypeName               = 'PullRequestID'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/pullRequestID'
+  Property 'revision' =
+    MaxLength              = '40'
+    MinLength              = '40'
+    Type                   = 'string'
+    TypeName               = 'Revision'
+    SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/revision'
+Required               = '[kind project revision]'
+Type                   = 'object'
+TypeName               = 'Var2'
+SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]'
 
 
