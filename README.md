@@ -30,6 +30,7 @@ This library provides the following packages to interface with TaskCluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecacheevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/schedulerevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/treeherderevents
 
 ## Example programs
 
