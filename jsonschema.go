@@ -2,6 +2,7 @@ package jsonschema2go
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/format"
 	"io"
@@ -30,29 +31,42 @@ type (
 		AllOf                *Items                `json:"allOf"`
 		AnyOf                *Items                `json:"anyOf"`
 		Default              *interface{}          `json:"default"`
+		Definitions          *Properties           `json:"definitions"`
+		Dependencies         *Properties           `json:"dependencies"`
 		Description          *string               `json:"description"`
 		Enum                 []interface{}         `json:"enum"`
+		ExclusiveMaximum     *bool                 `json:"exclusiveMaximum"`
+		ExclusiveMinimum     *bool                 `json:"exclusiveMinimum"`
 		Format               *string               `json:"format"`
 		ID                   *string               `json:"id"`
 		Items                *JsonSubSchema        `json:"items"`
 		Maximum              *int                  `json:"maximum"`
+		MaxItems             *int                  `json:"maxItems"`
 		MaxLength            *int                  `json:"maxLength"`
+		MaxProperties        *int                  `json:"maxProperties"`
 		Minimum              *int                  `json:"minimum"`
+		MinItems             *int                  `json:"minItems"`
 		MinLength            *int                  `json:"minLength"`
+		MinProperties        *int                  `json:"minProperties"`
+		MultipleOf           *int                  `json:"multipleOf"`
 		OneOf                *Items                `json:"oneOf"`
 		Pattern              *string               `json:"pattern"`
+		PatternProperties    *Properties           `json:"patternProperties"`
 		Properties           *Properties           `json:"properties"`
 		Ref                  *string               `json:"$ref"`
 		Required             []string              `json:"required"`
 		Schema               *string               `json:"$schema"`
 		Title                *string               `json:"title"`
 		Type                 *string               `json:"type"`
+		UniqueItems          *bool                 `json:"uniqueItems"`
 
 		// non-json fields used for sorting/tracking
 		TypeName     string         `json:"-"`
 		SourceURL    string         `json:"-"`
 		RefSubSchema *JsonSubSchema `json:"-"`
 		IsRequired   bool           `json:"-"`
+		// the json schema at the root of the schema document
+		RootSchema *JsonSubSchema `json:"-"`
 	}
 
 	Items []JsonSubSchema
@@ -61,6 +75,8 @@ type (
 		Properties          map[string]*JsonSubSchema
 		SortedPropertyNames []string
 		SourceURL           string
+		// the json schema at the root of the schema document
+		RootSchema *JsonSubSchema `json:"-"`
 	}
 
 	AdditionalProperties struct {
@@ -101,6 +117,7 @@ func (schemaSet *SchemaSet) SortedSanitizedURLs() []string {
 }
 
 var itemsMap map[*Items]string = make(map[*Items]string)
+var itemsRootSchemaMap map[*Items]*JsonSubSchema = make(map[*Items]*JsonSubSchema)
 
 func (subSchema JsonSubSchema) String() string {
 	result := ""
@@ -284,7 +301,7 @@ func (p *Properties) postPopulate(job *Job) error {
 		for propertyName := range p.Properties {
 			p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
 			// subscehams need to have SourceURL set
-			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
+			p.Properties[propertyName].setSource(p.SourceURL+"/"+propertyName, p.RootSchema)
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[propertyName].postPopulate(job)
 			if err != nil {
@@ -300,8 +317,9 @@ func (p *Properties) postPopulate(job *Job) error {
 	return nil
 }
 
-func (p *Properties) setSourceURL(url string) {
+func (p *Properties) setSource(url string, rootSchema *JsonSubSchema) {
 	p.SourceURL = url
+	p.RootSchema = rootSchema
 }
 
 func (p *Properties) UnmarshalJSON(bytes []byte) (err error) {
@@ -338,7 +356,7 @@ func (items Items) String() string {
 
 func (items *Items) postPopulate(job *Job) error {
 	for i := range *items {
-		(*items)[i].setSourceURL(itemsMap[items] + "[" + strconv.Itoa(i) + "]")
+		(*items)[i].setSource(itemsMap[items]+"["+strconv.Itoa(i)+"]", itemsRootSchemaMap[items])
 		err := (*items)[i].postPopulate(job)
 		if err != nil {
 			return err
@@ -356,16 +374,19 @@ func (job *Job) add(url string, subSchema *JsonSubSchema) {
 		return
 	}
 	job.result.SchemaSet.set[sanitizedURL] = subSchema
-	if subSchema.Title != nil {
-		subSchema.TypeName = text.GoIdentifierFrom(*subSchema.Title, job.ExportTypes, job.result.SchemaSet.typeNames)
-	} else {
-		subSchema.TypeName = text.GoIdentifierFrom("var", job.ExportTypes, job.result.SchemaSet.typeNames)
+	if subSchema.TypeName == "" {
+		if subSchema.Title != nil {
+			subSchema.TypeName = text.GoIdentifierFrom(*subSchema.Title, job.ExportTypes, job.result.SchemaSet.typeNames)
+		} else {
+			subSchema.TypeName = text.GoIdentifierFrom("var", job.ExportTypes, job.result.SchemaSet.typeNames)
+		}
 	}
 }
 
-func (items *Items) setSourceURL(url string) {
+func (items *Items) setSource(url string, rootSchema *JsonSubSchema) {
 	// can't set this in the object so need to store outside in global array
 	itemsMap[items] = url
+	itemsRootSchemaMap[items] = rootSchema
 }
 
 func describeList(name string, value interface{}) string {
@@ -389,13 +410,13 @@ func describe(name string, value interface{}) string {
 
 type canPopulate interface {
 	postPopulate(*Job) error
-	setSourceURL(string)
+	setSource(string, *JsonSubSchema)
 }
 
-func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string) error {
+func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string, rootSchema *JsonSubSchema) error {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
-			canPopulate.setSourceURL(subSchema.SourceURL + suffix)
+			canPopulate.setSource(subSchema.SourceURL+suffix, rootSchema)
 			err := canPopulate.postPopulate(job)
 			if err != nil {
 				return err
@@ -406,31 +427,45 @@ func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, jo
 }
 
 func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
-	err = subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf")
+	err = subSchema.postPopulateIfNotNil(subSchema.Definitions, job, "/definitions", subSchema.RootSchema)
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf")
+	err = subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf", subSchema.RootSchema)
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf")
+	err = subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf", subSchema.RootSchema)
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items")
+	err = subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf", subSchema.RootSchema)
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties")
+	err = subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items", subSchema.RootSchema)
+	if err != nil {
+		return err
+	}
+	err = subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties", subSchema.RootSchema)
 	if err != nil {
 		return err
 	}
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
-	subSchema.RefSubSchema, err = job.cacheJsonSchema(subSchema.Ref)
-	if err != nil {
-		return err
+	if ref := subSchema.Ref; ref != nil && *ref != "" {
+		switch true {
+		case *ref == "#":
+			subSchema.RefSubSchema = subSchema
+		case strings.HasPrefix(*ref, "#/definitions/"):
+			subSchema.RefSubSchema = subSchema.RootSchema.Definitions.Properties[(*ref)[len("#/definitions/"):]]
+			job.add(subSchema.RefSubSchema.SourceURL, subSchema.RefSubSchema)
+		default:
+			subSchema.RefSubSchema, err = job.cacheJsonSchema(*subSchema.Ref)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	// Find and tag subschema properties that are in required list
 	for _, req := range subSchema.Required {
@@ -443,15 +478,16 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	return nil
 }
 
-func (subSchema *JsonSubSchema) setSourceURL(url string) {
+func (subSchema *JsonSubSchema) setSource(url string, rootSchema *JsonSubSchema) {
 	subSchema.SourceURL = url
+	subSchema.RootSchema = rootSchema
 }
 
-func (job *Job) loadJsonSchema(URL string) (*JsonSubSchema, error) {
+func (job *Job) loadJsonSchema(URL string) error {
 	var resp *http.Response
 	u, err := url.Parse(URL)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	var body io.ReadCloser
 	// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
@@ -459,13 +495,13 @@ func (job *Job) loadJsonSchema(URL string) (*JsonSubSchema, error) {
 	case "http", "https":
 		resp, err = http.Get(URL)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		body = resp.Body
 	case "file":
 		body, err = os.Open(u.Path)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	default:
 		fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
@@ -474,40 +510,40 @@ func (job *Job) loadJsonSchema(URL string) (*JsonSubSchema, error) {
 	defer body.Close()
 	data, err := ioutil.ReadAll(body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// json is valid YAML, so we can safely convert, even if it is already json
 	j, err := yaml.YAMLToJSON(data)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	m := new(JsonSubSchema)
 	err = json.Unmarshal(j, m)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	m.SourceURL = sanitizeURL(URL)
+	m.setSource(sanitizeURL(URL), m)
 	err = m.postPopulate(job)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return m, nil
+	job.add(URL, m)
+	return nil
 }
 
-func (job *Job) cacheJsonSchema(url *string) (*JsonSubSchema, error) {
+func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	// if url is not provided, there is nothing to download
-	if url == nil || *url == "" {
-		return nil, nil
+	if url == "" {
+		return nil, errors.New("Empty url in cacheJsonSchema")
 	}
 	// only fetch if we haven't fetched already...
-	if _, ok := job.result.SchemaSet.set[*url]; !ok {
-		schema, err := job.loadJsonSchema(*url)
+	if _, ok := job.result.SchemaSet.set[url]; !ok {
+		err := job.loadJsonSchema(url)
 		if err != nil {
 			return nil, err
 		}
-		job.add(*url, schema)
 	}
-	return job.result.SchemaSet.SubSchema(*url), nil
+	return job.result.SchemaSet.SubSchema(url), nil
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
@@ -558,7 +594,7 @@ func (job *Job) Execute() (*Result, error) {
 		typeNames: make(stringSet),
 	}
 	for _, URL := range job.URLs {
-		_, err := job.cacheJsonSchema(&URL)
+		_, err := job.cacheJsonSchema(URL)
 		if err != nil {
 			return nil, err
 		}
