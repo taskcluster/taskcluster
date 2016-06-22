@@ -291,7 +291,7 @@ properties:
       links:
         type: array
         items:
-        - type: object
+          type: object
           description: |
             List of URLs shown as key/value pairs.  Shown as:
             "<label>: <linkText>" where linkText will be a link to the url.
