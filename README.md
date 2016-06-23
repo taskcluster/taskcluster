@@ -527,7 +527,8 @@ func main() {
 
 - [ ] Properly document all exported types for better go docs
 - [ ] Handle `$ref` references that start with `#` character
-- [ ] Handle nested definition sections
+- [ ] Enforce references point to definitions (if that is a requirement)
+- [ ] Support all the JsonSubSchema attributes that have been added but are ignored
 - [ ] Test cases
 - [ ] Coverage reporting
 - [ ] Validate json with json schema, and handle failures gracefully (no panics)
