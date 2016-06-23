@@ -26,39 +26,39 @@ type (
 	// in the json we read, or whether it was not given. Unmarshaling into a pointer means pointer
 	// will be nil pointer if it wasn't read, or a pointer to true/false if it was read from json.
 	JsonSubSchema struct {
-		AdditionalItems      *bool                 `json:"additionalItems"`
-		AdditionalProperties *AdditionalProperties `json:"additionalProperties"`
-		AllOf                *Items                `json:"allOf"`
-		AnyOf                *Items                `json:"anyOf"`
-		Default              *interface{}          `json:"default"`
-		Definitions          *Properties           `json:"definitions"`
-		Dependencies         *Properties           `json:"dependencies"`
-		Description          *string               `json:"description"`
-		Enum                 []interface{}         `json:"enum"`
-		ExclusiveMaximum     *bool                 `json:"exclusiveMaximum"`
-		ExclusiveMinimum     *bool                 `json:"exclusiveMinimum"`
-		Format               *string               `json:"format"`
-		ID                   *string               `json:"id"`
-		Items                *JsonSubSchema        `json:"items"`
-		Maximum              *int                  `json:"maximum"`
-		MaxItems             *int                  `json:"maxItems"`
-		MaxLength            *int                  `json:"maxLength"`
-		MaxProperties        *int                  `json:"maxProperties"`
-		Minimum              *int                  `json:"minimum"`
-		MinItems             *int                  `json:"minItems"`
-		MinLength            *int                  `json:"minLength"`
-		MinProperties        *int                  `json:"minProperties"`
-		MultipleOf           *int                  `json:"multipleOf"`
-		OneOf                *Items                `json:"oneOf"`
-		Pattern              *string               `json:"pattern"`
-		PatternProperties    *Properties           `json:"patternProperties"`
-		Properties           *Properties           `json:"properties"`
-		Ref                  *string               `json:"$ref"`
-		Required             []string              `json:"required"`
-		Schema               *string               `json:"$schema"`
-		Title                *string               `json:"title"`
-		Type                 *string               `json:"type"`
-		UniqueItems          *bool                 `json:"uniqueItems"`
+		AdditionalItems      *bool                  `json:"additionalItems"`
+		AdditionalProperties *AdditionalProperties  `json:"additionalProperties"`
+		AllOf                *Items                 `json:"allOf"`
+		AnyOf                *Items                 `json:"anyOf"`
+		Default              *interface{}           `json:"default"`
+		Definitions          *Properties            `json:"definitions"`
+		Dependencies         map[string]*Dependency `json:"dependencies"`
+		Description          *string                `json:"description"`
+		Enum                 []interface{}          `json:"enum"`
+		ExclusiveMaximum     *bool                  `json:"exclusiveMaximum"`
+		ExclusiveMinimum     *bool                  `json:"exclusiveMinimum"`
+		Format               *string                `json:"format"`
+		ID                   *string                `json:"id"`
+		Items                *JsonSubSchema         `json:"items"`
+		Maximum              *int                   `json:"maximum"`
+		MaxItems             *int                   `json:"maxItems"`
+		MaxLength            *int                   `json:"maxLength"`
+		MaxProperties        *int                   `json:"maxProperties"`
+		Minimum              *int                   `json:"minimum"`
+		MinItems             *int                   `json:"minItems"`
+		MinLength            *int                   `json:"minLength"`
+		MinProperties        *int                   `json:"minProperties"`
+		MultipleOf           *int                   `json:"multipleOf"`
+		OneOf                *Items                 `json:"oneOf"`
+		Pattern              *string                `json:"pattern"`
+		PatternProperties    *Properties            `json:"patternProperties"`
+		Properties           *Properties            `json:"properties"`
+		Ref                  *string                `json:"$ref"`
+		Required             []string               `json:"required"`
+		Schema               *string                `json:"$schema"`
+		Title                *string                `json:"title"`
+		Type                 *string                `json:"type"`
+		UniqueItems          *bool                  `json:"uniqueItems"`
 
 		// non-json fields used for sorting/tracking
 		TypeName     string         `json:"-"`
@@ -83,6 +83,11 @@ type (
 	AdditionalProperties struct {
 		Boolean    *bool
 		Properties *JsonSubSchema
+	}
+
+	Dependency struct {
+		SchemaDependency   *JsonSubSchema
+		PropertyDependency *[]string
 	}
 
 	canPopulate interface {
@@ -244,14 +249,18 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 	}
 	switch typ {
 	case "array":
-		if jsonType := jsonSubSchema.Items.Type; jsonType != nil {
-			var arrayType string
-			_, _, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
-			typ = "[]" + arrayType
-		} else {
-			if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
-				typ = "[]" + refSubSchema.TypeName
+		if jsonSubSchema.Items != nil {
+			if jsonSubSchema.Items.Type != nil {
+				var arrayType string
+				_, _, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
+				typ = "[]" + arrayType
+			} else {
+				if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
+					typ = "[]" + refSubSchema.TypeName
+				}
 			}
+		} else {
+			typ = "[]interface{}"
 		}
 	case "object":
 		if s := jsonSubSchema.Properties; s != nil {
@@ -345,6 +354,18 @@ func (i *Items) UnmarshalJSON(bytes []byte) (err error) {
 
 func (p *Properties) UnmarshalJSON(bytes []byte) (err error) {
 	err = json.Unmarshal(bytes, &p.Properties)
+	return
+}
+
+func (d *Dependency) UnmarshalJSON(bytes []byte) (err error) {
+	s, j := &[]string{}, new(JsonSubSchema)
+	if err = json.Unmarshal(bytes, s); err == nil {
+		d.PropertyDependency = s
+		return
+	}
+	if err = json.Unmarshal(bytes, j); err == nil {
+		d.SchemaDependency = j
+	}
 	return
 }
 
