@@ -65,11 +65,12 @@ type (
 		SourceURL    string         `json:"-"`
 		RefSubSchema *JsonSubSchema `json:"-"`
 		IsRequired   bool           `json:"-"`
-		// the json schema at the root of the schema document
-		RootSchema *JsonSubSchema `json:"-"`
 	}
 
-	Items []JsonSubSchema
+	Items struct {
+		Items     []*JsonSubSchema
+		SourceURL string
+	}
 
 	Properties struct {
 		Properties          map[string]*JsonSubSchema
@@ -84,12 +85,31 @@ type (
 		Properties *JsonSubSchema
 	}
 
-	stringSet map[string]bool
+	canPopulate interface {
+		postPopulate(*Job) error
+		setSourceURL(string)
+	}
 
+	Job struct {
+		Package     string
+		ExportTypes bool
+		URLs        []string
+		result      *Result
+	}
+
+	Result struct {
+		SourceCode []byte
+		SchemaSet  *SchemaSet
+	}
+
+	// SchemaSet contains the JsonSubSchemas objects read when performing a Job.
 	SchemaSet struct {
-		set       map[string]*JsonSubSchema
+		all       map[string]*JsonSubSchema
+		used      map[string]*JsonSubSchema
 		typeNames stringSet
 	}
+
+	stringSet map[string]bool
 )
 
 // Ensure url contains "#" by adding it to end if needed
@@ -102,22 +122,19 @@ func sanitizeURL(url string) string {
 }
 
 func (schemaSet *SchemaSet) SubSchema(url string) *JsonSubSchema {
-	return schemaSet.set[sanitizeURL(url)]
+	return schemaSet.all[sanitizeURL(url)]
 }
 
 func (schemaSet *SchemaSet) SortedSanitizedURLs() []string {
-	keys := make([]string, len(schemaSet.set))
+	keys := make([]string, len(schemaSet.used))
 	i := 0
-	for k := range schemaSet.set {
+	for k := range schemaSet.used {
 		keys[i] = k
 		i++
 	}
 	sort.Strings(keys)
 	return keys
 }
-
-var itemsMap map[*Items]string = make(map[*Items]string)
-var itemsRootSchemaMap map[*Items]*JsonSubSchema = make(map[*Items]*JsonSubSchema)
 
 func (subSchema JsonSubSchema) String() string {
 	result := ""
@@ -301,7 +318,7 @@ func (p *Properties) postPopulate(job *Job) error {
 		for propertyName := range p.Properties {
 			p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
 			// subscehams need to have SourceURL set
-			p.Properties[propertyName].setSource(p.SourceURL+"/"+propertyName, p.RootSchema)
+			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[propertyName].postPopulate(job)
 			if err != nil {
@@ -317,9 +334,13 @@ func (p *Properties) postPopulate(job *Job) error {
 	return nil
 }
 
-func (p *Properties) setSource(url string, rootSchema *JsonSubSchema) {
+func (p *Properties) setSourceURL(url string) {
 	p.SourceURL = url
-	p.RootSchema = rootSchema
+}
+
+func (i *Items) UnmarshalJSON(bytes []byte) (err error) {
+	err = json.Unmarshal(bytes, &i.Items)
+	return
 }
 
 func (p *Properties) UnmarshalJSON(bytes []byte) (err error) {
@@ -348,32 +369,31 @@ func (aP AdditionalProperties) String() string {
 
 func (items Items) String() string {
 	result := ""
-	for i, j := range items {
+	for i, j := range items.Items {
 		result += fmt.Sprintf("Item '%v' =\n", i) + text.Indent(j.String(), "  ")
 	}
 	return result
 }
 
 func (items *Items) postPopulate(job *Job) error {
-	for i := range *items {
-		(*items)[i].setSource(itemsMap[items]+"["+strconv.Itoa(i)+"]", itemsRootSchemaMap[items])
-		err := (*items)[i].postPopulate(job)
+	for i, j := range (*items).Items {
+		j.setSourceURL(items.SourceURL + "[" + strconv.Itoa(i) + "]")
+		err := j.postPopulate(job)
 		if err != nil {
 			return err
 		}
 		// add to schemas so we get a type generated for it in source code
-		job.add((*items)[i].SourceURL, &(*items)[i])
+		job.add(j)
 	}
 	return nil
 }
 
-func (job *Job) add(url string, subSchema *JsonSubSchema) {
-	sanitizedURL := sanitizeURL(url)
+func (job *Job) add(subSchema *JsonSubSchema) {
 	// if we have already included in the schema set, nothing to do...
-	if _, ok := job.result.SchemaSet.set[sanitizedURL]; ok {
+	if _, ok := job.result.SchemaSet.used[subSchema.SourceURL]; ok {
 		return
 	}
-	job.result.SchemaSet.set[sanitizedURL] = subSchema
+	job.result.SchemaSet.used[subSchema.SourceURL] = subSchema
 	if subSchema.TypeName == "" {
 		if subSchema.Title != nil {
 			subSchema.TypeName = text.GoIdentifierFrom(*subSchema.Title, job.ExportTypes, job.result.SchemaSet.typeNames)
@@ -383,10 +403,8 @@ func (job *Job) add(url string, subSchema *JsonSubSchema) {
 	}
 }
 
-func (items *Items) setSource(url string, rootSchema *JsonSubSchema) {
-	// can't set this in the object so need to store outside in global array
-	itemsMap[items] = url
-	itemsRootSchemaMap[items] = rootSchema
+func (items *Items) setSourceURL(url string) {
+	items.SourceURL = url
 }
 
 func describeList(name string, value interface{}) string {
@@ -408,15 +426,10 @@ func describe(name string, value interface{}) string {
 	return ""
 }
 
-type canPopulate interface {
-	postPopulate(*Job) error
-	setSource(string, *JsonSubSchema)
-}
-
-func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string, rootSchema *JsonSubSchema) error {
+func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string) error {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
-			canPopulate.setSource(subSchema.SourceURL+suffix, rootSchema)
+			canPopulate.setSourceURL(subSchema.SourceURL + suffix)
 			err := canPopulate.postPopulate(job)
 			if err != nil {
 				return err
@@ -427,40 +440,38 @@ func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, jo
 }
 
 func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
-	err = subSchema.postPopulateIfNotNil(subSchema.Definitions, job, "/definitions", subSchema.RootSchema)
+	// setSourceURL(string) should always called before postPopulate(*Job), so
+	// we can rely on it being already set
+	job.result.SchemaSet.all[subSchema.SourceURL] = subSchema
+	err = subSchema.postPopulateIfNotNil(subSchema.Definitions, job, "/definitions")
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf", subSchema.RootSchema)
+	err = subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf")
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf", subSchema.RootSchema)
+	err = subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf")
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf", subSchema.RootSchema)
+	err = subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf")
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items", subSchema.RootSchema)
+	err = subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items")
 	if err != nil {
 		return err
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties", subSchema.RootSchema)
+	err = subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties")
 	if err != nil {
 		return err
 	}
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
-		switch true {
-		case *ref == "#":
-			subSchema.RefSubSchema = subSchema
-		case strings.HasPrefix(*ref, "#/definitions/"):
-			subSchema.RefSubSchema = subSchema.RootSchema.Definitions.Properties[(*ref)[len("#/definitions/"):]]
-			job.add(subSchema.RefSubSchema.SourceURL, subSchema.RefSubSchema)
-		default:
+		// only need to cache a schema if it isn't relative to the current document
+		if !strings.HasPrefix(*ref, "#") {
 			subSchema.RefSubSchema, err = job.cacheJsonSchema(*subSchema.Ref)
 			if err != nil {
 				return err
@@ -478,16 +489,15 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	return nil
 }
 
-func (subSchema *JsonSubSchema) setSource(url string, rootSchema *JsonSubSchema) {
+func (subSchema *JsonSubSchema) setSourceURL(url string) {
 	subSchema.SourceURL = url
-	subSchema.RootSchema = rootSchema
 }
 
-func (job *Job) loadJsonSchema(URL string) error {
+func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error) {
 	var resp *http.Response
 	u, err := url.Parse(URL)
 	if err != nil {
-		return err
+		return
 	}
 	var body io.ReadCloser
 	// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
@@ -495,13 +505,13 @@ func (job *Job) loadJsonSchema(URL string) error {
 	case "http", "https":
 		resp, err = http.Get(URL)
 		if err != nil {
-			return err
+			return
 		}
 		body = resp.Body
 	case "file":
 		body, err = os.Open(u.Path)
 		if err != nil {
-			return err
+			return
 		}
 	default:
 		fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
@@ -510,25 +520,21 @@ func (job *Job) loadJsonSchema(URL string) error {
 	defer body.Close()
 	data, err := ioutil.ReadAll(body)
 	if err != nil {
-		return err
+		return
 	}
 	// json is valid YAML, so we can safely convert, even if it is already json
 	j, err := yaml.YAMLToJSON(data)
 	if err != nil {
-		return err
+		return
 	}
-	m := new(JsonSubSchema)
-	err = json.Unmarshal(j, m)
+	subSchema = new(JsonSubSchema)
+	err = json.Unmarshal(j, subSchema)
 	if err != nil {
-		return err
+		return
 	}
-	m.setSource(sanitizeURL(URL), m)
-	err = m.postPopulate(job)
-	if err != nil {
-		return err
-	}
-	job.add(URL, m)
-	return nil
+	subSchema.setSourceURL(sanitizeURL(URL))
+	err = subSchema.postPopulate(job)
+	return
 }
 
 func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
@@ -536,14 +542,12 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	if url == "" {
 		return nil, errors.New("Empty url in cacheJsonSchema")
 	}
+	sanitizedURL := sanitizeURL(url)
 	// only fetch if we haven't fetched already...
-	if _, ok := job.result.SchemaSet.set[url]; !ok {
-		err := job.loadJsonSchema(url)
-		if err != nil {
-			return nil, err
-		}
+	if _, ok := job.result.SchemaSet.all[sanitizedURL]; !ok {
+		return job.loadJsonSchema(sanitizedURL)
 	}
-	return job.result.SchemaSet.SubSchema(url), nil
+	return job.result.SchemaSet.SubSchema(sanitizedURL), nil
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
@@ -558,8 +562,8 @@ func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	typeDefinitions := make(map[string]string)
-	typeNames := make([]string, 0, len(schemaSet.set))
-	for _, i := range schemaSet.set {
+	typeNames := make([]string, 0, len(schemaSet.used))
+	for _, i := range schemaSet.used {
 		var newComment, newMember, newType string
 		newComment, newMember, newType, extraPackages, rawMessageTypes = i.typeDefinition(true, extraPackages, rawMessageTypes)
 		typeDefinitions[i.TypeName] = text.Indent(newComment+newMember+" "+newType, "\t")
@@ -572,33 +576,43 @@ func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
 	return content + ")\n\n", extraPackages, rawMessageTypes
 }
 
-type Job struct {
-	Package     string
-	ExportTypes bool
-	URLs        []string
-	result      *Result
-}
-
-type Result struct {
-	SourceCode []byte
-	SchemaSet  *SchemaSet
-}
-
 func (job *Job) Execute() (*Result, error) {
 	// Generate normalised names for schemas. Keep a record of generated type
 	// names, so that we don't reuse old names. Set acts like a set
 	// of strings.
 	job.result = new(Result)
 	job.result.SchemaSet = &SchemaSet{
-		set:       make(map[string]*JsonSubSchema),
+		all:       make(map[string]*JsonSubSchema),
+		used:      make(map[string]*JsonSubSchema),
 		typeNames: make(stringSet),
 	}
 	for _, URL := range job.URLs {
-		_, err := job.cacheJsonSchema(URL)
+		j, err := job.cacheJsonSchema(URL)
 		if err != nil {
 			return nil, err
 		}
+		// note we don't add inside cacheJsonSchema/loadJsonSchema
+		// since we don't want to add e.g. top level items if only
+		// definitions inside the schema are referenced
+		job.add(j)
 	}
+
+	// link schemas (update cross references between schemas)
+	for _, j := range job.result.SchemaSet.all {
+		// if there is a referenced schema...
+		if j.Ref != nil && *j.Ref != "" {
+			// see if it is relative to current doc, or absolute reference
+			var fullyQualifiedRef string
+			if (*j.Ref)[0] == '#' {
+				fullyQualifiedRef = j.SourceURL[:strings.Index(j.SourceURL, "#")] + *j.Ref
+			} else {
+				fullyQualifiedRef = sanitizeURL(*j.Ref)
+			}
+			j.RefSubSchema = job.result.SchemaSet.all[fullyQualifiedRef]
+			job.add(j.RefSubSchema)
+		}
+	}
+
 	types, extraPackages, rawMessageTypes := generateGoTypes(job.result.SchemaSet)
 	content := `// This source code file is AUTO-GENERATED by github.com/taskcluster/jsonschema2go
 
