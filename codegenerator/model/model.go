@@ -234,9 +234,9 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 			ExportTypes: true,
 		}
 		result, err := job.Execute()
-		apiDefs[i].schemas = result.SchemaSet
-
 		exitOnFail(err)
+
+		apiDefs[i].schemas = result.SchemaSet
 		typesSourceFile := filepath.Join(apiDefs[i].PackagePath, "types.go")
 		formatSourceAndSave(typesSourceFile, result.SourceCode)
 
