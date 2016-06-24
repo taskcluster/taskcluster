@@ -181,7 +181,7 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 		content += "\n"
 	}
 	content += "//\n"
-	content += fmt.Sprintf("// See %v/#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
+	content += fmt.Sprintf("// See %v#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
 	content += "type " + exchangeEntry + " struct {\n"
 	keyNames := make(map[string]bool, len(entry.RoutingKey))
 	for _, rk := range entry.RoutingKey {
