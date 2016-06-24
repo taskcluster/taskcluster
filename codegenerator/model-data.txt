@@ -1,4 +1,4 @@
-Generated: 1466627773
+Generated: 1466774900
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10317,8 +10317,9 @@ Properties
             TypeName               = 'Revision'
             SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision'
         Required               = '[kind project revision]'
+        Title                  = 'HG Push'
         Type                   = 'object'
-        TypeName               = 'Var'
+        TypeName               = 'HGPush'
         SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]'
       Item '1' =
         Description            = 'BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
@@ -10350,8 +10351,9 @@ Properties
             TypeName               = 'Revision_Hash'
             SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision_hash'
         Required               = '[kind project revision_hash]'
+        Title                  = 'HG Push Legacy'
         Type                   = 'object'
-        TypeName               = 'Var1'
+        TypeName               = 'HGPushLegacy'
         SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]'
       Item '2' =
         Properties
@@ -10388,8 +10390,9 @@ Properties
             TypeName               = 'Revision'
             SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/revision'
         Required               = '[kind project revision]'
+        Title                  = 'Github Pull Request'
         Type                   = 'object'
-        TypeName               = 'Var2'
+        TypeName               = 'GithubPullRequest'
         SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]'
     Type HAS NOT BEEN SET!!!
     TypeName               = 'Origin'
@@ -10577,8 +10580,9 @@ Properties
     TypeName               = 'Revision'
     SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision'
 Required               = '[kind project revision]'
+Title                  = 'HG Push'
 Type                   = 'object'
-TypeName               = 'Var'
+TypeName               = 'HGPush'
 SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]'
 
 
@@ -10613,8 +10617,9 @@ Properties
     TypeName               = 'Revision_Hash'
     SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision_hash'
 Required               = '[kind project revision_hash]'
+Title                  = 'HG Push Legacy'
 Type                   = 'object'
-TypeName               = 'Var1'
+TypeName               = 'HGPushLegacy'
 SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]'
 
 
@@ -10654,8 +10659,9 @@ Properties
     TypeName               = 'Revision'
     SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/revision'
 Required               = '[kind project revision]'
+Title                  = 'Github Pull Request'
 Type                   = 'object'
-TypeName               = 'Var2'
+TypeName               = 'GithubPullRequest'
 SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]'
 
 

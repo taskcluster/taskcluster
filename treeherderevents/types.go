@@ -9,6 +9,100 @@ import (
 )
 
 type (
+	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]
+	GithubPullRequest struct {
+
+		// Possible values:
+		//   * "github.com"
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/kind
+		Kind string `json:"kind"`
+
+		// This could be the organization or the individual git username
+		// depending on who owns the repo.
+		//
+		// Syntax:     ^[\w-]+$
+		// Min length: 1
+		// Max length: 50
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/owner
+		Owner string `json:"owner,omitempty"`
+
+		// Syntax:     ^[\w-]+$
+		// Min length: 1
+		// Max length: 50
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/project
+		Project string `json:"project"`
+
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/pullRequestID
+		PullRequestID int `json:"pullRequestID,omitempty"`
+
+		// Min length: 40
+		// Max length: 40
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/revision
+		Revision string `json:"revision"`
+	}
+
+	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
+	HGPush struct {
+
+		// Possible values:
+		//   * "hg.mozilla.org"
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind
+		Kind string `json:"kind"`
+
+		// Syntax:     ^[\w-]+$
+		// Min length: 1
+		// Max length: 50
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project
+		Project string `json:"project"`
+
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
+		PushLogID int `json:"pushLogID,omitempty"`
+
+		// Syntax:     ^[0-9a-f]+$
+		// Min length: 40
+		// Max length: 40
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision
+		Revision string `json:"revision"`
+	}
+
+	// BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
+	// Some repos like mozilla-beta have not yet merged in the code that
+	// allows them access to the revision.
+	//
+	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
+	HGPushLegacy struct {
+
+		// Possible values:
+		//   * "hg.mozilla.org"
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind
+		Kind string `json:"kind"`
+
+		// Syntax:     ^[\w-]+$
+		// Min length: 1
+		// Max length: 50
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project
+		Project string `json:"project"`
+
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pushLogID
+		PushLogID int `json:"pushLogID,omitempty"`
+
+		// Syntax:     ^[0-9a-f]+$
+		// Min length: 40
+		// Max length: 40
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision_hash
+		Revision_Hash string `json:"revision_hash"`
+	}
+
 	// Definition of a single job that can be added to Treeherder
 	// Project is determined by the routing key, so we don't need to specify it here.
 	//
@@ -369,99 +463,5 @@ type (
 		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
 		Platform string `json:"platform"`
-	}
-
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
-	Var struct {
-
-		// Possible values:
-		//   * "hg.mozilla.org"
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind
-		Kind string `json:"kind"`
-
-		// Syntax:     ^[\w-]+$
-		// Min length: 1
-		// Max length: 50
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project
-		Project string `json:"project"`
-
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
-		PushLogID int `json:"pushLogID,omitempty"`
-
-		// Syntax:     ^[0-9a-f]+$
-		// Min length: 40
-		// Max length: 40
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision
-		Revision string `json:"revision"`
-	}
-
-	// BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
-	// Some repos like mozilla-beta have not yet merged in the code that
-	// allows them access to the revision.
-	//
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
-	Var1 struct {
-
-		// Possible values:
-		//   * "hg.mozilla.org"
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind
-		Kind string `json:"kind"`
-
-		// Syntax:     ^[\w-]+$
-		// Min length: 1
-		// Max length: 50
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project
-		Project string `json:"project"`
-
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pushLogID
-		PushLogID int `json:"pushLogID,omitempty"`
-
-		// Syntax:     ^[0-9a-f]+$
-		// Min length: 40
-		// Max length: 40
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision_hash
-		Revision_Hash string `json:"revision_hash"`
-	}
-
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]
-	Var2 struct {
-
-		// Possible values:
-		//   * "github.com"
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/kind
-		Kind string `json:"kind"`
-
-		// This could be the organization or the individual git username
-		// depending on who owns the repo.
-		//
-		// Syntax:     ^[\w-]+$
-		// Min length: 1
-		// Max length: 50
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/owner
-		Owner string `json:"owner,omitempty"`
-
-		// Syntax:     ^[\w-]+$
-		// Min length: 1
-		// Max length: 50
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/project
-		Project string `json:"project"`
-
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/pullRequestID
-		PullRequestID int `json:"pullRequestID,omitempty"`
-
-		// Min length: 40
-		// Max length: 40
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/revision
-		Revision string `json:"revision"`
 	}
 )
