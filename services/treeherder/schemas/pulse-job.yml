@@ -42,6 +42,7 @@ properties:
   origin:
     oneOf:
       - type: "object"
+        title: "HG Push"
         properties:
           kind:
             type: "string"
@@ -61,6 +62,7 @@ properties:
         required: [kind, project, revision]
 
       - type: "object"
+        title: "HG Push Legacy"
         description: |
           BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
           Some repos like mozilla-beta have not yet merged in the code that
@@ -84,6 +86,7 @@ properties:
         required: [kind, project, revision_hash]
 
       - type: "object"
+        title: "Github Pull Request"
         properties:
           kind:
             type: "string"
