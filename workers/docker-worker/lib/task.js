@@ -17,7 +17,6 @@ import features from './features';
 import getHostname from './util/hostname';
 import { fmtLog, fmtErrorLog } from './log';
 import { hasPrefixedScopes } from './util/scopes';
-import { IMAGE_ERROR } from './docker/errors';
 import { scopeMatch } from 'taskcluster-base/utils';
 import { validatePayload } from './util/validate_schema';
 import waitForEvent from './wait_for_event';
@@ -847,7 +846,8 @@ export class Task extends EventEmitter {
 
       monitor.count('task.image.pullFailed');
       return await this.abortRun(
-        fmtErrorLog(IMAGE_ERROR, JSON.stringify(this.task.payload.image), e.message)
+        fmtErrorLog("Pulling docker image %s has failed: %s",
+                    JSON.stringify(this.task.payload.image), e.message)
       );
     }
 
