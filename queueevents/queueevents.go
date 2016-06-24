@@ -101,7 +101,7 @@ import (
 // Please, note that messages are also published on this exchange if defined
 // using `createTask`.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#taskDefined
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskDefined
 type TaskDefined struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -135,7 +135,7 @@ func (binding TaskDefined) NewPayloadObject() interface{} {
 // efficiently and they would be able to reduce their polling interval
 // significantly without affecting general responsiveness.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#taskPending
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskPending
 type TaskPending struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -164,7 +164,7 @@ func (binding TaskPending) NewPayloadObject() interface{} {
 // Whenever a task is claimed by a worker, a run is started on the worker,
 // and a message is posted on this exchange.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#taskRunning
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskRunning
 type TaskRunning struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -209,7 +209,7 @@ func (binding TaskRunning) NewPayloadObject() interface{} {
 // smarter to index artifacts after the task in question have completed
 // successfully.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#artifactCreated
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#artifactCreated
 type ArtifactCreated struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -241,7 +241,7 @@ func (binding ArtifactCreated) NewPayloadObject() interface{} {
 // that completed the task. But information about additional runs is also
 // available from the task status structure.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#taskCompleted
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskCompleted
 type TaskCompleted struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -271,7 +271,7 @@ func (binding TaskCompleted) NewPayloadObject() interface{} {
 // to this exchange. This is same as worker ran task-specific code, but the
 // task specific code exited non-zero.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#taskFailed
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskFailed
 type TaskFailed struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -305,7 +305,7 @@ func (binding TaskFailed) NewPayloadObject() interface{} {
 // The specific _reason_ is evident from that task status structure, refer
 // to the `reasonResolved` property for the last run.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges/#taskException
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskException
 type TaskException struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`

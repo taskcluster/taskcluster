@@ -49,7 +49,7 @@ import (
 // exchange with designated `provisionerId` and `workerType` in the
 // routing-key and the name of the `cacheFolder` as payload
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/exchanges/#purgeCache
+// See https://docs.taskcluster.net/reference/core/purge-cache/exchanges#purgeCache
 type PurgeCache struct {
 	RoutingKeyKind string `mwords:"*"`
 	ProvisionerID  string `mwords:"*"`

@@ -43,7 +43,7 @@ import (
 // When a new `workerType` is created a message will be published to this
 // exchange.
 //
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges/#workerTypeCreated
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges#workerTypeCreated
 type WorkerTypeCreated struct {
 	RoutingKeyKind string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
@@ -65,7 +65,7 @@ func (binding WorkerTypeCreated) NewPayloadObject() interface{} {
 // When a `workerType` is updated a message will be published to this
 // exchange.
 //
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges/#workerTypeUpdated
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges#workerTypeUpdated
 type WorkerTypeUpdated struct {
 	RoutingKeyKind string `mwords:"*"`
 	WorkerType     string `mwords:"*"`
@@ -87,7 +87,7 @@ func (binding WorkerTypeUpdated) NewPayloadObject() interface{} {
 // When a `workerType` is removed a message will be published to this
 // exchange.
 //
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges/#workerTypeRemoved
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges#workerTypeRemoved
 type WorkerTypeRemoved struct {
 	RoutingKeyKind string `mwords:"*"`
 	WorkerType     string `mwords:"*"`

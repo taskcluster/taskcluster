@@ -68,7 +68,7 @@ import (
 // message is posted on this exchange to indicate that a task-graph have
 // been submitted.
 //
-// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphRunning
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges#taskGraphRunning
 type TaskGraphRunning struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -99,7 +99,7 @@ func (binding TaskGraphRunning) NewPayloadObject() interface{} {
 // are monitoring a task-graph and what to track states of the individual
 // tasks in the task-graph.
 //
-// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphExtended
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges#taskGraphExtended
 type TaskGraphExtended struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -134,7 +134,7 @@ func (binding TaskGraphExtended) NewPayloadObject() interface{} {
 // The message features the `taskId` of the task that caused the task-graph
 // to become blocked.
 //
-// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphBlocked
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges#taskGraphBlocked
 type TaskGraphBlocked struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -164,7 +164,7 @@ func (binding TaskGraphBlocked) NewPayloadObject() interface{} {
 // task-graph is declared to be finished, and a message is posted to this
 // exchange.
 //
-// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges/#taskGraphFinished
+// See https://docs.taskcluster.net/reference/platform/scheduler/exchanges#taskGraphFinished
 type TaskGraphFinished struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`

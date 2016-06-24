@@ -49,7 +49,7 @@ import (
 // exchange with the designated `organization` and `repository`
 // in the routing-key along with event specific metadata in the payload.
 //
-// See https://docs.taskcluster.net/reference/core/github/exchanges/#pullRequest
+// See https://docs.taskcluster.net/reference/core/github/exchanges#pullRequest
 type PullRequest struct {
 	RoutingKeyKind string `mwords:"*"`
 	Organization   string `mwords:"*"`
@@ -73,7 +73,7 @@ func (binding PullRequest) NewPayloadObject() interface{} {
 // exchange with the designated `organization` and `repository`
 // in the routing-key along with event specific metadata in the payload.
 //
-// See https://docs.taskcluster.net/reference/core/github/exchanges/#push
+// See https://docs.taskcluster.net/reference/core/github/exchanges#push
 type Push struct {
 	RoutingKeyKind string `mwords:"*"`
 	Organization   string `mwords:"*"`

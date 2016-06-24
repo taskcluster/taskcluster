@@ -49,7 +49,7 @@ import (
 // When a task run is scheduled or resolved, a message is posted to
 // this exchange in a Treeherder consumable format.
 //
-// See https://docs.taskcluster.net/reference/core/treeherder/exchanges/#jobs
+// See https://docs.taskcluster.net/reference/core/treeherder/exchanges#jobs
 type Jobs struct {
 	Destination string `mwords:"*"`
 	Project     string `mwords:"*"`
