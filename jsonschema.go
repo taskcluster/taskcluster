@@ -341,6 +341,12 @@ func (p *Properties) postPopulate(job *Job) error {
 		members := make(stringSet, len(p.SortedPropertyNames))
 		for _, j := range p.SortedPropertyNames {
 			p.Properties[j].TypeName = job.MemberNameGenerator(j, true, members)
+			// workaround to handle taskcluster-client-java - can probably drop
+			// at a point in the future:
+			if p.Properties[j].Items != nil {
+				p.Properties[j].Items.TypeName = p.Properties[j].TypeName
+			}
+			// ^^^^^^
 		}
 	}
 	return nil
