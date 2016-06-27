@@ -1,4 +1,4 @@
-Generated: 1467031317
+Generated: 1467055729
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -767,7 +767,7 @@ Properties
     Required               = '[accessKeyId secretAccessKey sessionToken]'
     Title                  = 'Temporary Security Credentials'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Credentials'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials'
   Property 'expires' =
     Description            = 'Date and time of when the temporary credentials expires.
@@ -1272,7 +1272,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/secret'
     Required               = '[secret public]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Dsn'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn'
   Property 'expires' =
     Description            = 'Expiration time for the credentials. The credentials should not be used
@@ -2043,7 +2043,7 @@ Properties
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/utility'
       Required               = '[instanceType capacity utility launchSpec secrets userData scopes]'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'InstanceTypeConfiguration'
       SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items'
     Type                   = 'array'
     TypeName               = ''
@@ -2108,7 +2108,7 @@ Properties
               SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId'
           Required               = '[ImageId]'
           Type                   = 'object'
-          TypeName               = ''
+          TypeName               = 'LaunchSpec'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec'
         Property 'region' =
           Description            = 'The Amazon AWS Region being configured.  Example: us-west-1
@@ -2143,7 +2143,7 @@ Properties
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/userData'
       Required               = '[region launchSpec secrets userData scopes]'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'RegionConfiguration'
       SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items'
     Type                   = 'array'
     TypeName               = ''
@@ -2231,7 +2231,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials/properties/clientId'
     Required               = '[clientId accessToken certificate]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Credentials'
     SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials'
   Property 'data' =
     Description            = 'Free-form object which contains secrets from the worker type definition
@@ -2333,7 +2333,7 @@ Properties
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/utility'
       Required               = '[instanceType capacity utility launchSpec secrets userData scopes]'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'InstanceTypeConfiguration'
       SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items'
     Type                   = 'array'
     TypeName               = ''
@@ -2406,7 +2406,7 @@ Properties
               SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId'
           Required               = '[ImageId]'
           Type                   = 'object'
-          TypeName               = ''
+          TypeName               = 'LaunchSpec'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec'
         Property 'region' =
           Description            = 'The Amazon AWS Region being configured.  Example: us-west-1
@@ -2440,7 +2440,7 @@ Properties
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/userData'
       Required               = '[region launchSpec secrets userData scopes]'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'RegionConfiguration'
       SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items'
     Type                   = 'array'
     TypeName               = ''
@@ -3089,7 +3089,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner'
     Required               = '[name description owner]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata'
   Property 'schedule' =
     Default                = '[]'
@@ -3192,7 +3192,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner'
     Required               = '[name description owner]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata'
   Property 'schedule' =
     Description            = 'Definition of the times at which a hook will result in creation of a task.
@@ -3566,7 +3566,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata'
   Property 'payload' =
     Description            = 'Task-specific payload following worker-specific format. For example the
@@ -4110,7 +4110,7 @@ Properties
       Required               = '[namespace name expires]'
       Title                  = 'Namespace'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'Namespace'
       SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items'
     Title                  = 'Namespaces'
     Type                   = 'array'
@@ -4230,7 +4230,7 @@ Properties
       Required               = '[namespace taskId rank data expires]'
       Title                  = 'Task'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'Task'
       SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items'
     Title                  = 'Tasks'
     Type                   = 'array'
@@ -5158,7 +5158,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata'
   Property 'payload' =
     Description            = 'Task-specific payload following worker-specific format. For example the
@@ -5380,7 +5380,7 @@ Properties
       Required               = '[storageType name expires contentType]'
       Title                  = 'Artifact'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'Artifact'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items'
     Title                  = 'Artifact List'
     Type                   = 'array'
@@ -5453,7 +5453,7 @@ Properties
       Required               = '[task status]'
       Title                  = 'Task definition and status'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'TaskDefinitionAndStatus'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks/items'
     Title                  = 'Tasks that depends on `taskId`'
     Type                   = 'array'
@@ -5513,7 +5513,7 @@ Properties
       Required               = '[task status]'
       Title                  = 'Task definition and status'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'TaskDefinitionAndStatus'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items'
     Title                  = 'Tasks from the Task-Group'
     Type                   = 'array'
@@ -5642,7 +5642,7 @@ Properties
       Required               = '[signedPollUrl signedDeleteUrl]'
       Title                  = 'Signed URLs for a queue'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'SignedURLsForAQueue'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues/items'
     Title                  = 'Queues To Poll From'
     Type                   = 'array'
@@ -6376,7 +6376,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/clientId'
     Required               = '[clientId accessToken certificate]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Credentials'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials'
   Property 'runId' =
     Description            = '`run-id` assigned to this run of the task
@@ -6529,7 +6529,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/clientId'
     Required               = '[clientId accessToken certificate]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Credentials'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials'
   Property 'runId' =
     Description            = '`run-id` assigned to this run of the task
@@ -6754,7 +6754,7 @@ Properties
       Required               = '[runId state reasonCreated scheduled]'
       Title                  = 'Run Information'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'RunInformation'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items'
     Title                  = 'List of Runs'
     Type                   = 'array'
@@ -6933,7 +6933,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata'
   Property 'payload' =
     Description            = 'Task-specific payload following worker-specific format. For example the
@@ -7712,7 +7712,7 @@ Properties
     Required               = '[storageType name expires contentType]'
     Title                  = 'Artifact Created'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Artifact'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact'
   Property 'runId' =
     Description            = 'Id of the run on which artifact was created.
@@ -8193,7 +8193,7 @@ Properties
       Required               = '[runId state reasonCreated scheduled]'
       Title                  = 'Run Information'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'RunInformation'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items'
     Title                  = 'List of Runs'
     Type                   = 'array'
@@ -8589,7 +8589,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata'
   Property 'payload' =
     Description            = 'Task-specific payload following worker-specific format. For example the
@@ -8806,7 +8806,7 @@ Properties
       Required               = '[taskId task]'
       Title                  = 'Task Node'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'TaskNode'
       SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#/properties/tasks/items'
     Title                  = 'Tasks'
     Type                   = 'array'
@@ -8863,7 +8863,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/metadata'
   Property 'scopes' =
     Description            = 'List of scopes (or scope-patterns) that tasks of the task-graph is authorized to use.'
@@ -8983,7 +8983,7 @@ Properties
       Required               = '[taskId name requires requiresLeft reruns rerunsLeft state satisfied dependents]'
       Title                  = 'Task Information'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'TaskInformation'
       SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json#/properties/tasks/items'
     Title                  = 'Tasks'
     Type                   = 'array'
@@ -9136,7 +9136,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json#/properties/metadata'
   Property 'status' =
     Ref                    = 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status.json#'
@@ -9265,7 +9265,7 @@ Properties
     Required               = '[name description owner source]'
     Title                  = 'Meta-data'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Metadata'
     SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/metadata'
   Property 'routes' =
     Default                = '[]'
@@ -9363,7 +9363,7 @@ Properties
       Required               = '[taskId task]'
       Title                  = 'Task Node'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'TaskNode'
       SourceURL              = 'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#/properties/tasks/items'
     Title                  = 'Tasks'
     Type                   = 'array'
@@ -10096,7 +10096,7 @@ Properties
         SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/jobSymbol'
     Required               = '[jobName jobSymbol groupSymbol]'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'Display'
     SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display'
   Property 'extra' =
     Description            = 'Extra information that Treeherder reads on a best-effort basis'
@@ -10142,7 +10142,7 @@ Properties
               SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url'
           Required               = '[url linkText label]'
           Type                   = 'object'
-          TypeName               = ''
+          TypeName               = 'Var'
           SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items'
         Type                   = 'array'
         TypeName               = ''
@@ -10155,7 +10155,7 @@ Properties
         TypeName               = ''
         SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/summary'
     Type                   = 'object'
-    TypeName               = ''
+    TypeName               = 'JobInfo'
     SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo'
   Property 'jobKind' =
     Default                = 'other'
@@ -10232,7 +10232,7 @@ Properties
                       TypeName               = ''
                       SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber'
                   Type                   = 'object'
-                  TypeName               = ''
+                  TypeName               = 'Var'
                   SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items'
                 Type                   = 'array'
                 TypeName               = ''
@@ -10270,7 +10270,7 @@ Properties
                 SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted'
             Required               = '[name timeStarted lineStarted lineFinished timeFinished result]'
             Type                   = 'object'
-            TypeName               = ''
+            TypeName               = 'Var'
             SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items'
           Type                   = 'array'
           TypeName               = ''
@@ -10284,7 +10284,7 @@ Properties
           SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/url'
       Required               = '[url name]'
       Type                   = 'object'
-      TypeName               = ''
+      TypeName               = 'Var'
       SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items'
     Type                   = 'array'
     TypeName               = ''
