@@ -345,11 +345,22 @@ func (p *Properties) postPopulate(job *Job) error {
 		sort.Strings(p.SortedPropertyNames)
 		members := make(stringSet, len(p.SortedPropertyNames))
 		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
+		propTypeNames := make(map[string]bool)
 		for _, j := range p.SortedPropertyNames {
-			p.MemberNames[j] = job.MemberNameGenerator(j, true, members)
+			p.MemberNames[j] = job.MemberNameGenerator(j, job.ExportTypes, members)
+			job.SetPropertyTypeName(p.Properties[j], propTypeNames)
 		}
 	}
 	return nil
+}
+
+func (job *Job) SetPropertyTypeName(subSchema *JsonSubSchema, propTypeNames map[string]bool) {
+	if subSchema.Properties != nil {
+		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, propTypeNames)
+	}
+	if subSchema.Items != nil {
+		job.SetPropertyTypeName(subSchema.Items, propTypeNames)
+	}
 }
 
 func (p *Properties) setSourceURL(url string) {
@@ -418,6 +429,21 @@ func (items *Items) postPopulate(job *Job) error {
 	return nil
 }
 
+func (subSchema *JsonSubSchema) TypeNameRaw() string {
+	switch {
+	case subSchema.PropertyName != "" && len(subSchema.PropertyName) < 40:
+		return subSchema.PropertyName
+	case subSchema.Title != nil && *subSchema.Title != "" && len(*subSchema.Title) < 40:
+		return *subSchema.Title
+	case subSchema.Description != nil && *subSchema.Description != "" && len(*subSchema.Description) < 40:
+		return *subSchema.Description
+	case subSchema.RefSubSchema != nil && subSchema.RefSubSchema.TypeName != "":
+		return subSchema.RefSubSchema.TypeName
+	default:
+		return "var"
+	}
+}
+
 func (job *Job) add(subSchema *JsonSubSchema) {
 	// if we have already included in the schema set, nothing to do...
 	if _, ok := job.result.SchemaSet.used[subSchema.SourceURL]; ok {
@@ -425,18 +451,7 @@ func (job *Job) add(subSchema *JsonSubSchema) {
 	}
 	job.result.SchemaSet.used[subSchema.SourceURL] = subSchema
 	if subSchema.TypeName == "" {
-		switch {
-		case subSchema.PropertyName != "" && len(subSchema.PropertyName) < 40:
-			subSchema.TypeName = job.TypeNameGenerator(subSchema.PropertyName, job.ExportTypes, job.result.SchemaSet.typeNames)
-		case subSchema.Title != nil && *subSchema.Title != "" && len(*subSchema.Title) < 40:
-			subSchema.TypeName = job.TypeNameGenerator(*subSchema.Title, job.ExportTypes, job.result.SchemaSet.typeNames)
-		case subSchema.Description != nil && *subSchema.Description != "" && len(*subSchema.Description) < 40:
-			subSchema.TypeName = job.TypeNameGenerator(*subSchema.Description, job.ExportTypes, job.result.SchemaSet.typeNames)
-		case subSchema.RefSubSchema != nil && subSchema.RefSubSchema.TypeName != "":
-			subSchema.TypeName = subSchema.RefSubSchema.TypeName
-		default:
-			subSchema.TypeName = job.TypeNameGenerator("var", job.ExportTypes, job.result.SchemaSet.typeNames)
-		}
+		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, job.result.SchemaSet.typeNames)
 	}
 }
 
