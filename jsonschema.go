@@ -245,6 +245,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 	for strings.Index(comment, "\n//\n") == 0 {
 		comment = "\n" + comment[4:]
 	}
+
 	typ = "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
@@ -323,7 +324,6 @@ func (p Properties) String() string {
 	for _, i := range p.SortedPropertyNames {
 		result += "Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  ")
 	}
-	result += fmt.Sprintf("Property name to member name mapping: %#v\n", p.MemberNames)
 	return result
 }
 
