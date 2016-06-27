@@ -336,11 +336,6 @@ func (p *Properties) postPopulate(job *Job) error {
 			// subscehams need to have SourceURL set
 			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
 			p.Properties[propertyName].PropertyName = propertyName
-			// subschemas also need to be triggered to postPopulate...
-			err := p.Properties[propertyName].postPopulate(job)
-			if err != nil {
-				return err
-			}
 		}
 		sort.Strings(p.SortedPropertyNames)
 		members := make(stringSet, len(p.SortedPropertyNames))
@@ -349,6 +344,11 @@ func (p *Properties) postPopulate(job *Job) error {
 		for _, j := range p.SortedPropertyNames {
 			p.MemberNames[j] = job.MemberNameGenerator(j, job.ExportTypes, members)
 			job.SetPropertyTypeName(p.Properties[j], propTypeNames)
+			// subschemas also need to be triggered to postPopulate...
+			err := p.Properties[j].postPopulate(job)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -359,6 +359,7 @@ func (job *Job) SetPropertyTypeName(subSchema *JsonSubSchema, propTypeNames map[
 		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, propTypeNames)
 	}
 	if subSchema.Items != nil {
+		subSchema.Items.PropertyName = subSchema.PropertyName + " entry"
 		job.SetPropertyTypeName(subSchema.Items, propTypeNames)
 	}
 }
