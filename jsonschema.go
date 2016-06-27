@@ -62,6 +62,7 @@ type (
 
 		// non-json fields used for sorting/tracking
 		TypeName     string         `json:"-"`
+		PropertyName string         `json:"-"`
 		SourceURL    string         `json:"-"`
 		RefSubSchema *JsonSubSchema `json:"-"`
 		IsRequired   bool           `json:"-"`
@@ -74,6 +75,7 @@ type (
 
 	Properties struct {
 		Properties          map[string]*JsonSubSchema
+		MemberNames         map[string]string
 		SortedPropertyNames []string
 		SourceURL           string
 	}
@@ -176,7 +178,7 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages stringSet, rawMessageTypes stringSet) (string, string, string, stringSet, stringSet) {
+func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages stringSet, rawMessageTypes stringSet) (string, string, stringSet, stringSet) {
 	comment := "\n"
 	if d := jsonSubSchema.Description; d != nil {
 		comment += text.Indent(*d, "// ")
@@ -255,7 +257,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 		if jsonSubSchema.Items != nil {
 			if jsonSubSchema.Items.Type != nil {
 				var arrayType string
-				_, _, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
+				_, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
 				typ = "[]" + arrayType
 			} else {
 				if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
@@ -270,8 +272,9 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			typ = fmt.Sprintf("struct {\n")
 			for _, j := range s.SortedPropertyNames {
 				// recursive call to build structs inside structs
-				var subComment, subMember, subType string
-				subComment, subMember, subType, extraPackages, rawMessageTypes = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
+				var subComment, subType string
+				subMember := s.MemberNames[j]
+				subComment, subType, extraPackages, rawMessageTypes = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
 				jsonStructTagOptions := ""
 				if !s.Properties[j].IsRequired {
 					jsonStructTagOptions = ",omitempty"
@@ -312,7 +315,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	}
-	return comment, jsonSubSchema.TypeName, typ, extraPackages, rawMessageTypes
+	return comment, typ, extraPackages, rawMessageTypes
 }
 
 func (p Properties) String() string {
@@ -320,6 +323,7 @@ func (p Properties) String() string {
 	for _, i := range p.SortedPropertyNames {
 		result += "Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  ")
 	}
+	result += fmt.Sprintf("Property name to member name mapping: %#v\n", p.MemberNames)
 	return result
 }
 
@@ -331,6 +335,7 @@ func (p *Properties) postPopulate(job *Job) error {
 			p.SortedPropertyNames = append(p.SortedPropertyNames, propertyName)
 			// subscehams need to have SourceURL set
 			p.Properties[propertyName].setSourceURL(p.SourceURL + "/" + propertyName)
+			p.Properties[propertyName].PropertyName = propertyName
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[propertyName].postPopulate(job)
 			if err != nil {
@@ -339,14 +344,9 @@ func (p *Properties) postPopulate(job *Job) error {
 		}
 		sort.Strings(p.SortedPropertyNames)
 		members := make(stringSet, len(p.SortedPropertyNames))
+		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
 		for _, j := range p.SortedPropertyNames {
-			p.Properties[j].TypeName = job.MemberNameGenerator(j, true, members)
-			// workaround to handle taskcluster-client-java - can probably drop
-			// at a point in the future:
-			if p.Properties[j].Items != nil {
-				p.Properties[j].Items.TypeName = p.Properties[j].TypeName
-			}
-			// ^^^^^^
+			p.MemberNames[j] = job.MemberNameGenerator(j, true, members)
 		}
 	}
 	return nil
@@ -426,6 +426,8 @@ func (job *Job) add(subSchema *JsonSubSchema) {
 	job.result.SchemaSet.used[subSchema.SourceURL] = subSchema
 	if subSchema.TypeName == "" {
 		switch {
+		case subSchema.PropertyName != "" && len(subSchema.PropertyName) < 40:
+			subSchema.TypeName = job.TypeNameGenerator(subSchema.PropertyName, job.ExportTypes, job.result.SchemaSet.typeNames)
 		case subSchema.Title != nil && *subSchema.Title != "" && len(*subSchema.Title) < 40:
 			subSchema.TypeName = job.TypeNameGenerator(*subSchema.Title, job.ExportTypes, job.result.SchemaSet.typeNames)
 		case subSchema.Description != nil && *subSchema.Description != "" && len(*subSchema.Description) < 40:
@@ -599,9 +601,9 @@ func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
 	typeDefinitions := make(map[string]string)
 	typeNames := make([]string, 0, len(schemaSet.used))
 	for _, i := range schemaSet.used {
-		var newComment, newMember, newType string
-		newComment, newMember, newType, extraPackages, rawMessageTypes = i.typeDefinition(true, extraPackages, rawMessageTypes)
-		typeDefinitions[i.TypeName] = text.Indent(newComment+newMember+" "+newType, "\t")
+		var newComment, newType string
+		newComment, newType, extraPackages, rawMessageTypes = i.typeDefinition(true, extraPackages, rawMessageTypes)
+		typeDefinitions[i.TypeName] = text.Indent(newComment+i.TypeName+" "+newType, "\t")
 		typeNames = append(typeNames, i.TypeName)
 	}
 	sort.Strings(typeNames)
