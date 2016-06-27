@@ -37,12 +37,6 @@ suite('handle running job', () => {
 
     expected.state = 'running';
     expected.timeStarted = started.toISOString();
-    expected.logs = [
-      {
-        name: "builds-4h",
-        url: "https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public%2Flogs%2Flive_backing.log"
-      }
-    ];
 
     let job = await handler.handleTaskRunning(pushInfo, task, status);
     assert.deepEqual(actual, expected);
