@@ -289,7 +289,6 @@ export class Handler {
     let run = message.status.runs[message.runId];
     let job = this.buildMessage(pushInfo, task, message.runId, message);
     job.timeStarted = message.status.runs[message.runId].started;
-    job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
