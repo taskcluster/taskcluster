@@ -178,8 +178,8 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages stringSet, rawMessageTypes stringSet) (string, string, stringSet, stringSet) {
-	comment := "\n"
+func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages stringSet, rawMessageTypes stringSet) (comment, typ string) {
+	comment = "\n"
 	if d := jsonSubSchema.Description; d != nil {
 		comment += text.Indent(*d, "// ")
 	}
@@ -245,7 +245,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 	for strings.Index(comment, "\n//\n") == 0 {
 		comment = "\n" + comment[4:]
 	}
-	typ := "json.RawMessage"
+	typ = "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
 	}
@@ -257,7 +257,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 		if jsonSubSchema.Items != nil {
 			if jsonSubSchema.Items.Type != nil {
 				var arrayType string
-				_, arrayType, extraPackages, rawMessageTypes = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
+				_, arrayType = jsonSubSchema.Items.typeDefinition(false, extraPackages, rawMessageTypes)
 				typ = "[]" + arrayType
 			} else {
 				if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
@@ -274,7 +274,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 				// recursive call to build structs inside structs
 				var subComment, subType string
 				subMember := s.MemberNames[j]
-				subComment, subType, extraPackages, rawMessageTypes = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
+				subComment, subType = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
 				jsonStructTagOptions := ""
 				if !s.Properties[j].IsRequired {
 					jsonStructTagOptions = ",omitempty"
@@ -315,7 +315,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	}
-	return comment, typ, extraPackages, rawMessageTypes
+	return comment, typ
 }
 
 func (p Properties) String() string {
@@ -602,7 +602,7 @@ func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
 	typeNames := make([]string, 0, len(schemaSet.used))
 	for _, i := range schemaSet.used {
 		var newComment, newType string
-		newComment, newType, extraPackages, rawMessageTypes = i.typeDefinition(true, extraPackages, rawMessageTypes)
+		newComment, newType = i.typeDefinition(true, extraPackages, rawMessageTypes)
 		typeDefinitions[i.TypeName] = text.Indent(newComment+i.TypeName+" "+newType, "\t")
 		typeNames = append(typeNames, i.TypeName)
 	}
