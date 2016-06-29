@@ -1,0 +1,15 @@
+{
+  "livelogSecret" : "this-is-a-secret",
+  "clientId" : "test-client",
+  "workerId" : "myworkerid",
+  "accessToken" : "V7w5mcc3Q3mQHp3ns0C7dA",
+  "workerGroup" : "abcde",
+  "workerType" : "some-worker-type",
+  "publicIP" : "2.1.2.1",
+  "workerTypeMetadata": {
+    "generic-worker-version": "generic-worker 2.0.0",
+    "go-arch": "amd64",
+    "go-os": "fakeos",
+    "machine-setup": "https://raw.githubusercontent.com/taskcluster/generic-worker/2d2ad3000787f2c893299e693ea3f59287127f5c/worker_types/win2012r2/userdata"
+  }
+}

@@ -18,23 +18,24 @@ type ExecCommand interface {
 type (
 	// Generic Worker config
 	Config struct {
-		AccessToken                string `json:"accessToken"`
-		ClientId                   string `json:"clientId"`
-		LiveLogCertificate         string `json:"livelogCertificate"`
-		LiveLogExecutable          string `json:"livelogExecutable"`
-		LiveLogKey                 string `json:"livelogKey"`
-		LiveLogSecret              string `json:"livelogSecret"`
-		Certificate                string `json:"certificate"`
-		ProvisionerId              string `json:"provisionerId"`
-		RefreshUrlsPrematurelySecs int    `json:"refreshURLsPrematurelySecs"`
-		PublicIP                   net.IP `json:"publicIP"`
-		Subdomain                  string `json:"subdomain"`
-		WorkerGroup                string `json:"workerGroup"`
-		WorkerId                   string `json:"workerId"`
-		WorkerType                 string `json:"workerType"`
-		UsersDir                   string `json:"usersDir"`
-		CleanUpTaskDirs            bool   `json:"cleanUpTaskDirs"`
-		IdleShutdownTimeoutSecs    int    `json:"idleShutdownTimeoutSecs"`
+		AccessToken                string                 `json:"accessToken"`
+		ClientId                   string                 `json:"clientId"`
+		LiveLogCertificate         string                 `json:"livelogCertificate"`
+		LiveLogExecutable          string                 `json:"livelogExecutable"`
+		LiveLogKey                 string                 `json:"livelogKey"`
+		LiveLogSecret              string                 `json:"livelogSecret"`
+		Certificate                string                 `json:"certificate"`
+		ProvisionerId              string                 `json:"provisionerId"`
+		RefreshUrlsPrematurelySecs int                    `json:"refreshURLsPrematurelySecs"`
+		PublicIP                   net.IP                 `json:"publicIP"`
+		Subdomain                  string                 `json:"subdomain"`
+		WorkerGroup                string                 `json:"workerGroup"`
+		WorkerId                   string                 `json:"workerId"`
+		WorkerType                 string                 `json:"workerType"`
+		UsersDir                   string                 `json:"usersDir"`
+		CleanUpTaskDirs            bool                   `json:"cleanUpTaskDirs"`
+		IdleShutdownTimeoutSecs    int                    `json:"idleShutdownTimeoutSecs"`
+		WorkerTypeMetaData         map[string]interface{} `json:"workerTypeMetaData"`
 	}
 
 	// Used for modelling the xml we get back from Azure

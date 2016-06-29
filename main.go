@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"time"
 
@@ -176,6 +177,14 @@ and reports back results to the queue.
                                             An integer, >= 0. A value of 0 means "do not shut
                                             the computer down" - i.e. continue running
                                             indefinitely.
+          workerTypeMetaData                This arbitrary json blob will be uploaded as an
+                                            artifact called worker_type_metadata.json with each
+                                            task. Providing information here, such as a URL to
+                                            the code/config used to set up the worker type will
+                                            mean that people running tasks on the worker type
+                                            will have more information about how it was set up
+                                            (for example what has been installed on the
+                                            machine).
 
     Here is an syntactically valid example configuration file:
 
@@ -258,6 +267,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		UsersDir:                   "C:\\Users",
 		CleanUpTaskDirs:            true,
 		IdleShutdownTimeoutSecs:    0,
+		WorkerTypeMetaData: map[string]interface{}{
+			"generic-worker-version": version,
+			"generic-worker-source":  "https://github.com/taskcluster/generic-worker/releases",
+			"go-version":             runtime.Version(),
+			"go-arch":                runtime.GOARCH,
+			"go-os":                  runtime.GOOS,
+		},
 	}
 	// try to open config file...
 	configFile, err := os.Open(filename)
@@ -872,6 +888,18 @@ func (task *TaskRun) run() error {
 	var finalReason string
 	var finalError error = nil
 
+	err := task.preTaskActions()
+
+	if err != nil {
+		log.Printf("%#v", err)
+		if finalError == nil {
+			log.Println("TASK EXCEPTION when running pre-task actions")
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
+			finalError = err
+		}
+	}
+
 	for i, _ := range task.Payload.Command {
 		err := task.ExecuteCommand(i)
 		if err != nil {
@@ -883,7 +911,7 @@ func (task *TaskRun) run() error {
 		}
 	}
 
-	err := task.postTaskActions()
+	err = task.postTaskActions()
 
 	if err != nil {
 		log.Printf("%#v", err)
@@ -940,6 +968,21 @@ func (task *TaskRun) run() error {
 		finalError = err
 	}
 	return finalError
+}
+
+func (task *TaskRun) preTaskActions() error {
+	jsonBytes, err := json.Marshal(config.WorkerTypeMetaData)
+	if err != nil {
+		return err
+	}
+	var out bytes.Buffer
+	json.Indent(&out, jsonBytes, "", "    ")
+	out.WriteRune('\n')
+	err = ioutil.WriteFile(filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"), out.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
+	return task.uploadLog("public/logs/worker_type_metadata.json")
 }
 
 func (task *TaskRun) postTaskActions() error {
