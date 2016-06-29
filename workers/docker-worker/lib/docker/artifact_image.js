@@ -97,18 +97,29 @@ export default class ArtifactImage {
     let readStream = fs.createReadStream(newTarball);
     await this.runtime.docker.loadImage(readStream);
 
+    let pulledImage;
     for (let i = 0; i <= 5; i++) {
-      let pulledImage = await this.imageExists();
+      pulledImage = await this.imageExists();
 
       if (pulledImage) {
-        return pulledImage;
+        break;
       }
 
       await sleep(5000);
     }
 
-    await removeDir(downloadDir);
-    throw new Error('Image could not be found after downloading');
+    try {
+      await removeDir(path.dirname(originalTarball));
+    } catch(e) {
+      debug(`Error removing temporary task image directory. ` +
+            `Path: ${path.dirname(originalTarball)}. Error: ${e.message}`);
+    }
+
+    if (!pulledImage) {
+      throw new Error('Image did not load properly.');
+    }
+
+    return pulledImage;
   }
 
   /*

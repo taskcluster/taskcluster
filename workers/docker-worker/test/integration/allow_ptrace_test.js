@@ -14,7 +14,7 @@ import Debug from 'debug';
 
 let debug = Debug('docker-worker:test:allow-ptrace-test');
 
-suite('allowPtrace feature', () => {
+suite.skip('allowPtrace feature', () => {
   let worker;
   setup(async () => {
     worker = new TestWorker(DockerWorker);
