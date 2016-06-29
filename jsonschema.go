@@ -100,6 +100,7 @@ type (
 	Job struct {
 		Package             string
 		ExportTypes         bool
+		HideStructMembers   bool
 		URLs                []string
 		result              *Result
 		TypeNameGenerator   NameGenerator
@@ -342,7 +343,7 @@ func (p *Properties) postPopulate(job *Job) error {
 		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
 		propTypeNames := make(map[string]bool)
 		for _, j := range p.SortedPropertyNames {
-			p.MemberNames[j] = job.MemberNameGenerator(j, job.ExportTypes, members)
+			p.MemberNames[j] = job.MemberNameGenerator(j, !job.HideStructMembers, members)
 			job.SetPropertyTypeName(p.Properties[j], propTypeNames)
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[j].postPopulate(job)
