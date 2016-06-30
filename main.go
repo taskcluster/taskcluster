@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -746,7 +747,16 @@ func (task *TaskRun) validatePayload() error {
 		reportPossibleError(<-taskStatusUpdateErr)
 		return fmt.Errorf("Validation of payload failed for task %v", task.TaskId)
 	}
-	return json.Unmarshal(jsonPayload, &task.Payload)
+	err = json.Unmarshal(jsonPayload, &task.Payload)
+	if err != nil {
+		return err
+	}
+	for _, artifact := range task.Payload.Artifacts {
+		if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
+			return errors.New("Malformed payload: artifact expiration before task deadline")
+		}
+	}
+	return nil
 }
 
 type CommandExecutionError struct {
