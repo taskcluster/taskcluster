@@ -24,16 +24,16 @@ defaults:
     region:           us-west-2
     apiVersion:       2014-01-01
   monitor:
-    component: 'tc-treeherder-default'
+    component: 'taskcluster-treeherder-staging'
 staging:
   pulse:
     queueName: taskcluster-treeherder-staging
   monitor:
-    component: 'tc-treeherder-staging'
+    component: 'taskcluster-treeherder-staging'
 production:
   pulse:
     queueName: taskcluster-treeherder
   monitor:
-    component: 'tc-treeherder'
+    component: 'taskcluster-treeherder'
 
 
