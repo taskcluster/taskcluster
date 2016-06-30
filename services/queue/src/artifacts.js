@@ -409,8 +409,10 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Handle azure artifacts
   if(artifact.storageType === 'azure') {
     if (artifact.details.container !== this.blobStore.container) {
-      debug("[alert-operator], Unknown container: %s, for artifact: %j",
-            artifact.details.container, artifact.json());
+      let err = new Error('Unknown container: ' +
+                          artifact.details.container + ' for artifact');
+      err.artifact = artifact.json();
+      await this.monitor.reportError(err);
     }
     // Generate URL expiration time
     var expiry = new Date();
@@ -436,8 +438,9 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
   }
 
   // We should never arrive here
-  debug("[alert-operator] Unknown artifact storageType from table storage: %s",
-        artifact.storageType);
+  let err = new Error('Unknown artifact storageType: ' + artifacts.storageType);
+  err.artifact = artifact.json();
+  this.monitor.reportError(err);
 };
 
 /** Get artifact from run */
