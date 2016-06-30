@@ -112,7 +112,7 @@ export class Handler {
     debug('Starting handler');
     this.listener.on('message', async (message) => {
       try {
-        this.monitor.timer('handle-message.time', this.handleMessage(message));
+        await this.monitor.timer('handle-message.time', this.handleMessage(message));
         this.monitor.timer('handle-message.success');
       } catch(err) {
         this.monitor.timer('handle-message.failure');
@@ -172,9 +172,11 @@ export class Handler {
       this.monitor.count(`${pushInfo.project}.publish-message.success`);
     } catch(err) {
       this.monitor.count(`${pushInfo.project}.publish-message.failure`);
-      throw new Error(
+      let e = new Error(
         `Could not publish job message for ${pushInfo.project} with task ID ${taskId}. ${err.message}. \n` +
         `Job: ${JSON.stringify(job, null, 4)}`);
+      console.log(e)
+      throw e;
     }
   }
 
