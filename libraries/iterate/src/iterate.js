@@ -1,6 +1,7 @@
 let _ = require('lodash');
 let assert = require('assert');
 let WatchDog = require('./watchdog');
+let debug = require('debug')('iterate');
 
 class Iterate {
   constructor(opts) {
@@ -27,6 +28,7 @@ class Iterate {
 
     // Not sure if the deep
     assert(typeof opts.handler === 'function', 'handler must be a function');
+    this.handler = opts.handler;
 
     assert(typeof (opts.dmsConfig || {}) === 'object', 'dmsConfig must be object');
     this.dmsConfig = opts.dmsConfig || null;
@@ -51,6 +53,7 @@ class Iterate {
     // TODO: double check this isn't an off by one
     // When we reach the end of a set number of iterations, we'll stop
     if (this.maxIterations > 0 && this.maxIterations <= this.currentIteration + 1) {
+      debug(`reached max iterations of ${this.maxIterations}`);
       this.stop();
     }
 
@@ -60,12 +63,15 @@ class Iterate {
     // Run the handler, pass in shared state so iterations can refer to
     // previous iterations without being too janky
     try {
+      debug('running handler');
       await this.handler(this.incrementalWatchDog, this.sharedState);
+      debug('ran handler');
       // Premature optimization?
       if (this.failures.length > 0) {
         this.failures = [];
       }
     } catch (err) {
+      debug('experienced iteration failure');
       this.failures.push(err);
     }
 
@@ -73,33 +79,43 @@ class Iterate {
     this.incrementalWatchDog.stop();
 
     if (this.failures.length > this.maxFailures) {
+      debug('exiting because of too many failures');
       process.nextTick(() => {
         // Aggregate the stacks and throw with all of them
-        let exceptions = "=====".join(failures.map(x => x.stack || x));
-        throw new Error(`Exceptions:\n=====${exceptions}`);
+        let exceptions = this.failures.map(x => x.stack || x).join('======\n');
+        throw new Error(`Exceptions:\n=====\n${exceptions}\n=====`);
       });
     }
 
     if (this.keepGoing) {
+      debug('scheduling next iteration');
       this.currentIteration++;
-      setTimeout(this.iterate, this.waitTime);
+      setTimeout(async () => {
+        await this.iterate();
+      }, this.waitTime);
     }
   }
 
   start() {
+    debug('starting');
     this.keepGoing = true;
     this.overallWatchDog.start();
 
     // Two reasons we call it this way:
     //   1. first call should have same exec env as following
     //   2. start should return immediately
-    setTimeout(this.iterate, 0);
+    setTimeout(async () => {
+      await this.iterate();
+    }, 0);
   }
 
   stop() {
     this.overallWatchDog.stop();
     this.keepGoing = false;
     this.currentIteration = 0;
+    debug('stopped');
   }
 
 }
+
+module.exports = Iterate;
