@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -267,7 +266,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		UsersDir:                   "C:\\Users",
 		CleanUpTaskDirs:            true,
 		IdleShutdownTimeoutSecs:    0,
-		WorkerTypeMetaData: map[string]interface{}{
+		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker-version": version,
 			"generic-worker-source":  "https://github.com/taskcluster/generic-worker/releases",
 			"go-version":             runtime.Version(),
@@ -970,15 +969,16 @@ func (task *TaskRun) run() error {
 	return finalError
 }
 
-func (task *TaskRun) preTaskActions() error {
-	jsonBytes, err := json.Marshal(config.WorkerTypeMetaData)
+func writeToFileAsJSON(obj interface{}, filename string) error {
+	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
 		return err
 	}
-	var out bytes.Buffer
-	json.Indent(&out, jsonBytes, "", "    ")
-	out.WriteRune('\n')
-	err = ioutil.WriteFile(filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"), out.Bytes(), 0644)
+	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
+}
+
+func (task *TaskRun) preTaskActions() error {
+	err := writeToFileAsJSON(config.WorkerTypeMetadata, filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"))
 	if err != nil {
 		return err
 	}
@@ -1021,14 +1021,7 @@ func (task *TaskRun) postTaskActions() error {
 func (c *Config) persist(file string) error {
 	fmt.Println("Worker ID: " + config.WorkerId)
 	fmt.Println("Creating file " + file + "...")
-	jsonBytes, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-	var out bytes.Buffer
-	json.Indent(&out, jsonBytes, "", "    ")
-	out.WriteRune('\n')
-	return ioutil.WriteFile(file, out.Bytes(), 0644)
+	return writeToFileAsJSON(c, file)
 }
 
 func convertNilToEmptyString(val interface{}) string {

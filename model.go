@@ -35,7 +35,7 @@ type (
 		UsersDir                   string                 `json:"usersDir"`
 		CleanUpTaskDirs            bool                   `json:"cleanUpTaskDirs"`
 		IdleShutdownTimeoutSecs    int                    `json:"idleShutdownTimeoutSecs"`
-		WorkerTypeMetaData         map[string]interface{} `json:"workerTypeMetaData"`
+		WorkerTypeMetadata         map[string]interface{} `json:"workerTypeMetadata"`
 	}
 
 	// Used for modelling the xml we get back from Azure

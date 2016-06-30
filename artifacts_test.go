@@ -264,7 +264,7 @@ func TestUpload(t *testing.T) {
 		LiveLogSecret:              "xyz",
 		PublicIP:                   net.ParseIP("127.0.0.1"),
 		Subdomain:                  "taskcluster-worker.net",
-		WorkerTypeMetaData: map[string]interface{}{
+		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker-version": version,
 			"go-version":             runtime.Version(),
 			"go-arch":                runtime.GOARCH,
