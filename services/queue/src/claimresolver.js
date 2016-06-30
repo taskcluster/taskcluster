@@ -28,7 +28,7 @@ const RESOLVED_STATES = [
  * ignored as it implies a failed request (which wasn't retried) or a run
  * that was reclaimed.
  */
-class ClaimResolver extends events.EventEmitter {
+class ClaimResolver {
   /**
    * Create ClaimResolver instance.
    *
@@ -41,11 +41,10 @@ class ClaimResolver extends events.EventEmitter {
    *   pollingDelay:      // Number of ms to sleep between polling
    *   parallelism:       // Number of polling loops to run in parallel
    *                      // Each handles up to 32 messages in parallel
+   *   monitor:           // base.monitor instance
    * }
    */
   constructor(options) {
-    super();
-
     assert(options, "options must be given");
     assert(options.Task.prototype instanceof data.Task,
            "Expected data.Task instance");
@@ -57,12 +56,14 @@ class ClaimResolver extends events.EventEmitter {
            "Expected pollingDelay to be a number");
     assert(typeof(options.parallelism) === 'number',
            "Expected parallelism to be a number");
+    assert(options.monitor !== null, 'options.monitor required!');
     this.Task               = options.Task;
     this.queueService       = options.queueService;
     this.dependencyTracker  = options.dependencyTracker;
     this.publisher          = options.publisher;
     this.pollingDelay       = options.pollingDelay;
     this.parallelism        = options.parallelism;
+    this.monitor            = options.monitor;
 
     // Promise that polling is done
     this.done               = null;
@@ -83,8 +84,13 @@ class ClaimResolver extends events.EventEmitter {
       loops.push(this.poll());
     }
     // Create promise that we're done looping
-    this.done = Promise.all(loops).catch((err) => {
-      this.emit('error', err); // This should crash the process
+    this.done = Promise.all(loops).catch(async (err) => {
+      console.log("Crashing the process: %s, as json: %j", err, err);
+      // TODO: use this.monitor.reportError(err); when PR lands:
+      // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
+      await this.monitor.reportError(err, 'error', {}, true);
+      // Crash the process
+      process.exit(1);
     }).then(() => {
       this.done = null;
     });
@@ -102,13 +108,14 @@ class ClaimResolver extends events.EventEmitter {
       var messages = await this.queueService.pollClaimQueue();
       debug("Fetched %s messages", messages.length);
 
-      await Promise.all(messages.map((message) => {
+      await Promise.all(messages.map(async (message) => {
         // Don't let a single task error break the loop, it'll be retried later
         // as we don't remove message unless they are handled
-        return this.handleMessage(message).catch((err) => {
-          debug("[alert-operator] Failed to handle message: %j" +
-                ", with err: %s, as JSON: %j", message, err, err, err.stack);
-        });
+        try {
+          await this.handleMessage(message);
+        } catch (err) {
+          this.monitor.reportError(err, 'warning');
+        }
       }));
 
       if(messages.length === 0 && !this.stopping) {
@@ -147,11 +154,15 @@ class ClaimResolver extends events.EventEmitter {
 
     // Check if this is the takenUntil we're supposed to be resolving for, if
     // this check fails, then the conditional load must have failed so we should
-    // alert operator!
+    // report an error
     if (task.takenUntil.getTime() !== takenUntil.getTime()) {
-      debug("[alert-operator] Task takenUntil doesn't match takenUntil from " +
-            "message, taskId: %s, task.takenUntil: %s, message.takenUntil: %s ",
-            taskId, task.takenUntil.toJSON(), takenUntil.toJSON());
+      let err = new Error('Task takenUntil does not match takenUntil from ' +
+                          'message, taskId: ' + taskId + ' this only happens ' +
+                          'if conditional load does not work');
+      err.taskId = taskId;
+      err.taskTakenUntil = task.takenUntil.toJSON();
+      err.messageTakenUntil = takenUntil.toJSON();
+      await this.monitor.reportError(err);
       return remove();
     }
 
@@ -161,8 +172,6 @@ class ClaimResolver extends events.EventEmitter {
       if (!run) {
         // The run might not have been created, if the claimTask operation
         // failed
-        debug("[not-a-bug] runId: %s does exists on taskId: %s, but " +
-              "deadline message has arrived", runId, taskId);
         return;
       }
 
@@ -191,8 +200,11 @@ class ClaimResolver extends events.EventEmitter {
 
       // If the run isn't the last run, then something is very wrong
       if (task.runs.length - 1 !== runId) {
-        debug("[alert-operator] running runId: %s, resolved exception, " +
-              "but it wasn't the last run! taskId: ", runId, taskId);
+        let err = new Error('Running runId: ' + runId + ' resolved exception,' +
+                            'but it was not the last run! taskId: ' + taskId);
+        err.taskId = taskId;
+        err.runId = runId;
+        this.monitor.reportError(err);
         return;
       }
 
