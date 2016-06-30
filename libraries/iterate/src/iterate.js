@@ -50,13 +50,6 @@ class Iterate {
   }
 
   async iterate() {
-    // TODO: double check this isn't an off by one
-    // When we reach the end of a set number of iterations, we'll stop
-    if (this.maxIterations > 0 && this.maxIterations <= this.currentIteration + 1) {
-      debug(`reached max iterations of ${this.maxIterations}`);
-      this.stop();
-    }
-
     // We only run this watch dog for the actual iteration loop
     this.incrementalWatchDog.start();
 
@@ -85,6 +78,13 @@ class Iterate {
         let exceptions = this.failures.map(x => x.stack || x).join('======\n');
         throw new Error(`Exceptions:\n=====\n${exceptions}\n=====`);
       });
+    }
+
+    // TODO: double check this isn't an off by one
+    // When we reach the end of a set number of iterations, we'll stop
+    if (this.maxIterations > 0 && this.maxIterations <= this.currentIteration + 1) {
+      debug(`reached max iterations of ${this.maxIterations}`);
+      this.stop();
     }
 
     if (this.keepGoing) {
