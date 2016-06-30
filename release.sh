@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 cd "$(dirname "${0}")"
 git grep -l 'alpha' | while read file; do
