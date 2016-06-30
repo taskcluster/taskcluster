@@ -2,13 +2,23 @@
   "name": "taskcluster-lib-iterate",
   "version": "1.0.0",
   "description": "A library to share iteration logic",
-  "main": "index.js",
+  "main": "lib/iterate.js",
   "scripts": {
-    "test": "mocha"
+    "compile": "babel-compile -p taskcluster src:lib test:.test",
+    "prepublish": "npm run compile",
+    "test": "npm run compile && mocha .test/*_test.js"
   },
   "keywords": [
     "taskcluster"
   ],
   "author": "John Ford <jhford@mozilla.com>",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "dependencies": {
+    "assume": "^1.4.1",
+    "babel-compile": "^2.0.0",
+    "babel-preset-taskcluster": "^3.0.0",
+    "lodash": "^4.13.1",
+    "mocha": "^2.5.3",
+    "sinon": "^1.17.4"
+  }
 }
