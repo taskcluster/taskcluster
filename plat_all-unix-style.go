@@ -32,13 +32,23 @@ func immediateShutdown() {
 	}
 }
 
-func startup() error {
-	log.Printf("Detected %s platform", runtime.GOOS)
+// we put this in init() instead of startup() as we want tests to be able to change
+// it - note we shouldn't have these nasty global vars, I can only apologise, and
+// say taskcluster-worker will be much nicer
+func init() {
+	pwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 	TaskUser = OSUser{
-		HomeDir:  os.Getwd(),
+		HomeDir:  pwd,
 		Name:     "",
 		Password: "",
 	}
+}
+
+func startup() error {
+	log.Printf("Detected %s platform", runtime.GOOS)
 	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
 }
 
