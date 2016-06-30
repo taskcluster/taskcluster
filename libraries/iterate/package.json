@@ -1,0 +1,14 @@
+{
+  "name": "taskcluster-lib-iterate",
+  "version": "1.0.0",
+  "description": "A library to share iteration logic",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "taskcluster"
+  ],
+  "author": "John Ford <jhford@mozilla.com>",
+  "license": "MPL-2.0"
+}
