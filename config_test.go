@@ -92,15 +92,15 @@ func TestWorkerTypeMetadata(t *testing.T) {
 		t.Fatalf("Config should pass validation, but get:\n%s", err)
 	}
 	// loadConfig function specifies a value, let's check we can override it in the config file
-	if config.WorkerTypeMetadata["go-os"] != "fakeos" {
-		t.Fatal("Was expecting key 'go-os' from file worker-type-metadata.json to override default value")
+	if config.WorkerTypeMetadata["generic-worker"].(map[string]interface{})["go-os"] != "fakeos" {
+		t.Fatalf("Was expecting key 'go-os' from file worker-type-metadata.json to override default value\n%#v", config)
 	}
 	// go-version not specified in config file, but should be set in loadConfig, let's check it is
-	if config.WorkerTypeMetadata["go-version"] != runtime.Version() {
-		t.Fatal("Was expecting key 'go-version' to be set to go version in worker type metadata")
+	if config.WorkerTypeMetadata["generic-worker"].(map[string]interface{})["go-version"] != runtime.Version() {
+		t.Fatalf("Was expecting key 'go-version' to be set to go version in worker type metadata\n%#v", config)
 	}
 	// machine-setup is not set in loadConfig, but is set in config file, let's check we have it
-	if config.WorkerTypeMetadata["machine-setup"] != "https://raw.githubusercontent.com/taskcluster/generic-worker/2d2ad3000787f2c893299e693ea3f59287127f5c/worker_types/win2012r2/userdata" {
-		t.Fatal("Was expecting machine-setup to be set properly")
+	if config.WorkerTypeMetadata["machine-setup"].(map[string]interface{})["script"] != "https://raw.githubusercontent.com/taskcluster/generic-worker/2d2ad3000787f2c893299e693ea3f59287127f5c/worker_types/win2012r2/userdata" {
+		t.Fatalf("Was expecting machine-setup to be set properly\n%#v", config)
 	}
 }

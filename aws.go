@@ -214,7 +214,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	}
 
 	// Now overlay existing config with values in secrets
-	json.Unmarshal(secrets.GenericWorker.Config, c)
+	err = c.mergeInJSON([]byte(secrets.GenericWorker.Config))
 	if err != nil {
 		return err
 	}

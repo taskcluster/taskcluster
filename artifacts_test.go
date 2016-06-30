@@ -265,10 +265,24 @@ func TestUpload(t *testing.T) {
 		PublicIP:                   net.ParseIP("127.0.0.1"),
 		Subdomain:                  "taskcluster-worker.net",
 		WorkerTypeMetadata: map[string]interface{}{
-			"generic-worker-version": version,
-			"go-version":             runtime.Version(),
-			"go-arch":                runtime.GOARCH,
-			"go-os":                  runtime.GOOS,
+			"aws": map[string]string{
+				"ami-id":            "test-ami",
+				"availability-zone": "test-aws-zone",
+				"instance-id":       "test-instance-id",
+				"instance-type":     "test-instance-type",
+				"public-ipv4":       "test-IP",
+			},
+			"generic-worker": map[string]string{
+				"go-arch":    runtime.GOARCH,
+				"go-os":      runtime.GOOS,
+				"go-version": runtime.Version(),
+				"release":    "test-release-url",
+				"version":    version,
+			},
+			"machine-setup": map[string]string{
+				"maintainer": "pmoore@mozilla.com",
+				"script":     "test-script-url",
+			},
 		},
 	}
 

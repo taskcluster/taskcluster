@@ -7,9 +7,14 @@
   "workerType" : "some-worker-type",
   "publicIP" : "2.1.2.1",
   "workerTypeMetadata": {
-    "generic-worker-version": "generic-worker 2.0.0",
-    "go-arch": "amd64",
-    "go-os": "fakeos",
-    "machine-setup": "https://raw.githubusercontent.com/taskcluster/generic-worker/2d2ad3000787f2c893299e693ea3f59287127f5c/worker_types/win2012r2/userdata"
+    "generic-worker": {
+      "version": "generic-worker 2.0.0",
+      "go-arch": "amd64",
+      "go-os": "fakeos"
+    },
+    "machine-setup": {
+      "maintainer": "pmoore@mozilla.com",
+      "script": "https://raw.githubusercontent.com/taskcluster/generic-worker/2d2ad3000787f2c893299e693ea3f59287127f5c/worker_types/win2012r2/userdata"
+    }
   }
 }
