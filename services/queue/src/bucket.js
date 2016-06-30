@@ -15,6 +15,7 @@ let Promise     = require('promise');
  *     secretAccessKey:  // ...
  *   },
  *   bucketCDN:          // https://cdn-for-bucket.com
+ *   monitor:            // base.monitor instance
  * }
  */
 var Bucket = function(options) {
@@ -23,11 +24,14 @@ var Bucket = function(options) {
   assert(options.credentials, "credentials must be specified");
   assert(!options.bucketCDN || typeof(options.bucketCDN) === 'string',
          "Expected bucketCDN to be a hostname or empty string for none");
+  assert(options.monitor,     "options.monitor is required");
   if (options.bucketCDN) {
     assert(/^https?:\/\//.test(options.bucketCDN), "bucketCDN must be http(s)");
     assert(/[^\/]$/.test(options.bucketCDN),
            "bucketCDN shouldn't end with slash");
   }
+  // Store the monitor
+  this.monitor = options.monitor;
   // Ensure access to the bucket property
   this.bucket = options.bucket;
   // Create S3 client
@@ -149,11 +153,10 @@ Bucket.prototype.setupCORS = async function() {
       debug("CORS already set for bucket: %s", this.bucket);
       return;
     }
-  }
-  catch (err) {
+  } catch (err) {
     // Failed to fetch CORS, ignoring issue for now
-    debug("[alert-operator] Failed to fetch CORS, err: %s, JSON: %j",
-          err, err, err.stack);
+    err.note = 'Failed to fetch CORS in bucket.js';
+    this.monitor.reportError(err, 'warning');
   }
 
   // Set CURS

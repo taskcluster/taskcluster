@@ -279,7 +279,8 @@ let Artifact = base.Entity.configure({
   context: [
     'blobStore',      // BlobStore instance wrapping Azure Blob Storage
     'privateBucket',  // Private artifact bucket wrapping S3
-    'publicBucket'    // Public artifact bucket wrapping S3
+    'publicBucket',   // Public artifact bucket wrapping S3
+    'monitor',        // base.monitor instance
   ]
 });
 
@@ -316,9 +317,12 @@ Artifact.prototype.remove = function(ignoreError) {
     } else if (this.details.bucket === this.privateBucket.bucket) {
       deleted = this.privateBucket.deleteObject(this.details.prefix);
     } else {
-      debug("[alert-operator] Expiring artifact with bucket: %s, which isn't " +
-            "configured for use. Please investigate taskId: %s, runId: %s",
-            this.details.bucket, this.taskId, this.runId);
+      let err = new Error("Expiring artifact with bucket which isn't " +
+                          "configured for use. Please investigate!");
+      err.bucket  = this.details.bucket;
+      err.taskId  = this.taskId;
+      err.runId   = this.runId;
+      this.monitor.reportError(err);
       return;
     }
   }
@@ -329,9 +333,12 @@ Artifact.prototype.remove = function(ignoreError) {
           this.details.container, this.details.path);
     // Validate that this is the configured container
     if (this.details.container !== this.blobStore.container) {
-      debug("[alert-operator] Expiring artifact with container: %s, which " +
-            "configured for use. Please investigate taskId: %s, runId: %s",
-            this.details.container, this.taskId, this.runId);
+      let err = new Error("Expiring artifact with container which isn't " +
+                          "configured for use. Please investigate!");
+      err.container = this.details.container;
+      err.taskId    = this.taskId;
+      err.runId     = this.runId;
+      this.monitor.reportError(err);
       return;
     }
     deleted = this.blobStore.deleteBlob(this.details.path, true);

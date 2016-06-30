@@ -16,17 +16,27 @@ suite('queue/QueueService', function() {
 
   // Check that we have an account
   let queueService = null;
+  let monitor = null;
   if (cfg.azure && cfg.azure.accountKey) {
-    queueService = new QueueService({
-      // Using a different prefix as we create/delete a lot of queues and we don't
-      // want queues in state being-deleted when running the other tests
-      prefix:             cfg.app.queuePrefix2,
-      credentials:        cfg.azure,
-      claimQueue:         cfg.app.claimQueue,
-      resolvedQueue:      cfg.app.resolvedQueue,
-      deadlineQueue:      cfg.app.deadlineQueue,
-      pendingPollTimeout: 30 * 1000,
-      deadlineDelay:      1000
+    before(async () => {
+      monitor = await base.monitor({
+        credentials: {},
+        project: 'test',
+        mock: true,
+        patchGlobal: false,
+      });
+      queueService = new QueueService({
+        // Using a different prefix as we create/delete a lot of queues and we
+        // don't want queues in state being-deleted when running the other tests
+        prefix:             cfg.app.queuePrefix2,
+        credentials:        cfg.azure,
+        claimQueue:         cfg.app.claimQueue,
+        resolvedQueue:      cfg.app.resolvedQueue,
+        deadlineQueue:      cfg.app.deadlineQueue,
+        pendingPollTimeout: 30 * 1000,
+        deadlineDelay:      1000,
+        monitor,
+      });
     });
   } else {
     console.log("WARNING: Skipping 'blobstore' tests, missing user-config.yml");

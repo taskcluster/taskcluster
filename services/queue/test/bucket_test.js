@@ -13,11 +13,22 @@ suite('queue/bucket_test', function() {
 
   // Check that we have an account
   let bucket = null;
+  let monitor = null;
   if (cfg.aws  && cfg.aws.accessKeyId) {
-    // Create bucket instance
-    bucket = new Bucket({
-      bucket:       cfg.app.publicArtifactBucket,
-      credentials:  cfg.aws
+    before(async () => {
+      monitor = await base.monitor({
+        credentials: {},
+        project: 'test',
+        mock: true,
+        patchGlobal: false,
+      });
+
+      // Create bucket instance
+      bucket = new Bucket({
+        bucket:       cfg.app.publicArtifactBucket,
+        credentials:  cfg.aws,
+        monitor,
+      });
     });
   } else {
     console.log("WARNING: Skipping 'Bucket' tests, missing user-config.yml");
@@ -83,7 +94,8 @@ suite('queue/bucket_test', function() {
     var bucket = new Bucket({
       bucket:       cfg.app.publicArtifactBucket,
       credentials:  cfg.aws,
-      bucketCDN:    "https://example.com"
+      bucketCDN:    "https://example.com",
+      monitor,
     });
     var url = bucket.createGetUrl("test");
     assert(url === "https://example.com/test");
