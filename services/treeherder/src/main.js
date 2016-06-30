@@ -31,6 +31,7 @@ let load = base.loader({
       project: cfg.monitor.component,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
+      process,
     }),
   },
 
