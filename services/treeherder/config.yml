@@ -24,16 +24,17 @@ defaults:
     region:           us-west-2
     apiVersion:       2014-01-01
   monitor:
-    component: 'taskcluster-treeherder-staging'
+    # Component name is restricted to 22 characters.
+    component: 'tc-treeherder-staging'
 staging:
   pulse:
     queueName: taskcluster-treeherder-staging
   monitor:
-    component: 'taskcluster-treeherder-staging'
+    component: 'tc-treeherder-staging'
 production:
   pulse:
     queueName: taskcluster-treeherder
   monitor:
-    component: 'taskcluster-treeherder'
+    component: 'tc-treeherder'
 
 
