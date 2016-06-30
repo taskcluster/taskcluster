@@ -17,6 +17,7 @@
     "assume": "^1.4.1",
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0",
+    "debug": "^2.2.0",
     "lodash": "^4.13.1",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4"
