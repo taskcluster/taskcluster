@@ -40,6 +40,9 @@ class Iterate {
     this.currentIteration = 0;
     this.keepGoing = false;
 
+    // Store the list of exceptions of the last few iterations
+    this.failures = [];
+
     // We want to be able to share state between iterations
     this.sharedState = {};
   }
@@ -56,10 +59,26 @@ class Iterate {
 
     // Run the handler, pass in shared state so iterations can refer to
     // previous iterations without being too janky
-    await this.handler(this.incrementalWatchDog, this.sharedState);
+    try {
+      await this.handler(this.incrementalWatchDog, this.sharedState);
+      // Premature optimization?
+      if (this.failures.length > 0) {
+        this.failures = [];
+      }
+    } catch (err) {
+      this.failures.push(err);
+    }
 
     // We don't wand this watchdog timer to always run
     this.incrementalWatchDog.stop();
+
+    if (this.failures.length > this.maxFailures) {
+      process.nextTick(() => {
+        // Aggregate the stacks and throw with all of them
+        let exceptions = "=====".join(failures.map(x => x.stack || x));
+        throw new Error(`Exceptions:\n=====${exceptions}`);
+      });
+    }
 
     if (this.keepGoing) {
       this.currentIteration++;
