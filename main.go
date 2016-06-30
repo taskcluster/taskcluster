@@ -19,7 +19,6 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/peterbourgon/mergemap"
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -55,7 +54,7 @@ var (
 	config             *Config
 	configFile         string
 
-	version = "2.1.0alpha3"
+	version = "2.1.0alpha4"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
@@ -278,44 +277,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		},
 	}
 
-	// try to open config file...
-	configFile, err := os.Open(filename)
-	// only overlay values if config file exists
+	configFileBytes, err := ioutil.ReadFile(filename)
+	// only overlay values if config file exists and could be read
 	if err == nil {
-		defer configFile.Close()
-		// This is all HORRIBLE
-		// but it seems about the only reasonable way to properly merge
-		// the json schemas such that json objects are recursively merged.
-		// Steps: convert c to json and then back to a go type, so that
-		// it is a map[string]interface{} and not a Config type. Get
-		// the config file also into a map[string]interface{} so that
-		// the two map[string]interface{} objects can be merged. Finally
-		// convert the merge result to json again so that it can be
-		// marshaled back into the original Config type... Yuck!
-		m1 := new(map[string]interface{})
-		m2 := new(map[string]interface{})
-		m1bytes, err := json.Marshal(c)
+		err = c.mergeInJSON(configFileBytes)
 		if err != nil {
 			return nil, err
 		}
-		err = json.Unmarshal(m1bytes, m1)
-		if err != nil {
-			return nil, err
-		}
-		err = json.NewDecoder(configFile).Decode(&m2)
-		if err != nil {
-			return nil, err
-		}
-		merged := mergemap.Merge(*m1, *m2)
-		mergedBytes, err := json.Marshal(merged)
-		if err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal(mergedBytes, c)
-		if err != nil {
-			return nil, err
-		}
-		// end of HORRIBLEness
 	}
 
 	// now overlay with data from amazon, if applicable
