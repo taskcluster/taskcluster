@@ -195,7 +195,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	for _, url := range []string{
 		"http://169.254.169.254/latest/meta-data/ami-id",
 		"http://169.254.169.254/latest/meta-data/instance-id",
-		"http://169.254.169.254/latest/meta-data/instsance-type",
+		"http://169.254.169.254/latest/meta-data/instance-type",
 		"http://169.254.169.254/latest/meta-data/public-ipv4",
 		"http://169.254.169.254/latest/meta-data/placement/availability-zone",
 	} {
