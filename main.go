@@ -54,7 +54,7 @@ var (
 	config             *Config
 	configFile         string
 
-	version = "generic-worker 2.1.0alpha1"
+	version = "2.1.0alpha2"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
@@ -210,7 +210,7 @@ and reports back results to the queue.
 
 // Entry point into the generic worker...
 func main() {
-	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
+	arguments, err := docopt.Parse(usage, nil, true, "generic-worker "+version, false, true)
 	if err != nil {
 		fmt.Println("Error parsing command line arguments!")
 		panic(err)
@@ -267,11 +267,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		CleanUpTaskDirs:            true,
 		IdleShutdownTimeoutSecs:    0,
 		WorkerTypeMetadata: map[string]interface{}{
-			"generic-worker-version": version,
-			"generic-worker-source":  "https://github.com/taskcluster/generic-worker/releases",
-			"go-version":             runtime.Version(),
-			"go-arch":                runtime.GOARCH,
-			"go-os":                  runtime.GOOS,
+			"generic-worker": map[string]string{
+				"go-arch":    runtime.GOARCH,
+				"go-os":      runtime.GOOS,
+				"go-version": runtime.Version(),
+				"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
+				"version":    version,
+			},
 		},
 	}
 	// try to open config file...
