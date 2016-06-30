@@ -1,5 +1,6 @@
 let _ = require('lodash');
 let assert = require('assert');
+let WatchDog = require('./watchdog');
 
 class Iterate {
   constructor(opts) {
@@ -30,6 +31,9 @@ class Iterate {
     assert(typeof (opts.dmsConfig || {}) === 'object', 'dmsConfig must be object');
     this.dmsConfig = opts.dmsConfig || null;
 
+    this.overallWatchDog = new WatchDog(this.maxIterationTime);
+    this.incrementalWatchDog = new WatchDog(this.watchDogTime);
+
     // Count the iteration that we're on.
     this.currentIteration = 0;
     this.keepGoing = false;
@@ -37,10 +41,15 @@ class Iterate {
 
   start() {
     this.keepGoing = true;
+    this.overallWatchDog.start();
+    this.incrementalWatchDog.start();
+
 
   }
 
   stop() {
+    this.overallWatchDog.start();
+    this.incrementalWatchDog.start();
     this.keepGoing = false;
     this.currentIteration = 0;
   }
