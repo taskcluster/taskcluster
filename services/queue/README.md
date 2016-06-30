@@ -61,13 +61,6 @@ and alerted upon.
 
 In addition, this server will print log messages it is recommend run with `DEBUG` as
 `"* -superagent -babel -mocha:* -express:*"`.
-Notice that messages printed containing the substring `[alert-operator]` should
-be monitored by the maintainer.
-
-Messages labeled `[not-a-bug]` should not be confused with errors or bugs. It's
-simply special conditions that can arise. Sometimes they can be useful to
-diagnose unrelated bugs.
-
 
 AWS Access Policies Required
 ----------------------------

@@ -58,23 +58,25 @@ let load = base.loader({
 
   // Create artifact bucket instances
   publicArtifactBucket: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
       let bucket = new Bucket({
         bucket:           cfg.app.publicArtifactBucket,
         credentials:      cfg.aws,
         bucketCDN:        cfg.app.publicArtifactBucketCDN,
+        monitor:          monitor.prefix('public-bucket'),
       });
       await bucket.setupCORS();
       return bucket;
     }
   },
   privateArtifactBucket: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
       let bucket = new Bucket({
         bucket:           cfg.app.privateArtifactBucket,
-        credentials:      cfg.aws
+        credentials:      cfg.aws,
+        monitor:          monitor.prefix('private-bucket'),
       });
       await bucket.setupCORS();
       return bucket;
@@ -108,9 +110,10 @@ let load = base.loader({
         context: {
           blobStore:      ctx.artifactStore,
           publicBucket:   ctx.publicArtifactBucket,
-          privateBucket:  ctx.privateArtifactBucket
+          privateBucket:  ctx.privateArtifactBucket,
+          monitor:        ctx.monitor.prefix('data.Artifact'),
         },
-        monitor: ctx.monitor.prefix('table.artifacts'),
+        monitor:          ctx.monitor.prefix('table.artifacts'),
       });
       await Artifact.ensureTable();
       return Artifact;
@@ -124,7 +127,7 @@ let load = base.loader({
       let Task = data.Task.setup({
         table:            cfg.app.taskTableName,
         credentials:      cfg.azure,
-        monitor: monitor.prefix('table.tasks'),
+        monitor:          monitor.prefix('table.tasks'),
       });
       await Task.ensureTable();
       return Task;
@@ -138,7 +141,7 @@ let load = base.loader({
       let TaskGroup = data.TaskGroup.setup({
         table:            cfg.app.taskGroupTableName,
         credentials:      cfg.azure,
-        monitor: monitor.prefix('table.taskgroups'),
+        monitor:          monitor.prefix('table.taskgroups'),
       });
       await TaskGroup.ensureTable();
       return TaskGroup;
@@ -152,7 +155,7 @@ let load = base.loader({
       let TaskGroupMember = data.TaskGroupMember.setup({
         table:            cfg.app.taskGroupMemberTableName,
         credentials:      cfg.azure,
-        monitor: monitor.prefix('table.taskgroupmembers'),
+        monitor:          monitor.prefix('table.taskgroupmembers'),
       });
       await TaskGroupMember.ensureTable();
       return TaskGroupMember;
@@ -166,7 +169,7 @@ let load = base.loader({
       let TaskRequirement = data.TaskRequirement.setup({
         table:            cfg.app.taskRequirementTableName,
         credentials:      cfg.azure,
-        monitor: monitor.prefix('table.taskrequirements'),
+        monitor:          monitor.prefix('table.taskrequirements'),
       });
       await TaskRequirement.ensureTable();
       return TaskRequirement;
@@ -180,7 +183,7 @@ let load = base.loader({
       let TaskDependency = data.TaskDependency.setup({
         table:            cfg.app.taskDependencyTableName,
         credentials:      cfg.azure,
-        monitor: monitor.prefix('table.taskdependencies'),
+        monitor:          monitor.prefix('table.taskdependencies'),
       });
       await TaskDependency.ensureTable();
       return TaskDependency;
@@ -189,15 +192,16 @@ let load = base.loader({
 
   // Create QueueService to manage azure queues
   queueService: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new QueueService({
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => new QueueService({
       prefix:           cfg.app.queuePrefix,
       credentials:      cfg.azure,
       claimQueue:       cfg.app.claimQueue,
       resolvedQueue:    cfg.app.resolvedQueue,
       deadlineQueue:    cfg.app.deadlineQueue,
-      deadlineDelay:    cfg.app.deadlineDelay
-    })
+      deadlineDelay:    cfg.app.deadlineDelay,
+      monitor:          monitor.prefix('queue-service'),
+    }),
   },
 
   // Create dependencyTracker
@@ -249,6 +253,7 @@ let load = base.loader({
         credentials:      ctx.cfg.taskcluster.credentials,
         cloudMirrorHost:  ctx.cfg.app.cloudMirrorHost,
         artifactRegion:   ctx.cfg.aws.region,
+        monitor:          ctx.monitor.prefix('api-context'),
       },
       validator:        ctx.validator,
       authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
@@ -276,11 +281,14 @@ let load = base.loader({
       'cfg', 'Task', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
     ],
-    setup: ({cfg, Task, queueService, publisher, dependencyTracker}) => {
+    setup: ({
+      cfg, Task, queueService, publisher, dependencyTracker, monitor,
+    }) => {
       let resolver = new ClaimResolver({
         Task, queueService, publisher, dependencyTracker,
         pollingDelay:   cfg.app.claim.pollingDelay,
-        parallelism:    cfg.app.claim.parallelism
+        parallelism:    cfg.app.claim.parallelism,
+        monitor:        monitor.prefix('claim-reaper'),
       });
       resolver.start();
       return resolver;
@@ -293,11 +301,14 @@ let load = base.loader({
       'cfg', 'Task', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
     ],
-    setup: ({cfg, Task, queueService, publisher, dependencyTracker}) => {
+    setup: ({
+      cfg, Task, queueService, publisher, dependencyTracker, monitor,
+    }) => {
       let resolver = new DeadlineResolver({
         Task, queueService, publisher, dependencyTracker,
         pollingDelay:   cfg.app.deadline.pollingDelay,
-        parallelism:    cfg.app.deadline.parallelism
+        parallelism:    cfg.app.deadline.parallelism,
+        monitor:        monitor.prefix('deadline-reaper'),
       });
       resolver.start();
       return resolver;

@@ -77,6 +77,7 @@ class QueueService {
    *   resolvedQueue:        // Queue name for the resolved task queue
    *   deadlineQueue:        // Queue name for the deadline queue
    *   deadlineDelay:        // ms before deadline expired messages arrive
+   *   monitor:              // base.monitor instance
    * }
    */
   constructor(options) {
@@ -86,6 +87,7 @@ class QueueService {
     assert(options.resolvedQueue,       "A resolvedQueue name must be given");
     assert(options.claimQueue,          "A claimQueue name must be given");
     assert(options.deadlineQueue,       "A deadlineQueue name must be given");
+    assert(options.monitor,             "A monitor instance must be given");
     options = _.defaults({}, options, {
       pendingPollTimeout:    5 * 60 * 1000,
       deadlineDelay:        10 * 60 * 1000
@@ -93,6 +95,7 @@ class QueueService {
 
     this.prefix             = options.prefix;
     this.pendingPollTimeout = options.pendingPollTimeout;
+    this.monitor            = options.monitor;
 
     this.client = new azure.Queue({
       accountId:    options.credentials.accountName,
@@ -397,8 +400,8 @@ class QueueService {
     return this.queues[id] = Promise.all(_.map(names, queueName => {
       return this._ensureQueueAndMetadata(queueName, provisionerId, workerType);
     })).catch(err => {
-      debug("[alert-operator] Failed to ensure azure queue: %s, as JSON: %j",
-            err, err, err.stack);
+      err.note = 'Failed to ensure azure queue in queueservice.js';
+      this.monitor.reportError(err);
 
       // Don't cache negative results
       this.queues[id] = undefined;
@@ -459,11 +462,12 @@ class QueueService {
         // If queue already exists, we must have been racing we assume meta-data
         // is up to date...
         if (err.code !== 'QueueAlreadyExists') {
-          // We probably don't have to alert on all these. But we should
-          // definitely alert if we see a QueueBeingDeleted error
-          debug("[alert-operator] Failed to create queue: %s for %s/%s " +
-                "got error: %s, as JSON: %j", queue, provisionerId, workerType,
-                err, err, err.stack);
+          // We probably don't have report on all these. But we should
+          // definitely report if we see a QueueBeingDeleted error
+          err.queue = queue;
+          err.provisionerId = provisionerId;
+          err.workerType = workerType;
+          this.monitor.reportError(err);
           throw err;
         }
       }
@@ -555,9 +559,9 @@ class QueueService {
     // being pending.
     if (timeToDeadline === 0) {
       // This should not happen, but if timing is right it is possible.
-      debug("[not-a-bug] runId: %s of taskId: %s became pending after " +
-            "deadline, skipping pending message publication to azure queue",
-            runId, task.taskId);
+      console.log("runId: %s of taskId: %s became pending after deadline, " +
+                  "skipping pending message publication to azure queue",
+                  runId, task.taskId);
       return;
     }
 

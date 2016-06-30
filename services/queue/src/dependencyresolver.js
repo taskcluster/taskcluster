@@ -14,7 +14,7 @@ let events        = require('events');
  *
  * This is just to offload dependency resolution to a background worker.
  */
-class DependencyResolver extends events.EventEmitter {
+class DependencyResolver {
   /**
    * options:
    * {
@@ -27,8 +27,6 @@ class DependencyResolver extends events.EventEmitter {
    * }
    */
   constructor(options = {}) {
-    super();
-
     assert(options,                   'options are required');
     assert(options.dependencyTracker, 'Expected options.dependencyTracker');
     assert(options.queueService,      'Expected options.queueService');
@@ -39,9 +37,9 @@ class DependencyResolver extends events.EventEmitter {
     assert(options.monitor !== null, 'options.monitor required!');
 
     // Remember options
-    this.dependencyTracker = options.dependencyTracker;
-    this.queueService = options.queueService;
-    this.monitor = options.monitor;
+    this.dependencyTracker  = options.dependencyTracker;
+    this.queueService       = options.queueService;
+    this.monitor            = options.monitor;
 
     // Set polling delay and parallelism
     this._pollingDelay  = options.pollingDelay;
@@ -68,9 +66,13 @@ class DependencyResolver extends events.EventEmitter {
     }
 
     // Create promise that we're done looping
-    this._done = Promise.all(loops).catch((err) => {
-      console.log("Crashing the process: %s, as json: %j", err, err); // TODO: Remove this, sentry should be enough
-      this.emit('error', err); // This should crash the process
+    this._done = Promise.all(loops).catch(async (err) => {
+      console.log("Crashing the process: %s, as json: %j", err, err);
+      // TODO: use this.monitor.reportError(err); when PR lands:
+      // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
+      await this.monitor.reportError(err, 'error', {}, true);
+      // Crash the process
+      process.exit(1);
     }).then(() => {
       this._done = null;
     });
