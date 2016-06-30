@@ -28,7 +28,7 @@ install:
 
 script:
   - "go install -v ./..."
-  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./...; go tool cover -func=coverage.report; fi"
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./... && go tool cover -func=coverage.report; fi"
 
 after_script:
   - "$HOME/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
