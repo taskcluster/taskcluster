@@ -1,4 +1,4 @@
-Generated: 1467336475
+Generated: 1467386941
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10072,7 +10072,6 @@ Properties
       Property 'groupSymbol' =
         MaxLength              = '25'
         MinLength              = '1'
-        Pattern                = '^[\w/?-]+$'
         Title                  = 'group symbol'
         Type                   = 'string'
         TypeName               = ''
@@ -10087,7 +10086,6 @@ Properties
       Property 'jobSymbol' =
         MaxLength              = '25'
         MinLength              = '0'
-        Pattern                = '^$|^[\w.-]+$'
         Title                  = 'jobSymbol'
         Type                   = 'string'
         TypeName               = ''

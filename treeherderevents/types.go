@@ -148,7 +148,6 @@ type (
 			// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/groupName
 			GroupName string `json:"groupName,omitempty"`
 
-			// Syntax:     ^[\w/?-]+$
 			// Min length: 1
 			// Max length: 25
 			//
@@ -161,7 +160,6 @@ type (
 			// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/jobName
 			JobName string `json:"jobName"`
 
-			// Syntax:     ^$|^[\w.-]+$
 			// Min length: 0
 			// Max length: 25
 			//
