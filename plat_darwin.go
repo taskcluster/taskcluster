@@ -26,7 +26,7 @@ func deleteHomeDir(path string, user string) error {
 func createNewTaskUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
-	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
+	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
 	TaskUser = OSUser{
 		HomeDir:  "/Users/" + userName,

@@ -102,7 +102,7 @@ func deleteHomeDir(path string, user string) error {
 func createNewTaskUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
-	userName := "Task_" + strconv.Itoa((int)(time.Now().Unix()))
+	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
 	TaskUser = OSUser{
 		HomeDir:  filepath.Join(config.UsersDir, userName),
@@ -197,7 +197,7 @@ func deleteHomeDirs() {
 	}
 	for _, file := range fi {
 		if file.IsDir() {
-			if fileName := file.Name(); strings.HasPrefix(fileName, "Task_") {
+			if fileName := file.Name(); strings.HasPrefix(fileName, "task_") {
 				path := filepath.Join(config.UsersDir, fileName)
 				// fileName could be <user> or <user>.<hostname>...
 				user := fileName
@@ -213,7 +213,7 @@ func deleteHomeDirs() {
 }
 
 func deleteOSUserAccount(line string) {
-	if strings.HasPrefix(line, "Task_") {
+	if strings.HasPrefix(line, "task_") {
 		user := line
 		log.Println("Attempting to remove Windows user " + user + "...")
 		err := runCommands(false, "", "", []string{"net", "user", user, "/delete"})
