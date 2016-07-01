@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -263,6 +264,26 @@ func TestUpload(t *testing.T) {
 		LiveLogSecret:              "xyz",
 		PublicIP:                   net.ParseIP("127.0.0.1"),
 		Subdomain:                  "taskcluster-worker.net",
+		WorkerTypeMetadata: map[string]interface{}{
+			"aws": map[string]string{
+				"ami-id":            "test-ami",
+				"availability-zone": "test-aws-zone",
+				"instance-id":       "test-instance-id",
+				"instance-type":     "test-instance-type",
+				"public-ipv4":       "test-IP",
+			},
+			"generic-worker": map[string]string{
+				"go-arch":    runtime.GOARCH,
+				"go-os":      runtime.GOOS,
+				"go-version": runtime.Version(),
+				"release":    "test-release-url",
+				"version":    version,
+			},
+			"machine-setup": map[string]string{
+				"maintainer": "pmoore@mozilla.com",
+				"script":     "test-script-url",
+			},
+		},
 	}
 
 	// get the worker started
@@ -286,11 +307,11 @@ func TestUpload(t *testing.T) {
 			case *queueevents.ArtifactCreatedMessage:
 				a := message.(*queueevents.ArtifactCreatedMessage)
 				artifactCreatedMessages[a.Artifact.Name] = a
-				// Finish after 4 artifacts have been created. Note: the second
+				// Finish after 5 artifacts have been created. Note: the second
 				// publish of the livelog artifact (for redirecting to the
 				// underlying file rather than the livelog stream) doesn't
-				// cause a new pulse message, hence this is 4 not 5.
-				if len(artifactCreatedMessages) == 4 {
+				// cause a new pulse message, hence this is 5 not 6.
+				if len(artifactCreatedMessages) == 5 {
 					// killWorkerChan <- true
 					// pulseConn.AMQPConn.Close()
 					artifactsCreatedChan <- true
@@ -412,6 +433,15 @@ func TestUpload(t *testing.T) {
 				t.Errorf("Artifact '%s' not created", artifact)
 			}
 		}
+	}
+
+	// Check worker type metadata is there
+	if a := artifactCreatedMessages["public/logs/worker_type_metadata.json"]; a != nil {
+		if a.Artifact.ContentType != "text/plain; charset=utf-8" {
+			t.Errorf("Artifact 'public/logs/worker_type_metadata.json' should have mime type 'text/plain; charset=utf-8' but has '%s'", a.Artifact.ContentType)
+		}
+	} else {
+		t.Error("Artifact 'public/logs/worker_type_metadata.json' not created")
 	}
 
 	// now check content was uploaded to Amazon, and is correct

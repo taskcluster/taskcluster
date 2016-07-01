@@ -32,18 +32,29 @@ func immediateShutdown() {
 	}
 }
 
+// we put this in init() instead of startup() as we want tests to be able to change
+// it - note we shouldn't have these nasty global vars, I can only apologise, and
+// say taskcluster-worker will be much nicer
+func init() {
+	pwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	TaskUser = OSUser{
+		HomeDir:  pwd,
+		Name:     "",
+		Password: "",
+	}
+}
+
 func startup() error {
 	log.Printf("Detected %s platform", runtime.GOOS)
-	return nil
+	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
 }
 
 func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	cmd := exec.Command(task.Payload.Command[index][0], task.Payload.Command[index][1:]...)
 	commandName := fmt.Sprintf("command_%06d", index)
-	err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
-	if err != nil {
-		return err
-	}
 	log, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log"))
 	if err != nil {
 		return err

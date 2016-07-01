@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -15,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"time"
 
@@ -54,7 +54,7 @@ var (
 	config             *Config
 	configFile         string
 
-	version = "generic-worker 2.0.0"
+	version = "2.1.0"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
@@ -176,6 +176,14 @@ and reports back results to the queue.
                                             An integer, >= 0. A value of 0 means "do not shut
                                             the computer down" - i.e. continue running
                                             indefinitely.
+          workerTypeMetaData                This arbitrary json blob will be uploaded as an
+                                            artifact called worker_type_metadata.json with each
+                                            task. Providing information here, such as a URL to
+                                            the code/config used to set up the worker type will
+                                            mean that people running tasks on the worker type
+                                            will have more information about how it was set up
+                                            (for example what has been installed on the
+                                            machine).
 
     Here is an syntactically valid example configuration file:
 
@@ -202,7 +210,7 @@ and reports back results to the queue.
 
 // Entry point into the generic worker...
 func main() {
-	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
+	arguments, err := docopt.Parse(usage, nil, true, "generic-worker "+version, false, true)
 	if err != nil {
 		fmt.Println("Error parsing command line arguments!")
 		panic(err)
@@ -258,15 +266,23 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		UsersDir:                   "C:\\Users",
 		CleanUpTaskDirs:            true,
 		IdleShutdownTimeoutSecs:    0,
+		WorkerTypeMetadata: map[string]interface{}{
+			"generic-worker": map[string]string{
+				"go-arch":    runtime.GOARCH,
+				"go-os":      runtime.GOOS,
+				"go-version": runtime.Version(),
+				"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
+				"version":    version,
+			},
+		},
 	}
-	// try to open config file...
-	configFile, err := os.Open(filename)
-	// only overlay values if config file exists
+
+	configFileBytes, err := ioutil.ReadFile(filename)
+	// only overlay values if config file exists and could be read
 	if err == nil {
-		defer configFile.Close()
-		err = json.NewDecoder(configFile).Decode(&c)
+		err = c.mergeInJSON(configFileBytes)
 		if err != nil {
-			return c, err
+			return nil, err
 		}
 	}
 
@@ -872,6 +888,18 @@ func (task *TaskRun) run() error {
 	var finalReason string
 	var finalError error = nil
 
+	err := task.preTaskActions()
+
+	if err != nil {
+		log.Printf("%#v", err)
+		if finalError == nil {
+			log.Println("TASK EXCEPTION when running pre-task actions")
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // internal error (could not post public/logs/worker_type_metadata.json artifact)
+			finalError = err
+		}
+	}
+
 	for i, _ := range task.Payload.Command {
 		err := task.ExecuteCommand(i)
 		if err != nil {
@@ -883,7 +911,7 @@ func (task *TaskRun) run() error {
 		}
 	}
 
-	err := task.postTaskActions()
+	err = task.postTaskActions()
 
 	if err != nil {
 		log.Printf("%#v", err)
@@ -942,6 +970,22 @@ func (task *TaskRun) run() error {
 	return finalError
 }
 
+func writeToFileAsJSON(obj interface{}, filename string) error {
+	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
+}
+
+func (task *TaskRun) preTaskActions() error {
+	err := writeToFileAsJSON(config.WorkerTypeMetadata, filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"))
+	if err != nil {
+		return err
+	}
+	return task.uploadLog("public/logs/worker_type_metadata.json")
+}
+
 func (task *TaskRun) postTaskActions() error {
 	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log"))
 	if err != nil {
@@ -978,14 +1022,7 @@ func (task *TaskRun) postTaskActions() error {
 func (c *Config) persist(file string) error {
 	fmt.Println("Worker ID: " + config.WorkerId)
 	fmt.Println("Creating file " + file + "...")
-	jsonBytes, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-	var out bytes.Buffer
-	json.Indent(&out, jsonBytes, "", "    ")
-	out.WriteRune('\n')
-	return ioutil.WriteFile(file, out.Bytes(), 0644)
+	return writeToFileAsJSON(c, file)
 }
 
 func convertNilToEmptyString(val interface{}) string {

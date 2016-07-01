@@ -12,6 +12,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
@@ -31,7 +32,7 @@ func queryUserData() (*UserData, error) {
 	return userData, err
 }
 
-func queryMetaData(url, name string) (string, error) {
+func queryMetaData(url string) (string, error) {
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-data-retrieval
 	// call http://169.254.169.254/latest/meta-data/instance-id with httpbackoff
 	resp, _, err := httpbackoff.Get(url)
@@ -40,16 +41,7 @@ func queryMetaData(url, name string) (string, error) {
 	}
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(name + ": " + string(content))
 	return string(content), err
-}
-
-func queryInstanceName() (string, error) {
-	return queryMetaData("http://169.254.169.254/latest/meta-data/instance-id", "Instance name")
-}
-
-func queryPublicIP() (string, error) {
-	return queryMetaData("http://169.254.169.254/latest/meta-data/public-ipv4", "Public IP")
 }
 
 type UserData struct {
@@ -179,14 +171,6 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	if err != nil {
 		return err
 	}
-	instanceName, err := queryInstanceName()
-	if err != nil {
-		return err
-	}
-	publicIP, err := queryPublicIP()
-	if err != nil {
-		return err
-	}
 	c.ProvisionerId = userData.ProvisionerId
 	awsprov := awsprovisioner.AwsProvisioner{
 		Authenticate: false,
@@ -205,9 +189,24 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	c.ClientId = secToken.Credentials.ClientID
 	c.Certificate = secToken.Credentials.Certificate
 	c.WorkerGroup = userData.Region
-	c.WorkerId = instanceName
-	c.PublicIP = net.ParseIP(publicIP)
 	c.WorkerType = userData.WorkerType
+
+	awsMetadata := map[string]interface{}{}
+	for _, url := range []string{
+		"http://169.254.169.254/latest/meta-data/ami-id",
+		"http://169.254.169.254/latest/meta-data/instance-id",
+		"http://169.254.169.254/latest/meta-data/instance-type",
+		"http://169.254.169.254/latest/meta-data/public-ipv4",
+		"http://169.254.169.254/latest/meta-data/placement/availability-zone",
+	} {
+		key := url[strings.LastIndex(url, "/")+1:]
+		// if we get an error, be ok with it, it isn't sooooo important
+		value, _ := queryMetaData(url)
+		awsMetadata[key] = value
+	}
+	c.WorkerTypeMetadata["aws"] = awsMetadata
+	c.WorkerId = awsMetadata["instance-id"].(string)
+	c.PublicIP = net.ParseIP(awsMetadata["public-ipv4"].(string))
 	secrets := new(Secrets)
 	json.Unmarshal(secToken.Data, secrets)
 	if err != nil {
@@ -215,7 +214,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	}
 
 	// Now overlay existing config with values in secrets
-	json.Unmarshal(secrets.GenericWorker.Config, c)
+	err = c.mergeInJSON([]byte(secrets.GenericWorker.Config))
 	if err != nil {
 		return err
 	}
