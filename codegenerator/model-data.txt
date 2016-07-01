@@ -1,4 +1,4 @@
-Generated: 1467307715
+Generated: 1467336475
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10065,7 +10065,6 @@ Properties
       Property 'groupName' =
         MaxLength              = '100'
         MinLength              = '1'
-        Pattern                = '^[\w,\+\s\[\]\(\)-]+$'
         Title                  = 'group name'
         Type                   = 'string'
         TypeName               = ''
@@ -10081,7 +10080,6 @@ Properties
       Property 'jobName' =
         MaxLength              = '100'
         MinLength              = '1'
-        Pattern                = '^[A-Za-z0-9\s_,\.\+\[\]\(\)-]+$'
         Title                  = 'job name'
         Type                   = 'string'
         TypeName               = ''

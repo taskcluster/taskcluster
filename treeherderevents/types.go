@@ -142,7 +142,6 @@ type (
 			// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkId
 			ChunkID int `json:"chunkId,omitempty"`
 
-			// Syntax:     ^[\w,\+\s\[\]\(\)-]+$
 			// Min length: 1
 			// Max length: 100
 			//
@@ -156,7 +155,6 @@ type (
 			// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/groupSymbol
 			GroupSymbol string `json:"groupSymbol"`
 
-			// Syntax:     ^[A-Za-z0-9\s_,\.\+\[\]\(\)-]+$
 			// Min length: 1
 			// Max length: 100
 			//
