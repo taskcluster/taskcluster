@@ -118,8 +118,6 @@ properties:
       jobSymbol:
         title: "jobSymbol"
         type: "string"
-        # spaces and "?" are not valid for job symbols
-        pattern: "^$|^[\\w.-]+$"
         minLength: 0
         maxLength: 25
       chunkId:
@@ -133,8 +131,6 @@ properties:
       groupSymbol:
         title: "group symbol"
         type: "string"
-        # spaces not valid for group symbols
-        pattern: "^[\\w/?-]+$"
         minLength: 1
         maxLength: 25
       # could do without these if we require job type and group to exist prior
