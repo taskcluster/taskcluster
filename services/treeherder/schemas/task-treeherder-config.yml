@@ -94,8 +94,6 @@ properties:
       given push.  This symbol could be something such as "B" or a number representing
       the current chunk.
     type: "string"
-    # spaces and "?" are not valid for job symbols
-    pattern: "^[A-Za-z0-9._-]+$"
     minLength: 0
     maxLength: 25
   groupName:
@@ -112,7 +110,6 @@ properties:
       of "ME" would have all jobs with that group symbol appear as
       ME(symbol 1, symbol 2, ...).
     type: "string"
-    pattern: "^[\\w/?-]+$"
     minLength: 1
     maxLength: 25
   productName:
