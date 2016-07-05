@@ -66,7 +66,7 @@ helper.dependencyResolver = async () => {
 };
 // Allow tests to start deadline-reaper
 helper.deadlineReaper = async () => {
-  var reaper = await load('deadline-reaper', loadOptions)
+  var reaper = await load('deadline-reaper', loadOptions);
   toTerminate.push(reaper);
   return reaper;
 };
@@ -76,16 +76,16 @@ var webServer = null;
 // Setup before tests
 mocha.before(async () => {
   // Create mock authentication server
-  debug("### Creating mock authentication server")
+  debug('### Creating mock authentication server');
   base.testing.fakeauth.start({
     'test-server': ['*'],
-    'test-client': ['*']
+    'test-client': ['*'],
   });
 
   webServer = await load('server', loadOptions);
 
   // Create client for working with API
-  debug("### Creating client")
+  debug('### Creating client');
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
   var reference = v1.reference({baseUrl: helper.baseUrl});
   helper.Queue = taskcluster.createClient(reference);
@@ -98,9 +98,9 @@ mocha.before(async () => {
       baseUrl:          helper.baseUrl,
       credentials: {
         clientId:       'test-client',
-        accessToken:    'none'
+        accessToken:    'none',
       },
-      authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+      authorizedScopes: scopes.length > 0 ? scopes : undefined,
     });
   };
 
@@ -110,7 +110,7 @@ mocha.before(async () => {
   // Create client for binding to reference
   var exchangeReference = exchanges.reference({
     exchangePrefix:   cfg.app.exchangePrefix,
-    credentials:      cfg.pulse
+    credentials:      cfg.pulse,
   });
   helper.QueueEvents = taskcluster.createClient(exchangeReference);
   helper.queueEvents = new helper.QueueEvents();
