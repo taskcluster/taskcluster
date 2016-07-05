@@ -23,12 +23,6 @@
 // routing key pattern. This makes it very easy to bind to all messages
 // about a certain kind tasks.
 //
-// **Task-graphs**, if the task-graph scheduler, documented elsewhere, is
-// used to schedule a task-graph, the task submitted will have their
-// `schedulerId` set to `'task-graph-scheduler'`, and their `taskGroupId` to
-// the `taskGraphId` as given to the task-graph scheduler. This is useful if
-// you wish to listen for all messages in a specific task-graph.
-//
 // **Task specific routes**, a task can define a task specific route using
 // the `task.routes` property. See task creation documentation for details
 // on permissions required to provide task specific routes. If a task has
@@ -38,7 +32,7 @@
 //
 // These routes will always be prefixed `route.`, so that cannot interfere
 // with the _primary_ routing key as documented here. Notice that the
-// _primary_ routing key is alwasys prefixed `primary.`. This is ensured
+// _primary_ routing key is always prefixed `primary.`. This is ensured
 // in the routing key reference, so API clients will do this automatically.
 //
 // Please, note that the way RabbitMQ works, the message will only arrive

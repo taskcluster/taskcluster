@@ -1,4 +1,4 @@
-Generated: 1467386941
+Generated: 1467736172
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4541,8 +4541,8 @@ Entry 0     =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task.json#'
     Entry Title       = 'Get Task Definition'
     Entry Description = 'This end-point will return the task-definition. Notice that the task
-definition may have been modified by queue, if an optional property isn't
-specified the queue may provide a default value.'
+definition may have been modified by queue, if an optional property is
+not specified the queue may provide a default value.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -4582,7 +4582,7 @@ results. However, you can only be sure to have seen all results if you
 keep calling `listTaskGroup` with the last `continuationToken` until you
 get a result without a `continuationToken`.
 
-If you're not interested in listing all the members at once, you may
+If you are not interested in listing all the members at once, you may
 use the query-string option `limit` to return fewer.'
 Entry 3     =
     Entry Type        = 'function'
@@ -4610,7 +4610,7 @@ results. However, you can only be sure to have seen all results if you
 keep calling `listDependentTasks` with the last `continuationToken` until
 you get a result without a `continuationToken`.
 
-If you're not interested in listing all the tasks at once, you may
+If you are not interested in listing all the tasks at once, you may
 use the query-string option `limit` to return fewer.'
 Entry 4     =
     Entry Type        = 'function'
@@ -4719,8 +4719,8 @@ the queue have started because the worker stopped responding, for example
 because a spot node died.
 
 **Remark** this operation is idempotent, if you try to rerun a task that
-isn't either `failed` or `completed`, this operation will just return the
-current task status.'
+is not either `failed` or `completed`, this operation will just return
+the current task status.'
 Entry 8     =
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -4815,9 +4815,9 @@ Entry 13    =
 a run that failed because the task specific code behaved unexpectedly.
 For example the task exited non-zero, or didn't produce expected output.
 
-Don't use this if the task couldn't be run because if malformed payload,
-or other unexpected condition. In these cases we have a task exception,
-which should be reported with `reportException`.'
+Do not use this if the task couldn't be run because if malformed
+payload, or other unexpected condition. In these cases we have a task
+exception, which should be reported with `reportException`.'
 Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -7108,12 +7108,6 @@ You'll notice that all the exchanges in the document shares the same
 routing key pattern. This makes it very easy to bind to all messages
 about a certain kind tasks.
 
-**Task-graphs**, if the task-graph scheduler, documented elsewhere, is
-used to schedule a task-graph, the task submitted will have their
-`schedulerId` set to `'task-graph-scheduler'`, and their `taskGroupId` to
-the `taskGraphId` as given to the task-graph scheduler. This is useful if
-you wish to listen for all messages in a specific task-graph.
-
 **Task specific routes**, a task can define a task specific route using
 the `task.routes` property. See task creation documentation for details
 on permissions required to provide task specific routes. If a task has
@@ -7123,7 +7117,7 @@ routing-key `'route.notify.by-email'`.
 
 These routes will always be prefixed `route.`, so that cannot interfere
 with the _primary_ routing key as documented here. Notice that the
-_primary_ routing key is alwasys prefixed `primary.`. This is ensured
+_primary_ routing key is always prefixed `primary.`. This is ensured
 in the routing key reference, so API clients will do this automatically.
 
 Please, note that the way RabbitMQ works, the message will only arrive

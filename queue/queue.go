@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 1 Jul 2016 at 15:29:00 UTC. The code was generated
+// Tue, 5 Jul 2016 at 16:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -80,8 +80,8 @@ func New(credentials *tcclient.Credentials) *Queue {
 }
 
 // This end-point will return the task-definition. Notice that the task
-// definition may have been modified by queue, if an optional property isn't
-// specified the queue may provide a default value.
+// definition may have been modified by queue, if an optional property is
+// not specified the queue may provide a default value.
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#task
 func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, error) {
@@ -113,7 +113,7 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 // keep calling `listTaskGroup` with the last `continuationToken` until you
 // get a result without a `continuationToken`.
 //
-// If you're not interested in listing all the members at once, you may
+// If you are not interested in listing all the members at once, you may
 // use the query-string option `limit` to return fewer.
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listTaskGroup
@@ -140,7 +140,7 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 // keep calling `listDependentTasks` with the last `continuationToken` until
 // you get a result without a `continuationToken`.
 //
-// If you're not interested in listing all the tasks at once, you may
+// If you are not interested in listing all the tasks at once, you may
 // use the query-string option `limit` to return fewer.
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listDependentTasks
@@ -253,8 +253,8 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 // because a spot node died.
 //
 // **Remark** this operation is idempotent, if you try to rerun a task that
-// isn't either `failed` or `completed`, this operation will just return the
-// current task status.
+// is not either `failed` or `completed`, this operation will just return
+// the current task status.
 //
 // Required scopes:
 //   * (queue:rerun-task and assume:scheduler-id:<schedulerId>/<taskGroupId>), or
@@ -361,9 +361,9 @@ func (myQueue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse
 // a run that failed because the task specific code behaved unexpectedly.
 // For example the task exited non-zero, or didn't produce expected output.
 //
-// Don't use this if the task couldn't be run because if malformed payload,
-// or other unexpected condition. In these cases we have a task exception,
-// which should be reported with `reportException`.
+// Do not use this if the task couldn't be run because if malformed
+// payload, or other unexpected condition. In these cases we have a task
+// exception, which should be reported with `reportException`.
 //
 // Required scopes:
 //   * (queue:resolve-task and assume:worker-id:<workerGroup>/<workerId>), or
