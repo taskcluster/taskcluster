@@ -16,11 +16,11 @@ var makeTask = () => {
     deadline:         taskcluster.fromNowJSON('1 hour'),
     payload:          {},
     metadata: {
-      name:           "Load testing task",
-      description:    "Task created during load tests",
+      name:           'Load testing task',
+      description:    'Task created during load tests',
       owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue'
-    }
+      source:         'https://github.com/taskcluster/taskcluster-queue',
+    },
   };
 };
 
@@ -35,8 +35,8 @@ var launch = async function(cfg) {
   var success = 0;
   var failed  = 0;
   var summary = () => {
-    console.log("%s req/s success: %s, failed: %s",
-                fmt(success / CYCLE_SECONDS), success, failed)
+    console.log('%s req/s success: %s, failed: %s',
+                fmt(success / CYCLE_SECONDS), success, failed);
     success = 0;
     failed  = 0;
   };
@@ -62,9 +62,9 @@ var launch = async function(cfg) {
           'docker-worker:cache:*',
           'docker-worker:image:taskcluster/*',
           'docker-worker:capability:device:loopbackVideo',
-          'docker-worker:capability:device:loopbackAudio'
+          'docker-worker:capability:device:loopbackAudio',
         ],
-        credentials:  cfg.taskcluster.credentials
+        credentials:  cfg.taskcluster.credentials,
       });
       var queue = new taskcluster.Queue({
         credentials:      tempCreds,
@@ -80,16 +80,16 @@ var launch = async function(cfg) {
           'docker-worker:cache:*',
           'docker-worker:image:taskcluster/*',
           'docker-worker:capability:device:loopbackVideo',
-          'docker-worker:capability:device:loopbackAudio'
-        ]
+          'docker-worker:capability:device:loopbackAudio',
+        ],
       });
-      while(true) {
+      while (true) {
         await queue.createTask(slugid.v4(), makeTask()).then(() => {
           success += 1;
         }, (err) => {
           failed += 1;
           if (exiting) {
-            console.log("Error: %s: %s", err.statusCode, err.message);
+            console.log('Error: %s: %s', err.statusCode, err.message);
           }
         });
         if (exiting) {
@@ -98,58 +98,54 @@ var launch = async function(cfg) {
         await base.testing.sleep(10);
       }
     })().catch(function(err) {
-      console.log("LOOP CRASHED!!!");
+      console.log('LOOP CRASHED!!!');
       console.log(err.stack);
     });
   };
 
   //  2 req in parallel
-  while(loops < 2) startLoop();
+  while (loops < 2) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   //  4 req in parallel
-  while(loops < 4) startLoop();
+  while (loops < 4) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   //  8 req in parallel
-  while(loops < 8) startLoop();
+  while (loops < 8) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   // 16 req in parallel
-  while(loops < 16) startLoop();
+  while (loops < 16) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   // 32 req in parallel
-  while(loops < 32) startLoop();
+  while (loops < 32) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   // 48 req in parallel
-  while(loops < 48) startLoop();
+  while (loops < 48) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   //*/
 /*
   // 64 req in parallel
-  while(loops < 64) startLoop();
+  while (loops < 64) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   // 128 req in parallel
-  while(loops < 128) startLoop();
+  while (loops < 128{ ) startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();//*/
 
-  console.log("Exiting");
+  console.log('Exiting');
   exiting = true;
 };
 
 // Export launch in-case anybody cares
 module.exports = launch;
-
-
-
-
 

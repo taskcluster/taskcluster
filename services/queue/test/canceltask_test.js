@@ -22,29 +22,29 @@ suite('Rerun task', function() {
     scopes:           [],
     payload:          {},
     metadata: {
-      name:           "Unit testing task",
-      description:    "Task created during unit tests",
+      name:           'Unit testing task',
+      description:    'Task created during unit tests',
       owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue'
+      source:         'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing'
-    }
+      purpose:        'taskcluster-testing',
+    },
   };
 
-  test("defineTask, cancelTask (idempotent)", async () => {
+  test('defineTask, cancelTask (idempotent)', async () => {
     var taskId = slugid.v4();
 
-    debug("### Define task");
+    debug('### Define task');
     var r1 = await helper.queue.defineTask(taskId, taskDef);
     assume(r1.status.state).equals('unscheduled');
 
-    debug("### Listen for task-exception");
+    debug('### Listen for task-exception');
     await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId:     taskId
+      taskId,
     }));
 
-    debug("### Cancel Task");
+    debug('### Cancel Task');
     var r2 = await helper.queue.cancelTask(taskId);
     assume(r2.status.state).equals('exception');
     assume(r2.status.runs.length).equals(1);
@@ -55,26 +55,26 @@ suite('Rerun task', function() {
     var m1 = await helper.events.waitFor('except');
     assume(m1.payload.status).deep.equals(r2.status);
 
-    debug("### Cancel Task (again)");
+    debug('### Cancel Task (again)');
     var r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status).deep.equals(r2.status);
   });
 
-  test("createTask, cancelTask (idempotent)", async () => {
+  test('createTask, cancelTask (idempotent)', async () => {
     var taskId = slugid.v4();
 
-    debug("### Create task");
+    debug('### Create task');
     var r1 = await helper.queue.createTask(taskId, taskDef);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
 
-    debug("### Listen for task-exception");
+    debug('### Listen for task-exception');
     await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId:     taskId
+      taskId,
     }));
 
-    debug("### Cancel Task");
+    debug('### Cancel Task');
     var r2 = await helper.queue.cancelTask(taskId);
     assume(r2.status.state).equals('exception');
     assume(r2.status.runs.length).equals(1);
@@ -85,33 +85,33 @@ suite('Rerun task', function() {
     var m1 = await helper.events.waitFor('except');
     assume(m1.payload.status).deep.equals(r2.status);
 
-    debug("### Cancel Task (again)");
+    debug('### Cancel Task (again)');
     var r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status).deep.equals(r2.status);
   });
 
-  test("createTask, claimTask, cancelTask (idempotent)", async () => {
+  test('createTask, claimTask, cancelTask (idempotent)', async () => {
     var taskId = slugid.v4();
 
-    debug("### Create task");
+    debug('### Create task');
     var r1 = await helper.queue.createTask(taskId, taskDef);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
 
-    debug("### Claim task");
+    debug('### Claim task');
     var r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
-      workerId:       'my-worker'
+      workerId:       'my-worker',
     });
     assume(r1.status.state).equals('running');
 
-    debug("### Listen for task-exception");
+    debug('### Listen for task-exception');
     await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId:     taskId
+      taskId,
     }));
 
-    debug("### Cancel Task");
+    debug('### Cancel Task');
     var r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status.state).equals('exception');
     assume(r3.status.runs.length).equals(1);
@@ -122,7 +122,7 @@ suite('Rerun task', function() {
     var m1 = await helper.events.waitFor('except');
     assume(m1.payload.status).deep.equals(r3.status);
 
-    debug("### Cancel Task (again)");
+    debug('### Cancel Task (again)');
     var r4 = await helper.queue.cancelTask(taskId);
     assume(r4.status).deep.equals(r3.status);
   });

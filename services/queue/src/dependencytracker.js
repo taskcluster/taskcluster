@@ -90,8 +90,8 @@ class DependencyTracker {
 
       // Check if requiredTask is satisfied
       let state = requiredTask.state();
-      if (state === 'completed' || (task.requires === 'all-resolved' &&
-          (state === 'exception' || state === 'failed'))) {
+      if (state === 'completed' || task.requires === 'all-resolved' &&
+          (state === 'exception' || state === 'failed')) {
         // If a dependency is satisfied we delete the TaskRequirement entry
         await this.TaskRequirement.remove({
           taskId:         task.taskId,
@@ -111,16 +111,16 @@ class DependencyTracker {
       if (missing.length > 0) {
         msg += '`task.dependencies` references non-existing tasks: \n';
         msg += missing.map(taskId => {
-          return ' * ' + taskId + ','
+          return ' * ' + taskId + ',';
         }).join('\n') + '\n';
         msg += 'All taskIds in `task.dependencies` **must** exist\n';
         msg += 'before the task is created.\n';
       }
       if (expiring.length > 0) {
-       msg += '`task.dependencies` references tasks that expires\n';
-       msg += 'before `task.deadline` this is not allowed, see tasks: \n';
+        msg += '`task.dependencies` references tasks that expires\n';
+        msg += 'before `task.deadline` this is not allowed, see tasks: \n';
         msg += expiring.map(taskId => {
-          return ' * ' + taskId + ','
+          return ' * ' + taskId + ',';
         }).join('\n') + '\n';
         msg += 'All taskIds in `task.dependencies` **must** have\n';
         msg += '`task.expires` greater than the `deadline` for this task.\n';
@@ -194,7 +194,7 @@ class DependencyTracker {
 
     // If the task isn't blocked (dependencies resolved), or it has no
     // dependencies we ensure that the first run is pending (if not already).
-    if ((anySatisfied && !await this.isBlocked(task.taskId)) ||
+    if (anySatisfied && !await this.isBlocked(task.taskId) ||
         task.dependencies.length === 0) {
 
       await task.modify(task => {
@@ -207,7 +207,7 @@ class DependencyTracker {
         task.runs.push({
           state:          'pending',
           reasonCreated:  'scheduled',
-          scheduled:      new Date().toJSON()
+          scheduled:      new Date().toJSON(),
         });
       });
     }
@@ -282,7 +282,7 @@ class DependencyTracker {
   async scheduleTask(taskOrTaskId) {
     // Load task, if not already loaded
     let task = taskOrTaskId;
-    if (typeof(task) === 'string') {
+    if (typeof task === 'string') {
       task = await this.Task.load({taskId: taskOrTaskId}, true);
 
       if (!task) {
@@ -311,7 +311,7 @@ class DependencyTracker {
       task.runs.push({
         state:          'pending',
         reasonCreated:  'scheduled',
-        scheduled:      new Date().toJSON()
+        scheduled:      new Date().toJSON(),
       });
     });
 
@@ -325,7 +325,7 @@ class DependencyTracker {
         this.queueService.putPendingMessage(task, 0),
         this.publisher.taskPending({
           status:         status,
-          runId:          0
+          runId:          0,
         }, task.routes),
       ]);
     }
@@ -333,7 +333,6 @@ class DependencyTracker {
     return status;
   }
 };
-
 
 // Export DependencyTracker
 module.exports = DependencyTracker;

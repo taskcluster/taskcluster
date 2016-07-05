@@ -39,7 +39,7 @@ suite('queue/QueueService', function() {
       });
     });
   } else {
-    console.log("WARNING: Skipping 'blobstore' tests, missing user-config.yml");
+    console.log('WARNING: Skipping \'blobstore\' tests, missing user-config.yml');
     this.pending = true;
   }
 
@@ -47,17 +47,17 @@ suite('queue/QueueService', function() {
   var workerType    = 'no-worker';
   var provisionerId = slugid.v4(); // make a unique provisionerId
 
-  test("putDeadlineMessage, pollDeadlineQueue", async () => {
+  test('putDeadlineMessage, pollDeadlineQueue', async () => {
     var taskId      = slugid.v4();
     var deadline    = new Date(new Date().getTime() + 2 * 1000);
-    debug("Putting message with taskId: %s", taskId);
+    debug('Putting message with taskId: %s', taskId);
     // Put message
     await queueService.putDeadlineMessage(taskId, deadline);
 
     // Poll for message
     return base.testing.poll(async () => {
       var messages = await queueService.pollDeadlineQueue();
-      debug("Received messages: %j", messages);
+      debug('Received messages: %j', messages);
 
       // delete all the messages
       await Promise.all(messages.map((message) => {
@@ -69,21 +69,21 @@ suite('queue/QueueService', function() {
         return message.taskId === taskId &&
                message.deadline.getTime() === deadline.getTime();
       });
-      assert(foundTaskId, "Expected to see taskId at some point");
+      assert(foundTaskId, 'Expected to see taskId at some point');
     });
   });
 
-  test("putClaimMessage, pollClaimQueue", async () => {
+  test('putClaimMessage, pollClaimQueue', async () => {
     var taskId      = slugid.v4();
     var takenUntil  = new Date(new Date().getTime() + 2 * 1000);
-    debug("Putting message with taskId: %s", taskId);
+    debug('Putting message with taskId: %s', taskId);
     // Put message
     await queueService.putClaimMessage(taskId, 0, takenUntil);
 
     // Poll for message
     return base.testing.poll(async () => {
       var messages = await queueService.pollClaimQueue();
-      debug("Received messages: %j", messages);
+      debug('Received messages: %j', messages);
 
       // delete all the messages
       await Promise.all(messages.map((message) => {
@@ -95,20 +95,20 @@ suite('queue/QueueService', function() {
         return message.taskId === taskId &&
                message.takenUntil.getTime() === takenUntil.getTime();
       });
-      assert(foundTaskId, "Expected to see taskId at some point");
+      assert(foundTaskId, 'Expected to see taskId at some point');
     });
   });
 
-  test("putResolvedMessage, pollResolvedQueue", async () => {
+  test('putResolvedMessage, pollResolvedQueue', async () => {
     var taskId      = slugid.v4();
-    debug("Putting message with taskId: %s", taskId);
+    debug('Putting message with taskId: %s', taskId);
     // Put message
     await queueService.putResolvedMessage(taskId, 'completed');
 
     // Poll for message
     return base.testing.poll(async () => {
       var messages = await queueService.pollResolvedQueue();
-      debug("Received messages: %j", messages);
+      debug('Received messages: %j', messages);
 
       // delete all the messages
       await Promise.all(messages.map((message) => {
@@ -120,11 +120,11 @@ suite('queue/QueueService', function() {
         return message.taskId === taskId &&
                message.resolution === 'completed';
       });
-      assert(foundTaskId, "Expected to see taskId at some point");
+      assert(foundTaskId, 'Expected to see taskId at some point');
     });
   });
 
-  test("put, get, delete (priority: normal)", async () => {
+  test('put, get, delete (priority: normal)', async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
     var task    = {
@@ -132,33 +132,33 @@ suite('queue/QueueService', function() {
       provisionerId:      provisionerId,
       workerType:         workerType,
       priority:           'normal',
-      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
+      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
     };
 
     // Put message into pending queue
-    debug("### Putting message in pending queue");
+    debug('### Putting message in pending queue');
     await queueService.putPendingMessage(task, runId);
 
     // Get signedPollUrl and signedDeleteUrl
     var {
-      queues
+      queues,
     } = await queueService.signedPendingPollUrls(provisionerId, workerType);
 
     // Get a message
-    debug("### Polling for queue for message");
+    debug('### Polling for queue for message');
     var i = 0;
     var queue;
     var [message, payload] = await base.testing.poll(async () => {
       // Poll azure queue
-      debug(" - Polling azure queue: %s", i);
+      debug(' - Polling azure queue: %s', i);
       queue = queues[i++ % queues.length];
       var res = await request.get(queue.signedPollUrl).buffer().end();
-      assert(res.ok, "Request failed");
+      assert(res.ok, 'Request failed');
 
       // Parse XML
       var json = await new Promise((accept, reject) => {
         xml2js.parseString(res.text, (err, json) => {
-          err ? reject(err) : accept(json)
+          err ? reject(err) : accept(json);
         });
       });
 
@@ -168,25 +168,25 @@ suite('queue/QueueService', function() {
       // Load the payload
       var payload = new Buffer(message.MessageText[0], 'base64').toString();
       payload = JSON.parse(payload);
-      debug("Received message with payload: %j", payload);
+      debug('Received message with payload: %j', payload);
 
       // Check that we got the right task, notice they have life time of 5 min,
       // so waiting 5 min should fix this issue.. Another option is to create
       // a unique queue for each test run. Probably not needed.
-      assert(payload.taskId === taskId, "Got wrong taskId, try again in 5 min");
+      assert(payload.taskId === taskId, 'Got wrong taskId, try again in 5 min');
 
       return [message, payload];
-    }).catch(err => {throw new Error("Failed to poll queue")});
+    }).catch(err => {throw new Error('Failed to poll queue');});
 
-    debug("### Delete pending message");
+    debug('### Delete pending message');
     var deleteMessageUrl = queue.signedDeleteUrl
           .replace('{{messageId}}', encodeURIComponent(message.MessageId))
           .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
     var res = await request.del(deleteMessageUrl).buffer().end();
-    assert(res.ok, "Message failed to delete");
+    assert(res.ok, 'Message failed to delete');
   });
 
-  test("put, get, delete (priority: high)", async () => {
+  test('put, get, delete (priority: high)', async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
     var task    = {
@@ -194,33 +194,33 @@ suite('queue/QueueService', function() {
       provisionerId:      provisionerId,
       workerType:         workerType,
       priority:           'high',
-      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000)
+      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
     };
 
     // Put message into pending queue
-    debug("### Putting message in pending queue");
+    debug('### Putting message in pending queue');
     await queueService.putPendingMessage(task, runId);
 
     // Get signedPollUrl and signedDeleteUrl
     var {
-      queues
+      queues,
     } = await queueService.signedPendingPollUrls(provisionerId, workerType);
 
     // Get a message
-    debug("### Polling for queue for message");
+    debug('### Polling for queue for message');
     var i = 0;
     var queue;
     var [message, payload] = await base.testing.poll(async () => {
       // Poll azure queue
-      debug(" - Polling azure queue: %s", i);
+      debug(' - Polling azure queue: %s', i);
       queue = queues[i++ % queues.length];
       var res = await request.get(queue.signedPollUrl).buffer().end();
-      assert(res.ok, "Request failed");
+      assert(res.ok, 'Request failed');
 
       // Parse XML
       var json = await new Promise((accept, reject) => {
         xml2js.parseString(res.text, (err, json) => {
-          err ? reject(err) : accept(json)
+          err ? reject(err) : accept(json);
         });
       });
 
@@ -230,34 +230,34 @@ suite('queue/QueueService', function() {
       // Load the payload
       var payload = new Buffer(message.MessageText[0], 'base64').toString();
       payload = JSON.parse(payload);
-      debug("Received message with payload: %j", payload);
+      debug('Received message with payload: %j', payload);
 
       // Check that we got the right task, notice they have life time of 5 min,
       // so waiting 5 min should fix this issue.. Another option is to create
       // a unique queue for each test run. Probably not needed.
-      assert(payload.taskId === taskId, "Got wrong taskId, try again in 5 min");
+      assert(payload.taskId === taskId, 'Got wrong taskId, try again in 5 min');
 
       return [message, payload];
-    }).catch(err => {throw new Error("Failed to poll queue")});
+    }).catch(err => {throw new Error('Failed to poll queue');});
 
-    debug("### Delete pending message");
+    debug('### Delete pending message');
     var deleteMessageUrl = queue.signedDeleteUrl
           .replace('{{messageId}}', encodeURIComponent(message.MessageId))
           .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
     var res = await request.del(deleteMessageUrl).buffer().end();
-    assert(res.ok, "Message failed to delete");
+    assert(res.ok, 'Message failed to delete');
   });
 
-  test("countPendingMessages", async () => {
+  test('countPendingMessages', async () => {
     var count = await queueService.countPendingMessages(
       provisionerId,
       workerType
     );
-    debug("pending message count: %j", count);
-    assert(typeof(count) === 'number', "Expected count as number!");
+    debug('pending message count: %j', count);
+    assert(typeof count === 'number', 'Expected count as number!');
   });
 
-  test("deleteUnusedWorkerQueues (can delete queues)", async () => {
+  test('deleteUnusedWorkerQueues (can delete queues)', async () => {
     // 11 days into the future, so we'll delete all queues (yay)
     let now = new Date(Date.now() + 11 * 24 * 60 * 60 * 1000);
 
@@ -265,7 +265,7 @@ suite('queue/QueueService', function() {
     let provisionerId = slugid.v4();
     let workerType = slugid.v4();
     let queueNames = await queueService.ensurePendingQueue(
-      provisionerId, workerType
+      provisionerId, workerType,
     );
 
     // Delete previously created queues
@@ -276,20 +276,19 @@ suite('queue/QueueService', function() {
       try {
         // Get meta-data, this will fail if the queue was deleted
         await queueService.client.getMetadata(queueName);
-        assert(false, "Expected the queue to have been deleted!");
+        assert(false, 'Expected the queue to have been deleted!');
       } catch (err) {
-        assert(err.statusCode === 404, "Expected 400 error");
+        assert(err.statusCode === 404, 'Expected 400 error');
       }
     }));
   });
 
-
-  test("deleteUnusedWorkerQueues (respects meta-data)", async () => {
+  test('deleteUnusedWorkerQueues (respects meta-data)', async () => {
     // Ensure a queue with updated meta-data exists
     let provisionerId = slugid.v4();
     let workerType = slugid.v4();
     let queueNames = await queueService.ensurePendingQueue(
-      provisionerId, workerType
+      provisionerId, workerType,
     );
 
     // Let's delete from now and check that we didn't delete queue just created

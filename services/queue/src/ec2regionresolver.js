@@ -10,7 +10,7 @@ const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
 class EC2RegionResolver {
   /** Construct EC2RegionResolver given a list of regions we care about */
   constructor(regions) {
-    assert(regions instanceof Array, "regions must be an array");
+    assert(regions instanceof Array, 'regions must be an array');
     this.regions = regions;
     this.ipRanges = [];
   }
@@ -31,7 +31,7 @@ class EC2RegionResolver {
     }).map(prefix => {
       return {
         range:    new Netmask(prefix.ip_prefix),
-        region:   prefix.region
+        region:   prefix.region,
       };
     });
   }

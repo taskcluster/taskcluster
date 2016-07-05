@@ -1,4 +1,4 @@
-suite("task.priority", () => {
+suite('task.priority', () => {
   var debug       = require('debug')('test:createDefaults');
   var assert      = require('assert');
   var slugid      = require('slugid');
@@ -23,15 +23,15 @@ suite("task.priority", () => {
       deadline:         taskcluster.fromNowJSON('30 min'),
       payload:          {},
       metadata: {
-        name:           "Unit testing task",
-        description:    "Task created during unit tests",
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
         owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue'
-      }
+        source:         'https://github.com/taskcluster/taskcluster-queue',
+      },
     };
   };
 
-  test("Can create 'high' w. queue:task-priority:high", async () => {
+  test('Can create "high" w. queue:task-priority:high', async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/' + workerType,
       'queue:task-priority:high',
@@ -39,25 +39,25 @@ suite("task.priority", () => {
     await helper.queue.createTask(slugid.v4(), makeTask('high'));
   });
 
-  test("Can't create 'high' without queue:task-priority:high", async () => {
+  test('Can\'t create "high" without queue:task-priority:high', async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/' + workerType,
     );
     await helper.queue.createTask(slugid.v4(), makeTask('high')).then(() => {
-      assert(false, "Expected 400 error!");
+      assert(false, 'Expected 400 error!');
     }, err => {
-      debug("Got error as expected");
+      debug('Got error as expected');
     });
   });
 
-  test("Can create 'normal' without queue:task-priority:high", async () => {
+  test('Can create "normal" without queue:task-priority:high', async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/' + workerType,
     );
     await helper.queue.createTask(slugid.v4(), makeTask('normal'));
   });
 
-  test("Can define 'high' w. queue:task-priority:high", async () => {
+  test('Can define "high" w. queue:task-priority:high', async () => {
     helper.scopes(
       'queue:define-task:no-provisioner/' + workerType,
       'queue:task-priority:high',
@@ -65,36 +65,36 @@ suite("task.priority", () => {
     await helper.queue.defineTask(slugid.v4(), makeTask('high'));
   });
 
-  test("Can't define 'high' without queue:task-priority:high", async () => {
+  test('Can\'t define "high" without queue:task-priority:high', async () => {
     helper.scopes(
       'queue:define-task:no-provisioner/' + workerType,
     );
     await helper.queue.defineTask(slugid.v4(), makeTask('high')).then(() => {
-      assert(false, "Expected 400 error!");
+      assert(false, 'Expected 400 error!');
     }, err => {
-      debug("Got error as expected");
+      debug('Got error as expected');
     });
   });
 
-  test("Can define 'normal' without queue:task-priority:high", async () => {
+  test('Can define "normal" without queue:task-priority:high', async () => {
     helper.scopes(
       'queue:define-task:no-provisioner/' + workerType,
     );
     await helper.queue.defineTask(slugid.v4(), makeTask('normal'));
   });
 
-  test("poll 'high' before 'low'", async () => {
+  test('poll "high" before "low"', async () => {
     var highTaskId    = slugid.v4();
     var normalTaskId  = slugid.v4();
 
-    debug("### Creating normal: %s and high: %s tasks",
+    debug('### Creating normal: %s and high: %s tasks',
           normalTaskId, highTaskId);
     await Promise.all([
       helper.queue.createTask(highTaskId, makeTask('high')),
-      helper.queue.createTask(normalTaskId, makeTask('normal'))
+      helper.queue.createTask(normalTaskId, makeTask('normal')),
     ]);
 
-    debug("### Get signed poll urls");
+    debug('### Get signed poll urls');
     var {queues} = await helper.queue.pollTaskUrls(
       'no-provisioner', workerType
     );
@@ -111,7 +111,7 @@ suite("task.priority", () => {
     await base.testing.poll(async () => {
       var index = i++ % queues.length;
 
-      debug("### Polling azure queue: %s", index);
+      debug('### Polling azure queue: %s', index);
       var queue = queues[index];
       var res = await request.get(
         queue.signedPollUrl + '&numofmessages=32'
@@ -121,7 +121,7 @@ suite("task.priority", () => {
       // Parse XML
       var xml = await new Promise((accept, reject) => {
         xml2js.parseString(res.text, (err, json) => {
-          err ? reject(err) : accept(json)
+          err ? reject(err) : accept(json);
         });
       });
 
@@ -129,11 +129,11 @@ suite("task.priority", () => {
       // repeat, this is appropriate for testing only!
       assume(xml.QueueMessagesList.QueueMessage).is.an('array');
 
-      for(let msg of xml.QueueMessagesList.QueueMessage) {
+      for (let msg of xml.QueueMessagesList.QueueMessage) {
         try {
           var data = msg.MessageText[0];
           var payload = JSON.parse(new Buffer(data, 'base64').toString());
-          debug("payload: %j", payload);
+          debug('payload: %j', payload);
           if (payload.taskId === normalTaskId) {
             normalIndex = index;
           }
@@ -141,14 +141,14 @@ suite("task.priority", () => {
             highIndex = index;
           }
 
-        } catch(err) {
+        } catch (err) {
           // Ignore errors here
-          debug("err parsing message body: %s, JSON: %j", err, err, err.stack);
+          debug('err parsing message body: %s, JSON: %j', err, err, err.stack);
         }
       }
 
       if (normalIndex === undefined || highIndex === undefined) {
-        throw new Error("Try again, we're missing a taskId");
+        throw new Error('Try again, we\'re missing a taskId');
       }
     });
 

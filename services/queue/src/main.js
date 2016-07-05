@@ -16,7 +16,7 @@ let EC2RegionResolver   = require('./ec2regionresolver');
 let DeadlineResolver    = require('./deadlineresolver');
 let ClaimResolver       = require('./claimresolver');
 let DependencyTracker   = require('./dependencytracker');
-let DependencyResolver  = require('./dependencyresolver')
+let DependencyResolver  = require('./dependencyresolver');
 
 // Create component loader
 let load = base.loader({
@@ -32,7 +32,7 @@ let load = base.loader({
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
       process,
-    })
+    }),
   },
 
   // Validator and publisher
@@ -40,8 +40,8 @@ let load = base.loader({
     requires: ['cfg'],
     setup: ({cfg}) => base.validator({
       prefix:       'queue/v1/',
-      aws:           cfg.aws
-    })
+      aws:           cfg.aws,
+    }),
   },
   publisher: {
     requires: ['cfg', 'validator', 'monitor'],
@@ -53,7 +53,7 @@ let load = base.loader({
       publish:            cfg.app.publishMetaData,
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
-    })
+    }),
   },
 
   // Create artifact bucket instances
@@ -68,7 +68,7 @@ let load = base.loader({
       });
       await bucket.setupCORS();
       return bucket;
-    }
+    },
   },
   privateArtifactBucket: {
     requires: ['cfg', 'monitor'],
@@ -80,7 +80,7 @@ let load = base.loader({
       });
       await bucket.setupCORS();
       return bucket;
-    }
+    },
   },
 
   // Create artifactStore
@@ -89,12 +89,12 @@ let load = base.loader({
     setup: async ({cfg}) => {
       let store = new BlobStore({
         container:        cfg.app.artifactContainer,
-        credentials:      cfg.azure
+        credentials:      cfg.azure,
       });
       await store.createContainer();
       await store.setupCORS();
       return store;
-    }
+    },
   },
 
   // Create artifacts table
@@ -117,7 +117,7 @@ let load = base.loader({
       });
       await Artifact.ensureTable();
       return Artifact;
-    }
+    },
   },
 
   // Create task table
@@ -131,7 +131,7 @@ let load = base.loader({
       });
       await Task.ensureTable();
       return Task;
-    }
+    },
   },
 
   // Create task-group table
@@ -145,7 +145,7 @@ let load = base.loader({
       });
       await TaskGroup.ensureTable();
       return TaskGroup;
-    }
+    },
   },
 
   // Create task-group member table
@@ -159,7 +159,7 @@ let load = base.loader({
       });
       await TaskGroupMember.ensureTable();
       return TaskGroupMember;
-    }
+    },
   },
 
   // Create TaskRequirement table
@@ -173,7 +173,7 @@ let load = base.loader({
       });
       await TaskRequirement.ensureTable();
       return TaskRequirement;
-    }
+    },
   },
 
   // Create TaskDependency table
@@ -187,7 +187,7 @@ let load = base.loader({
       });
       await TaskDependency.ensureTable();
       return TaskDependency;
-    }
+    },
   },
 
   // Create QueueService to manage azure queues
@@ -222,7 +222,7 @@ let load = base.loader({
       );
       await regionResolver.loadIpRanges();
       return regionResolver;
-    }
+    },
   },
 
   api: {
@@ -230,7 +230,7 @@ let load = base.loader({
       'cfg', 'publisher', 'validator',
       'Task', 'Artifact', 'TaskGroup', 'TaskGroupMember', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
-      'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency'
+      'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -262,7 +262,7 @@ let load = base.loader({
       referencePrefix:  'queue/v1/api.json',
       aws:              ctx.cfg.aws,
       monitor:          ctx.monitor.prefix('api'),
-    })
+    }),
   },
 
   // Create the server process
@@ -272,7 +272,7 @@ let load = base.loader({
       let app = base.app(cfg.server);
       app.use('/v1', api);
       return app.createServer();
-    }
+    },
   },
 
   // Create the claim-reaper process
@@ -292,7 +292,7 @@ let load = base.loader({
       });
       resolver.start();
       return resolver;
-    }
+    },
   },
 
   // Create the deadline reaper process
@@ -312,7 +312,7 @@ let load = base.loader({
       });
       resolver.start();
       return resolver;
-    }
+    },
   },
 
   // Create the dependency-resolver process
@@ -336,30 +336,30 @@ let load = base.loader({
     setup: async ({cfg, Artifact, monitor}) => {
       // Find an artifact expiration delay
       let now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
-      debug("Expiring artifacts at: %s, from before %s", new Date(), now);
+      debug('Expiring artifacts at: %s, from before %s', new Date(), now);
       let count = await Artifact.expire(now);
-      debug("Expired %s artifacts", count);
+      debug('Expired %s artifacts', count);
 
-      monitor.count("expire-artifacts.done");
+      monitor.count('expire-artifacts.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
   // Create the queue expiration process (periodic job)
   'expire-queues': {
     requires: ['cfg', 'queueService', 'monitor'],
     setup: async ({cfg, queueService, monitor}) => {
-      debug("Expiring queues at: %s", new Date());
+      debug('Expiring queues at: %s', new Date());
       let count = await queueService.deleteUnusedWorkerQueues();
-      debug("Expired %s queues", count);
+      debug('Expired %s queues', count);
 
-      monitor.count("expire-queues.done");
+      monitor.count('expire-queues.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
   // Create the task expiration process (periodic job)
@@ -367,17 +367,17 @@ let load = base.loader({
     requires: ['cfg', 'Task', 'monitor'],
     setup: async ({cfg, Task, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       // Expire tasks using delay
-      debug("Expiring tasks at: %s, from before %s", new Date(), now);
+      debug('Expiring tasks at: %s, from before %s', new Date(), now);
       let count = await Task.expire(now);
-      debug("Expired %s tasks", count);
+      debug('Expired %s tasks', count);
 
-      monitor.count("expire-tasks.done");
+      monitor.count('expire-tasks.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
   // Create the task-group expiration process (periodic job)
@@ -385,17 +385,17 @@ let load = base.loader({
     requires: ['cfg', 'TaskGroup', 'monitor'],
     setup: async ({cfg, TaskGroup, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       // Expire task-groups using delay
-      debug("Expiring task-groups at: %s, from before %s", new Date(), now);
+      debug('Expiring task-groups at: %s, from before %s', new Date(), now);
       let count = await TaskGroup.expire(now);
-      debug("Expired %s task-groups", count);
+      debug('Expired %s task-groups', count);
 
-      monitor.count("expire-task-groups.done");
+      monitor.count('expire-task-groups.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
   // Create the task-group membership expiration process (periodic job)
@@ -403,18 +403,18 @@ let load = base.loader({
     requires: ['cfg', 'TaskGroupMember', 'monitor'],
     setup: async ({cfg, TaskGroupMember, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       // Expire task-group members using delay
-      debug("Expiring task-group members at: %s, from before %s",
+      debug('Expiring task-group members at: %s, from before %s',
             new Date(), now);
       let count = await TaskGroupMember.expire(now);
-      debug("Expired %s task-group members", count);
+      debug('Expired %s task-group members', count);
 
-      monitor.count("expire-task-group-members.done");
+      monitor.count('expire-task-group-members.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
   // Create the task-dependency expiration process (periodic job)
@@ -422,17 +422,17 @@ let load = base.loader({
     requires: ['cfg', 'TaskDependency', 'monitor'],
     setup: async ({cfg, TaskDependency, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       // Expire task-dependency using delay
-      debug("Expiring task-dependency at: %s, from before %s", new Date(), now);
+      debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
       let count = await TaskDependency.expire(now);
-      debug("Expired %s task-dependency", count);
+      debug('Expired %s task-dependency', count);
 
-      monitor.count("expire-task-dependency.done");
+      monitor.count('expire-task-dependency.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
    // Create the task-requirement expiration process (periodic job)
@@ -440,23 +440,23 @@ let load = base.loader({
     requires: ['cfg', 'TaskRequirement', 'monitor'],
     setup: async ({cfg, TaskRequirement, monitor}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       // Expire task-requirement using delay
-      debug("Expiring task-requirement at: %s, from before %s", new Date(), now);
+      debug('Expiring task-requirement at: %s, from before %s', new Date(), now);
       let count = await TaskRequirement.expire(now);
-      debug("Expired %s task-requirement", count);
+      debug('Expired %s task-requirement', count);
 
-      monitor.count("expire-task-requirement.done");
+      monitor.count('expire-task-requirement.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
-    }
+    },
   },
 
   // Create the load-test process (run as one-off job)
   'load-test': {
     requires: ['cfg'],
-    setup: ({cfg}) => require('./load-test')(cfg)
+    setup: ({cfg}) => require('./load-test')(cfg),
   },
 
 }, ['profile', 'process']);

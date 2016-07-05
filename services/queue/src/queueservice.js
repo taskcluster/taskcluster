@@ -17,7 +17,7 @@ var AZURE_QUEUE_TIMEOUT     = 7 * 1000;
 var globalAzureQueueAgent = new azure.Agent({
   keepAlive:        true,
   maxSockets:       100,
-  maxFreeSockets:   100
+  maxFreeSockets:   100,
 });
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
@@ -33,24 +33,24 @@ var secondsTo = function(target, relativeTo = new Date()) {
 
 /** Validate task description object */
 var validateTask = function(task) {
-  assert(typeof(task.taskId) === 'string', "Expected task.taskId");
-  assert(typeof(task.provisionerId) === 'string',
-         "Expected task.provisionerId");
-  assert(typeof(task.workerType) === 'string', "Expected task.workerType");
-  assert(task.deadline instanceof Date, "Expected task.deadline");
+  assert(typeof task.taskId === 'string', 'Expected task.taskId');
+  assert(typeof task.provisionerId === 'string',
+         'Expected task.provisionerId');
+  assert(typeof task.workerType === 'string', 'Expected task.workerType');
+  assert(task.deadline instanceof Date, 'Expected task.deadline');
 };
 
 /** Priority to constant for use in queue name (should be a string) */
 const PRIORITY_TO_CONSTANT = {
   high:   '5',
-  normal: '1'
+  normal: '1',
 };
 _.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'string'));
 
 /** Priority in order of priority from high to low */
 const PRIORITIES = [
   'high',
-  'normal'
+  'normal',
 ];
 assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
 
@@ -81,16 +81,16 @@ class QueueService {
    * }
    */
   constructor(options) {
-    assert(options, "options is required");
-    assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), "Invalid prefix");
-    assert(options.prefix.length <= 6,  "Prefix is too long");
-    assert(options.resolvedQueue,       "A resolvedQueue name must be given");
-    assert(options.claimQueue,          "A claimQueue name must be given");
-    assert(options.deadlineQueue,       "A deadlineQueue name must be given");
-    assert(options.monitor,             "A monitor instance must be given");
+    assert(options, 'options is required');
+    assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), 'Invalid prefix');
+    assert(options.prefix.length <= 6,  'Prefix is too long');
+    assert(options.resolvedQueue,       'A resolvedQueue name must be given');
+    assert(options.claimQueue,          'A claimQueue name must be given');
+    assert(options.deadlineQueue,       'A deadlineQueue name must be given');
+    assert(options.monitor,             'A monitor instance must be given');
     options = _.defaults({}, options, {
       pendingPollTimeout:    5 * 60 * 1000,
-      deadlineDelay:        10 * 60 * 1000
+      deadlineDelay:        10 * 60 * 1000,
     });
 
     this.prefix             = options.prefix;
@@ -100,7 +100,7 @@ class QueueService {
     this.client = new azure.Queue({
       accountId:    options.credentials.accountName,
       accessKey:    options.credentials.accountKey,
-      timeout:      AZURE_QUEUE_TIMEOUT
+      timeout:      AZURE_QUEUE_TIMEOUT,
     });
 
     // Store account name of use in SAS signed Urls
@@ -136,14 +136,14 @@ class QueueService {
     var text = new Buffer(JSON.stringify(message)).toString('base64');
     return this.client.putMessage(queue, text, {
       visibilityTimeout:    visibility,
-      messageTTL:           ttl
+      messageTTL:           ttl,
     });
   }
 
   async _getMessages(queue, {visibility, count}) {
     var messages = await this.client.getMessages(queue, {
       visibilityTimeout:    visibility,
-      numberOfMessages:     count
+      numberOfMessages:     count,
     });
     return messages.map(msg => {
       return {
@@ -152,8 +152,8 @@ class QueueService {
           this.client,
           queue,
           msg.messageId,
-          msg.popReceipt
-        )
+          msg.popReceipt,
+        ),
       };
     });
   }
@@ -167,7 +167,7 @@ class QueueService {
       // Don't cache negative results
       this.claimQueueReady = null;
       throw err;
-    })
+    });
     return this.claimQueueReady = ready;
   }
 
@@ -180,7 +180,7 @@ class QueueService {
       // Don't cache negative results
       this.resolvedQueueReady = null;
       throw err;
-    })
+    });
     return this.resolvedQueueReady = ready;
   }
 
@@ -199,25 +199,25 @@ class QueueService {
 
   /** Enqueue message to become visible when claim has expired */
   async putClaimMessage(taskId, runId, takenUntil) {
-    assert(taskId,                      "taskId must be given");
-    assert(typeof(runId) === 'number',  "runId must be a number");
-    assert(takenUntil instanceof Date,  "takenUntil must be a date");
-    assert(isFinite(takenUntil),        "takenUntil must be a valid date");
+    assert(taskId,                      'taskId must be given');
+    assert(typeof runId === 'number',   'runId must be a number');
+    assert(takenUntil instanceof Date,  'takenUntil must be a date');
+    assert(isFinite(takenUntil),        'takenUntil must be a valid date');
 
     await this.ensureClaimQueue();
     return this._putMessage(this.claimQueue, {
       taskId:             taskId,
       runId:              runId,
-      takenUntil:         takenUntil.toJSON()
+      takenUntil:         takenUntil.toJSON(),
     }, {
       ttl:                7 * 24 * 60 * 60,
-      visibility:         secondsTo(takenUntil)
+      visibility:         secondsTo(takenUntil),
     });
   }
 
   /** Enqueue message ensure the dependency resolver handles the resolution */
   async putResolvedMessage(taskId, resolution) {
-    assert(taskId, "taskId must be given");
+    assert(taskId, 'taskId must be given');
     assert(resolution === 'completed' || resolution === 'failed' ||
            resolution === 'exception',
            'resolution must be completed, failed or exception');
@@ -233,20 +233,20 @@ class QueueService {
 
   /** Enqueue message to become visible when deadline has expired */
   async putDeadlineMessage(taskId, deadline) {
-    assert(taskId,                      "taskId must be given");
-    assert(deadline instanceof Date,    "deadline must be a date");
-    assert(isFinite(deadline),          "deadline must be a valid date");
+    assert(taskId,                      'taskId must be given');
+    assert(deadline instanceof Date,    'deadline must be a date');
+    assert(isFinite(deadline),          'deadline must be a valid date');
 
     await this.ensureDeadlineQueue();
     var delay = Math.floor(this.deadlineDelay / 1000);
-    debug("Put deadline message to be visible in %s seconds",
+    debug('Put deadline message to be visible in %s seconds',
            secondsTo(deadline) + delay);
     return this._putMessage(this.deadlineQueue, {
       taskId:             taskId,
-      deadline:           deadline.toJSON()
+      deadline:           deadline.toJSON(),
     }, {
       ttl:                7 * 24 * 60 * 60,
-      visibility:         secondsTo(deadline) + delay
+      visibility:         secondsTo(deadline) + delay,
     });
   }
 
@@ -275,7 +275,7 @@ class QueueService {
     // Get messages
     var messages = await this._getMessages(this.claimQueue, {
       visibility:             10 * 60,
-      count:                  32
+      count:                  32,
     });
 
     // Convert to neatly consumable format
@@ -284,7 +284,7 @@ class QueueService {
         taskId:       m.payload.taskId,
         runId:        m.payload.runId,
         takenUntil:   new Date(m.payload.takenUntil),
-        remove:       m.remove
+        remove:       m.remove,
       };
     });
   }
@@ -350,7 +350,7 @@ class QueueService {
     // Get messages
     var messages = await this._getMessages(this.deadlineQueue, {
       visibility:             10 * 60,
-      count:                  32
+      count:                  32,
     });
 
     // Convert to neatly consumable format
@@ -358,7 +358,7 @@ class QueueService {
       return {
         taskId:       m.payload.taskId,
         deadline:     new Date(m.payload.deadline),
-        remove:       m.remove
+        remove:       m.remove,
       };
     });
   }
@@ -375,9 +375,9 @@ class QueueService {
 
     // Create promise, if it doesn't exist
     assert(/^[A-Za-z0-9_-]{1,22}$/.test(provisionerId),
-           "Expected provisionerId to be an identifier");
+           'Expected provisionerId to be an identifier');
     assert(/^[A-Za-z0-9_-]{1,22}$/.test(workerType),
-           "Expected workerType to be an identifier");
+           'Expected workerType to be an identifier');
 
     // Hash identifier to 24 characters
     let hashId = (id) => {
@@ -390,7 +390,7 @@ class QueueService {
       this.prefix,            // prefix all queues
       hashId(provisionerId),  // hash of provisionerId
       hashId(workerType),     // hash of workerType
-      ''                      // priority, add 1 = normal, 5 = high
+      '',                     // priority, add 1 = normal, 5 = high
     ].join('-');
 
     // Mapping from priority to queue name
@@ -440,7 +440,7 @@ class QueueService {
       return this.client.setMetadata(queue, {
         provisioner_id: provisionerId,
         worker_type:    workerType,
-        last_used:      taskcluster.fromNowJSON()
+        last_used:      taskcluster.fromNowJSON(),
       });
     } catch (err) {
       // We handle queue not found exceptions, because getMetadata is a HEA
@@ -456,7 +456,7 @@ class QueueService {
         await this.client.createQueue(queue, {
           provisioner_id: provisionerId,
           worker_type:    workerType,
-          last_used:      taskcluster.fromNowJSON()
+          last_used:      taskcluster.fromNowJSON(),
         });
       } catch (err) {
         // If queue already exists, we must have been racing we assume meta-data
@@ -479,7 +479,7 @@ class QueueService {
    * Returns number of queues deleted.
    */
   async deleteUnusedWorkerQueues(now = new Date()) {
-    assert(now instanceof Date, "Expected now as Date object");
+    assert(now instanceof Date, 'Expected now as Date object');
     let deleteIfNotUsedSince = now.getTime() - 10 * 24 * 60 * 60 * 1000;
     let deleted = 0; // Number of queues deleted
 
@@ -490,7 +490,7 @@ class QueueService {
       let {queues, nextMarker} = await this.client.listQueues({
         marker,
         prefix: this.prefix + '-',
-        metadata: true
+        metadata: true,
       });
 
       // Set next marker
@@ -516,7 +516,7 @@ class QueueService {
           return; // Abort if there are messages
         }
 
-        debug("Deleting queue %s with metadata: %j", name, metadata);
+        debug('Deleting queue %s with metadata: %j', name, metadata);
         await this.client.deleteQueue(name);
 
         // Count queues deleted (for test ability)
@@ -529,7 +529,6 @@ class QueueService {
     // Return number of queues deleted
     return deleted;
   }
-
 
   /**
    * Enqueue message about a new pending task in appropriate queue
@@ -545,12 +544,12 @@ class QueueService {
    */
   async putPendingMessage(task, runId) {
     validateTask(task);
-    assert(typeof(runId) === 'number', "Expected runId as number");
+    assert(typeof runId === 'number', 'Expected runId as number');
 
     // Find name of azure queue
     var queueNames = await this.ensurePendingQueue(
       task.provisionerId,
-      task.workerType
+      task.workerType,
     );
 
     // Find the time to deadline
@@ -559,8 +558,8 @@ class QueueService {
     // being pending.
     if (timeToDeadline === 0) {
       // This should not happen, but if timing is right it is possible.
-      console.log("runId: %s of taskId: %s became pending after deadline, " +
-                  "skipping pending message publication to azure queue",
+      console.log('runId: %s of taskId: %s became pending after deadline, ' +
+                  'skipping pending message publication to azure queue',
                   runId, task.taskId);
       return;
     }
@@ -568,10 +567,10 @@ class QueueService {
     // Put message queue
     return this._putMessage(queueNames[task.priority], {
       taskId:     task.taskId,
-      runId:      runId
+      runId:      runId,
     }, {
       ttl:          timeToDeadline,
-      visibility:   0
+      visibility:   0,
     });
   }
 
@@ -600,8 +599,8 @@ class QueueService {
       var sas = this.client.sas(queueName, {
         start, expiry,
         permissions: {
-          process:    true
-        }
+          process:    true,
+        },
       });
       // Construct signed url
       return {
@@ -609,14 +608,14 @@ class QueueService {
           protocol:       'https',
           host:           `${this.accountName}.queue.core.windows.net`,
           pathname:       `/${queueName}/messages`,
-          search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`
+          search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`,
         }),
         signedDeleteUrl: url.format({
           protocol:       'https',
           host:           `${this.accountName}.queue.core.windows.net`,
           pathname:       `/${queueName}/messages/{{messageId}}`,
-          search:         `?popreceipt={{popReceipt}}&${sas}`
-        })
+          search:         `?popreceipt={{popReceipt}}&${sas}`,
+        }),
       };
     });
 

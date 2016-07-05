@@ -75,17 +75,17 @@ var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
  * }
  */
 var api = new base.API({
-  title:        "Queue API Documentation",
+  title:        'Queue API Documentation',
   description: [
-    "The queue, typically available at `queue.taskcluster.net`, is responsible",
-    "for accepting tasks and track their state as they are executed by",
-    "workers. In order ensure they are eventually resolved.",
-    "",
-    "This document describes the API end-points offered by the queue. These ",
-    "end-points targets the following audience:",
-    " * Schedulers, who create tasks to be executed,",
-    " * Workers, who execute tasks, and",
-    " * Tools, that wants to inspect the state of a task."
+    'The queue, typically available at `queue.taskcluster.net`, is responsible',
+    'for accepting tasks and track their state as they are executed by',
+    'workers. In order ensure they are eventually resolved.',
+    '',
+    'This document describes the API end-points offered by the queue. These ',
+    'end-points targets the following audience:',
+    ' * Schedulers, who create tasks to be executed,',
+    ' * Workers, who execute tasks, and',
+    ' * Tools, that wants to inspect the state of a task.',
   ].join('\n'),
   schemaPrefix:       'http://schemas.taskcluster.net/queue/v1/',
   params: {
@@ -102,24 +102,24 @@ var api = new base.API({
     InputError:       400,  // Any hand coded validation errors
   },
   context: [
-    'Task',             // data.Task instance
-    'Artifact',         // data.Artifact instance
-    'TaskGroup',        // data.TaskGroup instance
+    'Task',               // data.Task instance
+    'Artifact',           // data.Artifact instance
+    'TaskGroup',          // data.TaskGroup instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
-    'TaskGroupMember',  // data.TaskGroupMember instance
-    'TaskDependency',   // data.TaskDependency instance
-    'publicBucket',     // bucket instance for public artifacts
-    'privateBucket',    // bucket instance for private artifacts
-    'blobStore',        // BlobStore for azure artifacts
-    'publisher',        // publisher from base.Exchanges
-    'validator',        // base.validator
-    'claimTimeout',     // Number of seconds before a claim expires
-    'queueService',     // Azure QueueService object from queueservice.js
-    'regionResolver',   // Instance of EC2RegionResolver,
-    'publicProxies',    // Mapping from EC2 region to host for publicBucket
-    'credentials',      // TC credentials for issuing temp creds on claim
-    'dependencyTracker',// Instance of DependencyTracker
-    'monitor',          // base.monitor instance
+    'TaskGroupMember',    // data.TaskGroupMember instance
+    'TaskDependency',     // data.TaskDependency instance
+    'publicBucket',       // bucket instance for public artifacts
+    'privateBucket',      // bucket instance for private artifacts
+    'blobStore',          // BlobStore for azure artifacts
+    'publisher',          // publisher from base.Exchanges
+    'validator',          // base.validator
+    'claimTimeout',       // Number of seconds before a claim expires
+    'queueService',       // Azure QueueService object from queueservice.js
+    'regionResolver',     // Instance of EC2RegionResolver,
+    'publicProxies',      // Mapping from EC2 region to host for publicBucket
+    'credentials',        // TC credentials for issuing temp creds on claim
+    'dependencyTracker',  // Instance of DependencyTracker
+    'monitor',            // base.monitor instance
   ],
 });
 
@@ -134,27 +134,26 @@ api.declare({
   stability:  base.API.stability.stable,
   idempotent: true,
   output:     'task.json#',
-  title:      "Get Task Definition",
+  title:      'Get Task Definition',
   description: [
-    "This end-point will return the task-definition. Notice that the task",
-    "definition may have been modified by queue, if an optional property isn't",
-    "specified the queue may provide a default value."
-  ].join('\n')
+    'This end-point will return the task-definition. Notice that the task',
+    'definition may have been modified by queue, if an optional property is',
+    'not specified the queue may provide a default value.',
+  ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
   let task = await this.Task.load({
-    taskId:     req.params.taskId
+    taskId:     req.params.taskId,
   }, true);
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.reportError(
-      "ResourceNotFound", [
-        "{{taskId}} does not correspond to a task that exists.",
-        "Are you sure this task has already been submitted?"
-      ].join('\n'), {
-        taskId: req.params.taskId
-      });
+    return res.reportError('ResourceNotFound', [
+      '{{taskId}} does not correspond to a task that exists.',
+      'Are you sure this task has already been submitted?',
+    ].join('\n'), {
+      taskId: req.params.taskId,
+    });
   }
 
   // Create task definition
@@ -162,7 +161,6 @@ api.declare({
 
   return res.reply(definition);
 });
-
 
 /** Get task status */
 api.declare({
@@ -172,33 +170,31 @@ api.declare({
   stability:  base.API.stability.stable,
   input:      undefined,  // No input is accepted
   output:     'task-status-response.json#',
-  title:      "Get task status",
+  title:      'Get task status',
   description: [
-    "Get task status structure from `taskId`"
-  ].join('\n')
+    'Get task status structure from `taskId`',
+  ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
   let task = await this.Task.load({
-    taskId:     req.params.taskId
+    taskId:     req.params.taskId,
   }, true);
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.reportError(
-      "ResourceNotFound", [
-        "{{taskId}} does not correspond to a task that exists.",
-        "Are you sure this task exists?"
-      ].join('\n'), {
-        taskId: req.params.taskId
-      });
+    return res.reportError('ResourceNotFound', [
+      '{{taskId}} does not correspond to a task that exists.',
+      'Are you sure this task exists?',
+    ].join('\n'), {
+      taskId: req.params.taskId,
+    });
   }
 
   // Reply with task status
   return res.reply({
-    status:   task.status()
+    status: task.status(),
   });
 });
-
 
 /** List taskIds by taskGroupId */
 api.declare({
@@ -211,29 +207,29 @@ api.declare({
   name:       'listTaskGroup',
   stability:  base.API.stability.stable,
   output:     'list-task-group-response.json#',
-  title:      "List Task Group",
+  title:      'List Task Group',
   description: [
-    "List tasks sharing the same `taskGroupId`.",
-    "",
-    "As a task-group may contain an unbounded number of tasks, this end-point",
-    "may return a `continuationToken`. To continue listing tasks you must call",
-    "the `listTaskGroup` again with the `continuationToken` as the",
-    "query-string option `continuationToken`.",
-    "",
-    "By default this end-point will try to return up to 1000 members in one",
-    "request. But it **may return less**, even if more tasks are available.",
-    "It may also return a `continuationToken` even though there are no more",
-    "results. However, you can only be sure to have seen all results if you",
-    "keep calling `listTaskGroup` with the last `continuationToken` until you",
-    "get a result without a `continuationToken`.",
-    "",
-    "If you're not interested in listing all the members at once, you may",
-    "use the query-string option `limit` to return fewer.",
-  ].join('\n')
+    'List tasks sharing the same `taskGroupId`.',
+    '',
+    'As a task-group may contain an unbounded number of tasks, this end-point',
+    'may return a `continuationToken`. To continue listing tasks you must call',
+    'the `listTaskGroup` again with the `continuationToken` as the',
+    'query-string option `continuationToken`.',
+    '',
+    'By default this end-point will try to return up to 1000 members in one',
+    'request. But it **may return less**, even if more tasks are available.',
+    'It may also return a `continuationToken` even though there are no more',
+    'results. However, you can only be sure to have seen all results if you',
+    'keep calling `listTaskGroup` with the last `continuationToken` until you',
+    'get a result without a `continuationToken`.',
+    '',
+    'If you are not interested in listing all the members at once, you may',
+    'use the query-string option `limit` to return fewer.',
+  ].join('\n'),
 }, async function(req, res) {
   let taskGroupId   = req.params.taskGroupId;
   let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000);
+  let limit         = parseInt(req.query.limit || 1000, 10);
 
   // Find taskGroup and list of members
   let [
@@ -249,10 +245,10 @@ api.declare({
 
   // If no taskGroup was found
   if (!taskGroup) {
-    return res.reportError(
-      'ResourceNotFound',
-      "No task-group with taskGroupId: {{taskGroupId}}",
-      {taskGroupId}
+    return res.reportError('ResourceNotFound',
+      'No task-group with taskGroupId: {{taskGroupId}}', {
+        taskGroupId,
+      },
     );
   }
 
@@ -263,7 +259,7 @@ api.declare({
     // Remove tasks that don't exist, this happens on creation errors
     // Remove tasks with wrong schedulerId, this shouldn't happen unless of some
     // creation errors (probably something that involves dependency errors).
-    return task != null && task.schedulerId === taskGroup.schedulerId;
+    return task && task.schedulerId === taskGroup.schedulerId;
   });
 
   // Build result
@@ -283,9 +279,6 @@ api.declare({
   return res.reply(result);
 });
 
-
-
-
 /** List tasks dependents */
 api.declare({
   method:     'get',
@@ -297,29 +290,29 @@ api.declare({
   name:       'listDependentTasks',
   stability:  base.API.stability.stable,
   output:     'list-dependent-tasks-response.json#',
-  title:      "List Dependent Tasks",
+  title:      'List Dependent Tasks',
   description: [
-    "List tasks that depend on the given `taskId`.",
-    "",
-    "As many tasks from different task-groups may dependent on a single tasks,",
-    "this end-point may return a `continuationToken`. To continue listing",
-    "tasks you must call `listDependentTasks` again with the",
-    "`continuationToken` as the query-string option `continuationToken`.",
-    "",
-    "By default this end-point will try to return up to 1000 tasks in one",
-    "request. But it **may return less**, even if more tasks are available.",
-    "It may also return a `continuationToken` even though there are no more",
-    "results. However, you can only be sure to have seen all results if you",
-    "keep calling `listDependentTasks` with the last `continuationToken` until",
-    "you get a result without a `continuationToken`.",
-    "",
-    "If you're not interested in listing all the tasks at once, you may",
-    "use the query-string option `limit` to return fewer.",
-  ].join('\n')
+    'List tasks that depend on the given `taskId`.',
+    '',
+    'As many tasks from different task-groups may dependent on a single tasks,',
+    'this end-point may return a `continuationToken`. To continue listing',
+    'tasks you must call `listDependentTasks` again with the',
+    '`continuationToken` as the query-string option `continuationToken`.',
+    '',
+    'By default this end-point will try to return up to 1000 tasks in one',
+    'request. But it **may return less**, even if more tasks are available.',
+    'It may also return a `continuationToken` even though there are no more',
+    'results. However, you can only be sure to have seen all results if you',
+    'keep calling `listDependentTasks` with the last `continuationToken` until',
+    'you get a result without a `continuationToken`.',
+    '',
+    'If you are not interested in listing all the tasks at once, you may',
+    'use the query-string option `limit` to return fewer.',
+  ].join('\n'),
 }, async function(req, res) {
   let taskId        = req.params.taskId;
   let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000);
+  let limit         = parseInt(req.query.limit || 1000, 10);
 
   // Find task and list dependents
   let [
@@ -337,15 +330,15 @@ api.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      "Task with taskId: {{taskId}} was not found",
-      {taskId}
+      'Task with taskId: {{taskId}} was not found',
+      {taskId},
     );
   }
 
   // Load tasks
   let tasks = (await Promise.all(dependents.entries.map(dependent => {
     return this.Task.load({taskId: dependent.dependentTaskId}, true);
-  }))).filter(task => task != null);
+  }))).filter(task => !!task);
 
   // Build result
   let result = {
@@ -364,8 +357,6 @@ api.declare({
   return res.reply(result);
 });
 
-
-
 /** Construct default values and validate dates */
 var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Set taskGroupId to taskId if not provided
@@ -379,39 +370,39 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
       code:       'InputError',
-      message:    "Created timestamp cannot be in the past (max 15min drift)",
-      details:    {created: taskDef.created}
+      message:    'Created timestamp cannot be in the past (max 15min drift)',
+      details:    {created: taskDef.created},
     };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {
       code:       'InputError',
-      message:    "Created timestamp cannot be in the future (max 15min drift)",
-      details:    {created: taskDef.created}
+      message:    'Created timestamp cannot be in the future (max 15min drift)',
+      details:    {created: taskDef.created},
     };
   }
   if (created.getTime() > deadline.getTime()) {
     return {
       code:       'InputError',
-      message:    "Deadline cannot be past created",
-      details:      {created: taskDef.created, deadline: taskDef.deadline}
+      message:    'Deadline cannot be past created',
+      details:    {created: taskDef.created, deadline: taskDef.deadline},
     };
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {
       code:       'InputError',
-      message:    "Deadline cannot be in the past",
-      details:    {deadline: taskDef.deadline}
+      message:    'Deadline cannot be in the past',
+      details:    {deadline: taskDef.deadline},
     };
   }
 
-  var msToDeadline = (deadline.getTime() - new Date().getTime());
+  var msToDeadline = deadline.getTime() - new Date().getTime();
   // Validate that deadline is less than 5 days from now, allow 15 min drift
   if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
       code:       'InputError',
-      message:    "Deadline cannot be more than 5 days into the future",
-      details:    {deadline: taskDef.deadline}
+      message:    'Deadline cannot be more than 5 days into the future',
+      details:    {deadline: taskDef.deadline},
     };
   }
 
@@ -426,8 +417,8 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   if (deadline.getTime() > new Date(taskDef.deadline).getTime()) {
     return {
       code:       'InputError',
-      message:    "Expires cannot be before the deadline",
-      details:    {deadline: taskDef.deadline, expires: taskDef.expires}
+      message:    'Expires cannot be before the deadline',
+      details:    {deadline: taskDef.deadline, expires: taskDef.expires},
     };
   }
 
@@ -463,16 +454,16 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   }
   if (taskGroup.schedulerId !== taskDef.schedulerId) {
     res.reportError(
-      "RequestConflict", [
-        "Task group {{taskGroupId}} contains tasks with",
-        "schedulerId {{taskGroupSchedulerId}}. You are attempting",
-        "to include tasks from schedulerId {{taskSchedulerId}},",
-        "which is not permitted.",
-        "All tasks in the same task-group must have the same schedulerId."
+      'RequestConflict', [
+        'Task group {{taskGroupId}} contains tasks with',
+        'schedulerId {{taskGroupSchedulerId}}. You are attempting',
+        'to include tasks from schedulerId {{taskSchedulerId}},',
+        'which is not permitted.',
+        'All tasks in the same task-group must have the same schedulerId.',
       ].join('\n'), {
         taskGroupId,
         taskGroupSchedulerId: taskGroup.schedulerId,
-        taskSchedulerId: taskDef.schedulerId
+        taskSchedulerId: taskDef.schedulerId,
       });
     return false;
   }
@@ -498,7 +489,6 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   return true;
 };
 
-
 /** Create tasks */
 api.declare({
   method:     'put',
@@ -519,33 +509,33 @@ api.declare({
   deferAuth:  true,
   input:      'create-task-request.json#',
   output:     'task-status-response.json#',
-  title:      "Create New Task",
+  title:      'Create New Task',
   description: [
-    "Create a new task, this is an **idempotent** operation, so repeat it if",
-    "you get an internal server error or network connection is dropped.",
-    "",
-    "**Task `deadline´**, the deadline property can be no more than 5 days",
-    "into the future. This is to limit the amount of pending tasks not being",
-    "taken care of. Ideally, you should use a much shorter deadline.",
-    "",
-    "**Task expiration**, the `expires` property must be greater than the",
-    "task `deadline`. If not provided it will default to `deadline` + one",
-    "year. Notice, that artifacts created by task must expire before the task.",
-    "",
-    "**Task specific routing-keys**, using the `task.routes` property you may",
-    "define task specific routing-keys. If a task has a task specific ",
-    "routing-key: `<route>`, then when the AMQP message about the task is",
-    "published, the message will be CC'ed with the routing-key: ",
-    "`route.<route>`. This is useful if you want another component to listen",
-    "for completed tasks you have posted.  The caller must have scope",
-    "`queue:route:<route>` for each route.",
-    "",
-    "**Dependencies**, any tasks referenced in `task.dependencies` must have",
-    "already been created at the time of this call.",
-    "",
-    "**Important** Any scopes the task requires are also required for creating",
-    "the task. Please see the Request Payload (Task Definition) for details."
-  ].join('\n')
+    'Create a new task, this is an **idempotent** operation, so repeat it if',
+    'you get an internal server error or network connection is dropped.',
+    '',
+    '**Task `deadline´**, the deadline property can be no more than 5 days',
+    'into the future. This is to limit the amount of pending tasks not being',
+    'taken care of. Ideally, you should use a much shorter deadline.',
+    '',
+    '**Task expiration**, the `expires` property must be greater than the',
+    'task `deadline`. If not provided it will default to `deadline` + one',
+    'year. Notice, that artifacts created by task must expire before the task.',
+    '',
+    '**Task specific routing-keys**, using the `task.routes` property you may',
+    'define task specific routing-keys. If a task has a task specific ',
+    'routing-key: `<route>`, then when the AMQP message about the task is',
+    'published, the message will be CC\'ed with the routing-key: ',
+    '`route.<route>`. This is useful if you want another component to listen',
+    'for completed tasks you have posted.  The caller must have scope',
+    '`queue:route:<route>` for each route.',
+    '',
+    '**Dependencies**, any tasks referenced in `task.dependencies` must have',
+    'already been created at the time of this call.',
+    '',
+    '**Important** Any scopes the task requires are also required for creating',
+    'the task. Please see the Request Payload (Task Definition) for details.',
+  ].join('\n'),
 }, async function(req, res) {
   var taskId  = req.params.taskId;
   var taskDef = req.body;
@@ -565,11 +555,9 @@ api.declare({
     taskDef.routes.map(route => 'queue:route:' + route),
 
     // Add scope for priority if any
-    (
-      taskDef.priority !== 'normal' ? [
-        'queue:task-priority:' + taskDef.priority
-      ] : []
-    ),
+    taskDef.priority !== 'normal' ? [
+      'queue:task-priority:' + taskDef.priority,
+    ] : [],
   ]);
 
   // Authenticate request by providing parameters, and then validate that the
@@ -644,10 +632,10 @@ api.declare({
     // Compare the two task definitions
     if (!_.isEqual(taskDef, def)) {
       return res.reportError('RequestConflict', [
-        "taskId {{taskId}} already used by another task.",
-        "This could be the result of faulty idempotency!",
-        "Existing task definition was:\n ```js\n{{existingTask}}\n```",
-        "This request tried to define:\n ```js\n{{taskDefinition}}\n```",
+        'taskId {{taskId}} already used by another task.',
+        'This could be the result of faulty idempotency!',
+        'Existing task definition was:\n ```js\n{{existingTask}}\n```',
+        'This request tried to define:\n ```js\n{{taskDefinition}}\n```',
       ].join('\n'), {
         taskId,
         existingTask: def,
@@ -713,31 +701,31 @@ api.declare({
     // Future scope
       'queue:define-task:<provisionerId>/<workerType>',
       'queue:task-group-id:<schedulerId>/<taskGroupId>',
-    ]
+    ],
   ],
   deferAuth:  true,
   input:      'create-task-request.json#',
   output:     'task-status-response.json#',
-  title:      "Define Task",
+  title:      'Define Task',
   description: [
-    "Define a task without scheduling it. This API end-point allows you to",
-    "upload a task definition without having scheduled. The task won't be",
-    "reported as pending until it is scheduled, see the scheduleTask API ",
-    "end-point.",
-    "",
-    "The purpose of this API end-point is allow schedulers to upload task",
-    "definitions without the tasks becoming _pending_ immediately. This useful",
-    "if you have a set of dependent tasks. Then you can upload all the tasks",
-    "and when the dependencies of a tasks have been resolved, you can schedule",
-    "the task by calling `/task/:taskId/schedule`. This eliminates the need to",
-    "store tasks somewhere else while waiting for dependencies to resolve.",
-    "",
-    "**Important** Any scopes the task requires are also required for defining",
-    "the task. Please see the Request Payload (Task Definition) for details.",
-    "",
-    "**Note** this operation is **idempotent**, as long as you upload the same",
-    "task definition as previously defined this operation is safe to retry."
-  ].join('\n')
+    'Define a task without scheduling it. This API end-point allows you to',
+    'upload a task definition without having scheduled. The task won\'t be',
+    'reported as pending until it is scheduled, see the scheduleTask API ',
+    'end-point.',
+    '',
+    'The purpose of this API end-point is allow schedulers to upload task',
+    'definitions without the tasks becoming _pending_ immediately. This useful',
+    'if you have a set of dependent tasks. Then you can upload all the tasks',
+    'and when the dependencies of a tasks have been resolved, you can schedule',
+    'the task by calling `/task/:taskId/schedule`. This eliminates the need to',
+    'store tasks somewhere else while waiting for dependencies to resolve.',
+    '',
+    '**Important** Any scopes the task requires are also required for defining',
+    'the task. Please see the Request Payload (Task Definition) for details.',
+    '',
+    '**Note** this operation is **idempotent**, as long as you upload the same',
+    'task definition as previously defined this operation is safe to retry.',
+  ].join('\n'),
 }, async function(req, res) {
   var taskId  = req.params.taskId;
   var taskDef = req.body;
@@ -757,16 +745,14 @@ api.declare({
     taskDef.routes.map(route => 'queue:route:' + route),
 
     // Add scope for priority if any
-    (
-      taskDef.priority !== 'normal' ? [
-        'queue:task-priority:' + taskDef.priority
-      ] : []
-    ),
+    taskDef.priority !== 'normal' ? [
+      'queue:task-priority:' + taskDef.priority,
+    ] : [],
   ]);
 
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
-  if(!req.satisfies({
+  if (!req.satisfies({
     provisionerId:  taskDef.provisionerId,
     workerType:     taskDef.workerType,
     schedulerId:    taskDef.schedulerId,
@@ -818,7 +804,7 @@ api.declare({
       tags:               taskDef.tags,
       extra:              taskDef.extra,
       runs:               [],
-      takenUntil:         new Date(0)
+      takenUntil:         new Date(0),
     });
   } catch (err) {
     // We can handle cases where entity already exists, not that, we re-throw
@@ -834,10 +820,10 @@ api.declare({
     // (ignore runs as this method don't create them)
     if (!_.isEqual(taskDef, def)) {
       return res.reportError('RequestConflict', [
-        "taskId {{taskId}} already used by another task.",
-        "This could be the result of faulty idempotency!",
-        "Existing task definition was:\n ```js\n{{existingTask}}\n```",
-        "This request tried to define:\n ```js\n{{taskDefinition}}\n```",
+        'taskId {{taskId}} already used by another task.',
+        'This could be the result of faulty idempotency!',
+        'Existing task definition was:\n ```js\n{{existingTask}}\n```',
+        'This request tried to define:\n ```js\n{{taskDefinition}}\n```',
       ].join('\n'), {
         taskId,
         existingTask: def,
@@ -879,7 +865,6 @@ api.declare({
   return res.reply({status});
 });
 
-
 /** Schedule previously defined tasks */
 api.declare({
   method:     'post',
@@ -890,25 +875,25 @@ api.declare({
     [
       // Legacy scope
       'queue:schedule-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>',
     ], [
       'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
-    ]
+    ],
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
   output:     'task-status-response.json#',
-  title:      "Schedule Defined Task",
+  title:      'Schedule Defined Task',
   description: [
-    "If you have define a task using `defineTask` API end-point, then you",
-    "can schedule the task to be scheduled using this method.",
-    "This will announce the task as pending and workers will be allowed, to",
-    "claim it and resolved the task.",
-    "",
-    "**Note** this operation is **idempotent** and will not fail or complain",
-    "if called with `taskId` that is already scheduled, or even resolved.",
-    "To reschedule a task previously resolved, use `rerunTask`."
-  ].join('\n')
+    'If you have define a task using `defineTask` API end-point, then you',
+    'can schedule the task to be scheduled using this method.',
+    'This will announce the task as pending and workers will be allowed, to',
+    'claim it and resolved the task.',
+    '',
+    '**Note** this operation is **idempotent** and will not fail or complain',
+    'if called with `taskId` that is already scheduled, or even resolved.',
+    'To reschedule a task previously resolved, use `rerunTask`.',
+  ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
   var taskId = req.params.taskId;
@@ -917,15 +902,14 @@ api.declare({
   // If task entity doesn't exists, we return ResourceNotFound
   if (!task) {
     return res.reportError(
-      "ResourceNotFound",
-      "taskId {{taskId}} not found. Are you sure it exists?",
-      {
-        taskId,
-      });
+      'ResourceNotFound',
+      'taskId {{taskId}} not found. Are you sure it exists?',
+      {taskId},
+    );
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     taskId,
     schedulerId:    task.schedulerId,
     taskGroupId:    task.taskGroupId,
@@ -938,11 +922,14 @@ api.declare({
 
   // If null it must because deadline is exceeded
   if (status === null) {
-    return res.reportError("RequestConflict",
-      "Task {{taskId}} Can't be scheduled past its deadline at {{deadline}}.", {
+    return res.reportError(
+      'RequestConflict',
+      'Task {{taskId}} Can\'t be scheduled past its deadline at ' +
+      '{{deadline}}.', {
         taskId,
-        deadline: task.deadline.toJSON()
-    });
+        deadline: task.deadline.toJSON(),
+      }
+    );
   }
 
   return res.reply({status});
@@ -958,29 +945,29 @@ api.declare({
     [
       // Legacy scopes
       'queue:rerun-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>',
     ], [
       'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
-    ]
+    ],
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
   output:     'task-status-response.json#',
-  title:      "Rerun a Resolved Task",
+  title:      'Rerun a Resolved Task',
   description: [
-    "This method _reruns_ a previously resolved task, even if it was",
-    "_completed_. This is useful if your task completes unsuccessfully, and",
-    "you just want to run it from scratch again. This will also reset the",
-    "number of `retries` allowed.",
-    "",
-    "Remember that `retries` in the task status counts the number of runs that",
-    "the queue have started because the worker stopped responding, for example",
-    "because a spot node died.",
-    "",
-    "**Remark** this operation is idempotent, if you try to rerun a task that",
-    "isn't either `failed` or `completed`, this operation will just return the",
-    "current task status."
-  ].join('\n')
+    'This method _reruns_ a previously resolved task, even if it was',
+    '_completed_. This is useful if your task completes unsuccessfully, and',
+    'you just want to run it from scratch again. This will also reset the',
+    'number of `retries` allowed.',
+    '',
+    'Remember that `retries` in the task status counts the number of runs that',
+    'the queue have started because the worker stopped responding, for example',
+    'because a spot node died.',
+    '',
+    '**Remark** this operation is idempotent, if you try to rerun a task that',
+    'is not either `failed` or `completed`, this operation will just return',
+    'the current task status.',
+  ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
   var taskId  = req.params.taskId;
@@ -988,20 +975,19 @@ api.declare({
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
-    return res.reportError(
-      "ResourceNotFound", [
-        "{{taskId}} does not correspond to a task that exists.",
-        "Are you sure this task has been submitted before?"
-      ].join('\n'), {
-        taskId
-      });
+    return res.reportError('ResourceNotFound', [
+      '{{taskId}} does not correspond to a task that exists.',
+      'Are you sure this task has been submitted before?',
+    ].join('\n'), {
+      taskId,
+    });
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     taskId,
     schedulerId:    task.schedulerId,
-    taskGroupId:    task.taskGroupId
+    taskGroupId:    task.taskGroupId,
   })) {
     return;
   }
@@ -1009,12 +995,13 @@ api.declare({
   // Validate deadline
   if (task.deadline.getTime() < new Date().getTime()) {
     return res.reportError(
-      "RequestConflict",
-      "Task {{taskId}} Can't be rescheduled past it's deadline of {{deadline}}.",
-      {
+      'RequestConflict',
+      'Task {{taskId}} Can\'t be rescheduled past it\'s deadline of ' +
+      '{{deadline}}.', {
         taskId,
-        deadline: task.deadline.toJSON()
-      });
+        deadline: task.deadline.toJSON(),
+      },
+    );
   }
 
   // Ensure that we have a pending or running run
@@ -1035,7 +1022,7 @@ api.declare({
     task.runs.push({
       state:            'pending',
       reasonCreated:    'rerun',
-      scheduled:        new Date().toJSON()
+      scheduled:        new Date().toJSON(),
     });
 
     // Calculate maximum number of retries allowed
@@ -1053,11 +1040,11 @@ api.declare({
   if (state !== 'pending' && state !== 'running' &&
       task.runs.length >= MAX_RUNS_ALLOWED) {
     return res.reportError(
-      "RequestConflict",
-      "Maximum number of runs reached. ({{max_runs_allowed}})",
-      {
-        max_runs_allowed: MAX_RUNS_ALLOWED
-      });
+      'RequestConflict',
+      'Maximum number of runs reached. ({{max_runs_allowed}})', {
+        max_runs_allowed: MAX_RUNS_ALLOWED,
+      },
+    );
   }
 
   // Put message in appropriate azure queue, and publish message to pulse,
@@ -1069,16 +1056,13 @@ api.declare({
       this.queueService.putPendingMessage(task, runId),
       this.publisher.taskPending({
         status:         status,
-        runId:          runId
-      }, task.routes)
+        runId:          runId,
+      }, task.routes),
     ]);
   }
 
-  return res.reply({
-    status:     status
-  });
+  return res.reply({status});
 });
-
 
 /** Cancel a task */
 api.declare({
@@ -1090,29 +1074,29 @@ api.declare({
     [
       // Legacy scopes
       'queue:cancel-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>'
+      'assume:scheduler-id:<schedulerId>/<taskGroupId>',
     ], [
       'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
-    ]
+    ],
   ],
   deferAuth:  true,
   input:      undefined, // No input accepted
   output:     'task-status-response.json#',
-  title:      "Cancel Task",
+  title:      'Cancel Task',
   description: [
-    "This method will cancel a task that is either `unscheduled`, `pending` or",
-    "`running`. It will resolve the current run as `exception` with",
-    "`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.",
-    "it doesn't have any runs, an initial run will be added and resolved as",
-    "described above. Hence, after canceling a task, it cannot be scheduled",
-    "with `queue.scheduleTask`, but a new run can be created with",
-    "`queue.rerun`. These semantics is equivalent to calling",
-    "`queue.scheduleTask` immediately followed by `queue.cancelTask`.",
-    "",
-    "**Remark** this operation is idempotent, if you try to cancel a task that",
-    "isn't `unscheduled`, `pending` or `running`, this operation will just",
-    "return the current task status."
-  ].join('\n')
+    'This method will cancel a task that is either `unscheduled`, `pending` or',
+    '`running`. It will resolve the current run as `exception` with',
+    '`reasonResolved` set to `canceled`. If the task isn\'t scheduled yet, ie.',
+    'it doesn\'t have any runs, an initial run will be added and resolved as',
+    'described above. Hence, after canceling a task, it cannot be scheduled',
+    'with `queue.scheduleTask`, but a new run can be created with',
+    '`queue.rerun`. These semantics is equivalent to calling',
+    '`queue.scheduleTask` immediately followed by `queue.cancelTask`.',
+    '',
+    '**Remark** this operation is idempotent, if you try to cancel a task that',
+    'isn\'t `unscheduled`, `pending` or `running`, this operation will just',
+    'return the current task status.',
+  ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
   var taskId  = req.params.taskId;
@@ -1121,27 +1105,31 @@ api.declare({
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound',
-      "Task {{taskId}} not found. Are you sure it was created?", {
-      taskId
-    });
+      'Task {{taskId}} not found. Are you sure it was created?', {
+        taskId,
+      },
+    );
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     taskId,
     schedulerId:    task.schedulerId,
-    taskGroupId:    task.taskGroupId
+    taskGroupId:    task.taskGroupId,
   })) {
     return;
   }
 
   // Validate deadline
   if (task.deadline.getTime() < new Date().getTime()) {
-    return res.reportError('RequestConflict',
-      "Task {{taskId}} Can't be canceled past it's deadline of {{deadline}}.", {
-      taskId,
-      deadline: task.deadline.toJSON()
-    });
+    return res.reportError(
+      'RequestConflict',
+      'Task {{taskId}} Can\'t be canceled past it\'s deadline of ' +
+      '{{deadline}}.', {
+        taskId,
+        deadline: task.deadline.toJSON(),
+      },
+    );
   }
 
   // Modify the task
@@ -1167,7 +1155,7 @@ api.declare({
         reasonCreated:    'exception',
         reasonResolved:   'canceled',
         scheduled:        now,
-        resolved:         now
+        resolved:         now,
       });
     }
 
@@ -1212,27 +1200,27 @@ api.declare({
     [
       // Legacy scopes
       'queue:poll-task-urls',
-      'assume:worker-type:<provisionerId>/<workerType>'
+      'assume:worker-type:<provisionerId>/<workerType>',
     ], [
       'queue:poll-task-urls:<provisionerId>/<workerType>',
-    ]
+    ],
   ],
   deferAuth:  true,
   output:     'poll-task-urls-response.json#',
-  title:      "Get Urls to Poll Pending Tasks",
+  title:      'Get Urls to Poll Pending Tasks',
   description: [
-    "Get a signed URLs to get and delete messages from azure queue.",
-    "Once messages are polled from here, you can claim the referenced task",
-    "with `claimTask`, and afterwards you should always delete the message."
-  ].join('\n')
+    'Get a signed URLs to get and delete messages from azure queue.',
+    'Once messages are polled from here, you can claim the referenced task',
+    'with `claimTask`, and afterwards you should always delete the message.',
+  ].join('\n'),
 }, async function(req, res) {
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
-    provisionerId:  provisionerId,
-    workerType:     workerType
+  if (!req.satisfies({
+    provisionerId,
+    workerType,
   })) {
     return;
   }
@@ -1241,13 +1229,13 @@ api.declare({
   // provisionerId and workerType
   var {
     queues,
-    expiry
+    expiry,
   } = await this.queueService.signedPendingPollUrls(provisionerId, workerType);
 
   // Return signed URLs
   res.reply({
     queues,
-    expires: expiry.toJSON()
+    expires: expiry.toJSON(),
   });
 });
 
@@ -1262,43 +1250,41 @@ api.declare({
       // Legacy
       'queue:claim-task',
       'assume:worker-type:<provisionerId>/<workerType>',
-      'assume:worker-id:<workerGroup>/<workerId>'
+      'assume:worker-id:<workerGroup>/<workerId>',
     ], [
       'queue:claim-task:<provisionerId>/<workerType>',
       'queue:worker-id:<workerGroup>/<workerId>',
-    ]
+    ],
   ],
   deferAuth:  true,
   input:      'task-claim-request.json#',
   output:     'task-claim-response.json#',
-  title:      "Claim task",
+  title:      'Claim task',
   description: [
-    "claim a task, more to be added later..."
-  ].join('\n')
+    'claim a task, more to be added later...',
+  ].join('\n'),
 }, async function(req, res) {
   var taskId      = req.params.taskId;
-  var runId       = parseInt(req.params.runId);
+  var runId       = parseInt(req.params.runId, 10);
 
   var workerGroup = req.body.workerGroup;
   var workerId    = req.body.workerId;
 
   // Load Task entity
-  let task = await this.Task.load({
-    taskId:     taskId
-  }, true);
+  let task = await this.Task.load({taskId}, true);
 
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError(
-      "ResourceNotFound",
-      "Task {{taskId}} not found. Are you sure it was created?",
-      {
-        taskId
-      });
+      'ResourceNotFound',
+      'Task {{taskId}} not found. Are you sure it was created?', {
+        taskId,
+      },
+    );
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     workerGroup,
     workerId,
     provisionerId:  task.provisionerId,
@@ -1344,12 +1330,12 @@ api.declare({
   // If the run doesn't exist return ResourceNotFound
   if (!run) {
     return res.reportError(
-      "ResourceNotFound",
-      "Run {{runId}} not found on task {{taskId}}.",
-      {
+      'ResourceNotFound',
+      'Run {{runId}} not found on task {{taskId}}.', {
         taskId,
-        runId
-      });
+        runId,
+      },
+    );
   }
   // If the run wasn't claimed by this workerGroup/workerId, then we return
   // RequestConflict as it must have claimed by someone else
@@ -1358,11 +1344,11 @@ api.declare({
       run.workerGroup       !== workerGroup ||
       run.workerId          !== workerId) {
     return res.reportError(
-      "RequestConflict",
-      "Run {{runId}} was already claimed by another worker.",
-      {
+      'RequestConflict',
+      'Run {{runId}} was already claimed by another worker.', {
         runId,
-      });
+      },
+    );
   }
 
   // Construct status object
@@ -1375,7 +1361,7 @@ api.declare({
     runId:        runId,
     workerGroup:  workerGroup,
     workerId:     workerId,
-    takenUntil:   run.takenUntil
+    takenUntil:   run.takenUntil,
   }, task.routes);
 
   // Create temporary credentials for the task
@@ -1387,7 +1373,7 @@ api.declare({
       'queue:resolve-task:' + taskId + '/' + runId,
       'queue:create-artifact:' + taskId + '/' + runId,
     ].concat(task.scopes),
-    credentials: this.credentials
+    credentials: this.credentials,
   });
 
   // Reply to caller
@@ -1398,10 +1384,9 @@ api.declare({
     workerId:     workerId,
     takenUntil:   run.takenUntil,
     task:         await task.definition(),
-    credentials:  credentials
+    credentials:  credentials,
   });
 });
-
 
 /** Reclaim a task */
 api.declare({
@@ -1413,46 +1398,44 @@ api.declare({
     [
       // Legacy
       'queue:claim-task',
-      'assume:worker-id:<workerGroup>/<workerId>'
+      'assume:worker-id:<workerGroup>/<workerId>',
     ], [
-      'queue:reclaim-task:<taskId>/<runId>'
-    ]
+      'queue:reclaim-task:<taskId>/<runId>',
+    ],
   ],
   deferAuth:  true,
   output:     'task-reclaim-response.json#',
-  title:      "Reclaim task",
+  title:      'Reclaim task',
   description: [
-    "reclaim a task more to be added later..."
-  ].join('\n')
+    'reclaim a task more to be added later...',
+  ].join('\n'),
 }, async function(req, res) {
   var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId);
+  var runId  = parseInt(req.params.runId, 10);
 
   // Load Task entity
-  let task = await this.Task.load({
-    taskId:     taskId
-  }, true);
+  let task = await this.Task.load({taskId}, true);
 
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError(
-      "ResourceNotFound",
-      "Task {{taskId}} not found. Are you sure it was created?",
-      {
-        taskId
-      });
+      'ResourceNotFound',
+      'Task {{taskId}} not found. Are you sure it was created?', {
+        taskId,
+      }
+    );
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
     return res.reportError(
-      "ResourceNotFound",
-      "Run {{runId}} not found on task {{taskId}}.",
-      {
+      'ResourceNotFound',
+      'Run {{runId}} not found on task {{taskId}}.', {
         taskId,
-        runId
-      });
+        runId,
+      }
+    );
   }
 
   // Authenticate request by providing parameters
@@ -1468,12 +1451,13 @@ api.declare({
   // Check if task is past deadline
   if (task.deadline.getTime() <= Date.now()) {
     return res.reportError(
-      "RequestConflict",
-      "Task {{taskId}} Can't be reclaimed past it's deadline of {{deadline}}.",
-      {
+      'RequestConflict',
+      'Task {{taskId}} Can\'t be reclaimed past it\'s deadline of ' +
+      '{{deadline}}.', {
         taskId,
-        deadline: task.deadline.toJSON()
-      });
+        deadline: task.deadline.toJSON(),
+      },
+    );
   }
 
   // Set takenUntil to now + claimTimeout
@@ -1513,12 +1497,12 @@ api.declare({
   // If run isn't running we had a conflict
   if (task.runs.length - 1 !== runId || run.state !== 'running') {
     return res.reportError(
-      "RequestConflict",
-      "Run {{runId}} on task {{taskId}} is resolved or not running.",
-      {
+      'RequestConflict',
+      'Run {{runId}} on task {{taskId}} is resolved or not running.', {
         taskId,
-        runId
-      });
+        runId,
+      }
+    );
   }
 
   // Create temporary credentials for the task
@@ -1530,7 +1514,7 @@ api.declare({
       'queue:resolve-task:' + taskId + '/' + runId,
       'queue:create-artifact:' + taskId + '/' + runId,
     ].concat(task.scopes),
-    credentials: this.credentials
+    credentials: this.credentials,
   });
 
   // Reply to caller
@@ -1540,10 +1524,9 @@ api.declare({
     workerGroup:  run.workerGroup,
     workerId:     run.workerId,
     takenUntil:   takenUntil.toJSON(),
-    credentials:  credentials
+    credentials:  credentials,
   });
 });
-
 
 /**
  * Resolve a run of a task as `target` ('completed' or 'failed').
@@ -1551,7 +1534,7 @@ api.declare({
  */
 var resolveTask = async function(req, res, taskId, runId, target) {
   assert(target === 'completed' ||
-         target === 'failed', "Expected a valid target");
+         target === 'failed', 'Expected a valid target');
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1559,27 +1542,29 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound',
-      "Task {{taskId}} not found. Are you sure it was created?", {
-      taskId,
-    });
+      'Task {{taskId}} not found. Are you sure it was created?', {
+        taskId,
+      },
+    );
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
     return res.reportError('ResourceNotFound',
-      "Run {{runId}} not found on task {{taskId}}.", {
-      taskId,
-      runId,
-    });
+      'Run {{runId}} not found on task {{taskId}}.', {
+        taskId,
+        runId,
+      },
+    );
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     taskId,
     runId,
     workerGroup:    run.workerGroup,
-    workerId:       run.workerId
+    workerId:       run.workerId,
   })) {
     return;
   }
@@ -1608,10 +1593,11 @@ var resolveTask = async function(req, res, taskId, runId, target) {
       run.state             !== target ||
       run.reasonResolved    !== target) {
     return res.reportError('RequestConflict',
-      "Run {{runId}} on task {{taskId}} is resolved or not running.", {
-      taskId,
-      runId
-    });
+      'Run {{runId}} on task {{taskId}} is resolved or not running.', {
+        taskId,
+        runId,
+      },
+    );
   }
 
   // Update dependency tracker
@@ -1626,20 +1612,19 @@ var resolveTask = async function(req, res, taskId, runId, target) {
       status,
       runId,
       workerGroup:  run.workerGroup,
-      workerId:     run.workerId
+      workerId:     run.workerId,
     }, task.routes);
   } else {
     await this.publisher.taskFailed({
       status,
       runId,
       workerGroup:  run.workerGroup,
-      workerId:     run.workerId
+      workerId:     run.workerId,
     }, task.routes);
   }
 
   return res.reply({status});
 };
-
 
 /** Report task completed */
 api.declare({
@@ -1651,28 +1636,27 @@ api.declare({
     [
       // Legacy
       'queue:resolve-task',
-      'assume:worker-id:<workerGroup>/<workerId>'
+      'assume:worker-id:<workerGroup>/<workerId>',
     ], [
-      'queue:resolve-task:<taskId>/<runId>'
-    ]
+      'queue:resolve-task:<taskId>/<runId>',
+    ],
   ],
   deferAuth:  true,
   input:      undefined,  // No input at this point
   output:     'task-status-response.json#',
-  title:      "Report Run Completed",
+  title:      'Report Run Completed',
   description: [
-    "Report a task completed, resolving the run as `completed`."
-  ].join('\n')
+    'Report a task completed, resolving the run as `completed`.',
+  ].join('\n'),
 }, function(req, res) {
   var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId);
+  var runId  = parseInt(req.params.runId, 10);
   // Backwards compatibility with very old workers, should be dropped in the
   // future
   var target = req.body.success === false ? 'failed' : 'completed';
 
   return resolveTask.call(this, req, res, taskId, runId, target);
 });
-
 
 /** Report task failed */
 api.declare({
@@ -1684,27 +1668,27 @@ api.declare({
     [
       // Legacy
       'queue:resolve-task',
-      'assume:worker-id:<workerGroup>/<workerId>'
+      'assume:worker-id:<workerGroup>/<workerId>',
     ], [
-      'queue:resolve-task:<taskId>/<runId>'
-    ]
+      'queue:resolve-task:<taskId>/<runId>',
+    ],
   ],
   deferAuth:  true,
   input:      undefined,  // No input at this point
   output:     'task-status-response.json#',
-  title:      "Report Run Failed",
+  title:      'Report Run Failed',
   description: [
-    "Report a run failed, resolving the run as `failed`. Use this to resolve",
-    "a run that failed because the task specific code behaved unexpectedly.",
-    "For example the task exited non-zero, or didn't produce expected output.",
-    "",
-    "Don't use this if the task couldn't be run because if malformed payload,",
-    "or other unexpected condition. In these cases we have a task exception,",
-    "which should be reported with `reportException`."
-  ].join('\n')
+    'Report a run failed, resolving the run as `failed`. Use this to resolve',
+    'a run that failed because the task specific code behaved unexpectedly.',
+    'For example the task exited non-zero, or didn\'t produce expected output.',
+    '',
+    'Do not use this if the task couldn\'t be run because if malformed',
+    'payload, or other unexpected condition. In these cases we have a task',
+    'exception, which should be reported with `reportException`.',
+  ].join('\n'),
 }, function(req, res) {
   var taskId        = req.params.taskId;
-  var runId         = parseInt(req.params.runId);
+  var runId         = parseInt(req.params.runId, 10);
 
   return resolveTask.call(this, req, res, taskId, runId, 'failed');
 });
@@ -1719,32 +1703,32 @@ api.declare({
     [
       // Legacy
       'queue:resolve-task',
-      'assume:worker-id:<workerGroup>/<workerId>'
+      'assume:worker-id:<workerGroup>/<workerId>',
     ], [
-      'queue:resolve-task:<taskId>/<runId>'
-    ]
+      'queue:resolve-task:<taskId>/<runId>',
+    ],
   ],
   deferAuth:  true,
   input:      'task-exception-request.json#',
   output:     'task-status-response.json#',
-  title:      "Report Task Exception",
+  title:      'Report Task Exception',
   description: [
-    "Resolve a run as _exception_. Generally, you will want to report tasks as",
-    "failed instead of exception. You should `reportException` if,",
-    "",
-    "  * The `task.payload` is invalid,",
-    "  * Non-existent resources are referenced,",
-    "  * Declared actions cannot be executed due to unavailable resources,",
-    "  * The worker had to shutdown prematurely, or,",
-    "  * The worker experienced an unknown error.",
-    "",
-    "Do not use this to signal that some user-specified code crashed for any",
-    "reason specific to this code. If user-specific code hits a resource that",
-    "is temporarily unavailable worker should report task _failed_."
-  ].join('\n')
+    'Resolve a run as _exception_. Generally, you will want to report tasks as',
+    'failed instead of exception. You should `reportException` if,',
+    '',
+    '  * The `task.payload` is invalid,',
+    '  * Non-existent resources are referenced,',
+    '  * Declared actions cannot be executed due to unavailable resources,',
+    '  * The worker had to shutdown prematurely, or,',
+    '  * The worker experienced an unknown error.',
+    '',
+    'Do not use this to signal that some user-specified code crashed for any',
+    'reason specific to this code. If user-specific code hits a resource that',
+    'is temporarily unavailable worker should report task _failed_.',
+  ].join('\n'),
 }, async function(req, res) {
   var taskId        = req.params.taskId;
-  var runId         = parseInt(req.params.runId);
+  var runId         = parseInt(req.params.runId, 10);
   var reason        = req.body.reason;
 
   // Load Task entity
@@ -1753,27 +1737,30 @@ api.declare({
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound',
-      "Task {{taskId}} not found. Are you sure it exists?", {
-      taskId,
-    });
+      'Task {{taskId}} not found. Are you sure it exists?', {
+        taskId,
+      },
+    );
   }
 
   // Handle cases where the run doesn't exist
   var run = task.runs[runId];
   if (!run) {
-    return res.reportError('ResourceNotFound',
-      "Run {{runId}} not found on task {{taskId}}.", {
-      taskId,
-      runId,
-    });
+    return res.reportError(
+      'ResourceNotFound',
+      'Run {{runId}} not found on task {{taskId}}.', {
+        taskId,
+        runId,
+      },
+    );
   }
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     taskId,
     runId,
     workerGroup:    run.workerGroup,
-    workerId:       run.workerId
+    workerId:       run.workerId,
   })) {
     return;
   }
@@ -1800,7 +1787,7 @@ api.declare({
       task.runs.push({
         state:            'pending',
         reasonCreated:    'retry',
-        scheduled:        new Date().toJSON()
+        scheduled:        new Date().toJSON(),
       });
     }
   });
@@ -1814,10 +1801,11 @@ api.declare({
       run.state             !== 'exception' ||
       run.reasonResolved    !== reason) {
     return res.reportError('RequestConflict',
-      "Run {{runId}} on task {{taskId}} is resolved or not running.", {
-      taskId,
-      runId
-    });
+      'Run {{runId}} on task {{taskId}} is resolved or not running.', {
+        taskId,
+        runId,
+      },
+    );
   }
 
   var status = task.status();
@@ -1835,8 +1823,8 @@ api.declare({
       this.queueService.putPendingMessage(task, runId + 1),
       this.publisher.taskPending({
         status,
-        runId:          runId + 1
-      }, task.routes)
+        runId:          runId + 1,
+      }, task.routes),
     ]);
   } else {
     // Update dependency tracker, as the task is resolved (no new run)
@@ -1847,15 +1835,13 @@ api.declare({
       status,
       runId,
       workerGroup:  run.workerGroup,
-      workerId:     run.workerId
+      workerId:     run.workerId,
     }, task.routes);
   }
 
   // Reply to caller
   return res.reply({status});
 });
-
-
 
 // Load artifacts.js so API end-points declared in that file is loaded
 require('./artifacts');
@@ -1867,49 +1853,48 @@ api.declare({
   name:       'pendingTasks',
   stability:  base.API.stability.stable,
   output:     'pending-tasks-response.json#',
-  title:      "Get Number of Pending Tasks",
+  title:      'Get Number of Pending Tasks',
   description: [
-    "Get an approximate number of pending tasks for the given `provisionerId`",
-    "and `workerType`.",
-    "",
-    "The underlying Azure Storage Queues only promises to give us an estimate.",
-    "Furthermore, we cache the result in memory for 20 seconds. So consumers",
-    "should be no means expect this to be an accurate number.",
-    "It is, however, a solid estimate of the number of pending tasks.",
-  ].join('\n')
+    'Get an approximate number of pending tasks for the given `provisionerId`',
+    'and `workerType`.',
+    '',
+    'The underlying Azure Storage Queues only promises to give us an estimate.',
+    'Furthermore, we cache the result in memory for 20 seconds. So consumers',
+    'should be no means expect this to be an accurate number.',
+    'It is, however, a solid estimate of the number of pending tasks.',
+  ].join('\n'),
 }, async function(req, res) {
   var provisionerId = req.params.provisionerId;
   var workerType    = req.params.workerType;
 
   // Get number of pending message
   var count = await this.queueService.countPendingMessages(
-    provisionerId, workerType
+    provisionerId, workerType,
   );
 
   // Reply to call with count `pendingTasks`
   return res.reply({
     provisionerId:  provisionerId,
     workerType:     workerType,
-    pendingTasks:   count
+    pendingTasks:   count,
   });
 });
-
 
 /** Check that the server is a alive */
 api.declare({
   method:   'get',
   route:    '/ping',
   name:     'ping',
-  title:    "Ping Server",
+  title:    'Ping Server',
   description: [
-    "Documented later...",
-    "",
-    "**Warning** this api end-point is **not stable**."
-  ].join('\n')
+    'Documented later...',
+    '',
+    '**Warning** this api end-point is **not stable**.',
+  ].join('\n'),
 }, function(req, res) {
 
   res.status(200).json({
     alive:    true,
-    uptime:   process.uptime()
+    uptime:   process.uptime(),
   });
 });

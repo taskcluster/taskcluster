@@ -3,6 +3,7 @@
 
 
 mocha                             \
+  .test/lint_test.js              \
   .test/validate_test.js          \
   .test/bucket_test.js            \
   .test/blobstore_test.js         \

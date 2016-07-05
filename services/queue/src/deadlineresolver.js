@@ -12,7 +12,7 @@ let events        = require('events');
 const RESOLVED_STATES = [
   'completed',
   'failed',
-  'exception'
+  'exception',
 ];
 
 /**
@@ -42,17 +42,17 @@ class DeadlineResolver {
    * }
    */
   constructor(options) {
-    assert(options, "options must be given");
+    assert(options, 'options must be given');
     assert(options.Task.prototype instanceof data.Task,
-           "Expected data.Task instance");
+           'Expected data.Task instance');
     assert(options.queueService instanceof QueueService,
-           "Expected instance of QueueService");
-    assert(options.dependencyTracker, "Expected a DependencyTracker instance");
-    assert(options.publisher, "Expected a publisher");
-    assert(typeof(options.pollingDelay) === 'number',
-           "Expected pollingDelay to be a number");
-    assert(typeof(options.parallelism) === 'number',
-           "Expected parallelism to be a number");
+           'Expected instance of QueueService');
+    assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
+    assert(options.publisher, 'Expected a publisher');
+    assert(typeof options.pollingDelay === 'number',
+           'Expected pollingDelay to be a number');
+    assert(typeof options.parallelism === 'number',
+           'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     this.Task               = options.Task;
     this.queueService       = options.queueService;
@@ -77,12 +77,12 @@ class DeadlineResolver {
 
     // Start a loop for the amount of parallelism desired
     var loops = [];
-    for(var i = 0; i < this.parallelism; i++) {
+    for (var i = 0; i < this.parallelism; i++) {
       loops.push(this.poll());
     }
     // Create promise that we're done looping
     this.done = Promise.all(loops).catch(async (err) => {
-      console.log("Crashing the process: %s, as json: %j", err, err);
+      console.log('Crashing the process: %s, as json: %j', err, err);
       // TODO: use this.monitor.reportError(err); when PR lands:
       // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
       await this.monitor.reportError(err, 'error', {}, true);
@@ -101,9 +101,9 @@ class DeadlineResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    while(!this.stopping) {
+    while (!this.stopping) {
       var messages = await this.queueService.pollDeadlineQueue();
-      debug("Fetched %s messages", messages.length);
+      debug('Fetched %s messages', messages.length);
 
       await Promise.all(messages.map(async (message) => {
         // Don't let a single task error break the loop, it'll be retried later
@@ -115,7 +115,7 @@ class DeadlineResolver {
         }
       }));
 
-      if(messages.length === 0 && !this.stopping) {
+      if (messages.length === 0 && !this.stopping) {
         await this.sleep(this.pollingDelay);
       }
     }
@@ -133,10 +133,10 @@ class DeadlineResolver {
     // operation
     var {entries: [task]} = await this.Task.query({
       taskId:     taskId,   // Matches an exact entity
-      deadline:   deadline  // Load conditionally
+      deadline:   deadline, // Load conditionally
     }, {
       matchRow:   'exact',  // Validate that we match row key exactly
-      limit:      1         // Load at most one entity, no need to search
+      limit:      1,        // Load at most one entity, no need to search
     });
 
     // If the task doesn't exist we're done
@@ -170,7 +170,7 @@ class DeadlineResolver {
           reasonCreated:    'exception',
           reasonResolved:   'deadline-exceeded',
           scheduled:        now,
-          resolved:         now
+          resolved:         now,
         });
       }
 
@@ -205,7 +205,7 @@ class DeadlineResolver {
     var run = _.last(task.runs);
     if (run.reasonResolved  === 'deadline-exceeded' &&
         run.state           === 'exception') {
-      debug("Resolved taskId: %s, by deadline", taskId);
+      debug('Resolved taskId: %s, by deadline', taskId);
 
       // Update dependency tracker
       await this.dependencyTracker.resolveTask(taskId, 'exception');
@@ -213,7 +213,7 @@ class DeadlineResolver {
       // Publish messages about the last run
       await this.publisher.taskException({
         status:   task.status(),
-        runId:    task.runs.length - 1
+        runId:    task.runs.length - 1,
       }, task.routes);
     }
 

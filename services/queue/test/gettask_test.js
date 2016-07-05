@@ -24,18 +24,18 @@ suite('Get task', function() {
     scopes:           [],
     payload:          {},
     metadata: {
-      name:           "Unit testing task",
-      description:    "Task created during unit tests",
+      name:           'Unit testing task',
+      description:    'Task created during unit tests',
       owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue'
+      source:         'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing'
+      purpose:        'taskcluster-testing',
     },
-    extra: {}
+    extra: {},
   };
 
-  test("task(taskId) is correct", async () => {
+  test('task(taskId) is correct', async () => {
     var taskId = slugid.v4();
 
     await helper.queue.createTask(taskId, taskDef);
@@ -43,7 +43,7 @@ suite('Get task', function() {
     assume(taskDef2).deep.equals(taskDef);
   });
 
-  test("task(taskId) doesn't require credentials", async () => {
+  test('task(taskId) doesn\'t require credentials', async () => {
     var taskId = slugid.v4();
     await helper.queue.createTask(taskId, taskDef);
 

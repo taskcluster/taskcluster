@@ -10,11 +10,11 @@ suite('Task Expiration (expire-tasks)', () => {
   var helper      = require('./helper');
 
   // test functionality elsewhere, here we just test that it can actually run
-  test("expire-queues runs without bugs", async () => {
+  test('expire-queues runs without bugs', async () => {
     // We don't care if we delete any queues. In fact we won't delete queues
     // used in testing because they have up-to-date meta-data. Also if we did
     // they would be in state queue-being-deleted (so tests would fail)
-    debug("### Expire queues (don't care if delete any)");
+    debug('### Expire queues (don\'t care if delete any)');
     await helper.expireQueues();
   });
 });
