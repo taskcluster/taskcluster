@@ -1,4 +1,4 @@
-suite("Ping test", function() {
+suite('Ping test', function() {
   var debug       = require('debug')('test:ping');
   var assert      = require('assert');
   var slugid      = require('slugid');
@@ -6,7 +6,7 @@ suite("Ping test", function() {
   var Promise     = require('promise');
   var helper      = require('./helper');
 
-  test("ping (async)", async () => {
+  test('ping (async)', async () => {
     await helper.queue.ping();
   });
 });
