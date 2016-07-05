@@ -220,4 +220,36 @@ suite('Create task', function() {
       assume(err.statusCode).equals(409);
     });
   });
+
+  test('createTask w. created > deadline', async () => {
+    var taskId = slugid.v4();
+    var taskDef2 = _.defaults({
+      created:      taskcluster.fromNowJSON('15 min'),
+      deadline:     taskcluster.fromNowJSON('10 min'),
+      expires:      taskcluster.fromNowJSON('3 days'),
+    }, taskDef);
+
+    await helper.queue.createTask(taskId, taskDef2).then(() => {
+      throw new Error('This operation should have failed!');
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug('Expected error: %j', err, err);
+    });
+  });
+
+  test('createTask w. deadline > expires', async () => {
+    var taskId = slugid.v4();
+    var taskDef2 = _.defaults({
+      created:      taskcluster.fromNowJSON(),
+      deadline:     taskcluster.fromNowJSON('4 days'),
+      expires:      taskcluster.fromNowJSON('3 days'),
+    }, taskDef);
+
+    await helper.queue.createTask(taskId, taskDef2).then(() => {
+      throw new Error('This operation should have failed!');
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug('Expected error: %j', err, err);
+    });
+  });
 });

@@ -414,7 +414,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   }
 
   // Validate that expires is past deadline
-  if (deadline.getTime() > new Date(taskDef.deadline).getTime()) {
+  if (deadline.getTime() > new Date(taskDef.expires).getTime()) {
     return {
       code:       'InputError',
       message:    'Expires cannot be before the deadline',
