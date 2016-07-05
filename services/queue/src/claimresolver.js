@@ -12,7 +12,7 @@ let events        = require('events');
 const RESOLVED_STATES = [
   'completed',
   'failed',
-  'exception'
+  'exception',
 ];
 
 /**
@@ -45,17 +45,17 @@ class ClaimResolver {
    * }
    */
   constructor(options) {
-    assert(options, "options must be given");
+    assert(options, 'options must be given');
     assert(options.Task.prototype instanceof data.Task,
-           "Expected data.Task instance");
+           'Expected data.Task instance');
     assert(options.queueService instanceof QueueService,
-           "Expected instance of QueueService");
-    assert(options.dependencyTracker, "Expected a DependencyTracker instance");
-    assert(options.publisher, "Expected a publisher");
-    assert(typeof(options.pollingDelay) === 'number',
-           "Expected pollingDelay to be a number");
-    assert(typeof(options.parallelism) === 'number',
-           "Expected parallelism to be a number");
+           'Expected instance of QueueService');
+    assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
+    assert(options.publisher, 'Expected a publisher');
+    assert(typeof options.pollingDelay === 'number',
+           'Expected pollingDelay to be a number');
+    assert(typeof options.parallelism === 'number',
+           'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     this.Task               = options.Task;
     this.queueService       = options.queueService;
@@ -80,12 +80,12 @@ class ClaimResolver {
 
     // Start a loop for the amount of parallelism desired
     var loops = [];
-    for(var i = 0; i < this.parallelism; i++) {
+    for (var i = 0; i < this.parallelism; i++) {
       loops.push(this.poll());
     }
     // Create promise that we're done looping
     this.done = Promise.all(loops).catch(async (err) => {
-      console.log("Crashing the process: %s, as json: %j", err, err);
+      console.log('Crashing the process: %s, as json: %j', err, err);
       // TODO: use this.monitor.reportError(err); when PR lands:
       // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
       await this.monitor.reportError(err, 'error', {}, true);
@@ -104,9 +104,9 @@ class ClaimResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    while(!this.stopping) {
+    while (!this.stopping) {
       var messages = await this.queueService.pollClaimQueue();
-      debug("Fetched %s messages", messages.length);
+      debug('Fetched %s messages', messages.length);
 
       await Promise.all(messages.map(async (message) => {
         // Don't let a single task error break the loop, it'll be retried later
@@ -118,7 +118,7 @@ class ClaimResolver {
         }
       }));
 
-      if(messages.length === 0 && !this.stopping) {
+      if (messages.length === 0 && !this.stopping) {
         await this.sleep(this.pollingDelay);
       }
     }
@@ -140,10 +140,10 @@ class ClaimResolver {
     // significantly reduce the amount of task entities that we load.
     var {entries: [task]} = await this.Task.query({
       taskId:     taskId,     // Matches an exact entity
-      takenUntil: takenUntil  // Load conditionally
+      takenUntil: takenUntil, // Load conditionally
     }, {
       matchRow:   'exact',    // Validate that we match row key exactly
-      limit:      1           // Load at most one entity, no need to search
+      limit:      1,          // Load at most one entity, no need to search
     });
 
     // If the task doesn't exist, we're done
@@ -214,7 +214,7 @@ class ClaimResolver {
         task.runs.push({
           state:            'pending',
           reasonCreated:    'retry',
-          scheduled:        new Date().toJSON()
+          scheduled:        new Date().toJSON(),
         });
       }
     });
@@ -244,8 +244,8 @@ class ClaimResolver {
         this.queueService.putPendingMessage(task, runId + 1),
         this.publisher.taskPending({
           status:         status,
-          runId:          runId + 1
-        }, task.routes)
+          runId:          runId + 1,
+        }, task.routes),
       ]);
     } else {
       // Update dependencyTracker
@@ -256,7 +256,7 @@ class ClaimResolver {
         status:       status,
         runId:        runId,
         workerGroup:  run.workerGroup,
-        workerId:     run.workerId
+        workerId:     run.workerId,
       }, task.routes);
     }
 

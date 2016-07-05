@@ -11,7 +11,7 @@ suite('Poll tasks', function() {
   var xml2js      = require('xml2js');
   var helper      = require('./helper');
 
-  test("pollTaskUrl, getMessage, claimTask, deleteMessage", async () => {
+  test('pollTaskUrl, getMessage, claimTask, deleteMessage', async () => {
     // Use the same task definition for everything
     var taskDef = {
       provisionerId:    'no-provisioner',
@@ -19,56 +19,54 @@ suite('Poll tasks', function() {
       schedulerId:      'my-scheduler',
       taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
       // let's just test a large routing key too, 90 chars please :)
-      routes:           ["--- long routing key ---.--- long routing key ---." +
-                         "--- long routing key ---.--- long routing key ---." +
-                         "--- long routing key ---.--- long routing key ---." +
-                         "--- long routing key ---.--- long routing key ---." +
-                         "--- long routing key ---.--- long routing key ---"],
+      routes:           ['--- long routing key ---.--- long routing key ---.' +
+                         '--- long routing key ---.--- long routing key ---.' +
+                         '--- long routing key ---.--- long routing key ---.' +
+                         '--- long routing key ---.--- long routing key ---.' +
+                         '--- long routing key ---.--- long routing key ---'],
       retries:          5,
       created:          taskcluster.fromNowJSON(),
       deadline:         taskcluster.fromNowJSON('5 minutes'),
       scopes:           [],
       payload:          {},
       metadata: {
-        name:           "Unit testing task",
-        description:    "Task created during unit tests",
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
         owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue'
+        source:         'https://github.com/taskcluster/taskcluster-queue',
       },
       tags: {
-        purpose:        'taskcluster-testing'
+        purpose:        'taskcluster-testing',
       },
       extra: {
         myUsefulDetails: {
-          property:     "that is useful by external service!!"
-        }
-      }
+          property:     'that is useful by external service!!',
+        },
+      },
     };
     var taskId = slugid.v4();
 
-    debug("### Create task");
+    debug('### Create task');
     helper.scopes(
       'queue:create-task:no-provisioner/poll-test-worker',
       'queue:route:*',
     );
     await helper.queue.createTask(taskId, taskDef);
 
-
-    debug("### Access Tasks from azure queue");
+    debug('### Access Tasks from azure queue');
     helper.scopes(
       'queue:poll-task-urls',
-      'assume:worker-type:no-provisioner/poll-test-worker'
+      'assume:worker-type:no-provisioner/poll-test-worker',
     );
     var r1 = await helper.queue.pollTaskUrls(
-      'no-provisioner', 'poll-test-worker'
+      'no-provisioner', 'poll-test-worker',
     );
     assume(r1.queues).is.not.empty();
-
 
     helper.scopes(
       'queue:claim-task',
       'assume:worker-type:no-provisioner/poll-test-worker',
-      'assume:worker-id:dummy-workers/test-worker'
+      'assume:worker-id:dummy-workers/test-worker',
     );
     var i = 0;
     var queue, msg, payload;
@@ -76,7 +74,7 @@ suite('Poll tasks', function() {
     // tests. Don't EVER do this is production code! You could end up with a
     // loop that just get messages and there by makes them invisible :)
     await base.testing.poll(async () => {
-      debug("### Polling azure queue: %s", i);
+      debug('### Polling azure queue: %s', i);
       queue = r1.queues[i++ % r1.queues.length];
       var res = await request.get(queue.signedPollUrl).buffer().end();
       assume(res.ok).is.ok();
@@ -84,7 +82,7 @@ suite('Poll tasks', function() {
       // Parse XML
       var xml = await new Promise((accept, reject) => {
         xml2js.parseString(res.text, (err, json) => {
-          err ? reject(err) : accept(json)
+          err ? reject(err) : accept(json);
         });
       });
 
@@ -95,7 +93,7 @@ suite('Poll tasks', function() {
       msg = xml.QueueMessagesList.QueueMessage[0];
       payload = new Buffer(msg.MessageText[0], 'base64').toString();
       payload = JSON.parse(payload);
-      debug("payload: %j", payload);
+      debug('payload: %j', payload);
 
       // again this will skip if we didn't get the taskId we expected
       assume(payload.taskId).equals(taskId);
@@ -103,17 +101,17 @@ suite('Poll tasks', function() {
 
     await helper.queue.claimTask(payload.taskId, payload.runId, {
       workerGroup:      'dummy-workers',
-      workerId:         'test-worker'
+      workerId:         'test-worker',
     });
 
-    debug("### Deleting message from azure");
+    debug('### Deleting message from azure');
     var deleteUrl = queue.signedDeleteUrl
      .replace('{{messageId}}', encodeURIComponent(msg.MessageId[0]))
      .replace('{{popReceipt}}', encodeURIComponent(msg.PopReceipt[0]));
     await base.testing.poll(async () => {
       var res = await request.del(deleteUrl).buffer().end();
       if (!res.ok) {
-        throw new Error("error deleting message: " + res.text + " deleteUrl: " +
+        throw new Error('error deleting message: ' + res.text + ' deleteUrl: ' +
                         deleteUrl);
       }
     }, 20, 500);

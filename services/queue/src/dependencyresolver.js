@@ -30,10 +30,10 @@ class DependencyResolver {
     assert(options,                   'options are required');
     assert(options.dependencyTracker, 'Expected options.dependencyTracker');
     assert(options.queueService,      'Expected options.queueService');
-    assert(typeof(options.pollingDelay) === 'number',
-           "Expected pollingDelay to be a number");
-    assert(typeof(options.parallelism) === 'number',
-           "Expected parallelism to be a number");
+    assert(typeof options.pollingDelay === 'number',
+           'Expected pollingDelay to be a number');
+    assert(typeof options.parallelism === 'number',
+           'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
 
     // Remember options
@@ -51,7 +51,6 @@ class DependencyResolver {
     this._stopping      = false;
   }
 
-
   /** Start polling for resolved-task messages */
   start() {
     if (this._done) {
@@ -61,13 +60,13 @@ class DependencyResolver {
 
     // Start a loop for the amount of parallelism desired
     let loops = [];
-    for(var i = 0; i < this._parallelism; i++) {
+    for (var i = 0; i < this._parallelism; i++) {
       loops.push(this._pollResolvedTasks());
     }
 
     // Create promise that we're done looping
     this._done = Promise.all(loops).catch(async (err) => {
-      console.log("Crashing the process: %s, as json: %j", err, err);
+      console.log('Crashing the process: %s, as json: %j', err, err);
       // TODO: use this.monitor.reportError(err); when PR lands:
       // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
       await this.monitor.reportError(err, 'error', {}, true);
@@ -86,11 +85,11 @@ class DependencyResolver {
 
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
-    while(!this._stopping) {
+    while (!this._stopping) {
       let messages = await this.queueService.pollResolvedQueue();
       this.monitor.count('resolved-queue-poll-requests', 1);
       this.monitor.count('resolved-queue-polled-messages', messages.length);
-      debug("Fetched %s messages", messages.length);
+      debug('Fetched %s messages', messages.length);
 
       await Promise.all(messages.map(async (m) => {
         // Don't let a single task error break the loop, it'll be retried later
@@ -105,7 +104,7 @@ class DependencyResolver {
         }
       }));
 
-      if(messages.length === 0 && !this._stopping) {
+      if (messages.length === 0 && !this._stopping) {
         await new Promise(accept => setTimeout(accept, this._pollingDelay));
       }
     }

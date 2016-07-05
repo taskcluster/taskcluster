@@ -9,7 +9,7 @@ suite('Query tasks', function() {
   var assume      = require('assume');
   var helper      = require('./helper');
 
-  test("pendingTasks >= 1", async () => {
+  test('pendingTasks >= 1', async () => {
     let taskDef = {
       provisionerId:    'no-provisioner',
       workerType:       'query-test-worker',
@@ -22,28 +22,28 @@ suite('Query tasks', function() {
       scopes:           [],
       payload:          {},
       metadata: {
-        name:           "Unit testing task",
-        description:    "Task created during unit tests",
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
         owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue'
+        source:         'https://github.com/taskcluster/taskcluster-queue',
       },
       tags: {
-        purpose:        'taskcluster-testing'
-      }
+        purpose:        'taskcluster-testing',
+      },
     };
 
     let taskId1 = slugid.v4();
     let taskId2 = slugid.v4();
 
-    debug("### Create tasks");
+    debug('### Create tasks');
     await Promise.all([
       helper.queue.createTask(taskId1, taskDef),
-      helper.queue.createTask(taskId2, taskDef)
+      helper.queue.createTask(taskId2, taskDef),
     ]);
 
     let r1 = await helper.queue.pendingTasks(
       'no-provisioner',
-      'query-test-worker'
+      'query-test-worker',
     );
     assume(r1.pendingTasks).is.greaterThan(1);
 
@@ -57,7 +57,7 @@ suite('Query tasks', function() {
     // bug we should investigate
     let r2 = await helper.queue.pendingTasks(
       'no-provisioner',
-      'query-test-worker'
+      'query-test-worker',
     );
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
 
@@ -66,28 +66,28 @@ suite('Query tasks', function() {
     // with queueservice.js and you want to ensure that it still works.
     // Just comment out the return statement below.
     return; // STOP TEST HERE
-    console.log("WARNING: Unstable test running, should be disabled on master");
+    console.log('WARNING: Unstable test running, should be disabled on master');
     await base.testing.poll(async () => {
       // At some point in the future we have to got fetch a new result saying
       // more tasks are now in the queue...
       let r3 = await helper.queue.pendingTasks(
         'no-provisioner',
-        'query-test-worker'
+        'query-test-worker',
       );
       assume(r3.pendingTasks).is.greaterThan(r1.pendingTasks);
     }, 30, 1000);
   });
 
-  test("pendingTasks == 0", async () => {
+  test('pendingTasks == 0', async () => {
     let r1 = await helper.queue.pendingTasks(
       'no-provisioner',
-      'empty-test-worker'
+      'empty-test-worker',
     );
     assume(r1.pendingTasks).equals(0);
 
     let r2 = await helper.queue.pendingTasks(
       'no-provisioner',
-      'empty-test-worker'
+      'empty-test-worker',
     );
     assume(r2.pendingTasks).equals(0);
   });

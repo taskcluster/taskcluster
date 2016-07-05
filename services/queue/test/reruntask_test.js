@@ -21,77 +21,77 @@ suite('Rerun task', function() {
     scopes:           [],
     payload:          {},
     metadata: {
-      name:           "Unit testing task",
-      description:    "Task created during unit tests",
+      name:           'Unit testing task',
+      description:    'Task created during unit tests',
       owner:          'jonasfj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue'
+      source:         'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing'
-    }
+      purpose:        'taskcluster-testing',
+    },
   };
 
-  test("create, claim, complete and rerun (is idempotent)", async () => {
+  test('create, claim, complete and rerun (is idempotent)', async () => {
     let taskId = slugid.v4();
 
     await Promise.all([
       helper.events.listenFor('pending', helper.queueEvents.taskPending({
-        taskId:   taskId,
-        runId:    0
+        taskId,
+        runId:    0,
       })),
       helper.events.listenFor('running', helper.queueEvents.taskRunning({
-        taskId:   taskId
+        taskId,
       })),
       helper.events.listenFor('completed', helper.queueEvents.taskCompleted({
-        taskId:   taskId
+        taskId,
       })),
       helper.events.listenFor('pending-again', helper.queueEvents.taskPending({
         taskId:   taskId,
-        runId:    1
-      }))
+        runId:    1,
+      })),
     ]);
 
-    debug("### Creating task");
+    debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
-    debug("### Waiting for pending message");
+    debug('### Waiting for pending message');
     await helper.events.waitFor('pending');
 
-    debug("### Claiming task");
+    debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
-      workerId:       'my-worker'
+      workerId:       'my-worker',
     });
 
-    debug("### Waiting for running message");
+    debug('### Waiting for running message');
     await helper.events.waitFor('running');
 
-    debug("### Reporting task completed");
+    debug('### Reporting task completed');
     await helper.queue.reportCompleted(taskId, 0);
 
-    debug("### Waiting for completed message");
+    debug('### Waiting for completed message');
     await helper.events.waitFor('completed');
 
-    debug("### Requesting task rerun");
+    debug('### Requesting task rerun');
     helper.scopes(
       'queue:rerun-task',
-      'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ'
+      'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ',
     );
     await helper.queue.rerunTask(taskId);
 
-    debug("### Waiting for pending message again");
+    debug('### Waiting for pending message again');
     await helper.events.waitFor('pending-again');
 
-    debug("### Requesting task rerun (again)");
+    debug('### Requesting task rerun (again)');
     await helper.queue.rerunTask(taskId);
   });
 
-  test("throw error on missing task", async () => {
+  test('throw error on missing task', async () => {
     let taskId = slugid.v4();
-    await helper.queue.rerunTask(taskId).catch( (err) => {
+    await helper.queue.rerunTask(taskId).catch(err => {
       assert.equal(err.statusCode, 404);
-      assert.equal(err.code, "ResourceNotFound");
+      assert.equal(err.code, 'ResourceNotFound');
     });
   });
 });

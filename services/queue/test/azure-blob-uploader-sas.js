@@ -30,13 +30,13 @@ BlobUploader.prototype.buildUrl = function(queryString) {
 
 /** Upload a single block for commit later */
 BlobUploader.prototype.putBlock = function(blockId, block) {
-  assert(blockId, "blockId must be given");
-  assert(block,   "block must be given");
+  assert(blockId, 'blockId must be given');
+  assert(block,   'block must be given');
 
   // Construct URL
   var url = this.buildUrl({
     comp:     'block',
-    blockid:  new Buffer('' + blockId).toString('base64')
+    blockid:  new Buffer('' + blockId).toString('base64'),
   });
 
   // Send request
@@ -47,8 +47,8 @@ BlobUploader.prototype.putBlock = function(blockId, block) {
           .then(function(res) {
             // Check for success
             if (!res.ok) {
-              debug("putBlock failed, error code: %s", res.status);
-              throw new Error("Failed putBlock");
+              debug('putBlock failed, error code: %s', res.status);
+              throw new Error('Failed putBlock');
             }
             // Return blockId
             return blockId;
@@ -57,23 +57,23 @@ BlobUploader.prototype.putBlock = function(blockId, block) {
 
 /** Commit a list of blocks as the blob */
 BlobUploader.prototype.putBlockList = function(blockIds, contentType) {
-  assert(blockIds instanceof Array, "blockIds must be an array")
-  assert(contentType, "contentType must be given");
+  assert(blockIds instanceof Array, 'blockIds must be an array');
+  assert(contentType, 'contentType must be given');
   // Construct URL
   var url = this.buildUrl({
-    comp:     'blocklist'
+    comp:     'blocklist',
   });
   // Construct XML
   var blockList = xmlbuilder.create('BlockList', {
     version:    '1.0',
-    encoding:   'utf-8'
+    encoding:   'utf-8',
   });
   blockIds.forEach(function(blockId) {
     var id = new Buffer('' + blockId).toString('base64');
     blockList.element('Latest', id);
   });
   var xml = blockList.end({
-    pretty:     true
+    pretty:     true,
   });
   // Send request
   return request
@@ -84,8 +84,8 @@ BlobUploader.prototype.putBlockList = function(blockIds, contentType) {
           .then(function(res) {
             // Check for success
             if (!res.ok) {
-              debug("putBlockList failed, error code: %s", res.status);
-              throw new Error("Failed putBlockList");
+              debug('putBlockList failed, error code: %s', res.status);
+              throw new Error('Failed putBlockList');
             }
           });
 };

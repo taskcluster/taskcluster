@@ -15,79 +15,79 @@ api.declare({
   scopes: [
     [
       'queue:create-artifact:<name>',
-      'assume:worker-id:<workerGroup>/<workerId>'
+      'assume:worker-id:<workerGroup>/<workerId>',
     ], [
-      'queue:create-artifact:<taskId>/<runId>'
-    ]
+      'queue:create-artifact:<taskId>/<runId>',
+    ],
   ],
   deferAuth:  true,
   input:      'post-artifact-request.json#',
   output:     'post-artifact-response.json#',
-  title:      "Create Artifact",
+  title:      'Create Artifact',
   description: [
-    "This API end-point creates an artifact for a specific run of a task. This",
-    "should **only** be used by a worker currently operating on this task, or",
-    "from a process running within the task (ie. on the worker).",
-    "",
-    "All artifacts must specify when they `expires`, the queue will",
-    "automatically take care of deleting artifacts past their",
-    "expiration point. This features makes it feasible to upload large",
-    "intermediate artifacts from data processing applications, as the",
-    "artifacts can be set to expire a few days later.",
-    "",
-    "We currently support 4 different `storageType`s, each storage type have",
-    "slightly different features and in some cases difference semantics.",
-    "",
-    "**S3 artifacts**, is useful for static files which will be stored on S3.",
-    "When creating an S3 artifact the queue will return a pre-signed URL",
-    "to which you can do a `PUT` request to upload your artifact. Note",
-    "that `PUT` request **must** specify the `content-length` header and",
-    "**must** give the `content-type` header the same value as in the request",
-    "to `createArtifact`.",
-    "",
-    "**Azure artifacts**, are stored in _Azure Blob Storage_ service, which",
-    "given the consistency guarantees and API interface offered by Azure is",
-    "more suitable for artifacts that will be modified during the execution",
-    "of the task. For example docker-worker has a feature that persists the",
-    "task log to Azure Blob Storage every few seconds creating a somewhat",
-    "live log. A request to create an Azure artifact will return a URL",
-    "featuring a [Shared-Access-Signature]" +
-    "(http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),",
-    "refer to MSDN for further information on how to use these.",
-    "**Warning: azure artifact is currently an experimental feature subject",
-    "to changes and data-drops.**",
-    "",
-    "**Reference artifacts**, only consists of meta-data which the queue will",
-    "store for you. These artifacts really only have a `url` property and",
-    "when the artifact is requested the client will be redirect the URL",
-    "provided with a `303` (See Other) redirect. Please note that we cannot",
-    "delete artifacts you upload to other service, we can only delete the",
-    "reference to the artifact, when it expires.",
-    "",
-    "**Error artifacts**, only consists of meta-data which the queue will",
-    "store for you. These artifacts are only meant to indicate that you the",
-    "worker or the task failed to generate a specific artifact, that you",
-    "would otherwise have uploaded. For example docker-worker will upload an",
-    "error artifact, if the file it was supposed to upload doesn't exists or",
-    "turns out to be a directory. Clients requesting an error artifact will",
-    "get a `403` (Forbidden) response. This is mainly designed to ensure that",
-    "dependent tasks can distinguish between artifacts that were suppose to",
-    "be generated and artifacts for which the name is misspelled.",
-    "",
-    "**Artifact immutability**, generally speaking you cannot overwrite an",
-    "artifact when created. But if you repeat the request with the same",
-    "properties the request will succeed as the operation is idempotent.",
-    "This is useful if you need to refresh a signed URL while uploading.",
-    "Do not abuse this to overwrite artifacts created by another entity!",
-    "Such as worker-host overwriting artifact created by worker-code.",
-    "",
-    "As a special case the `url` property on _reference artifacts_ can be",
-    "updated. You should only use this to update the `url` property for",
-    "reference artifacts your process has created."
-  ].join('\n')
-}, async function(req ,res) {
+    'This API end-point creates an artifact for a specific run of a task. This',
+    'should **only** be used by a worker currently operating on this task, or',
+    'from a process running within the task (ie. on the worker).',
+    '',
+    'All artifacts must specify when they `expires`, the queue will',
+    'automatically take care of deleting artifacts past their',
+    'expiration point. This features makes it feasible to upload large',
+    'intermediate artifacts from data processing applications, as the',
+    'artifacts can be set to expire a few days later.',
+    '',
+    'We currently support 4 different `storageType`s, each storage type have',
+    'slightly different features and in some cases difference semantics.',
+    '',
+    '**S3 artifacts**, is useful for static files which will be stored on S3.',
+    'When creating an S3 artifact the queue will return a pre-signed URL',
+    'to which you can do a `PUT` request to upload your artifact. Note',
+    'that `PUT` request **must** specify the `content-length` header and',
+    '**must** give the `content-type` header the same value as in the request',
+    'to `createArtifact`.',
+    '',
+    '**Azure artifacts**, are stored in _Azure Blob Storage_ service, which',
+    'given the consistency guarantees and API interface offered by Azure is',
+    'more suitable for artifacts that will be modified during the execution',
+    'of the task. For example docker-worker has a feature that persists the',
+    'task log to Azure Blob Storage every few seconds creating a somewhat',
+    'live log. A request to create an Azure artifact will return a URL',
+    'featuring a [Shared-Access-Signature]' +
+    '(http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),',
+    'refer to MSDN for further information on how to use these.',
+    '**Warning: azure artifact is currently an experimental feature subject',
+    'to changes and data-drops.**',
+    '',
+    '**Reference artifacts**, only consists of meta-data which the queue will',
+    'store for you. These artifacts really only have a `url` property and',
+    'when the artifact is requested the client will be redirect the URL',
+    'provided with a `303` (See Other) redirect. Please note that we cannot',
+    'delete artifacts you upload to other service, we can only delete the',
+    'reference to the artifact, when it expires.',
+    '',
+    '**Error artifacts**, only consists of meta-data which the queue will',
+    'store for you. These artifacts are only meant to indicate that you the',
+    'worker or the task failed to generate a specific artifact, that you',
+    'would otherwise have uploaded. For example docker-worker will upload an',
+    'error artifact, if the file it was supposed to upload doesn\'t exists or',
+    'turns out to be a directory. Clients requesting an error artifact will',
+    'get a `403` (Forbidden) response. This is mainly designed to ensure that',
+    'dependent tasks can distinguish between artifacts that were suppose to',
+    'be generated and artifacts for which the name is misspelled.',
+    '',
+    '**Artifact immutability**, generally speaking you cannot overwrite an',
+    'artifact when created. But if you repeat the request with the same',
+    'properties the request will succeed as the operation is idempotent.',
+    'This is useful if you need to refresh a signed URL while uploading.',
+    'Do not abuse this to overwrite artifacts created by another entity!',
+    'Such as worker-host overwriting artifact created by worker-code.',
+    '',
+    'As a special case the `url` property on _reference artifacts_ can be',
+    'updated. You should only use this to update the `url` property for',
+    'reference artifacts your process has created.',
+  ].join('\n'),
+}, async function(req, res) {
   var taskId      = req.params.taskId;
-  var runId       = parseInt(req.params.runId);
+  var runId       = parseInt(req.params.runId, 10);
   var name        = req.params.name;
   var input       = req.body;
   var storageType = input.storageType;
@@ -101,23 +101,21 @@ api.declare({
   past.setMinutes(past.getMinutes() - 15);
   if (expires.getTime() < past.getTime()) {
     return res.status(400).json({
-      message:  "Expires must be in the future",
+      message:  'Expires must be in the future',
       error: {
         now:      new Date().toJSON(),
-        expires:  expires.toJSON()
-      }
+        expires:  expires.toJSON(),
+      },
     });
   }
 
   // Load Task entity
-  var task = await this.Task.load({
-    taskId:       taskId
-  }, true);
+  var task = await this.Task.load({taskId}, true);
 
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.status(404).json({
-      message: "Task not found"
+      message: 'Task not found',
     });
   }
 
@@ -125,7 +123,7 @@ api.declare({
   var run = task.runs[runId];
   if (!run) {
     return res.status(404).json({
-      message: "Run not found"
+      message: 'Run not found',
     });
   }
 
@@ -134,12 +132,12 @@ api.declare({
   var workerId    = run.workerId;
 
   // Authenticate request by providing parameters
-  if(!req.satisfies({
+  if (!req.satisfies({
     taskId,
     runId,
-    workerGroup:  workerGroup,
-    workerId:     workerId,
-    name:         name
+    workerGroup,
+    workerId,
+    name,
   })) {
     return;
   }
@@ -147,13 +145,13 @@ api.declare({
   // Validate expires <= task.expires
   if (expires.getTime() > task.expires.getTime()) {
     return res.status(400).json({
-      messages: "Artifact expires after the task expiration " +
-                "(task.expires < expires) - this is now allowed, " +
-                "artifacts must expire before the task they belong to",
+      messages: 'Artifact expires after the task expiration ' +
+                '(task.expires < expires) - this is now allowed, ' +
+                'artifacts must expire before the task they belong to',
       error: {
         taskExpires:      task.expires.toJSON(),
-        expires:          expires.toJSON()
-      }
+        expires:          expires.toJSON(),
+      },
     });
   }
 
@@ -165,20 +163,20 @@ api.declare({
       // up to 25 min past resolution. This allows us to report exception as
       // soon as we know and then upload logs if possible.
       // Useful because exception usually implies something badly wrong.
-      allow = (new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000);
+      allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000;
     }
     if (!allow) {
       return res.status(409).json({
-        message:    "Artifacts cannot be created for a task after it is " +
-                    "resolved, unless it is resolved 'exception', and even " +
-                    "in this case only up to 25 min past resolution." +
-                    "This to ensure that artifacts have been uploaded before " +
-                    "a task is 'completed' and output is consumed by a " +
-                    "dependent task",
+        message:    'Artifacts cannot be created for a task after it is ' +
+                    'resolved, unless it is resolved \'exception\', and even ' +
+                    'in this case only up to 25 min past resolution.' +
+                    'This to ensure that artifacts have been uploaded before ' +
+                    'a task is \'completed\' and output is consumed by a ' +
+                    'dependent task',
         error: {
           status:   task.status(),
-          runId:    runId
-        }
+          runId:    runId,
+        },
       });
     }
   }
@@ -186,7 +184,7 @@ api.declare({
   // Construct details for different storage types
   var isPublic = /^public\//.test(name);
   var details  = {};
-  switch(storageType) {
+  switch (storageType) {
     case 's3':
       if (isPublic) {
         details.bucket  = this.publicBucket.bucket;
@@ -211,32 +209,27 @@ api.declare({
       break;
 
     default:
-      throw new Error("Unknown storageType: " + storageType);
+      throw new Error('Unknown storageType: ' + storageType);
   }
 
   try {
     var artifact = await this.Artifact.create({
-      taskId:           taskId,
-      runId:            runId,
-      name:             name,
-      storageType:      storageType,
-      contentType:      contentType,
-      details:          details,
-      expires:          expires
+      taskId,
+      runId,
+      name,
+      storageType,
+      contentType,
+      details,
+      expires,
     });
-  }
-  catch (err) {
+  } catch (err) {
     // Re-throw error if this isn't because the entity already exists
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
 
     // Load existing Artifact entity
-    artifact = await this.Artifact.load({
-      taskId:           taskId,
-      runId:            runId,
-      name:             name
-    });
+    artifact = await this.Artifact.load({taskId, runId, name});
 
     // Allow recreating of the same artifact, report conflict if it's not the
     // same artifact (allow for later expiration).
@@ -245,8 +238,8 @@ api.declare({
         artifact.contentType !== contentType ||
         artifact.expires.getTime() > expires.getTime()) {
       return res.status(409).json({
-        message:  "Artifact already exists, with different type or " +
-                  " later expiration",
+        message:  'Artifact already exists, with different type or ' +
+                  ' later expiration',
         error: {
           originalArtifact: {
             storageType:  artifact.storageType,
@@ -254,11 +247,11 @@ api.declare({
             expires:      artifact.expires,
           },
           newArtifact: {
-            storageType:  storageType,
-            contentType:  contentType,
-            expires:      expires
-          }
-        }
+            storageType,
+            contentType,
+            expires,
+          },
+        },
       });
     }
 
@@ -267,8 +260,8 @@ api.declare({
     if (storageType !== 'reference' &&
         !_.isEqual(artifact.details, details)) {
       return res.status(409).json({
-        message:  "Artifact already exists with different contentType or " +
-                  "error message"
+        message:  'Artifact already exists with different contentType or ' +
+                  'error message',
       });
     }
 
@@ -283,9 +276,9 @@ api.declare({
   await this.publisher.artifactCreated({
     status:         task.status(),
     artifact:       artifact.json(),
-    workerGroup:    workerGroup,
-    workerId:       workerId,
-    runId:          runId
+    workerGroup,
+    workerId,
+    runId,
   }, task.routes);
 
   switch (artifact.storageType) {
@@ -302,14 +295,15 @@ api.declare({
       // Create put URL
       var putUrl = await bucket.createPutUrl(
         artifact.details.prefix, {
-        contentType:      artifact.contentType,
-        expires:          30 * 60 + 10 // Add 10 sec for clock drift
-      });
+          contentType:      artifact.contentType,
+          expires:          30 * 60 + 10, // Add 10 sec for clock drift
+        },
+      );
       return res.reply({
         storageType:  's3',
         contentType:  artifact.contentType,
         expires:      expiry.toJSON(),
-        putUrl:       putUrl
+        putUrl:       putUrl,
       });
 
     case 'azure':
@@ -317,53 +311,42 @@ api.declare({
       var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
       // Generate SAS
       var putUrl = this.blobStore.generateWriteSAS(
-        artifact.details.path, {
-        expiry:         expiry
-      });
+        artifact.details.path, {expiry},
+      );
       return res.reply({
         storageType:  'azure',
         contentType:  artifact.contentType,
         expires:      expiry.toJSON(),
-        putUrl:       putUrl
+        putUrl,
       });
 
     case 'reference':
     case 'error':
       // For 'reference' and 'error' the response is simple
-      return res.reply({
-        storageType:    storageType
-      });
+      return res.reply({storageType});
 
     default:
-      throw new Error("Unknown storageType: " + artifact.storageType);
+      throw new Error('Unknown storageType: ' + artifact.storageType);
   }
 });
 
 /** Reply to an artifact request using taskId, runId, name and context */
 var replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Load artifact meta-data from table storage
-  var promiseResponse = await Promise.all([
-      this.Artifact.load({
-        taskId:     taskId,
-        runId:      runId,
-        name:       name
-      }, true),
-      this.Task.load({
-        taskId: taskId
-      }, true),
+  let [artifact, task] = await Promise.all([
+    this.Artifact.load({taskId, runId, name}, true),
+    this.Task.load({taskId}, true),
   ]);
-  var artifact = promiseResponse[0];
-  var task = promiseResponse[1];
 
   // Give a 404, if the artifact couldn't be loaded
   if (!artifact) {
     return res.status(404).json({
-      message:  "Artifact not found"
+      message:  'Artifact not found',
     });
   }
 
   // Handle S3 artifacts
-  if(artifact.storageType === 's3') {
+  if (artifact.storageType === 's3') {
     // Find url
     var url = null;
 
@@ -399,15 +382,15 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       }
     } else if (bucket === this.privateBucket.bucket) {
       url = await this.privateBucket.createSignedGetUrl(prefix, {
-        expires: 30 * 60
+        expires: 30 * 60,
       });
     }
-    assert(url, "Url should have been constructed!");
+    assert(url, 'Url should have been constructed!');
     return res.redirect(303, url);
   }
 
   // Handle azure artifacts
-  if(artifact.storageType === 'azure') {
+  if (artifact.storageType === 'azure') {
     if (artifact.details.container !== this.blobStore.container) {
       let err = new Error('Unknown container: ' +
                           artifact.details.container + ' for artifact');
@@ -419,9 +402,8 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
     expiry.setMinutes(expiry.getMinutes() + 30);
     // Create and redirect to signed URL
     return res.redirect(303, this.blobStore.createSignedGetUrl(
-      artifact.details.path, {
-      expiry:   expiry
-    }));
+      artifact.details.path, {expiry},
+    ));
   }
 
   // Handle redirect artifacts
@@ -433,7 +415,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
   if (artifact.storageType === 'error') {
     return res.status(403).json({
       reason:     artifact.details.reason,
-      message:    artifact.details.message
+      message:    artifact.details.message,
     });
   }
 
@@ -450,33 +432,31 @@ api.declare({
   name:       'getArtifact',
   stability:  base.API.stability.stable,
   scopes: [
-    ['queue:get-artifact:<name>']
+    ['queue:get-artifact:<name>'],
   ],
   deferAuth:  true,
-  title:      "Get Artifact from Run",
+  title:      'Get Artifact from Run',
   description: [
-    "Get artifact by `<name>` from a specific run.",
-    "",
-    "**Public Artifacts**, in-order to get an artifact you need the scope",
-    "`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.",
-    "But if the artifact `name` starts with `public/`, authentication and",
-    "authorization is not necessary to fetch the artifact.",
-    "",
-    "**API Clients**, this method will redirect you to the artifact, if it is",
-    "stored externally. Either way, the response may not be JSON. So API",
-    "client users might want to generate a signed URL for this end-point and",
-    "use that URL with a normal HTTP client."
-  ].join('\n')
-}, async function(req ,res) {
+    'Get artifact by `<name>` from a specific run.',
+    '',
+    '**Public Artifacts**, in-order to get an artifact you need the scope',
+    '`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.',
+    'But if the artifact `name` starts with `public/`, authentication and',
+    'authorization is not necessary to fetch the artifact.',
+    '',
+    '**API Clients**, this method will redirect you to the artifact, if it is',
+    'stored externally. Either way, the response may not be JSON. So API',
+    'client users might want to generate a signed URL for this end-point and',
+    'use that URL with a normal HTTP client.',
+  ].join('\n'),
+}, async function(req, res) {
   var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId);
+  var runId  = parseInt(req.params.runId, 10);
   var name   = req.params.name;
 
   // Check if this artifact is in the public/ folder, or require request
   // to be authenticated by providing parameters
-  if(!/^public\//.test(name) && !req.satisfies({
-    name:         name
-  })) {
+  if (!/^public\//.test(name) && !req.satisfies({name})) {
     return;
   }
 
@@ -490,53 +470,51 @@ api.declare({
   name:       'getLatestArtifact',
   stability:  base.API.stability.stable,
   scopes: [
-    ['queue:get-artifact:<name>']
+    ['queue:get-artifact:<name>'],
   ],
   deferAuth:  true,
-  title:      "Get Artifact from Latest Run",
+  title:      'Get Artifact from Latest Run',
   description: [
-    "Get artifact by `<name>` from the last run of a task.",
-    "",
-    "**Public Artifacts**, in-order to get an artifact you need the scope",
-    "`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.",
-    "But if the artifact `name` starts with `public/`, authentication and",
-    "authorization is not necessary to fetch the artifact.",
-    "",
-    "**API Clients**, this method will redirect you to the artifact, if it is",
-    "stored externally. Either way, the response may not be JSON. So API",
-    "client users might want to generate a signed URL for this end-point and",
-    "use that URL with a normal HTTP client.",
-    "",
-    "**Remark**, this end-point is slightly slower than",
-    "`queue.getArtifact`, so consider that if you already know the `runId` of",
-    "the latest run. Otherwise, just us the most convenient API end-point."
-  ].join('\n')
-}, async function(req ,res) {
+    'Get artifact by `<name>` from the last run of a task.',
+    '',
+    '**Public Artifacts**, in-order to get an artifact you need the scope',
+    '`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.',
+    'But if the artifact `name` starts with `public/`, authentication and',
+    'authorization is not necessary to fetch the artifact.',
+    '',
+    '**API Clients**, this method will redirect you to the artifact, if it is',
+    'stored externally. Either way, the response may not be JSON. So API',
+    'client users might want to generate a signed URL for this end-point and',
+    'use that URL with a normal HTTP client.',
+    '',
+    '**Remark**, this end-point is slightly slower than',
+    '`queue.getArtifact`, so consider that if you already know the `runId` of',
+    'the latest run. Otherwise, just us the most convenient API end-point.',
+  ].join('\n'),
+}, async function(req, res) {
   var taskId = req.params.taskId;
   var name   = req.params.name;
 
   // Check if this artifact is in the public/ folder, or require request
   // to be authenticated by providing parameterss
-  if(!/^public\//.test(name) && !req.satisfies({
-    name:         name
-  })) {
+  if (!/^public\//.test(name) && !req.satisfies({name})) {
     return;
   }
 
   // Load task status structure from table
-  var task = await this.Task.load({taskId: taskId}, true);
+  var task = await this.Task.load({taskId}, true);
 
   // Give a 404 if not found
   if (!task) {
     return res.status(404).json({
-      message:  "Task not found"
+      message:  'Task not found',
     });
   }
 
   // Check that we have runs
   if (task.runs.length === 0) {
     return res.status(404).json({
-      message:  "Task doesn't have any runs"
+      message:  'Task doesn\'t have any runs',
     });
   }
 
@@ -546,7 +524,6 @@ api.declare({
   // Reply
   return replyWithArtifact.call(this, taskId, runId, name, req, res);
 });
-
 
 /** Get artifacts from run */
 api.declare({
@@ -559,39 +536,36 @@ api.declare({
   name:       'listArtifacts',
   stability:  base.API.stability.experimental,
   output:     'list-artifacts-response.json#',
-  title:      "Get Artifacts from Run",
+  title:      'Get Artifacts from Run',
   description: [
-    "Returns a list of artifacts and associated meta-data for a given run.",
-    "",
-    "As a task may have many artifacts paging may be necessary. If this",
-    "end-point returns a `continuationToken`, you should call the end-point",
-    "again with the `continuationToken` as the query-string option:",
-    "`continuationToken`.",
-    "",
-    "By default this end-point will list up-to 1000 artifacts in a single page",
-    "you may limit this with the query-string parameter `limit`.",
-  ].join('\n')
-}, async function(req ,res) {
+    'Returns a list of artifacts and associated meta-data for a given run.',
+    '',
+    'As a task may have many artifacts paging may be necessary. If this',
+    'end-point returns a `continuationToken`, you should call the end-point',
+    'again with the `continuationToken` as the query-string option:',
+    '`continuationToken`.',
+    '',
+    'By default this end-point will list up-to 1000 artifacts in a single page',
+    'you may limit this with the query-string parameter `limit`.',
+  ].join('\n'),
+}, async function(req, res) {
   let taskId        = req.params.taskId;
-  let runId         = parseInt(req.params.runId);
+  let runId         = parseInt(req.params.runId, 10);
   let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000);
+  let limit         = parseInt(req.query.limit || 1000, 10);
   // TODO: Add support querying using prefix
 
-  let [
-    task,
-    artifacts,
-  ] = await Promise.all([
+  let [task, artifacts] = await Promise.all([
     this.Task.load({taskId}, true),
-    this.Artifact.query({taskId, runId}, {continuation, limit})
+    this.Artifact.query({taskId, runId}, {continuation, limit}),
   ]);
 
   // Give a 404 if not found
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      "No task with taskId: {{taskId}} found",
-      {taskId}
+      'No task with taskId: {{taskId}} found',
+      {taskId},
     );
   }
 
@@ -599,13 +573,14 @@ api.declare({
   if (!task.runs[runId]) {
     return res.reportError(
       'ResourceNotFound',
-      "Task with taskId: {{taskId}} run with runId: {{runId}}\n" +
-      "task status: {{status}}", {
-      taskId, runId,
-      status: task.status(),
-    });
+      'Task with taskId: {{taskId}} run with runId: {{runId}}\n' +
+      'task status: {{status}}', {
+        taskId,
+        runId,
+        status: task.status(),
+      },
+    );
   }
-
 
   let result = {
     artifacts: artifacts.entries.map(artifact => artifact.json()),
@@ -616,7 +591,6 @@ api.declare({
 
   return res.reply(result);
 });
-
 
 /** Get latest artifacts from task */
 api.declare({
@@ -629,23 +603,23 @@ api.declare({
   },
   stability:  base.API.stability.experimental,
   output:     'list-artifacts-response.json#',
-  title:      "Get Artifacts from Latest Run",
+  title:      'Get Artifacts from Latest Run',
   description: [
-    "Returns a list of artifacts and associated meta-data for the latest run",
-    "from the given task.",
-    "",
-    "As a task may have many artifacts paging may be necessary. If this",
-    "end-point returns a `continuationToken`, you should call the end-point",
-    "again with the `continuationToken` as the query-string option:",
-    "`continuationToken`.",
-    "",
-    "By default this end-point will list up-to 1000 artifacts in a single page",
-    "you may limit this with the query-string parameter `limit`.",
-  ].join('\n')
-}, async function(req ,res) {
+    'Returns a list of artifacts and associated meta-data for the latest run',
+    'from the given task.',
+    '',
+    'As a task may have many artifacts paging may be necessary. If this',
+    'end-point returns a `continuationToken`, you should call the end-point',
+    'again with the `continuationToken` as the query-string option:',
+    '`continuationToken`.',
+    '',
+    'By default this end-point will list up-to 1000 artifacts in a single page',
+    'you may limit this with the query-string parameter `limit`.',
+  ].join('\n'),
+}, async function(req, res) {
   let taskId        = req.params.taskId;
   let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000);
+  let limit         = parseInt(req.query.limit || 1000, 10);
   // TODO: Add support querying using prefix
 
   // Load task status structure from table
@@ -655,8 +629,8 @@ api.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      "No task with taskId: {{taskId}} found",
-      {taskId}
+      'No task with taskId: {{taskId}} found',
+      {taskId},
     );
   }
 
@@ -664,8 +638,8 @@ api.declare({
   if (task.runs.length === 0) {
     return res.reportError(
       'ResourceNotFound',
-      "Task with taskId: {{taskId}} does not have any runs",
-      {taskId}
+      'Task with taskId: {{taskId}} does not have any runs',
+      {taskId},
     );
   }
 

@@ -166,7 +166,6 @@ let Task = base.Entity.configure({
   },
 });
 
-
 /** Return promise for the task definition */
 Task.prototype.definition = function() {
   return Promise.resolve({
@@ -186,7 +185,7 @@ Task.prototype.definition = function() {
     payload:        _.cloneDeep(this.payload),
     metadata:       _.cloneDeep(this.metadata),
     tags:           _.cloneDeep(this.tags),
-    extra:          _.cloneDeep(this.extra)
+    extra:          _.cloneDeep(this.extra),
   });
 };
 
@@ -203,10 +202,8 @@ Task.prototype.status = function() {
     retriesLeft:      this.retriesLeft,
     state:            this.state(),
     runs:             this.runs.map((run, runId) => {
-      return _.defaults({
-        runId:        runId
-      }, run);
-    })
+      return _.defaults({runId}, run);
+    }),
   };
 };
 
@@ -230,13 +227,13 @@ Task.prototype.hasClaim = function() {
  * Returns a promise that all expired tasks have been deleted
  */
 Task.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
+  assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+    expires:          base.Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          (task) => { count++; return task.remove(true); }
+    handler:          (task) => { count++; return task.remove(true); },
   });
   return count;
 };
@@ -274,14 +271,14 @@ let Artifact = base.Entity.configure({
      *   message:       Human readable error message to return
      */
     details:        base.Entity.types.JSON,
-    expires:        base.Entity.types.Date
+    expires:        base.Entity.types.Date,
   },
   context: [
     'blobStore',      // BlobStore instance wrapping Azure Blob Storage
     'privateBucket',  // Private artifact bucket wrapping S3
     'publicBucket',   // Public artifact bucket wrapping S3
     'monitor',        // base.monitor instance
-  ]
+  ],
 });
 
 /** Return JSON representation of artifact meta-data */
@@ -290,7 +287,7 @@ Artifact.prototype.json = function() {
     storageType:      this.storageType,
     name:             this.name,
     expires:          this.expires.toJSON(),
-    contentType:      this.contentType
+    contentType:      this.contentType,
   };
 };
 
@@ -305,11 +302,10 @@ Artifact.prototype.json = function() {
 Artifact.prototype.remove = function(ignoreError) {
   // Promise that deleted underlying artifact, and keep reference to context
   var deleted = Promise.resolve();
-  var ctx     = this;
 
   // Handle S3 artifacts
   if (this.storageType === 's3') {
-    debug("Deleting expired s3 artifact from bucket: %s, prefix: %s",
+    debug('Deleting expired s3 artifact from bucket: %s, prefix: %s',
           this.details.bucket, this.details.prefix);
     // Delete the right bucket
     if (this.details.bucket === this.publicBucket.bucket) {
@@ -317,8 +313,8 @@ Artifact.prototype.remove = function(ignoreError) {
     } else if (this.details.bucket === this.privateBucket.bucket) {
       deleted = this.privateBucket.deleteObject(this.details.prefix);
     } else {
-      let err = new Error("Expiring artifact with bucket which isn't " +
-                          "configured for use. Please investigate!");
+      let err = new Error('Expiring artifact with bucket which isn\'t ' +
+                          'configured for use. Please investigate!');
       err.bucket  = this.details.bucket;
       err.taskId  = this.taskId;
       err.runId   = this.runId;
@@ -329,12 +325,12 @@ Artifact.prototype.remove = function(ignoreError) {
 
   // Handle azure artifact
   if (this.storageType === 'azure') {
-    debug("Deleting expired azure artifact from container: %s, path: %s",
+    debug('Deleting expired azure artifact from container: %s, path: %s',
           this.details.container, this.details.path);
     // Validate that this is the configured container
     if (this.details.container !== this.blobStore.container) {
-      let err = new Error("Expiring artifact with container which isn't " +
-                          "configured for use. Please investigate!");
+      let err = new Error('Expiring artifact with container which isn\'t ' +
+                          'configured for use. Please investigate!');
       err.container = this.details.container;
       err.taskId    = this.taskId;
       err.runId     = this.runId;
@@ -346,13 +342,13 @@ Artifact.prototype.remove = function(ignoreError) {
 
   // When underlying artifact is deleted (if any underlying artifact exists)
   // we delete the artifact Entity.
-  return deleted.then(function() {
+  return deleted.then(() => {
     // Delete entity, if underlying resource was successfully deleted
-    return base.Entity.prototype.remove.call(ctx, true, true);
-  }, function(err) {
-    debug("WARNING: Failed to delete expired artifact: %j, details: %j " +
-          "from taskId: %s, runId: %s with error: %s, as JSON: %j",
-          ctx.json(), ctx.details, ctx.taskId, ctx.runId, err, err);
+    return base.Entity.prototype.remove.call(this, true, true);
+  }, err => {
+    debug('WARNING: Failed to delete expired artifact: %j, details: %j ' +
+          'from taskId: %s, runId: %s with error: %s, as JSON: %j',
+          this.json(), this.details, this.taskId, this.runId, err, err);
     // Rethrow error, if we're not supposed to ignore it.
     if (!ignoreError) {
       throw err;
@@ -360,27 +356,25 @@ Artifact.prototype.remove = function(ignoreError) {
   });
 };
 
-
 /**
  * Expire artifacts that are past their expiration.
  *
  * Returns a promise that all expired artifacts have been deleted
  */
 Artifact.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
+  assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+    expires:          base.Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          (item) => { count++; return item.remove(true); }
+    handler:          (item) => { count++; return item.remove(true); },
   });
   return count;
 };
 
 // Export Artifact
 exports.Artifact = Artifact;
-
 
 /**
  * Entity for tracking task-group existence
@@ -399,7 +393,7 @@ let TaskGroup = base.Entity.configure({
     // won't be updated 100 times if we submit 100 tasks sequentially, with
     // slightly higher expiration.
     expires:        base.Entity.types.Date,
-  }
+  },
 });
 
 /**
@@ -408,13 +402,16 @@ let TaskGroup = base.Entity.configure({
  * Returns a promise that all expired task-groups have been deleted
  */
 TaskGroup.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
+  assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+    expires:          base.Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          (taskGroup) => { count++; return taskGroup.remove(true); }
+    handler:          (taskGroup) => {
+      count++;
+      return taskGroup.remove(true);
+    },
   });
   return count;
 };
@@ -436,7 +433,7 @@ let TaskGroupMember = base.Entity.configure({
     taskGroupId:    base.Entity.types.SlugId,
     taskId:         base.Entity.types.SlugId,
     expires:        base.Entity.types.Date,
-  }
+  },
 });
 
 /**
@@ -445,13 +442,13 @@ let TaskGroupMember = base.Entity.configure({
  * Returns a promise that all expired task-group memberships have been deleted
  */
 TaskGroupMember.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
+  assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+    expires:          base.Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          (member) => { count++; return member.remove(true); }
+    handler:          (member) => { count++; return member.remove(true); },
   });
   return count;
 };
@@ -489,13 +486,13 @@ let TaskRequirement = base.Entity.configure({
  * Returns a promise that all expired TaskRequirement entries have been deleted
  */
 TaskRequirement.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
+  assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+    expires:          base.Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); }
+    handler:          entry => { count++; return entry.remove(true); },
   });
   return count;
 };
@@ -534,16 +531,16 @@ let TaskDependency = base.Entity.configure({
  * Returns a promise that all expired TaskDependency entries have been deleted
  */
 TaskDependency.expire = async function(now) {
-  assert(now instanceof Date, "now must be given as option");
+  assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now)
+    expires:          base.Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); }
+    handler:          entry => { count++; return entry.remove(true); },
   });
   return count;
 };
 
 // Export TaskDependency
-exports.TaskDependency = TaskDependency
+exports.TaskDependency = TaskDependency;

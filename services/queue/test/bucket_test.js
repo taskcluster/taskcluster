@@ -31,34 +31,34 @@ suite('queue/bucket_test', function() {
       });
     });
   } else {
-    console.log("WARNING: Skipping 'Bucket' tests, missing user-config.yml");
+    console.log('WARNING: Skipping "Bucket" tests, missing user-config.yml');
     this.pending = true;
   }
 
   // Test that put to signed url works
-  test("createPutUrl", function() {
+  test('createPutUrl', function() {
     var key     = slugid.v4();
     return bucket.createPutUrl(key, {
       contentType:      'application/json',
-      expires:          60 * 10
+      expires:          60 * 10,
     }).then(function(url) {
       return request
         .put(url)
-        .send({message: "Hello"})
+        .send({message: 'Hello'})
         .end();
     });
   });
 
   // Test we can delete an object
-  test("deleteObject", function() {
+  test('deleteObject', function() {
     var key     = slugid.v4();
     return bucket.createPutUrl(key, {
       contentType:      'application/json',
-      expires:          60 * 10
+      expires:          60 * 10,
     }).then(function(url) {
       return request
         .put(url)
-        .send({message: "Hello"})
+        .send({message: 'Hello'})
         .end();
     }).then(function() {
       return bucket.deleteObject(key);
@@ -66,38 +66,38 @@ suite('queue/bucket_test', function() {
   });
 
   // Test we can delete an object a non-existing object
-  test("deleteObject (non-existing object)", function() {
+  test('deleteObject (non-existing object)', function() {
     var key     = slugid.v4();
     return bucket.deleteObject(key);
   });
 
-  test("createGetUrl", async function() {
+  test('createGetUrl', async function() {
     var key     = slugid.v4();
     var url     = await bucket.createPutUrl(key, {
       contentType:      'application/json',
-      expires:          60 * 10
-    })
+      expires:          60 * 10,
+    });
 
-    var res = await request.put(url).send({message: "Hello"}).end();
-    assert(res.ok, "put request failed");
+    var res = await request.put(url).send({message: 'Hello'}).end();
+    assert(res.ok, 'put request failed');
 
     url = bucket.createGetUrl(key);
-    debug("createGetUrl -> %s", url);
+    debug('createGetUrl -> %s', url);
 
     var res = await request.get(url).end();
-    assert(res.ok, "get request failed");
-    assert(res.body.message === 'Hello', "wrong message");
+    assert(res.ok, 'get request failed');
+    assert(res.body.message === 'Hello', 'wrong message');
   });
 
-  test("uses bucketCDN", () => {
+  test('uses bucketCDN', () => {
     // Create bucket instance
     var bucket = new Bucket({
       bucket:       cfg.app.publicArtifactBucket,
       credentials:  cfg.aws,
-      bucketCDN:    "https://example.com",
+      bucketCDN:    'https://example.com',
       monitor,
     });
-    var url = bucket.createGetUrl("test");
-    assert(url === "https://example.com/test");
+    var url = bucket.createGetUrl('test');
+    assert(url === 'https://example.com/test');
   });
 });

@@ -49,8 +49,8 @@
     "mocha-eslint": "^2.0.1",
     "babel-eslint": "^6.0.0",
     "taskcluster-lib-testing": "^1.0.0",
-    "eslint-config-taskcluster": "^1.0.0",
-    "eslint-plugin-taskcluster": "^1.0.0"
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2"
   },
   "engines": {
     "node": "^5.8.0",
