@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^2.3.0",
+    "babel-preset-taskcluster": "^3.0.0",
     "babel-eslint": "^6.0.2",
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.0",
