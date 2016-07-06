@@ -1,4 +1,4 @@
-Generated: 1467736172
+Generated: 1467833332
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2577,7 +2577,7 @@ Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'AWS Provisioner Pulse Exchanges'
 Description     = 'Exchanges from the provisioner... more docs later'
-Exchange Prefix = 'exchange/taskcluster-aws-provisioner/'
+Exchange Prefix = 'exchange/taskcluster-aws-provisioner/v1/'
 Entry 0     = 
     Entry Type        = 'topic-exchange'
     Entry Exchange    = 'worker-type-created'

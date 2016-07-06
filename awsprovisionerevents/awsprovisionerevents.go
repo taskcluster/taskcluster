@@ -55,7 +55,7 @@ func (binding WorkerTypeCreated) RoutingKey() string {
 }
 
 func (binding WorkerTypeCreated) ExchangeName() string {
-	return "exchange/taskcluster-aws-provisioner/worker-type-created"
+	return "exchange/taskcluster-aws-provisioner/v1/worker-type-created"
 }
 
 func (binding WorkerTypeCreated) NewPayloadObject() interface{} {
@@ -77,7 +77,7 @@ func (binding WorkerTypeUpdated) RoutingKey() string {
 }
 
 func (binding WorkerTypeUpdated) ExchangeName() string {
-	return "exchange/taskcluster-aws-provisioner/worker-type-updated"
+	return "exchange/taskcluster-aws-provisioner/v1/worker-type-updated"
 }
 
 func (binding WorkerTypeUpdated) NewPayloadObject() interface{} {
@@ -99,7 +99,7 @@ func (binding WorkerTypeRemoved) RoutingKey() string {
 }
 
 func (binding WorkerTypeRemoved) ExchangeName() string {
-	return "exchange/taskcluster-aws-provisioner/worker-type-removed"
+	return "exchange/taskcluster-aws-provisioner/v1/worker-type-removed"
 }
 
 func (binding WorkerTypeRemoved) NewPayloadObject() interface{} {
