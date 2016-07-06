@@ -34,6 +34,11 @@ let message = `
               "label": "Inspect Task",
               "linkText": "Inspect Task",
               "url": "https://tools.taskcluster.net/task-inspector/#5UMTRzgESFG3Bn8kCBwxxQ/0"
+            },
+            {
+              "label": "One Click Loaner",
+              "linkText": "One Click Loaner",
+              "url": "https://tools.taskcluster.net/one-click-loaner/#5UMTRzgESFG3Bn8kCBwxxQ"
             }
         ]
     },

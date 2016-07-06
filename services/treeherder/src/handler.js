@@ -217,6 +217,11 @@ export class Handler {
             label: 'Inspect Task',
             linkText: 'Inspect Task',
             url: `https:\/\/tools.taskcluster.net/task-inspector/#${taskId}/${runId}`
+          },
+          {
+            label: 'One Click Loaner',
+            linkText: 'One Click Loaner',
+            url: `https:\/\/tools.taskcluster.net/one-click-loaner/#${taskId}`
           }
         ]
       }
