@@ -18,8 +18,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/stateless-dns-go/hostname"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 type (

@@ -4,7 +4,7 @@
 
 package main
 
-import "github.com/taskcluster/taskcluster-client-go/tcclient"
+import tcclient "github.com/taskcluster/taskcluster-client-go"
 
 type (
 	// This schema defines the structure of the `payload` property referred to

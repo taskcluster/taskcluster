@@ -18,7 +18,7 @@ import (
 	"github.com/contester/runlib/subprocess"
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/os/exec"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"golang.org/x/sys/windows/registry"
 )
 
