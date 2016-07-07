@@ -15,7 +15,7 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 var (
