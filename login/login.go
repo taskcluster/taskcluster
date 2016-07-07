@@ -51,7 +51,7 @@
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 
-import "github.com/taskcluster/taskcluster-client-go/tcclient"
+import tcclient "github.com/taskcluster/taskcluster-client-go"
 
 type Login tcclient.ConnectionData
 

@@ -5,7 +5,7 @@ package treeherderevents
 import (
 	"encoding/json"
 
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type (

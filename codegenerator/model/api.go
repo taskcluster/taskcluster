@@ -114,7 +114,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type ` + api.apiDef.Name + ` tcclient.ConnectionData

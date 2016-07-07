@@ -9,9 +9,9 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/jsontest"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/index"
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 // This is a silly test that looks for the latest mozilla-central buildbot linux64 l10n build

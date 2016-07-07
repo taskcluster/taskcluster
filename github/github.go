@@ -39,7 +39,7 @@
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
-import "github.com/taskcluster/taskcluster-client-go/tcclient"
+import tcclient "github.com/taskcluster/taskcluster-client-go"
 
 type Github tcclient.ConnectionData
 
