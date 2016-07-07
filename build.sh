@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -euvx
 
 # options:
 #   -n  skip code generation
@@ -75,7 +75,7 @@ go tool cover -func=coverage.report
 grep -q PANIC codegenerator/model-data.txt && exit 68
 
 go get github.com/golang/lint/golint
-"${GOPATH}/bin/golint" codegenerator/...; "${GOPATH}/bin/golint" integrationtest/...; "${GOPATH}/bin/golint" tcclient/...
+"${GOPATH}/bin/golint" codegenerator/...; "${GOPATH}/bin/golint" integrationtest/...; "${GOPATH}/bin/golint" .
 
 # finally check that generated files have been committed, and that formatting
 # code resulted in no changes...
