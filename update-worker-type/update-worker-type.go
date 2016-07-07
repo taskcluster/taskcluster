@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/secrets"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 func main() {

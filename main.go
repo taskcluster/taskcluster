@@ -22,8 +22,8 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/httpbackoff"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 	"github.com/xeipuuv/gojsonschema"
 )
 
