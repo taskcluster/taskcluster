@@ -46,7 +46,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type Queue tcclient.ConnectionData

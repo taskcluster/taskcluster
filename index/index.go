@@ -126,7 +126,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type Index tcclient.ConnectionData

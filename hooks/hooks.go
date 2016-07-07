@@ -50,7 +50,7 @@ package hooks
 import (
 	"net/url"
 
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type Hooks tcclient.ConnectionData
