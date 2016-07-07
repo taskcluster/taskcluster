@@ -300,20 +300,20 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "tcclient.Time"
-				extraPackages["github.com/taskcluster/taskcluster-client-go/tcclient"] = true
+				extraPackages["tcclient \"github.com/taskcluster/taskcluster-client-go\""] = true
 			}
 		}
 	}
 	switch typ {
 	case "json.RawMessage":
-		extraPackages["encoding/json"] = true
+		extraPackages["\"encoding/json\""] = true
 		if topLevel {
 			// Special case: we have here a top level RawMessage such as
 			// queue.PostArtifactRequest - therefore need to implement
 			// Marhsal and Unmarshal methods. See:
 			// http://play.golang.org/p/FKHSUmWVFD vs
 			// http://play.golang.org/p/erjM6ptIYI
-			extraPackages["errors"] = true
+			extraPackages["\"errors\""] = true
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	}
@@ -684,7 +684,7 @@ package ` + job.Package + `
 		extraPackagesContent := ""
 		for j, k := range extraPackages {
 			if k {
-				extraPackagesContent += text.Indent("\""+j+"\"\n", "\t")
+				extraPackagesContent += text.Indent(""+j+"\n", "\t")
 			}
 		}
 
