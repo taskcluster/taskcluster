@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 

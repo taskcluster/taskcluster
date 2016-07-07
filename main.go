@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
 var version = "Taskcluster proxy 3.0.8"
