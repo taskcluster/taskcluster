@@ -269,11 +269,11 @@ func canonicalPath(path string) string {
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
-func (task *TaskRun) uploadLiveLog(index int) error {
+func (task *TaskRun) uploadLiveLog() error {
 	maxRunTimeDeadline := time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].Started).Add(time.Duration(task.Payload.MaxRunTime) * time.Second)
 	// deduce stateless DNS name to use
 	statelessHostname := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
-	getURL, err := url.Parse(task.Commands[index].liveLog.GetURL)
+	getURL, err := url.Parse(task.liveLog.GetURL)
 	if err != nil {
 		return err
 	}
@@ -282,7 +282,7 @@ func (task *TaskRun) uploadLiveLog(index int) error {
 	return task.uploadArtifact(
 		RedirectArtifact{
 			BaseArtifact: BaseArtifact{
-				CanonicalPath: task.Commands[index].logFile + ".live",
+				CanonicalPath: "public/logs/live.log",
 				// livelog expires when task must have completed
 				Expires: tcclient.Time(maxRunTimeDeadline),
 			},
