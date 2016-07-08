@@ -29,6 +29,12 @@ properties:
     maximum: 3
   jobKind:
     type: "string"
+    description: |
+      jobKind specifies the type of task that should be reported to Treeherder.
+      The jobKind could cause Treeherder to display/treat the task differently.
+      For instance, tasks with a jobKind of 'build' will be reported as red when
+      the task fails, 'test' as orange, and any jobs not specifying jobKind or
+      'other' will be red.
     default: "other"
     enum:
       - build
