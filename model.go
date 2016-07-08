@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"net"
 	"time"
 
@@ -73,6 +74,11 @@ type (
 		Commands            []Command                    `json:"-"`
 		// not exported
 		reclaimTimer *time.Timer
+		logWriter    io.Writer
+		// The canonical name of the log file as reported to the Queue, which
+		// is typically the relative location of the log file to the user home
+		// directory
+		liveLog *livelog.LiveLog
 	}
 
 	// Regardless of platform, we will have to call out to system commands to run tasks,
@@ -82,8 +88,6 @@ type (
 		// The canonical name of the log file as reported to the Queue, which
 		// is typically the relative location of the log file to the user home
 		// directory
-		logFile string
-		liveLog *livelog.LiveLog
 	}
 
 	// Custom time format to enable unmarshalling of azure xml directly into go

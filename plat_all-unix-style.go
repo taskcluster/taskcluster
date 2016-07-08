@@ -3,8 +3,6 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -52,20 +50,14 @@ func startup() error {
 	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
 }
 
-func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
+func (task *TaskRun) generateCommand(index int) error {
 	cmd := exec.Command(task.Payload.Command[index][0], task.Payload.Command[index][1:]...)
-	commandName := fmt.Sprintf("command_%06d", index)
-	log, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log"))
-	if err != nil {
-		return err
-	}
-	multiWriter := io.MultiWriter(writer, log)
-	cmd.Stdout = multiWriter
-	cmd.Stderr = multiWriter
+	cmd.Stdout = task.logWriter
+	cmd.Stderr = task.logWriter
 	// cmd.Stdout = log
 	// cmd.Stderr = log
 	task.prepEnvVars(cmd)
-	task.Commands[index] = Command{osCommand: cmd, logFile: "public/logs/" + commandName + ".log"}
+	task.Commands[index] = Command{osCommand: cmd}
 	return nil
 }
 

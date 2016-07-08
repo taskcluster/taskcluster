@@ -795,67 +795,21 @@ func (err CommandExecutionError) Error() string {
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
-	defer func(liveLog *livelog.LiveLog) {
-		errClose := liveLog.LogWriter.Close()
-		if errClose != nil {
-			// no need to raise an exception
-			log.Printf("WARN: could not close livelog writer: %s", errClose)
-		}
-		errTerminate := liveLog.Terminate()
-		if errTerminate != nil {
-			// no need to raise an exception
-			log.Printf("WARN: could not close livelog writer: %s", errTerminate)
-		}
-	}(liveLog)
+	err := task.generateCommand(index) // platform specific
 	if err != nil {
 		return WorkerShutdown(err)
 	}
-	err = task.generateCommand(index, liveLog.LogWriter) // platform specific
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-
-	task.Commands[index].liveLog = liveLog
 
 	err = task.Commands[index].osCommand.Start()
 	if err != nil {
 		return WorkerShutdown(err)
 	}
 
-	log.Println("Posting livelog redirect artifact")
-	err = task.uploadLiveLog(index)
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-
 	log.Println("Waiting for command to finish...")
 	errCommand := task.Commands[index].osCommand.Wait()
-	err = task.uploadLog(task.Commands[index].logFile)
 	if errCommand != nil {
 		return exceptionOrFailure(errCommand)
 	}
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-
-	commandLogURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskId, task.RunId, url.QueryEscape(task.Commands[index].logFile))
-
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-
-	err = task.uploadArtifact(
-		RedirectArtifact{
-			BaseArtifact: BaseArtifact{
-				CanonicalPath: task.Commands[index].logFile + ".live",
-				// same expiry as underlying log it points to
-				Expires: task.Definition.Expires,
-			},
-			MimeType: "text/plain; charset=utf-8",
-			URL:      commandLogURL,
-		},
-	)
 	if err != nil {
 		return WorkerShutdown(err)
 	}
@@ -898,16 +852,42 @@ func (task *TaskRun) run() error {
 	var finalReason string
 	var finalError error = nil
 
-	err := task.preTaskActions()
-
+	absLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
+	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
-		log.Printf("%#v", err)
-		if finalError == nil {
-			log.Println("TASK EXCEPTION when running pre-task actions")
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // internal error (could not post public/logs/worker_type_metadata.json artifact)
-			finalError = err
+		return WorkerShutdown(err)
+	}
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
+	defer func(liveLog *livelog.LiveLog) {
+		errClose := liveLog.LogWriter.Close()
+		if errClose != nil {
+			// no need to raise an exception
+			log.Printf("WARN: could not close livelog writer: %s", errClose)
 		}
+		errTerminate := liveLog.Terminate()
+		if errTerminate != nil {
+			// no need to raise an exception
+			log.Printf("WARN: could not close livelog writer: %s", errTerminate)
+		}
+	}(liveLog)
+	if err != nil {
+		log.Printf("WARN: could not create livelog: %s", err)
+		task.logWriter = logFileHandle
+	} else {
+		task.liveLog = liveLog
+		task.logWriter = io.MultiWriter(liveLog.LogWriter, logFileHandle)
+		err = task.uploadLiveLog()
+		if err != nil {
+			log.Printf("WARN: could not upload livelog: %s", err)
+		}
+	}
+	err = writeToFileAsJSON(config.WorkerTypeMetadata, filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"))
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+	err = task.uploadLog("public/logs/worker_type_metadata.json")
+	if err != nil {
+		return WorkerShutdown(err)
 	}
 
 	for i, _ := range task.Payload.Command {
@@ -988,44 +968,33 @@ func writeToFileAsJSON(obj interface{}, filename string) error {
 	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
 }
 
-func (task *TaskRun) preTaskActions() error {
-	err := writeToFileAsJSON(config.WorkerTypeMetadata, filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"))
-	if err != nil {
-		return err
-	}
-	return task.uploadLog("public/logs/worker_type_metadata.json")
-}
-
 func (task *TaskRun) postTaskActions() error {
-	completeLogFile, err := os.Create(filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log"))
+	log.Println("Uploading full log file")
+	err := task.uploadLog("public/logs/live_backing.log")
 	if err != nil {
-		return err
+		return WorkerShutdown(err)
 	}
-	defer completeLogFile.Close()
-	for _, command := range task.Commands {
-		// unrun commands won't have logFile set...
-		if command.logFile != "" {
-			log.Printf("Looking for %v", command.logFile)
-			commandLog, err := os.Open(filepath.Join(TaskUser.HomeDir, command.logFile))
-			if err != nil {
-				log.Println("Not found")
-				continue // file does not exist - maybe command did not run
-			}
-			log.Println("Found")
-			_, err = io.Copy(completeLogFile, commandLog)
-			if err != nil {
-				log.Println("Copy failed")
-				return err
-			}
-			log.Println("Copy succeeded")
-			err = commandLog.Close()
-			if err != nil {
-				return err
-			}
-		}
+
+	log.Println("Redirecting live.log to live_backing.log")
+	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskId, task.RunId, "public/logs/live_backing.log")
+	if err != nil {
+		return WorkerShutdown(err)
 	}
-	// will only upload if log concatenation succeeded
-	return task.uploadLog("public/logs/live_backing.log")
+	err = task.uploadArtifact(
+		RedirectArtifact{
+			BaseArtifact: BaseArtifact{
+				CanonicalPath: "public/logs/live.log",
+				// same expiry as underlying log it points to
+				Expires: task.Definition.Expires,
+			},
+			MimeType: "text/plain; charset=utf-8",
+			URL:      logURL,
+		},
+	)
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+	return nil
 }
 
 // writes config to json file

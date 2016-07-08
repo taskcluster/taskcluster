@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -224,7 +223,7 @@ func deleteOSUserAccount(line string) {
 	}
 }
 
-func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
+func (task *TaskRun) generateCommand(index int) error {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
 	env := filepath.Join(TaskUser.HomeDir, "env.txt")
@@ -232,8 +231,6 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
 	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
-	logFile := "public/logs/" + commandName + ".log"
-	absLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", commandName+".log")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
@@ -345,15 +342,10 @@ func (task *TaskRun) generateCommand(index int, writer io.Writer) error {
 	cmd.Password = TaskUser.Password
 	cmd.Dir = TaskUser.HomeDir
 	log.Println("Running command: '" + strings.Join(command, "' '") + "'")
-	log, err := os.Create(absLogFile)
-	if err != nil {
-		return err
-	}
-	multiWriter := io.MultiWriter(writer, log)
-	cmd.Stdout = multiWriter
-	cmd.Stderr = multiWriter
+	cmd.Stdout = task.logWriter
+	cmd.Stderr = task.logWriter
 	// cmd.Stdin = strings.NewReader("blah blah")
-	task.Commands[index] = Command{logFile: logFile, osCommand: cmd}
+	task.Commands[index] = Command{osCommand: cmd}
 	return nil
 }
 
