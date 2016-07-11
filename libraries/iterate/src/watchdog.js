@@ -31,7 +31,7 @@ class WatchDog extends events.EventEmitter {
    * Start the timers
    */
   start() {
-    this.__watchDog = setTimeout(this.action, this.maxTime * 1000);
+    this.__watchDog = setTimeout(this.action, this.maxTime);
     this.emit('started');
     debug('started, emitted started event');
   }
@@ -55,7 +55,7 @@ class WatchDog extends events.EventEmitter {
    */
   touch() {
     let oldWD = this.__watchDog;
-    this.__watchDog = setTimeout(this.action, this.maxTime * 1000);
+    this.__watchDog = setTimeout(this.action, this.maxTime);
     clearTimeout(oldWD);
     this.emit('touched');
     debug('touched, reset timer');
