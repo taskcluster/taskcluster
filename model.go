@@ -85,9 +85,6 @@ type (
 	// and each command execution should write to a file.
 	Command struct {
 		osCommand ExecCommand
-		// The canonical name of the log file as reported to the Queue, which
-		// is typically the relative location of the log file to the user home
-		// directory
 	}
 
 	// Custom time format to enable unmarshalling of azure xml directly into go

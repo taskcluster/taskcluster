@@ -13,10 +13,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
@@ -789,6 +792,12 @@ func WorkerShutdown(err error) *CommandExecutionError {
 	}
 }
 
+func (task *TaskRun) Log(message string) {
+	for _, line := range strings.Split(message, "\n") {
+		task.logWriter.Write([]byte("[taskcluster " + tcclient.Time(time.Now()).String() + "] " + line + "\n"))
+	}
+}
+
 func (err CommandExecutionError) Error() string {
 	return fmt.Sprintf("TASK NOT SUCCESSFUL: status %v with reason: %q due to %s", err.TaskStatus, err.Reason, err.Cause)
 }
@@ -800,6 +809,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		return WorkerShutdown(err)
 	}
 
+	task.Log("Executing command " + strconv.Itoa(index) + ": " + task.describeCommand(index))
 	err = task.Commands[index].osCommand.Start()
 	if err != nil {
 		return WorkerShutdown(err)
@@ -807,6 +817,22 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	log.Println("Waiting for command to finish...")
 	errCommand := task.Commands[index].osCommand.Wait()
+	exitStatus := 0
+	if errCommand != nil {
+		if exiterr, ok := errCommand.(*exec.ExitError); ok {
+			// The program has exited with an exit code != 0
+
+			// This works on both Unix and Windows. Although package
+			// syscall is generally platform dependent, WaitStatus is
+			// defined for both Unix and Windows and in both cases has
+			// an ExitStatus() method with the same signature.
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				exitStatus = status.ExitStatus()
+			}
+		}
+	}
+	task.Log("Exit Code: " + strconv.Itoa(exitStatus))
+
 	if errCommand != nil {
 		return exceptionOrFailure(errCommand)
 	}
@@ -881,15 +907,15 @@ func (task *TaskRun) run() error {
 			log.Printf("WARN: could not upload livelog: %s", err)
 		}
 	}
-	err = writeToFileAsJSON(config.WorkerTypeMetadata, filepath.Join(TaskUser.HomeDir, "public", "logs", "worker_type_metadata.json"))
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-	err = task.uploadLog("public/logs/worker_type_metadata.json")
-	if err != nil {
-		return WorkerShutdown(err)
-	}
 
+	jsonBytes, err := json.MarshalIndent(config.WorkerTypeMetadata, "  ", "  ")
+	if err != nil {
+		return WorkerShutdown(err)
+	}
+	task.Log("Worker Type settings:")
+	task.Log(string(jsonBytes))
+	task.Log("=== Task Starting ===")
+	started := time.Now()
 	for i, _ := range task.Payload.Command {
 		err := task.ExecuteCommand(i)
 		if err != nil {
@@ -900,6 +926,9 @@ func (task *TaskRun) run() error {
 			break
 		}
 	}
+	finished := time.Now()
+	task.Log("=== Task Finished ===")
+	task.Log("Task Duration: " + finished.Sub(started).String())
 
 	err = task.postTaskActions()
 

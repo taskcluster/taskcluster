@@ -590,3 +590,7 @@ type (
 		MaxRunTime int `json:"maxRunTime"`
 	}
 )
+
+func (task *TaskRun) describeCommand(index int) string {
+	return task.Payload.Command[index]
+}

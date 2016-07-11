@@ -42,8 +42,8 @@ install netbsd amd64
 install netbsd arm
 install openbsd 386
 install openbsd amd64
-install plan9 386
-install plan9 amd64
+# install plan9 386
+# install plan9 amd64
 install solaris amd64
 
 find "${GOPATH}/bin" -name 'generic-worker*'

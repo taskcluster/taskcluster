@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -84,4 +85,8 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	}
 	cmd.Env = taskEnv
 	log.Printf("Environment: %v", taskEnv)
+}
+
+func (task *TaskRun) describeCommand(index int) string {
+	return fmt.Sprintf("%q", task.Payload.Command[index])
 }

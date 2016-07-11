@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -307,11 +308,11 @@ func TestUpload(t *testing.T) {
 			case *queueevents.ArtifactCreatedMessage:
 				a := message.(*queueevents.ArtifactCreatedMessage)
 				artifactCreatedMessages[a.Artifact.Name] = a
-				// Finish after 5 artifacts have been created. Note: the second
+				// Finish after 3 artifacts have been created. Note: the second
 				// publish of the livelog artifact (for redirecting to the
 				// underlying file rather than the livelog stream) doesn't
-				// cause a new pulse message, hence this is 4 not 5.
-				if len(artifactCreatedMessages) == 4 {
+				// cause a new pulse message, hence this is 3 not 4.
+				if len(artifactCreatedMessages) == 3 {
 					// killWorkerChan <- true
 					// pulseConn.AMQPConn.Close()
 					artifactsCreatedChan <- true
@@ -406,10 +407,11 @@ func TestUpload(t *testing.T) {
 		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", err)
 	}
 
-	expectedArtifacts := map[string]string{
-		"public/logs/live_backing.log": "hello world!\ngoodbye world!\n",
-		"public/logs/live.log":         "hello world!\ngoodbye world!\n",
-		"SampleArtifacts/_/X.txt":      "test artifact\n",
+	// some required substrings - not all, just a selection
+	expectedArtifacts := map[string][]string{
+		"public/logs/live_backing.log": {"hello world!", "goodbye world!", `"instance-type": "test-instance-type"`},
+		"public/logs/live.log":         {"hello world!", "goodbye world!", "=== Task Finished ===", "Exit Code: 0"},
+		"SampleArtifacts/_/X.txt":      {"test artifact"},
 	}
 
 	// wait for task to complete, so we know artifact upload also completed
@@ -438,15 +440,6 @@ func TestUpload(t *testing.T) {
 		}
 	}
 
-	// Check worker type metadata is there
-	if a := artifactCreatedMessages["public/logs/worker_type_metadata.json"]; a != nil {
-		if a.Artifact.ContentType != "text/plain; charset=utf-8" {
-			t.Errorf("Artifact 'public/logs/worker_type_metadata.json' should have mime type 'text/plain; charset=utf-8' but has '%s'", a.Artifact.ContentType)
-		}
-	} else {
-		t.Error("Artifact 'public/logs/worker_type_metadata.json' not created")
-	}
-
 	// now check content was uploaded to Amazon, and is correct
 	for artifact, content := range expectedArtifacts {
 		url, err := myQueue.GetLatestArtifact_SignedURL(taskId, artifact, 10*time.Minute)
@@ -461,8 +454,10 @@ func TestUpload(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
 		}
-		if string(bytes) != content {
-			t.Errorf("Artifact '%s': Was expecting content '%s' but found '%s'", artifact, content, string(bytes))
+		for _, requiredSubstring := range content {
+			if strings.Index(string(bytes), requiredSubstring) < 0 {
+				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(bytes))
+			}
 		}
 	}
 }
