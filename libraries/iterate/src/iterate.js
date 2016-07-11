@@ -13,13 +13,13 @@ class Iterate {
     this.maxFailures = opts.maxFailures || 7;
 
     assert(typeof opts.maxIterationTime === 'number', 'maxIterationTime must be number');
-    this.maxIterationTime = opts.maxIterationTime;
+    this.maxIterationTime = opts.maxIterationTime * 1000;
 
     assert(typeof (opts.minIterationTime || 0) === 'number', 'minIterationTime must be number');
-    this.minIterationTime = opts.minIterationTime || 0;
+    this.minIterationTime = opts.minIterationTime * 1000 || 0;
 
     assert(typeof opts.watchDog === 'number', 'watchDog must be number');
-    this.watchDogTime = opts.watchDog;
+    this.watchDogTime = opts.watchDog * 1000;
 
     assert(typeof opts.waitTime === 'number', 'waitTime must be number');
     this.waitTime = opts.waitTime * 1000;
