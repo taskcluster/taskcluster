@@ -13,8 +13,8 @@ to report task status to Treeherder.
 For a task to be reported to treeherder, it must have the custom route in the form of:
 `<treeherder destination>.<project>.<revision>.<push/pullrequest ID>`
 
-For job messages to appear on Treeherder production, the destination of `treeherder` should
-be used.  Also, `treeherder-staging` could be used for reporting jobs to the Treeherder
+For job messages to appear on Treeherder production, the destination of `tc-treeherder` should
+be used.  Also, `tc-treeherder-staging` could be used for reporting jobs to the Treeherder
 staging environment.
 
 Note: Github repos should use the `project` form of `<user>/<project>` to be recognized
@@ -22,7 +22,7 @@ as a github source.
 
 ## Treeherder job configuration
 
-All jobs that are reproted to Treeherder must have some basic information about the job
+All jobs that are reported to Treeherder must have some basic information about the job
 itself, such as job symbol, job name, platform, etc.
 
 This configuration needs to be declared in the task definition under `task.extra.treeherder`
