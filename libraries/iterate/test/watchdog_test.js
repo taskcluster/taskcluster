@@ -15,7 +15,7 @@ describe('watchdog', function() {
   });
 
   it('should emit when starting', function(done) {
-    var w = new subject(10);
+    var w = new subject(10 * 1000);
     w.on('started', function() {
       done();
     });
@@ -24,7 +24,7 @@ describe('watchdog', function() {
   });
 
   it('should emit when touched', function(done) {
-    var w = new subject(10);
+    var w = new subject(10 * 1000);
     w.on('touched', function() {
       done();
     });
@@ -34,7 +34,7 @@ describe('watchdog', function() {
   });
 
   it('should emit when stopped', function(done) {
-    var w = new subject(10);
+    var w = new subject(10 * 1000);
     w.on('stopped', function() {
       done();
     });
@@ -43,7 +43,7 @@ describe('watchdog', function() {
   });
 
   it('should emit expired event', function(done) {
-    var w = new subject(1);
+    var w = new subject(1 * 1000);
     w.on('expired', () => {
       done();
     });
@@ -52,14 +52,14 @@ describe('watchdog', function() {
   });
 
   it('should not throw early', function() {
-    var w = new subject(1);
+    var w = new subject(1 * 1000);
     w.start();
     this.clock.tick(999);
     w.stop();
   });
 
   it('should throw on time', function() {
-    var w = new subject(1);
+    var w = new subject(1 * 1000);
     w.start();
     assume(() => {
       this.clock.tick(1000);
@@ -68,7 +68,7 @@ describe('watchdog', function() {
   });
 
   it('touching should reset timer', function() {
-    var w = new subject(1);
+    var w = new subject(1 * 1000);
     w.start();
     // We do this three times to ensure that the
     // time period stays constant and doesn't grow
