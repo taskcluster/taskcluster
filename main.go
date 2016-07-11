@@ -913,7 +913,7 @@ func (task *TaskRun) run() error {
 		return WorkerShutdown(err)
 	}
 	task.Log("Worker Type settings:")
-	task.Log(string(jsonBytes))
+	task.Log("  " + string(jsonBytes))
 	task.Log("=== Task Starting ===")
 	started := time.Now()
 	for i, _ := range task.Payload.Command {
