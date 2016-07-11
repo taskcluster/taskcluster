@@ -6,6 +6,10 @@ i = new Iterate({
   maxIterationTime: 10,
   watchDog: 5,
   waitTime: 1,
+  dmsConfig: {
+    apiKey: 'lala',
+    snitchUrl: 'http://www.google.com',
+  },
   handler: (watchDog, state) => {
     return new Promise((res, rej) => {
       console.log('hi');
