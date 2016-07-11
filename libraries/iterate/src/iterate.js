@@ -2,6 +2,7 @@ let _ = require('lodash');
 let assert = require('assert');
 let WatchDog = require('./watchdog');
 let debug = require('debug')('iterate');
+let request = require('request-promise');
 
 class Iterate {
   constructor(opts) {
@@ -32,6 +33,11 @@ class Iterate {
 
     assert(typeof (opts.dmsConfig || {}) === 'object', 'dmsConfig must be object');
     this.dmsConfig = opts.dmsConfig || null;
+    if (this.dmsConfig) {
+      assert(typeof this.dmsConfig === 'object');
+      assert(typeof this.dmsConfig.snitchUrl === 'string');
+      assert(typeof this.dmsConfig.apiKey === 'string');
+    }
 
     // We add the times together since we're always going to have the watch dog
     // running even when we're waiting for the next iteration
@@ -85,6 +91,23 @@ class Iterate {
     if (this.maxIterations > 0 && this.maxIterations <= this.currentIteration + 1) {
       debug(`reached max iterations of ${this.maxIterations}`);
       this.stop();
+    }
+
+    // Hit the dead man's snitch
+    if (this.dmsConfig) {
+      try {
+        debug('hitting deadman\'s snitch');
+        let result = await request.get(this.dmsConfig.snitchUrl, {
+          auth: {
+            username: this.dmsConfig.apiKey,
+            password: '',
+            sendImmediately: true,
+          }
+        });
+        debug('hit deadman\'s snitch');
+      } catch (err) {
+        debug(`error hitting deadman's snitch ${err.stack || err}`);
+      }
     }
 
     if (this.keepGoing) {
