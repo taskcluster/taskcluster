@@ -63,9 +63,22 @@ class Iterate {
     // previous iterations without being too janky
     try {
       debug('running handler');
+      let start = new Date();
+
+      // Note that we're using a watch dog for the maxIterationTime guarding
       await this.handler(this.incrementalWatchDog, this.sharedState);
-      debug('ran handler');
-      // Premature optimization?
+      let diff = (new Date() - start) / 1000;
+      debug(`ran handler in ${diff} seconds`);
+
+      // Let's check that if we have a minimum threshold for handler activity
+      // time, that we exceed it
+      if (this.minIterationTime > 0 && diff < this.minIterationTime) {
+        throw new Error('Minimum threshold for handler execution not met');
+      }
+
+      // We could probably safely just create a new Array every time since if
+      // we get to this point we want to reset the Array unconditionally, but I
+      // don't have timing on the costs... premature optimization!
       if (this.failures.length > 0) {
         this.failures = [];
       }
