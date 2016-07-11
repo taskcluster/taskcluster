@@ -22,7 +22,7 @@ class Iterate {
     this.watchDogTime = opts.watchDog;
 
     assert(typeof opts.waitTime === 'number', 'waitTime must be number');
-    this.waitTime = opts.waitTime;
+    this.waitTime = opts.waitTime * 1000;
 
     assert(typeof (opts.waitTimeAfterFail || 0) === 'number', 'waitTimeAfterFail must be number');
     this.waitTimeAfterFail = opts.waitTimeAfterFail || opts.waitTime;
@@ -125,10 +125,17 @@ class Iterate {
 
     if (this.keepGoing) {
       debug('scheduling next iteration');
+      this.overallWatchDog.touch();
       this.currentIteration++;
       setTimeout(async () => {
-        await this.iterate();
+        try {
+          await this.iterate();
+        } catch (err) {
+          console.error(err.stack || err);
+        }
       }, this.waitTime);
+    } else {
+      this.stop();
     }
   }
 
@@ -141,7 +148,12 @@ class Iterate {
     //   1. first call should have same exec env as following
     //   2. start should return immediately
     setTimeout(async () => {
-      await this.iterate();
+      debug('starting iteration');
+      try {
+        await this.iterate();
+      } catch (err) {
+        console.error(err.stack || err);
+      }
     }, 0);
   }
 
