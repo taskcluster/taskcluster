@@ -39,17 +39,26 @@ describe('timing tests', () => {
           done(new Error('incremental watch dog expiration'));
         });
 
+        i.on('error', err => {
+          done(err);
+        });
+
         console.log('iterate!');
         iterations++;
         return 1;
       }
     });
 
-    i.start();
 
     i.overallWatchDog.on('expired', () => {
       done(new Error('overall watchdog expiration'));
     });
+
+    i.on('error', err => {
+      done(err);
+    });
+
+    i.start();
 
     setTimeout(() => {
       assume(iterations).equals(5);
@@ -72,7 +81,7 @@ describe('timing tests', () => {
         // In order to get the looping stuff to work, I had to stop the
         // watchdog timer.  This will be tested in the tests for the
         // Iterate.iterate method
-        watchdog.on('expired', () => {
+        i.on('error', err => {
           assume(i.currentIteration).equals(0);
           debug('correctly getting expired watchdog timer');
           i.stop();
@@ -86,11 +95,6 @@ describe('timing tests', () => {
     });
 
     i.start();
-
-    i.overallWatchDog.on('expired', () => {
-      done(new Error('overall watchdog expiration'));
-    });
-
   });
 
   it('should error when overall watchdog expires', done => {
@@ -110,14 +114,33 @@ describe('timing tests', () => {
 
     i.start();
 
-    i.overallWatchDog.on('expired', () => {
+    i.on('error', err => {
+      i.stop();
+      done();
+    });
+  });
+
+  it('should error when iteration is too quick', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 12,
+      minIterationTime: 10,
+      watchDog: 10,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        watchdog.stop();
+        return 1;
+      }
+    });
+
+    i.start();
+
+    i.on('error', err => {
       debug('correctly getting expired watchdog timer');
       i.stop();
       done();
     });
-
-
-
   });
 
 
