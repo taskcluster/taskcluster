@@ -3,9 +3,34 @@ let assert = require('assert');
 let WatchDog = require('./watchdog');
 let debug = require('debug')('iterate');
 let request = require('request-promise');
+let events = require('events');
 
-class Iterate {
+
+/**
+ * Run a handler many times.  Monitor the handler to make sure that it fails loudly
+ * when it fails, but tries to succeed more than once before killing itself.
+ *
+ * Options:
+ *   * 
+ * 
+ * Emits:
+ *   * 'started': when overall iteration starts
+ *   * 'stopped': when overall iteration is finished
+ *   * 'completed': only when we have a max number of iterations, when we finish the last iteration
+ *   * 'iteration-start': when an individual iteration starts
+ *   * 'iteration-complete': when an individual iteration completes with success.
+ *     provides the value that handler resolves with
+ *   * 'iteration-error': provides iteration error
+ *   * 'waiting': when we start waiting for the next iteration
+ *   * 'error': when the iteration is considered to be concluded and provides
+ *     list of iteration errors.  If there are no handlers and this event is
+ *     emitted, an exception will be thrown in a process.nextTick callback.
+ */
+class Iterate extends events.EventEmitter {
   constructor(opts) {
+    super();
+    events.EventEmitter.call(this);
+
     assert(typeof (opts.maxIterations || 0) === 'number', 'maxIterations must be number');
     this.maxIterations = opts.maxIterations || 0;
 
@@ -44,6 +69,16 @@ class Iterate {
     this.overallWatchDog = new WatchDog(this.maxIterationTime + this.waitTime);
     this.incrementalWatchDog = new WatchDog(this.watchDogTime);
 
+    this.overallWatchDog.on('expired', () => {
+      this.failures.push(new Error(`maxIterationTime of ${this.maxIterationTime} exceeded`));
+      this.__emitFatalError();
+    });
+
+    this.incrementalWatchDog.on('expired', () => {
+      this.failures.push(new Error(`watchDog of ${this.watchDogTime} exceeded`));
+      this.__emitFatalError();
+    });
+
     // Count the iteration that we're on.
     this.currentIteration = 0;
     this.keepGoing = false;
@@ -57,6 +92,7 @@ class Iterate {
 
   async iterate() {
     // We only run this watch dog for the actual iteration loop
+    this.emit('iteration-started');
     this.incrementalWatchDog.start();
 
     // Run the handler, pass in shared state so iterations can refer to
@@ -65,9 +101,14 @@ class Iterate {
       debug('running handler');
       let start = new Date();
 
-      // Note that we're using a watch dog for the maxIterationTime guarding
-      await this.handler(this.incrementalWatchDog, this.sharedState);
+      // Note that we're using a watch dog for the maxIterationTime guarding.
+      // The overallWatchDog timer is the absolute upper bounds for this
+      // iteration, this watchdog is the one to check things are still
+      // happening in the handler.
+      let value = await this.handler(this.incrementalWatchDog, this.sharedState);
+      // TODO: do this timing the better way
       let diff = (new Date() - start) / 1000;
+      this.emit('iteration-complete', value);
       debug(`ran handler in ${diff} seconds`);
 
       // Let's check that if we have a minimum threshold for handler activity
@@ -83,6 +124,7 @@ class Iterate {
         this.failures = [];
       }
     } catch (err) {
+      this.emit('iteration-error', err);
       debug('experienced iteration failure');
       this.failures.push(err);
     }
@@ -91,18 +133,14 @@ class Iterate {
     this.incrementalWatchDog.stop();
 
     if (this.failures.length > this.maxFailures) {
-      debug('exiting because of too many failures');
-      process.nextTick(() => {
-        // Aggregate the stacks and throw with all of them
-        let exceptions = this.failures.map(x => x.stack || x).join('======\n');
-        throw new Error(`Exceptions:\n=====\n${exceptions}\n=====`);
-      });
+      this.__emitFatalError();
     }
 
     // TODO: double check this isn't an off by one
     // When we reach the end of a set number of iterations, we'll stop
     if (this.maxIterations > 0 && this.maxIterations <= this.currentIteration + 1) {
       debug(`reached max iterations of ${this.maxIterations}`);
+      this.emit('completed');
       this.stop();
     }
 
@@ -139,6 +177,27 @@ class Iterate {
     }
   }
 
+  /** 
+   * Special function which knows how to emit the final error and then throw an
+   * unhandled exception where appropriate.  Also stop trying to iterate
+   * further.
+   */
+  __emitFatalError() {
+    this.stop();
+    if (this.listeners('error').length > 0) {
+      this.emit('error', this.failures);
+    } else {
+      debug('fatal error:');
+      for (let x of this.failures) {
+        debug(`  * ${x.stack || x}`);
+      }
+      debug('trying to crash process');
+      process.nextTick(() => {
+        throw new Error(`Errors:\n=====${this.failures.map(x => x.stack || x).join('\n')}`);
+      });
+    }
+  }
+
   start() {
     debug('starting');
     this.keepGoing = true;
@@ -149,6 +208,7 @@ class Iterate {
     //   2. start should return immediately
     setTimeout(async () => {
       debug('starting iteration');
+      this.emit('started');
       try {
         await this.iterate();
       } catch (err) {
@@ -161,6 +221,7 @@ class Iterate {
     this.overallWatchDog.stop();
     this.keepGoing = false;
     this.currentIteration = 0;
+    this.emit('stopped');
     debug('stopped');
   }
 
