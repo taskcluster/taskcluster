@@ -143,6 +143,71 @@ describe('timing tests', () => {
     });
   });
 
+  it('should do fail when there are too many failures', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 12,
+      maxFailures: 1,
+      watchDog: 10,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        return new Promise((res, rej) => {
+          rej(new Error('hi'));
+        });
+      }
+    });
+
+    i.start();
+    
+    i.on('error', err => {
+      i.stop();
+      done();
+    });
+
+  });
+
+
+
+  it('should do something when errors are not handled', done => {
+    let iterations = 0;
+
+    // NOTE: Mocha has it's own uncaught exception listener.  If we were to
+    // leave it in force during this test, we'd end up getting two results from
+    // the test.  One failure from the mocha handler and one pass from our own
+    // handler.  This is obviously not ideal, and it's sort of a risk that we
+    // mess up the uncaught exception handling for future tests
+
+    let origListeners = process.listeners('uncaughtException');
+    process.removeAllListeners('uncaughtException');
+
+    let uncaughtHandler = function (err) {
+      process.removeAllListeners('uncaughtException');
+      for (let listener of origListeners) {
+        process.on('uncaughtException', listener);
+      }
+      i.stop();
+      done();
+    };
+
+    process.on('uncaughtException', uncaughtHandler);
+
+    let i = new subject({
+      maxIterationTime: 12,
+      maxFailures: 1,
+      watchDog: 10,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        return new Promise((res, rej) => {
+          rej(new Error('hi'));
+        });
+      }
+    });
+
+    i.start();
+
+  });
+
 
 
 })

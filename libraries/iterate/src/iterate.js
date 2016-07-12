@@ -69,11 +69,14 @@ class Iterate extends events.EventEmitter {
     this.overallWatchDog = new WatchDog(this.maxIterationTime + this.waitTime);
     this.incrementalWatchDog = new WatchDog(this.watchDogTime);
 
+    // We want to have a single way for all guarded failure cases to exit.
+    // Instead of using the watch dog's process killing feature, we'll exit as
+    // if this were any other error.  This is for both the overall and the
+    // incremental watch dogs
     this.overallWatchDog.on('expired', () => {
       this.failures.push(new Error(`maxIterationTime of ${this.maxIterationTime} exceeded`));
       this.__emitFatalError();
     });
-
     this.incrementalWatchDog.on('expired', () => {
       this.failures.push(new Error(`watchDog of ${this.watchDogTime} exceeded`));
       this.__emitFatalError();
@@ -132,7 +135,7 @@ class Iterate extends events.EventEmitter {
     // We don't wand this watchdog timer to always run
     this.incrementalWatchDog.stop();
 
-    if (this.failures.length > this.maxFailures) {
+    if (this.failures.length >= this.maxFailures) {
       this.__emitFatalError();
     }
 
@@ -193,7 +196,7 @@ class Iterate extends events.EventEmitter {
       }
       debug('trying to crash process');
       process.nextTick(() => {
-        throw new Error(`Errors:\n=====${this.failures.map(x => x.stack || x).join('\n')}`);
+        throw new Error(`Errors:\n=====\n${this.failures.map(x => x.stack || x).join('=====\n')}`);
       });
     }
   }
