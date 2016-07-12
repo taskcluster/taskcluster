@@ -1,4 +1,4 @@
-Generated: 1467833332
+Generated: 1468337368
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4689,13 +4689,19 @@ Entry 6     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Schedule Defined Task'
-    Entry Description = 'If you have define a task using `defineTask` API end-point, then you
-can schedule the task to be scheduled using this method.
-This will announce the task as pending and workers will be allowed, to
-claim it and resolved the task.
+    Entry Description = 'scheduleTask will schedule a task to be executed, even if it has
+unresolved dependencies. A task would otherwise only be scheduled if
+its dependencies were resolved.
+
+This is useful if you have defined a task that depends on itself or on
+some other task that has not been resolved, but you wish the task to be
+scheduled immediately.
+
+This will announce the task as pending and workers will be allowed to
+claim it and resolve the task.
 
 **Note** this operation is **idempotent** and will not fail or complain
-if called with `taskId` that is already scheduled, or even resolved.
+if called with a `taskId` that is already scheduled, or even resolved.
 To reschedule a task previously resolved, use `rerunTask`.'
 Entry 7     =
     Entry Type        = 'function'

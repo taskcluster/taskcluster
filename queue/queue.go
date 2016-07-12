@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 6 Jul 2016 at 19:28:00 UTC. The code was generated
+// Tue, 12 Jul 2016 at 15:29:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -221,13 +221,19 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) 
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// If you have define a task using `defineTask` API end-point, then you
-// can schedule the task to be scheduled using this method.
-// This will announce the task as pending and workers will be allowed, to
-// claim it and resolved the task.
+// scheduleTask will schedule a task to be executed, even if it has
+// unresolved dependencies. A task would otherwise only be scheduled if
+// its dependencies were resolved.
+//
+// This is useful if you have defined a task that depends on itself or on
+// some other task that has not been resolved, but you wish the task to be
+// scheduled immediately.
+//
+// This will announce the task as pending and workers will be allowed to
+// claim it and resolve the task.
 //
 // **Note** this operation is **idempotent** and will not fail or complain
-// if called with `taskId` that is already scheduled, or even resolved.
+// if called with a `taskId` that is already scheduled, or even resolved.
 // To reschedule a task previously resolved, use `rerunTask`.
 //
 // Required scopes:
