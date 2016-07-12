@@ -141,10 +141,10 @@ class Iterate extends events.EventEmitter {
 
     // TODO: double check this isn't an off by one
     // When we reach the end of a set number of iterations, we'll stop
-    if (this.maxIterations > 0 && this.maxIterations <= this.currentIteration + 1) {
+    if (this.maxIterations > 0 && this.currentIteration >= this.maxIterations - 1) {
       debug(`reached max iterations of ${this.maxIterations}`);
-      this.emit('completed');
       this.stop();
+      this.emit('completed');
     }
 
     // Hit the dead man's snitch

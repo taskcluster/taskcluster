@@ -39,10 +39,6 @@ describe('timing tests', () => {
           done(new Error('incremental watch dog expiration'));
         });
 
-        i.on('error', err => {
-          done(err);
-        });
-
         console.log('iterate!');
         iterations++;
         return 1;
@@ -68,6 +64,44 @@ describe('timing tests', () => {
       assume(i.keepGoing).is.not.ok();
       done();
     }, 5000);
+  });
+
+  it('should stop after the correct number of iterations', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 3,
+      watchDog: 2,
+      waitTime: 1,
+      maxIterations: 5,
+      handler: async (watchdog, state) => {
+        watchdog.on('expired', () => {
+          done(new Error('incremental watch dog expiration'));
+        });
+
+        console.log('iterate!');
+        iterations++;
+        return 1;
+      }
+    });
+
+
+    i.overallWatchDog.on('expired', () => {
+      done(new Error('overall watchdog expiration'));
+    });
+
+    i.on('error', err => {
+      done(err);
+    });
+
+    i.start();
+
+    i.on('completed', () => {
+      assume(iterations).equals(5);
+      assume(i.keepGoing).is.not.ok();
+      i.stop();
+      done();
+    });
   });
 
   it('should error when iteration watchdog expires', done => {
