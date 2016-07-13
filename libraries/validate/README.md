@@ -74,6 +74,19 @@ This library will automatically publish schemas to s3 in production if you so de
 
 All other functionality should be the same as [ajv itself](https://www.npmjs.com/package/ajv).
 
+You may be tempted to use remote references and be able to validate your service's output
+against already defined responses defined in other services. However, this is not allowed by
+this library and is not planned to be supported.
+
+Our reasoning is that if you're interacting with the returned results of another service,
+the results have already been validated by the output validation of that service. If you wish
+to pass this on to your consumers unaltered, you can either mark it as a generic object with
+no validation in your output schema (not recommended) or specify how you expect the output to
+be (which can just be copied from the other service) and then modify the data you return to
+ensure that only those fields you expect are passed on. This will ensure that as services are
+modified and updated there will not be unexpected results for downstream dependencies.
+
+
 Options and Defaults
 --------------------
 
