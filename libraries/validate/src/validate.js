@@ -14,7 +14,7 @@ let render = require('./render');
 let rootdir = require('app-root-dir');
 
 async function validator(options) {
-  let schemas = [];
+  let schemas = {};
   let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
 
   let cfg = _.defaults(options, {
@@ -53,16 +53,12 @@ async function validator(options) {
 
     let schema = render(json, cfg.constants);
 
+    if (schema.id) {
+      debug('Schema incorrectly attempts to set own id: %s', name);
+      throw new Error('Schema ' + root + '/' + name + ' attempts to set own id!');
+    }
     name = name.replace(/\.ya?ml$/, '.json');
-    let id = urljoin(cfg.baseUrl, cfg.prefix, name) + '#';
-    if (!schema.id) {
-      schema.id = id;
-    }
-    if (schema.id !== id) {
-      debug('Bad schema name: %s expected: %s', schema.id, id);
-      throw new Error('Incorrect schemaId specified. It is recommended not to set' +
-          'one at all. It will be set automatically.');
-    }
+    schema.id = urljoin(cfg.baseUrl, cfg.prefix, name) + '#';
 
     try {
       ajv.addSchema(schema);
@@ -71,7 +67,7 @@ async function validator(options) {
       if (!content) {
         throw new Error('Schema %s has invalid content!', name);
       }
-      schemas.push({name: name, content});
+      schemas[name] = content;
     } catch (err) {
       debug('failed to load schema at %s', path.resolve(root, name));
       throw err;
@@ -90,13 +86,13 @@ async function validator(options) {
       debug('Using default s3 client');
       s3Provider = new aws.S3(cfg.aws);
     }
-    await Promise.all(schemas.map((entry) => {
+    await Promise.all(_.map(schemas, (content, name) => {
       return publish(
         s3Provider,
         cfg.bucket,
         cfg.prefix,
-        entry.name,
-        entry.content
+        name,
+        content
       );
     }));
   }
@@ -123,7 +119,7 @@ async function validator(options) {
 
   // Add a utility function that can be used to get all of the
   // schemas that have been loaded.
-  validate.schemas = _.map(schemas, 'content');
+  validate.schemas = schemas;
 
   return validate;
 };

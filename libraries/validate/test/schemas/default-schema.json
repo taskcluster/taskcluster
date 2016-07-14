@@ -1,5 +1,4 @@
 {
-  "id":           "http://localhost:1203/default-schema.json#",
   "$schema":      "http://json-schema.org/draft-04/schema#",
   "title":        "test json schema",
   "type":         "object",
