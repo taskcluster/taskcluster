@@ -115,6 +115,11 @@ class Monitor {
   stopResourceMonitoring() {
     clearInterval(this._resourceInterval);
   }
+
+  /** Patch an AWS service (an instance of a service from aws-sdk) */
+  patchAWS(service) {
+    utils.patchAWS(this, service);
+  }
 }
 
 class MockMonitor {
@@ -197,6 +202,10 @@ class MockMonitor {
 
   stopResourceMonitoring() {
     clearInterval(this._resourceInterval);
+  }
+
+  patchAWS(service) {
+    utils.patchAWS(this, service);
   }
 }
 
