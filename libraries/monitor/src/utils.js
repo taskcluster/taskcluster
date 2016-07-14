@@ -121,3 +121,16 @@ export function timer(monitor, prefix, funcOrPromise) {
   Promise.resolve(funcOrPromise).then(done, done);
   return funcOrPromise;
 }
+
+export function patchAWS(monitor, service) {
+  monitor = monitor.prefix(service.serviceIdentifier);
+  let makeRequest = service.makeRequest;
+  service.makeRequest = function(operation, params, callback) {
+    let r = makeRequest.call(this, operation, params, callback);
+    r.on('complete', () => {
+      let requestTime = (new Date()).getTime() - r.startTime.getTime();
+      monitor.measure(operation + '.duration', requestTime);
+    });
+    return r;
+  };
+}
