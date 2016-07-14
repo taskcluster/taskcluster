@@ -83,7 +83,7 @@ export default class TaskclusterProxy {
 
     // Update credentials in proxy
     task.on('credentials', async (credentials) => {
-      let credentials = JSON.stringify(task.claim.credentials);
+      let creds = JSON.stringify(credentials);
 
       await new Promise((accept, reject) => {
         let req = http.request({
@@ -92,13 +92,14 @@ export default class TaskclusterProxy {
           path: '/credentials',
           headers: {
             'Content-Type': 'text/json',
-            'Content-Length': credentials.length
+            'Content-Length': creds.length
           }
         }, res => {
-          if (res.statusCode == 200) {
+          if (res.statusCode === 200) {
             task.runtime.log('Credentials updated', {
               taskId: task.status.taskId,
-              runId: task.runId
+              runId: task.runId,
+              credentials: creds
             });
             accept();
           } else {
@@ -112,7 +113,7 @@ export default class TaskclusterProxy {
         });
 
         req.on('error', err => reject(err));
-        req.write(credentials);
+        req.write(creds);
         req.end();
       });
     });
