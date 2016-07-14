@@ -296,14 +296,15 @@ properties:
             url:
               type: string
               format: url
+              maxLength: 512
             linkText:
               type: string
               minLength: 1
-              maxLength: 50
+              maxLength: 125
             label:
               type: string
               minLength: 1
-              maxLength: 50
+              maxLength: 70
           additionalProperties: false
           required:
           - url
