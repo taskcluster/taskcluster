@@ -1,4 +1,4 @@
-Generated: 1468337368
+Generated: 1468538888
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10120,19 +10120,20 @@ Properties
           '
           Properties
             Property 'label' =
-              MaxLength              = '50'
+              MaxLength              = '70'
               MinLength              = '1'
               Type                   = 'string'
               TypeName               = ''
               SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label'
             Property 'linkText' =
-              MaxLength              = '50'
+              MaxLength              = '125'
               MinLength              = '1'
               Type                   = 'string'
               TypeName               = ''
               SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText'
             Property 'url' =
               Format                 = 'url'
+              MaxLength              = '512'
               Type                   = 'string'
               TypeName               = ''
               SourceURL              = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url'
