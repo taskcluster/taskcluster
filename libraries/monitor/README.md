@@ -150,6 +150,20 @@ middleware.push(monitor.expressMiddleware('name_of_function'));
 ```
 This is already integrated in `taskcluster-lib-api` and probably doesn't need to be implemented in your service on its own.
 
+
+### AWS SDK Timing Wrapper
+Oftentimes a lot of a service's time will be spent interacting with AWS services. These interactions can be measured
+as in the following example:
+
+```js
+let aws = require('aws-sdk');
+let ec2 = new aws.EC2({region: 'us-west-2'});
+monitor.patchAWS(ec2);
+await ec2.describeAvailabilityZones().promise().catch(err => {
+  debug('Ignored ec2 error, we measure duration, not success, err: ', err);
+});
+```
+
 Options and Defaults
 --------------------
 
