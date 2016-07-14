@@ -108,4 +108,15 @@ suite('MockMonitor', () => {
     }
     assert(false);
   });
+
+  test('monitor.patchAWS(service)', async () => {
+    let aws = require('aws-sdk');
+    let ec2 = new aws.EC2({region: 'us-west-2'});
+    monitor.patchAWS(ec2);
+    await ec2.describeAvailabilityZones().promise().catch(err => {
+      debug('Ignored ec2 error, we measure duration, not success, err: ', err);
+    });
+    let data = monitor.measures['mm.ec2.describeAvailabilityZones.duration'];
+    assert(data.length === 1);
+  });
 });
