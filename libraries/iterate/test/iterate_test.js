@@ -425,128 +425,240 @@ describe('Iterate', () => {
     i.start();
   });
 
-  it('should emit correct events with maxFailures and maxIterations', done => {
-    let iterations = 0;
+  describe('event emission ordering', () => {
 
-    let i = new subject({
-      maxIterationTime: 3,
-      maxIterations: 1,
-      maxFailures: 1,
-      watchDog: 2,
-      waitTime: 1,
-      handler: async (watchdog, state) => {
-        debug('iterate!');
-        iterations++;
-        throw new Error('hi');
-      }
-    });
+    it('should be correct with maxFailures and maxIterations', done => {
+      let iterations = 0;
 
-    let events = new IterateEvents(i, [
-      'started',
-      'iteration-start',
-      'iteration-failure',
-      'iteration-complete',
-      'completed',
-      'stopped',
-      'error',
-    ]);
-
-    i.on('error', () => {
-      events.assert(done);
-    });
-
-    i.on('started', () => {
-      i.stop();
-    });
-
-    i.start();
-  });
-  
-  it('should emit correct events with maxFailures only', done => {
-    let iterations = 0;
-
-    let i = new subject({
-      maxIterationTime: 3,
-      maxFailures: 1,
-      watchDog: 2,
-      waitTime: 1,
-      handler: async (watchdog, state) => {
-        debug('iterate!');
-        iterations++;
-        throw new Error('hi');
-      }
-    });
-
-    let events = new IterateEvents(i, [
-      'started',
-      'iteration-start',
-      'iteration-failure',
-      'iteration-complete',
-      'stopped',
-      'error',
-    ]);
-
-    i.on('error', () => {
-      events.assert(done);
-    });
-
-    i.on('started', () => {
-      i.stop();
-    });
-
-    i.start();
-  });
-  
-  it('should emit correct events with fail, good, fail, good pattern', done => {
-    let iterations = 0;
-
-    let i = new subject({
-      maxIterationTime: 3,
-      maxIterations: 6,
-      maxFailures: 5,
-      watchDog: 2,
-      waitTime: 1,
-      handler: async (watchdog, state) => {
-        if (iterations++ % 2 === 0) {
-          throw new Error('even, so failing');
-        } else {
-          return 'odd, so working';
+      let i = new subject({
+        maxIterationTime: 3,
+        maxIterations: 1,
+        maxFailures: 1,
+        watchDog: 2,
+        waitTime: 1,
+        handler: async (watchdog, state) => {
+          debug('iterate!');
+          iterations++;
+          throw new Error('hi');
         }
-      }
+      });
+
+      let events = new IterateEvents(i, [
+        'started',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'completed',
+        'stopped',
+        'error',
+      ]);
+
+      i.on('error', () => {
+        events.assert(done);
+      });
+
+      i.on('started', () => {
+        i.stop();
+      });
+
+      i.start();
+    });
+    
+    it('should be correct with maxFailures only', done => {
+      let iterations = 0;
+
+      let i = new subject({
+        maxIterationTime: 3,
+        maxFailures: 1,
+        watchDog: 2,
+        waitTime: 1,
+        handler: async (watchdog, state) => {
+          debug('iterate!');
+          iterations++;
+          throw new Error('hi');
+        }
+      });
+
+      let events = new IterateEvents(i, [
+        'started',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'stopped',
+        'error',
+      ]);
+
+      i.on('error', () => {
+        events.assert(done);
+      });
+
+      i.on('started', () => {
+        i.stop();
+      });
+
+      i.start();
+    });
+    
+    it('should be correct when handler takes too little time', done => {
+      let iterations = 0;
+
+      let i = new subject({
+        maxIterationTime: 3,
+        minIterationTime: 100,
+        maxFailures: 1,
+        watchDog: 2,
+        waitTime: 1,
+        handler: async (watchdog, state) => {
+          return true;
+        }
+      });
+
+      let events = new IterateEvents(i, [
+        'started',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'stopped',
+        'error',
+      ]);
+
+      i.on('error', () => {
+        events.assert(done);
+      });
+
+      i.on('started', () => {
+        i.stop();
+      });
+
+      i.overallWatchDog.stop();
+
+      i.start();
     });
 
-    let events = new IterateEvents(i, [
-      'started',
-      'iteration-start',
-      'iteration-failure',
-      'iteration-complete',
-      'iteration-start',
-      'iteration-success',
-      'iteration-complete',
-      'iteration-start',
-      'iteration-failure',
-      'iteration-complete',
-      'iteration-start',
-      'iteration-success',
-      'iteration-complete',
-      'iteration-start',
-      'iteration-failure',
-      'iteration-complete',
-      'iteration-start',
-      'iteration-success',
-      'iteration-complete',
-      'completed',
-      'stopped',
-    ]);
+    it('should be correct when handler takes too long (incremental watchdog)', done => {
+      let iterations = 0;
 
-    i.on('stopped', () => {
-      events.assert(done);
+      let i = new subject({
+        maxIterationTime: 3,
+        maxFailures: 1,
+        watchDog: 2,
+        waitTime: 1,
+        handler: async (watchdog, state) => {
+          return new Promise((res, rej) => {
+            setTimeout(res, 6000);
+          });
+        }
+      });
+
+      let events = new IterateEvents(i, [
+        'started',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'stopped',
+        'error',
+      ]);
+
+      i.on('error', () => {
+        events.assert(done);
+      });
+
+      i.on('started', () => {
+        i.stop();
+      });
+
+      i.overallWatchDog.stop();
+
+      i.start();
     });
+    
+    it('should be correct when handler takes too long (overall watchdog)', done => {
+      let iterations = 0;
 
-    i.on('error', err => {
-      done(err)
+      let i = new subject({
+        maxIterationTime: 3,
+        maxFailures: 1,
+        watchDog: 2,
+        waitTime: 1,
+        handler: async (watchdog, state) => {
+          watchdog.stop();
+          return new Promise((res, rej) => {
+            setTimeout(res, 6000);
+          });
+        }
+      });
+
+      let events = new IterateEvents(i, [
+        'started',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'stopped',
+        'error',
+      ]);
+
+      i.on('error', () => {
+        events.assert(done);
+      });
+
+      i.on('started', () => {
+        i.stop();
+      });
+
+      i.start();
     });
+    
+    it('should be correct with mixed results', done => {
+      let iterations = 0;
 
-    i.start();
+      let i = new subject({
+        maxIterationTime: 3,
+        maxIterations: 6,
+        maxFailures: 5,
+        watchDog: 2,
+        waitTime: 1,
+        handler: async (watchdog, state) => {
+          if (iterations++ % 2 === 0) {
+            throw new Error('even, so failing');
+          } else {
+            return 'odd, so working';
+          }
+        }
+      });
+
+      let events = new IterateEvents(i, [
+        'started',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'iteration-start',
+        'iteration-success',
+        'iteration-complete',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'iteration-start',
+        'iteration-success',
+        'iteration-complete',
+        'iteration-start',
+        'iteration-failure',
+        'iteration-complete',
+        'iteration-start',
+        'iteration-success',
+        'iteration-complete',
+        'completed',
+        'stopped',
+      ]);
+
+      i.on('stopped', () => {
+        events.assert(done);
+      });
+
+      i.on('error', err => {
+        done(err)
+      });
+
+      i.start();
+    });
   });
 })

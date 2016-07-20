@@ -120,13 +120,23 @@ class Iterate extends events.EventEmitter {
     // We want to have a single way for all guarded failure cases to exit.
     // Instead of using the watch dog's process killing feature, we'll exit as
     // if this were any other error.  This is for both the overall and the
-    // incremental watch dogs
+    // incremental watch dogs.  When these watch dogs fail, we want to make sure
+    // that we emit the correct events.  If the overall watch dog fails, it's
+    // important that we stop the per-iteration watchdog, since we don't want
+    // to accidentally crash after a long time.
     this.overallWatchDog.on('expired', () => {
-      this.failures.push(new Error(`maxIterationTime of ${this.maxIterationTime} exceeded`));
+      let err = new Error(`maxIterationTime of ${this.maxIterationTime} exceeded`);
+      this.failures.push(err);
+      this.emit('iteration-failure', err);
+      this.emit('iteration-complete');
+      this.incrementalWatchDog.stop();
       this.__emitFatalError();
     });
     this.incrementalWatchDog.on('expired', () => {
-      this.failures.push(new Error(`watchDog of ${this.watchDogTime} exceeded`));
+      let err = new Error(`watchDog of ${this.watchDogTime} exceeded`);
+      this.failures.push(err);
+      this.emit('iteration-failure', err);
+      this.emit('iteration-complete');
       this.__emitFatalError();
     });
 
@@ -166,14 +176,16 @@ class Iterate extends events.EventEmitter {
       
       // TODO: do this timing the better way
       let diff = (new Date() - start) / 1000;
-      this.emit('iteration-success', value);
-      debug(`ran handler in ${diff} seconds`);
 
       // Let's check that if we have a minimum threshold for handler activity
       // time, and mark as failure when we exceed it
       if (this.minIterationTime > 0 && diff < this.minIterationTime) {
         throw new Error('Minimum threshold for handler execution not met');
       }
+
+      // Wait until we've done all the checks to emit success
+      this.emit('iteration-success', value);
+      debug(`ran handler in ${diff} seconds`);
 
       // We could probably safely just create a new Array every time since if
       // we get to this point we want to reset the Array unconditionally, but I
