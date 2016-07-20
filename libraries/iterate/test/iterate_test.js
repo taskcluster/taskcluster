@@ -23,7 +23,8 @@ describe('iteration functionality', () => {
 // I split out tests that verify that all the looping stuff works as expected.
 // I'd rather use fake timers, but there are lots of timeouts involved and I
 // couldn't get it to play nice
-describe('timing tests', () => {
+describe('Iterate', () => {
+
   it('should be able to start and stop', done => {
     let iterations = 0;
 
@@ -39,7 +40,7 @@ describe('timing tests', () => {
           done(new Error('incremental watch dog expiration'));
         });
 
-        console.log('iterate!');
+        debug('iterate!');
         iterations++;
         return 1;
       }
@@ -66,7 +67,7 @@ describe('timing tests', () => {
     }, 5000);
   });
 
-  it('should stop after the correct number of iterations', done => {
+  it('should stop after correct number of iterations', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -79,7 +80,7 @@ describe('timing tests', () => {
           done(new Error('incremental watch dog expiration'));
         });
 
-        console.log('iterate!');
+        debug('iterate!');
         iterations++;
         return 1;
       }
@@ -104,7 +105,7 @@ describe('timing tests', () => {
     });
   });
 
-  it('should error when iteration watchdog expires', done => {
+  it('should emit error when iteration watchdog expires', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -119,6 +120,7 @@ describe('timing tests', () => {
           assume(i.currentIteration).equals(0);
           debug('correctly getting expired watchdog timer');
           i.stop();
+          assume(i.keepGoing).is.not.ok();
           done();
         });
         return new Promise((res, rej) => {
@@ -131,7 +133,7 @@ describe('timing tests', () => {
     i.start();
   });
 
-  it('should error when overall watchdog expires', done => {
+  it('should emit error when overall watchdog expires', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -150,11 +152,12 @@ describe('timing tests', () => {
 
     i.on('error', err => {
       i.stop();
+      assume(i.keepGoing).is.not.ok();
       done();
     });
   });
 
-  it('should error when iteration is too quick', done => {
+  it('should emit error when iteration is too quick', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -173,11 +176,12 @@ describe('timing tests', () => {
     i.on('error', err => {
       debug('correctly getting expired watchdog timer');
       i.stop();
+      assume(i.keepGoing).is.not.ok();
       done();
     });
   });
 
-  it('should do fail when there are too many failures', done => {
+  it('should emit error after too many failures', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -196,6 +200,7 @@ describe('timing tests', () => {
     
     i.on('error', err => {
       i.stop();
+      assume(i.keepGoing).is.not.ok();
       done();
     });
 
@@ -203,7 +208,7 @@ describe('timing tests', () => {
 
 
 
-  it('should do something when errors are not handled', done => {
+  it('should cause uncaughtException when error event is unhandled', done => {
     let iterations = 0;
 
     // NOTE: Mocha has it's own uncaught exception listener.  If we were to
@@ -221,6 +226,7 @@ describe('timing tests', () => {
         process.on('uncaughtException', listener);
       }
       i.stop();
+      assume(i.keepGoing).is.not.ok();
       done();
     };
 
@@ -242,6 +248,58 @@ describe('timing tests', () => {
 
   });
 
+  it('should share state between iterations', done => {
+    let iterations = 0;
+    let v = {a:1};
+
+    let i = new subject({
+      maxIterationTime: 3,
+      watchDog: 2,
+      waitTime: 1,
+      maxIterations: 2,
+      maxFailures: 1,
+      handler: async (watchdog, state) => {
+        watchdog.on('expired', () => {
+          done(new Error('incremental watch dog expiration'));
+        });
+
+        if (iterations === 0) {
+          assume(state).deeply.equals({});
+          state.v = v;
+        } else if (iterations === 1) {
+          assume(state.v).deeply.equals(v);
+          assume(state.v).equals(v);
+        } else {
+          done(new Error('too many iterations'));
+        }
+
+        debug('iterate!');
+        iterations++;
+        return 1;
+      }
+    });
 
 
+    i.overallWatchDog.on('expired', () => {
+      done(new Error('overall watchdog expiration'));
+    });
+
+    i.on('error', err => {
+      done(err);
+    });
+
+    i.on('iteration-error', err => {
+      done(err);
+    });
+
+    i.start();
+
+    i.on('completed', () => {
+      assume(iterations).equals(2);
+      assume(i.keepGoing).is.not.ok();
+      i.stop();
+      assume(i.keepGoing).is.not.ok();
+      done();
+    });
+  });
 })
