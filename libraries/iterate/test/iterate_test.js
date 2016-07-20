@@ -3,27 +3,65 @@ let sinon = require('sinon');
 let assume = require('assume');
 let debug = require('debug')('iterate-test');
 
-describe('iteration functionality', () => {
+let possibleEvents = [
+  'started',
+  'stopped',
+  'completed',
+  'iteration-start',
+  'iteration-success',
+  'iteration-failure',
+  'iteration-complete',
+  'error',
+];
+
+class IterateEvents {
+  constructor(iterator, expectedOrder) {
+    this.iterator = iterator;
+    this.expectedOrder = expectedOrder;
+    this.orderOfEmission = [];
+    for (let x of possibleEvents) {
+      iterator.on(x, () => {
+        this.orderOfEmission.push(x);
+      });
+    }
+  }
+
+  assert(f) {
+    let dl = () => { // dl === dump list
+      return `\nExpected: ${JSON.stringify(this.expectedOrder, null, 2)}` +
+        `\nActual: ${JSON.stringify(this.orderOfEmission, null, 2)}`;
+    }
+
+    if (this.orderOfEmission.length !== this.expectedOrder.length) {
+      return f(new Error(`order emitted differs in length from expectation ${dl()}`));
+    }
+
+    for (let i = 0 ; i < this.orderOfEmission.length ; i++) {
+      if (this.orderOfEmission[i] !== this.expectedOrder[i]) {
+        return f(new Error(`order emitted differs in content ${dl()}`));
+      }
+    }
+
+    debug(`Events Emitted: ${JSON.stringify(this.orderOfEmission)}`);
+    return f();
+  }
+
+}
+
+describe('Iterate', () => {
   let sandbox;
   let clock;
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create({
-      useFakeTimers: true,
+      //useFakeTimers: true,
     });
-    clock = sandbox.clock;
+    //clock = sandbox.clock;
   });
 
   afterEach(() => {
     sandbox.restore();
   });
-});
-
-
-// I split out tests that verify that all the looping stuff works as expected.
-// I'd rather use fake timers, but there are lots of timeouts involved and I
-// couldn't get it to play nice
-describe('Iterate', () => {
 
   it('should be able to start and stop', done => {
     let iterations = 0;
@@ -55,6 +93,10 @@ describe('Iterate', () => {
       done(err);
     });
 
+    i.on('stopped', () => {
+      done();  
+    });
+
     i.start();
 
     setTimeout(() => {
@@ -63,8 +105,8 @@ describe('Iterate', () => {
       assume(i.keepGoing).is.ok();
       i.stop();
       assume(i.keepGoing).is.not.ok();
-      done();
     }, 5000);
+
   });
 
   it('should stop after correct number of iterations', done => {
@@ -301,5 +343,210 @@ describe('Iterate', () => {
       assume(i.keepGoing).is.not.ok();
       done();
     });
+  });
+
+  it('should emit correct events for single iteration', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 3,
+      watchDog: 2,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        debug('iterate!');
+        iterations++;
+        return 1;
+      }
+    });
+
+    i.on('error', err => {
+      done(err);
+    });
+
+    let events = new IterateEvents(i, [
+      'started',
+      'iteration-start',
+      'iteration-success',
+      'iteration-complete',
+      'stopped'
+    ]);
+
+    i.on('stopped', () => {
+      events.assert(done);
+    });
+
+    i.on('started', () => {
+      i.stop();
+    });
+
+    i.start();
+  });
+
+  it('should emit correct events with maxIterations', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 3,
+      maxIterations: 1,
+      watchDog: 2,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        debug('iterate!');
+        iterations++;
+        return 1;
+      }
+    });
+
+    i.on('error', err => {
+      done(err);
+    });
+
+    let events = new IterateEvents(i, [
+      'started',
+      'iteration-start',
+      'iteration-success',
+      'iteration-complete',
+      'completed',
+      'stopped'
+    ]);
+
+    i.on('error', err => {
+      done(err)
+    });
+
+    i.on('stopped', () => {
+      events.assert(done);
+    });
+
+    i.on('started', () => {
+      i.stop();
+    });
+
+    i.start();
+  });
+
+  it('should emit correct events with maxFailures and maxIterations', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 3,
+      maxIterations: 1,
+      maxFailures: 1,
+      watchDog: 2,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        debug('iterate!');
+        iterations++;
+        throw new Error('hi');
+      }
+    });
+
+    let events = new IterateEvents(i, [
+      'started',
+      'iteration-start',
+      'iteration-failure',
+      'iteration-complete',
+      'completed',
+      'stopped',
+      'error',
+    ]);
+
+    i.on('error', () => {
+      events.assert(done);
+    });
+
+    i.on('started', () => {
+      i.stop();
+    });
+
+    i.start();
+  });
+  
+  it('should emit correct events with maxFailures only', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 3,
+      maxFailures: 1,
+      watchDog: 2,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        debug('iterate!');
+        iterations++;
+        throw new Error('hi');
+      }
+    });
+
+    let events = new IterateEvents(i, [
+      'started',
+      'iteration-start',
+      'iteration-failure',
+      'iteration-complete',
+      'stopped',
+      'error',
+    ]);
+
+    i.on('error', () => {
+      events.assert(done);
+    });
+
+    i.on('started', () => {
+      i.stop();
+    });
+
+    i.start();
+  });
+  
+  it('should emit correct events with fail, good, fail, good pattern', done => {
+    let iterations = 0;
+
+    let i = new subject({
+      maxIterationTime: 3,
+      maxIterations: 6,
+      maxFailures: 5,
+      watchDog: 2,
+      waitTime: 1,
+      handler: async (watchdog, state) => {
+        if (iterations++ % 2 === 0) {
+          throw new Error('even, so failing');
+        } else {
+          return 'odd, so working';
+        }
+      }
+    });
+
+    let events = new IterateEvents(i, [
+      'started',
+      'iteration-start',
+      'iteration-failure',
+      'iteration-complete',
+      'iteration-start',
+      'iteration-success',
+      'iteration-complete',
+      'iteration-start',
+      'iteration-failure',
+      'iteration-complete',
+      'iteration-start',
+      'iteration-success',
+      'iteration-complete',
+      'iteration-start',
+      'iteration-failure',
+      'iteration-complete',
+      'iteration-start',
+      'iteration-success',
+      'iteration-complete',
+      'completed',
+      'stopped',
+    ]);
+
+    i.on('stopped', () => {
+      events.assert(done);
+    });
+
+    i.on('error', err => {
+      done(err)
+    });
+
+    i.start();
   });
 })

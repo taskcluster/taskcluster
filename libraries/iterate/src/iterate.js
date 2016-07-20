@@ -68,7 +68,6 @@ let events = require('events');
  *     success.  provides the value that handler resolves with
  *   * 'iteration-failure': provides iteration error
  *   * 'iteration-complete': when an iteration is complete regardless of outcome
- *   * 'waiting': when we start waiting for the next iteration
  *   * 'error': when the iteration is considered to be concluded and provides
  *     list of iteration errors.  If there are no handlers and this event is
  *     emitted, an exception will be thrown in a process.nextTick callback.
@@ -150,7 +149,7 @@ class Iterate extends events.EventEmitter {
 
   async iterate() {
     // We only run this watch dog for the actual iteration loop
-    this.emit('iteration-started');
+    this.emit('iteration-start');
     this.incrementalWatchDog.start();
 
     // Run the handler, pass in shared state so iterations can refer to
@@ -197,7 +196,6 @@ class Iterate extends events.EventEmitter {
     if (this.maxIterations > 0 && this.currentIteration >= this.maxIterations - 1) {
       debug(`reached max iterations of ${this.maxIterations}`);
       this.stop();
-      this.__makeSafe();
       this.emit('completed');
     }
 
