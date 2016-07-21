@@ -130,14 +130,20 @@ class Iterate extends events.EventEmitter {
       this.emit('iteration-failure', err);
       this.emit('iteration-complete');
       this.incrementalWatchDog.stop();
-      this.__emitFatalError();
+      if (this.failures.length >= this.maxFailures) {
+        this.__emitFatalError();
+      }
     });
+
     this.incrementalWatchDog.on('expired', () => {
       let err = new Error(`watchDog of ${this.watchDogTime} exceeded`);
       this.failures.push(err);
       this.emit('iteration-failure', err);
       this.emit('iteration-complete');
-      this.__emitFatalError();
+      this.overallWatchDog.touch();
+      if (this.failures.length >= this.maxFailures) {
+        this.__emitFatalError();
+      }
     });
 
     // Count the iteration that we're on.
