@@ -1,5 +1,6 @@
 let uuid = require('uuid');
 let debug = require('debug')('base:api');
+let _ = require('lodash');
 
 const ERROR_CODES = {
   MalformedPayload:         400,  // Only for JSON.parse() errors
@@ -40,7 +41,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
           err.badMessage = message;
           err.badCode = code;
           err.details = details;
-          monitor.captureError(err, {level: 'error'});
+          monitor.reportError(err);
         }
       }
       let requestInfo = {
@@ -69,7 +70,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
       ].join('\n');
       res.status(status).json({code, message, requestInfo, details});
     };
-    res.reportInternalError = (err) => {
+    res.reportInternalError = (err, tags = {}) => {
       let incidentId = uuid.v4();
       res.reportError(
         'InternalServerError',
@@ -82,7 +83,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
       );
       if (monitor) {
         err.incidentId = incidentId;
-        monitor.captureError(err, {level: 'error'});
+        monitor.reportError(err, tags);
       }
     };
     next();
