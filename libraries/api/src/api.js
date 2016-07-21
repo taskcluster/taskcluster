@@ -87,6 +87,7 @@ var parameterValidator = function(options) {
  *   output:   'http://schemas...output-schema.json',  // optional, null if no output
  *   skipInputValidation:    true,                     // defaults to false
  *   skipOutputValidation:   true,                     // defaults to false
+ *   name:     '...',                                  // method name for debug
  * }
  *
  * This validates body against the schema given in `options.input` and returns
@@ -133,7 +134,7 @@ var schema = function(validate, options) {
           err.schema = options.output;
           err.url = req.url;
           err.payload = json;
-          return res.reportInternalError(err);
+          return res.reportInternalError(err, {apiMethodName: options.name});
         }
       }
       // If JSON was valid or validation was skipped then reply with 200 OK
@@ -283,7 +284,8 @@ var createRemoteSignatureValidator = function(options) {
  *     'service:method:action:<resource>'
  *     ['admin', 'superuser'],
  *   ]
- *   deferAuth:   false // defaults to false
+ *   deferAuth:   false, // defaults to false
+ *   name:        '...', // API end-point name for internal errors
  * }
  *
  * Check that the client is authenticated and has scope patterns that satisfies
@@ -474,7 +476,7 @@ var remoteAuthentication = function(options, entry) {
         next();
       }
     }).catch(function(err) {
-      return res.reportInternalError(err);
+      return res.reportInternalError(err, {apiMethodName: entry.name});
     });
   };
 };
@@ -484,14 +486,15 @@ var remoteAuthentication = function(options, entry) {
  *
  * This invokes the handler with `context` as `this` and then catches
  * exceptions and failures of returned promises handler.
+ * Errors are reported as internal errors with `name` as API method name.
  */
-var handle = function(handler, context) {
+var handle = function(handler, context, name) {
   assert(handler, "No handler is provided");
   return function(req, res) {
     Promise.resolve(null).then(function() {
       return handler.call(context, req, res);
     }).catch(function(err) {
-      return res.reportInternalError(err);
+      return res.reportInternalError(err, {apiMethodName: name});
     });
   };
 };
@@ -789,7 +792,7 @@ API.prototype.router = function(options) {
       parameterValidator(entry.params),
       queryValidator(entry.query),
       schema(options.validator, entry),
-      handle(entry.handler, options.context)
+      handle(entry.handler, options.context, options.name)
     );
 
     // Create entry on router
