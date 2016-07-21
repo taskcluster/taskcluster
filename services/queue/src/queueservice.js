@@ -216,15 +216,16 @@ class QueueService {
   }
 
   /** Enqueue message ensure the dependency resolver handles the resolution */
-  async putResolvedMessage(taskId, resolution) {
+  async putResolvedMessage(taskId, taskGroupId, resolution) {
     assert(taskId, 'taskId must be given');
+    assert(taskGroupId, 'taskGroupId must be given');
     assert(resolution === 'completed' || resolution === 'failed' ||
            resolution === 'exception',
            'resolution must be completed, failed or exception');
 
     await this.ensureResolvedQueue();
     return this._putMessage(this.resolvedQueue, {
-      taskId, resolution,
+      taskId, taskGroupId, resolution,
     }, {
       ttl:                7 * 24 * 60 * 60,
       visibility:         0,

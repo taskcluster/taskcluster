@@ -101,9 +101,10 @@ suite('queue/QueueService', function() {
 
   test('putResolvedMessage, pollResolvedQueue', async () => {
     var taskId      = slugid.v4();
-    debug('Putting message with taskId: %s', taskId);
+    var taskGroupId = slugid.v4();
+    debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
     // Put message
-    await queueService.putResolvedMessage(taskId, 'completed');
+    await queueService.putResolvedMessage(taskId, taskGroupId, 'completed');
 
     // Poll for message
     return base.testing.poll(async () => {

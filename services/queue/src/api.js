@@ -1184,7 +1184,7 @@ api.declare({
   // If the last run was canceled, resolve dependencies and publish message
   if (run.state === 'exception' && run.reasonResolved === 'canceled') {
     // Update dependency tracker
-    await this.queueService.putResolvedMessage(taskId, 'exception');
+    await this.queueService.putResolvedMessage(taskId, task.taskGroupId, 'exception');
 
     // Publish message about the exception
     await this.publisher.taskException(_.defaults({
@@ -1607,7 +1607,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   }
 
   // Update dependency tracker
-  await this.queueService.putResolvedMessage(taskId, target);
+  await this.queueService.putResolvedMessage(taskId, task.taskGroupId, target);
 
   // Construct status object
   var status = task.status();
@@ -1834,7 +1834,7 @@ api.declare({
     ]);
   } else {
     // Update dependency tracker, as the task is resolved (no new run)
-    await this.queueService.putResolvedMessage(taskId, 'exception');
+    await this.queueService.putResolvedMessage(taskId, task.taskGroupId, 'exception');
 
     // Publish message about taskException
     await this.publisher.taskException({
