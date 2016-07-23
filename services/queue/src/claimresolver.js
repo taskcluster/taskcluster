@@ -119,6 +119,10 @@ class ClaimResolver {
       }));
 
       if (messages.length === 0 && !this.stopping) {
+        // Count that the queue is empty, we should have this happen regularly.
+        // otherwise, we're not keeping up with the messages. We can setup
+        // alerts to notify us if this doesn't happen for say 40 min.
+        this.monitor.count('claim-queue-empty');
         await this.sleep(this.pollingDelay);
       }
     }
@@ -266,4 +270,3 @@ class ClaimResolver {
 
 // Export ClaimResolver
 module.exports = ClaimResolver;
-

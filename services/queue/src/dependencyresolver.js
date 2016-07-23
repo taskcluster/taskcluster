@@ -105,6 +105,10 @@ class DependencyResolver {
       }));
 
       if (messages.length === 0 && !this._stopping) {
+        // Count that the queue is empty, we should have this happen regularly.
+        // otherwise, we're not keeping up with the messages. We can setup
+        // alerts to notify us if this doesn't happen for say 40 min.
+        this.monitor.count('resolved-queue-empty');
         await new Promise(accept => setTimeout(accept, this._pollingDelay));
       }
     }
