@@ -116,6 +116,10 @@ class DeadlineResolver {
       }));
 
       if (messages.length === 0 && !this.stopping) {
+        // Count that the queue is empty, we should have this happen regularly.
+        // otherwise, we're not keeping up with the messages. We can setup
+        // alerts to notify us if this doesn't happen for say 40 min.
+        this.monitor.count('deadline-queue-empty');
         await this.sleep(this.pollingDelay);
       }
     }
@@ -223,4 +227,3 @@ class DeadlineResolver {
 
 // Export DeadlineResolver
 module.exports = DeadlineResolver;
-
