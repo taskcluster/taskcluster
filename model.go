@@ -79,6 +79,7 @@ type (
 		// is typically the relative location of the log file to the user home
 		// directory
 		liveLog *livelog.LiveLog
+		Queue   *queue.Queue `json:"-"`
 	}
 
 	// Regardless of platform, we will have to call out to system commands to run tasks,

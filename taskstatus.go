@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -118,6 +119,15 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 			return err
 		}
 		task.TaskClaimResponse = *tcrsp
+		// note we don't need to worry about a mutex here since either old
+		// value or new value can be used for some crossover time, and the
+		// update should be atomic
+		task.Queue = queue.New(&tcclient.Credentials{
+			ClientID:    tcrsp.Credentials.ClientID,
+			AccessToken: tcrsp.Credentials.AccessToken,
+			Certificate: tcrsp.Credentials.Certificate,
+		})
+
 		// don't report failure if this fails, as it is already logged and failure =>
 		task.deleteFromAzure()
 		return nil
@@ -134,6 +144,14 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		}
 
 		task.TaskReclaimResponse = *tcrsp
+		// note we don't need to worry about a mutex here since either old
+		// value or new value can be used for some crossover time, and the
+		// update should be atomic
+		task.Queue = queue.New(&tcclient.Credentials{
+			ClientID:    tcrsp.Credentials.ClientID,
+			AccessToken: tcrsp.Credentials.AccessToken,
+			Certificate: tcrsp.Credentials.Certificate,
+		})
 		log.Printf("Reclaimed task %v successfully.", task.TaskId)
 		return nil
 	}
