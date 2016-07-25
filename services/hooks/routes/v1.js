@@ -335,6 +335,60 @@ api.declare({
   return res.status(200).json({});
 });
 
+/** Trigger a hook **/
+api.declare({
+  method:       'post',
+  route:        '/hooks/:hookGroupId/:hookId/trigger',
+  name:         'triggerHook',
+  deferAuth:    true,
+  scopes:       [["hooks:trigger-hook:<hookGroupId>/<hookId>"]],
+  input:        'trigger-payload.json',
+  output:       'task-status.json',
+  title:        'Trigger a hook',
+  stability:    'experimental',
+  description: [
+    "This endpoint will trigger the creation of a task from a hook definition."
+  ].join('\n')
+}, async function(req, res) {
+  var hookGroupId = req.params.hookGroupId;
+  var hookId      = req.params.hookId;
+  if (!req.satisfies({hookGroupId, hookId})) {
+    return;
+  }
+
+  var lastFire;
+  var resp;
+  var payload = req.body;
+  var hook = await this.Hook.load({hookGroupId, hookId}, true);
+
+  if (!hook) {
+    return res.status(404).json({
+      message: "Hook not found"
+    });
+  }
+
+  try {
+    resp = await this.taskcreator.fire(hook, payload);
+    lastFire = {
+      result: 'success',
+      taskId: resp.status.taskId,
+      time: new Date(),
+    };
+  } catch(err) {
+    lastFire = {
+      result: 'error',
+      error: err,
+      time: new Date(),
+    };
+  }
+
+  await hook.modify((hook) => {
+    hook.lastFire = lastFire;
+  });
+
+  return res.reply(resp);
+});
+
 // XXX disabled for the first draft of this service
 if (0) {
 
@@ -444,43 +498,6 @@ api.declare({
   if (req.params.token !== hook.triggerToken) {
     return res.status(401).json({
       message: "Invalid token"
-    });
-  }
-
-  let resp = await this.taskcreator.fire(hook, payload);
-  return res.reply(resp);
-});
-
-
-/** Trigger a hook for debugging **/
-api.declare({
-  method:       'post',
-  route:        '/hooks/:hookGroupId/:hookId/trigger',
-  name:         'triggerHook',
-  deferAuth:    true,
-  scopes:       [["hooks:trigger-hook:<hookGroupId>/<hookId>"]],
-  input:        'trigger-payload.json',
-  output:       'task-status.json',
-  title:        'Trigger a hook',
-  stability:    'experimental',
-  description: [
-    "Trigger a hook, given that you have the correct scoping for it"
-  ].join('\n')
-}, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId    = req.params.hookId;
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
-
-  var payload = req.body;
-
-  var hook = await this.Hook.load({hookGroupId, hookId}, true);
-
-  // Return a 404 if the hook entity doesn't exist
-  if (!hook) {
-    return res.status(404).json({
-      message: "Hook not found"
     });
   }
 
