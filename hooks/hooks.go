@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 14 Jul 2016 at 23:28:00 UTC. The code was generated
+// Mon, 25 Jul 2016 at 17:42:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -189,4 +189,18 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 	cd := tcclient.ConnectionData(*myHooks)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
 	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This endpoint will trigger the creation of a task from a hook definition.
+//
+// Required scopes:
+//   * hooks:trigger-hook:<hookGroupId>/<hookId>
+//
+// See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
+func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerPayload) (*TaskStatusResponse, error) {
+	cd := tcclient.ConnectionData(*myHooks)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusResponse), nil)
+	return responseObject.(*TaskStatusResponse), err
 }
