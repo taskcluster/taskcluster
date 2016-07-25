@@ -1,6 +1,5 @@
 let util = require('util');
 let assume = require('assume');
-let debug = require('debug')('taskcluster:loader');
 let Promise = require('promise');
 let _ = require('lodash');
 let TopoSort = require('topo-sort');
@@ -179,16 +178,16 @@ function loader(componentDirectory, virtualComponents = []) {
   return function(target, options = {}) {
     options = _.clone(options);
     if (typeof target !== 'string') {
-      debug(`Target is type ${typeof target}, not string`);
+      new Error(`Target is type ${typeof target}, not string`);
     }
-    assume(target).is.a('string');
     // Check that all virtual components are defined
-    assume(options).is.an('object');
+    if (typeof options !== 'object') {
+      throw new Error('options must be an object');
+    }
     for (let vComp of virtualComponents) {
       if (!options[vComp]) {
-        debug(`Requested component ${vComp} does not exist in loader`);
+        throw new Error(`Requested component '${vComp}' does not exist in loader`);
       }
-      assume(options[vComp]).exists();
     }
 
     // Keep state of loaded components, make the virtual ones immediately loaded
