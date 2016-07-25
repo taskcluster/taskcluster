@@ -313,7 +313,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		return err
 	}
 	par := queue.PostArtifactRequest(json.RawMessage(payload))
-	parsp, err := Queue.CreateArtifact(
+	parsp, err := task.Queue.CreateArtifact(
 		task.TaskId,
 		strconv.Itoa(int(task.RunId)),
 		artifact.Base().CanonicalPath,
