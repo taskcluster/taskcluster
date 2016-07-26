@@ -69,7 +69,6 @@ var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
  *   claimTimeout:   // Number of seconds before a claim expires
  *   queueService:   // Azure QueueService object from queueservice.js
  *   regionResolver: // Instance of EC2RegionResolver,
- *   publicProxies:  // Mapping from EC2 region to proxy host for publicBucket
  *   credentials:    // TaskCluster credentials for issuing temp creds on claim
  *   dependencyTracker: // Instance of DependencyTracker
  * }
@@ -116,7 +115,6 @@ var api = new base.API({
     'claimTimeout',       // Number of seconds before a claim expires
     'queueService',       // Azure QueueService object from queueservice.js
     'regionResolver',     // Instance of EC2RegionResolver,
-    'publicProxies',      // Mapping from EC2 region to host for publicBucket
     'credentials',        // TC credentials for issuing temp creds on claim
     'dependencyTracker',  // Instance of DependencyTracker
     'monitor',            // base.monitor instance
