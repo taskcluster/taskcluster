@@ -32,7 +32,8 @@
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "^2.5.3",
     "mocha-eslint": "^2.0.2",
-    "source-map-support": "^0.4.0"
+    "source-map-support": "^0.4.0",
+    "taskcluster-lib-validate": "^2.0.0"
   },
   "main": "./lib/docs.js"
 }
