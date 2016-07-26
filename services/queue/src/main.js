@@ -217,8 +217,7 @@ let load = base.loader({
     requires: ['cfg'],
     setup: async ({cfg}) => {
       let regionResolver = new EC2RegionResolver(
-        cfg.app.usePublicArtifactBucketProxy ?
-        _.keys(cfg.app.publicArtifactBucketProxies) : []
+        cfg.app.useCloudMirror ? cfg.app.cloudMirrorRegions : []
       );
       await regionResolver.loadIpRanges();
       return regionResolver;
@@ -249,7 +248,6 @@ let load = base.loader({
         publicBucket:     ctx.publicArtifactBucket,
         privateBucket:    ctx.privateArtifactBucket,
         regionResolver:   ctx.regionResolver,
-        publicProxies:    ctx.cfg.app.publicArtifactBucketProxies,
         credentials:      ctx.cfg.taskcluster.credentials,
         cloudMirrorHost:  ctx.cfg.app.cloudMirrorHost,
         artifactRegion:   ctx.cfg.aws.region,

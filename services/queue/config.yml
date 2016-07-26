@@ -128,10 +128,11 @@ production:
     taskGroupMemberTableName:     'QueueTaskGroupMembers'
     taskRequirementTableName:     'QueueTaskRequirement'
     taskDependencyTableName:      'QueueTaskDependency'
-    publicArtifactBucketProxies:
-      'us-east-1':  's3-copy-proxy-us-east-1.taskcluster.svc.tutum.io'
-      'us-west-1':  's3-copy-proxy-us-west-1.taskcluster.svc.tutum.io'
-    usePublicArtifactBucketProxy: !env:bool USE_PUBLIC_ARTIFACT_BUCKET_PROXY
+    cloudMirrorRegions:
+      - us-east-1
+      - us-west-1
+      - eu-central-1
+    useCloudMirror: !env:bool USE_PUBLIC_ARTIFACT_BUCKET_PROXY
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1
   server:
