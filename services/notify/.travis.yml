@@ -1,0 +1,32 @@
+language: node_js
+sudo: false
+env:
+  global:
+  - CXX=g++-4.8
+node_js:
+- '5'
+cache:
+  directories:
+    - node_modules
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+script: npm test
+
+# encrpyt channel name to get around issue
+# https://github.com/travis-ci/travis-ci/issues/1094
+notifications:
+  irc:
+    channels:
+      # encrpyted string was "irc.mozilla.org#taskcluster-bots"
+      - secure: "Nw2pFBO6XRnvg8apEA8Tcjj04PR9DFnPiUdV3PDjo2vCZC8BGVIGfp5trBi3HkkltV44ZMpeKNrFtZwZMa5wTbgqL1HT1OGvW8F2SOARbBUYHhcyZabZEpeYLcDcRg7tnoPHz3xEPKPBmhubJ+aRqLJQJlM3rcyfCjJ7o9tfDMomAPC75leeL2/367Oeck8ZRyCfwQRAldGnEIcsDi1S56WUWXRY607aNOtVYfrhzEmTCRjRK8/Y2l5zv4I2Te7uZX3bTCeqYtcF4/9BqgtYsvf1a0fygB1UE/ESjCmEynYrrfxa/Nx77gyJx4yDorqOQ/2md74IvDk+IftAWbtyOBSvNZ5XlT/bAkjM79RD0J/s2PKfmB66vEKg6ke7esxrea3IvXBiQ+1wHG5a/ofFpdlFQFqWnFre5omMu1N2aavnTKqOcAK+TU2bYwPRTSmmFPpFNvtxtwgS0hz9TAyrUsRzQmrqZIaNuERGGFIcF7VRnUVEgyydlIL5iUwZnkcRc9u4Ijjk5oDggCFdS08wQ4k34mjuBssOcJwZmWdUs2HeblTwfOpCGJfkH2kBOuNYXe5gGpdiQZJEAWd2A3l4cdVar7RLHY9MLAMCOAwgSeohP5AijKvzVQGi4oM9NLZ3MNuMv1nOBxKITKRNO4oA34tYA++ocA9kiV8vN2Hkq7c="
+    on_success: change
+    on_failure: always
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
+      - "Commit message : %{commit_message}"
