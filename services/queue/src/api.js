@@ -581,7 +581,7 @@ api.declare({
   let expires = new Date(taskDef.expires);
 
   // Insert entry in deadline queue
-  await this.queueService.putDeadlineMessage(taskId, deadline);
+  await this.queueService.putDeadlineMessage(taskId, taskDef.taskGroupId, deadline);
 
   // Try to create Task entity
   try {
@@ -777,7 +777,7 @@ api.declare({
   let expires = new Date(taskDef.expires);
 
   // Insert entry in deadline queue (garbage entries are acceptable)
-  await this.queueService.putDeadlineMessage(taskId, deadline);
+  await this.queueService.putDeadlineMessage(taskId, taskDef.taskGroupId, deadline);
 
   // Try to create Task entity
   try {
