@@ -49,10 +49,11 @@ suite('queue/QueueService', function() {
 
   test('putDeadlineMessage, pollDeadlineQueue', async () => {
     var taskId      = slugid.v4();
+    var taskGroupId = slugid.v4();
     var deadline    = new Date(new Date().getTime() + 2 * 1000);
-    debug('Putting message with taskId: %s', taskId);
+    debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
     // Put message
-    await queueService.putDeadlineMessage(taskId, deadline);
+    await queueService.putDeadlineMessage(taskId, taskGroupId, deadline);
 
     // Poll for message
     return base.testing.poll(async () => {
