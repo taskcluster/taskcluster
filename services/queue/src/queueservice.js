@@ -233,8 +233,9 @@ class QueueService {
   }
 
   /** Enqueue message to become visible when deadline has expired */
-  async putDeadlineMessage(taskId, deadline) {
+  async putDeadlineMessage(taskId, taskGroupId, deadline) {
     assert(taskId,                      'taskId must be given');
+    assert(taskGroupId,                 'taskGroupId must be given');
     assert(deadline instanceof Date,    'deadline must be a date');
     assert(isFinite(deadline),          'deadline must be a valid date');
 
@@ -244,6 +245,7 @@ class QueueService {
            secondsTo(deadline) + delay);
     return this._putMessage(this.deadlineQueue, {
       taskId:             taskId,
+      taskGroupId:        taskGroupId,
       deadline:           deadline.toJSON(),
     }, {
       ttl:                7 * 24 * 60 * 60,
