@@ -9,7 +9,7 @@ let marked = require('marked');
  * listener and the API implementation.
  */
 class Notifier {
-  constructor(options = {}) {
+  constructor (options = {}) {
     // Set default options
     this.options = _.defaults({}, options, {
 
@@ -18,7 +18,7 @@ class Notifier {
       params: {
         Source: options.email,
       },
-    }, options.aws);
+    }, options.aws));
     this.publisher = options.publisher;
     this.sqs = new aws.SQS(options.aws);
     this.queueUrl = this.sqs.createQueue({
@@ -26,7 +26,7 @@ class Notifier {
     }).then(req => req.data.QueueUrl);
   }
 
-  email({address, subject, content, replyTo}) {
+  email ({address, subject, content, replyTo}) {
     let html = marked(content, {
       gfm:          true,
       tables:       true,
@@ -60,11 +60,11 @@ class Notifier {
     });
   }
 
-  pulse({routingKey, message}) {
+  pulse ({routingKey, message}) {
     return this.publisher.notify(message, routingKey);
   }
 
-  async irc({channel, user, message}) {
+  async irc ({channel, user, message}) {
     await this.sqs.sendMessage({
       QueueUrl:       await this.queueUrl,
       MessageBody:    JSON.stringify({channel, user, message}),

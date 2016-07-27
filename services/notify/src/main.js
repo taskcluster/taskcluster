@@ -30,15 +30,15 @@ let load = base.loader({
         return new base.stats.Influx(cfg.influx);
       }
       return new base.stats.NullDrain();
-    }
+    },
   },
   monitor: {
     requires: ['cfg', 'influx', 'process'],
     setup: ({cfg, influx, process}) => base.stats.startProcessUsageReporting({
       drain:      influx,
       component:  cfg.app.statsComponent,
-      process:    process
-    })
+      process:    process,
+    }),
   },
 
   // Validator and publisher
@@ -49,8 +49,8 @@ let load = base.loader({
       constants:     require('../schemas/constants'),
       publish:       cfg.app.publishMetaData,
       schemaPrefix:  'queue/v1/',
-      aws:           cfg.aws
-    })
+      aws:           cfg.aws,
+    }),
   },
   publisher: {
     requires: ['cfg', 'validator', 'influx', 'process'],
@@ -63,8 +63,8 @@ let load = base.loader({
       aws:                cfg.aws,
       drain:              influx,
       component:          cfg.app.statsComponent,
-      process:            process
-    })
+      process:            process,
+    }),
   },
 
   // Create artifact bucket instances
@@ -78,18 +78,18 @@ let load = base.loader({
       });
       await bucket.setupCORS();
       return bucket;
-    }
+    },
   },
   privateArtifactBucket: {
     requires: ['cfg'],
     setup: async ({cfg}) => {
       let bucket = new Bucket({
         bucket:           cfg.app.privateArtifactBucket,
-        credentials:      cfg.aws
+        credentials:      cfg.aws,
       });
       await bucket.setupCORS();
       return bucket;
-    }
+    },
   },
 
   // Create artifactStore
@@ -98,12 +98,12 @@ let load = base.loader({
     setup: async ({cfg}) => {
       let store = new BlobStore({
         container:        cfg.app.artifactContainer,
-        credentials:      cfg.azure
+        credentials:      cfg.azure,
       });
       await store.createContainer();
       await store.setupCORS();
       return store;
-    }
+    },
   },
 
   // Create artifacts table
@@ -119,15 +119,15 @@ let load = base.loader({
         context: {
           blobStore:      ctx.artifactStore,
           publicBucket:   ctx.publicArtifactBucket,
-          privateBucket:  ctx.privateArtifactBucket
+          privateBucket:  ctx.privateArtifactBucket,
         },
         drain:            ctx.influx,
         component:        ctx.cfg.app.statsComponent,
-        process:          ctx.process
+        process:          ctx.process,
       });
       await Artifact.ensureTable();
       return Artifact;
-    }
+    },
   },
 
   // Create task table
@@ -139,11 +139,11 @@ let load = base.loader({
         credentials:      cfg.azure,
         drain:            influx,
         component:        cfg.app.statsComponent,
-        process:          process
+        process:          process,
       });
       await Task.ensureTable();
       return Task;
-    }
+    },
   },
 
   // Create QueueService to manage azure queues
@@ -154,8 +154,8 @@ let load = base.loader({
       credentials:      cfg.azure,
       claimQueue:       cfg.app.claimQueue,
       deadlineQueue:    cfg.app.deadlineQueue,
-      deadlineDelay:    cfg.app.deadlineDelay
-    })
+      deadlineDelay:    cfg.app.deadlineDelay,
+    }),
   },
 
   // Create EC2RegionResolver for regions we have artifact proxies in
@@ -168,7 +168,7 @@ let load = base.loader({
       );
       await regionResolver.loadIpRanges();
       return regionResolver;
-    }
+    },
   },
 
   api: {
@@ -176,7 +176,7 @@ let load = base.loader({
       'cfg', 'publisher', 'validator',
       'Task', 'Artifact', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
-      'regionResolver', 'influx'
+      'regionResolver', 'influx',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -200,8 +200,8 @@ let load = base.loader({
       referencePrefix:  'queue/v1/api.json',
       aws:              ctx.cfg.aws,
       component:        ctx.cfg.app.statsComponent,
-      drain:            ctx.influx
-    })
+      drain:            ctx.influx,
+    }),
   },
 
   // Create the server process
@@ -211,7 +211,7 @@ let load = base.loader({
       let app = base.app(cfg.server);
       app.use('/v1', api);
       return app.createServer();
-    }
+    },
   },
 
   // Create the claim-reaper process
@@ -221,11 +221,11 @@ let load = base.loader({
       let resolver = new ClaimResolver({
         Task, queueService, publisher,
         pollingDelay:   cfg.app.claim.pollingDelay,
-        parallelism:    cfg.app.claim.parallelism
+        parallelism:    cfg.app.claim.parallelism,
       });
       resolver.start();
       return resolver;
-    }
+    },
   },
 
   // Create the deadline reaper process
@@ -235,11 +235,11 @@ let load = base.loader({
       let resolver = new DeadlineResolver({
         Task, queueService, publisher,
         pollingDelay:   cfg.app.deadline.pollingDelay,
-        parallelism:    cfg.app.deadline.parallelism
+        parallelism:    cfg.app.deadline.parallelism,
       });
       resolver.start();
       return resolver;
-    }
+    },
   },
 
   // Create the artifact expiration process (periodic job)
@@ -248,30 +248,30 @@ let load = base.loader({
     setup: async ({cfg, Artifact, influx}) => {
       // Find an artifact expiration delay
       let now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
-      debug("Expiring artifacts at: %s, from before %s", new Date(), now);
+      debug('Expiring artifacts at: %s, from before %s', new Date(), now);
       let count = await Artifact.expire(now);
-      debug("Expired %s artifacts", count);
+      debug('Expired %s artifacts', count);
 
       // Stop recording statistics and send any stats that we have
       base.stats.stopProcessUsageReporting();
       return influx.close();
-    }
+    },
   },
 
   // Create the queue expiration process (periodic job)
   'expire-queues': {
     requires: ['cfg', 'queueService', 'monitor', 'influx'],
     setup: async ({cfg, queueService, influx}) => {
-      debug("Expiring queues at: %s", new Date());
+      debug('Expiring queues at: %s', new Date());
       let count = await queueService.deleteUnusedWorkerQueues();
-      debug("Expired %s queues", count);
+      debug('Expired %s queues', count);
 
       // Stop recording statistics and send any stats that we have
       base.stats.stopProcessUsageReporting();
       return influx.close();
-    }
+    },
   },
 
   // Create the task expiration process (periodic job)
@@ -279,23 +279,23 @@ let load = base.loader({
     requires: ['cfg', 'Task', 'monitor', 'influx'],
     setup: async ({cfg, Task, influx}) => {
       var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       // Expire tasks using delay
-      debug("Expiring tasks at: %s, from before %s", new Date(), now);
+      debug('Expiring tasks at: %s, from before %s', new Date(), now);
       let count = await Task.expire(now);
-      debug("Expired %s tasks", count);
+      debug('Expired %s tasks', count);
 
       // Stop recording statistics and send any stats that we have
       base.stats.stopProcessUsageReporting();
       return influx.close();
-    }
+    },
   },
 
   // Create the load-test process (run as one-off job)
   'load-test': {
     requires: ['cfg'],
-    setup: ({cfg}) => require('./load-test')(cfg)
+    setup: ({cfg}) => require('./load-test')(cfg),
   },
 
 }, ['profile', 'process']);
