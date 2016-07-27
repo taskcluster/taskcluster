@@ -10,8 +10,4 @@ let IRCBot = require('./irc');
     password: '12345',
   });
 
-
-
-
-
 })().catch(err => console.log(err.stack));
