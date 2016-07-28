@@ -64,6 +64,7 @@ properties:
       expires and not longer works for authentication.
     type:         string
     format:       date-time
+additionalProperties: false
 required:
   - queues
   - expires

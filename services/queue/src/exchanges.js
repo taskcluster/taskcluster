@@ -124,6 +124,26 @@ var buildCommonRoutingKey = function(options) {
   ];
 };
 
+/** Build common routing key construct for task-group-messages for `exchanges.declare` */
+var buildTaskGroupRoutingKey = function(options) {
+  options = options || {};
+  return [
+    {
+      name:             'routingKeyKind',
+      summary:          'Identifier for the routing-key kind. This is ' +
+                        'always `\'primary\'` for the formalized routing key.',
+      constant:         'primary',
+      required:         true,
+    },
+    {
+      name:             'taskGroupId',
+      summary:          '`taskGroupId` for the taskGroup this message concerns',
+      required:         true,
+      maxSize:          22,
+    },
+  ];
+};
+
 /** Build an AMQP compatible message from a message */
 var commonMessageBuilder = function(message) {
   message.version = 1;
@@ -295,5 +315,25 @@ exchanges.declare({
   schema:             'task-exception-message.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
+  CCBuilder:          commonCCBuilder,
+});
+
+/** Task group resolved exchange */
+exchanges.declare({
+  exchange:           'task-group-resolved',
+  name:               'taskGroupResolved',
+  title:              'Task Group Resolved',
+  description: [
+    'Whenever a task group has run to completion (success is not considered),',
+    'a message will be sent on this exchange. It can be listened to to know',
+    'when a group is "complete". There is no guarantee that this group is now',
+    'intert. It can have more tasks added to it by the scheduler, but at least',
+    'for the time being, it is done. If another task is added to this group and',
+    'it completes, this message will be sent again.',
+  ].join('\n'),
+  routingKey:         buildTaskGroupRoutingKey(),
+  schema:             'task-group-resolved.json#',
+  messageBuilder:     commonMessageBuilder,
+  routingKeyBuilder:  (message, routes) => { return {taskGroupId: message.taskGroupId}; },
   CCBuilder:          commonCCBuilder,
 });

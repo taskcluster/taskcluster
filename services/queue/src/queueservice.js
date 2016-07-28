@@ -299,9 +299,10 @@ class QueueService {
    * ```js
    * [
    *   {
-   *     taskId:      '<taskId>',     // taskId that was resolved
-   *     resolution:  ...,            // resolution of the task
-   *     remove:      function() {},  // Delete message call when handled
+   *     taskId:      '<taskId>',      // taskId that was resolved
+   *     taskGroupId: '<taskGroupId>', // taskGroupId of task that was resolved
+   *     resolution:  ...,             // resolution of the task
+   *     remove:      function() {},   // Delete message call when handled
    *   },
    *   ... // up-to to 32 objects in one list
    * ]
@@ -323,6 +324,7 @@ class QueueService {
     return messages.map(m => {
       return {
         taskId:       m.payload.taskId,
+        taskGroupId:  m.payload.taskGroupId,
         resolution:   m.payload.resolution,
         remove:       m.remove,
       };
@@ -360,6 +362,7 @@ class QueueService {
     return messages.map(m => {
       return {
         taskId:       m.payload.taskId,
+        taskGroupId:  m.payload.taskGroupId,
         deadline:     new Date(m.payload.deadline),
         remove:       m.remove,
       };

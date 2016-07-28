@@ -1,0 +1,18 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Task Group Resolved"
+description: |
+  Message written once a task group has no tasks to be run. It is
+  possible for a task group to later have another task added, in which
+  case this message will be sent again once it finishes.
+type:               object
+properties:
+  version:    {$const: message-version}
+  taskGroupId:
+    title:          "Task-Group Identifier"
+    description: |
+      Identifier for the task-group being listed.
+    type:           string
+    pattern:        {$const: slugid-pattern}
+required:
+ - taskGroupId
+additionalProperties: false

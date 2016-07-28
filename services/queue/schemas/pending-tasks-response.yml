@@ -31,6 +31,7 @@ properties:
       number of reported here may be higher than actual number of pending tasks.
       But there cannot be more pending tasks reported here. Ie. this is an
       **upper-bound** on the number of pending tasks.
+additionalProperties: false
 required:
   - provisionerId
   - workerType
