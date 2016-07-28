@@ -1,6 +1,6 @@
 package extpoints
 
-import "github.com/taskcluster/taskcluster-client-go/tcclient"
+import "github.com/taskcluster/taskcluster-cli/client"
 
 // A ConfigOption is something with a default value and a validator.
 // Only requirement is that values are JSON structures.
@@ -17,7 +17,7 @@ type Context struct {
 	// Command line arguments parsed with docopt
 	Arguments map[string]interface{}
 	// Globally configured taskcluster credentials (nil, if none are available)
-	Credentials *tcclient.Credentials
+	Credentials *client.Credentials
 	// Config keys matching declared ConfigOptions
 	Config map[string]interface{}
 }

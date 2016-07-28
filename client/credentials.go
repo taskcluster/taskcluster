@@ -1,0 +1,108 @@
+package client
+
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"hash"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/tent/hawk-go"
+)
+
+// Credentials for taskcluster and methods to sign requests.
+type Credentials struct {
+	ClientID         string   `json:"clientId"`
+	AccessToken      string   `json:"accessToken"`
+	Certificate      string   `json:"certificate"`
+	AuthorizedScopes []string `json:"authorizedScopes"`
+}
+
+// PayloadHash creates payload hash calculator for given content-type
+func PayloadHash(contentType string) hash.Hash {
+	a := hawk.Auth{
+		Credentials: hawk.Credentials{
+			Hash: sha256.New,
+		},
+	}
+	return a.PayloadHash(contentType)
+}
+
+type certificate struct {
+	Version   int      `json:"version"`
+	Scopes    []string `json:"scopes"`
+	Start     int64    `json:"start"`
+	Expiry    int64    `json:"expiry"`
+	Seed      string   `json:"seed"`
+	Signature string   `json:"signature"`
+	Issuer    string   `json:"issuer,omitempty"`
+}
+
+type ext struct {
+	Certificate      *certificate `json:"certificate,omitempty"`
+	AuthorizedScopes *[]string    `json:"authorizedScopes,omitempty"`
+}
+
+func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, error) {
+	// Create a hawk auth
+	a, err := hawk.NewURLAuth(url, &hawk.Credentials{
+		ID:   c.ClientID,
+		Key:  c.AccessToken,
+		Hash: sha256.New,
+	}, 0)
+	if err != nil {
+		return nil, err
+	}
+	a.Method = method
+
+	// Add ext, if needed
+	var e ext
+	if c.Certificate != "" {
+		err = json.Unmarshal([]byte(c.Certificate), e.Certificate)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse certificate, error: %s", err)
+		}
+	}
+	if len(c.AuthorizedScopes) > 0 {
+		e.AuthorizedScopes = &c.AuthorizedScopes
+	}
+	if e.Certificate != nil || e.AuthorizedScopes != nil {
+		s, _ := json.Marshal(e)
+		a.Ext = string(s)
+	}
+
+	// Set payload hash
+	if h != nil {
+		a.SetHash(h)
+	}
+
+	return a, nil
+}
+
+// SignHeader generates a request signature for Authorization
+func (c *Credentials) SignHeader(method, url string, h hash.Hash) (string, error) {
+	a, err := c.newAuth(strings.ToUpper(method), url, h)
+	if err != nil {
+		return "", err
+	}
+	return a.RequestHeader(), nil
+}
+
+// SignURL will generate a (bewit) signed URL
+func (c *Credentials) SignURL(URL string) (string, error) {
+	a, err := c.newAuth("GET", URL, nil)
+	if err != nil {
+		return "", err
+	}
+	URL += "?bewit=" + url.QueryEscape(a.Bewit())
+	return URL, nil
+}
+
+// SignRequest will add an Authorization header
+func (c *Credentials) SignRequest(req *http.Request, hash hash.Hash) error {
+	s, err := c.SignHeader(req.Method, req.URL.String(), hash)
+	req.Header.Set("Authorization", s)
+	return err
+}

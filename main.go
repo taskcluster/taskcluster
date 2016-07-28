@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/docopt/docopt-go"
+	"github.com/taskcluster/taskcluster-cli/client"
 	"github.com/taskcluster/taskcluster-cli/config"
 	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
@@ -89,9 +90,30 @@ func main() {
 		true, "taskcluster", false,
 	)
 
+	// Create credentials, if available in configuration
+	var credentials *client.Credentials
+	clientID, ok1 := config["config"]["clientId"].(string)
+	accessToken, ok2 := config["config"]["accessToken"].(string)
+	if ok1 && ok2 {
+		certificate, _ := config["config"]["certificate"].(string)
+		authorizedScopes, _ := config["config"]["authorizedScopes"].([]string)
+		credentials = &client.Credentials{
+			ClientID:         clientID,
+			AccessToken:      accessToken,
+			Certificate:      certificate,
+			AuthorizedScopes: authorizedScopes,
+		}
+	}
+
 	// Execute provider with parsed args
-	provider.Execute(extpoints.Context{
-		Arguments: subArguments,
-		Config:    config[cmd],
+	success := provider.Execute(extpoints.Context{
+		Arguments:   subArguments,
+		Config:      config[cmd],
+		Credentials: credentials,
 	})
+	if success {
+		os.Exit(0)
+	} else {
+		os.Exit(1)
+	}
 }

@@ -1,12 +1,20 @@
 package apis
 
 import (
+	"bytes"
 	"fmt"
+	"hash"
 	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
 	"strings"
 
 	"github.com/taskcluster/taskcluster-cli/apis/definitions"
+	"github.com/taskcluster/taskcluster-cli/client"
 	"github.com/taskcluster/taskcluster-cli/extpoints"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type apiProvider struct {
@@ -112,40 +120,211 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	}
 	// Print help information about the end-point
 	if entry == nil {
-		if argv["help"] == true {
-			// Print help
-		} else {
+		if argv["help"] != true {
 			// Internal error
 			panic("Unknown command, internal error!")
 		}
-	} else {
-
+		// Print help
+		method := argv["<method>"].(string)
+		for _, e := range p.Entries {
+			if e.Name == method {
+				entry = &e
+			}
+		}
+		if entry == nil {
+			fmt.Printf("Unknown method: '%s'\n", method)
+		}
+		p.help(entry)
+		return true
 	}
 
-	fmt.Println("-----------------")
-	fmt.Printf("%+v\n", entry)
-	for _, arg := range entry.Args {
-		fmt.Printf("  %s = %s\n", arg, argv["<"+arg+">"])
-	}
-	fmt.Println("-----------------")
-
-	for k, v := range argv {
-		if v != false {
-			fmt.Printf("%s = %#v\n", k, v)
+	// Read payload
+	var input io.Reader
+	if payload, ok := argv["<payload>"].(string); ok {
+		if payload == "-" {
+			input = os.Stdin
+		} else {
+			input = bytes.NewBufferString(payload)
 		}
 	}
 
-	return true
+	// Setup output
+	var output io.Writer
+	if out, ok := argv["--output"].(string); ok {
+		f, err := os.Create(out)
+		if err != nil {
+			fmt.Printf("Failed to open output file, error: %s\n", err)
+			return false
+		}
+		defer f.Close()
+		output = f
+	} else {
+		output = os.Stdout
+	}
+
+	// Construct arguments
+	args := make(map[string]string)
+	for _, arg := range entry.Args {
+		args[arg] = argv["<"+arg+">"].(string)
+	}
+
+	// Construct query
+	query := make(map[string]string)
+	for _, opt := range entry.Query {
+		query[opt] = argv["--"+opt].(string)
+	}
+
+	// Do a dry run
+	if argv["--dry-run"] == true {
+		return p.dryrun(entry, args, query, input, output)
+	}
+
+	// Find baseURL
+	baseURL := context.Config["baseUrl"].(string)
+	if s, ok := argv["--base-url"].(string); ok {
+		baseURL = s
+	}
+
+	// Execute method
+	return p.execute(baseURL, entry, context, args, query, input, output)
 }
 
 func (p apiProvider) help(entry *definitions.Entry) {
-
+	fmt.Printf("%s\n", entry.Title)
+	fmt.Printf("Method:    %s\n", entry.Method)
+	fmt.Printf("BaseUrl:   %s\n", p.BaseURL)
+	fmt.Printf("Path:      %s\n", entry.Route)
+	fmt.Printf("Stability: %s\n", entry.Stability)
+	fmt.Printf("Scopes:\n")
+	for i, scopes := range entry.Scopes {
+		fmt.Printf("  %s", strings.Join(scopes, ","))
+		if i == len(scopes) {
+			fmt.Printf(", or")
+		}
+		fmt.Println("")
+	}
+	fmt.Println(entry.Description)
 }
 
-func (p apiProvider) dryrun(entry *definitions.Entry, args, query map[string]string, payload io.Reader, output io.Writer) {
+func (p apiProvider) dryrun(
+	entry *definitions.Entry, args, query map[string]string,
+	payload io.Reader, output io.Writer,
+) bool {
+	// If there is no schema, there is nothing to validate
+	schema, ok := schemas[entry.Input]
+	if !ok {
+		return true
+	}
 
+	// Read all input
+	data, err := ioutil.ReadAll(payload)
+	if err != nil {
+		fmt.Printf("Failed to read input, error: %s\n", err)
+	}
+	input := gojsonschema.NewStringLoader(string(data))
+
+	// Validate against input schema
+	result, err := gojsonschema.Validate(
+		gojsonschema.NewStringLoader(schema), input,
+	)
+	if err != nil {
+		fmt.Printf("Validation failed, error: %s\n", err)
+		return false
+	}
+
+	// Print all validation errors
+	for _, e := range result.Errors() {
+		fmt.Printf(" - %s\n", e.Description())
+	}
+
+	return result.Valid()
 }
 
-func (p apiProvider) execute(baseURL string, entry *definitions.Entry, args, query map[string]string, payload io.Reader, output io.Writer) {
+func (p apiProvider) execute(
+	baseURL string, entry *definitions.Entry, context extpoints.Context,
+	args, query map[string]string, payload io.Reader, output io.Writer,
+) bool {
+	var input []byte
+	// Read all input
+	if entry.Input != "" {
+		data, err := ioutil.ReadAll(payload)
+		if err != nil {
+			fmt.Printf("Failed to read input, error: %s\n", err)
+		}
+		input = data
+	}
 
+	// Parameterize the route
+	route := entry.Route
+	for k, v := range args {
+		val := strings.Replace(url.QueryEscape(v), "+", "%20", -1)
+		route = strings.Replace(route, "<"+k+">", val, 1)
+	}
+
+	// Create query options
+	qs := make(url.Values)
+	for k, v := range query {
+		qs.Add(k, v)
+	}
+	q := qs.Encode()
+	if q != "" {
+		q = "?" + q
+	}
+
+	// Construct body
+	var body io.Reader
+	if len(input) > 0 {
+		body = bytes.NewReader(input)
+	}
+
+	// Try to make the request up to 5 times
+	var err error
+	var res *http.Response
+	for i := 0; i < 5; i++ {
+		// New request
+		req, err2 := http.NewRequest(entry.Method, baseURL+route+q, body)
+		if err2 != nil {
+			panic(fmt.Sprintf("Internal error constructing request, error: %s", err))
+		}
+
+		// If there is a body, we set a content-type
+		if body != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
+
+		// Sign request if credentials are available
+		if context.Credentials != nil {
+			var h hash.Hash
+			// Create payload hash if there is any
+			if body != nil {
+				h = client.PayloadHash("application/json")
+				h.Write(input)
+			}
+			err2 := context.Credentials.SignRequest(req, h)
+			if err2 != nil {
+				fmt.Println("Failed to sign request, error: ", err2)
+				return false
+			}
+		}
+
+		// Send request
+		res, err = http.DefaultClient.Do(req)
+		// If error or 5xx we retry
+		if err != nil && res.StatusCode/100 == 5 {
+			continue
+		}
+		break
+	}
+	// Handle request errors
+	if err != nil {
+		fmt.Println("Request failed")
+		return false
+	}
+
+	// Print the request to whatever output
+	defer res.Body.Close()
+	_, err = io.Copy(output, res.Body)
+
+	// Exit
+	return err == nil && res.StatusCode/100 == 2
 }
