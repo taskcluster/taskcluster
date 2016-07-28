@@ -67,7 +67,7 @@ suite('queue/QueueService', function() {
 
       // Check if we got the message
       var foundTaskId = messages.some((message) => {
-        return message.taskId === taskId &&
+        return message.taskId === taskId && message.taskGroupId === taskGroupId &&
                message.deadline.getTime() === deadline.getTime();
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
@@ -119,7 +119,7 @@ suite('queue/QueueService', function() {
 
       // Check if we got the message
       var foundTaskId = messages.some((message) => {
-        return message.taskId === taskId &&
+        return message.taskId === taskId && message.taskGroupId === taskGroupId &&
                message.resolution === 'completed';
       });
       assert(foundTaskId, 'Expected to see taskId at some point');
