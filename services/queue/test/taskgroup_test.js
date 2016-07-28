@@ -29,30 +29,26 @@ suite('TaskGroup features', () => {
     let taskIdA = slugid.v4();
     let taskGroupId = slugid.v4();
 
+    // Start dependency-resolver
+    await helper.dependencyResolver();
+
     await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
       taskId:   taskIdA,
     }));
     await helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
       taskId:   taskIdA,
     }));
+    await helper.events.listenFor('task-group-resolved', helper.queueEvents.taskGroupResolved({
+      taskGroupId: taskGroupId,
+    }));
 
     debug('### Creating taskA');
-    helper.scopes(
-      'queue:define-task:no-provisioner/test-worker',
-      'queue:task-group-id:dummy-scheduler/' + taskGroupId,
-      'queue:schedule-task:dummy-scheduler/' + taskGroupId + '/' + taskIdA,
-    );
     var r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
     debug('### Creating taskB');
     let taskIdB = slugid.v4();
-    helper.scopes(
-      'queue:define-task:no-provisioner/test-worker',
-      'queue:task-group-id:dummy-scheduler/' + taskGroupId,
-      'queue:schedule-task:dummy-scheduler/' + taskGroupId + '/' + taskIdB,
-    );
     await helper.queue.createTask(taskIdB, _.defaults({
       taskGroupId,
     }, taskDef));
@@ -68,6 +64,24 @@ suite('TaskGroup features', () => {
     // Check taskA status
     var r2 = await helper.queue.status(taskIdA);
     assume(r1.status).deep.equals(r2.status);
+
+    // Check that task group finishes
+    debug('### Claim and resolve taskA');
+    await helper.queue.claimTask(taskIdA, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker',
+    });
+    await helper.queue.reportCompleted(taskIdA, 0);
+
+    debug('### Claim and resolve taskB');
+    await helper.queue.claimTask(taskIdB, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker',
+    });
+    await helper.queue.reportCompleted(taskIdB, 0);
+
+    var tgf = await helper.events.waitFor('task-group-resolved');
+    assume(tgf.payload.taskGroupId).equals(taskGroupId);
   });
 
   test('schedulerId is fixed per taskGroupId', async () => {

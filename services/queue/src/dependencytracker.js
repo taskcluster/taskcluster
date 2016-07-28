@@ -11,29 +11,32 @@ let base    = require('taskcluster-base');
  *
  * Options:
  * {
- *   Task:              data.Task instance
- *   publisher:         publisher from exchanges
- *   queueService:      QueueService instance
- *   TaskDependency:    data.TaskDependency instance
- *   TaskRequirement:   data.TaskRequirement instance
+ *   Task:               data.Task instance
+ *   publisher:          publisher from exchanges
+ *   queueService:       QueueService instance
+ *   TaskDependency:     data.TaskDependency instance
+ *   TaskRequirement:    data.TaskRequirement instance
+ *   TaskGroupActiveSet: data.TaskGroupMember instance
  * }
  */
 class DependencyTracker {
   constructor(options = {}) {
     // Validate options
-    assert(options,                 'options are required');
-    assert(options.Task,            'Expected options.Task');
-    assert(options.publisher,       'Expected options.publisher');
-    assert(options.queueService,    'Expected options.queueService');
-    assert(options.TaskDependency,  'Expected options.TaskDependency');
-    assert(options.TaskRequirement, 'Expected options.TaskRequirement');
+    assert(options,                    'options are required');
+    assert(options.Task,               'Expected options.Task');
+    assert(options.publisher,          'Expected options.publisher');
+    assert(options.queueService,       'Expected options.queueService');
+    assert(options.TaskDependency,     'Expected options.TaskDependency');
+    assert(options.TaskRequirement,    'Expected options.TaskRequirement');
+    assert(options.TaskGroupActiveSet, 'Expected options.TaskGroupActiveSet');
 
     // Store options on this object
-    this.Task             = options.Task;
-    this.publisher        = options.publisher;
-    this.queueService     = options.queueService;
-    this.TaskDependency   = options.TaskDependency;
-    this.TaskRequirement  = options.TaskRequirement;
+    this.Task               = options.Task;
+    this.publisher          = options.publisher;
+    this.queueService       = options.queueService;
+    this.TaskDependency     = options.TaskDependency;
+    this.TaskRequirement    = options.TaskRequirement;
+    this.TaskGroupActiveSet = options.TaskGroupActiveSet;
   }
 
   /**
@@ -217,7 +220,7 @@ class DependencyTracker {
   }
 
   /** Track resolution of a task, scheduling any dependent tasks */
-  async resolveTask(taskId, resolution) {
+  async resolveTask(taskId, taskGroupId, resolution) {
     assert(resolution === 'completed' || resolution === 'failed' ||
          resolution === 'exception',
          'resolution must be completed, failed or exception');
@@ -252,6 +255,8 @@ class DependencyTracker {
         }
       },
     });
+
+    await this.updateTaskGroupActiveSet(taskId, taskGroupId);
   }
 
   /** Returns true, if some task requirement is blocking the task */
@@ -263,14 +268,46 @@ class DependencyTracker {
     // we better not make assumptions about their APIs being sane. But since
     // we're not filtering here I fully expect that we should able to get the
     // first entry. Just we could if we specified both partitionKey and rowKey.
-    assert(
-      result.entries.length > 0 || !result.continuation,
-      'Single request emptiness checking invariant failed, this is a ' +
-      'flawed assumption in our code. Search the code for "emptiness checking "'
-    );
+    if (result.entries.length === 0 && result.continuation) {
+      let err = new Error('Single request emptiness check invariant failed. ' +
+                          'This is a flawed assumption in isBlocked()');
+      err.taskId = taskId;
+      err.result = result;
+      throw err;
+    }
 
     // If we have any entries the taskId is blocked!
     return result.entries.length > 0;
+  }
+
+  /**
+   * Remove a resolved task from the working set and check for task-group resolution
+   *
+   * If a task-group has no active tasks left in it, we are free to send a message
+   * that the group is "resolved" for the time being.
+   */
+  async updateTaskGroupActiveSet(taskId, taskGroupId) {
+    await this.TaskGroupActiveSet.remove({taskId, taskGroupId}, true);
+
+    // check for emptiness of the partition
+    let result = await this.TaskGroupActiveSet.query({taskGroupId}, {limit: 1});
+
+    // We assume this generally won't happen, see comment in isBlocked(...)
+    // which also uses a query operation with limit = 1 to check for partition emptiness.
+    if (result.entries.length === 0 && result.continuation) {
+      let err = new Error('Single request emptiness check invariant failed. ' +
+                          'This is a flawed assumption in resolveTask()');
+      err.taskId = taskId;
+      err.taskGroupId = taskGroupId;
+      err.result = result;
+      throw err;
+    }
+
+    if (result.entries.length == 0) {
+      await this.publisher.taskGroupResolved({
+        taskGroupId,
+      }, []);
+    }
   }
 
   /**
