@@ -126,7 +126,8 @@ var schema = function(validate, options) {
     res.reply = function(json) {
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
-      if(options.output !== undefined && !options.skipOutputValidation) {
+      if(options.output !== undefined && !options.skipOutputValidation &&
+         options.output !== 'blob') {
         var error = validate(json, options.output);
         if (error) {
           debug('Output schema validation error: ' + error);
@@ -606,7 +607,7 @@ var STABILITY_LEVELS = _.values(stability);
  *   scopes:   [['admin'], ['per1', 'per2']],    // Scopes in disjunctive form
  *                                               // admin OR (per1 AND per2)
  *   input:    'input-schema.json',              // optional, null if no input
- *   output:   'output-schema.json',             // optional, null if no output
+ *   output:   'output-schema.json' || 'blob',   // optional, null if no output
  *   skipInputValidation:    true,               // defaults to false
  *   skipOutputValidation:   true,               // defaults to false
  *   title:     "My API Method",
@@ -649,7 +650,7 @@ API.prototype.declare = function(options, handler) {
   if (options.input) {
     options.input = this._options.schemaPrefix + options.input;
   }
-  if (options.output) {
+  if (options.output && options.output !== 'blob') {
     options.output = this._options.schemaPrefix + options.output;
   }
   this._entries.push(options);

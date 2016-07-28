@@ -78,6 +78,18 @@ suite("api/validate", function() {
     res.reply({value: 12});
   });
 
+  // Declare a method we can test blob output on
+  api.declare({
+    method:   'get',
+    route:    '/test-blob-output',
+    name:     'testBlobOutput',
+    output:   'blob',
+    title:    "Test End-Point",
+    description: "Place we can call to test something",
+  }, function(req, res) {
+    res.reply({value: 'Hello World'});
+  });
+
   // Reference to mock authentication server
   var _mockAuthServer = null;
   // Reference for test api server
@@ -215,6 +227,18 @@ suite("api/validate", function() {
       .then(function(res) {
         assert(res.ok, "Request failed");
         assert(res.body.value === 12, "Got wrong value");
+      });
+  });
+
+  // test blob output
+  test("blob output", function() {
+    var url = 'http://localhost:61515/test-blob-output';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.body.value === "Hello World", "Got wrong value");
       });
   });
 
