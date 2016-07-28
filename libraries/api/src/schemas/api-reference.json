@@ -103,9 +103,17 @@
             "description":    "JSON schema for input, if input is taken otherwise not present."
           },
           "output": {
-            "type":           "string",
-            "format":         "uri",
-            "description":    "JSON schema for output, if output is provided otherwise not present."
+            "oneOf": [
+              {
+                "type":           "string",
+                "format":         "uri",
+                "description":    "JSON schema for output, if output is provided otherwise not present."  
+              }, {
+                "type":           "string",
+                "enum":           ["blob"],
+                "description":    "Output kind if not JSON matching a specific schema."
+              }
+            ]
           },
           "title": {
             "type":           "string",
