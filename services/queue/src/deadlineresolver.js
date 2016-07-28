@@ -24,6 +24,11 @@ const RESOLVED_STATES = [
  *
  * Notice, that the task may not exists. Or the task may have different
  * `deadline`, we shall only handle task if the `deadline` match.
+ *
+ * The deadline message serves 3 purposes:
+ * A) Resolve old tasks
+ * B) Resolve tasks that failed to create properly
+ * C) Clean up TaskGroupActiveSet and publish message about task-group finished.
  */
 class DeadlineResolver {
   /**
@@ -131,7 +136,7 @@ class DeadlineResolver {
   }
 
   /** Handle advisory message about deadline expiration */
-  async handleMessage({taskId, deadline, remove}) {
+  async handleMessage({taskId, taskGroupId, deadline, remove}) {
     // Query for entity for which we have exact rowKey too, limit to 1, and
     // require that deadline matches. This is essentially a conditional load
     // operation
@@ -145,6 +150,7 @@ class DeadlineResolver {
 
     // If the task doesn't exist we're done
     if (!task) {
+      await this.dependencyTracker.updateTaskGroupActiveSet(taskId, taskGroupId);
       return remove();
     }
 
@@ -212,7 +218,7 @@ class DeadlineResolver {
       debug('Resolved taskId: %s, by deadline', taskId);
 
       // Update dependency tracker
-      await this.dependencyTracker.resolveTask(taskId, 'exception');
+      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, 'exception');
 
       // Publish messages about the last run
       await this.publisher.taskException({
