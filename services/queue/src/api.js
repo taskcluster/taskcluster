@@ -605,7 +605,12 @@ api.declare({
   let expires = new Date(taskDef.expires);
 
   // Insert entry in deadline queue
-  await this.queueService.putDeadlineMessage(taskId, taskDef.taskGroupId, deadline);
+  await this.queueService.putDeadlineMessage(
+    taskId,
+    taskDef.taskGroupId,
+    taskDef.schedulerId,
+    deadline
+  );
 
   // Try to create Task entity
   try {
@@ -801,7 +806,12 @@ api.declare({
   let expires = new Date(taskDef.expires);
 
   // Insert entry in deadline queue (garbage entries are acceptable)
-  await this.queueService.putDeadlineMessage(taskId, taskDef.taskGroupId, deadline);
+  await this.queueService.putDeadlineMessage(
+    taskId,
+    taskDef.taskGroupId,
+    taskDef.schedulerId,
+    deadline
+  );
 
   // Try to create Task entity
   try {
@@ -1206,7 +1216,12 @@ api.declare({
   // If the last run was canceled, resolve dependencies and publish message
   if (run.state === 'exception' && run.reasonResolved === 'canceled') {
     // Update dependency tracker
-    await this.queueService.putResolvedMessage(taskId, task.taskGroupId, 'exception');
+    await this.queueService.putResolvedMessage(
+      taskId,
+      task.taskGroupId,
+      task.schedulerId,
+      'exception'
+    );
 
     // Publish message about the exception
     await this.publisher.taskException(_.defaults({
@@ -1629,7 +1644,12 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   }
 
   // Update dependency tracker
-  await this.queueService.putResolvedMessage(taskId, task.taskGroupId, target);
+  await this.queueService.putResolvedMessage(
+    taskId,
+    task.taskGroupId,
+    task.schedulerId,
+    target
+  );
 
   // Construct status object
   var status = task.status();
@@ -1856,7 +1876,12 @@ api.declare({
     ]);
   } else {
     // Update dependency tracker, as the task is resolved (no new run)
-    await this.queueService.putResolvedMessage(taskId, task.taskGroupId, 'exception');
+    await this.queueService.putResolvedMessage(
+      taskId,
+      task.taskGroupId,
+      task.schedulerId,
+      'exception'
+    );
 
     // Publish message about taskException
     await this.publisher.taskException({
