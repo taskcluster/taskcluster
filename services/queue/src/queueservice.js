@@ -216,16 +216,17 @@ class QueueService {
   }
 
   /** Enqueue message ensure the dependency resolver handles the resolution */
-  async putResolvedMessage(taskId, taskGroupId, resolution) {
+  async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution) {
     assert(taskId, 'taskId must be given');
     assert(taskGroupId, 'taskGroupId must be given');
+    assert(schedulerId, 'schedulerId must be given');
     assert(resolution === 'completed' || resolution === 'failed' ||
            resolution === 'exception',
            'resolution must be completed, failed or exception');
 
     await this.ensureResolvedQueue();
     return this._putMessage(this.resolvedQueue, {
-      taskId, taskGroupId, resolution,
+      taskId, taskGroupId, schedulerId, resolution,
     }, {
       ttl:                7 * 24 * 60 * 60,
       visibility:         0,
@@ -233,9 +234,10 @@ class QueueService {
   }
 
   /** Enqueue message to become visible when deadline has expired */
-  async putDeadlineMessage(taskId, taskGroupId, deadline) {
+  async putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline) {
     assert(taskId,                      'taskId must be given');
     assert(taskGroupId,                 'taskGroupId must be given');
+    assert(schedulerId,                 'schedulerId must be given');
     assert(deadline instanceof Date,    'deadline must be a date');
     assert(isFinite(deadline),          'deadline must be a valid date');
 
@@ -244,8 +246,9 @@ class QueueService {
     debug('Put deadline message to be visible in %s seconds',
            secondsTo(deadline) + delay);
     return this._putMessage(this.deadlineQueue, {
-      taskId:             taskId,
-      taskGroupId:        taskGroupId,
+      taskId,
+      taskGroupId,
+      schedulerId,
       deadline:           deadline.toJSON(),
     }, {
       ttl:                7 * 24 * 60 * 60,
