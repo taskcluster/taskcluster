@@ -16,13 +16,17 @@
   },
   "dependencies": {
     "app-root-dir": "^1.0.2",
+    "aws-sdk": "^2.4.9",
     "babel-runtime": "^6.0.0",
     "debug": "^2.2.0",
     "lodash": "^4.13.1",
     "mz": "^2.4.0",
     "promise": "^7.0.4",
     "recursive-readdir-sync": "^1.0.6",
-    "tar-stream": "^1.5.2"
+    "s3-upload-stream": "^1.0.7",
+    "tar-stream": "^1.5.2",
+    "taskcluster-base": "^5.1.1",
+    "taskcluster-client": "^1.0.1"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
