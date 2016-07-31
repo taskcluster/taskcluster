@@ -7,6 +7,7 @@ suite('End to End', () => {
   let rootdir = require('app-root-dir');
   let zlib = require('zlib');
   let validator = require('taskcluster-lib-validate');
+  let base = require('taskcluster-base');
 
   test('tarball exists', async function() {
     let validate = await validator({
@@ -22,6 +23,31 @@ suite('End to End', () => {
     let doc = await documenter({
       schemas,
       tier,
+    });
+    assert.ok(doc.tgz);
+  });
+
+  test('test publish tarball', async function() {
+    let validate = await validator({
+      folder: rootdir.get() + 'test/schemas',
+      baseUrl: 'http://localhost:1203/',
+      constants: {'my-constant': 42},
+    });
+
+    let schemas = validate.schemas;
+
+    let tier = 'core';
+
+    let cfg = base.config();
+    let credentials = cfg.taskcluster.credentials;
+    let publish = true;
+
+    let doc = await documenter({
+      project: 'testing',
+      schemas,
+      tier,
+      credentials,
+      publish,
     });
     assert.ok(doc.tgz);
   });
