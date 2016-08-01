@@ -78,7 +78,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/m
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v5.0.1/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v5.0.2/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # download livelog
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v0.0.6/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -120,7 +120,7 @@ Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassTh
 [Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "User")
 
 # upgrade python libraries
-Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.1 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.2 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
 
 # set env vars for the currently running process
 $env:GOROOT = "C:\go"
