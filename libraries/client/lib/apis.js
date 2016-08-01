@@ -281,7 +281,7 @@ module.exports = {
             "bucket",
             "prefix"
           ],
-          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.",
+          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the TaskCluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the TaskCluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.",
           "method": "get",
           "name": "awsS3Credentials",
           "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#",
@@ -420,6 +420,114 @@ module.exports = {
       "version": 0
     },
     "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json"
+  },
+  "AuthEvents": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "description": "The auth service, typically available at `auth.taskcluster.net`\nis responsible for storing credentials, managing assignment of scopes,\nand validation of request signatures from other services.\n\nThese exchanges provides notifications when credentials or roles are\nupdated. This is mostly so that multiple instances of the auth service\ncan purge their caches and synchronize state. But you are of course\nwelcome to use these for other purposes, monitoring changes for example.",
+      "entries": [
+        {
+          "description": "Message that a new client has been created.",
+          "exchange": "client-created",
+          "name": "clientCreated",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/auth/v1/client-message.json#",
+          "title": "Client Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Message that a new client has been updated.",
+          "exchange": "client-updated",
+          "name": "clientUpdated",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/auth/v1/client-message.json#",
+          "title": "Client Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Message that a new client has been deleted.",
+          "exchange": "client-deleted",
+          "name": "clientDeleted",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/auth/v1/client-message.json#",
+          "title": "Client Deleted Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Message that a new role has been created.",
+          "exchange": "role-created",
+          "name": "roleCreated",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/auth/v1/role-message.json#",
+          "title": "Role Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Message that a new role has been updated.",
+          "exchange": "role-updated",
+          "name": "roleUpdated",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/auth/v1/role-message.json#",
+          "title": "Role Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Message that a new role has been deleted.",
+          "exchange": "role-deleted",
+          "name": "roleDeleted",
+          "routingKey": [
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/auth/v1/role-message.json#",
+          "title": "Role Deleted Messages",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-auth/v1/",
+      "title": "Auth Pulse Exchanges",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/auth/v1/exchanges.json"
   },
   "AwsProvisioner": {
     "reference": {
@@ -628,27 +736,9 @@ module.exports = {
         },
         {
           "args": [
-          ],
-          "description": "This method is a left over and will be removed as soon as the\ntools.tc.net UI is updated to use the per-worker state\n\n**DEPRECATED.**",
-          "method": "get",
-          "name": "awsState",
-          "query": [
-          ],
-          "route": "/aws-state",
-          "scopes": [
-            [
-              "aws-provisioner:aws-state"
-            ]
-          ],
-          "stability": "deprecated",
-          "title": "Get AWS State for all worker types",
-          "type": "function"
-        },
-        {
-          "args": [
             "workerType"
           ],
-          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for all instances, 1 for requests\nwhich show in the ec2 api and 1 list for those only tracked internally\nin the provisioner.",
+          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for all instances, 1 for requests\nwhich show in the ec2 api and 1 list for those only tracked internally\nin the provisioner.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
           "method": "get",
           "name": "state",
           "query": [
@@ -679,9 +769,10 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "**Warning** this api end-point is **not stable**.",
+          "description": "This endpoint is used to show when the last time the provisioner\nhas checked in.  A check in is done through the deadman's snitch\napi.  It is done at the conclusion of a provisioning iteration\nand used to tell if the background provisioning process is still\nrunning.\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "backendStatus",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#",
           "query": [
           ],
           "route": "/backend-status",
@@ -788,7 +879,7 @@ module.exports = {
           "type": "topic-exchange"
         }
       ],
-      "exchangePrefix": "exchange/taskcluster-aws-provisioner/",
+      "exchangePrefix": "exchange/taskcluster-aws-provisioner/v1/",
       "title": "AWS Provisioner Pulse Exchanges",
       "version": 0
     },
@@ -806,6 +897,8 @@ module.exports = {
           "description": "Capture a GitHub event and publish it via pulse, if it's a push\nor pull request.",
           "method": "post",
           "name": "githubWebHookConsumer",
+          "query": [
+          ],
           "route": "/github",
           "stability": "experimental",
           "title": "Consume GitHub WebHook",
@@ -817,6 +910,8 @@ module.exports = {
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
+          "query": [
+          ],
           "route": "/ping",
           "stability": "experimental",
           "title": "Ping Server",
@@ -843,7 +938,7 @@ module.exports = {
               "multipleWords": false,
               "name": "routingKeyKind",
               "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
             },
             {
               "multipleWords": false,
@@ -878,7 +973,7 @@ module.exports = {
               "multipleWords": false,
               "name": "routingKeyKind",
               "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
             },
             {
               "multipleWords": false,
@@ -1194,6 +1289,46 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/index/v1/api.json"
   },
+  "Login": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://login.taskcluster.net/v1",
+      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.\n\nThe API methods described here issue temporary credentials based on\nan assertion.  The assertion identifies the user, usually with an\nemail-like string.  This string is then passed through a series of\nauthorizers, each of which may supply scopes to be included in the\ncredentials. Finally, the service generates temporary credentials based\non those scopes.\n\nThe generated credentials include scopes to create new, permanent clients\nwith names based on the user's identifier.  These credentials are\nperiodically scanned for scopes that the user does not posess, and disabled\nif such scopes are discovered.  Thus users can create long-lived credentials\nthat are only usable until the user's access level is reduced.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "description": "Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.\n\nThe supplied audience must be on a whitelist of TaskCluster-related\nsites configured in the login service.  This is not a general-purpose\nassertion-verification service!",
+          "input": "http://schemas.taskcluster.net/login/v1/persona-request.json",
+          "method": "post",
+          "name": "credentialsFromPersonaAssertion",
+          "output": "http://schemas.taskcluster.net/login/v1/credentials-response.json",
+          "query": [
+          ],
+          "route": "/persona",
+          "stability": "experimental",
+          "title": "Get TaskCluster credentials given a Persona assertion",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "experimental",
+          "title": "Ping Server",
+          "type": "function"
+        }
+      ],
+      "title": "Login API",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/login/v1/api.json"
+  },
   "PurgeCache": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
@@ -1287,7 +1422,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property isn't\nspecified the queue may provide a default value.",
+          "description": "This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property is\nnot specified the queue may provide a default value.",
           "method": "get",
           "name": "task",
           "output": "http://schemas.taskcluster.net/queue/v1/task.json#",
@@ -1317,7 +1452,7 @@ module.exports = {
           "args": [
             "taskGroupId"
           ],
-          "description": "List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must\n`listTaskGroup` again with the `continuationToken` as the query-string\noption `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continationToken` until you\nget a result without a `continuationToken`.\n\nIf you're not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "description": "List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must call\nthe `listTaskGroup` again with the `continuationToken` as the\nquery-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "listTaskGroup",
           "output": "http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#",
@@ -1334,7 +1469,24 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.",
+          "description": "List tasks that depend on the given `taskId`.\n\nAs many tasks from different task-groups may dependent on a single tasks,\nthis end-point may return a `continuationToken`. To continue listing\ntasks you must call `listDependentTasks` again with the\n`continuationToken` as the query-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 tasks in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listDependentTasks` with the last `continuationToken` until\nyou get a result without a `continuationToken`.\n\nIf you are not interested in listing all the tasks at once, you may\nuse the query-string option `limit` to return fewer.",
+          "method": "get",
+          "name": "listDependentTasks",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task/<taskId>/dependents",
+          "stability": "stable",
+          "title": "List Dependent Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId"
+          ],
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**, any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.",
           "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -1388,7 +1540,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "If you have define a task using `defineTask` API end-point, then you\ncan schedule the task to be scheduled using this method.\nThis will announce the task as pending and workers will be allowed, to\nclaim it and resolved the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
+          "description": "scheduleTask will schedule a task to be executed, even if it has\nunresolved dependencies. A task would otherwise only be scheduled if\nits dependencies were resolved.\n\nThis is useful if you have defined a task that depends on itself or on\nsome other task that has not been resolved, but you wish the task to be\nscheduled immediately.\n\nThis will announce the task as pending and workers will be allowed to\nclaim it and resolve the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with a `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
           "method": "post",
           "name": "scheduleTask",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#",
@@ -1412,7 +1564,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nisn't either `failed` or `completed`, this operation will just return the\ncurrent task status.",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
           "method": "post",
           "name": "rerunTask",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#",
@@ -1564,7 +1716,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDon't use this if the task couldn't be run because if malformed payload,\nor other unexpected condition. In these cases we have a task exception,\nwhich should be reported with `reportException`.",
+          "description": "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDo not use this if the task couldn't be run because if malformed\npayload, or other unexpected condition. In these cases we have a task\nexception, which should be reported with `reportException`.",
           "method": "post",
           "name": "reportFailed",
           "output": "http://schemas.taskcluster.net/queue/v1/task-status-response.json#",
@@ -1751,7 +1903,7 @@ module.exports = {
   "QueueEvents": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task-graphs**, if the task-graph scheduler, documented elsewhere, is\nused to schedule a task-graph, the task submitted will have their\n`schedulerId` set to `'task-graph-scheduler'`, and their `taskGroupId` to\nthe `taskGraphId` as given to the task-graph scheduler. This is useful if\nyou wish to listen for all messages in a specific task-graph.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is alwasys prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
+      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is always prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
       "entries": [
         {
           "description": "When a task is created or just defined a message is posted to this\nexchange.\n\nThis message exchange is mainly useful when tasks are scheduled by a\nscheduler that uses `defineTask` as this does not make the task\n`pending`. Thus, no `taskPending` message is published.\nPlease, note that messages are also published on this exchange if defined\nusing `createTask`.",
@@ -2249,6 +2401,41 @@ module.exports = {
           "schema": "http://schemas.taskcluster.net/queue/v1/task-exception-message.json#",
           "title": "Task Exception Messages",
           "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a task group has run to completion (success is not considered),\na message will be sent on this exchange. It can be listened to to know\nwhen a group is \"complete\". There is no guarantee that this group is now\nintert. It can have more tasks added to it by the scheduler, but at least\nfor the time being, it is done. If another task is added to this group and\nit completes, this message will be sent again.",
+          "exchange": "task-group-resolved",
+          "name": "taskGroupResolved",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": false,
+              "summary": "`schedulerId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#",
+          "title": "Task Group Resolved",
+          "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-queue/v1/",
@@ -2735,7 +2922,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "List the names of all visible secrets.",
+          "description": "List the names of all secrets that you would have access to read. In\nother words, secret name `<X>` will only be returned if a) a secret\nwith name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.",
           "method": "get",
           "name": "list",
           "output": "http://schemas.taskcluster.net/secrets/v1/secret-list.json#",
@@ -2764,5 +2951,45 @@ module.exports = {
       "version": 0
     },
     "referenceUrl": "http://references.taskcluster.net/secrets/v1/api.json"
+  },
+  "TreeherderEvents": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
+      "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by TaskCluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
+      "entries": [
+        {
+          "description": "When a task run is scheduled or resolved, a message is posted to\nthis exchange in a Treeherder consumable format.",
+          "exchange": "jobs",
+          "name": "jobs",
+          "routingKey": [
+            {
+              "multipleWords": false,
+              "name": "destination",
+              "required": true,
+              "summary": "destination"
+            },
+            {
+              "multipleWords": false,
+              "name": "project",
+              "required": true,
+              "summary": "project"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#",
+          "title": "Job Messages",
+          "type": "topic-exchange"
+        }
+      ],
+      "exchangePrefix": "exchange/taskcluster-treeherder/v1/",
+      "title": "Taskcluster-treeherder Pulse Exchange",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json"
   }
 };
