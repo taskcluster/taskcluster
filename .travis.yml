@@ -12,6 +12,7 @@ env:
 before_install:
   - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz
   - tar -C $HOME -xf go.tar.gz
+  - rm go.tar.gz
   - export GOROOT="${HOME}/go"
   - export PATH="${GOROOT}/bin:${PATH}"
   - export GOOS="${MY_GOOS}"
