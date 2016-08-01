@@ -196,10 +196,9 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.instanceStarted(instanceId, token) : void`
  * `awsProvisioner.removeSecret(token) : void`
  * `awsProvisioner.getLaunchSpecs(workerType) : result`
- * `awsProvisioner.awsState() : void`
  * `awsProvisioner.state(workerType) : void`
  * `awsProvisioner.ping() : void`
- * `awsProvisioner.backendStatus() : void`
+ * `awsProvisioner.backendStatus() : result`
 
 ### Methods in `taskcluster.Github`
 ```js
@@ -239,6 +238,15 @@ var index = new taskcluster.Index(options);
  * `index.findArtifactFromTask(namespace, name) : void`
  * `index.ping() : void`
 
+### Methods in `taskcluster.Login`
+```js
+// Create Login client instance with default baseUrl:
+//  - https://login.taskcluster.net/v1
+var login = new taskcluster.Login(options);
+```
+ * `login.credentialsFromPersonaAssertion(payload) : result`
+ * `login.ping() : void`
+
 ### Methods in `taskcluster.PurgeCache`
 ```js
 // Create PurgeCache client instance with default baseUrl:
@@ -257,6 +265,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.task(taskId) : result`
  * `queue.status(taskId) : result`
  * `queue.listTaskGroup(taskGroupId, [options]) : result`
+ * `queue.listDependentTasks(taskId, [options]) : result`
  * `queue.createTask(taskId, payload) : result`
  * `queue.defineTask(taskId, payload) : result`
  * `queue.scheduleTask(taskId) : result`
@@ -302,10 +311,23 @@ var secrets = new taskcluster.Secrets(options);
  * `secrets.list() : result`
  * `secrets.ping() : void`
 
+### Exchanges in `taskcluster.AuthEvents`
+```js
+// Create AuthEvents client instance with default exchangePrefix:
+//  - exchange/taskcluster-auth/v1/
+var authEvents = new taskcluster.AuthEvents(options);
+```
+ * `authEvents.clientCreated(routingKeyPattern) : binding-info`
+ * `authEvents.clientUpdated(routingKeyPattern) : binding-info`
+ * `authEvents.clientDeleted(routingKeyPattern) : binding-info`
+ * `authEvents.roleCreated(routingKeyPattern) : binding-info`
+ * `authEvents.roleUpdated(routingKeyPattern) : binding-info`
+ * `authEvents.roleDeleted(routingKeyPattern) : binding-info`
+
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
 ```js
 // Create AwsProvisionerEvents client instance with default exchangePrefix:
-//  - exchange/taskcluster-aws-provisioner/
+//  - exchange/taskcluster-aws-provisioner/v1/
 var awsProvisionerEvents = new taskcluster.AwsProvisionerEvents(options);
 ```
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) : binding-info`
@@ -342,6 +364,7 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskCompleted(routingKeyPattern) : binding-info`
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
  * `queueEvents.taskException(routingKeyPattern) : binding-info`
+ * `queueEvents.taskGroupResolved(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.SchedulerEvents`
 ```js
@@ -353,6 +376,14 @@ var schedulerEvents = new taskcluster.SchedulerEvents(options);
  * `schedulerEvents.taskGraphExtended(routingKeyPattern) : binding-info`
  * `schedulerEvents.taskGraphBlocked(routingKeyPattern) : binding-info`
  * `schedulerEvents.taskGraphFinished(routingKeyPattern) : binding-info`
+
+### Exchanges in `taskcluster.TreeherderEvents`
+```js
+// Create TreeherderEvents client instance with default exchangePrefix:
+//  - exchange/taskcluster-treeherder/v1/
+var treeherderEvents = new taskcluster.TreeherderEvents(options);
+```
+ * `treeherderEvents.jobs(routingKeyPattern) : binding-info`
 
 <!-- END OF GENERATED DOCS -->
 
