@@ -82,6 +82,7 @@ suite('TaskGroup features', () => {
 
     var tgf = await helper.events.waitFor('task-group-resolved');
     assume(tgf.payload.taskGroupId).equals(taskGroupId);
+    assume(tgf.payload.schedulerId).equals('dummy-scheduler');
   });
 
   test('schedulerId is fixed per taskGroupId', async () => {
