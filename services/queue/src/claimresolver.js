@@ -253,7 +253,7 @@ class ClaimResolver {
       ]);
     } else {
       // Update dependencyTracker
-      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, 'exception');
+      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
 
       // Publish message about task exception
       await this.publisher.taskException({

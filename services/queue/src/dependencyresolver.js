@@ -95,7 +95,7 @@ class DependencyResolver {
         // Don't let a single task error break the loop, it'll be retried later
         // as we don't remove message unless they are handled
         try {
-          await this.dependencyTracker.resolveTask(m.taskId, m.taskGroupId, m.resolution);
+          await this.dependencyTracker.resolveTask(m.taskId, m.taskGroupId, m.schedulerId, m.resolution);
           await m.remove();
           this.monitor.count('handled-messages-success', 1);
         } catch (err) {

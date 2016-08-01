@@ -328,6 +328,7 @@ class QueueService {
       return {
         taskId:       m.payload.taskId,
         taskGroupId:  m.payload.taskGroupId,
+        schedulerId:  m.payload.schedulerId,
         resolution:   m.payload.resolution,
         remove:       m.remove,
       };
@@ -366,6 +367,7 @@ class QueueService {
       return {
         taskId:       m.payload.taskId,
         taskGroupId:  m.payload.taskGroupId,
+        schedulerId:  m.payload.schedulerId,
         deadline:     new Date(m.payload.deadline),
         remove:       m.remove,
       };
