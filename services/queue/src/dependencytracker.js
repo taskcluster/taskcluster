@@ -220,7 +220,7 @@ class DependencyTracker {
   }
 
   /** Track resolution of a task, scheduling any dependent tasks */
-  async resolveTask(taskId, taskGroupId, resolution) {
+  async resolveTask(taskId, taskGroupId, schedulerId, resolution) {
     assert(resolution === 'completed' || resolution === 'failed' ||
          resolution === 'exception',
          'resolution must be completed, failed or exception');
@@ -256,7 +256,7 @@ class DependencyTracker {
       },
     });
 
-    await this.updateTaskGroupActiveSet(taskId, taskGroupId);
+    await this.updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId);
   }
 
   /** Returns true, if some task requirement is blocking the task */
@@ -286,7 +286,7 @@ class DependencyTracker {
    * If a task-group has no active tasks left in it, we are free to send a message
    * that the group is "resolved" for the time being.
    */
-  async updateTaskGroupActiveSet(taskId, taskGroupId) {
+  async updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId) {
     await this.TaskGroupActiveSet.remove({taskId, taskGroupId}, true);
 
     // check for emptiness of the partition
@@ -306,6 +306,7 @@ class DependencyTracker {
     if (result.entries.length == 0) {
       await this.publisher.taskGroupResolved({
         taskGroupId,
+        schedulerId,
       }, []);
     }
   }

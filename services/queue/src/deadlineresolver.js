@@ -136,7 +136,7 @@ class DeadlineResolver {
   }
 
   /** Handle advisory message about deadline expiration */
-  async handleMessage({taskId, taskGroupId, deadline, remove}) {
+  async handleMessage({taskId, taskGroupId, schedulerId, deadline, remove}) {
     // Query for entity for which we have exact rowKey too, limit to 1, and
     // require that deadline matches. This is essentially a conditional load
     // operation
@@ -150,7 +150,7 @@ class DeadlineResolver {
 
     // If the task doesn't exist we're done
     if (!task) {
-      await this.dependencyTracker.updateTaskGroupActiveSet(taskId, taskGroupId);
+      await this.dependencyTracker.updateTaskGroupActiveSet(taskId, taskGroupId, schedulerId);
       return remove();
     }
 
@@ -218,7 +218,7 @@ class DeadlineResolver {
       debug('Resolved taskId: %s, by deadline', taskId);
 
       // Update dependency tracker
-      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, 'exception');
+      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
 
       // Publish messages about the last run
       await this.publisher.taskException({

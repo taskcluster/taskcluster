@@ -134,12 +134,23 @@ var buildTaskGroupRoutingKey = function(options) {
                         'always `\'primary\'` for the formalized routing key.',
       constant:         'primary',
       required:         true,
-    },
-    {
+    }, {
       name:             'taskGroupId',
-      summary:          '`taskGroupId` for the taskGroup this message concerns',
+      summary:          '`taskGroupId` for the task-group this message concerns',
       required:         true,
       maxSize:          22,
+    }, {
+      name:             'schedulerId',
+      summary:          '`schedulerId` for the task-group this message concerns',
+      required:         false, // TODO: Make this required sometime after the deadlinequeue is drained (Aug 3, 2016)
+      maxSize:          22,
+    }, {
+      name:             'reserved',
+      summary:          'Space reserved for future routing-key entries, you ' +
+                        'should always match this entry with `#`. As ' +
+                        'automatically done by our tooling, if not specified.',
+      multipleWords:    true,
+      maxSize:          1,
     },
   ];
 };
@@ -161,6 +172,14 @@ var commonRoutingKeyBuilder = function(message, routing) {
     workerType:       message.status.workerType,
     schedulerId:      message.status.schedulerId,
     taskGroupId:      message.status.taskGroupId,
+  };
+};
+
+/** Build a message from message for task-group messages */
+var taskGroupRoutingKeyBuilder = function(message, routing) {
+  return {
+    schedulerId:      message.schedulerId,
+    taskGroupId:      message.taskGroupId,
   };
 };
 
@@ -334,6 +353,6 @@ exchanges.declare({
   routingKey:         buildTaskGroupRoutingKey(),
   schema:             'task-group-resolved.json#',
   messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  (message, routes) => { return {taskGroupId: message.taskGroupId}; },
+  routingKeyBuilder:  taskGroupRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder,
 });
