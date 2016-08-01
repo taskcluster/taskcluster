@@ -1052,6 +1052,28 @@ module.exports = {
           "stability": "experimental",
           "title": "Delete a hook",
           "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will trigger the creation of a task from a hook definition.",
+          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-payload.json",
+          "method": "post",
+          "name": "triggerHook",
+          "output": "http://schemas.taskcluster.net/hooks/v1/task-status.json",
+          "query": [
+          ],
+          "route": "/hooks/<hookGroupId>/<hookId>/trigger",
+          "scopes": [
+            [
+              "hooks:trigger-hook:<hookGroupId>/<hookId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Trigger a hook",
+          "type": "function"
         }
       ],
       "title": "Hooks API Documentation",

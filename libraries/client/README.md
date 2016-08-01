@@ -224,6 +224,7 @@ var hooks = new taskcluster.Hooks(options);
  * `hooks.createHook(hookGroupId, hookId, payload) : result`
  * `hooks.updateHook(hookGroupId, hookId, payload) : result`
  * `hooks.removeHook(hookGroupId, hookId) : void`
+ * `hooks.triggerHook(hookGroupId, hookId, payload) : result`
 
 ### Methods in `taskcluster.Index`
 ```js
