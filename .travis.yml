@@ -11,8 +11,8 @@ env:
 
 before_install:
   - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz
-  - tar xvf go.tar.gz
-  - export GOROOT="$(pwd)/go"
+  - tar -C $HOME xvf go.tar.gz
+  - export GOROOT="${HOME}/go"
   - export PATH="${GOROOT}/bin:${PATH}"
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
