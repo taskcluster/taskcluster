@@ -14,6 +14,8 @@ before_install:
   - tar -C $HOME -xf go.tar.gz
   - export GOROOT="${HOME}/go"
   - export PATH="${GOROOT}/bin:${PATH}"
+  - export GOOS="${MY_GOOS}"
+  - export GOARCH="${MY_GOARCH}"
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
   - go get github.com/pierrre/gotestcover
@@ -23,8 +25,6 @@ install:
   - "go get github.com/taskcluster/livelog"
 
 script:
-  - export GOOS="${MY_GOOS}"
-  - export GOARCH="${MY_GOARCH}"
   - "go install -v ./..."
   - "if test $GOOS.$GOARCH = linux.amd64; then ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./... && go tool cover -func=coverage.report; fi"
 
