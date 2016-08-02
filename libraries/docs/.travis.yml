@@ -27,3 +27,12 @@ notifications:
     - 'Change view : %{compare_url}'
     - 'Build details : %{build_url}'
     - 'Commit message : %{commit_message}'
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  api_key:
+    secure: PZnzXV8YJ5dBBi06jszamHLOCt5WZXlttHuMeWUHeOUINr3T7BHeEFrwjctHPn91kkdQe7FEwzVBd5jyJGW1VYGtLJ1g51h1ewZV8VKnqzBwtXSU+Z4ohsQgkRgWFfDhOHbVJz5QZjqF1kbLrhSDcMAYXm0juG8TYnXsk6Kfp/fis412Z3cZwdrSAG4IN7GyPaN+yP0mBsDbnStacP+IUJuE+wiizXxWKsPz/1ZEyOcN9pnSjX3D9dT1ZGLXDu8P3MDLGGRyIwVU91AzQJIjIMLEmM0c5LOOYRJ97CWgvynbMlc4LNdRnJk6p3/LFotU0PPf2x35f1rCR8W69JJL5GxiuGKM5MNinTdQvK/fkbpKpi0gp+X3AYBi+9c4FUOdhiefnQ5LmVALH6hGP/2yGs0JrAEumBQtm3b+RqZw8ZZSsUA/NVT3SSsdpiIrBit88U2JYAfDqTI8988MlQ9cuIQIdTIVU3bgBrcqbCdBxJp6VPxImfbyOhjlKvxhLkGW7qqoV1vmX20fRnBwGdg15/JQfBXNepOYliU6HcE/KZRPLwiCa9d26NkQwhS4bXdKzeBZkZEtXjreBKb4kl/Zwd0oAjbp3NZ4UZcNXESHH3dDAXGZCBvVDxjLjcAWNO9uRc1t7HF+yTigTD+iIZQHXLo7B7BduL4JzUA4WGjTLDo=
+  on:
+    tags: true
+    repo: taskcluster/taskcluster-lib-docs
+
