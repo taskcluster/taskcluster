@@ -9,248 +9,122 @@ suite('End to End', () => {
   let validator = require('taskcluster-lib-validate');
   let base = require('taskcluster-base');
 
+  let validate = null;
+  let api = null;
+  let exchanges = null;
+  let references = null;
+  let cfg = base.config();
+  let credentials = cfg.taskcluster.credentials;
+  let tier = 'core';
+
+  suiteSetup(async () => {
+    validate = await validator({
+      folder: './test/schemas',
+      baseUrl: 'http://localhost:1203/',
+      constants: {'my-constant': 42},
+    });
+    api = new base.API({
+      title: 'Testing Stuff',
+      description: 'This is for testing stuff!',
+    });
+    exchanges = new base.Exchanges({
+      title: 'Testing Stuff Again',
+      description: 'Another test!',
+    });
+    references = [
+      {name: 'api', reference: api.reference({baseUrl: 'http://localhost'})},
+      {name: 'events', reference: exchanges.reference({baseUrl: 'http://localhost'})},
+    ];
+  });
+
+  function assertInTarball(shoulds, tarball, done) {
+    shoulds.push('taskcluster-lib-docs/metadata.json');
+    shoulds.push('taskcluster-lib-docs/README.md');
+    let contains = [];
+    let extractor = tar.extract();
+    extractor.on('entry', (header, stream, callback) => {
+      stream.on('end', () => {
+        contains.push(header.name);
+        callback(); // ready for next entry
+      });
+
+      stream.resume(); // just auto drain the stream
+    });
+
+    extractor.on('finish', function() {
+      done(assert.deepEqual(contains.sort(), shoulds.sort()));
+    });
+
+    tarball.pipe(zlib.Unzip()).pipe(extractor);
+  }
+
   test('tarball exists', async function() {
-    let validate = await validator({
-      folder: rootdir.get() + 'test/schemas',
-      baseUrl: 'http://localhost:1203/',
-      constants: {'my-constant': 42},
-    });
-
-    let schemas = validate.schemas;
-
-    let tier = 'core';
-
     let doc = await documenter({
-      schemas,
+      schemas: validate.schemas,
       tier,
     });
     assert.ok(doc.tgz);
   });
 
-  test('test publish tarball', async function() {
-    let validate = await validator({
-      folder: rootdir.get() + 'test/schemas',
-      baseUrl: 'http://localhost:1203/',
-      constants: {'my-constant': 42},
-    });
-
-    let schemas = validate.schemas;
-
-    let tier = 'core';
-
-    let cfg = base.config();
-    let credentials = cfg.taskcluster.credentials;
-    let publish = true;
-
-    let doc = await documenter({
-      project: 'testing',
-      schemas,
-      tier,
-      credentials,
-      publish,
-    });
-    assert.ok(doc.tgz);
-  });
-
-  test('tarball is empty', function() {
-    let schemas = {};
-    let docsFolder = [];
-
-    let tier = 'core';
-
+  test('tarball is empty but exists', function() {
     let doc = documenter({
       tier,
-      schemas,
-      docsFolder: rootdir.get() + '/docs',
     });
     assert.equal(doc.tgz, null);
   });
 
-  test('tarball contains docs and metadata', async function(done) {
-
-    let schemas = {};
-    let tier = 'core';
-
-    let shoulds = [
-      'docs/example.md',
-      'metadata.json',
-    ];
-
+  test('test publish tarball', async function() {
     let doc = await documenter({
-      schemas,
-      docsFolder: rootdir.get() + '/docs',
+      project: 'testing',
+      schemas: validate.schemas,
+      tier,
+      credentials,
+      docsFolder: './test/docs/',
+      references,
+      publish: true,
+    });
+    assert.ok(doc.tgz);
+  });
+
+  test('tarball contains docs and metadata', async function(done) {
+    let doc = await documenter({
+      docsFolder: './test/docs',
       tier,
     });
-
-    let tarball = doc.tgz;
-
-    let extractor = tar.extract();
-    extractor.on('entry', (header, stream, callback) => {
-      let entryName = header.name;
-      let contains = false;
-      for (let expectedValue of shoulds) {
-        if (expectedValue == entryName) {
-          contains = true;
-          break;
-        }
-      }
-      assert.ok(contains);
-
-      stream.on('end', () => {
-        callback(); // ready for next entry
-      });
-
-      stream.resume(); // just auto drain the stream
-    });
-
-    extractor.on('finish', function() {
-      done();
-    });
-
-    tarball.pipe(zlib.Unzip()).pipe(extractor);
+    let shoulds = [
+      'taskcluster-lib-docs/docs/example.md',
+    ];
+    assertInTarball(shoulds, doc.tgz, done);
   });
 
   test('tarball contains schemas and metadata', async function(done) {
-    let validate = await validator({
-      folder: rootdir.get() + 'test/schemas',
-      baseUrl: 'http://localhost:1203/',
-      constants: {'my-constant': 42},
-    });
-
-    let schemas = validate.schemas;
-
-    let tier = 'core';
-
-    let docFolder = [];
-
-    let shoulds = [
-      'schema/foo.json',
-      'schema/bar.json',
-      'metadata.json',
-    ];
-
     let doc = await documenter({
-      schemas,
+      schemas: validate.schemas,
       tier,
     });
-
-    let tarball = doc.tgz;
-
-    let extractor = tar.extract();
-    extractor.on('entry', (header, stream, callback) => {
-      let entryName = header.name;
-      let contains = false;
-      for (let expectedValue of shoulds) {
-        if (expectedValue == entryName) {
-          contains = true;
-          break;
-        }
-      }
-      assert.ok(contains);
-
-      stream.on('end', () => {
-        callback(); // ready for next entry
-      });
-
-      stream.resume(); // just auto drain the stream
-    });
-
-    extractor.on('finish', function() {
-      done();
-    });
-
-    tarball.pipe(zlib.Unzip()).pipe(extractor);
+    let shoulds = [
+      'taskcluster-lib-docs/schema/foo.json',
+      'taskcluster-lib-docs/schema/bar.json',
+    ];
+    assertInTarball(shoulds, doc.tgz, done);
   });
 
   test('tarball contains references and metadata', async function(done) {
-    let references = [
-      {name: 'api', reference: 'api.reference'},
-      {name: 'events', reference: 'exchanges.reference'},
-    ];
-
-    let tier = 'core';
-
-    let schemas = {};
-
-    let shoulds = [
-      'references/api.json',
-      'references/events.json',
-      'metadata.json',
-    ];
-
     let doc = await documenter({
-      schemas,
       references,
       tier,
     });
-
-    let tarball = doc.tgz;
-
-    let extractor = tar.extract();
-    extractor.on('entry', (header, stream, callback) => {
-      let entryName = header.name;
-      let contains = false;
-      for (let expectedValue of shoulds) {
-        if (expectedValue == entryName) {
-          contains = true;
-          break;
-        }
-      }
-      assert.ok(contains);
-
-      stream.on('end', () => {
-        callback(); // ready for next entry
-      });
-
-      stream.resume(); // just auto drain the stream
-    });
-
-    extractor.on('finish', function() {
-      done();
-    });
-
-    tarball.pipe(zlib.Unzip()).pipe(extractor);
+    let shoulds = [
+      'taskcluster-lib-docs/references/api.json',
+      'taskcluster-lib-docs/references/events.json',
+    ];
+    assertInTarball(shoulds, doc.tgz, done);
   });
 
   test('tarball contains only metadata', async function(done) {
-
-    let schemas = {};
-    let tier = 'core';
-
-    let shoulds = [
-      'metadata.json',
-    ];
-
     let doc = await documenter({
-      schemas,
       tier,
     });
-
-    let tarball = doc.tgz;
-
-    let extractor = tar.extract();
-    extractor.on('entry', (header, stream, callback) => {
-      let entryName = header.name;
-      let contains = false;
-      for (let expectedValue of shoulds) {
-        if (expectedValue == entryName) {
-          contains = true;
-          break;
-        }
-      }
-      assert.ok(contains);
-
-      stream.on('end', () => {
-        callback(); // ready for next entry
-      });
-
-      stream.resume(); // just auto drain the stream
-    });
-
-    extractor.on('finish', function() {
-      done();
-    });
-
-    tarball.pipe(zlib.Unzip()).pipe(extractor);
+    assertInTarball([], doc.tgz, done);
   });
 });
