@@ -32,7 +32,8 @@ The following are the options that can be passed to this library. They are liste
 
 ```js
     // A set of Taskcluster credentials that must contain both 'clientId' and 'accessToken' fields
-    // The client must have scopes for [ auth:aws-s3:read-write:taskcluster-raw-docs/<project> ]
+    // The client must have scopes for [ auth:aws-s3:read-write:taskcluster-raw-docs/<project>/ ]
+    // Don't forget the trailing slash!
     credentials: {},
 
     // The name of the project will automatically be set to your package name from package.json,
