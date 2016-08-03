@@ -121,12 +121,11 @@ func StarOut(text string) string {
 }
 
 // GoIdentifierFrom provides a mechanism to mutate an arbitrary descriptive
-// string (name) into an _exported_ Go identifier (variable name, function
-// name, etc) that e.g. can be used in generated code, taking into account a
-// blacklist of names that have already been used, plus the blacklist of the go
-// language reserved key words (https://golang.org/ref/spec#Keywords), in order
-// to guarantee that a new name is created which will not conflict with an
-// existing type.
+// string (name) into a Go identifier (variable name, function name, etc) that
+// e.g. can be used in generated code, taking into account a blacklist of names
+// that should not be used, plus the blacklist of the go language reserved key
+// words (https://golang.org/ref/spec#Keywords), in order to guarantee that a
+// new name is created which will not conflict with an existing type.
 //
 // Identifier syntax: https://golang.org/ref/spec#Identifiers
 //

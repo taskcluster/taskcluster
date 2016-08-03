@@ -106,6 +106,7 @@ type (
 		TypeNameGenerator   NameGenerator
 		MemberNameGenerator NameGenerator
 		SkipCodeGen         bool
+		TypeNameBlacklist   StringSet
 	}
 
 	Result struct {
@@ -117,10 +118,10 @@ type (
 	SchemaSet struct {
 		all       map[string]*JsonSubSchema
 		used      map[string]*JsonSubSchema
-		typeNames stringSet
+		TypeNames StringSet
 	}
 
-	stringSet map[string]bool
+	StringSet map[string]bool
 )
 
 // Ensure url contains "#" by adding it to end if needed
@@ -179,7 +180,7 @@ func (subSchema JsonSubSchema) String() string {
 	return result
 }
 
-func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages stringSet, rawMessageTypes stringSet) (comment, typ string) {
+func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ string) {
 	comment = "\n"
 	if d := jsonSubSchema.Description; d != nil {
 		comment += text.Indent(*d, "// ")
@@ -339,7 +340,7 @@ func (p *Properties) postPopulate(job *Job) error {
 			p.Properties[propertyName].PropertyName = propertyName
 		}
 		sort.Strings(p.SortedPropertyNames)
-		members := make(stringSet, len(p.SortedPropertyNames))
+		members := make(StringSet, len(p.SortedPropertyNames))
 		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
 		propTypeNames := make(map[string]bool)
 		for _, j := range p.SortedPropertyNames {
@@ -453,7 +454,8 @@ func (job *Job) add(subSchema *JsonSubSchema) {
 	}
 	job.result.SchemaSet.used[subSchema.SourceURL] = subSchema
 	if subSchema.TypeName == "" {
-		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, job.result.SchemaSet.typeNames)
+		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, job.TypeNameBlacklist)
+		job.result.SchemaSet.TypeNames[subSchema.TypeName] = true
 	}
 }
 
@@ -610,9 +612,9 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 // Returns the generated code content, and a map of keys of extra packages to import, e.g.
 // a generated type might use time.Time, so if not imported, this would have to be added.
 // using a map of strings -> bool to simulate a set - true => include
-func generateGoTypes(schemaSet *SchemaSet) (string, stringSet, stringSet) {
-	extraPackages := make(stringSet)
-	rawMessageTypes := make(stringSet)
+func generateGoTypes(schemaSet *SchemaSet) (string, StringSet, StringSet) {
+	extraPackages := make(StringSet)
+	rawMessageTypes := make(StringSet)
 	content := "type (" // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	typeDefinitions := make(map[string]string)
@@ -638,7 +640,10 @@ func (job *Job) Execute() (*Result, error) {
 	job.result.SchemaSet = &SchemaSet{
 		all:       make(map[string]*JsonSubSchema),
 		used:      make(map[string]*JsonSubSchema),
-		typeNames: make(stringSet),
+		TypeNames: make(StringSet),
+	}
+	if job.TypeNameBlacklist == nil {
+		job.TypeNameBlacklist = make(StringSet)
 	}
 	if job.TypeNameGenerator == nil {
 		job.TypeNameGenerator = text.GoIdentifierFrom
@@ -704,7 +709,7 @@ package ` + job.Package + `
 	return job.result, err
 }
 
-func jsonRawMessageImplementors(rawMessageTypes stringSet) string {
+func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 	// first sort the order of the rawMessageTypes since when we rebuild, we
 	// don't want to generate functions in a different order and introduce
 	// diffs against the previous version
