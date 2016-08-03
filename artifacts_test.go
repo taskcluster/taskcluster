@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -408,10 +409,33 @@ func TestUpload(t *testing.T) {
 	}
 
 	// some required substrings - not all, just a selection
-	expectedArtifacts := map[string][]string{
-		"public/logs/live_backing.log": {"hello world!", "goodbye world!", `"instance-type": "test-instance-type"`},
-		"public/logs/live.log":         {"hello world!", "goodbye world!", "=== Task Finished ===", "Exit Code: 0"},
-		"SampleArtifacts/_/X.txt":      {"test artifact"},
+	expectedArtifacts := map[string]struct {
+		extracts        []string
+		contentEncoding string
+	}{
+		"public/logs/live_backing.log": {
+			extracts: []string{
+				"hello world!",
+				"goodbye world!",
+				`"instance-type": "test-instance-type"`,
+			},
+			contentEncoding: "gzip",
+		},
+		"public/logs/live.log": {
+			extracts: []string{
+				"hello world!",
+				"goodbye world!",
+				"=== Task Finished ===",
+				"Exit Code: 0",
+			},
+			contentEncoding: "gzip",
+		},
+		"SampleArtifacts/_/X.txt": {
+			extracts: []string{
+				"test artifact",
+			},
+			contentEncoding: "",
+		},
 	}
 
 	// wait for task to complete, so we know artifact upload also completed
@@ -426,7 +450,7 @@ func TestUpload(t *testing.T) {
 	case <-timeoutTimer.C:
 		t.Fatalf("Test timed out waiting for artifacts to be published")
 	case <-artifactsCreatedChan:
-		for artifact, _ := range expectedArtifacts {
+		for artifact := range expectedArtifacts {
 			if a := artifactCreatedMessages[artifact]; a != nil {
 				if a.Artifact.ContentType != "text/plain; charset=utf-8" {
 					t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, a.Artifact.ContentType)
@@ -446,6 +470,12 @@ func TestUpload(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
 		}
+		// need to do this so Content-Encoding header isn't swallowed by Go for test later on
+		tr := &http.Transport{
+			DisableCompression: true,
+		}
+		client := &http.Client{Transport: tr}
+		rawResp, _, err := httpbackoff.ClientGet(client, url.String())
 		resp, _, err := httpbackoff.Get(url.String())
 		if err != nil {
 			t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
@@ -454,10 +484,16 @@ func TestUpload(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
 		}
-		for _, requiredSubstring := range content {
+		for _, requiredSubstring := range content.extracts {
 			if strings.Index(string(bytes), requiredSubstring) < 0 {
 				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(bytes))
 			}
+		}
+		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != content.contentEncoding {
+			t.Fatalf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", content.contentEncoding, actualContentEncoding, artifact, url)
+		}
+		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != "text/plain; charset=utf-8" {
+			t.Fatalf("Content-Type in Signed URL response does not match Content-Type of artifact")
 		}
 	}
 }
