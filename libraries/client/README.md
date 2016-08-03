@@ -104,6 +104,17 @@ var RawRoutingPattern = 'route.task.specific.routing.key';
 listener.bind(queueEvents.taskCompleted(RawRoutingPattern);
 ```
 
+### Web Listener
+Listening to  events can be done using a `WebListener`. All steps are identical to using `PulseListener` except in initializing the listener. While PulseListener opens a TCP socket
+to `pulse.mozilla.org` directly, a WebListener will connect to `events.taskcluster.net`
+using a websocket. In addition, `PulseListener` cannot be used on
+the browser.
+
+```javascript
+var listener = new taskcluster.WebListener({
+  baseUrl: undefined // defaults to: https://events.taskcluster.net/v1
+});
+```
 
 ## Advanced Listening
 
