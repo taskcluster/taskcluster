@@ -1,4 +1,4 @@
-Generated: 1469468561
+Generated: 1470223440
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2508,7 +2508,7 @@ Items
   SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#/items'
 Title                  = 'List Worker Types'
 Type                   = 'array'
-TypeName               = 'ListWorkerTypes'
+TypeName               = 'ListWorkerTypes1'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'
 
 
@@ -5680,6 +5680,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-artifacts
 
 http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#
 ===========================================================================
+Additional Properties  = 'false'
 Description            = 'Response from a `listDependentTasks` request.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#'
@@ -5740,6 +5741,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-dependent
 
 http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#
 ======================================================================
+Additional Properties  = 'false'
 Description            = 'Response from a `listTaskGroup` request.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
@@ -5800,6 +5802,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-grou
 
 http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#
 ====================================================================
+Additional Properties  = 'false'
 Description            = 'Response to a request for the number of pending tasks for a given
 `provisionerId` and `workerType`.
 '
@@ -5847,6 +5850,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/pending-tasks-
 
 http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#
 =====================================================================
+Additional Properties  = 'false'
 Description            = 'Response to request for poll task urls.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'
@@ -7924,6 +7928,42 @@ to the `reasonResolved` property for the last run.'
         Element M Words   = 'true'
         Element Required  = 'false'
     Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'
+Entry 7     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'task-group-resolved'
+    Entry Name        = 'taskGroupResolved'
+    Entry Title       = 'Task Group Resolved'
+    Entry Description = 'Whenever a task group has run to completion (success is not considered),
+a message will be sent on this exchange. It can be listened to to know
+when a group is "complete". There is no guarantee that this group is now
+intert. It can have more tasks added to it by the scheduler, but at least
+for the time being, it is done. If another task is added to this group and
+it completes, this message will be sent again.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'taskGroupId'
+        Element Summary   = '`taskGroupId` for the task-group this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'schedulerId'
+        Element Summary   = '`schedulerId` for the task-group this message concerns'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'false'
+    Routing Key Element 3     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
@@ -8206,6 +8246,47 @@ Title                  = 'Task Failed Message'
 Type                   = 'object'
 TypeName               = 'TaskFailedMessage'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Message written once a task group has no tasks to be run. It is
+possible for a task group to later have another task added, in which
+case this message will be sent again once it finishes.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'
+Properties
+  Property 'schedulerId' =
+    Description            = 'Identifier for the scheduler that created this task-group.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Scheduler Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#/properties/schedulerId'
+  Property 'taskGroupId' =
+    Description            = 'Identifier for the task-group being listed.
+    '
+    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+    Title                  = 'Task-Group Identifier'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#/properties/taskGroupId'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+    Type                   = 'integer'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#/properties/version'
+Required               = '[taskGroupId schedulerId]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Task Group Resolved'
+Type                   = 'object'
+TypeName               = 'TaskGroupResolved1'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/task-pending-message.json#

@@ -325,6 +325,33 @@ func (binding TaskException) NewPayloadObject() interface{} {
 	return new(TaskExceptionMessage)
 }
 
+// Whenever a task group has run to completion (success is not considered),
+// a message will be sent on this exchange. It can be listened to to know
+// when a group is "complete". There is no guarantee that this group is now
+// intert. It can have more tasks added to it by the scheduler, but at least
+// for the time being, it is done. If another task is added to this group and
+// it completes, this message will be sent again.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskGroupResolved
+type TaskGroupResolved struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskGroupResolved) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupResolved) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-group-resolved"
+}
+
+func (binding TaskGroupResolved) NewPayloadObject() interface{} {
+	return new(TaskGroupResolved1)
+}
+
 func generateRoutingKey(x interface{}) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
