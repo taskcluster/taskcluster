@@ -1,4 +1,4 @@
-Generated: 1470223440
+Generated: 1470245058
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7932,13 +7932,12 @@ Entry 7     =
     Entry Type        = 'topic-exchange'
     Entry Exchange    = 'task-group-resolved'
     Entry Name        = 'taskGroupResolved'
-    Entry Title       = 'Task Group Resolved'
-    Entry Description = 'Whenever a task group has run to completion (success is not considered),
-a message will be sent on this exchange. It can be listened to to know
-when a group is "complete". There is no guarantee that this group is now
-intert. It can have more tasks added to it by the scheduler, but at least
-for the time being, it is done. If another task is added to this group and
-it completes, this message will be sent again.'
+    Entry Title       = 'Task Group Resolved Messages'
+    Entry Description = 'A message is published on task-group-resolved whenever all submitted
+tasks (whether scheduled or unscheduled) for a given task group have
+been resolved, regardless of whether they resolved as successful or
+not. A task group may be resolved multiple times, since new tasks may
+be submitted against an already resolved task group.'
     Routing Key Element 0     = 
         Element Name      = 'routingKeyKind'
         Element Summary   = 'Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.'
