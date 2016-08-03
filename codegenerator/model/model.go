@@ -47,8 +47,9 @@ type APIModel interface {
 	setAPIDefinition(apiDef *APIDefinition)
 }
 
-// APIDefinition represents the definition of a REST API, comprising of the URL to the defintion
-// of the API in json format, together with a URL to a json schema to validate the definition
+// APIDefinition represents the definition of an API (currently a REST API or
+// an AMQP API), comprising of the URL to the defintion of the API in json
+// format, together with a URL to a json schema to validate the definition
 type APIDefinition struct {
 	URL            string `json:"url"`
 	Name           string `json:"name"`
@@ -56,6 +57,7 @@ type APIDefinition struct {
 	Data           APIModel
 	schemaURLs     []string
 	schemas        *jsonschema2go.SchemaSet
+	members        jsonschema2go.StringSet
 	PackageName    string
 	ExampleVarName string
 	PackagePath    string
@@ -229,9 +231,10 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 
 		// Generate types
 		job := &jsonschema2go.Job{
-			Package:     apiDefs[i].PackageName,
-			URLs:        apiDefs[i].schemaURLs,
-			ExportTypes: true,
+			Package:           apiDefs[i].PackageName,
+			URLs:              apiDefs[i].schemaURLs,
+			ExportTypes:       true,
+			TypeNameBlacklist: apiDefs[i].members,
 		}
 		result, err := job.Execute()
 		exitOnFail(err)

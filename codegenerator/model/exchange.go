@@ -41,6 +41,7 @@ func (exchange *Exchange) String() string {
 }
 
 func (exchange *Exchange) postPopulate(apiDef *APIDefinition) {
+	exchange.apiDef.members = make(map[string]bool, len(exchange.Entries))
 	for i := range exchange.Entries {
 		exchange.Entries[i].Parent = exchange
 		exchange.Entries[i].postPopulate(apiDef)
@@ -61,10 +62,12 @@ type ExchangeEntry struct {
 	Title       string         `json:"title"`
 	Type        string         `json:"type"`
 
-	Parent *Exchange
+	Parent   *Exchange
+	typeName string
 }
 
 func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
+	entry.typeName = text.GoIdentifierFrom(entry.Name, true, entry.Parent.apiDef.members)
 	entry.Parent.apiDef.schemaURLs = append(entry.Parent.apiDef.schemaURLs, entry.Schema)
 }
 
@@ -145,9 +148,9 @@ import (
 )
 
 `
-	entryTypeNames := make(map[string]bool, len(exchange.Entries))
+	exchange.apiDef.members = make(map[string]bool, len(exchange.Entries))
 	for _, entry := range exchange.Entries {
-		content += entry.generateAPICode(text.GoIdentifierFrom(entry.Name, true, entryTypeNames))
+		content += entry.generateAPICode()
 	}
 
 	content += `
@@ -172,7 +175,7 @@ func generateRoutingKey(x interface{}) string {
 	return content
 }
 
-func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
+func (entry *ExchangeEntry) generateAPICode() string {
 	content := ""
 	if entry.Description != "" {
 		content = text.Indent(entry.Description, "// ")
@@ -182,25 +185,26 @@ func (entry *ExchangeEntry) generateAPICode(exchangeEntry string) string {
 	}
 	content += "//\n"
 	content += fmt.Sprintf("// See %v#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
-	content += "type " + exchangeEntry + " struct {\n"
-	keyNames := make(map[string]bool, len(entry.RoutingKey))
+	content += "type " + entry.typeName + " struct {\n"
+	structMembers := make(map[string]bool, len(entry.RoutingKey))
 	for _, rk := range entry.RoutingKey {
 		mwch := "*"
 		if rk.MultipleWords {
 			mwch = "#"
 		}
-		content += "\t" + text.GoIdentifierFrom(rk.Name, true, keyNames) + " string `mwords:\"" + mwch + "\"`\n"
+		structMember := text.GoIdentifierFrom(rk.Name, true, structMembers)
+		content += "\t" + structMember + " string `mwords:\"" + mwch + "\"`\n"
 	}
 	content += "}\n"
-	content += "func (binding " + exchangeEntry + ") RoutingKey() string {\n"
+	content += "func (binding " + entry.typeName + ") RoutingKey() string {\n"
 	content += "\treturn generateRoutingKey(&binding)\n"
 	content += "}\n"
 	content += "\n"
-	content += "func (binding " + exchangeEntry + ") ExchangeName() string {\n"
+	content += "func (binding " + entry.typeName + ") ExchangeName() string {\n"
 	content += "\treturn \"" + entry.Parent.ExchangePrefix + entry.Exchange + "\"\n"
 	content += "}\n"
 	content += "\n"
-	content += "func (binding " + exchangeEntry + ") NewPayloadObject() interface{} {\n"
+	content += "func (binding " + entry.typeName + ") NewPayloadObject() interface{} {\n"
 	content += "\treturn new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Schema).TypeName + ")\n"
 	content += "}\n"
 	content += "\n"
