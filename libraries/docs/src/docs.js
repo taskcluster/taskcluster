@@ -51,8 +51,7 @@ async function documenter(options) {
   );
 
   _.forEach(options.schemas, (schema, name) => {
-    let data = JSON.stringify(schema, null, 2);
-    tarball.entry(headers(name, 'schema'), data);
+    tarball.entry(headers(name, 'schema'), schema);
   });
 
   _.forEach(options.references, (reference) => {
