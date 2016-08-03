@@ -35,6 +35,24 @@ let load = base.loader({
     }),
   },
 
+  docs: {
+    requires: ['cfg', 'validator', 'reference'],
+    setup: ({cfg, validator, reference}) => base.docs({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        }, {
+          name: 'events',
+          reference: reference,
+        },
+      ],
+    }),
+  },
+
   publisher: {
     requires: ['cfg', 'monitor', 'validator', 'mockPublisher'],
     setup: async ({cfg, monitor, validator, mockPublisher}) => {
@@ -77,8 +95,8 @@ let load = base.loader({
   },
 
   server: {
-    requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => {
+    requires: ['cfg', 'api', 'docs'],
+    setup: ({cfg, api, docs}) => {
 
       debug('Launching server.');
       let app = base.app(cfg.server);
