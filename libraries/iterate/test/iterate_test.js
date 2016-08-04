@@ -85,10 +85,6 @@ describe('Iterate', () => {
     });
 
 
-    i.overallWatchDog.on('expired', () => {
-      done(new Error('overall watchdog expiration'));
-    });
-
     i.on('error', err => {
       done(err);
     });
@@ -129,10 +125,6 @@ describe('Iterate', () => {
     });
 
 
-    i.overallWatchDog.on('expired', () => {
-      done(new Error('overall watchdog expiration'));
-    });
-
     i.on('error', err => {
       done(err);
     });
@@ -154,6 +146,7 @@ describe('Iterate', () => {
       maxIterationTime: 5,
       watchDog: 1,
       waitTime: 1,
+      maxFailures: 1,
       handler: async (watchdog, state) => {
         // In order to get the looping stuff to work, I had to stop the
         // watchdog timer.  This will be tested in the tests for the
@@ -166,7 +159,7 @@ describe('Iterate', () => {
           done();
         });
         return new Promise((res, rej) => {
-          setTimeout(res, 2000);
+          setTimeout(res, 6000);
         });
 
       }
@@ -175,28 +168,31 @@ describe('Iterate', () => {
     i.start();
   });
 
-  it('should emit error when overall watchdog expires', done => {
+  it('should emit error when overall iteration limit is hit', done => {
     let iterations = 0;
 
     let i = new subject({
       maxIterationTime: 1,
-      watchDog: 1,
+      watchDog: 100,
       waitTime: 1,
+      maxFailures: 1,
       handler: async (watchdog, state) => {
         watchdog.stop();
         return new Promise((res, rej) => {
-          setTimeout(res, 5000);
+          setTimeout(() => {
+            return res();
+          }, 5000);
         });
       }
     });
-
-    i.start();
 
     i.on('error', err => {
       i.stop();
       assume(i.keepGoing).is.not.ok();
       done();
     });
+
+    i.start();
   });
 
   it('should emit error when iteration is too quick', done => {
@@ -321,10 +317,6 @@ describe('Iterate', () => {
       }
     });
 
-
-    i.overallWatchDog.on('expired', () => {
-      done(new Error('overall watchdog expiration'));
-    });
 
     i.on('error', err => {
       done(err);
@@ -530,8 +522,6 @@ describe('Iterate', () => {
         i.stop();
       });
 
-      i.overallWatchDog.stop();
-
       i.start();
     });
 
@@ -539,13 +529,13 @@ describe('Iterate', () => {
       let iterations = 0;
 
       let i = new subject({
-        maxIterationTime: 3,
+        maxIterationTime: 5,
         maxFailures: 1,
-        watchDog: 2,
+        watchDog: 1,
         waitTime: 1,
         handler: async (watchdog, state) => {
           return new Promise((res, rej) => {
-            setTimeout(res, 6000);
+            setTimeout(res, 3000);
           });
         }
       });
@@ -567,12 +557,10 @@ describe('Iterate', () => {
         i.stop();
       });
 
-      i.overallWatchDog.stop();
-
       i.start();
     });
     
-    it('should be correct when handler takes too long (overall watchdog)', done => {
+    it('should be correct when handler takes too long (overall time)', done => {
       let iterations = 0;
 
       let i = new subject({
