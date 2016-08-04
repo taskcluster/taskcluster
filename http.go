@@ -61,8 +61,6 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 	callSummary := new(CallSummary)
 	callSummary.HTTPRequestBody = string(rawPayload)
 
-	httpClient := &http.Client{}
-
 	// function to perform http request - we call this using backoff library to
 	// have exponential backoff in case of intermittent failures (e.g. network
 	// blips or HTTP 5xx errors)
@@ -73,33 +71,20 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
-		httpRequest, err := http.NewRequest(method, u.String(), ioReader)
+		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
 			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), connectionData.BaseURL, err)
 		}
-		httpRequest.Header.Set("Content-Type", "application/json")
-		callSummary.HTTPRequest = httpRequest
+		callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
 		if connectionData.Authenticate {
-			credentials := &hawk.Credentials{
-				ID:   connectionData.Credentials.ClientID,
-				Key:  connectionData.Credentials.AccessToken,
-				Hash: sha256.New,
-			}
-			reqAuth := hawk.NewRequestAuth(httpRequest, credentials, 0)
-			reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
+			err = connectionData.Credentials.SignRequest(callSummary.HTTPRequest)
 			if err != nil {
-				return nil, nil, fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", connectionData.Credentials, err)
+				return nil, nil, err
 			}
-			httpRequest.Header.Set("Authorization", reqAuth.RequestHeader())
 		}
-		// reqBytes, err := httputil.DumpRequest(httpRequest, true)
-		// only log if there is no error. if an error, just don't log.
-		// if err == nil {
-		// 	log.Printf("Making http request: %v", string(reqBytes))
-		// }
-		resp, err := httpClient.Do(httpRequest)
+		resp, err := (&http.Client{}).Do(callSummary.HTTPRequest)
 		return resp, err, nil
 	}
 
@@ -117,6 +102,26 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 
 	return callSummary, err
 
+}
+
+// SignRequest will add an Authorization header
+func (c *Credentials) SignRequest(req *http.Request) (err error) {
+	// s, err := c.SignHeader(req.Method, req.URL.String(), hash)
+	// req.Header.Set("Authorization", s)
+	// return err
+
+	credentials := &hawk.Credentials{
+		ID:   c.ClientID,
+		Key:  c.AccessToken,
+		Hash: sha256.New,
+	}
+	reqAuth := hawk.NewRequestAuth(req, credentials, 0)
+	reqAuth.Ext, err = getExtHeader(c)
+	if err != nil {
+		return fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
+	}
+	req.Header.Set("Authorization", reqAuth.RequestHeader())
+	return nil
 }
 
 // APICall is the generic REST API calling method which performs all REST API
