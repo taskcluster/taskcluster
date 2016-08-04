@@ -52,33 +52,13 @@ class Iterate extends events.EventEmitter {
 
     // We add the times together since we're always going to have the watch dog
     // running even when we're waiting for the next iteration
-    this.overallWatchDog = new WatchDog(this.maxIterationTime + this.waitTime);
     this.incrementalWatchDog = new WatchDog(this.watchDogTime);
-
-    // We want to have a single way for all guarded failure cases to exit.
-    // Instead of using the watch dog's process killing feature, we'll exit as
-    // if this were any other error.  This is for both the overall and the
-    // incremental watch dogs.  When these watch dogs fail, we want to make sure
-    // that we emit the correct events.  If the overall watch dog fails, it's
-    // important that we stop the per-iteration watchdog, since we don't want
-    // to accidentally crash after a long time.
-    this.overallWatchDog.on('expired', () => {
-      let err = new Error(`maxIterationTime of ${this.maxIterationTime} exceeded`);
-      this.failures.push(err);
-      this.emit('iteration-failure', err);
-      this.emit('iteration-complete');
-      this.incrementalWatchDog.stop();
-      if (this.failures.length >= this.maxFailures) {
-        this.__emitFatalError();
-      }
-    });
 
     this.incrementalWatchDog.on('expired', () => {
       let err = new Error(`watchDog of ${this.watchDogTime} exceeded`);
       this.failures.push(err);
       this.emit('iteration-failure', err);
       this.emit('iteration-complete');
-      this.overallWatchDog.touch();
       if (this.failures.length >= this.maxFailures) {
         this.__emitFatalError();
       }
@@ -113,10 +93,16 @@ class Iterate extends events.EventEmitter {
       let start = new Date();
 
       // Note that we're using a watch dog for the maxIterationTime guarding.
-      // The overallWatchDog timer is the absolute upper bounds for this
-      // iteration, this watchdog is the one to check things are still
-      // happening in the handler.
-      let value = await this.handler(this.incrementalWatchDog, this.sharedState);
+      let res = Promise.race([
+          new Promise((res, rej) => {
+            setTimeout({
+              rej(new Error('Iteration exceeded maximum time allowed'));
+            }, this.maxIterationTime);
+          });
+          await this.handler(this.incrementalWatchDog, this.sharedState),
+      ]);
+
+      let value = res[1];
       
       // TODO: do this timing the better way
       let diff = (new Date() - start) / 1000;
@@ -163,7 +149,6 @@ class Iterate extends events.EventEmitter {
     } else {
       if (this.keepGoing) {
         debug('scheduling next iteration');
-        this.overallWatchDog.touch();
         this.currentIteration++;
         this.currentTimeout = setTimeout(async () => {
           try {
@@ -226,7 +211,6 @@ class Iterate extends events.EventEmitter {
   start() {
     debug('starting');
     this.keepGoing = true;
-    this.overallWatchDog.start();
 
     // Two reasons we call it this way:
     //   1. first call should have same exec env as following
@@ -249,7 +233,6 @@ class Iterate extends events.EventEmitter {
   }
 
   __makeSafe() {
-    this.overallWatchDog.stop();
     this.incrementalWatchDog.stop();
     this.emit('stopped');
   }
