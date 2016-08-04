@@ -462,7 +462,7 @@ type (
 	ListWorkerTypeSummariesResponse []WorkerTypeSummary
 
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
-	ListWorkerTypes []string
+	ListWorkerTypes1 []string
 
 	// A summary of a worker type's current state, expresed in terms of capacity.
 	//

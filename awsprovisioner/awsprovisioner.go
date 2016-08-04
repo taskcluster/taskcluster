@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 25 Jul 2016 at 17:42:00 UTC. The code was generated
+// Wed, 3 Aug 2016 at 17:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -221,10 +221,10 @@ func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) error 
 // type definition but are still running in AWS.
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#listWorkerTypes
-func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, error) {
+func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes1, error) {
 	cd := tcclient.ConnectionData(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes), nil)
-	return responseObject.(*ListWorkerTypes), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes1), nil)
+	return responseObject.(*ListWorkerTypes1), err
 }
 
 // Insert a secret into the secret storage.  The supplied secrets will

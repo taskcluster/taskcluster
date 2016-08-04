@@ -325,6 +325,32 @@ func (binding TaskException) NewPayloadObject() interface{} {
 	return new(TaskExceptionMessage)
 }
 
+// A message is published on task-group-resolved whenever all submitted
+// tasks (whether scheduled or unscheduled) for a given task group have
+// been resolved, regardless of whether they resolved as successful or
+// not. A task group may be resolved multiple times, since new tasks may
+// be submitted against an already resolved task group.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskGroupResolved
+type TaskGroupResolved struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskGroupResolved) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupResolved) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-group-resolved"
+}
+
+func (binding TaskGroupResolved) NewPayloadObject() interface{} {
+	return new(TaskGroupResolved1)
+}
+
 func generateRoutingKey(x interface{}) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
