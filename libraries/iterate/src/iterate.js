@@ -54,16 +54,6 @@ class Iterate extends events.EventEmitter {
     // running even when we're waiting for the next iteration
     this.watchDog = new WatchDog(this.watchDogTime);
 
-    this.watchDog.on('expired', () => {
-      let err = new Error(`watchDog of ${this.watchDogTime} exceeded`);
-      this.failures.push(err);
-      this.emit('iteration-failure', err);
-      this.emit('iteration-complete');
-      if (this.failures.length >= this.maxFailures) {
-        this.__emitFatalError();
-      }
-    });
-
     // Count the iteration that we're on.
     this.currentIteration = 0;
 
@@ -84,7 +74,6 @@ class Iterate extends events.EventEmitter {
   async iterate() {
     // We only run this watch dog for the actual iteration loop
     this.emit('iteration-start');
-    this.watchDog.start();
 
     // Run the handler, pass in shared state so iterations can refer to
     // previous iterations without being too janky
@@ -92,15 +81,48 @@ class Iterate extends events.EventEmitter {
       debug('running handler');
       let start = new Date();
 
+      let watchDog = new WatchDog(this.watchDogTime);
+
+      // Haha, what a terrible idea
+      let onDemandRejection = {
+        called: false,
+        reject: function (x) {
+          if (this.called) {
+            throw new Error('Cannot ondemand reject twice!');
+          }
+          if (!this.rej) {
+            throw new Error('cannot reject yet');
+          }
+          this.called = true;
+          this.rej(x);
+        },
+        promise: function () {
+          if (!this.p) {
+            this.p = new Promise((res, rej) => {
+              this.rej = rej;
+            });
+          }
+          return this.p;
+        },
+      };
+
+      watchDog.on('expired', () => {
+        onDemandRejection.reject(new Error('watchDog exceeded'));
+      });
+
+      watchDog.start();
       // Note that we're using a watch dog for the maxIterationTime guarding.
-      let res = Promise.race([
+      let res = await Promise.race([
           new Promise((res, rej) => {
-            setTimeout({
+            setTimeout(() => {
+              debug(`handler lost race to timeout ${this.maxIterationTime}ms`);
               rej(new Error('Iteration exceeded maximum time allowed'));
             }, this.maxIterationTime);
-          });
-          await this.handler(this.watchDog, this.sharedState),
+          }),
+          onDemandRejection.promise(),
+          this.handler(watchDog, this.sharedState),
       ]);
+      watchDog.stop();
 
       let value = res[1];
       
@@ -131,7 +153,6 @@ class Iterate extends events.EventEmitter {
     this.emit('iteration-complete');
 
     // We don't wand this watchdog timer to always run
-    this.watchDog.stop();
 
     // TODO: double check this isn't an off by one
     // When we reach the end of a set number of iterations, we'll stop
@@ -159,7 +180,7 @@ class Iterate extends events.EventEmitter {
         }, this.waitTime);
       } else {
         this.stop();
-        this.__makeSafe();
+        this.emit('stopped');
       }
     }
   }
@@ -192,8 +213,11 @@ class Iterate extends events.EventEmitter {
    * further.
    */
   __emitFatalError() {
+    if (this.currentTimeout) {
+      clearTimeout(this.currentTimeout);
+    }
     this.stop();
-    this.__makeSafe();
+    this.emit('stopped');
     if (this.listeners('error').length > 0) {
       this.emit('error', this.failures);
     } else {
@@ -228,13 +252,7 @@ class Iterate extends events.EventEmitter {
 
   stop() {
     this.keepGoing = false;
-    this.currentIteration = 0;
     debug('stopped');
-  }
-
-  __makeSafe() {
-    this.watchDog.stop();
-    this.emit('stopped');
   }
 
 }
