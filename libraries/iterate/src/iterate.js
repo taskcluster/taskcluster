@@ -52,9 +52,9 @@ class Iterate extends events.EventEmitter {
 
     // We add the times together since we're always going to have the watch dog
     // running even when we're waiting for the next iteration
-    this.incrementalWatchDog = new WatchDog(this.watchDogTime);
+    this.watchDog = new WatchDog(this.watchDogTime);
 
-    this.incrementalWatchDog.on('expired', () => {
+    this.watchDog.on('expired', () => {
       let err = new Error(`watchDog of ${this.watchDogTime} exceeded`);
       this.failures.push(err);
       this.emit('iteration-failure', err);
@@ -84,7 +84,7 @@ class Iterate extends events.EventEmitter {
   async iterate() {
     // We only run this watch dog for the actual iteration loop
     this.emit('iteration-start');
-    this.incrementalWatchDog.start();
+    this.watchDog.start();
 
     // Run the handler, pass in shared state so iterations can refer to
     // previous iterations without being too janky
@@ -99,7 +99,7 @@ class Iterate extends events.EventEmitter {
               rej(new Error('Iteration exceeded maximum time allowed'));
             }, this.maxIterationTime);
           });
-          await this.handler(this.incrementalWatchDog, this.sharedState),
+          await this.handler(this.watchDog, this.sharedState),
       ]);
 
       let value = res[1];
@@ -131,7 +131,7 @@ class Iterate extends events.EventEmitter {
     this.emit('iteration-complete');
 
     // We don't wand this watchdog timer to always run
-    this.incrementalWatchDog.stop();
+    this.watchDog.stop();
 
     // TODO: double check this isn't an off by one
     // When we reach the end of a set number of iterations, we'll stop
@@ -233,7 +233,7 @@ class Iterate extends events.EventEmitter {
   }
 
   __makeSafe() {
-    this.incrementalWatchDog.stop();
+    this.watchDog.stop();
     this.emit('stopped');
   }
 
