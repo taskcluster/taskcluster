@@ -5,6 +5,40 @@ let debug = require('debug')('iterate');
 let request = require('request-promise');
 let events = require('events');
 
+class CommandPromise {
+
+  constructor() {
+    this.called = false;
+    this.p = new Promise((res, rej) => {
+      this.__res = res;
+      this.__rej = rej;
+    });
+  }
+
+  __throw() {
+    throw new Error('Already resolved or rejected');
+  }
+
+  reject(x) {
+    if (this.called) {
+      this.__throw();
+    }
+    this.__rej(x);
+  }
+
+  resolve(x) {
+    if (this.called) {
+      this.__throw();
+    }
+    this.__res(x);
+  }
+
+  promise() {
+    return this.p;
+  }
+
+}
+
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor
@@ -83,31 +117,10 @@ class Iterate extends events.EventEmitter {
 
       let watchDog = new WatchDog(this.watchDogTime);
 
-      // Haha, what a terrible idea
-      let onDemandRejection = {
-        called: false,
-        reject: function (x) {
-          if (this.called) {
-            throw new Error('Cannot ondemand reject twice!');
-          }
-          if (!this.rej) {
-            throw new Error('cannot reject yet');
-          }
-          this.called = true;
-          this.rej(x);
-        },
-        promise: function () {
-          if (!this.p) {
-            this.p = new Promise((res, rej) => {
-              this.rej = rej;
-            });
-          }
-          return this.p;
-        },
-      };
+      let watchDogRejector = new CommandPromise();
 
       watchDog.on('expired', () => {
-        onDemandRejection.reject(new Error('watchDog exceeded'));
+        watchDogRejector.reject(new Error('watchDog exceeded'));
       });
 
       watchDog.start();
@@ -119,7 +132,7 @@ class Iterate extends events.EventEmitter {
               rej(new Error('Iteration exceeded maximum time allowed'));
             }, this.maxIterationTime);
           }),
-          onDemandRejection.promise(),
+          watchDogRejector.promise(),
           this.handler(watchDog, this.sharedState),
       ]);
       watchDog.stop();
