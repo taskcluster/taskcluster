@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -883,6 +884,8 @@ func (task *TaskRun) run() error {
 	if err != nil {
 		return WorkerShutdown(err)
 	}
+	gzipLogWriter := gzip.NewWriter(logFileHandle)
+	gzipLogWriter.Name = "live_backing.log"
 	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
 	defer func(liveLog *livelog.LiveLog) {
 		errClose := liveLog.LogWriter.Close()
@@ -898,10 +901,10 @@ func (task *TaskRun) run() error {
 	}(liveLog)
 	if err != nil {
 		log.Printf("WARN: could not create livelog: %s", err)
-		task.logWriter = logFileHandle
+		task.logWriter = gzipLogWriter
 	} else {
 		task.liveLog = liveLog
-		task.logWriter = io.MultiWriter(liveLog.LogWriter, logFileHandle)
+		task.logWriter = io.MultiWriter(liveLog.LogWriter, gzipLogWriter)
 		err = task.uploadLiveLog()
 		if err != nil {
 			log.Printf("WARN: could not upload livelog: %s", err)
@@ -929,6 +932,9 @@ func (task *TaskRun) run() error {
 	finished := time.Now()
 	task.Log("=== Task Finished ===")
 	task.Log("Task Duration: " + finished.Sub(started).String())
+	// don't fret if we can't close these
+	_ = gzipLogWriter.Close()
+	_ = logFileHandle.Close()
 
 	err = task.postTaskActions()
 

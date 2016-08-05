@@ -37,7 +37,8 @@ type (
 
 	S3Artifact struct {
 		BaseArtifact
-		MimeType string
+		MimeType        string
+		ContentEncoding string
 	}
 
 	AzureArtifact struct {
@@ -117,8 +118,12 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
 		if err != nil {
 			return nil, nil, err
 		}
-		log.Printf("MimeType in put request: %v", artifact.MimeType)
+		log.Printf("Content-Type in S3 PUT request: %v", artifact.MimeType)
 		httpRequest.Header.Set("Content-Type", artifact.MimeType)
+		if artifact.ContentEncoding != "" {
+			httpRequest.Header.Set("Content-Encoding", artifact.ContentEncoding)
+			log.Printf("Content-Encoding in put request: %v", artifact.ContentEncoding)
+		}
 		// request body could be a) binary and b) massive, so don't show it...
 		requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
 		if dumpError != nil {
@@ -300,7 +305,8 @@ func (task *TaskRun) uploadLog(logFile string) error {
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
-			MimeType: "text/plain; charset=utf-8",
+			MimeType:        "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
 		},
 	)
 }
