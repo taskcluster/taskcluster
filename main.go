@@ -884,12 +884,7 @@ func (task *TaskRun) run() error {
 	if err != nil {
 		return WorkerShutdown(err)
 	}
-	// using NewWriterLevel(...) instead of NewWriter(...) to be explicit about
-	// compression level, so easy to change later
-	gzipLogWriter, err := gzip.NewWriterLevel(logFileHandle, gzip.DefaultCompression)
-	if err != nil {
-		return WorkerShutdown(err)
-	}
+	gzipLogWriter := gzip.NewWriter(logFileHandle)
 	gzipLogWriter.Name = "live_backing.log"
 	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
 	defer func(liveLog *livelog.LiveLog) {
@@ -906,7 +901,7 @@ func (task *TaskRun) run() error {
 	}(liveLog)
 	if err != nil {
 		log.Printf("WARN: could not create livelog: %s", err)
-		task.logWriter = logFileHandle
+		task.logWriter = gzipLogWriter
 	} else {
 		task.liveLog = liveLog
 		task.logWriter = io.MultiWriter(liveLog.LogWriter, gzipLogWriter)
