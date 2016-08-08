@@ -12,6 +12,9 @@ suite('API', function() {
   let dailyHookDef = _.defaults({
       schedule: ["0 0 3 * * *"],
     }, hookDef);
+  let invalidHookDef = _.defaults({
+    schedule: ['0 0 3 0 * *'],
+  }, hookDef);
 
   let setHookLastFire = async (hookGroupId, hookId, lastFire) => {
     let hook = await helper.Hook.load({hookGroupId, hookId}, true);
@@ -64,6 +67,12 @@ suite('API', function() {
       var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assert(new Date(r1.nextScheduledDate) > new Date());
     });
+
+    test("fails with invalid schedule", async () => {
+      await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
+          () => { throw new Error("Expected an error"); },
+          (err) => { assume(err.statusCode).equals(400); });
+    });
   });
 
   suite("updateHook", function() {
@@ -77,10 +86,19 @@ suite('API', function() {
       assume(r2.task).deep.equals(r1.task);
     });
 
-    test("updateHook fails if resource doesn't exist", async () => {
+    test("fails if resource doesn't exist", async () => {
       await helper.hooks.updateHook('foo', 'bar', hookDef).then(
           () => { throw new Error("Expected an error"); },
           (err) => { assume(err.statusCode).equals(404); });
+    });
+
+    test("fails if new schedule is invalid", async () => {
+      var input = require('./test_definition');
+      await helper.hooks.createHook('foo', 'bar', input);
+
+      await helper.hooks.updateHook('foo', 'bar', invalidHookDef).then(
+          () => { throw new Error("Expected an error"); },
+          (err) => { assume(err.statusCode).equals(400); });
     });
   });
 
