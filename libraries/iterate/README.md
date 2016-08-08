@@ -18,16 +18,18 @@ i = new Iterate({
   waitTime: 2,
   handler: (watchDog, state) => {
     console.log(`do some work`);
+
     watchDog.touch(); // tell Iterate that we`re doing work still
+
     console.log(`still working`);
     watchDog.touch();
+
     return new Promise((res, rej) => {
       console.log(`Almost done`);
       watchDog.touch();
       setTimeout(res, 2);
     });
   },
-
 });
 
 i.start();
@@ -51,7 +53,7 @@ the following properties:
   Is passed in a watchdog and state object reference
 * `waitTime`: number of seconds between the conclusion of one iteration
   and commencement of another.
-* `maxIterations` (optional, default infinite): Complete up to this many 
+* `maxIterations` (optional, default infinite): Complete up to this many
   iterations and then successfully exit.  Failed iterations count.
 * `maxFailures` (optional, default 7): When this number of failures occur
   in consecutive iterations, treat as an error
@@ -63,6 +65,8 @@ the following properties:
 * `dmsConfig` (optional): provide information of a deadman's snitch to
   inform of the completion of an iteration.  This is an object of shape
   `{apiKey: '...', snitchUrl: '...'}`
+* `monitor` (optional): instance of `taskcluster-lib-monitor` prefix with a
+  name appropriate for this iterate instance.
 
 The code to run is called a handler.  A handler is a function which returns a
 promise (e.g. async function).  This function is passed in the arguments
@@ -71,7 +75,7 @@ promise (e.g. async function).  This function is passed in the arguments
 The `watchdog` parameter is basically a ticking timebomb.  It has methods
 `.start()`, `.stop()` and `.touch()` and emits `started`, `expired`, `stopped`
 and `touched`.  What it allows an implementor is the abilty to say that while
-the absolute maximum iteration interval (`maxIterationTime`), incremental 
+the absolute maximum iteration interval (`maxIterationTime`), incremental
 progress should be made.  The idea here is that after each chunk of work in the
 handler, you run `.touch()`.  This way, you can have a handler that can be
 marked as failing without waiting the full `maxIterationTime`.  The delay for
@@ -111,4 +115,3 @@ There are a couple things that I`d like to do to this library
   down easier.  Right now, we emit `stopped` on success and `stopped` *and*
   `error` on failure.  We should either emit only one of `stopped` and `error`
   or have the above mentioned events
-
