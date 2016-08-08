@@ -41,7 +41,7 @@ class Monitor {
         console.log('Can\'t report to sentry, error not reported: ', err.stack);
         return Promise.resolve();
       }
-      
+
       sentry.client.captureException(err, {
         tags: _.defaults({
           prefix: this._opts.project + (this._opts.prefix || '.root'),
@@ -54,11 +54,12 @@ class Monitor {
         let onLogged, onError;
         onLogged = () => {
           sentry.client.removeListener('error', onError);
-          accept();
+          accept(true);
         };
         onError = (e) => {
           sentry.client.removeListener('logged', onLogged);
-          reject(new Error('Failed to log error to Sentry: ' + e));
+          console.log('Failed to log error to Sentry: ' + e);
+          accept(false);
         };
         sentry.client.once('logged', onLogged);
         sentry.client.once('error', onError);
@@ -69,7 +70,7 @@ class Monitor {
   // captureError is an alias for reportError to match up
   // with the raven api better.
   async captureError(err, level='error', tags={}) {
-    this.reportError(err, level, tags);
+    return this.reportError(err, level, tags);
   }
 
   count(key, val) {
@@ -133,10 +134,11 @@ class MockMonitor {
 
   async reportError(err, level='error', tags={}) {
     this.errors.push(err);
+    return true;
   }
 
   async captureError(err, level='error', tags={}) {
-    this.reportError(err, level, tags);
+    return this.reportError(err, level, tags);
   }
 
   count(key, val) {

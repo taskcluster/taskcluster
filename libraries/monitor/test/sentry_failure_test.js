@@ -1,4 +1,4 @@
-suite('Sentry', () => {
+suite('Sentry Failure', () => {
   let assert = require('assert');
   let monitoring = require('../');
   let debug = require('debug')('test');
@@ -26,26 +26,15 @@ suite('Sentry', () => {
     let sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
       .post('/api/12345/store/', '*')
-      .twice()
-      .reply(200, () => {
-        debug('called Sentry.');
-      })
-      .post('/api/12345/store/', '*')
-      .reply(200, () => {
-        debug('called Sentry the correct amount of times.');
-        done();
+      .reply(500, () => {
+        debug('called Sentry, returned 500');
       });
 
     setTimeout(function() {
       sentryScope.done();
     }, 2000);
 
-    let results = await Promise.all([
-      monitor.reportError('create sentry error test'),
-      monitor.reportError('another time'),
-      monitor.captureError('this is the same as reportError'),
-    ]);
-    assert.deepEqual(results, [true, true, true]);
+    done(assert.equal(false, await monitor.reportError('stranger things')));
   });
 
 });
