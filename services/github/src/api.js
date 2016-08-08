@@ -43,6 +43,7 @@ function getPushDetails (eventData) {
     'event.head.repo.url': eventData.repository.clone_url,
     'event.head.sha': eventData.after,
     'event.head.ref': ref,
+    'event.base.sha': eventData.before,
   };
 };
 
