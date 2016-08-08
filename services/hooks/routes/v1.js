@@ -1,4 +1,5 @@
 var base        = require('taskcluster-base');
+var parser      = require('cron-parser');
 var debug       = require('debug')('hooks:routes:v1');
 var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
@@ -227,6 +228,17 @@ api.declare({
     return;
   }
 
+  // Validate cron-parser expressions
+  _.forEach(hookDef.schedule, function(schedule){
+    try {
+      parser.parseExpression(schedule);
+    } catch (err) {
+      return res.status(400).json({
+        message: err.message + " in " + schedule
+      });
+    }
+  });
+
   // Try to create a Hook entity
   try {
     var hook = await this.Hook.create(
@@ -294,6 +306,16 @@ api.declare({
 
   // Attempt to modify properties of the hook
   var schedule = hookDef.schedule ? hookDef.schedule : [];
+  _.forEach(schedule, function(schedule){
+    try {
+      parser.parseExpression(schedule);
+    } catch (err) {
+      return res.status(400).json({
+        message: err.message + " in " + schedule
+      });
+    }
+  });
+
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
     hook.task              = hookDef.task;
