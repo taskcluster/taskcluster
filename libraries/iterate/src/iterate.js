@@ -49,17 +49,25 @@ class Iterate extends events.EventEmitter {
     super();
     events.EventEmitter.call(this);
 
-    assert(typeof (opts.maxIterations || 0) === 'number', 'maxIterations must be number');
-    this.maxIterations = opts.maxIterations || 0;
+    // Set default values
+    opts = _.defaults({}, opts, {
+      maxIterations: 0,
+      maxFailures: 7,
+      minIterationTime: 0,
+      waitTimeAfterFail: 0,
+    });
 
-    assert(typeof (opts.maxFailures || 7) === 'number', 'maxFailures must be number');
-    this.maxFailures = opts.maxFailures || 7;
+    assert(typeof opts.maxIterations === 'number', 'maxIterations must be number');
+    this.maxIterations = opts.maxIterations;
+
+    assert(typeof opts.maxFailures === 'number', 'maxFailures must be number');
+    this.maxFailures = opts.maxFailures;
 
     assert(typeof opts.maxIterationTime === 'number', 'maxIterationTime must be number');
     this.maxIterationTime = opts.maxIterationTime * 1000;
 
-    assert(typeof (opts.minIterationTime || 0) === 'number', 'minIterationTime must be number');
-    this.minIterationTime = opts.minIterationTime * 1000 || 0;
+    assert(typeof opts.minIterationTime === 'number', 'minIterationTime must be number');
+    this.minIterationTime = opts.minIterationTime * 1000;
 
     assert(typeof opts.watchDog === 'number', 'watchDog must be number');
     this.watchDogTime = opts.watchDog * 1000;
@@ -67,7 +75,7 @@ class Iterate extends events.EventEmitter {
     assert(typeof opts.waitTime === 'number', 'waitTime must be number');
     this.waitTime = opts.waitTime * 1000;
 
-    assert(typeof (opts.waitTimeAfterFail || 0) === 'number', 'waitTimeAfterFail must be number');
+    assert(typeof opts.waitTimeAfterFail === 'number', 'waitTimeAfterFail must be number');
     this.waitTimeAfterFail = opts.waitTimeAfterFail || opts.waitTime;
 
     // Not sure if the deep
@@ -78,11 +86,15 @@ class Iterate extends events.EventEmitter {
     this.dmsConfig = opts.dmsConfig || null;
     if (this.dmsConfig) {
       assert(typeof this.dmsConfig === 'object', 'dms config must be object');
-      assert(typeof this.dmsConfig.snitchUrl === 'string', 
+      assert(typeof this.dmsConfig.snitchUrl === 'string',
           'dms config must have snitchUrl as string');
       assert(typeof this.dmsConfig.apiKey === 'string',
           'dms config must have apiKey as string');
     }
+
+    assert(!opts.monitor || typeof opts.monitor === 'object',
+           'monitor should be an object from taskcluster-lib-monitor if given');
+    this.monitor = opts.monitor;
 
     // We add the times together since we're always going to have the watch dog
     // running even when we're waiting for the next iteration
@@ -138,7 +150,7 @@ class Iterate extends events.EventEmitter {
       watchDog.stop();
 
       let value = res[1];
-      
+
       // TODO: do this timing the better way
       let diff = (new Date() - start) / 1000;
 
@@ -151,6 +163,10 @@ class Iterate extends events.EventEmitter {
       // Wait until we've done all the checks to emit success
       this.emit('iteration-success', value);
       debug(`ran handler in ${diff} seconds`);
+      if (this.monitor) {
+        this.monitor.measure('iteration-time', diff * 1000);
+        this.monitor.count('successful-iteration', 1);
+      }
 
       // We could probably safely just create a new Array every time since if
       // we get to this point we want to reset the Array unconditionally, but I
@@ -160,6 +176,12 @@ class Iterate extends events.EventEmitter {
       }
     } catch (err) {
       this.emit('iteration-failure', err);
+      if (this.monitor) {
+        this.monitor.count('failed-iteration', 1);
+        this.monitor.reportError(err, 'warning', {
+          consecutiveErrors: this.failures.length,
+        });
+      }
       debug('experienced iteration failure');
       this.failures.push(err);
     }
@@ -220,7 +242,7 @@ class Iterate extends events.EventEmitter {
     }
   }
 
-  /** 
+  /**
    * Special function which knows how to emit the final error and then throw an
    * unhandled exception where appropriate.  Also stop trying to iterate
    * further.
@@ -231,6 +253,11 @@ class Iterate extends events.EventEmitter {
     }
     this.stop();
     this.emit('stopped');
+    if (this.monitor) {
+      let err = new Error('Fatal iteration error');
+      err.failures = this.failures;
+      this.monitor.reportError(err);
+    }
     if (this.listeners('error').length > 0) {
       this.emit('error', this.failures);
     } else {
