@@ -31,6 +31,7 @@
     "assume": "^1.4.1",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
-    "source-map-support": "^0.4.1"
+    "source-map-support": "^0.4.1",
+    "taskcluster-lib-monitor": "^3.1.0"
   }
 }
