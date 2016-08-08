@@ -2,6 +2,7 @@ let subject = require('../');
 let sinon = require('sinon');
 let assume = require('assume');
 let debug = require('debug')('iterate-test');
+let monitoring = require('taskcluster-lib-monitor');
 
 let possibleEvents = [
   'started',
@@ -51,12 +52,14 @@ class IterateEvents {
 describe('Iterate', () => {
   let sandbox;
   let clock;
+  let monitor;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     sandbox = sinon.sandbox.create({
       //useFakeTimers: true,
     });
     //clock = sandbox.clock;
+    monitor = await monitoring({project: 'iterate', credentials: {}, mock: true});
   });
 
   afterEach(() => {
@@ -81,7 +84,8 @@ describe('Iterate', () => {
         debug('iterate!');
         iterations++;
         return 1;
-      }
+      },
+      monitor,
     });
 
 
@@ -90,7 +94,7 @@ describe('Iterate', () => {
     });
 
     i.on('stopped', () => {
-      done();  
+      done();
     });
 
     i.start();
@@ -101,6 +105,7 @@ describe('Iterate', () => {
       assume(i.keepGoing).is.ok();
       i.stop();
       assume(i.keepGoing).is.not.ok();
+      assume(monitor.counts['iterate.successful-iteration']).equals(5);
     }, 5000);
 
   });
@@ -235,7 +240,7 @@ describe('Iterate', () => {
     });
 
     i.start();
-    
+
     i.on('error', err => {
       i.stop();
       assume(i.keepGoing).is.not.ok();
@@ -455,7 +460,7 @@ describe('Iterate', () => {
 
       i.start();
     });
-    
+
     it('should be correct with maxFailures only', done => {
       let iterations = 0;
 
@@ -490,7 +495,7 @@ describe('Iterate', () => {
 
       i.start();
     });
-    
+
     it('should be correct when handler takes too little time', done => {
       let iterations = 0;
 
@@ -559,7 +564,7 @@ describe('Iterate', () => {
 
       i.start();
     });
-    
+
     it('should be correct when handler takes too long (overall time)', done => {
       let iterations = 0;
 
@@ -595,7 +600,7 @@ describe('Iterate', () => {
 
       i.start();
     });
-    
+
     it('should be correct with mixed results', done => {
       let iterations = 0;
 
