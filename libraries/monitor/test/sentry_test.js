@@ -21,7 +21,7 @@ suite('Sentry', () => {
     authmock.teardown();
   });
 
-  test('should create sentry error', async function (done) {
+  test('should log to sentry', async function (done) {
 
     let sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
@@ -46,6 +46,22 @@ suite('Sentry', () => {
       monitor.captureError('this is the same as reportError'),
     ]);
     assert.deepEqual(results, [true, true, true]);
+  });
+
+  test('should handle sentry error', async function (done) {
+
+    let sentryScope = nock('https://app.getsentry.com')
+      .filteringRequestBody(/.*/, '*')
+      .post('/api/12345/store/', '*')
+      .reply(500, () => {
+        debug('called Sentry, returned 500');
+      });
+
+    setTimeout(function() {
+      sentryScope.done();
+    }, 2000);
+
+    done(assert.equal(false, await monitor.reportError('stranger things')));
   });
 
 });
