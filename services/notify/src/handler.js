@@ -6,7 +6,7 @@ let taskcluster = require('taskcluster-client');
 /** Handler listening for tasks that carries notifications */
 class Handler {
   /** Construct listener given notifier, pulse credentials and queueName */
-  constructor (notifier, validator, credentials, queueName) {
+  constructor(notifier, validator, credentials, queueName) {
     // Create queue
     this.queue = new taskcluster.Queue();
 
@@ -27,12 +27,12 @@ class Handler {
     this.listener.on('message', m => this.onMessage(m));
   }
 
-  async listen () {
+  async listen() {
     await this.listener.connect();
     await this.listener.resume();
   }
 
-  async onMessage (message) {
+  async onMessage(message) {
     // Load task definition
     let task = await this.queue.task(message.payload.status.taskId);
 

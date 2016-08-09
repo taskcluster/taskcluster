@@ -21,7 +21,7 @@ class IRCBot {
    * }
    * ```
    */
-  contructor (options) {
+  contructor(options) {
     assert(options,           'options is required');
     assert(options.server,    'options.server is required');
     assert(options.nick,      'options.nick is required');
@@ -43,7 +43,7 @@ class IRCBot {
     this.done = Promise.resolve(null);
   }
 
-  async start () {
+  async start() {
     // Connect to IRC
     await new Promise((accept, reject) => this.client.connect(err => {
       err ? reject(err) : accept();
@@ -83,7 +83,7 @@ class IRCBot {
     })();
   }
 
-  async notify ({channel, user, message}) {
+  async notify({channel, user, message}) {
     // If a channel is specified we need to join it, we just do this every time
     // as it probably doesn't do any harm...
     if (channel) {
@@ -98,7 +98,7 @@ class IRCBot {
     }));
   }
 
-  async terminate () {
+  async terminate() {
     this.stopping = true;
     await this.done;
     await new Promise(accept => this.client.disconnect(accept));

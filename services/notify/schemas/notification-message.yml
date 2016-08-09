@@ -1,0 +1,15 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Notification Message"
+description: |
+  WRITE MORE HERE
+type: object
+properties:
+  version: {$const: message-version}
+  message:
+    title: "Message"
+    description: |
+      Arbitrary message.
+    type: object
+required:
+ - message
+additionalProperties: false
