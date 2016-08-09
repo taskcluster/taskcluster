@@ -1,0 +1,12 @@
+defaults:
+  taskcluster:
+    credentials:
+      clientId:         '...'
+      accessKey:        '...'
+  aws:
+    accessKeyId:        '...'
+    secretAccessKey:    '...'
+    region:             us-west-2
+  pulse:
+    username:           '...'
+    password:           '...'
