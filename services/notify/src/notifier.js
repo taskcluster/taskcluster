@@ -1,7 +1,7 @@
 let debug = require('debug')('notify');
 let _ = require('lodash');
 let assert = require('assert');
-let aws = require('aws-sdk-promise');
+let aws = require('aws-sdk');
 let marked = require('marked');
 
 /**
@@ -9,7 +9,7 @@ let marked = require('marked');
  * listener and the API implementation.
  */
 class Notifier {
-  constructor (options = {}) {
+  constructor(options = {}) {
     // Set default options
     this.options = _.defaults({}, options, {
 
@@ -23,10 +23,10 @@ class Notifier {
     this.sqs = new aws.SQS(options.aws);
     this.queueUrl = this.sqs.createQueue({
       QueueName:  this.options.queueName,
-    }).then(req => req.data.QueueUrl);
+    }).promise().then(req => req.data.QueueUrl);
   }
 
-  email ({address, subject, content, replyTo}) {
+  email({address, subject, content, replyTo}) {
     let html = marked(content, {
       gfm:          true,
       tables:       true,
@@ -56,15 +56,14 @@ class Notifier {
           },
         },
       },
-      ReplyToAddresses: replyTo ? [replyTo] : [],
-    });
+    }).promise();
   }
 
-  pulse ({routingKey, message}) {
-    return this.publisher.notify(message, routingKey);
+  pulse({routingKey, message}) {
+    return this.publisher.notify({message}, [routingKey]);
   }
 
-  async irc ({channel, user, message}) {
+  async irc({channel, user, message}) {
     await this.sqs.sendMessage({
       QueueUrl:       await this.queueUrl,
       MessageBody:    JSON.stringify({channel, user, message}),

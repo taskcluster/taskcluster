@@ -1,0 +1,13 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Send IRC Message Response"
+description: |
+  Response to a request to send an irc message
+type:               object
+properties:
+  success:
+    type:           boolean
+    description: |
+      Whether or not the message was sent
+additionalProperties: false
+required:
+  - success
