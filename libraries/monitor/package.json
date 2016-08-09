@@ -39,5 +39,5 @@
     "taskcluster-lib-testing": "^1.0.0",
     "aws-sdk": "^2.0.0"
   },
-  "main": "./lib/monitor.js"
+  "main": "./lib/index.js"
 }
