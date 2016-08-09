@@ -1,0 +1,48 @@
+defaults:
+  app:
+    sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
+    sqsQueueName:                 !env SQS_QUEUE
+    exchangePrefix:               v1/
+
+  taskcluster:
+    authBaseUrl:      https://auth.taskcluster.net/v1
+    credentials:
+      clientId:       !env TASKCLUSTER_CLIENT_ID
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+
+  server:
+    port:             !env:number PORT
+    publicUrl:        !env PUBLIC_URL
+    env:              !env NODE_ENV
+    forceSSL:         !env:flag FORCE_SSL
+    trustProxy:       false
+
+  aws:
+    accessKeyId:      !env AWS_ACCESS_KEY_ID
+    secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
+    region:           us-west-2
+    apiVersion:       2014-01-01
+
+  pulse:
+    username:         !env PULSE_USERNAME
+    password:         !env PULSE_PASSWORD
+
+# Configuration in production
+production:
+  taskcluster:
+    authBaseUrl:      https://auth.taskcluster.net/v1
+  server:
+    publicUrl:        https://notify.taskcluster.net
+    env:              production
+    forceSSL:         true
+    trustProxy:       true
+
+# Configuration of tests
+test:
+  app:
+    sourceEmail: taskcluster-testing@example.com
+    sqsQueueName: taskcluster-notify-test
+  server:
+    publicUrl:        http://localhost:60401
+    port:             60401
+    env:              development

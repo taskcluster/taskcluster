@@ -14,6 +14,8 @@ let api = new base.API({
   ],
 });
 
+module.exports = api;
+
 api.declare({
   method:       'post',
   route:        '/email',
@@ -31,8 +33,8 @@ api.declare({
   if (!req.satisfies({address: req.body.address})) {
     return;
   }
-  await notifier.email(req.body);
-  reply();
+  await this.notifier.email(req.body);
+  res.sendStatus(200);
 });
 
 api.declare({
@@ -50,8 +52,8 @@ api.declare({
   if (!req.satisfies({routingKey: req.body.routingKey})) {
     return;
   }
-  await notifier.pulse(req.body);
-  reply();
+  await this.notifier.pulse(req.body);
+  res.sendStatus(200);
 });
 
 api.declare({
@@ -87,6 +89,25 @@ api.declare({
   if (!req.satisfies([required])) {
     return;
   }
-  await notifier.irc(input);
-  reply();
+  await this.notifier.irc(input);
+  res.sendStatus(200);
+});
+
+/** Check that the server is a alive */
+api.declare({
+  method:   'get',
+  route:    '/ping',
+  name:     'ping',
+  title:    'Ping Server',
+  description: [
+    'Documented later...',
+    '',
+    '**Warning** this api end-point is **not stable**.',
+  ].join('\n'),
+}, function(req, res) {
+
+  res.status(200).json({
+    alive:    true,
+    uptime:   process.uptime(),
+  });
 });
