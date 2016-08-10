@@ -1,4 +1,4 @@
-Generated: 1470245058
+Generated: 1470812974
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4621,6 +4621,198 @@ Title                  = 'Persona Assertion Request'
 Type                   = 'object'
 TypeName               = 'PersonaAssertionRequest'
 SourceURL              = 'http://schemas.taskcluster.net/login/v1/persona-request.json#'
+
+
+http://references.taskcluster.net/notify/v1/api.json
+====================================================
+Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
+Title       = 'Notification Service'
+Description = 'The notification service, typically available at `notify.taskcluster.net`
+listens for tasks with associated notifications and handles requests to
+send emails and post pulse messages.'
+Base URL    = 'https://notify.taskcluster.net/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/email'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'email'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[notify:email:<address>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/notify/v1/email-request.json'
+    Entry Output      = ''
+    Entry Title       = 'Send an Email'
+    Entry Description = 'Send an email to `address`. The content is markdown and will be rendered
+to HTML, but both the HTML and raw markdown text will be sent in the
+email.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/pulse'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'pulse'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[notify:pulse:<routingKey>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/notify/v1/pulse-request.json'
+    Entry Output      = ''
+    Entry Title       = 'Publish a Pulse Message'
+    Entry Description = 'Publish a message on pulse with the given `routingKey`.'
+Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/irc'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'irc'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[notify:irc-channel:<channel> notify:irc-user:<user>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/notify/v1/irc-request.json'
+    Entry Output      = ''
+    Entry Title       = 'Post IRC Message'
+    Entry Description = 'Post a message on IRC to a specific channel or user, or a specific user
+on a specific channel.
+
+Success of this API method does not imply the message was successfully
+posted. This API method merely inserts the IRC message into a queue
+that will be processed by a background process.
+This allows us to re-send the message in face of connection issues.
+
+However, if the user isn't online the message will be dropped without
+error. We maybe improve this behavior in the future. For now just keep
+in mind that IRC is a best-effort service.'
+Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/notify/v1/email-request.json#
+============================================================
+Additional Properties  = 'false'
+Description            = 'Request to send an email
+'
+ID                     = 'http://schemas.taskcluster.net/notify/v1/email-request.json#'
+Properties
+  Property 'address' =
+    Description            = 'E-mail address to which the message should be sent
+    '
+    Format                 = 'email'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/address'
+  Property 'content' =
+    Description            = 'Content of the e-mail as **markdown**, will be rendered to HTML before
+    the email is sent. Notice that markdown allows for a few HTML tags, but
+    won't allow inclusion of script tags and other unpleasantries.
+    '
+    MaxLength              = '102400'
+    MinLength              = '1'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/content'
+  Property 'replyTo' =
+    Description            = 'Reply-to e-mail (this property is optional)
+    '
+    Format                 = 'email'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/replyTo'
+  Property 'subject' =
+    Description            = 'Subject line of the e-mail, this is plain-text
+    '
+    MaxLength              = '255'
+    MinLength              = '1'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/subject'
+Required               = '[address subject content]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Send Email Request'
+Type                   = 'object'
+TypeName               = 'SendEmailRequest'
+SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#'
+
+
+http://schemas.taskcluster.net/notify/v1/irc-request.json#
+==========================================================
+Additional Properties  = 'false'
+Description            = 'Request to post a message on IRC.
+'
+ID                     = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#'
+Properties
+  Property 'channel' =
+    Description            = 'Channel to post the message in. Please note that you **must** supply
+    either `user` or `channel`, you cannot supply both.
+    '
+    Pattern                = '^[#&][^ ,\u0007]{1,199}$'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/channel'
+  Property 'message' =
+    Description            = 'IRC message to send as plain text.
+    '
+    MaxLength              = '510'
+    MinLength              = '1'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/message'
+  Property 'user' =
+    Description            = 'User to post the message to. Please note that you **must** supply
+    either `user` or `channel`, you cannot supply both.
+    '
+    MaxLength              = '255'
+    MinLength              = '1'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/user'
+Required               = '[message]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Post IRC Message Request'
+Type                   = 'object'
+TypeName               = 'PostIRCMessageRequest'
+SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#'
+
+
+http://schemas.taskcluster.net/notify/v1/pulse-request.json#
+============================================================
+Additional Properties  = 'false'
+Description            = 'Request to post a message on pulse.
+'
+ID                     = 'http://schemas.taskcluster.net/notify/v1/pulse-request.json#'
+Properties
+  Property 'message' =
+    Description            = 'IRC message to send as plain text.
+    '
+    Type                   = 'object'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/message'
+  Property 'routingKey' =
+    Description            = 'Routing-key to use when posting the message.
+    '
+    MaxLength              = '255'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/routingKey'
+Required               = '[routingKey message]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Post Pulse Message Request'
+Type                   = 'object'
+TypeName               = 'PostPulseMessageRequest'
+SourceURL              = 'http://schemas.taskcluster.net/notify/v1/pulse-request.json#'
 
 
 http://references.taskcluster.net/purge-cache/v1/api.json
