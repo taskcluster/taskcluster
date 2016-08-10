@@ -74,7 +74,7 @@ suite('MockMonitor', () => {
     }
   });
 
-  test('montor.timer(k, value)', async () => {
+  test('monitor.timer(k, value)', async () => {
     let v = monitor.timer('k', 45);
     assert(v == 45);
     // Sleep so that the promise handler can be handled before we check that
@@ -83,13 +83,13 @@ suite('MockMonitor', () => {
     assert(monitor.measures['mm.k'].length === 1);
   });
 
-  test('montor.timer(k, () => value)', async () => {
+  test('monitor.timer(k, () => value)', async () => {
     let v = monitor.timer('k', () => 45);
     assert(v == 45);
     assert(monitor.measures['mm.k'].length === 1);
   });
 
-  test('montor.timer(k, async () => value)', async () => {
+  test('monitor.timer(k, async () => value)', async () => {
     let v = await monitor.timer('k', async () => {
       await new Promise(accept => setTimeout(accept, 100));
       return 45;
@@ -98,12 +98,36 @@ suite('MockMonitor', () => {
     assert(monitor.measures['mm.k'].length === 1);
   });
 
-  test('montor.timer(k, () => {throw new Error()})', async () => {
+  test('monitor.timer(k, () => {throw new Error()})', async () => {
     try {
       monitor.timer('k', () => {throw new Error();});
     } catch (err) {
       await new Promise(accept => setTimeout(accept, 10));
       assert(monitor.measures['mm.k'].length === 1);
+      return;
+    }
+    assert(false);
+  });
+
+  test('monitor.timeDooDad', async () => {
+    let doodad = monitor.timeDooDad('doodadgood');
+    doodad.measure();
+    assert(monitor.measures['mm.doodadgood'].length === 1);
+  });
+  
+  test('monitor.timeDooDad forced double submit', async () => {
+    let doodad = monitor.timeDooDad('doodadgood');
+    doodad.measure();
+    doodad.measure(true);
+    assert(monitor.measures['mm.doodadgood'].length === 2);
+  });
+
+  test('monitor.timeDooDad unforced double submit throws', async () => {
+    let doodad = monitor.timeDooDad('doodadgood');
+    doodad.measure();
+    try {
+      doodad.measure();
+    } catch (err) {
       return;
     }
     assert(false);

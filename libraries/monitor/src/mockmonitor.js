@@ -73,6 +73,10 @@ class MockMonitor {
     return utils.timedHandler(this, name, handler);
   }
 
+  timeDooDad(name) {
+    return new utils.TimeDooDad(this, name);
+  }
+
   expressMiddleware(name) {
     return utils.expressMiddleware(this, name);
   }
