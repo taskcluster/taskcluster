@@ -18,6 +18,7 @@ This library provides the following packages to interface with TaskCluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/hooks
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/index
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/login
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/notify
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler
