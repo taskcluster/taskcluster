@@ -14,17 +14,20 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
-// This is a silly test that looks for the latest mozilla-central buildbot linux64 l10n build
-// and asserts that it must have a created time between a year ago and an hour in the future.
+// This is a silly test that looks for the latest mozilla-inbound linux64 debug
+// build and asserts that it must have a created time between a year ago and an
+// hour in the future.
 //
-// Could easily break at a point in the future, at which point we can change to something else.
+// Could easily break at a point in the future, e.g. if this index route
+// changes, at which point we can change to something else.
 //
-// Note, no credentials are needed, so this can be run even on travis-ci.org, for example.
-func TestFindLatestBuildbotTask(t *testing.T) {
+// Note, no credentials are needed, so this can be run even on travis-ci.org,
+// for example.
+func TestFindLatestLinux64DebugBuild(t *testing.T) {
 	creds := &tcclient.Credentials{}
 	Index := index.New(creds)
 	Queue := queue.New(creds)
-	itr, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
+	itr, err := Index.FindTask("gecko.v1.mozilla-inbound.latest.linux.linux64.debug")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
