@@ -164,6 +164,18 @@ await ec2.describeAvailabilityZones().promise().catch(err => {
 });
 ```
 
+### Timing Arbitary Steps
+If none of the above options are convenient for you, you can also just start and stop timers whenever you want. A timer may
+only be started and measured once. Any attempts over that will cause it to throw an Error.
+
+```js
+let doodad = monitor.timeKeeper('metricName');
+// Do some stuff here that takes some amount of time
+// ...
+// Keep doing stuff here however long you like
+doodad.measure();
+```
+
 Options and Defaults
 --------------------
 

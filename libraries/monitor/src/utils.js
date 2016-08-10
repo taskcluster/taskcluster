@@ -136,9 +136,9 @@ export function patchAWS(monitor, service) {
 }
 
 /**
- * A Timer is used for measuring arbitrary times.  This is nice when the
+ * A TimeKeeper is used for measuring arbitrary times.  This is nice when the
  * action to time does not fit neatly into a single function or promise.  A
- * Timer should be created for each measurment and should only have its
+ * TimeKeeper should be created for each measurement and should only have its
  * measurement submitted a single time.  An exception will be thrown if you try
  * to submit the same doo dad twice.
  */
