@@ -1,6 +1,6 @@
 suite('End to End', () => {
   let assert = require('assert');
-  let documenter = require('../');
+  let {documenter, downloader} = require('../');
   let debug = require('debug')('test');
   let _ = require('lodash');
   let tar = require('tar-stream');
@@ -47,7 +47,6 @@ suite('End to End', () => {
         contains.push(header.name);
         callback(); // ready for next entry
       });
-
       stream.resume(); // just auto drain the stream
     });
 
@@ -126,5 +125,20 @@ suite('End to End', () => {
       tier,
     });
     assertInTarball([], doc.tgz, done);
+  });
+
+  test('download tarball contains project', async function() {
+    let files = await downloader({
+      project: 'testing',
+      credentials,
+    });
+
+    let shoulds = [
+      'testing/metadata.json',
+    ];
+
+    for (let should of shoulds) {
+      assert.ok(files[should]);
+    }
   });
 });

@@ -135,8 +135,60 @@ async function documenter(options) {
   let output = {
     tgz,
   };
-
   return output;
 }
 
-module.exports = documenter;
+async function downloader(options) {
+  options = _.defaults({}, options, {
+    credentials: {},
+    project: null,
+  });
+
+  let auth = new client.Auth({
+    credentials: options.credentials,
+  });
+
+  let creds = await auth.awsS3Credentials('read-write', 'taskcluster-raw-docs', options.project + '/');
+
+  let s3 = new aws.S3(creds.credentials);
+
+  let readStream = s3.getObject({
+    Bucket: 'taskcluster-raw-docs',
+    Key: options.project + '/latest.tar.gz',
+  }).createReadStream();
+
+  let output = {};
+  let extractor = tar.extract();
+
+  let downloadPromise = new Promise((resolve, reject) => {
+    extractor.on('entry', (header, stream, callback) => {
+      let data = [];
+
+      stream.on('data', function(chunk) {
+        data.push(chunk);
+      });
+
+      stream.on('end', () => {
+        output[header.name] = data.join('');
+        callback(); //ready for next entry
+      });
+
+      stream.resume(); //just auto drain the stream
+    });
+
+    extractor.on('finish', function() {
+      // all entries read
+      resolve();
+    });
+
+    extractor.on('error', function() {
+      reject();
+    });
+  });
+
+  readStream.pipe(zlib.Unzip()).pipe(extractor);
+  await downloadPromise;
+  return output;
+}
+
+module.exports = {documenter, downloader};
