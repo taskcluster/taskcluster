@@ -1329,6 +1329,89 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/login/v1/api.json"
   },
+  "Notify": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://notify.taskcluster.net/v1",
+      "description": "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail.",
+          "input": "http://schemas.taskcluster.net/notify/v1/email-request.json",
+          "method": "post",
+          "name": "email",
+          "query": [
+          ],
+          "route": "/email",
+          "scopes": [
+            [
+              "notify:email:<address>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Send an Email",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Publish a message on pulse with the given `routingKey`.",
+          "input": "http://schemas.taskcluster.net/notify/v1/pulse-request.json",
+          "method": "post",
+          "name": "pulse",
+          "query": [
+          ],
+          "route": "/pulse",
+          "scopes": [
+            [
+              "notify:pulse:<routingKey>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Publish a Pulse Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
+          "input": "http://schemas.taskcluster.net/notify/v1/irc-request.json",
+          "method": "post",
+          "name": "irc",
+          "query": [
+          ],
+          "route": "/irc",
+          "scopes": [
+            [
+              "notify:irc-channel:<channel>",
+              "notify:irc-user:<user>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Post IRC Message",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "experimental",
+          "title": "Ping Server",
+          "type": "function"
+        }
+      ],
+      "title": "Notification Service",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/notify/v1/api.json"
+  },
   "PurgeCache": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
@@ -2403,7 +2486,7 @@ module.exports = {
           "type": "topic-exchange"
         },
         {
-          "description": "Whenever a task group has run to completion (success is not considered),\na message will be sent on this exchange. It can be listened to to know\nwhen a group is \"complete\". There is no guarantee that this group is now\nintert. It can have more tasks added to it by the scheduler, but at least\nfor the time being, it is done. If another task is added to this group and\nit completes, this message will be sent again.",
+          "description": "A message is published on task-group-resolved whenever all submitted\ntasks (whether scheduled or unscheduled) for a given task group have\nbeen resolved, regardless of whether they resolved as successful or\nnot. A task group may be resolved multiple times, since new tasks may\nbe submitted against an already resolved task group.",
           "exchange": "task-group-resolved",
           "name": "taskGroupResolved",
           "routingKey": [
@@ -2434,7 +2517,7 @@ module.exports = {
             }
           ],
           "schema": "http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#",
-          "title": "Task Group Resolved",
+          "title": "Task Group Resolved Messages",
           "type": "topic-exchange"
         }
       ],
