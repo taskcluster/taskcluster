@@ -258,6 +258,17 @@ var login = new taskcluster.Login(options);
  * `login.credentialsFromPersonaAssertion(payload) : result`
  * `login.ping() : void`
 
+### Methods in `taskcluster.Notify`
+```js
+// Create Notify client instance with default baseUrl:
+//  - https://notify.taskcluster.net/v1
+var notify = new taskcluster.Notify(options);
+```
+ * `notify.email(payload) : void`
+ * `notify.pulse(payload) : void`
+ * `notify.irc(payload) : void`
+ * `notify.ping() : void`
+
 ### Methods in `taskcluster.PurgeCache`
 ```js
 // Create PurgeCache client instance with default baseUrl:
