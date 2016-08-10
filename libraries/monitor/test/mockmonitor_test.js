@@ -114,7 +114,7 @@ suite('MockMonitor', () => {
     doodad.measure();
     assert(monitor.measures['mm.doodadgood'].length === 1);
   });
-  
+
   test('monitor.timeKeeper forced double submit', async () => {
     let doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
