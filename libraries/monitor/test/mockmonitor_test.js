@@ -109,21 +109,21 @@ suite('MockMonitor', () => {
     assert(false);
   });
 
-  test('monitor.timeDooDad', async () => {
-    let doodad = monitor.timeDooDad('doodadgood');
+  test('monitor.timeKeeper', async () => {
+    let doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
     assert(monitor.measures['mm.doodadgood'].length === 1);
   });
   
-  test('monitor.timeDooDad forced double submit', async () => {
-    let doodad = monitor.timeDooDad('doodadgood');
+  test('monitor.timeKeeper forced double submit', async () => {
+    let doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
     doodad.measure(true);
     assert(monitor.measures['mm.doodadgood'].length === 2);
   });
 
-  test('monitor.timeDooDad unforced double submit throws', async () => {
-    let doodad = monitor.timeDooDad('doodadgood');
+  test('monitor.timeKeeper unforced double submit throws', async () => {
+    let doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
     try {
       doodad.measure();
