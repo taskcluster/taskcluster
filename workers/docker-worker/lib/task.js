@@ -450,6 +450,7 @@ export class Task extends EventEmitter {
       `Task ID: ${this.status.taskId}`,
       `Worker ID: ${this.runtime.workerId}`,
       `Worker Group: ${this.runtime.workerGroup}`,
+      `Worker Node Type: ${this.runtime.workerNodeType}`,
       `Worker Type: ${this.runtime.workerType}`,
       `Public IP: ${this.runtime.publicIp}`
     ];

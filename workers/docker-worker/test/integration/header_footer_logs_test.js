@@ -57,6 +57,10 @@ suite('Header/Footer logs', () => {
       `Log header does not include worker type. Log Line: ${tcLogs[3]}`
     );
     assert.ok(
+      tcLogs[3].includes(`Worker Node Type: ${result.run.workerNodeType}`),
+      `Log header does not include worker node type. Log Line: ${tcLogs[3]}`
+    );
+    assert.ok(
       tcLogs[4].includes('Public IP: 127.0.0.1'),
       `Log header does not include worker type. Log Line: ${tcLogs[4]}`
     );
