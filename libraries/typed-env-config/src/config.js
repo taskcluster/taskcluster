@@ -45,6 +45,7 @@ let assert = require('assert');
  * `undefined`, so it can fall-back to defaults from previous config file.
  */
 let config = (options) => {
+  assert(options instanceof Object, "Options must be an object!");
   options = _.defaults({}, options, {
     files: [
       'config.yml',
