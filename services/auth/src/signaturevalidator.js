@@ -39,9 +39,10 @@ var parseExt = function(ext) {
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-var limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes, ext, expandScopes) {
+var limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
+                                  expires, ext, expandScopes) {
   let issuingScopes = scopes;
-  let res = {scopes, accessToken};
+  let res = {scopes, expires, accessToken};
 
   // Handle certificates
   if (ext.certificate) {
@@ -140,8 +141,14 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
       .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
       .replace(/=/g,  '');  // Drop '==' padding
 
-    // Update scopes and accessToken
+    // Update expiration, scopes and accessToken
     res.accessToken = temporaryKey;
+
+    var cert_expires = new Date(cert.expiry);
+    if (res.expires > cert_expires) {
+      res.expires = cert_expires;
+    }
+
     res.scopes = scopes = expandScopes(cert.scopes);
   }
 
@@ -175,7 +182,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
  *
  * options:
  * {
- *    clientLoader:   async (clientId) => {clientId, accessToken, scopes},
+ *    clientLoader:   async (clientId) => {clientId, expires, accessToken, scopes},
  *    nonceManager:   nonceManager({size: ...}),
  *    expandScopes:   (scopes) => scopes,
  * }
@@ -227,20 +234,21 @@ var createSignatureValidator = function(options) {
         }
       }
 
-      var accessToken, scopes;
-      ({clientId, accessToken, scopes} = await options.clientLoader(issuingClientId));
+      var accessToken, scopes, expires;
+      ({clientId, expires, accessToken, scopes} = await options.clientLoader(issuingClientId));
 
       // apply restrictions based on the ext field
       if (ext) {
-        ({scopes, accessToken} = limitClientWithExt(
+        ({scopes, expires, accessToken} = limitClientWithExt(
             credentialName, issuingClientId, accessToken,
-            scopes, ext, options.expandScopes));
+            scopes, expires, ext, options.expandScopes));
       }
 
       callback(null, {
         key:       accessToken,
         algorithm: 'sha256',
         clientId:  credentialName,
+        expires:   expires,
         scopes:    scopes
       });
     })().catch(callback);
@@ -267,6 +275,7 @@ var createSignatureValidator = function(options) {
           result = {
             status:   'auth-success',
             scheme:   'hawk',
+            expires:  credentials.expires,
             scopes:   credentials.scopes,
             clientId: credentials.clientId
           };
