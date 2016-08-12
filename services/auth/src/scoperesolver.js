@@ -27,6 +27,7 @@ class ScopeResolver extends events.EventEmitter {
     //    unexpandedScopes:             // Scopes (as set in the table)
     //    disabled: true | false,       // If true, client is disabled
     //    scopes: [...],                // Scopes (including indirect scopes)
+    //    expires: new Date(),          // The client's expiration timestamp
     //    expandedScopes: [...],        // Scopes (including indirect scopes)
     //    updateLastUsed: true | false  // true, if lastUsed should be updated
     // }

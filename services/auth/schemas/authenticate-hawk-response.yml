@@ -43,12 +43,22 @@ anyOf:
           for logging, auditing, and identifying the credential but **must** not be
           used for access control.  That's what scopes are for.
         type:                 string
+      expires:
+        description: |
+          The expiration time for the credentials used to make this request.
+          This should be treated as the latest time at which the authorization
+          is valid.  For most cases, where the access being authorized occurs
+          immediately, this field can be ignored, as the value will always be
+          in the future if the status is `auth-success`.
+        type: string
+        format: date-time
     additionalProperties:       false
     required:
       - status
       - scopes
       - scheme
       - clientId
+      - expires
   - title:                    "Authentication Failed Response"
     type:                     object
     properties:

@@ -759,7 +759,12 @@ api.declare({
     "the secret credentials leave this service."
   ].join('\n')
 }, function(req, res) {
-  return this.signatureValidator(req.body).then(result => res.reply(result));
+  return this.signatureValidator(req.body).then(result => {
+    if (result.expires) {
+      result.expires = result.expires.toJSON();
+    }
+    return res.reply(result);
+  });
 });
 
 

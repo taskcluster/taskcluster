@@ -12,16 +12,22 @@ suite("signature validation", function() {
   var taskcluster  = require('taskcluster-client');
   var sigvalidator = require('../lib/signaturevalidator');
 
+  var one_hour = taskcluster.fromNow('1 hour');
+  var two_hours = taskcluster.fromNow('2 hour');
+  var three_hours = taskcluster.fromNow('3 hour');
+
   var validator;
   var clients = {
     root: {
       clientId: 'root',
       accessToken: 'root-secret',
+      expires: two_hours,
       scopes: ['*'],
     },
     unpriv: {
       clientId: 'unpriv',
       accessToken: 'unpriv-secret',
+      expires: two_hours,
       scopes: ['scope2'],
     },
   };
@@ -122,13 +128,11 @@ suite("signature validation", function() {
 
       var start = new Date();
       start.setMinutes(start.getMinutes() - 5);
-      var expiry = new Date();
-      expiry.setMinutes(expiry.getMinutes() + 5);
 
       // Set default options
       options = _.defaults({}, options, {
         start,
-        expiry,
+        expiry: two_hours,
         scopes: [],
         accessToken: id + '-secret',
       });
@@ -193,10 +197,14 @@ suite("signature validation", function() {
       clientId: options.clientId || 'root',
       status: 'auth-success',
       scheme: 'hawk',
+      expires: two_hours,
       scopes,
     };
     if (options.hash) {
       exp.hash = options.hash;
+    }
+    if (options.expires) {
+      exp.expires = options.expires;
     }
     return exp;
   };
@@ -462,6 +470,28 @@ suite("signature validation", function() {
       ext: {certificate},
     }
   }), failed('ext.certificate.expiry < now'));
+
+  testWithTemp("temporary credentials that expire soon give correct expiration", {
+    expiry: one_hour,
+    id: 'root',
+    scopes: ['tmpscope'],
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {certificate},
+    }
+  }), success(['tmpscope'], {expires: one_hour}));
+
+  testWithTemp("temporary credentials that expire after issuer give correct expiration", {
+    expiry: three_hours,
+    id: 'root',
+    scopes: ['tmpscope'],
+  }, (id, key, certificate) => ({
+    authorization: {
+      credentials: {id, key},
+      ext: {certificate},
+    }
+  }), success(['tmpscope'], {expires: two_hours}));
 
   testWithTemp("invalid: postdated temporary credentials", {
     start: taskcluster.fromNow('1 hour'),
