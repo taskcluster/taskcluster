@@ -150,4 +150,10 @@ suite("config", function() {
       list:       ["abc", "def", "qouted string", ""]
     });
   });
+
+  test("yell when options are wrong format", () => {
+    assume(() => {
+      config('oops');
+    }).throws("Options must be an object!");
+  });
 });
