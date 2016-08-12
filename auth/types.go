@@ -73,6 +73,15 @@ type (
 		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId
 		ClientID string `json:"clientId"`
 
+		// The expiration time for the credentials used to make this request.
+		// This should be treated as the latest time at which the authorization
+		// is valid.  For most cases, where the access being authorized occurs
+		// immediately, this field can be ignored, as the value will always be
+		// in the future if the status is `auth-success`.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
 		// Payload as extracted from `Authentication` header. This property is
 		// only present if a hash is available. You are not required to validate
 		// this hash, but if you do, please check `scheme` to ensure that it's
