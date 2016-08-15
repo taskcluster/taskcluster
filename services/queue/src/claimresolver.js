@@ -88,7 +88,7 @@ class ClaimResolver {
       console.log('Crashing the process: %s, as json: %j', err, err);
       // TODO: use this.monitor.reportError(err); when PR lands:
       // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
-      await this.monitor.reportError(err, 'error', {}, true);
+      await this.monitor.reportError(err, 'error', {});
       // Crash the process
       process.exit(1);
     }).then(() => {
