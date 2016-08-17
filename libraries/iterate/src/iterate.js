@@ -137,7 +137,7 @@ class Iterate extends events.EventEmitter {
 
       watchDog.start();
       // Note that we're using a watch dog for the maxIterationTime guarding.
-      let res = await Promise.race([
+      let value = await Promise.race([
           new Promise((res, rej) => {
             setTimeout(() => {
               debug(`handler lost race to timeout ${this.maxIterationTime}ms`);
@@ -148,8 +148,6 @@ class Iterate extends events.EventEmitter {
           this.handler(watchDog, this.sharedState),
       ]);
       watchDog.stop();
-
-      let value = res[1];
 
       // TODO: do this timing the better way
       let diff = (new Date() - start) / 1000;
