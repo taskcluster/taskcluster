@@ -189,7 +189,7 @@ export default class TaskListener extends EventEmitter {
         }
         let stats = {
           uptime: this.host.billingCycleUptime(),
-          interval: this.host.billingCycleInterval()
+          interval: this.runtime.billingCycleInterval
         };
         let remainder = stats.interval - (stats.uptime % stats.interval);
         if (remainder * this.runtime.taskQueue.slowdownDivisor < stats.interval) {

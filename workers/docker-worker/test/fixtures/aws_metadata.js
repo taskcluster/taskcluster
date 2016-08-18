@@ -38,6 +38,7 @@ function route(context) {
         workerType: 'ami-333333',
         provisionerId: 'aws-provisioner',
         data: {
+          billingCycleInterval: 120*60,
           dockerConfig: {
             allowPrivileged: true
           }

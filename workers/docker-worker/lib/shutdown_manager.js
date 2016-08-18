@@ -40,7 +40,7 @@ export default class ShutdownManager extends EventEmitter {
 
     let stats = {
       uptime: this.host.billingCycleUptime(),
-      interval: this.host.billingCycleInterval()
+      interval: this.config.billingCycleInterval
     };
 
     this.config.log('uptime', stats);

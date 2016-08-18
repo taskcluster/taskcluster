@@ -51,13 +51,6 @@ async function getJsonData(url) {
 }
 
 /**
-@return Number Billing cycle interval in seconds.
-*/
-export function billingCycleInterval() {
-  return minutes(60);
-}
-
-/**
 @return Number of seconds this worker has been running.
 */
 export function billingCycleUptime() {
@@ -93,6 +86,7 @@ export async function configure(baseUrl=BASE_URL) {
     workerId: metadata[2],
     workerGroup: metadata[3],
     workerNodeType: metadata[4],
+    billingCycleInterval: minutes(60),
     // AWS Specific shutdown parameters notice this can also be overridden.
     shutdown: {
       enabled: true,

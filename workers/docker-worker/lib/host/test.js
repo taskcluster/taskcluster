@@ -13,7 +13,8 @@ export function billingCycleUptime() {
     return 0;
   }
 }
-export function billingCycleInterval() {
+
+function billingCycleInterval() {
   let path = settingsPath('billingCycleInterval');
 
   try {
@@ -40,7 +41,8 @@ export function configure() {
   let path = settingsPath('configure');
   let config = {
     publicIp: '127.0.0.1',
-    workerNodeType: 'test-worker'
+    workerNodeType: 'test-worker',
+    billingCycleInterval: billingCycleInterval()
   };
   try {
     let content = fs.readFileSync(path, 'utf8');

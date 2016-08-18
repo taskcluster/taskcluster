@@ -60,6 +60,7 @@ suite('configuration/aws', () => {
       workerGroup: 'us-west-2',
       capacity: 1,
       publicIp: '22.33.44.252',
+      billingCycleInterval: 120*60,
       restrictedProxy: {
         accessToken: 'xyz'
       },
