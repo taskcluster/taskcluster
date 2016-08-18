@@ -3,7 +3,8 @@ let base              = require('taskcluster-base');
 let _                 = require('lodash');
 let v1                = require('./api');
 let Notifier          = require('./notifier');
-let exchanges           = require('./exchanges');
+let exchanges         = require('./exchanges');
+let IRC               = require('./irc');
 
 // Create component loader
 let load = base.loader({
@@ -51,6 +52,18 @@ let load = base.loader({
       queueName: cfg.app.sqsQueueName,
       publisher,
     }),
+  },
+
+  irc: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      let client = new IRC(_.merge(cfg.irc, {
+        aws: cfg.aws,
+        queueName: cfg.app.sqsQueueName,
+      }));
+      await client.start();
+      return client;
+    },
   },
 
   api: {
