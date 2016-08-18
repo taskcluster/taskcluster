@@ -20,12 +20,20 @@ defaults:
   aws:
     accessKeyId:      !env AWS_ACCESS_KEY_ID
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
-    region:           us-west-2
+    region:           us-east-1
     apiVersion:       2014-01-01
 
   pulse:
     username:         !env PULSE_USERNAME
     password:         !env PULSE_PASSWORD
+
+  irc:
+    server:           !env IRC_SERVER
+    nick:             !env IRC_NICK
+    userName:         !env IRC_USER_NAME
+    realName:         !env IRC_REAL_NAME
+    password:         !env IRC_PASSWORD
+    port:             !env IRC_PORT
 
 # Configuration in production
 production:
@@ -36,13 +44,27 @@ production:
     env:              production
     forceSSL:         true
     trustProxy:       true
+  irc:
+    server:           irc.mozilla.org
+    nick:             taskcluster
+    userName:         taskcluster
+    realName:         Taskcluster Robot
+    queueName:        irc-notifications
+    port:             6697
 
 # Configuration of tests
 test:
   app:
-    sourceEmail: taskcluster-testing@example.com
-    sqsQueueName: taskcluster-notify-test
+    sourceEmail: taskcluster-noreply@mozilla.com
+    sqsQueueName: taskcluster-notify-irc-test
   server:
     publicUrl:        http://localhost:60401
     port:             60401
     env:              development
+  irc:
+    server:           irc.mozilla.org
+    nick:             taskcluster
+    userName:         taskcluster
+    realName:         Taskcluster Robot
+    queueName:        irc-test-notifications
+    port:             6697

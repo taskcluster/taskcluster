@@ -10,3 +10,5 @@ defaults:
   pulse:
     username:           '...'
     password:           '...'
+  irc:
+    password:           '...'
