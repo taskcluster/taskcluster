@@ -64,11 +64,11 @@ class Notifier {
   }
 
   async irc({channel, user, message}) {
-    await this.sqs.sendMessage({
+    return this.sqs.sendMessage({
       QueueUrl:       await this.queueUrl,
       MessageBody:    JSON.stringify({channel, user, message}),
       DelaySeconds:   0,
-    });
+    }).promise();
   }
 };
 

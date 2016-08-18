@@ -27,3 +27,6 @@ maxProperties: 2
 additionalProperties: false
 required:
   - message
+oneOf:
+  - required: [channel]
+  - required: [user]
