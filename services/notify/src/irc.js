@@ -1,6 +1,8 @@
+let debug = require('debug')('notify');
 let irc = require('irc');
 let Promise = require('promise');
 let assert = require('assert');
+let aws = require('aws-sdk');
 
 const MAX_RETRIES = 5;
 
@@ -21,9 +23,10 @@ class IRCBot {
    * }
    * ```
    */
-  contructor(options) {
+  constructor(options) {
     assert(options,           'options is required');
     assert(options.server,    'options.server is required');
+    assert(options.port,      'options.port is required');
     assert(options.nick,      'options.nick is required');
     assert(options.userName,  'options.userName is required');
     assert(options.realName,  'options.realName is required');
@@ -34,8 +37,13 @@ class IRCBot {
       userName: options.userName,
       realName: options.realName,
       password: options.password,
-      secure:   true,
-      sasl:     true,  // try port 6669 if this doesn't work...
+      port: options.port,
+      autoConnect: false,
+      secure: true,
+      debug: true,
+    });
+    this.client.addListener('error', message => {
+      console.log('error: ', message);
     });
     this.sqs = new aws.SQS(options.aws);
     this.queueName = options.queueName;
@@ -51,17 +59,18 @@ class IRCBot {
 
     let queueUrl = await this.sqs.createQueue({
       QueueName:  this.queueName,
-    }).then(req => req.data.QueueUrl);
+    }).promise().then(req => req.data.QueueUrl);
 
     this.done = (async () => {
+      debug('Connecting to: ' + queueUrl);
       while (!this.stopping) {
         let req = await this.sqs.receiveMessage({
           QueueUrl:             queueUrl,
           AttributeNames:       ['ApproximateReceiveCount'],
           MaxNumberOfMessages:  10,
           VisibilityTimeout:    30,
-          WaitTimeSeconds:      300,
-        });
+          WaitTimeSeconds:      20,
+        }).promise();
         for (let message of req.data.Messages) {
           try {
             await this.notify(JSON.parse(message.Body));
@@ -87,13 +96,13 @@ class IRCBot {
     // If a channel is specified we need to join it, we just do this every time
     // as it probably doesn't do any harm...
     if (channel) {
-      await Promise((accept, reject) => this.client.join(channel, err => {
+      await new Promise((accept, reject) => this.client.join(channel, err => {
         err ? reject(err) : accept();
       }));
     }
     // Post message to user or channel (which ever is given)
     let target = user || channel;
-    await Promise((accept, reject) => this.client.say(target, message, err => {
+    await new Promise((accept, reject) => this.client.say(target, message, err => {
       err ? reject(err) : accept();
     }));
   }
@@ -106,3 +115,4 @@ class IRCBot {
 
 };
 
+module.exports = IRCBot;
