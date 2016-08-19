@@ -23,6 +23,21 @@ properties:
       Content of the e-mail as **markdown**, will be rendered to HTML before
       the email is sent. Notice that markdown allows for a few HTML tags, but
       won't allow inclusion of script tags and other unpleasantries.
+  link:
+    type:           string
+    maxLength:      1024
+    minLength:      1
+    format:         uri
+    description: |
+      Optional link that can be added as a button to the email.
+  template:
+    type:           string
+    minLength:      1
+    maxLength:      32
+    description: |
+      A template that the content can be rendered into. WRITE MORE HERE.
+      ALSO MAKE IT SO THAT content IS AN OBJECT SO THAT THINGS CAN BE
+      SUBSITUTED IN
   replyTo:
     type:           string
     format:         email
