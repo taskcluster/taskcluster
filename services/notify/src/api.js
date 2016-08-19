@@ -27,7 +27,7 @@ api.declare({
   description: [
     'Send an email to `address`. The content is markdown and will be rendered',
     'to HTML, but both the HTML and raw markdown text will be sent in the',
-    'email.',
+    'email. WRITE SOMETHING ABOUT TEMPLATE',
   ].join('\n'),
 }, async function(req, res) {
   if (!req.satisfies({address: req.body.address})) {

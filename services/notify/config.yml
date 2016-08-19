@@ -55,7 +55,7 @@ production:
 # Configuration of tests
 test:
   app:
-    sourceEmail: taskcluster-noreply@mozilla.com
+    sourceEmail: '"Taskcluster" <taskcluster-noreply@mozilla.com>'
     sqsQueueName: taskcluster-notify-irc-test
   server:
     publicUrl:        http://localhost:60401
