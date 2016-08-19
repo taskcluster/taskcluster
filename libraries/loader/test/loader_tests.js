@@ -131,6 +131,25 @@ describe('component loader', () => {
     assume(called).is.true();
   });
 
+  it('should fail loading a nonexistent component', async () => {
+    let load = subject({
+      base: {
+        requires: [],
+        setup: () => {}
+      }
+    });
+
+    try {
+      await load('does-not-exist');
+    } catch (e) {
+      if (!e.message.match(/is not defined/)) {
+        throw e;
+      }
+      return; // Ignore expected error
+    }
+    assert(false, 'Expected an exception')
+  });
+
 
   it('should detect and bail on cyclic dependency', async () => {
     try {
