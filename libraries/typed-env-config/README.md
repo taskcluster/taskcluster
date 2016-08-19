@@ -41,7 +41,7 @@ environment variables to load from. But default the following is options is
 given. So if you name your files `config.yml` and `user-config.yml` you can
 load configuration with `config({profile: 'my-profile'})`.
 ```js
-var config = require('taskcluster-lib-config');
+var config = require('typed-env-config');
 
 var cfg = config({
   files: [                // Files to load configuration from
