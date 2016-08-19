@@ -29,6 +29,7 @@ class Notifier {
   }
 
   async email({address, subject, content, link, replyTo, template}) {
+    // It is very, very important that this uses the sanitize option
     let html = marked(content, {
       gfm:          true,
       tables:       true,
