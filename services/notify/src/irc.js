@@ -1,8 +1,9 @@
 let debug = require('debug')('notify');
-let irc = require('irc');
-let Promise = require('promise');
+let Promise = require('bluebird');
+let irc = Promise.promisifyAll(require('irc'));
 let assert = require('assert');
 let aws = require('aws-sdk');
+let _  = require('lodash');
 
 const MAX_RETRIES = 5;
 
@@ -43,7 +44,10 @@ class IRCBot {
       debug: true,
     });
     this.client.addListener('error', message => {
-      console.log('error: ', message);
+      // We add this listener because this library
+      // emits an error for any message it receives
+      // and we don't really care about anything
+      // we receive.
     });
     this.sqs = new aws.SQS(options.aws);
     this.queueName = options.queueName;
@@ -52,10 +56,12 @@ class IRCBot {
   }
 
   async start() {
-    // Connect to IRC
-    await new Promise((accept, reject) => this.client.connect(err => {
-      err ? reject(err) : accept();
-    }));
+    await this.client.connectAsync().catch((e) => {
+      // We always get an error when connecting to irc.mozilla.org
+      if (e.command !== 'rpl_welcome') {
+        throw e;
+      };
+    });
 
     let queueUrl = await this.sqs.createQueue({
       QueueName:  this.queueName,
@@ -71,6 +77,7 @@ class IRCBot {
           VisibilityTimeout:    30,
           WaitTimeSeconds:      20,
         }).promise();
+        debug('Received a message from sqs.');
         for (let message of req.data.Messages) {
           try {
             await this.notify(JSON.parse(message.Body));
@@ -85,8 +92,9 @@ class IRCBot {
           // Delete message
           await this.sqs.deleteMessage({
             QueueUrl:       queueUrl,
-            ReceiptHandle:  ReceiptHandle,
-          });
+            ReceiptHandle:  message.ReceiptHandle,
+          }).promise();
+          debug('Deleted a message from sqs.');
         }
       }
     })();
@@ -96,21 +104,16 @@ class IRCBot {
     // If a channel is specified we need to join it, we just do this every time
     // as it probably doesn't do any harm...
     if (channel) {
-      await new Promise((accept, reject) => this.client.join(channel, err => {
-        err ? reject(err) : accept();
-      }));
+      await this.client.joinAsync(channel);
     }
     // Post message to user or channel (which ever is given)
-    let target = user || channel;
-    await new Promise((accept, reject) => this.client.say(target, message, err => {
-      err ? reject(err) : accept();
-    }));
+    await this.client.say(user || channel, message);
   }
 
   async terminate() {
     this.stopping = true;
     await this.done;
-    await new Promise(accept => this.client.disconnect(accept));
+    await this.client.disconnectAsync();
   }
 
 };
