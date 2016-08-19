@@ -178,8 +178,14 @@ function loader(componentDirectory, virtualComponents = []) {
   return function(target, options = {}) {
     options = _.clone(options);
     if (typeof target !== 'string') {
-      new Error(`Target is type ${typeof target}, not string`);
+      throw new Error(`Target is type ${typeof target}, not string`);
     }
+
+    // Check that target is defined
+    if (!componentDirectory[target] && !includes(virtualComponents, target)) {
+      throw new Error(`Target ${target} is not defined`);
+    }
+
     // Check that all virtual components are defined
     if (typeof options !== 'object') {
       throw new Error('options must be an object');
