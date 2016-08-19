@@ -3,6 +3,8 @@ let _ = require('lodash');
 let assert = require('assert');
 let aws = require('aws-sdk');
 let marked = require('marked');
+let EmailTemplate = require('email-templates').EmailTemplate;
+let path = require('path');
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -26,7 +28,7 @@ class Notifier {
     }).promise().then(req => req.data.QueueUrl);
   }
 
-  email({address, subject, content, replyTo}) {
+  async email({address, subject, content, link, replyTo, template}) {
     let html = marked(content, {
       gfm:          true,
       tables:       true,
@@ -36,6 +38,13 @@ class Notifier {
       smartLists:   true,
       smartypants:  false,
     });
+    if (template) {
+      let templ = new EmailTemplate(path.join(__dirname, 'templates', template));
+      let mail = await templ.render({address, subject, content: html, link});
+      html = mail.html;
+      content = mail.text;
+      subject = mail.subject;
+    }
     return this.ses.sendEmail({
       Destination: {
         ToAddresses: [address],
