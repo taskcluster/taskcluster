@@ -172,6 +172,11 @@ let config = (options) => {
     }
   }
 
+  // If all configuration files failed to load we return undefined, so it'll
+  // cause an error.
+  if (cfgs.length === 0) {
+    return undefined;
+  }
   // Combine all the configuration keys
   return _.defaultsDeep.apply(_, cfgs);
 };
