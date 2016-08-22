@@ -104,10 +104,11 @@ class IRCBot {
     // If a channel is specified we need to join it, we just do this every time
     // as it probably doesn't do any harm...
     if (channel) {
-      await this.client.joinAsync(channel);
+      // This callback does not ever have an error. If it triggers, we have succeeded
+      await new Promise((accept, reject) => this.client.join(channel, accept));
     }
     // Post message to user or channel (which ever is given)
-    await this.client.say(user || channel, message);
+    this.client.say(user || channel, message);
   }
 
   async terminate() {
