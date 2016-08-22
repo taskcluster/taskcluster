@@ -2,14 +2,17 @@
 
 cd "$(dirname "${0}")"
 
+# need to use go 1.7 or later, see e.g.
+# https://github.com/contester/runlib/issues/5
+
 GO_VERSION="$(go version 2>/dev/null | cut -f3 -d' ')"
 GO_MAJ="$(echo "${GO_VERSION}" | cut -f1 -d'.')"
 GO_MIN="$(echo "${GO_VERSION}" | cut -f2 -d'.')"
 if [ -z "${GO_VERSION}" ]; then
   echo "Have you installed go? I get no result from \`go version\` command." >&2
   exit 64
-elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 5 ]; then
-  echo "Go version go1.x needed, where x >= 5, but the version I found is: '${GO_VERSION}'" >&2
+elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 7 ]; then
+  echo "Go version go1.x needed, where x >= 7, but the version I found is: '${GO_VERSION}'" >&2
   echo "I found it here:" >&2
   which go >&2
   echo "The complete output of \`go version\` command is:" >&2
