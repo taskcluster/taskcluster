@@ -222,7 +222,7 @@ go test -v ./...
 
 1. Bump the version number in `main.go` [here](https://github.com/taskcluster/generic-worker/blob/d1e48692122dd3e295defda1e61acc8509ad7e23/main.go#L58).
 2. Commit the change, e.g. `git add main.go; git commit -m "Bumped version number"`.
-3. Tag the repo, e.g. `git tag v5.1.0`
+3. Tag the repo, e.g. `git tag v5.1.1`
 4. Push to github taskcluster repo master branch, e.g. `git push; git push --tags`
 5. Wait for binary releases to magically appear [here](https://github.com/taskcluster/generic-worker/releases) (travis will push them if tests pass).
 
