@@ -6,10 +6,11 @@ let utils = require('./utils');
 
 class Monitor {
 
-  constructor(authClient, sentry, statsumClient, opts) {
+  constructor(sentryDSN, sentry, statsumClient, opts) {
     this._opts = opts;
-    this._auth = authClient;
-    this._sentry = sentry; // This must be a Promise that resolves to {client, expires}
+    this._sentryDSN = sentryDSN;
+    // This must be a Promise that resolves to {client, expires}
+    this._sentry = sentry || Promise.resolve({client: null, expires: new Date(0)}); 
     this._statsum = statsumClient;
     this._resourceInterval = null;
   }
@@ -21,7 +22,7 @@ class Monitor {
     }
     this._sentry = this._sentry.then(async (sentry) => {
       if (!sentry.expires || Date.parse(sentry.expires) <= Date.now()) {
-        let sentryInfo = await this._auth.sentryDSN(this._opts.project);
+        let sentryInfo = await this._sentryDSN(this._opts.project);
         return {
           client: new raven.Client(sentryInfo.dsn.secret),
           expires: sentryInfo.expires,
@@ -86,7 +87,7 @@ class Monitor {
     let newopts = _.cloneDeep(this._opts);
     newopts.prefix = (this._opts.prefix || '')  + '.' + prefix;
     return new Monitor(
-      this._auth,
+      this._sentryDSN,
       this._sentry,
       this._statsum.prefix(prefix),
       newopts

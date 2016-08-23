@@ -8,48 +8,86 @@ let Statsum = require('statsum');
 let MockMonitor = require('./mockmonitor');
 let Monitor = require('./monitor');
 
+/**
+ * Create a new monitor, given options:
+ * {
+ *   project: '...',
+ *   patchGlobal:  true,
+ *   reportStatsumErrors: true,
+ *   resourceInterval: 10 * 1000,
+ *   crashTimeout: 5 * 1000,
+ *   mock: false,
+ *   credentials: {
+ *     clientId:       '...',
+ *     accessToken:    '...',
+ *   },
+ *   // If credentials aren't given, you must supply:
+ *   statsumToken: async (project) => {token, expires, baseUrl}
+ *   sentryDNS: async (project) => {dsn: {secret: '...'}, expires}
+ * }
+ */
 async function monitor(options) {
-  assert(options.credentials, 'Must provide taskcluster credentials!');
-  assert(options.project, 'Must provide a project name!');
-  let opts = _.defaults(options, {
+  options = _.defaults({}, options, {
     patchGlobal: true,
     reportStatsumErrors: true,
     resourceInterval: 10 * 1000,
     crashTimeout: 5 * 1000,
+    mock: false,
   });
+  assert(options.credentials || options.statsumToken && options.sentryDSN ||
+         options.mock,
+         'Must provide taskcluster credentials or sentryDSN and statsumToken');
+  assert(options.project, 'Must provide a project name!');
 
-  if (opts.mock) {
-    return new MockMonitor(opts);
+  // Return mock monitor, if mocking
+  if (options.mock) {
+    return new MockMonitor(options);
   }
 
-  let authClient = new taskcluster.Auth({
-    credentials: opts.credentials,
-  });
-
-  let statsumClient = new Statsum(
-    project => authClient.statsumToken(project),
-    {
-      project: opts.project,
-      emitErrors: opts.reportStatsumErrors,
+  // Find functions for statsum and sentry
+  let statsumToken = options.statsumToken;
+  let sentryDSN = options.sentryDSN;
+  // Wrap statsumToken in function if it's not a function
+  if (statsumToken && !(statsumToken instanceof Function)) {
+    statsumToken = () => options.statsumToken;
+  }
+  // Wrap sentryDSN in function if it's not a function
+  if (sentryDSN && !(sentryDSN instanceof Function)) {
+    sentryDSN = () => options.sentryDSN;
+  }
+  // Use taskcluster credentials for statsumToken and sentryDSN, if given
+  if (options.credentials) {
+    let auth = new taskcluster.Auth({
+      credentials: options.credentials,
+    });
+    if (!statsumToken) {
+      statsumToken = project => auth.statsumToken(project);
     }
-  );
-
-  let sentry = Promise.resolve({client: null, expires: new Date(0)});
-
-  let m = new Monitor(authClient, sentry, statsumClient, opts);
-
-  if (opts.reportStatsumErrors) {
-    statsumClient.on('error', err => m.reportError(err, 'warning'));
+    if (!sentryDSN) {
+      sentryDSN = project => auth.sentryDSN(project);
+    }
   }
 
-  if (opts.patchGlobal) {
+  // Create statsum client
+  let statsum = new Statsum(statsumToken, {
+    project: options.project,
+    emitErrors: options.reportStatsumErrors,
+  });
+
+  let m = new Monitor(sentryDSN, null, statsum, options);
+
+  if (options.reportStatsumErrors) {
+    statsum.on('error', err => m.reportError(err, 'warning'));
+  }
+
+  if (options.patchGlobal) {
     process.on('uncaughtException', async (err) => {
       console.log('Uncaught Exception! Attempting to report to Sentry and crash.');
       console.log(err.stack);
       setTimeout(() => {
         console.log('Failed to report error to Sentry after timeout!');
         process.exit(1);
-      }, opts.crashTimeout);
+      }, options.crashTimeout);
       try {
         await m.reportError(err, 'fatal', {});
         console.log('Succesfully reported error to Sentry.');
@@ -67,8 +105,8 @@ async function monitor(options) {
     });
   }
 
-  if (opts.process) {
-    utils.resources(m, opts.process, opts.resourceInterval);
+  if (options.process) {
+    utils.resources(m, options.process, options.resourceInterval);
   }
 
   return m;
