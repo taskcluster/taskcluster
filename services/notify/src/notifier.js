@@ -21,6 +21,7 @@ class Notifier {
         Source: options.email,
       },
     }, options.aws));
+    this.template = new EmailTemplate(path.join(__dirname, 'templates', 'simple'));
     this.publisher = options.publisher;
     this.sqs = new aws.SQS(options.aws);
     this.queueUrl = this.sqs.createQueue({
@@ -28,9 +29,9 @@ class Notifier {
     }).promise().then(req => req.data.QueueUrl);
   }
 
-  async email({address, subject, content, link, replyTo, template}) {
+  async email({address, subject, content, link, replyTo}) {
     // It is very, very important that this uses the sanitize option
-    let html = marked(content, {
+    let formatted  = marked(content, {
       gfm:          true,
       tables:       true,
       breaks:       true,
@@ -39,13 +40,10 @@ class Notifier {
       smartLists:   true,
       smartypants:  false,
     });
-    if (template) {
-      let templ = new EmailTemplate(path.join(__dirname, 'templates', template));
-      let mail = await templ.render({address, subject, content: html, link});
-      html = mail.html;
-      content = mail.text;
-      subject = mail.subject;
-    }
+    let mail = await this.template.render({address, subject, content, formatted, link});
+    let html = mail.html;
+    content = mail.text;
+    subject = mail.subject;
     return this.ses.sendEmail({
       Destination: {
         ToAddresses: [address],
