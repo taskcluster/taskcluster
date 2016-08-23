@@ -70,6 +70,7 @@ class IRCBot {
     this.done = (async () => {
       debug('Connecting to: ' + queueUrl);
       while (!this.stopping) {
+        debug('Waiting for message from sqs.');
         let req = await this.sqs.receiveMessage({
           QueueUrl:             queueUrl,
           AttributeNames:       ['ApproximateReceiveCount'],
@@ -77,7 +78,12 @@ class IRCBot {
           VisibilityTimeout:    30,
           WaitTimeSeconds:      20,
         }).promise();
-        debug('Received a message from sqs.');
+        if (!req.data.Messages) {
+          debug('Did not receive any messages from sqs in timout.');
+          continue;
+        }
+        debug(`Received ${req.data.Messages.length} messages from sqs.`);
+        let success = 0;
         for (let message of req.data.Messages) {
           try {
             await this.notify(JSON.parse(message.Body));
@@ -94,13 +100,15 @@ class IRCBot {
             QueueUrl:       queueUrl,
             ReceiptHandle:  message.ReceiptHandle,
           }).promise();
-          debug('Deleted a message from sqs.');
+          success += 1;
         }
+        debug(`Deleted ${success} message from sqs.`);
       }
     })();
   }
 
   async notify({channel, user, message}) {
+    debug(`Sending message to ${user || channel}: ${message}.`);
     // If a channel is specified we need to join it, we just do this every time
     // as it probably doesn't do any harm...
     if (channel) {
