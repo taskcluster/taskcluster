@@ -1,4 +1,4 @@
-Generated: 1471011789
+Generated: 1471982028
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3807,7 +3807,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and
-    status is deleted. Notice that all artifacts for the
+    status is deleted. Notice that all artifacts for the task
     must have an expiration that is no later than this.
     '
     Format                 = 'date-time'
@@ -5571,7 +5571,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and status is deleted.
-    Notice that all artifacts for the must have an expiration that is no
+    Notice that all artifacts for the task must have an expiration that is no
     later than this. If this property isn't it will be set to `deadline`
     plus one year (this default may subject to change).
     '
@@ -7105,7 +7105,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and
-    status is deleted. Notice that all artifacts for the
+    status is deleted. Notice that all artifacts for the task
     must have an expiration that is no later than this.
     '
     Format                 = 'date-time'
@@ -7350,7 +7350,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and status is deleted.
-    Notice that all artifacts for the must have an expiration that is no
+    Notice that all artifacts for the task must have an expiration that is no
     later than this. If this property isn't it will be set to `deadline`
     plus one year (this default may subject to change).
     '
@@ -8614,7 +8614,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and
-    status is deleted. Notice that all artifacts for the
+    status is deleted. Notice that all artifacts for the task
     must have an expiration that is no later than this.
     '
     Format                 = 'date-time'
@@ -9076,7 +9076,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies'
   Property 'expires' =
     Description            = 'Task expiration, time at which task definition and status is deleted.
-    Notice that all artifacts for the must have an expiration that is no
+    Notice that all artifacts for the task must have an expiration that is no
     later than this. If this property isn't it will be set to `deadline`
     plus one year (this default may subject to change).
     '

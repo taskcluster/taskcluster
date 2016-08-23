@@ -630,7 +630,7 @@ type (
 		Dependencies []string `json:"dependencies,omitempty"`
 
 		// Task expiration, time at which task definition and status is deleted.
-		// Notice that all artifacts for the must have an expiration that is no
+		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
 		//
@@ -837,7 +837,7 @@ type (
 		Dependencies []string `json:"dependencies"`
 
 		// Task expiration, time at which task definition and status is deleted.
-		// Notice that all artifacts for the must have an expiration that is no
+		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may subject to change).
 		//
@@ -1157,7 +1157,7 @@ type (
 		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and
-		// status is deleted. Notice that all artifacts for the
+		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
