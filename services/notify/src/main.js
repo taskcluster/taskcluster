@@ -3,6 +3,7 @@ let base              = require('taskcluster-base');
 let _                 = require('lodash');
 let v1                = require('./api');
 let Notifier          = require('./notifier');
+var Handler           = require('./handler');
 let exchanges         = require('./exchanges');
 let IRC               = require('./irc');
 
@@ -63,6 +64,20 @@ let load = base.loader({
       }));
       await client.start();
       return client;
+    },
+  },
+
+  handler: {
+    requires: ['cfg', 'monitor', 'notifier', 'validator'],
+    setup: async ({cfg, monitor, notifier, validator}) => {
+      let handler = new Handler({
+        notifier,
+        validator,
+        credentials:        cfg.pulse,
+        queueName:          cfg.app.listenerQueueName,
+        monitor:            monitor.prefix('handlers'),
+      });
+      return handler.listen();
     },
   },
 
