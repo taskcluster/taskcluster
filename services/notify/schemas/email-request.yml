@@ -24,20 +24,27 @@ properties:
       the email is sent. Notice that markdown allows for a few HTML tags, but
       won't allow inclusion of script tags and other unpleasantries.
   link:
-    type:           string
-    maxLength:      1024
-    minLength:      1
-    format:         uri
+    type: object
     description: |
       Optional link that can be added as a button to the email.
-  template:
-    type:           string
-    minLength:      1
-    maxLength:      32
-    description: |
-      A template that the content can be rendered into. WRITE MORE HERE.
-      ALSO MAKE IT SO THAT content IS AN OBJECT SO THAT THINGS CAN BE
-      SUBSITUTED IN
+    properties:
+      text:
+        type:           string
+        maxLength:      40
+        minLength:      1
+        description: |
+          Text to display on link.
+      href:
+        type:           string
+        maxLength:      1024
+        minLength:      1
+        format:         uri
+        description: |
+          Where the link should point to.
+    additionalProperties: false
+    required:
+      - text
+      - href
   replyTo:
     type:           string
     format:         email
