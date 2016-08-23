@@ -78,20 +78,37 @@ export default class ArtifactImage {
           this.runtime.dockerConfig
       );
       this.runtime.monitor.measure('task.taskImage.downloadTime', Date.now() - start);
+
+      await this.renameAndLoad(this.imageName, originalTarball);
+
     } catch(e) {
-      await removeDir(downloadDir);
       debug(`Error loading docker image. ${e.stack}`);
+      try {
+        await removeDir(downloadDir);
+      } catch(e) {
+        debug(`Error removing download dir. ${e.stack}`);
+      }
       throw new Error(`Error loading docker image. ${e.message}`);
     }
 
-    await this.renameAndLoad(this.imageName, originalTarball);
     this.runtime.monitor.measure('task.taskImage.loadTime', Date.now() - start);
+    try {
+      await removeDir(downloadDir);
+    } catch(e) {
+      debug(`Error removing download dir. ${e.stack}`);
+    }
   }
 
   async renameAndLoad(imageName, originalTarball) {
     this.stream.write(fmtLog('Loading docker image from downloaded archive.'));
     debug('Renaming image and creating new archive');
     let newTarball = await this.renameImageInTarball(imageName, originalTarball);
+
+    try {
+      await fs.unlink(originalTarball);
+    } catch(e) {
+      debug(`Error when attempting to remove downloaded image. ${e.stack}`);
+    }
 
     debug('Loading docker image');
     let readStream = fs.createReadStream(newTarball);
@@ -106,13 +123,6 @@ export default class ArtifactImage {
       }
 
       await sleep(5000);
-    }
-
-    try {
-      await removeDir(path.dirname(originalTarball));
-    } catch(e) {
-      debug(`Error removing temporary task image directory. ` +
-            `Path: ${path.dirname(originalTarball)}. Error: ${e.message}`);
     }
 
     if (!pulledImage) {
@@ -209,6 +219,13 @@ export default class ArtifactImage {
       pack.on('end', accept);
       pack.on('error', reject);
     });
+
+    try {
+      await removeDir(extractedPath);
+    } catch(e) {
+      debug(`Error removing temporary task image directory. ` +
+            `Path: ${extractedPath}. Error: ${e.message}`);
+    }
 
     return editedTarballPath;
   }
