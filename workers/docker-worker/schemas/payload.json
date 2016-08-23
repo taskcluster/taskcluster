@@ -187,7 +187,7 @@
     },
     "encryptedEnv": {
       "title": "List of encrypted environment variable mappings.",
-      "description": "List of base64 encoded asymmetric encrypted environment variables. See http://docs.taskcluster.net/docker-worker/#encrypted-environment-variables",
+      "description": "List of base64 encoded asymmetric encrypted environment variables. See https://docs.taskcluster.net/manual/execution/workers/docker-worker#encrypted-environment-variables",
       "type": "array",
       "items": {
         "title": "Base64 encoded encrypted environment variable object.",
@@ -210,7 +210,7 @@
     "graphs": {
       "type": "array",
       "title": "Paths (in the container) to a json files which are used to extend the task graph",
-      "description": "Contents of file are used to extend the graph (if this task was part of a graph). See http://docs.taskcluster.net/scheduler/api-docs/#extendTaskGraph",
+      "description": "Contents of file are used to extend the graph (if this task was part of a graph). See https://docs.taskcluster.net/reference/platform/scheduler/api-docs#extendTaskGraph",
       "items": {
         "title": "Individual path to graph extension point.",
         "type": "string"
