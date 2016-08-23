@@ -75,7 +75,7 @@ let load = base.loader({
         validator,
         credentials:        cfg.pulse,
         queueName:          cfg.app.listenerQueueName,
-        monitor:            monitor.prefix('handlers'),
+        monitor:            monitor.prefix('handler'),
       });
       return handler.listen();
     },
