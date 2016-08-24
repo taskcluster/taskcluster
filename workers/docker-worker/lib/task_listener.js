@@ -78,6 +78,10 @@ export default class TaskListener extends EventEmitter {
   }
 
   async listenForCancelEvents() {
+    // Until listeners are consolidated, do not listen for cancellation.  Next
+    // reclaim event will cause a 409 which should cause the task to abort.
+    return;
+
     // Do not listen for events if pulse configuration is not supplied.  Since
     // this is a state that should not happen in production, log an alert so that
     // we can respond quickly to the event.

@@ -86,6 +86,10 @@ async function listenForPurgeCacheEvents(runtime, volumeCache) {
     volumeCache.purge(message.payload.cacheName);
   });
 
+  purgeCacheListener.on('error', function (e) {
+    runtime.log('[alert operator] Error encountered with purge cache listener. ' + e.stack);
+  });
+
   await purgeCacheListener.resume();
   return purgeCacheListener;
 }
