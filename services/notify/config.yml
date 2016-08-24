@@ -63,8 +63,8 @@ test:
     env:              development
   irc:
     server:           irc.mozilla.org
-    nick:             taskcluster
-    userName:         taskcluster
-    realName:         Taskcluster Robot
+    nick:             taskcluster-test
+    userName:         taskcluster-test
+    realName:         Taskcluster Test Robot
     queueName:        irc-test-notifications
     port:             6697
