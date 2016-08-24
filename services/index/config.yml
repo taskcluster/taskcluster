@@ -69,7 +69,8 @@ production:
     routePrefix:                  'index'
     indexedTaskTableName:         'IndexedTasks'
     namespaceTableName:           'Namespaces'
-    listenerQueueName:            'index/incoming-tasks'
+    # updated because the old queue was wedged when CloudAmqp failed 2016-08-24
+    listenerQueueName:            'index/incoming-tasks2'
 
   server:
     publicUrl:                      'https://index.taskcluster.net'
