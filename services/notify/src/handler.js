@@ -66,7 +66,7 @@ class Handler {
     return Promise.all(_.flatten([
       pulseMessages.map(m => this.notifier.pulse(m)),
       ircMessages.map(m => {
-        m.message = `Task ${taskId} complete! ${href}`;
+        m.message = `Task "${task.metadata.name}" complete with status '${status.status.state}'. Inspect: ${href}`;
         return this.notifier.irc(m);
       }),
       emailMessages.map(m => {
