@@ -120,6 +120,10 @@ export class Handler {
         console.log(`Error caught when processing message. ${err.message}. ${err.stack}`);
       };
     });
+    this.listener.on('error', (error) => {
+      console.log(`Error encountered with pulse listener. ${error.stack}`);
+      process.exit();
+    });
     await this.listener.resume();
     debug('Handler Started');
   }
