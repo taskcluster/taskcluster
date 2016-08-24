@@ -33,6 +33,19 @@ var buildPulseConnectionString = function(options) {
   ].join('');
 };
 
+/** Connect to AMQP server while retrying connection establishment */
+var retryConnect = function(connectionString, retries) {
+  return amqplib.connect(connectionString, {
+    noDelay: true,
+    timeout: 30 * 1000
+  }).catch(function(err) {
+    if (retries > 0) {
+      return retryConnect(connectionString, retries - 1);
+    }
+    throw err;
+  });
+};
+
 /**
  * Create PulseConnection from `options` on the form:
  * {
@@ -99,7 +112,7 @@ PulseConnection.prototype.connect = function() {
   // Connect if we're not already doing this
   if (!this._connecting) {
     this._connecting = true;
-    amqplib.connect(this._connectionString).then(function(conn) {
+    retryConnect(this._connectionString, 7).then(function(conn) {
       // Save reference to the connection
       that._conn = conn;
 
