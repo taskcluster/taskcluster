@@ -18,7 +18,6 @@ let load = base.loader({
     setup: ({cfg}) => {
       debug('Configuring validator');
       return base.validator({
-        folder: path.join(__dirname, '..', 'schemas'),
         prefix:       'taskcluster-treeherder/v1/',
         aws:           cfg.aws
       });
