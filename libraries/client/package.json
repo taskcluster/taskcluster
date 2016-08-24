@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
@@ -18,7 +18,7 @@
     "superagent": "~1.7.0",
     "superagent-promise": "^0.2.0",
     "superagent-hawk": "^0.0.6",
-    "amqplib": "^0.4.0",
+    "amqplib": "^0.4.1",
     "slugid": "^1.1.0",
     "promise": "^6.1.0",
     "hawk": "^2.3.1",
