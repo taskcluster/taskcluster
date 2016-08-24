@@ -48,6 +48,8 @@ class Handler {
       return;
     }
 
+    debug(`Recieved message for ${taskId} with task.extra.notify attributes. Finding notifications.`);
+
     // Find entries for email, pulse and irc messages
     const PREFIX = 'http://schemas.taskcluster.net/notify/v1/';
     let emailMessages = task.extra.notify.filter(entry => {
