@@ -84,6 +84,8 @@ Handlers.prototype.setup = function() {
   return this.listener.connect().then(function() {
     return that.listener.resume();
   });
+
+  console.log("Handler listening for pulse messages");
 };
 
 // Export Handlers
