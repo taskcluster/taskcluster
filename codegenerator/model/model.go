@@ -229,7 +229,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		err = os.MkdirAll(apiDefs[i].PackagePath, 0755)
 		exitOnFail(err)
 
-		// Generate types
+		fmt.Printf("Generating go types for %s\n", apiDefs[i].PackageName)
 		job := &jsonschema2go.Job{
 			Package:           apiDefs[i].PackageName,
 			URLs:              apiDefs[i].schemaURLs,
@@ -243,7 +243,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 		typesSourceFile := filepath.Join(apiDefs[i].PackagePath, "types.go")
 		formatSourceAndSave(typesSourceFile, result.SourceCode)
 
-		// Generate functions and methods
+		fmt.Printf("Generating functions and methods for %s\n", job.Package)
 		content := `
 // The following code is AUTO-GENERATED. Please DO NOT edit.
 // To update this generated code, run the following command:
