@@ -536,10 +536,12 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	}
 	// Find and tag subschema properties that are in required list
 	for _, req := range subSchema.Required {
-		if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
-			subSubSchema.IsRequired = true
-		} else {
-			panic(fmt.Sprintf("Schema %v has a required property %v but this property definition cannot be found", subSchema.SourceURL, req))
+		if subSchema.Properties != nil {
+			if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
+				subSubSchema.IsRequired = true
+			} else {
+				panic(fmt.Sprintf("Schema %v has a required property %v but this property definition cannot be found", subSchema.SourceURL, req))
+			}
 		}
 	}
 	return nil
