@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/notify/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 23 Aug 2016 at 19:53:00 UTC. The code was generated
+// Thu, 25 Aug 2016 at 12:48:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package notify
 
@@ -72,7 +72,8 @@ func New(credentials *tcclient.Credentials) *Notify {
 //
 // Send an email to `address`. The content is markdown and will be rendered
 // to HTML, but both the HTML and raw markdown text will be sent in the
-// email.
+// email. If a link is included, it will be rendered to a nice button in the
+// HTML version of the email
 //
 // Required scopes:
 //   * notify:email:<address>

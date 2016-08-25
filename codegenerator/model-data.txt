@@ -1,4 +1,4 @@
-Generated: 1471982028
+Generated: 1472129318
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4668,7 +4668,8 @@ Entry 0     =
     Entry Title       = 'Send an Email'
     Entry Description = 'Send an email to `address`. The content is markdown and will be rendered
 to HTML, but both the HTML and raw markdown text will be sent in the
-email.'
+email. If a link is included, it will be rendered to a nice button in the
+HTML version of the email'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'post'
@@ -4746,6 +4747,32 @@ Properties
     Type                   = 'string'
     TypeName               = ''
     SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/content'
+  Property 'link' =
+    Additional Properties  = 'false'
+    Description            = 'Optional link that can be added as a button to the email.
+    '
+    Properties
+      Property 'href' =
+        Description            = 'Where the link should point to.
+        '
+        Format                 = 'uri'
+        MaxLength              = '1024'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/href'
+      Property 'text' =
+        Description            = 'Text to display on link.
+        '
+        MaxLength              = '40'
+        MinLength              = '1'
+        Type                   = 'string'
+        TypeName               = ''
+        SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/text'
+    Required               = '[text href]'
+    Type                   = 'object'
+    TypeName               = 'Link'
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link'
   Property 'replyTo' =
     Description            = 'Reply-to e-mail (this property is optional)
     '
@@ -4775,6 +4802,17 @@ Additional Properties  = 'false'
 Description            = 'Request to post a message on IRC.
 '
 ID                     = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#'
+OneOf
+  Item '0' =
+    Required               = '[channel]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Var'
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]'
+  Item '1' =
+    Required               = '[user]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Var1'
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]'
 Properties
   Property 'channel' =
     Description            = 'Channel to post the message in. Please note that you **must** supply
@@ -4807,6 +4845,22 @@ Title                  = 'Post IRC Message Request'
 Type                   = 'object'
 TypeName               = 'PostIRCMessageRequest'
 SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#'
+
+
+http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
+===================================================================
+Required               = '[channel]'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'Var'
+SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]'
+
+
+http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
+===================================================================
+Required               = '[user]'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'Var1'
+SourceURL              = 'http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]'
 
 
 http://schemas.taskcluster.net/notify/v1/pulse-request.json#

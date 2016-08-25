@@ -4,6 +4,7 @@ package notify
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 type (
@@ -76,6 +77,28 @@ type (
 		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/content
 		Content string `json:"content"`
 
+		// Optional link that can be added as a button to the email.
+		//
+		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
+		Link struct {
+
+			// Where the link should point to.
+			//
+			// Min length: 1
+			// Max length: 1024
+			//
+			// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/href
+			Href string `json:"href"`
+
+			// Text to display on link.
+			//
+			// Min length: 1
+			// Max length: 40
+			//
+			// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/text
+			Text string `json:"text"`
+		} `json:"link,omitempty"`
+
 		// Reply-to e-mail (this property is optional)
 		//
 		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/replyTo
@@ -89,4 +112,42 @@ type (
 		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/subject
 		Subject string `json:"subject"`
 	}
+
+	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
+	Var json.RawMessage
+
+	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
+	Var1 json.RawMessage
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var is of type json.RawMessage...
+func (this *Var) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var1 is of type json.RawMessage...
+func (this *Var1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var1) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var1: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
