@@ -28,12 +28,12 @@ defaults:
     component: 'tc-treeherder-staging'
 staging:
   pulse:
-    queueName: taskcluster-treeherder-staging-20160824
+    queueName: taskcluster-treeherder-staging
   monitor:
     component: 'tc-treeherder-staging'
 production:
   pulse:
-    queueName: taskcluster-treeherder-20160824
+    queueName: taskcluster-treeherder
   monitor:
     component: 'tc-treeherder'
 
