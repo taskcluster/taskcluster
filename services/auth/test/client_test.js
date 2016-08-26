@@ -6,7 +6,7 @@ suite('api (client)', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var assume      = require('assume');
-  var base        = require('taskcluster-base');
+  var testing     = require('taskcluster-lib-testing');
   var taskcluster = require('taskcluster-client');
 
   test('ping', async () => {
@@ -87,7 +87,7 @@ suite('api (client)', function() {
       helper.auth.deleteClient(CLIENT_ID + suffix)
     ));
 
-    await Promise.all(suffixes.map(suffix => 
+    await Promise.all(suffixes.map(suffix =>
       helper.auth.createClient(CLIENT_ID + suffix, {
         expires: taskcluster.fromNow('1 hour'),
         description: 'test client',
@@ -173,7 +173,7 @@ suite('api (client)', function() {
     let r1 = await helper.auth.client(CLIENT_ID);
 
     // Sleep 4 seconds, forcing an update of lastUsed date in test config
-    await base.testing.sleep(4000);
+    await testing.sleep(4000);
 
     // Reseting the accessToken causes a reload, which re-evaluates whether or
     // not to update the lastDateUsed
@@ -189,7 +189,7 @@ suite('api (client)', function() {
     });
     await testClient.resource();
 
-    await base.testing.poll(async () => {
+    await testing.poll(async () => {
       // Fetch client again and check that lastUsed was updated
       let r2 = await helper.auth.client(CLIENT_ID);
       assume(new Date(r2.lastDateUsed).getTime()).greaterThan(
