@@ -47,7 +47,7 @@ exports.start = function(clients) {
           " by " + clientId +
           " with scopes " + scopes.join(", ") +
           " from " + from);
-    expires = taskcluster.fromNow('2 minutes');
+    let expires = taskcluster.fromNow('2 minutes');
     return {status: "auth-success", scheme: "hawk", scopes, clientId, expires};
   });
 };
