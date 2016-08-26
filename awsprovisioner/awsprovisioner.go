@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 25 Aug 2016 at 12:48:00 UTC. The code was generated
+// Fri, 26 Aug 2016 at 09:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -165,6 +165,19 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 	return responseObject.(*GetWorkerTypeResponse), err
 }
 
+// This method is provided to allow workers to see when they were
+// last modified.  The value provided through UserData can be
+// compared against this value to see if changes have been made
+// If the worker type definition has not been changed, the date
+// should be identical as it is the same stored value.
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#workerTypeLastModified
+func (awsProvisioner *AwsProvisioner) WorkerTypeLastModified(workerType string) (*GetWorkerTypeResponse1, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type-last-modified/"+url.QueryEscape(workerType), new(GetWorkerTypeResponse1), nil)
+	return responseObject.(*GetWorkerTypeResponse1), err
+}
+
 // Retreive a copy of the requested worker type definition.
 // This copy contains a lastModified field as well as the worker
 // type name.  As such, it will require manipulation to be able to
@@ -225,6 +238,70 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes1, erro
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes1), nil)
 	return responseObject.(*ListWorkerTypes1), err
+}
+
+// Create an AMI Set. An AMI Set is a collection of AMIs with a single name.
+//
+// Required scopes:
+//   * aws-provisioner:manage-ami-set:<amiSetId>
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#createAmiSet
+func (awsProvisioner *AwsProvisioner) CreateAmiSet(id string, payload *CreateAMISetRequest) error {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	_, _, err := (&cd).APICall(payload, "PUT", "/ami-set/"+url.QueryEscape(id), nil, nil)
+	return err
+}
+
+// Retreive a copy of the requested AMI set.
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#amiSet
+func (awsProvisioner *AwsProvisioner) AmiSet(id string) (*GetAMISetResponse, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/ami-set/"+url.QueryEscape(id), new(GetAMISetResponse), nil)
+	return responseObject.(*GetAMISetResponse), err
+}
+
+// Provide a new copy of an AMI Set to replace the existing one.
+// This will overwrite the existing AMI Set if there
+// is already an AMI Set of that name. This method will return a
+// 200 response along with a copy of the AMI Set created.
+// Note that if you are using the result of a GET on the ami-set
+// end point that you will need to delete the lastModified and amiSet
+// keys from the object returned, since those fields are not allowed
+// the request body for this method.
+//
+// Otherwise, all input requirements and actions are the same as the
+// create method.
+//
+// Required scopes:
+//   * aws-provisioner:manage-ami-set:<amiSetId>
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#updateAmiSet
+func (awsProvisioner *AwsProvisioner) UpdateAmiSet(id string, payload *CreateAMISetRequest) (*GetAMISetResponse, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/ami-set/"+url.QueryEscape(id)+"/update", new(GetAMISetResponse), nil)
+	return responseObject.(*GetAMISetResponse), err
+}
+
+// Return a list of AMI sets names.
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#listAmiSets
+func (awsProvisioner *AwsProvisioner) ListAmiSets() (*ListAMISets, error) {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/list-ami-sets", new(ListAMISets), nil)
+	return responseObject.(*ListAMISets), err
+}
+
+// Delete an AMI Set.
+//
+// Required scopes:
+//   * aws-provisioner:manage-ami-set:<amiSetId>
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#removeAmiSet
+func (awsProvisioner *AwsProvisioner) RemoveAmiSet(id string) error {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/ami-set/"+url.QueryEscape(id), nil, nil)
+	return err
 }
 
 // Insert a secret into the secret storage.  The supplied secrets will
@@ -318,13 +395,13 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs_SignedURL(workerType string
 }
 
 // Return the state of a given workertype as stored by the provisioner.
-// This state is stored as three lists: 1 for all instances, 1 for requests
-// which show in the ec2 api and 1 list for those only tracked internally
-// in the provisioner.  The `summary` property contains an updated summary
+// This state is stored as three lists: 1 for running instances, 1 for
+// pending requests.  The `summary` property contains an updated summary
 // similar to that returned from `listWorkerTypeSummaries`.
 //
 // Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#state
 func (awsProvisioner *AwsProvisioner) State(workerType string) error {
@@ -336,7 +413,8 @@ func (awsProvisioner *AwsProvisioner) State(workerType string) error {
 // Returns a signed URL for State, valid for the specified duration.
 //
 // Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
 //
 // See State for more details.
 func (awsProvisioner *AwsProvisioner) State_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
@@ -372,4 +450,44 @@ func (awsProvisioner *AwsProvisioner) BackendStatus() (*BackendStatusResponse, e
 	cd := tcclient.ConnectionData(*awsProvisioner)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/backend-status", new(BackendStatusResponse), nil)
 	return responseObject.(*BackendStatusResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
+// Shut down every single EC2 instance associated with this workerType.
+// This means every single last one.  You probably don't want to use
+// this method, which is why it has an obnoxious name.  Don't even try
+// to claim you didn't know what this method does!
+//
+// **This API end-point is experimental and may be subject to change without warning.**
+//
+// Required scopes:
+//   * aws-provisioner:terminate-all-worker-type:<workerType>
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#terminateAllInstancesOfWorkerType
+func (awsProvisioner *AwsProvisioner) TerminateAllInstancesOfWorkerType(workerType string) error {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	_, _, err := (&cd).APICall(nil, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/terminate-all-instances", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
+// Shut down every single EC2 instance managed by this provisioner.
+// This means every single last one.  You probably don't want to use
+// this method, which is why it has an obnoxious name.  Don't even try
+// to claim you didn't know what this method does!
+//
+// **This API end-point is experimental and may be subject to change without warning.**
+//
+// Required scopes:
+//   * aws-provisioner:terminate-all-worker-type:*
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#shutdownEverySingleEc2InstanceManagedByThisProvisioner
+func (awsProvisioner *AwsProvisioner) ShutdownEverySingleEc2InstanceManagedByThisProvisioner() error {
+	cd := tcclient.ConnectionData(*awsProvisioner)
+	_, _, err := (&cd).APICall(nil, "POST", "/shutdown/every/single/ec2/instance/managed/by/this/provisioner", nil, nil)
+	return err
 }

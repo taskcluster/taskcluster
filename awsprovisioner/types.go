@@ -30,6 +30,33 @@ type (
 		Status string `json:"status"`
 	}
 
+	// Create a new AMI Set
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#
+	CreateAMISetRequest struct {
+
+		// AMIs in this set
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis
+		Amis []struct {
+
+			// The AMI that uses HVM virtualization type
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items/properties/hvm
+			Hvm string `json:"hvm"`
+
+			// The AMI that uses PV virtualization type
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items/properties/pv
+			Pv string `json:"pv"`
+
+			// The Amazon AWS region of the AMI set
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items/properties/region
+			Region string `json:"region"`
+		} `json:"amis"`
+	}
+
 	// A worker launchSpecification and required metadata
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
@@ -206,6 +233,44 @@ type (
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/userData
 		UserData json.RawMessage `json:"userData"`
+	}
+
+	// An AMI Set from the provisioner
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#
+	GetAMISetResponse struct {
+
+		// AMIs in this set
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis
+		Amis []struct {
+
+			// The AMI that uses HVM virtualization type
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items/properties/hvm
+			Hvm string `json:"hvm"`
+
+			// The AMI that uses PV virtualization type
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items/properties/pv
+			Pv string `json:"pv"`
+
+			// The Amazon AWS region of the AMI set
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items/properties/region
+			Region string `json:"region"`
+		} `json:"amis"`
+
+		// Name of the AMI set
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/id
+		ID string `json:"id"`
+
+		// ISO Date string (e.g. new Date().toISOString()) which represents the time
+		// when this AMI Set was last altered (inclusive of creation)
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/lastModified
+		LastModified tcclient.Time `json:"lastModified,omitempty"`
 	}
 
 	// All of the launch specifications for a worker type
@@ -457,6 +522,28 @@ type (
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
+
+	// Get the last modified date of a workerType
+	//
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#
+	GetWorkerTypeResponse1 struct {
+
+		// ISO Date string (e.g. new Date().toISOString()) which represents the time
+		// when this worker type definition was last altered (inclusive of creation)
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#/properties/lastModified
+		LastModified tcclient.Time `json:"lastModified"`
+
+		// The ID of the workerType
+		//
+		// Syntax:     ^[A-Za-z0-9+/=_-]{1,22}$
+		//
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#/properties/workerType
+		WorkerType string `json:"workerType"`
+	}
+
+	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#
+	ListAMISets []string
 
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#
 	ListWorkerTypeSummariesResponse []WorkerTypeSummary
