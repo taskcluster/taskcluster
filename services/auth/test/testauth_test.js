@@ -5,7 +5,6 @@ var helper      = require('./helper');
 var slugid      = require('slugid');
 var _           = require('lodash');
 var assume      = require('assume');
-var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
 
 let credentials = {
