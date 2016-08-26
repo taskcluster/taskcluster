@@ -2,6 +2,7 @@ var debug = require('debug')('taskcluster-lib-testing:FakeAuth');
 var nock = require('nock');
 var hawk = require('hawk');
 var url  = require('url');
+var taskcluster  = require('taskcluster-client');
 
 exports.start = function(clients) {
   nock('https://auth.taskcluster.net:443', {encodedQueryParams:true, allowUnmocked: true})
@@ -46,7 +47,8 @@ exports.start = function(clients) {
           " by " + clientId +
           " with scopes " + scopes.join(", ") +
           " from " + from);
-    return {status: "auth-success", scheme: "hawk", scopes, clientId};
+    expires = taskcluster.fromNow('2 minutes');
+    return {status: "auth-success", scheme: "hawk", scopes, clientId, expires};
   });
 };
 
