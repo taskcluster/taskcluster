@@ -12,7 +12,7 @@ properties:
       either `user` or `channel`, you cannot supply both.
   user:
     type:           string
-    pattern:        "^[A-Za-z\\[\\]\\\\~_\\^{|}][A-Za-z0-9\\-\\[\\]\\\\~_\\^{|}]{0,254}$",
+    pattern:        "^[A-Za-z\\[\\]\\\\~_\\^{|}][A-Za-z0-9\\-\\[\\]\\\\~_\\^{|}]{0,254}$"
     maxLength:      255
     minLength:      1
     description: |
