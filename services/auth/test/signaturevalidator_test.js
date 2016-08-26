@@ -6,7 +6,6 @@ suite("signature validation", function() {
   var hawk         = require('hawk');
   var _            = require('lodash');
   var assume       = require('assume');
-  var base         = require('taskcluster-base');
   var slugid       = require('slugid');
   var crypto       = require('crypto');
   var taskcluster  = require('taskcluster-client');

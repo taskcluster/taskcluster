@@ -2,7 +2,7 @@ var assert      = require('assert');
 var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
-var base        = require('taskcluster-base');
+var testing     = require('taskcluster-lib-testing');
 var data        = require('../lib/data');
 var v1          = require('../lib/v1');
 var taskcluster = require('taskcluster-client');
@@ -11,9 +11,10 @@ var serverLoad  = require('../lib/main');
 var exchanges   = require('../lib/exchanges');
 var testserver  = require('./testserver');
 var slugid      = require('slugid');
+var Config      = require('typed-env-config');
 
 // Load configuration
-var cfg = base.config({profile: 'test'});
+var cfg = Config({profile: 'test'});
 
 // Create subject to be tested by test
 var helper = module.exports = {};
@@ -30,7 +31,7 @@ if (!cfg.pulse.password) {
 }
 
 // Configure PulseTestReceiver
-helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
+helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
 
 var webServer = null, testServer;
 mocha.before(async () => {

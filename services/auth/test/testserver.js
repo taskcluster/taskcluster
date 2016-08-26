@@ -1,6 +1,6 @@
 let API         = require('taskcluster-lib-api');
-let validator   = require('taskcluster-lib-validate');
-let app         = require('taskcluster-lib-app');
+let Validate    = require('taskcluster-lib-validate');
+let App         = require('taskcluster-lib-app');
 let taskcluster = require('taskcluster-client');
 
 // Create a simple test server that we can set test requests to, useful for
@@ -28,7 +28,7 @@ myapi.declare({
 
 module.exports = async ({authBaseUrl, rootAccessToken}) => {
   // Create application
-  let serverApp = app({
+  let serverApp = App({
     port:           PORT,
     env:            'development',
     forceSSL:       false,
@@ -38,7 +38,7 @@ module.exports = async ({authBaseUrl, rootAccessToken}) => {
   // Create router for the API
   let router = myapi.router({
     authBaseUrl,
-    validator: await validator({
+    validator: await Validate({
       prefix: 'auth/v1',
     }),
   });

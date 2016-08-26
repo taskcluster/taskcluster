@@ -2,7 +2,6 @@ var _           = require('lodash');
 var assert      = require('assert');
 var taskcluster = require('taskcluster-client');
 var events      = require('events');
-var base        = require('taskcluster-base');
 var debug       = require('debug')('auth:ScopeResolver');
 var Promise     = require('promise');
 var dfa         = require('./dfa');
