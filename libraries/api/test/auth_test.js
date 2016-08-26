@@ -3,8 +3,6 @@ suite("api/auth", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var testing         = require('taskcluster-lib-testing');
-  var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
   var validator       = require('taskcluster-lib-validate');
   var makeApp         = require('taskcluster-lib-app');
   var subject         = require('../');
