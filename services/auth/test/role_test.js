@@ -6,7 +6,7 @@ suite('api (roles)', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var assume      = require('assume');
-  var base        = require('taskcluster-base');
+  var testing     = require('taskcluster-lib-testing');
   var taskcluster = require('taskcluster-client');
 
   test('ping', async () => {
@@ -111,7 +111,7 @@ suite('api (roles)', function() {
 
     let r1 = await helper.auth.role('thing-id:' + clientId);
 
-    await base.testing.sleep(100);
+    await testing.sleep(100);
 
     let r2 = await helper.auth.updateRole('thing-id:' + clientId, {
       description: 'test role',

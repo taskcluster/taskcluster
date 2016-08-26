@@ -1,6 +1,5 @@
-var debug       = require('debug')('auth:v1');
+var debug       = require('debug')('auth:api');
 var assert      = require('assert');
-var base        = require('taskcluster-base');
 var API         = require('taskcluster-lib-api');
 var slugid      = require('slugid');
 var Promise     = require('promise');
