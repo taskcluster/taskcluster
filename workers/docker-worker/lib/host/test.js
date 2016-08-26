@@ -41,8 +41,12 @@ export function configure() {
   let path = settingsPath('configure');
   let config = {
     publicIp: '127.0.0.1',
+    billingCycleInterval: billingCycleInterval(),
+    privateIp: '169.254.1.1',
     workerNodeType: 'test-worker',
-    billingCycleInterval: billingCycleInterval()
+    instanceId: 'test-worker-instance',
+    region: 'us-middle-1a',
+    instanceType: 'r3-superlarge'
   };
   try {
     let content = fs.readFileSync(path, 'utf8');

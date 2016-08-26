@@ -3,12 +3,12 @@
  */
 
 var debug = require('debug')('docker-worker:privateKey');
-var enums = require('openpgp/src/enums');
 var fs      = require('fs');
 var _       = require('lodash');
-var openpgp = require('openpgp');
 var util = require('util');
 var uuid = require('uuid');
+var openpgp = require('openpgp');
+
 
 function PrivateKey(keyFile) {
   this.privateKey = null;
@@ -96,17 +96,20 @@ PrivateKey.prototype = {
     // For each encrypted variable, create a promise and wait for all
     // promises to complete
     return Promise.all(_.map(taskPayload.encryptedEnv, function(encryptedVar) {
-
       var encryptedVarBuf = new Buffer(encryptedVar, 'base64');
       var armoredEncryptedVar =
-        openpgp.armor.encode(enums.armor.message, encryptedVarBuf.toString('binary'));
+        openpgp.armor.encode(openpgp.enums.armor.message, encryptedVarBuf);
 
       var encryptedVarMessage =
         openpgp.message.readArmored(armoredEncryptedVar);
 
-      return openpgp.decryptMessage(that.privateKey, encryptedVarMessage).then(function(text) {
+      var opts = {
+        privateKey: that.privateKey,
+        message: encryptedVarMessage
+      };
+      return openpgp.decrypt(opts).then(function(text) {
         // Validate the message
-        var decryptedData = JSON.parse(text);
+        var decryptedData = JSON.parse(text.data);
         validateDecryptedData(taskPayload, decryptedData, taskId);
 
         // Overwrite the secret in env, so everything can contine as usual

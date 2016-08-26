@@ -40,6 +40,7 @@ suite('Header/Footer logs', () => {
     });
 
     let tcLogs = result.log.match(/\[taskcluster (.*)\](.*)/g);
+
     assert.ok(
       tcLogs[0].includes(`Task ID: ${result.taskId}`),
       `Log header does not include task id. Log Line: ${tcLogs[0]}`
@@ -53,12 +54,12 @@ suite('Header/Footer logs', () => {
       `Log header does not include worker group. Log Line: ${tcLogs[2]}`
     );
     assert.ok(
-      tcLogs[4].includes(`Worker Type: ${result.status.workerType}`),
-      `Log header does not include worker type. Log Line: ${tcLogs[4]}`
+      tcLogs[3].includes('Worker Node Type: test-worker'),
+      `Log header does not include worker node type. Log Line: ${tcLogs[3]}`
     );
     assert.ok(
-      tcLogs[3].includes(`Worker Node Type: test-worker`),
-      `Log header does not include worker node type. Log Line: ${tcLogs[3]}`
+      tcLogs[4].includes(`Worker Type: ${result.status.workerType}`),
+      `Log header does not include worker type. Log Line: ${tcLogs[4]}`
     );
     assert.ok(
       tcLogs[5].includes('Public IP: 127.0.0.1'),

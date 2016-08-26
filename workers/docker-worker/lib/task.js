@@ -842,6 +842,7 @@ export class Task extends EventEmitter {
                                      this.stream,
                                      this,
                                      this.task.scopes);
+      this.imageHash = imageId;
       this.runtime.gc.markImage(imageId);
     } catch (e) {
 

@@ -58,9 +58,13 @@ suite('configuration/aws', () => {
       workerType: 'ami-333333',
       workerNodeType: 'c3.xlarge',
       workerGroup: 'us-west-2',
+      instanceId: 'i-123456',
+      instanceType: 'c3.xlarge',
+      region: 'us-west-2',
       capacity: 1,
       publicIp: '22.33.44.252',
       billingCycleInterval: 120*60,
+      privateIp: '169.254.1.2',
       restrictedProxy: {
         accessToken: 'xyz'
       },

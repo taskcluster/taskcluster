@@ -49,3 +49,30 @@ sudo modprobe v4l2loopback
 sudo modprobe snd-aloop
 # Create dependency file
 sudo depmod
+
+
+
+# Generate enough entropy to allow for gpg key generation
+sudo rngd -r /dev/urandom
+
+# Generate gpg key
+cat >gen_key_conf <<EOF
+  %echo Generating GPG signing key
+  Key-Type: RSA
+  Key-Length: 2048
+  Name-Real: Docker-Worker
+  Name-Email: taskcluster-accounts+gpgsigning@mozilla.com
+  %commit
+  %echo Done generating key
+EOF
+
+echo "Generating public signing key"
+sudo gpg --batch --gen-key gen_key_conf
+rm gen_key_conf
+
+echo "Exporting public signing key"
+sudo gpg -a --export-secret-keys > docker-worker-gpg-signing-key.key
+sudo mv docker-worker-gpg-signing-key.key /etc
+
+echo "Public signing key"
+sudo gpg -a --export

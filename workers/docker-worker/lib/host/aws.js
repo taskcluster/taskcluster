@@ -72,6 +72,8 @@ export async function configure(baseUrl=BASE_URL) {
     getText(baseUrl + '/meta-data/public-hostname'),
     // Public IP
     getText(baseUrl + '/meta-data/public-ipv4'),
+    // Private IP
+    getText(baseUrl + '/meta-data/local-ipv4'),
     // workerId
     getText(baseUrl + '/meta-data/instance-id'),
     // workerGroup
@@ -83,10 +85,17 @@ export async function configure(baseUrl=BASE_URL) {
   let config = {
     host: metadata[0],
     publicIp: metadata[1],
-    workerId: metadata[2],
-    workerGroup: metadata[3],
-    workerNodeType: metadata[4],
     billingCycleInterval: minutes(60),
+    privateIp: metadata[2],
+    workerId: metadata[3],
+    workerGroup: metadata[4],
+    workerNodeType: metadata[5],
+    // for aws, instance ID and worker IDs are one and the same
+    instanceId: metadata[3],
+    // for aws, same as worker group
+    region: metadata[4],
+    // for aws, same as worker node type
+    instanceType: metadata[5],
     // AWS Specific shutdown parameters notice this can also be overridden.
     shutdown: {
       enabled: true,

@@ -171,6 +171,7 @@ defaults:
     password: !env TESTDROID_PASSWORD
 
   dockerWorkerPrivateKey: '/etc/docker-worker-priv.pem'
+  signingKeyLocation: '/etc/docker-worker-gpg-signing-key.key'
 
   dockerSave:
     expiration: '7 days'
@@ -242,6 +243,7 @@ test:
   dockerVolume: '/tmp'
 
   dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
+  signingKeyLocation: '/worker/test/fixtures/gpg_signing_key.key'
 
   interactive:
     artifactName: 'private/docker-worker-tests/'

@@ -30,6 +30,8 @@ function route(context) {
       return 'publichost';
     case '/meta-data/public-ipv4':
       return '22.33.44.252';
+    case '/meta-data/local-ipv4':
+      return '169.254.1.2';
     case '/user-data':
       return new Buffer(JSON.stringify({
         capacity: 1,

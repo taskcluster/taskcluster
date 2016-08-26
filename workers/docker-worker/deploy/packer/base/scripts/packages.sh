@@ -79,7 +79,8 @@ sudo apt-get install -y \
     jq \
     rsyslog-gnutls \
     openvpn \
-    lxc
+    lxc \
+    rng-tools
 
 ## Clear mounts created in base image so fstab is empty in other builds...
 sudo sh -c 'echo "" > /etc/fstab'

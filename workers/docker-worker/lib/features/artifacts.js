@@ -139,8 +139,10 @@ export default class Artifacts {
       };
 
       try {
-        await uploadToS3(taskHandler.queue, taskId, runId, stream,
+        let digest = await uploadToS3(taskHandler.queue, taskId, runId, stream,
                          entryName, expiry, headers);
+        taskHandler.artifactHashes.push({name: entryName, hash: digest});
+
       } catch(err) {
         debug(err);
         // Log each error but don't throw yet.  Try to upload as many artifacts as
@@ -172,6 +174,7 @@ export default class Artifacts {
     if (taskHandler.isCanceled()) return;
 
     let artifacts = taskHandler.task.payload.artifacts;
+    taskHandler.artifactHashes = [];
     let errors = {};
 
     // Artifacts are optional...

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import https from 'https';
 import url from 'url';
 import fs from 'fs';
@@ -5,6 +6,7 @@ import temporary from 'temporary';
 import promiseRetry from 'promise-retry';
 import { createLogger } from './log';
 import _ from 'lodash';
+import waitForEvent from './wait_for_event';
 
 var log = createLogger({source: "uploadToS3"});
 
@@ -23,6 +25,7 @@ export default async function uploadToS3 (
 {
   let tmp = new temporary.File();
   let logDetails = {taskId, runId, artifactName};
+  let digest;
 
   try {
     // write the source out to a temporary file so that it can be
@@ -37,6 +40,18 @@ export default async function uploadToS3 (
         source.pipe(stream);
       });
     }
+
+    // Can this be done at the same time as piping to the write stream?
+    let hash = crypto.createHash('sha256');
+    let input = fs.createReadStream(tmp.path);
+    input.on('readable', () => {
+      let data = input.read();
+      if (data) {
+        hash.update(data);
+      }
+    });
+
+    await waitForEvent(input, 'end');
 
     if (!putUrl) {
       var artifact = await queue.createArtifact(
@@ -84,6 +99,8 @@ export default async function uploadToS3 (
               `Could not upload artifact. Status Code: ${response.statusCode}`
             ));
           } else {
+            digest = hash.digest('hex');
+            logDetails.hash = digest;
             accept();
           }
         });
@@ -102,4 +119,6 @@ export default async function uploadToS3 (
   } finally {
     tmp.unlink();
   }
+
+  return `sha256:${digest}`;
 }

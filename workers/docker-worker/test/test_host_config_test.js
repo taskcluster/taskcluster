@@ -13,7 +13,11 @@ suite('test host', function() {
         capacity: 2,
         publicIp: '127.0.0.1',
         billingCycleInterval: 3600,
-        workerNodeType: 'test-worker'
+        workerNodeType: 'test-worker',
+        instanceId: 'test-worker-instance',
+        instanceType: 'r3-superlarge',
+        privateIp: '169.254.1.1',
+        region: 'us-middle-1a'
       },
       (yield subject.configure())
     );
