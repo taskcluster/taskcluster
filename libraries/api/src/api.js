@@ -325,6 +325,11 @@ var createRemoteSignatureValidator = function(options) {
  * be used for logging and auditing, but should **never** be used for access
  * control.
  *
+ * If authentication was successful, `req.expires()` returns (via Promise) the
+ * expiration time of the credentials used to make this request.  If the
+ * response includes some additional security token, its duration should be
+ * limited to this expiration time.
+ *
  * Reports 401 if authentication fails.
  */
 var remoteAuthentication = function(options, entry) {
@@ -409,15 +414,18 @@ var remoteAuthentication = function(options, entry) {
         return Promise.resolve(result.scopes || []);
       };
 
-      let clientId;
+      let clientId, expires;
       // generate valid clientIds for exceptional cases
       if (result.status === 'auth-success') {
         clientId = result.clientId || 'unknown-clientId';
+        expires = new Date(result.expires);
       } else {
         clientId = 'auth-failed:' + result.status;
+        expires = undefined;
       }
-      // this is a function so we can later make an async request on demand
+      // these are functions so we can later make an async request on demand
       req.clientId = async () => clientId;
+      req.expires = async () => expires;
 
       /**
        * Create method to check if request satisfies a scope-set from required
