@@ -316,6 +316,8 @@ var createRemoteSignatureValidator = function(options) {
  * Note that `deferAuth` will not perform authorization unless, `req.satisfies({})`
  * is called either without arguments or with an object as first argument.
  *
+ * If `deferAuth` is false, then req.params will be used as the scope parameters.
+ *
  * The `req.scopes()` method returns a Promise for the set of scopes the caller
  * has. Please, note that `req.scopes()` returns `[]` if there was an
  * authentication error.
@@ -480,8 +482,9 @@ var remoteAuthentication = function(options, entry) {
         return retval;
       };
 
-      // If authentication is deferred or satisfied, then we proceed
-      if (!entry.scopes || entry.deferAuth || req.satisfies(entry.scopes)) {
+      // If authentication is deferred or satisfied, then we proceed,
+      // substituting the request paramters by default
+      if (!entry.scopes || entry.deferAuth || req.satisfies(req.params)) {
         next();
       }
     }).catch(function(err) {
