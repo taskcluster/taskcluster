@@ -98,6 +98,7 @@ suite("api/auth", function() {
       "test-client": ['service:magic'],
       "rockstar":    ['*'],
       "nobody":      ['another-irrelevant-scope'],
+      "param":       ['service:myfolder/resource'],
     });
 
     // Create router
@@ -229,8 +230,8 @@ suite("api/auth", function() {
     return request
       .get(url)
       .hawk({
-        id:           'rockstar',
-        key:          'groupie',
+        id:           'param',
+        key:          '--',
         algorithm:    'sha256'
       })
       .end()
