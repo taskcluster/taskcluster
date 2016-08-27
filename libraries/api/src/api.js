@@ -449,7 +449,7 @@ var remoteAuthentication = function(options, entry) {
         // must be used to parameterize the original scopesets
         if (!(scopesets instanceof Array)) {
           var params = scopesets;
-          scopesets = _.cloneDeep(entry.scopes, function(scope) {
+          scopesets = _.cloneDeepWith(entry.scopes, function(scope) {
             if(typeof(scope) === 'string') {
               return scope.replace(/<([^>]+)>/g, function(match, param) {
                 var value = params[param];
