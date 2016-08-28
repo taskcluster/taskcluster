@@ -1,5 +1,5 @@
 var express = require('express');
-var base    = require('taskcluster-base');
+var API     = require('taskcluster-lib-api');
 var _       = require('lodash');
 var Promise = require('promise');
 var debug   = require('debug')('base:test:authserver_mock');
@@ -33,7 +33,7 @@ var _clients = {
 };
 
 /** Create mock authentication API */
-var api = new base.API({
+var api = new API({
   title:        "Authentication Mock Server",
   description: [
     "Server that simulates an instance of the taskcluster\n" +
@@ -63,7 +63,7 @@ var clientLoader = function(clientId) {
   return new Promise(function(accept, reject) {
     var client = _clients[clientId];
     if (client) {
-      return accept(new base.API.authenticate.Client(client));
+      return accept(new API.authenticate.Client(client));
     }
     return reject();
   });
