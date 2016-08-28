@@ -2,13 +2,15 @@ var _            = require('lodash');
 var nock         = require('nock');
 var hawk         = require('hawk');
 var request      = require('superagent-promise');
-var base         = require('taskcluster-base');
+var validator    = require('taskcluster-lib-validate');
+var API          = require('taskcluster-lib-api');
+var App          = require('taskcluster-lib-app');
 var assert       = require('assert');
 var taskcluster  = require('taskcluster-client');
 var Promise      = require('promise');
 var path         = require('path');
 
-var testApi = new base.API({
+var testApi = new API({
   title:        "Test Server",
   description:  "for testing"
 });
@@ -33,12 +35,12 @@ suite('fakeauth', function() {
   var server;
 
   suiteSetup(function() {
-    return base.validator({
+    return validator({
       folder:  path.join(__dirname, 'schemas'),
       baseUrl: "http://localhost:1234",
     }).then(function(validator) {
       // Create application
-      var app = base.app({
+      var app = App({
         port:           1208,
         env:            'development',
         forceSSL:       false,
