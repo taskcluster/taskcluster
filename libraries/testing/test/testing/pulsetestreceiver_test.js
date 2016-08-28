@@ -1,13 +1,15 @@
 "use strict";
 
 suite('testing.PulseTestReceiver', async function() {
-  var base          = require('taskcluster-base');
-  var config        = require('taskcluster-lib-config');
-  var assert        = require('assert');
-  var path          = require('path');
-  var fs            = require('fs');
-  var slugid        = require('slugid');
-  var taskcluster   = require('taskcluster-client')
+  var config            = require('taskcluster-lib-config');
+  var Exchanges         = require('pulse-publisher');
+  var validator         = require('taskcluster-lib-validate');
+  var assert            = require('assert');
+  var path              = require('path');
+  var fs                = require('fs');
+  var slugid            = require('slugid');
+  var taskcluster       = require('taskcluster-client');
+  var PulseTestReceiver = require('../lib/pulse');
 
   // Load necessary configuration
   var cfg = config({
@@ -22,7 +24,7 @@ suite('testing.PulseTestReceiver', async function() {
   }
 
   // Setup an exchange so we publish messages
-  var exchanges = new base.Exchanges({
+  var exchanges = new Exchanges({
     title:        "My Title",
     description:  "My description"
   });
@@ -50,7 +52,7 @@ suite('testing.PulseTestReceiver', async function() {
 
   // Create validator to validate schema, and load exchange-test-schema.json
   // from disk
-  var validator = await base.validator({
+  var validator = await validator({
     folder: path.join(__dirname, 'schemas'),
     baseUrl: "http://localhost:1203",
   });
@@ -68,7 +70,7 @@ suite('testing.PulseTestReceiver', async function() {
 
   // Now let's create a single event listener for messages, or whatever we
   // should call this utility.
-  var receiver = new base.testing.PulseTestReceiver(cfg.get('pulse'));
+  var receiver = new PulseTestReceiver(cfg.get('pulse'));
 
   test("Can publish message", function() {
     // Create someId
