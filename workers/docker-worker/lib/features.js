@@ -19,7 +19,7 @@ const features = {
   generateCertificate: {
     title: 'Enable generation of a certificate for Chain of Trust',
     description: 'A certificate should be generated which will include information ' +
-                 'for downstream tasks to build a level of trust for the artifacts' +
+                 'for downstream tasks to build a level of trust for the artifacts ' +
                  'produced by the task and the environment it ran in.',
     defaults: false,
     module: require('./features/certificate_of_trust')
