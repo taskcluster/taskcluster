@@ -37,6 +37,40 @@ suite('End to End', () => {
     ];
   });
 
+  async function getObjectsInStream(inStream) {
+    let output = {};
+    let extractor = tar.extract();
+
+    let downloadPromise = new Promise((resolve, reject) => {
+      extractor.on('entry', (header, stream, callback) => {
+        let data = [];
+
+        stream.on('data', function(chunk) {
+          data.push(chunk);
+        });
+
+        stream.on('end', () => {
+          output[header.name] = data.join('');
+          callback(); //ready for next entry
+        });
+
+        stream.resume(); //just auto drain the stream
+      });
+
+      extractor.on('finish', function() {
+        // all entries read
+        resolve();
+      });
+
+      extractor.on('error', function() {
+        reject();
+      });
+    });
+    inStream.pipe(extractor);
+    await downloadPromise;
+    return output;
+  }
+
   function assertInTarball(shoulds, tarball, done) {
     shoulds.push('taskcluster-lib-docs/metadata.json');
     shoulds.push('taskcluster-lib-docs/README.md');
@@ -128,10 +162,13 @@ suite('End to End', () => {
   });
 
   test('download tarball contains project', async function() {
-    let files = await downloader({
+
+    let stream = await downloader({
       project: 'testing',
       credentials,
     });
+
+    let files = await getObjectsInStream(stream);
 
     let shoulds = [
       'testing/metadata.json',
