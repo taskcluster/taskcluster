@@ -1,3 +1,4 @@
+'use strict';
 let config = require('typed-env-config');
 let taskcluster = require('taskcluster-client');
 
