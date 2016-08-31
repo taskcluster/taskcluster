@@ -595,6 +595,21 @@ module.exports = {
           "args": [
             "workerType"
           ],
+          "description": "This method is provided to allow workers to see when they were\nlast modified.  The value provided through UserData can be\ncompared against this value to see if changes have been made\nIf the worker type definition has not been changed, the date\nshould be identical as it is the same stored value.",
+          "method": "get",
+          "name": "workerTypeLastModified",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#",
+          "query": [
+          ],
+          "route": "/worker-type-last-modified/<workerType>",
+          "stability": "stable",
+          "title": "Get Worker Type Last Modified Time",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerType"
+          ],
           "description": "Retreive a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.",
           "method": "get",
           "name": "workerType",
@@ -645,6 +660,95 @@ module.exports = {
           "route": "/list-worker-types",
           "stability": "stable",
           "title": "List Worker Types",
+          "type": "function"
+        },
+        {
+          "args": [
+            "id"
+          ],
+          "description": "Create an AMI Set. An AMI Set is a collection of AMIs with a single name.",
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#",
+          "method": "put",
+          "name": "createAmiSet",
+          "query": [
+          ],
+          "route": "/ami-set/<id>",
+          "scopes": [
+            [
+              "aws-provisioner:manage-ami-set:<amiSetId>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Create new AMI Set",
+          "type": "function"
+        },
+        {
+          "args": [
+            "id"
+          ],
+          "description": "Retreive a copy of the requested AMI set.",
+          "method": "get",
+          "name": "amiSet",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#",
+          "query": [
+          ],
+          "route": "/ami-set/<id>",
+          "stability": "stable",
+          "title": "Get AMI Set",
+          "type": "function"
+        },
+        {
+          "args": [
+            "id"
+          ],
+          "description": "Provide a new copy of an AMI Set to replace the existing one.\nThis will overwrite the existing AMI Set if there\nis already an AMI Set of that name. This method will return a\n200 response along with a copy of the AMI Set created.\nNote that if you are using the result of a GET on the ami-set\nend point that you will need to delete the lastModified and amiSet\nkeys from the object returned, since those fields are not allowed\nthe request body for this method.\n\nOtherwise, all input requirements and actions are the same as the\ncreate method.",
+          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#",
+          "method": "post",
+          "name": "updateAmiSet",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#",
+          "query": [
+          ],
+          "route": "/ami-set/<id>/update",
+          "scopes": [
+            [
+              "aws-provisioner:manage-ami-set:<amiSetId>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Update AMI Set",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Return a list of AMI sets names.",
+          "method": "get",
+          "name": "listAmiSets",
+          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#",
+          "query": [
+          ],
+          "route": "/list-ami-sets",
+          "stability": "stable",
+          "title": "List AMI sets",
+          "type": "function"
+        },
+        {
+          "args": [
+            "id"
+          ],
+          "description": "Delete an AMI Set.",
+          "method": "delete",
+          "name": "removeAmiSet",
+          "query": [
+          ],
+          "route": "/ami-set/<id>",
+          "scopes": [
+            [
+              "aws-provisioner:manage-ami-set:<amiSetId>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Delete AMI Set",
           "type": "function"
         },
         {
@@ -738,7 +842,7 @@ module.exports = {
           "args": [
             "workerType"
           ],
-          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for all instances, 1 for requests\nwhich show in the ec2 api and 1 list for those only tracked internally\nin the provisioner.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
+          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
           "method": "get",
           "name": "state",
           "query": [
@@ -747,6 +851,9 @@ module.exports = {
           "scopes": [
             [
               "aws-provisioner:view-worker-type:<workerType>"
+            ],
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
             ]
           ],
           "stability": "stable",
@@ -778,6 +885,43 @@ module.exports = {
           "route": "/backend-status",
           "stability": "experimental",
           "title": "Backend Status",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerType"
+          ],
+          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
+          "method": "post",
+          "name": "terminateAllInstancesOfWorkerType",
+          "query": [
+          ],
+          "route": "/worker-type/<workerType>/terminate-all-instances",
+          "scopes": [
+            [
+              "aws-provisioner:terminate-all-worker-type:<workerType>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Shutdown Every Ec2 Instance of this Worker Type",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
+          "method": "post",
+          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner",
+          "query": [
+          ],
+          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner",
+          "scopes": [
+            [
+              "aws-provisioner:terminate-all-worker-type:*"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner",
           "type": "function"
         }
       ],
@@ -1338,7 +1482,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail.",
+          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
           "input": "http://schemas.taskcluster.net/notify/v1/email-request.json",
           "method": "post",
           "name": "email",
@@ -1427,6 +1571,8 @@ module.exports = {
           "input": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
+          "query": [
+          ],
           "route": "/purge-cache/<provisionerId>/<workerType>",
           "scopes": [
             [
@@ -1440,9 +1586,44 @@ module.exports = {
         {
           "args": [
           ],
+          "description": "This is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
+          "method": "get",
+          "name": "allPurgeRequests",
+          "output": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/purge-cache/list",
+          "stability": "experimental",
+          "title": "All Open Purge Requests",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "List of caches that need to be purged if they are from before\na certain time. This is safe to be used in automation from\nworkers.",
+          "method": "get",
+          "name": "purgeRequests",
+          "output": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#",
+          "query": [
+            "since"
+          ],
+          "route": "/purge-cache/<provisionerId>/<workerType>",
+          "stability": "experimental",
+          "title": "Open Purge Requests for a provisionerId/workerType pair",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
+          "query": [
+          ],
           "route": "/ping",
           "stability": "experimental",
           "title": "Ping Server",
