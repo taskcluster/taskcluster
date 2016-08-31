@@ -83,6 +83,7 @@ let load = loader({
       validator:        validator,
       publish:          process.env.NODE_ENV === 'production',
       baseUrl:          cfg.server.publicUrl + '/v1',
+      aws:              cfg.aws,
       referencePrefix:  'purge-cache/v1/api.json',
       monitor:          monitor.prefix('api'),
     }),
