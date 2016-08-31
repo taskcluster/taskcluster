@@ -199,9 +199,15 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.listWorkerTypeSummaries() : result`
  * `awsProvisioner.createWorkerType(workerType, payload) : result`
  * `awsProvisioner.updateWorkerType(workerType, payload) : result`
+ * `awsProvisioner.workerTypeLastModified(workerType) : result`
  * `awsProvisioner.workerType(workerType) : result`
  * `awsProvisioner.removeWorkerType(workerType) : void`
  * `awsProvisioner.listWorkerTypes() : result`
+ * `awsProvisioner.createAmiSet(id, payload) : void`
+ * `awsProvisioner.amiSet(id) : result`
+ * `awsProvisioner.updateAmiSet(id, payload) : result`
+ * `awsProvisioner.listAmiSets() : result`
+ * `awsProvisioner.removeAmiSet(id) : void`
  * `awsProvisioner.createSecret(token, payload) : void`
  * `awsProvisioner.getSecret(token) : result`
  * `awsProvisioner.instanceStarted(instanceId, token) : void`
@@ -210,6 +216,8 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.state(workerType) : void`
  * `awsProvisioner.ping() : void`
  * `awsProvisioner.backendStatus() : result`
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) : void`
+ * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() : void`
 
 ### Methods in `taskcluster.Github`
 ```js
@@ -276,6 +284,8 @@ var notify = new taskcluster.Notify(options);
 var purgeCache = new taskcluster.PurgeCache(options);
 ```
  * `purgeCache.purgeCache(provisionerId, workerType, payload) : void`
+ * `purgeCache.allPurgeRequests([options]) : result`
+ * `purgeCache.purgeRequests(provisionerId, workerType, [options]) : result`
  * `purgeCache.ping() : void`
 
 ### Methods in `taskcluster.Queue`
