@@ -1,4 +1,3 @@
-id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#
 $schema:  http://json-schema.org/draft-04/schema#
 title:        "Purge Cache Request"
 description: |

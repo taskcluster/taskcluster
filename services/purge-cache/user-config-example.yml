@@ -1,10 +1,14 @@
 ---
 defaults:
+  azure:
+    account: "..."
   pulse:
     username: "..."
     password: "..."
-  influx:
-    connectionString: "https://<user>:<pwd>@<host>:<port>/db/<database>"
+  taskcluster:
+    credentials:
+      clientId: "..."
+      accessToken: "..."
 verify:
   taskcluster:
     # These credentials must have the scopes:
