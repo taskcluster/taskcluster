@@ -1,0 +1,43 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Open Purge Request List"
+description: |
+  A list of currently open purge-cache requests.
+type:         object
+properties:
+  continuationToken:
+    type: string
+    description: Passed back from Azure to allow us to page through long result sets.
+  cacheHit:
+    type: boolean
+    description: True if the cache has been used in this request.
+  requests:
+    type:         array
+    description: |
+      A simple list of purge-cache requests.
+    items:
+      type: object
+      properties:
+        provisionerId:
+          type: string
+          description: ProvisionerId associated with the workerType.
+        workerType:
+          type: string
+          description: Workertype cache exists on.
+        cacheName:
+          type: string
+          description: Name of cache to purge.
+        before:
+          type: string
+          format: date-time
+          description: |
+            All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+      additionalProperties: false
+      required:
+        - provisionerId
+        - workerType
+        - cacheName
+        - before
+additionalProperties: false
+required:
+  - requests
+  - cacheHit
