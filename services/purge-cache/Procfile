@@ -1,1 +1,2 @@
-web: node lib/main production
+web:                     node lib/main server
+expireCachePurges: node lib/main expire-cache-purges
