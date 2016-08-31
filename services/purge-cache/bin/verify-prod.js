@@ -12,4 +12,4 @@ purgeCache.purgeCache(
  'verifyprovisioner',
  'verifyworker',
  {cacheName: 'verifycache'}
-);
+).catch(function(err) {console.log(err)});
