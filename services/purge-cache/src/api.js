@@ -1,4 +1,5 @@
 let _           = require('lodash');
+let debug       = require('debug')('purge-cache');
 let API         = require('taskcluster-lib-api');
 let taskcluster = require('taskcluster-client');
 
@@ -47,9 +48,12 @@ api.declare({
   let {provisionerId, workerType} = req.params;
   let {cacheName} = req.body;
 
+  debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
+
   // Authenticate request by providing parameters, and then validate that the
   // requester satisfies all the scopes assigned to the task
   if (!req.satisfies({provisionerId, workerType, cacheName})) {
+    debug('Request did not have proper scopes. Aborting.');
     return;
   }
 

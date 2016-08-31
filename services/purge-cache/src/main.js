@@ -8,6 +8,7 @@ let loader            = require('taskcluster-lib-loader');
 let monitor           = require('taskcluster-lib-monitor');
 let validate          = require('taskcluster-lib-validate');
 let server            = require('taskcluster-lib-app');
+let docs              = require('taskcluster-lib-docs');
 let taskcluster       = require('taskcluster-client');
 let api               = require('./api');
 let exchanges         = require('./exchanges');
@@ -89,9 +90,36 @@ let load = loader({
     }),
   },
 
+  reference: {
+    requires: ['cfg'],
+    setup: ({cfg}) => exchanges.reference({
+      exchangePrefix:   cfg.app.exchangePrefix,
+      credentials:      cfg.pulse,
+    }),
+  },
+
+  docs: {
+    requires: ['cfg', 'validator', 'reference'],
+    setup: ({cfg, validator, reference}) => docs.documenter({
+      project: 'purge-cache',
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        }, {
+          name: 'events',
+          reference: reference,
+        },
+      ],
+    }),
+  },
+
   server: {
-    requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => {
+    requires: ['cfg', 'api', 'docs'],
+    setup: ({cfg, api, docs}) => {
 
       debug('Launching server.');
       let app = server(cfg.server);
