@@ -1,50 +1,50 @@
-var assert      = require('assert');
-var Promise     = require('promise');
-var path        = require('path');
-var _           = require('lodash');
-var base        = require('taskcluster-base');
-var api         = require('../lib/api');
-var taskcluster = require('taskcluster-client');
-var mocha       = require('mocha');
-var exchanges   = require('../lib/exchanges');
-var bin = {
-  server:         require('../lib/main'),
-};
+let assert      = require('assert');
+let Promise     = require('promise');
+let path        = require('path');
+let _           = require('lodash');
+let api         = require('../lib/api');
+let taskcluster = require('taskcluster-client');
+let mocha       = require('mocha');
+let exchanges   = require('../lib/exchanges');
+let load = require('../lib/main');
+let config      = require('typed-env-config');
+let testing     = require('taskcluster-lib-testing');
 
 // Load configuration
-var cfg = base.config({profile: 'test'});
+let cfg = config({profile: 'test'});
 
-var testclients = {
+let testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
 };
 
 // Create and export helper object
-var helper = module.exports = {};
+let helper = module.exports = {};
 
 // Skip tests if no credentials is configured
-if (!cfg.pulse.password) {
-  console.log("Skip tests due to missing credentials!");
+if (!cfg.pulse || !cfg.taskcluster) {
+  console.log('Skip tests due to missing credentials!');
   process.exit(1);
 }
 
 // Configure PulseTestReceiver
-helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
+helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
 
 // Hold reference to authServer
-var authServer = null;
-var webServer = null;
+let authServer = null;
+let webServer = null;
 
 // Setup before tests
 mocha.before(async () => {
   // Create mock authentication server
-  base.testing.fakeauth.start(testclients);
+  testing.fakeauth.start(testclients);
 
-  webServer = await bin.server('test');
+  await load('expire-cache-purges', {profile: 'test', process: 'test'});
+  webServer = await load('server', {profile: 'test', process: 'test'});
 
   // Create client for working with API
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-  var reference = api.reference({baseUrl: helper.baseUrl});
+  let reference = api.reference({baseUrl: helper.baseUrl});
   helper.PurgeCache = taskcluster.createClient(reference);
   // Utility to create an PurgeCache instance with limited scopes
   helper.scopes = (...scopes) => {
@@ -55,9 +55,9 @@ mocha.before(async () => {
       baseUrl:          helper.baseUrl,
       credentials: {
         clientId:       'test-client',
-        accessToken:    'none'
+        accessToken:    'none',
       },
-      authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+      authorizedScopes: scopes.length > 0 ? scopes : undefined,
     });
   };
 
@@ -65,9 +65,9 @@ mocha.before(async () => {
   helper.scopes();
 
   // Create client for binding to reference
-  var exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.purgeCache.exchangePrefix,
-    credentials:      cfg.pulse
+  let exchangeReference = exchanges.reference({
+    exchangePrefix:   cfg.app.exchangePrefix,
+    credentials:      cfg.pulse,
   });
   helper.PurgeCacheEvents = taskcluster.createClient(exchangeReference);
   helper.purgeCacheEvents = new helper.PurgeCacheEvents();
@@ -79,5 +79,5 @@ mocha.beforeEach(() => {
 
 mocha.after(async () => {
   await webServer.terminate();
-  base.testing.fakeauth.stop();
+  testing.fakeauth.stop();
 });
