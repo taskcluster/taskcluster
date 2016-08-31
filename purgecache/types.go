@@ -2,7 +2,53 @@
 
 package purgecache
 
+import (
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+)
+
 type (
+	// A list of currently open purge-cache requests.
+	//
+	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#
+	OpenPurgeRequestList struct {
+
+		// True if the cache has been used in this request.
+		//
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/cacheHit
+		CacheHit bool `json:"cacheHit"`
+
+		// Passed back from Azure to allow us to page through long result sets.
+		//
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// A simple list of purge-cache requests.
+		//
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests
+		Requests []struct {
+
+			// All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+			//
+			// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/before
+			Before tcclient.Time `json:"before"`
+
+			// Name of cache to purge.
+			//
+			// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/cacheName
+			CacheName string `json:"cacheName"`
+
+			// ProvisionerId associated with the workerType.
+			//
+			// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
+			ProvisionerID string `json:"provisionerId"`
+
+			// Workertype cache exists on.
+			//
+			// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/workerType
+			WorkerType string `json:"workerType"`
+		} `json:"requests"`
+	}
+
 	// Request that a message be published to purge a specific cache.
 	//
 	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#

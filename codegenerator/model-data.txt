@@ -1,4 +1,4 @@
-Generated: 1472228628
+Generated: 1472664229
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5200,6 +5200,38 @@ be listening for this message and purge caches when they see it.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/purge-cache/list'
+    Entry Args        = '[]'
+    Entry Query        = '[continuationToken limit]'
+    Entry Name        = 'allPurgeRequests'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#'
+    Entry Title       = 'All Open Purge Requests'
+    Entry Description = 'This is useful mostly for administors to view
+the set of open purge requests. It should not
+be used by workers. They should use the purgeRequests
+endpoint that is specific to their workerType and
+provisionerId.'
+Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/purge-cache/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Query        = '[since]'
+    Entry Name        = 'purgeRequests'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#'
+    Entry Title       = 'Open Purge Requests for a provisionerId/workerType pair'
+    Entry Description = 'List of caches that need to be purged if they are from before
+a certain time. This is safe to be used in automation from
+workers.'
+Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Query        = '[]'
@@ -5212,6 +5244,66 @@ Entry 1     =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#
+============================================================================
+Additional Properties  = 'false'
+Description            = 'A list of currently open purge-cache requests.
+'
+ID                     = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#'
+Properties
+  Property 'cacheHit' =
+    Description            = 'True if the cache has been used in this request.'
+    Type                   = 'boolean'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/cacheHit'
+  Property 'continuationToken' =
+    Description            = 'Passed back from Azure to allow us to page through long result sets.'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/continuationToken'
+  Property 'requests' =
+    Description            = 'A simple list of purge-cache requests.
+    '
+    Items
+      Additional Properties  = 'false'
+      Properties
+        Property 'before' =
+          Description            = 'All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+          '
+          Format                 = 'date-time'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/before'
+        Property 'cacheName' =
+          Description            = 'Name of cache to purge.'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/cacheName'
+        Property 'provisionerId' =
+          Description            = 'ProvisionerId associated with the workerType.'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/provisionerId'
+        Property 'workerType' =
+          Description            = 'Workertype cache exists on.'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/workerType'
+      Required               = '[provisionerId workerType cacheName before]'
+      Type                   = 'object'
+      TypeName               = 'RequestsEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items'
+    Type                   = 'array'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests'
+Required               = '[requests cacheHit]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Open Purge Request List'
+Type                   = 'object'
+TypeName               = 'OpenPurgeRequestList'
+SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#'
 
 
 http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#

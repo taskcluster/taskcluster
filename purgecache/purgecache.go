@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 26 Aug 2016 at 16:23:00 UTC. The code was generated
+// Wed, 31 Aug 2016 at 17:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -89,6 +89,39 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 	cd := tcclient.ConnectionData(*purgeCache)
 	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This is useful mostly for administors to view
+// the set of open purge requests. It should not
+// be used by workers. They should use the purgeRequests
+// endpoint that is specific to their workerType and
+// provisionerId.
+//
+// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#allPurgeRequests
+func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenPurgeRequestList, error) {
+	v := url.Values{}
+	v.Add("continuationToken", continuationToken)
+	v.Add("limit", limit)
+	cd := tcclient.ConnectionData(*purgeCache)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/list", new(OpenPurgeRequestList), v)
+	return responseObject.(*OpenPurgeRequestList), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// List of caches that need to be purged if they are from before
+// a certain time. This is safe to be used in automation from
+// workers.
+//
+// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeRequests
+func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*OpenPurgeRequestList, error) {
+	v := url.Values{}
+	v.Add("since", since)
+	cd := tcclient.ConnectionData(*purgeCache)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(OpenPurgeRequestList), v)
+	return responseObject.(*OpenPurgeRequestList), err
 }
 
 // Stability: *** EXPERIMENTAL ***
