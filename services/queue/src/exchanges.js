@@ -142,7 +142,7 @@ var buildTaskGroupRoutingKey = function(options) {
     }, {
       name:             'schedulerId',
       summary:          '`schedulerId` for the task-group this message concerns',
-      required:         false, // TODO: Make this required sometime after the deadlinequeue is drained (Aug 3, 2016)
+      required:         true,
       maxSize:          22,
     }, {
       name:             'reserved',
