@@ -42,6 +42,12 @@ suite('TaskGroup features', () => {
       taskGroupId: taskGroupId,
     }));
 
+    let shouldveResolved = false;
+    let taskGroupResolvedHandler = helper.events.waitFor('task-group-resolved').then(message => {
+      assert(shouldveResolved, 'Task group resolved too soon!');
+      return message;
+    });
+
     debug('### Creating taskA');
     var r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
@@ -78,9 +84,13 @@ suite('TaskGroup features', () => {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    // Allow any message to arrive, so we're resonably sure
+    // there isn't one on the wire
+    await new Promise(resolve => setTimeout(resolve, 250));
+    shouldveResolved = true;
     await helper.queue.reportCompleted(taskIdB, 0);
 
-    var tgf = await helper.events.waitFor('task-group-resolved');
+    let tgf = await taskGroupResolvedHandler;
     assume(tgf.payload.taskGroupId).equals(taskGroupId);
     assume(tgf.payload.schedulerId).equals('dummy-scheduler');
   });
