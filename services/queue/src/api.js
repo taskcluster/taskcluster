@@ -1335,6 +1335,18 @@ api.declare({
   })) {
     return;
   }
+  
+  // Check if task is past deadline
+  if (task.deadline.getTime() <= Date.now()) {
+    return res.reportError(
+      'RequestConflict',
+      'Task {{taskId}} Can\'t be claimed past it\'s deadline of ' +
+      '{{deadline}}.', {
+        taskId,
+        deadline: task.deadline.toJSON(),
+      },
+    );
+  }
 
   // Set takenUntil to now + claimTimeout
   var takenUntil = new Date();
