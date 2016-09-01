@@ -6,6 +6,7 @@ expireArtifacts:        node lib/main expire-artifacts
 expireTask:             node lib/main expire-tasks
 expireTaskGroups:       node lib/main expire-task-groups
 expireTaskGroupMembers: node lib/main expire-task-group-members
+expireTaskGroupSizes:   node lib/main expire-task-group-sizes
 expireTaskDependency    node lib/main expire-task-dependency
 expireTaskRequirement   node lib/main expire-task-requirement
 expireQueues:           node lib/main expire-queues
