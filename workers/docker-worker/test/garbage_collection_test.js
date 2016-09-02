@@ -14,6 +14,7 @@ suite('garbage collection tests', function () {
   var rmrf = require('rimraf');
   var removeImage = require('../lib/util/remove_image').removeImage;
   var base = require('taskcluster-base');
+  var monitoring = require('taskcluster-lib-monitor');
 
   var IMAGE = 'taskcluster/test-ubuntu';
 
@@ -33,7 +34,7 @@ suite('garbage collection tests', function () {
   }
 
   setup(co(function* () {
-    monitor = yield base.monitor({
+    monitor = yield monitoring({
         credentials: {},
         project: 'docker-worker-tests',
         mock: true

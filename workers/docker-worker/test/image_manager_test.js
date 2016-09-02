@@ -9,6 +9,7 @@ import slugid from 'slugid';
 import {createLogger} from '../lib/log';
 import {NAMESPACE, TASK_ID} from './fixtures/image_artifacts';
 import taskcluster from 'taskcluster-client';
+import monitoring from 'taskcluster-lib-monitor';
 
 let docker = Docker();
 let monitor;
@@ -22,7 +23,7 @@ const DOCKER_CONFIG = {
 
 suite('Image Manager', () => {
   setup(async () => {
-    monitor = await base.monitor({
+    monitor = await monitoring({
         credentials: {},
         project: 'docker-worker-tests',
         mock: true

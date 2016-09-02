@@ -8,6 +8,7 @@ var base = require('taskcluster-base');
 var createLogger = require('../lib/log').createLogger;
 var debug = require('debug')('docker-worker:bin:worker');
 var _ = require('lodash');
+var monitoring = require('taskcluster-lib-monitor');
 
 var Runtime = require('../lib/runtime');
 var TaskListener = require('../lib/task_listener');
@@ -176,7 +177,7 @@ async () => {
   // level docker-worker components.
   config.docker = require('../lib/docker')();
 
-  let monitor = await base.monitor({
+  let monitor = await monitoring({
     project: 'docker-worker',
     credentials: config.taskcluster,
     mock: profile === 'test',

@@ -13,6 +13,7 @@ suite('volume cache test', function () {
   var co = require('co');
   var cmd = require('./integration/helper/cmd');
   var base = require('taskcluster-base');
+  var monitoring = require('taskcluster-lib-monitor');
 
   // Location on the machine running the test where the cache will live
   var localCacheDir = path.join('/tmp', 'test-cache');
@@ -29,7 +30,7 @@ suite('volume cache test', function () {
   var IMAGE = 'taskcluster/test-ubuntu';
 
   setup(co(function* () {
-    monitor = yield base.monitor({
+    monitor = yield monitoring({
         credentials: {},
         project: 'docker-worker-tests',
         mock: true
