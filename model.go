@@ -20,23 +20,28 @@ type (
 	// Generic Worker config
 	Config struct {
 		AccessToken                string                 `json:"accessToken"`
-		ClientId                   string                 `json:"clientId"`
+		ClientID                   string                 `json:"clientId"`
 		LiveLogCertificate         string                 `json:"livelogCertificate"`
 		LiveLogExecutable          string                 `json:"livelogExecutable"`
 		LiveLogKey                 string                 `json:"livelogKey"`
 		LiveLogSecret              string                 `json:"livelogSecret"`
 		Certificate                string                 `json:"certificate"`
-		ProvisionerId              string                 `json:"provisionerId"`
+		ProvisionerID              string                 `json:"provisionerId"`
 		RefreshUrlsPrematurelySecs int                    `json:"refreshURLsPrematurelySecs"`
 		PublicIP                   net.IP                 `json:"publicIP"`
+		PrivateIP                  net.IP                 `json:"privateIP"`
 		Subdomain                  string                 `json:"subdomain"`
 		WorkerGroup                string                 `json:"workerGroup"`
-		WorkerId                   string                 `json:"workerId"`
+		WorkerID                   string                 `json:"workerId"`
+		InstanceID                 string                 `json:"instanceId"`
+		InstanceType               string                 `json:"instanceType"`
+		Region                     string                 `json:"region"`
 		WorkerType                 string                 `json:"workerType"`
 		UsersDir                   string                 `json:"usersDir"`
 		CleanUpTaskDirs            bool                   `json:"cleanUpTaskDirs"`
 		IdleShutdownTimeoutSecs    int                    `json:"idleShutdownTimeoutSecs"`
 		WorkerTypeMetadata         map[string]interface{} `json:"workerTypeMetadata"`
+		SigningKeyLocation         string                 `json:"signingKeyLocation"`
 	}
 
 	// Used for modelling the xml we get back from Azure
@@ -60,8 +65,8 @@ type (
 	// TaskId and RunId are taken from the json encoding of
 	// QueueMessage.MessageId that we get back from Azure
 	TaskRun struct {
-		TaskId              string                       `json:"taskId"`
-		RunId               uint                         `json:"runId"`
+		TaskID              string                       `json:"taskId"`
+		RunID               uint                         `json:"runId"`
 		QueueMessage        QueueMessage                 `json:"-"`
 		SignedURLPair       SignedURLPair                `json:"-"`
 		TaskClaimRequest    queue.TaskClaimRequest       `json:"-"`
@@ -127,8 +132,8 @@ func (c *azureTimeFormat) UnmarshalXML(d *xml.Decoder, start xml.StartElement) e
 }
 
 func (task *TaskRun) String() string {
-	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskId)
-	response += fmt.Sprintf("Run Id:                  %v\n", task.RunId)
+	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)
+	response += fmt.Sprintf("Run Id:                  %v\n", task.RunID)
 	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
 	response += fmt.Sprintf("Message Id:              %v\n", task.QueueMessage.MessageId)
 	response += fmt.Sprintf("Insertion Time:          %v\n", task.QueueMessage.InsertionTime)

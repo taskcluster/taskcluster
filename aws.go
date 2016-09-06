@@ -48,12 +48,12 @@ type UserData struct {
 	Data                interface{} `json:"data"`
 	Capacity            int         `json:"capacity"`
 	WorkerType          string      `json:"workerType"`
-	ProvisionerId       string      `json:"provisionerId"`
+	ProvisionerID       string      `json:"provisionerId"`
 	Region              string      `json:"region"`
 	InstanceType        string      `json:"instanceType"`
 	LaunchSpecGenerated time.Time   `json:"launchSpecGenerated"`
 	WorkerModified      time.Time   `json:"workerModified"`
-	ProvisionerBaseUrl  string      `json:"provisionerBaseUrl"`
+	ProvisionerBaseURL  string      `json:"provisionerBaseUrl"`
 	SecurityToken       string      `json:"securityToken"`
 }
 
@@ -171,10 +171,10 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	if err != nil {
 		return err
 	}
-	c.ProvisionerId = userData.ProvisionerId
+	c.ProvisionerID = userData.ProvisionerID
 	awsprov := awsprovisioner.AwsProvisioner{
 		Authenticate: false,
-		BaseURL:      userData.ProvisionerBaseUrl,
+		BaseURL:      userData.ProvisionerBaseURL,
 	}
 	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
 	// remove secrets even if we couldn't retrieve them!
@@ -186,7 +186,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		return removeErr
 	}
 	c.AccessToken = secToken.Credentials.AccessToken
-	c.ClientId = secToken.Credentials.ClientID
+	c.ClientID = secToken.Credentials.ClientID
 	c.Certificate = secToken.Credentials.Certificate
 	c.WorkerGroup = userData.Region
 	c.WorkerType = userData.WorkerType
@@ -198,15 +198,24 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		"http://169.254.169.254/latest/meta-data/instance-type",
 		"http://169.254.169.254/latest/meta-data/public-ipv4",
 		"http://169.254.169.254/latest/meta-data/placement/availability-zone",
+		"http://169.254.169.254/latest/meta-data/public-hostname",
+		"http://169.254.169.254/latest/meta-data/local-ipv4",
 	} {
 		key := url[strings.LastIndex(url, "/")+1:]
-		// if we get an error, be ok with it, it isn't sooooo important
-		value, _ := queryMetaData(url)
+		value, err := queryMetaData(url)
+		if err != nil {
+			return err
+		}
 		awsMetadata[key] = value
 	}
 	c.WorkerTypeMetadata["aws"] = awsMetadata
-	c.WorkerId = awsMetadata["instance-id"].(string)
+	c.WorkerID = awsMetadata["instance-id"].(string)
 	c.PublicIP = net.ParseIP(awsMetadata["public-ipv4"].(string))
+	c.PrivateIP = net.ParseIP(awsMetadata["local-ipv4"].(string))
+	c.InstanceID = awsMetadata["instance-id"].(string)
+	c.InstanceType = awsMetadata["instance-type"].(string)
+	c.Region = awsMetadata["availability-zone"].(string)
+
 	secrets := new(Secrets)
 	json.Unmarshal(secToken.Data, secrets)
 	if err != nil {

@@ -17,12 +17,13 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Generic worker payload",
-  "description": "This schema defines the structure of the ` + "`payload`" + ` property referred to in a Task Cluster Task definition.",
+  "description": "This schema defines the structure of the ` + "`payload`" + ` property referred to in a\nTaskCluster Task definition.",
   "type": "object",
   "required": [
     "command",
     "maxRunTime"
   ],
+  "additionalProperties": false,
   "properties": {
     "command": {
       "title": "Commands to run",
@@ -31,11 +32,11 @@ func taskPayloadSchema() string {
       "items": {
         "type": "string"
       },
-	  "description": "One entry per command (consider each entry to be interpreted as a full line of a Windows™ .bat file). For example: ` + "`" + `[\"set\", \"echo hello world > hello_world.txt\", \"set GOPATH=C:\\\\Go\"]` + "`" + `."
+      "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n` + "`" + `[\"set\", \"echo hello world > hello_world.txt\", \"set GOPATH=C:\\\\Go\"]` + "`" + `."
     },
     "env": {
       "title": "Environment variable mappings.",
-	  "description": "Example: ` + "```" + `{ \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\", \"GOOS\": \"darwin\" }` + "```" + `",
+      "description": "Example: ` + "```" + `{ \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\", \"GOOS\": \"darwin\" }` + "```" + `",
       "type": "object"
     },
     "maxRunTime": {
@@ -49,15 +50,16 @@ func taskPayloadSchema() string {
     "artifacts": {
       "type": "array",
       "title": "Artifacts to be published",
-	  "description": "Artifacts to be published. For example: ` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
+      "description": "Artifacts to be published. For example:\n` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
       "items": {
         "type": "object",
-          "properties": {
+        "additionalProperties": false,
+        "properties": {
           "type": {
             "title": "Artifact upload type.",
             "type": "string",
             "enum": ["file", "directory"],
-			"description": "Artifacts can be either an individual ` + "`file`" + ` or a ` + "`directory`" + ` containing potentially multiple files with recursively included subdirectories"
+            "description": "Artifacts can be either an individual ` + "`file`" + ` or a ` + "`directory`" + ` containing\npotentially multiple files with recursively included subdirectories"
           },
           "path": {
             "title": "Artifact location",
@@ -72,6 +74,19 @@ func taskPayloadSchema() string {
           }
         },
         "required": ["type", "path", "expires"]
+      }
+    },
+    "features": {
+      "title": "Feature flags",
+      "description": "Feature flags enable additional functionality.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generateCertificate": {
+          "type": "boolean",
+          "title": "Enable generation of a certificate for Chain of Trust",
+          "description": "A certificate should be generated which will include information for downstream\ntasks to build a level of trust for the artifacts produced by the task and the\nenvironment it ran in."
+        }
       }
     }
   }

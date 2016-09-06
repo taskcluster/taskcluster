@@ -1,7 +1,6 @@
 package main
 
 import (
-	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -26,6 +25,7 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/xeipuuv/gojsonschema"
@@ -58,6 +58,9 @@ var (
 	taskStatusDoneChan chan<- bool
 	config             *Config
 	configFile         string
+	Features           []Feature = []Feature{
+		&ChainOfTrust{},
+	}
 
 	version = "5.2.0"
 	usage   = `
@@ -75,8 +78,8 @@ and reports back results to the queue.
                                             [--config         CONFIG-FILE]
                                             [--username       USERNAME]
                                             [--password       PASSWORD]
-    generic-worker
     generic-worker show-payload-schema
+    generic-worker new-openpgp-keypair  --file PRIVATE-KEY-FILE
     generic-worker --help
     generic-worker --version
 
@@ -93,6 +96,10 @@ and reports back results to the queue.
                                             does not already exist on the system, the user
                                             will be created. This user will be used to run
                                             the service.
+    new-openpgp-keypair                     This will generate a fresh, new OpenPGP
+                                            compliant private/public key pair. The public
+                                            key will be written to stdout and the private
+                                            key will be written to the specified file.
 
   Options:
     --configure-for-aws                     This will create the CONFIG-FILE for an AWS
@@ -118,6 +125,10 @@ and reports back results to the queue.
                                             Windows service as. If the user does not
                                             already exist on the system, it will be
                                             created. [default: GenericWorker]
+    --file PRIVATE-KEY-FILE                 The path to the file to write the private key
+                                            to. The parent directory must already exist.
+                                            If the file exists it will be overwritten,
+                                            otherwise it will be created.
     --version                               The release version of the generic-worker.
 
 
@@ -189,6 +200,8 @@ and reports back results to the queue.
                                             will have more information about how it was set up
                                             (for example what has been installed on the
                                             machine).
+          signingKeyLocation                The PGP signing key for signing artifacts with.
+                                            If not set, tasks will not be signed.
 
     Here is an syntactically valid example configuration file:
 
@@ -246,6 +259,13 @@ func main() {
 			fmt.Printf("%#v\n", err)
 			os.Exit(65)
 		}
+	case arguments["new-openpgp-keypair"]:
+		err := generateOpenPGPKeypair(arguments["--file"].(string))
+		if err != nil {
+			fmt.Println("Error generating OpenPGP keypair for worker:")
+			fmt.Printf("%#v\n", err)
+			os.Exit(66)
+		}
 	}
 }
 
@@ -265,7 +285,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	// first assign defaults
 	c := &Config{
 		Subdomain:                  "taskcluster-worker.net",
-		ProvisionerId:              "aws-provisioner-v1",
+		ProvisionerID:              "aws-provisioner-v1",
 		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
 		UsersDir:                   "C:\\Users",
@@ -306,12 +326,12 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		name       string
 		disallowed interface{}
 	}{
-		{value: c.ProvisionerId, name: "provisionerId", disallowed: ""},
+		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.RefreshUrlsPrematurelySecs, name: "refreshURLsPrematurelySecs", disallowed: 0},
 		{value: c.AccessToken, name: "accessToken", disallowed: ""},
-		{value: c.ClientId, name: "clientId", disallowed: ""},
+		{value: c.ClientID, name: "clientId", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
-		{value: c.WorkerId, name: "workerId", disallowed: ""},
+		{value: c.WorkerID, name: "workerId", disallowed: ""},
 		{value: c.WorkerType, name: "workerType", disallowed: ""},
 		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
@@ -338,12 +358,17 @@ func runWorker() chan<- bool {
 		panic(err)
 	}
 
+	// initialise features
+	for _, feature := range Features {
+		feature.Initialise()
+	}
+
 	done := make(chan bool)
 	go func() {
 		// Queue is the object we will use for accessing queue api
 		Queue = queue.New(
 			&tcclient.Credentials{
-				ClientID:    config.ClientId,
+				ClientID:    config.ClientID,
 				AccessToken: config.AccessToken,
 				Certificate: config.Certificate,
 			},
@@ -445,7 +470,7 @@ func FindAndRunTask() bool {
 		}
 		err = <-taskStatusUpdateErr
 		if err != nil {
-			log.Printf("WARN: Not able to claim task %v", task.TaskId)
+			log.Printf("WARN: Not able to claim task %v", task.TaskID)
 			log.Printf("%v", err)
 			break
 		}
@@ -453,7 +478,7 @@ func FindAndRunTask() bool {
 		task.fetchTaskDefinition()
 		err = task.validatePayload()
 		if err != nil {
-			log.Printf("TASK EXCEPTION: Not able to validate task payload for task %v", task.TaskId)
+			log.Printf("TASK EXCEPTION: Not able to validate task payload for task %v", task.TaskID)
 			log.Printf("%#v", err)
 			taskStatusUpdate <- TaskStatusUpdate{
 				Task:   task,
@@ -615,7 +640,7 @@ func (task *TaskRun) deleteFromAzure() error {
 	if task == nil {
 		return fmt.Errorf("Cannot delete task from Azure - task is nil")
 	}
-	log.Println("Deleting task " + task.TaskId + " from Azure queue...")
+	log.Println("Deleting task " + task.TaskID + " from Azure queue...")
 	return deleteFromAzure(task.SignedURLPair.SignedDeleteURL)
 }
 
@@ -658,9 +683,8 @@ func deleteFromAzure(deleteUrl string) error {
 		log.Printf("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
 		log.Printf("%v", err)
 		return err
-	} else {
-		log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
 	}
+	log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
 	// no errors occurred, yay!
 	return nil
 }
@@ -678,9 +702,9 @@ func (task *TaskRun) setReclaimTimer() {
 	// First time we need to check claim response, after that, need to check reclaim response
 	var takenUntil time.Time
 	if len(task.TaskReclaimResponse.Status.Runs) > 0 {
-		takenUntil = time.Time(task.TaskReclaimResponse.Status.Runs[task.RunId].TakenUntil)
+		takenUntil = time.Time(task.TaskReclaimResponse.Status.Runs[task.RunID].TakenUntil)
 	} else {
-		takenUntil = time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].TakenUntil)
+		takenUntil = time.Time(task.TaskClaimResponse.Status.Runs[task.RunID].TakenUntil)
 	}
 
 	// Attempt to reclaim 3 mins earlier...
@@ -765,7 +789,7 @@ func (task *TaskRun) validatePayload() error {
 			Reason: "malformed-payload",
 		}
 		reportPossibleError(<-taskStatusUpdateErr)
-		return fmt.Errorf("Validation of payload failed for task %v", task.TaskId)
+		return fmt.Errorf("Validation of payload failed for task %v", task.TaskID)
 	}
 	err = json.Unmarshal(jsonPayload, &task.Payload)
 	if err != nil {
@@ -884,8 +908,6 @@ func (task *TaskRun) run() error {
 	if err != nil {
 		return WorkerShutdown(err)
 	}
-	gzipLogWriter := gzip.NewWriter(logFileHandle)
-	gzipLogWriter.Name = "live_backing.log"
 	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
 	defer func(liveLog *livelog.LiveLog) {
 		errClose := liveLog.LogWriter.Close()
@@ -901,13 +923,32 @@ func (task *TaskRun) run() error {
 	}(liveLog)
 	if err != nil {
 		log.Printf("WARN: could not create livelog: %s", err)
-		task.logWriter = gzipLogWriter
+		task.logWriter = logFileHandle
 	} else {
 		task.liveLog = liveLog
-		task.logWriter = io.MultiWriter(liveLog.LogWriter, gzipLogWriter)
+		task.logWriter = io.MultiWriter(liveLog.LogWriter, logFileHandle)
 		err = task.uploadLiveLog()
 		if err != nil {
 			log.Printf("WARN: could not upload livelog: %s", err)
+		}
+	}
+
+	// start features
+	for _, feature := range Features {
+		if feature.IsEnabled(task.Payload.Features) {
+			if !scopes.Given(task.Definition.Scopes).Satisfies(feature.RequiredScopes()) {
+				errorString := fmt.Sprintf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.RequiredScopes(), scopes.Given(task.Definition.Scopes))
+				task.Log(errorString)
+				return &CommandExecutionError{
+					Cause:      errors.New(errorString),
+					Reason:     "malformed-payload",
+					TaskStatus: Errored,
+				}
+			}
+			err = feature.Created(task)
+			if err != nil {
+				return WorkerShutdown(err)
+			}
 		}
 	}
 
@@ -932,11 +973,9 @@ func (task *TaskRun) run() error {
 	finished := time.Now()
 	task.Log("=== Task Finished ===")
 	task.Log("Task Duration: " + finished.Sub(started).String())
-	// don't fret if we can't close these
-	_ = gzipLogWriter.Close()
-	_ = logFileHandle.Close()
 
-	err = task.postTaskActions()
+	// don't fret if we can't close this
+	_ = logFileHandle.Close()
 
 	if err != nil {
 		log.Printf("%#v", err)
@@ -980,6 +1019,18 @@ func (task *TaskRun) run() error {
 		}
 	}
 
+	// stop features
+	for _, feature := range Features {
+		if feature.IsEnabled(task.Payload.Features) {
+			err = feature.Killed(task)
+			if err != nil {
+				return WorkerShutdown(err)
+			}
+		}
+	}
+
+	err = task.postTaskActions()
+
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.
 	taskStatusUpdate <- TaskStatusUpdate{
@@ -1011,7 +1062,7 @@ func (task *TaskRun) postTaskActions() error {
 	}
 
 	log.Println("Redirecting live.log to live_backing.log")
-	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskId, task.RunId, "public/logs/live_backing.log")
+	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskID, task.RunID, "public/logs/live_backing.log")
 	if err != nil {
 		return WorkerShutdown(err)
 	}
@@ -1034,7 +1085,7 @@ func (task *TaskRun) postTaskActions() error {
 
 // writes config to json file
 func (c *Config) persist(file string) error {
-	fmt.Println("Worker ID: " + config.WorkerId)
+	fmt.Println("Worker ID: " + config.WorkerID)
 	fmt.Println("Creating file " + file + "...")
 	return writeToFileAsJSON(c, file)
 }

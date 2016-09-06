@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,10 +9,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/openpgp"
+	"golang.org/x/crypto/openpgp/clearsign"
 
 	"github.com/streadway/amqp"
 	"github.com/taskcluster/httpbackoff"
@@ -26,7 +31,7 @@ var (
 	expiry tcclient.Time
 	// all tests can share taskGroupId so we can view all test tasks in same
 	// graph later for troubleshooting
-	taskGroupId string = slugid.Nice()
+	taskGroupID string = slugid.Nice()
 )
 
 func setup(t *testing.T) {
@@ -233,10 +238,10 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 func TestUpload(t *testing.T) {
 
 	// check we have all the env vars we need to run this test
-	clientId := os.Getenv("TASKCLUSTER_CLIENT_ID")
+	clientID := os.Getenv("TASKCLUSTER_CLIENT_ID")
 	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
-	if clientId == "" || accessToken == "" {
+	if clientID == "" || accessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
 
@@ -247,32 +252,38 @@ func TestUpload(t *testing.T) {
 	}
 
 	// define a unique workerType/provisionerId combination for this session
-	provisionerId := "test-provisioner"
+	provisionerID := "test-provisioner"
 	// this should be sufficiently unique
 	workerType := slugid.Nice()
-	taskId := slugid.Nice()
+	taskID := slugid.Nice()
 
 	// configure the worker
 	config = &Config{
+		SigningKeyLocation:         "test/private-opengpg-key",
 		AccessToken:                accessToken,
 		Certificate:                certificate,
-		ClientId:                   clientId,
-		ProvisionerId:              provisionerId,
+		ClientID:                   clientID,
+		ProvisionerID:              provisionerID,
 		RefreshUrlsPrematurelySecs: 310,
 		WorkerGroup:                "test-worker-group",
-		WorkerId:                   "test-worker-id",
+		WorkerID:                   "test-worker-id",
 		WorkerType:                 workerType,
 		LiveLogExecutable:          "livelog",
 		LiveLogSecret:              "xyz",
-		PublicIP:                   net.ParseIP("127.0.0.1"),
+		PublicIP:                   net.ParseIP("12.34.56.78"),
+		PrivateIP:                  net.ParseIP("87.65.43.21"),
+		InstanceID:                 "test-instance-id",
+		InstanceType:               "p3.enormous",
+		Region:                     "outer-space",
 		Subdomain:                  "taskcluster-worker.net",
 		WorkerTypeMetadata: map[string]interface{}{
 			"aws": map[string]string{
 				"ami-id":            "test-ami",
-				"availability-zone": "test-aws-zone",
+				"availability-zone": "outer-space",
 				"instance-id":       "test-instance-id",
-				"instance-type":     "test-instance-type",
-				"public-ipv4":       "test-IP",
+				"instance-type":     "p3.enormous",
+				"public-ipv4":       "12.34.56.78",
+				"local-ipv4":        "87.65.43.21",
 			},
 			"generic-worker": map[string]string{
 				"go-arch":    runtime.GOARCH,
@@ -309,10 +320,10 @@ func TestUpload(t *testing.T) {
 			case *queueevents.ArtifactCreatedMessage:
 				a := message.(*queueevents.ArtifactCreatedMessage)
 				artifactCreatedMessages[a.Artifact.Name] = a
-				// Finish after 3 artifacts have been created. Note: the second
+				// Finish after 5 artifacts have been created. Note: the second
 				// publish of the livelog artifact (for redirecting to the
 				// underlying file rather than the livelog stream) doesn't
-				// cause a new pulse message, hence this is 3 not 4.
+				// cause a new pulse message, hence this is 5 not 6.
 				if len(artifactCreatedMessages) == 3 {
 					// killWorkerChan <- true
 					// pulseConn.AMQPConn.Close()
@@ -325,37 +336,41 @@ func TestUpload(t *testing.T) {
 		1,    // prefetch
 		true, // auto-ack
 		queueevents.ArtifactCreated{
-			TaskID:        taskId,
+			TaskID:        taskID,
 			WorkerType:    workerType,
-			ProvisionerID: provisionerId,
+			ProvisionerID: provisionerID,
 		},
 		queueevents.TaskCompleted{
-			TaskID:        taskId,
+			TaskID:        taskID,
 			WorkerType:    workerType,
-			ProvisionerID: provisionerId,
+			ProvisionerID: provisionerID,
 		},
 	)
 
 	// create dummy task
 	myQueue := queue.New(
 		&tcclient.Credentials{
-			ClientID:    clientId,
+			ClientID:    clientID,
 			AccessToken: accessToken,
 			Certificate: certificate,
 		},
 	)
 
-	created := time.Now()
+	created := time.Now().UTC()
+	// reset nanoseconds
+	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
 	// deadline in one days' time
 	deadline := created.AddDate(0, 0, 1)
 	// expiry in one month, in case we need test results
 	expires := created.AddDate(0, 1, 0)
 
 	td := &queue.TaskDefinitionRequest{
-		Created:  tcclient.Time(created),
-		Deadline: tcclient.Time(deadline),
-		Expires:  tcclient.Time(expires),
-		Extra:    json.RawMessage(`{}`),
+		Created:      tcclient.Time(created),
+		Deadline:     tcclient.Time(deadline),
+		Expires:      tcclient.Time(expires),
+		Extra:        json.RawMessage(`{}`),
+		Dependencies: []string{},
+		Requires:     "all-completed",
 		Metadata: struct {
 			Description string `json:"description"`
 			Name        string `json:"name"`
@@ -387,22 +402,25 @@ func TestUpload(t *testing.T) {
 					"expires": "` + tcclient.Time(expires).String() + `",
 					"type": "file"
 				}
-			]
+			],
+            "features": {
+              "generateCertificate": true
+            }
 		}
 		
 		`),
-		ProvisionerID: provisionerId,
+		ProvisionerID: provisionerID,
 		Retries:       1,
 		Routes:        []string{},
 		SchedulerID:   "test-scheduler",
 		Scopes:        []string{},
 		Tags:          json.RawMessage(`{"createdForUser":"pmoore@mozilla.com"}`),
 		Priority:      "normal",
-		TaskGroupID:   taskGroupId,
+		TaskGroupID:   taskGroupID,
 		WorkerType:    workerType,
 	}
 
-	_, err := myQueue.CreateTask(taskId, td)
+	_, err := myQueue.CreateTask(taskID, td)
 
 	if err != nil {
 		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", err)
@@ -417,7 +435,7 @@ func TestUpload(t *testing.T) {
 			extracts: []string{
 				"hello world!",
 				"goodbye world!",
-				`"instance-type": "test-instance-type"`,
+				`"instance-type": "p3.enormous"`,
 			},
 			contentEncoding: "gzip",
 		},
@@ -427,6 +445,24 @@ func TestUpload(t *testing.T) {
 				"goodbye world!",
 				"=== Task Finished ===",
 				"Exit Code: 0",
+			},
+			contentEncoding: "gzip",
+		},
+		"public/logs/certified.log": {
+			extracts: []string{
+				"hello world!",
+				"goodbye world!",
+				"=== Task Finished ===",
+				"Exit Code: 0",
+			},
+			contentEncoding: "gzip",
+		},
+		"public/logs/certificate.json.gpg": {
+			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
+			// 8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f  ./_/X.txt
+			// a0ed21ab50992121f08da55365da0336062205fd6e7953dbff781a7de0d625b7  ./b/c/d.jpg
+			extracts: []string{
+				"sha256:8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
 			},
 			contentEncoding: "gzip",
 		},
@@ -465,8 +501,13 @@ func TestUpload(t *testing.T) {
 	}
 
 	// now check content was uploaded to Amazon, and is correct
+
+	// signer of public/logs/certificate.json.gpg
+	signer := &openpgp.Entity{}
+	cotCert := &ChainOfTrustCertificate{}
+
 	for artifact, content := range expectedArtifacts {
-		url, err := myQueue.GetLatestArtifact_SignedURL(taskId, artifact, 10*time.Minute)
+		url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
 		if err != nil {
 			t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
 		}
@@ -480,13 +521,13 @@ func TestUpload(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
 		}
-		bytes, err := ioutil.ReadAll(resp.Body)
+		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
 		}
 		for _, requiredSubstring := range content.extracts {
-			if strings.Index(string(bytes), requiredSubstring) < 0 {
-				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(bytes))
+			if strings.Index(string(b), requiredSubstring) < 0 {
+				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
 			}
 		}
 		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != content.contentEncoding {
@@ -495,5 +536,88 @@ func TestUpload(t *testing.T) {
 		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != "text/plain; charset=utf-8" {
 			t.Fatalf("Content-Type in Signed URL response does not match Content-Type of artifact")
 		}
+		// check openpgp signature is valid
+		if artifact == "public/logs/certificate.json.gpg" {
+			pubKey, err := os.Open(filepath.Join("test", "public-openpgp-key"))
+			if err != nil {
+				t.Fatalf("Error opening public key file")
+			}
+			defer pubKey.Close()
+			entityList, err := openpgp.ReadArmoredKeyRing(pubKey)
+			if err != nil {
+				t.Fatalf("Error decoding public key file")
+			}
+			block, _ := clearsign.Decode(b)
+			signer, err = openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
+			if err != nil {
+				t.Fatalf("Not able to validate openpgp signature of public/logs/certificate.json.gpg")
+			}
+			err = json.Unmarshal(block.Plaintext, cotCert)
+			if err != nil {
+				t.Fatalf("Could not interpret public/logs/certificate.json as json")
+			}
+		}
+	}
+	if signer == nil {
+		t.Fatalf("Signer of public/logs/certificate.json.gpg could not be established (is nil)")
+	}
+	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
+		t.Fatalf("Did not get correct signer identity in public/logs/certificate.json.gpg - %#v", signer.Identities)
+	}
+
+	// This trickery is to convert a TaskDefinitionResponse into a
+	// TaskDefinitionRequest in order that we can compare. We cannot cast, so
+	// need to transform to json as an intermediary step.
+	b, err := json.Marshal(cotCert.Task)
+	if err != nil {
+		t.Fatalf("Cannot marshal task into json - %#v\n%v", cotCert.Task, err)
+	}
+	cotCertTaskRequest := &queue.TaskDefinitionRequest{}
+	err = json.Unmarshal(b, cotCertTaskRequest)
+	if err != nil {
+		t.Fatalf("Cannot unmarshal json into task request - %#v\n%v", string(b), err)
+	}
+
+	// The Payload, Tags and Extra fields are raw bytes, so differences may not
+	// be valid. Since we are comparing the rest, let's skip these two fields,
+	// as the rest should give us good enough coverage already
+	cotCertTaskRequest.Payload = nil
+	cotCertTaskRequest.Tags = nil
+	cotCertTaskRequest.Extra = nil
+	td.Payload = nil
+	td.Tags = nil
+	td.Extra = nil
+	if !reflect.DeepEqual(cotCertTaskRequest, td) {
+		t.Fatalf("Did not get back expected task definition in chain of trust certificate:\n%#v\n ** vs **\n%#v", cotCertTaskRequest, td)
+	}
+	if len(cotCert.Artifacts) != 2 {
+		t.Fatalf("Expected 2 artifact hashes to be listed")
+	}
+	if cotCert.TaskID != taskID {
+		t.Fatalf("Expected taskId to be %q but was %q", taskID, cotCert.TaskID)
+	}
+	if cotCert.RunID != 0 {
+		t.Fatalf("Expected runId to be 0 but was %v", cotCert.RunID)
+	}
+	if cotCert.WorkerGroup != "test-worker-group" {
+		t.Fatalf("Expected workerGroup to be \"test-worker-group\" but was %q", cotCert.WorkerGroup)
+	}
+	if cotCert.WorkerID != "test-worker-id" {
+		t.Fatalf("Expected workerGroup to be \"test-worker-id\" but was %q", cotCert.WorkerID)
+	}
+	if cotCert.Extra.PublicIPAddress != "12.34.56.78" {
+		t.Fatalf("Expected publicIpAddress to be 12.34.56.78 but was %v", cotCert.Extra.PublicIPAddress)
+	}
+	if cotCert.Extra.PrivateIPAddress != "87.65.43.21" {
+		t.Fatalf("Expected privateIpAddress to be 87.65.43.21 but was %v", cotCert.Extra.PrivateIPAddress)
+	}
+	if cotCert.Extra.InstanceID != "test-instance-id" {
+		t.Fatalf("Expected instanceId to be \"test-instance-id\" but was %v", cotCert.Extra.InstanceID)
+	}
+	if cotCert.Extra.InstanceType != "p3.enormous" {
+		t.Fatalf("Expected instanceType to be \"p3.enormous\" but was %v", cotCert.Extra.InstanceType)
+	}
+	if cotCert.Extra.Region != "outer-space" {
+		t.Fatalf("Expected region to be \"outer-space\" but was %v", cotCert.Extra.Region)
 	}
 }

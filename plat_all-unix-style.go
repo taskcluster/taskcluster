@@ -72,7 +72,7 @@ func install(arguments map[string]interface{}) (err error) {
 
 func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	workerEnv := os.Environ()
-	taskEnv := make([]string, 0)
+	taskEnv := []string{}
 	for _, j := range workerEnv {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
 			log.Printf("Setting env var: %v", j)
