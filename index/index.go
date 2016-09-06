@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 31 Aug 2016 at 17:23:00 UTC. The code was generated
+// Tue, 6 Sep 2016 at 16:26:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -159,8 +159,6 @@ func New(credentials *tcclient.Credentials) *Index {
 	return &myIndex
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Find task by namespace, if no task existing for the given namespace, this
 // API end-point respond `404`.
 //
@@ -171,8 +169,6 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, error) {
 	return responseObject.(*IndexedTaskResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // List the namespaces immediately under a given namespace. This end-point
 // list up to 1000 namespaces. If more namespaces are present a
 // `continuationToken` will be returned, which can be given in the next
@@ -189,8 +185,6 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 	return responseObject.(*ListNamespacesResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // List the tasks immediately under a given namespace. This end-point
 // list up to 1000 tasks. If more tasks are present a
 // `continuationToken` will be returned, which can be given in the next
@@ -207,8 +201,6 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 	return responseObject.(*ListTasksResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Insert a task into the index. Please see the introduction above, for how
 // to index successfully completed tasks automatically, using custom routes.
 //
@@ -222,8 +214,6 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 	return responseObject.(*IndexedTaskResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Find task by namespace and redirect to artifact with given `name`,
 // if no task existing for the given namespace, this API end-point respond
 // `404`.

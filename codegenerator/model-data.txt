@@ -1,4 +1,4 @@
-Generated: 1472664229
+Generated: 1473179185
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4388,7 +4388,7 @@ Entry 0     =
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
     Entry Name        = 'findTask'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'
@@ -4402,7 +4402,7 @@ Entry 1     =
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
     Entry Name        = 'listNamespaces'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[]'
     Entry Input       = 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#'
@@ -4422,7 +4422,7 @@ Entry 2     =
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
     Entry Name        = 'listTasks'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[]'
     Entry Input       = 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'
@@ -4442,7 +4442,7 @@ Entry 3     =
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
     Entry Name        = 'insertTask'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[[index:insert-task:<namespace>]]'
     Entry Input       = 'http://schemas.taskcluster.net/index/v1/insert-task-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'
@@ -4456,7 +4456,7 @@ Entry 4     =
     Entry Args        = '[namespace name]'
     Entry Query        = '[]'
     Entry Name        = 'findArtifactFromTask'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[[queue:get-artifact:<name>]]'
     Entry Input       = ''
     Entry Output      = ''
@@ -8594,7 +8594,7 @@ be submitted against an already resolved task group.'
         Element Summary   = '`schedulerId` for the task-group this message concerns'
         Element Constant  = ''
         Element M Words   = 'false'
-        Element Required  = 'false'
+        Element Required  = 'true'
     Routing Key Element 3     = 
         Element Name      = 'reserved'
         Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
