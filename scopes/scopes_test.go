@@ -6,13 +6,13 @@ import (
 )
 
 func accept(t *testing.T, given Given, required Required) {
-	if !given.Satisfies(&required) {
+	if !given.Satisfies(required) {
 		t.Errorf("Expected given scopes %q to satisfy required scopes %q, but did not.", given, required)
 	}
 }
 
 func reject(t *testing.T, given Given, required Required) {
-	if given.Satisfies(&required) {
+	if given.Satisfies(required) {
 		t.Errorf("Expected given scopes %q *not* to satisfy required scopes %q, but it did.", given, required)
 	}
 }
@@ -220,12 +220,12 @@ func TestStarNotExpandedWhenNotAtEnd(t *testing.T) {
 // character.
 func ExampleGiven_Satisfies_wildcard() {
 	given := Given{"queue:*"}
-	fmt.Println(given.Satisfies(&Required{{"queue:route:*"}}))
-	fmt.Println(given.Satisfies(&Required{{"queue:*"}}))
-	fmt.Println(given.Satisfies(&Required{{"*"}}))
+	fmt.Println(given.Satisfies(Required{{"queue:route:*"}}))
+	fmt.Println(given.Satisfies(Required{{"queue:*"}}))
+	fmt.Println(given.Satisfies(Required{{"*"}}))
 
 	given = Given{"queue:route"}
-	fmt.Println(given.Satisfies(&Required{{"queue:*"}}))
+	fmt.Println(given.Satisfies(Required{{"queue:*"}}))
 	// Output:
 	// true
 	// true
@@ -245,7 +245,7 @@ func ExampleGiven_Satisfies_compound() {
 
 	fmt.Println(
 		given.Satisfies(
-			&Required{
+			Required{
 				{
 					"abc:def",  // satisfied by "abc:*"
 					"AB:CD:EF", // satisfied by "AB:*"

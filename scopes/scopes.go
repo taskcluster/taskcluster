@@ -49,14 +49,14 @@ type (
 //
 // This function is ported from
 // https://github.com/taskcluster/taskcluster-base/blob/218225942212e24596cee211389c276b2b985ffe/utils.js#L37-L68
-func (given *Given) Satisfies(required *Required) bool {
+func (given Given) Satisfies(required Required) bool {
 checkRequired:
 	// outer loop - any scope set can pass in order to pass scope sets
-	for _, set := range *required {
+	for _, set := range required {
 		// inner loop - all scopes have to pass in order to pass scope set
 		for _, scope := range set {
 			// just need to find one given scope to satisfy required scope
-			for _, pattern := range *given {
+			for _, pattern := range given {
 				if scope == pattern || (strings.HasSuffix(pattern, "*") && strings.HasPrefix(scope, pattern[0:len(pattern)-1])) {
 					goto scopeMatch
 				}
