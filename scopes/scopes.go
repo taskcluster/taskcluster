@@ -68,3 +68,35 @@ checkRequired:
 	}
 	return false
 }
+
+// Returns "<scope> and <scope> and ... and <scope>" for all scopes in given.
+func (given Given) String() string {
+	if len(given) == 0 {
+		return "<no scopes>"
+	}
+	return strings.Join(given, " and ")
+}
+
+// Returns a description of the required scopes in English.
+func (required Required) String() string {
+	text := ""
+	switch len(required) {
+	case 0:
+		text = "<no scopes>"
+	case 1:
+		text = strings.Join(required[0], ", and\n")
+	default:
+		lines := make([]string, len(required))
+		for i, j := range required {
+			switch len(j) {
+			case 0:
+			case 1:
+				lines[i] = j[0]
+			default:
+				lines[i] = "(" + strings.Join(j, " and ") + ")"
+			}
+		}
+		text += strings.Join(lines, ", or\n")
+	}
+	return text
+}
