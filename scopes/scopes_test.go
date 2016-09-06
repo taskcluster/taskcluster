@@ -88,13 +88,21 @@ func TestNoGivenWithRequired(t *testing.T) {
 	)
 }
 
-func TestNoGivenNoRequired(t *testing.T) {
+func TestNoGivenEmptyRequired(t *testing.T) {
 	accept(
 		t,
 		Given{},
 		Required{
 			{},
 		},
+	)
+}
+
+func TestNoGivenNoRequired(t *testing.T) {
+	accept(
+		t,
+		Given{},
+		Required{},
 	)
 }
 

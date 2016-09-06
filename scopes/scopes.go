@@ -50,6 +50,10 @@ type (
 // This function is ported from
 // https://github.com/taskcluster/taskcluster-base/blob/218225942212e24596cee211389c276b2b985ffe/utils.js#L37-L68
 func (given Given) Satisfies(required Required) bool {
+	// special case: no required scopes is always satisfied
+	if len(required) == 0 {
+		return true
+	}
 checkRequired:
 	// outer loop - any scope set can pass in order to pass scope sets
 	for _, set := range required {
