@@ -915,7 +915,7 @@ func (task *TaskRun) run() error {
 	if err != nil {
 		return WorkerShutdown(err)
 	}
-	task.Log("Worker Type settings:")
+	task.Log("Worker Type (" + config.WorkerType + ") settings:")
 	task.Log("  " + string(jsonBytes))
 	task.Log("=== Task Starting ===")
 	started := time.Now()
