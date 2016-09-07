@@ -31,10 +31,13 @@ api.declare({
     'HTML version of the email',
   ].join('\n'),
 }, async function(req, res) {
+  debug(`Received request to send email to ${req.body.address}`);
   if (!req.satisfies({address: req.body.address})) {
+    debug(`Scopes were not met for sending email to ${req.body.address}. Aborting.`);
     return;
   }
   await this.notifier.email(req.body);
+  debug(`Email sent to ${req.body.address}`);
   res.sendStatus(200);
 });
 
@@ -50,10 +53,13 @@ api.declare({
     'Publish a message on pulse with the given `routingKey`.',
   ].join('\n'),
 }, async function(req, res) {
+  debug(`Received request to publish message on ${req.body.routingKey}`);
   if (!req.satisfies({routingKey: req.body.routingKey})) {
+    debug(`Scopes were not met for publishing message on ${req.body.routingKey}. Aborting.`);
     return;
   }
   await this.notifier.pulse(req.body);
+  debug(`Message published on ${req.body.routingKey}`);
   res.sendStatus(200);
 });
 
@@ -82,15 +88,19 @@ api.declare({
   let input = req.body;
   let required = [];
   if (input.channel) {
+    debug(`Received request to send irc message to channel ${input.channel}`);
     required.push('notify:irc-channel:' + input.channel);
   }
   if (input.user) {
+    debug(`Received request to send irc message to user ${input.user}`);
     required.push('notify:irc-user:' + input.user);
   }
   if (!req.satisfies([required])) {
+    debug(`Scopes were not met for sending irc message to ${input.user || input.channel}. Aborting.`);
     return;
   }
   await this.notifier.irc(input);
+  debug(`irc message sent to ${input.user || input.channel}.`);
   res.sendStatus(200);
 });
 

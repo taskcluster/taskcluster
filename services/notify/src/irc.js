@@ -79,7 +79,7 @@ class IRCBot {
           WaitTimeSeconds:      20,
         }).promise();
         if (!req.data.Messages) {
-          debug('Did not receive any messages from sqs in timout.');
+          debug('Did not receive any messages from sqs in timeout.');
           continue;
         }
         debug(`Received ${req.data.Messages.length} messages from sqs.`);
