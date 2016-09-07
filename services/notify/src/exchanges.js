@@ -1,8 +1,8 @@
-var Exchanges = require('pulse-publisher');
-var assert    = require('assert');
+let Exchanges = require('pulse-publisher');
+let assert    = require('assert');
 
 /** Declaration of exchanges offered by the queue */
-var exchanges = new Exchanges({
+let exchanges = new Exchanges({
   title:      'Notify AMQP Exchanges',
   description: [
     'Write something here!',
@@ -14,7 +14,7 @@ var exchanges = new Exchanges({
 module.exports = exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-var buildCommonRoutingKey = function(options) {
+let buildCommonRoutingKey = function(options) {
   options = options || {};
   return [
     {
@@ -35,18 +35,18 @@ var buildCommonRoutingKey = function(options) {
 };
 
 /** Build an AMQP compatible message from a message */
-var commonMessageBuilder = function(message) {
+let commonMessageBuilder = function(message) {
   message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-var commonRoutingKeyBuilder = function(message, routing) {
+let commonRoutingKeyBuilder = function(message, routing) {
   return {};
 };
 
 /** Build list of routing keys to CC */
-var commonCCBuilder = function(message, routes) {
+let commonCCBuilder = function(message, routes) {
   assert(routes instanceof Array, 'Routes must be an array');
   return routes.map(route => 'route.' + route);
 };
@@ -57,7 +57,8 @@ exchanges.declare({
   name:               'notify',
   title:              'Notification Messages',
   description: [
-    'TODO: WRITE SOMETHING HERE',
+    'An arbitrary message that a taskcluster user',
+    'can trigger if they like.',
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
   schema:             'notification-message.json#',
