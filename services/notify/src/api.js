@@ -1,7 +1,7 @@
-let base = require('taskcluster-base');
+let API = require('taskcluster-lib-api');
 let debug = require('debug')('notify');
 
-let api = new base.API({
+let api = new API({
   title: 'Notification Service',
   description: [
     'The notification service, typically available at `notify.taskcluster.net`',
