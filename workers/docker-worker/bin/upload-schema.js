@@ -35,11 +35,14 @@ async function main () {
 
 main().then(() => {
   console.log(
-    'Done uploading schemas to s3://%s%s',
+    'Done uploading schemas to https://%s/%spayload.json',
     config.schema.bucket, config.schema.path
   );
 }, (err) => {
   if (err) {
     throw err;
   }
+}).catch(err => {
+  console.error(`Error uploading schema`);
+  throw err;
 });
