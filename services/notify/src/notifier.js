@@ -67,7 +67,7 @@ class Notifier {
     }).promise();
   }
 
-  pulse({routingKey, message}) {
+  async pulse({routingKey, message}) {
     return this.publisher.notify({message}, [routingKey]);
   }
 

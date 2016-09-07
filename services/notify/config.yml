@@ -3,6 +3,8 @@ defaults:
     sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
     sqsQueueName:                 !env SQS_QUEUE
     exchangePrefix:               v1/
+    listenerQueueName:            !env LISTENER_QUEUE_NAME
+    routePrefix:                  notify
 
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1
@@ -57,6 +59,7 @@ test:
   app:
     sourceEmail: '"Taskcluster" <taskcluster-noreply@mozilla.com>'
     sqsQueueName: taskcluster-notify-irc-test
+    routePrefix: test-notify
   server:
     publicUrl:        http://localhost:60401
     port:             60401

@@ -76,6 +76,7 @@ let load = base.loader({
         credentials:        cfg.pulse,
         queueName:          cfg.app.listenerQueueName,
         monitor:            monitor.prefix('handler'),
+        routePrefix:        cfg.app.routePrefix,
       });
       return handler.listen();
     },

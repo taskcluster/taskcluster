@@ -4,10 +4,22 @@ TaskCluster Notifications Service
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-notify.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-notify)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-*WRITE MORE HERE*
+No longer will you need to keep going back to the task-inspector page to know if your task is complete! Merely add a route and some `task.extra` config and we will tell you when your task is done! Further specification of this is contained in the docs.
 
 Testing
 -------
+
+
+
+THINGS TO DO BEFORE THIS IS READY:
+1. tests
+3. make each of the api calls idempotent
+
+
+
+
+
+
 
 *WRITE SOMETHING HERE ABOUT NEEDED CREDS AND CONFIG*
 `npm install` and `npm test`. You can set `DEBUG=taskcluster-notify,test` if you want to see what's going on.
