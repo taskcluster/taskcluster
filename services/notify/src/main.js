@@ -1,13 +1,14 @@
 let debug             = require('debug')('notify');
-let app               = require('taskcluster-lib-app');
+let appsetup          = require('taskcluster-lib-app');
 let loader            = require('taskcluster-lib-loader');
 let config            = require('typed-env-config');
 let monitor           = require('taskcluster-lib-monitor');
-let validator         = require('taskcluster-lib-validator');
+let validator         = require('taskcluster-lib-validate');
+let docs              = require('taskcluster-lib-docs');
 let _                 = require('lodash');
 let v1                = require('./api');
 let Notifier          = require('./notifier');
-var Handler           = require('./handler');
+let Handler           = require('./handler');
 let exchanges         = require('./exchanges');
 let IRC               = require('./irc');
 
@@ -33,6 +34,31 @@ let load = loader({
     setup: ({cfg}) => validator({
       prefix: 'notify/v1/',
       aws: cfg.aws,
+    }),
+  },
+
+  reference: {
+    requires: ['cfg'],
+    setup: ({cfg}) => exchanges.reference({
+      exchangePrefix:   cfg.app.exchangePrefix,
+      credentials:      cfg.pulse,
+    }),
+  },
+  docs: {
+    requires: ['cfg', 'validator', 'reference'],
+    setup: ({cfg, validator, reference}) => docs({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        }, {
+          name: 'events',
+          reference: reference,
+        },
+      ],
     }),
   },
 
@@ -105,7 +131,7 @@ let load = loader({
     setup: ({cfg, api}) => {
 
       debug('Launching server.');
-      let app = app(cfg.server);
+      let app = appsetup(cfg.server);
       app.use('/v1', api);
       return app.createServer();
     },
