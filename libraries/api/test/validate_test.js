@@ -3,7 +3,7 @@ suite("api/validate", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
+  var testing         = require('taskcluster-lib-testing');
   var validator       = require('taskcluster-lib-validate');
   var subject         = require('../');
   var express         = require('express');
@@ -90,55 +90,47 @@ suite("api/validate", function() {
     res.reply({value: 'Hello World'});
   });
 
-  // Reference to mock authentication server
-  var _mockAuthServer = null;
   // Reference for test api server
   var _apiServer = null;
 
   // Create a mock authentication server
   setup(function(){
-    assert(_mockAuthServer === null,  "_mockAuthServer must be null");
+    testing.fakeauth.start();
     assert(_apiServer === null,       "_apiServer must be null");
-    return mockAuthServer({
-      port:         61243
-    }).then(function(server) {
-      _mockAuthServer = server;
-    }).then(function() {
-      // Create validator
-      var validatorCreated = validator({
-        folder:         path.join(__dirname, 'schemas'),
-        baseUrl:        'http://localhost:4321/'
+    // Create validator
+    var validatorCreated = validator({
+      folder:         path.join(__dirname, 'schemas'),
+      baseUrl:        'http://localhost:4321/'
+    });
+
+    // Create server for api
+    return validatorCreated.then(function(validator) {
+      // Create router
+      var router = api.router({
+        validator:      validator,
+        authBaseUrl:    'http://localhost:61243'
       });
 
-      // Create server for api
-      return validatorCreated.then(function(validator) {
-        // Create router
-        var router = api.router({
-          validator:      validator,
-          authBaseUrl:    'http://localhost:61243'
+      // Create application
+      var app = express();
+
+      // Use router
+      app.use(router);
+
+      return new Promise(function(accept, reject) {
+        var server = app.listen(61515);
+        server.once('listening', function() {
+          accept(server)
         });
-
-        // Create application
-        var app = express();
-
-        // Use router
-        app.use(router);
-
-        return new Promise(function(accept, reject) {
-          var server = app.listen(61515);
-          server.once('listening', function() {
-            accept(server)
-          });
-          server.once('error', reject);
-          _apiServer = server;
-        });
+        server.once('error', reject);
+        _apiServer = server;
       });
     });
   });
 
   // Close server
   teardown(function() {
-    assert(_mockAuthServer, "_mockAuthServer doesn't exist");
+    testing.fakeauth.stop();
     assert(_apiServer,      "_apiServer doesn't exist");
     return new Promise(function(accept) {
       _apiServer.once('close', function() {
@@ -146,14 +138,6 @@ suite("api/validate", function() {
         accept();
       });
       _apiServer.close();
-    }).then(function() {
-      return new Promise(function(accept) {
-        _mockAuthServer.once('close', function() {
-          _mockAuthServer = null;
-          accept();
-        });
-        _mockAuthServer.close();
-      });
     });
   });
 
