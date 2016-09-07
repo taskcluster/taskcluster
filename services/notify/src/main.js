@@ -1,5 +1,9 @@
 let debug             = require('debug')('notify');
-let base              = require('taskcluster-base');
+let app               = require('taskcluster-lib-app');
+let loader            = require('taskcluster-lib-loader');
+let config            = require('typed-env-config');
+let monitor           = require('taskcluster-lib-monitor');
+let validator         = require('taskcluster-lib-validator');
 let _                 = require('lodash');
 let v1                = require('./api');
 let Notifier          = require('./notifier');
@@ -8,15 +12,15 @@ let exchanges         = require('./exchanges');
 let IRC               = require('./irc');
 
 // Create component loader
-let load = base.loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => config({profile}),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => base.monitor({
+    setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-notify',
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -26,7 +30,7 @@ let load = base.loader({
 
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => base.validator({
+    setup: ({cfg}) => validator({
       prefix: 'notify/v1/',
       aws: cfg.aws,
     }),
@@ -101,7 +105,7 @@ let load = base.loader({
     setup: ({cfg, api}) => {
 
       debug('Launching server.');
-      let app = base.app(cfg.server);
+      let app = app(cfg.server);
       app.use('/v1', api);
       return app.createServer();
     },
