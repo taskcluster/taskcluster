@@ -3,7 +3,7 @@ suite("api/responsetimer", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var mockAuthServer  = require('taskcluster-lib-testing/.test/mockauthserver');
+  var testing         = require('taskcluster-lib-testing');
   var subject         = require('../');
   var monitoring      = require('taskcluster-lib-monitor');
   var validator       = require('taskcluster-lib-validate');
@@ -46,60 +46,52 @@ suite("api/responsetimer", function() {
     res.status(500).send(req.params.name);
   });
 
-  // Reference to mock authentication server
-  var _mockAuthServer = null;
   // Reference for test api server
   var _apiServer = null;
 
   var monitor = null;
 
   setup(function(){
-    assert(_mockAuthServer === null,  "_mockAuthServer must be null");
+    testing.fakeauth.start();
     assert(_apiServer === null,       "_apiServer must be null");
-    return mockAuthServer({
-      port:         23243
-    }).then(function(server) {
-      _mockAuthServer = server;
-    }).then(function() {
-      // Create server for api
-      return validator({
-        folder:         path.join(__dirname, 'schemas'),
-        baseUrl:        'http://localhost:4321/'
-      }).then(async function(validator) {
-        monitor = await monitoring({
-          project: 'tc-lib-api-test',
-          credentials: {clientId: 'fake', accessToken: 'fake'},
-          mock: true,
+
+    // Create server for api
+    return validator({
+      folder:         path.join(__dirname, 'schemas'),
+      baseUrl:        'http://localhost:4321/'
+    }).then(async function(validator) {
+      monitor = await monitoring({
+        project: 'tc-lib-api-test',
+        credentials: {clientId: 'fake', accessToken: 'fake'},
+        mock: true,
+      });
+
+      // Create router
+      var router = api.router({
+        validator: validator,
+        authBaseUrl: 'http://localhost:23243',
+        monitor: monitor.prefix('api'),
+      });
+
+      // Create application
+      var app = express();
+
+      // Use router
+      app.use(router);
+
+      return new Promise(function(accept, reject) {
+        var server = app.listen(23525);
+        server.once('listening', function() {
+          accept(server)
         });
-
-        // Create router
-        var router = api.router({
-          validator: validator,
-          authBaseUrl: 'http://localhost:23243',
-          monitor: monitor.prefix('api'),
-        });
-
-        // Create application
-        var app = express();
-
-        // Use router
-        app.use(router);
-
-        return new Promise(function(accept, reject) {
-          var server = app.listen(23525);
-          server.once('listening', function() {
-            accept(server)
-          });
-          server.once('error', reject);
-          _apiServer = server;
-        });
+        server.once('error', reject);
+        _apiServer = server;
       });
     });
   });
 
   // Close server
   teardown(function() {
-    assert(_mockAuthServer, "_mockAuthServer doesn't exist");
     assert(_apiServer,      "_apiServer doesn't exist");
     return new Promise(function(accept) {
       _apiServer.once('close', function() {
@@ -107,14 +99,6 @@ suite("api/responsetimer", function() {
         accept();
       });
       _apiServer.close();
-    }).then(function() {
-      return new Promise(function(accept) {
-        _mockAuthServer.once('close', function() {
-          _mockAuthServer = null;
-          accept();
-        });
-        _mockAuthServer.close();
-      });
     });
   });
 
