@@ -404,7 +404,7 @@ func TestUpload(t *testing.T) {
 				}
 			],
             "features": {
-              "generateCertificate": true
+              "chainOfTrust": true
             }
 		}
 		

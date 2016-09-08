@@ -82,10 +82,10 @@ func taskPayloadSchema() string {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "generateCertificate": {
+        "chainOfTrust": {
           "type": "boolean",
-          "title": "Enable generation of a certificate for Chain of Trust",
-          "description": "A certificate should be generated which will include information for downstream\ntasks to build a level of trust for the artifacts produced by the task and the\nenvironment it ran in."
+          "title": "Enable generation of a openpgp signed Chain of Trust artifact",
+          "description": "An artifact named chainOfTrust.json.asc should be generated\nwhich will include information for downstream tasks to build\na level of trust for the artifacts produced by the task and\nthe environment it ran in."
         }
       }
     }

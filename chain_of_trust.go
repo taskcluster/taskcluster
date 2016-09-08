@@ -52,7 +52,7 @@ func (cot *ChainOfTrust) RequiredScopes() scopes.Required {
 }
 
 func (cot *ChainOfTrust) IsEnabled(fl EnabledFeatures) bool {
-	return fl.GenerateCertificate
+	return fl.ChainOfTrust
 }
 
 func (cot *ChainOfTrust) Killed(task *TaskRun) error {
