@@ -20,8 +20,7 @@ type ChainOfTrust struct {
 }
 
 type ArtifactHash struct {
-	Name string `json:"name"`
-	Hash string `json:"hash"`
+	SHA256 string `json:"sha256"`
 }
 
 type CotExtra struct {
@@ -33,13 +32,14 @@ type CotExtra struct {
 }
 
 type ChainOfTrustCertificate struct {
-	Artifacts   []ArtifactHash               `json:"artifacts"`
+	Version     int                          `json:"chainOfTrustVersion"`
+	Artifacts   map[string]ArtifactHash      `json:"artifacts"`
 	Task        queue.TaskDefinitionResponse `json:"task"`
 	TaskID      string                       `json:"taskId"`
 	RunID       uint                         `json:"runId"`
 	WorkerGroup string                       `json:"workerGroup"`
 	WorkerID    string                       `json:"workerId"`
-	Extra       CotExtra                     `json:"extra"`
+	Environment CotExtra                     `json:"environment"`
 }
 
 func (cot *ChainOfTrust) Initialise() error {
@@ -58,7 +58,7 @@ func (cot *ChainOfTrust) IsEnabled(fl EnabledFeatures) bool {
 func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 	logFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
 	certifiedLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "certified.log")
-	signedCert := filepath.Join(TaskUser.HomeDir, "public", "logs", "certificate.json.gpg")
+	signedCert := filepath.Join(TaskUser.HomeDir, "public", "logs", "chainOfTrust.json.asc")
 	err := copyFileContents(logFile, certifiedLogFile)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 	if err != nil {
 		return err
 	}
-	artifactHashes := []ArtifactHash{}
+	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range task.Artifacts {
 		switch a := artifact.(type) {
 		case S3Artifact:
@@ -76,23 +76,21 @@ func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 			if err != nil {
 				return err
 			}
-			artifactHashes = append(
-				artifactHashes,
-				ArtifactHash{
-					Name: a.CanonicalPath,
-					Hash: "sha256:" + hash,
-				})
+			artifactHashes[a.CanonicalPath] = ArtifactHash{
+				SHA256: hash,
+			}
 		}
 	}
 
 	cotCert := &ChainOfTrustCertificate{
+		Version:     1,
 		Artifacts:   artifactHashes,
 		Task:        task.Definition,
 		TaskID:      task.TaskID,
 		RunID:       task.RunID,
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
-		Extra: CotExtra{
+		Environment: CotExtra{
 			PublicIPAddress:  config.PublicIP.String(),
 			PrivateIPAddress: config.PrivateIP.String(),
 			InstanceID:       config.InstanceID,
@@ -136,7 +134,7 @@ func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 	w.Close()
 	out.Write([]byte{'\n'})
 	out.Close()
-	err = task.uploadLog("public/logs/certificate.json.gpg")
+	err = task.uploadLog("public/logs/chainOfTrust.json.asc")
 	if err != nil {
 		return err
 	}

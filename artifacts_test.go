@@ -457,12 +457,12 @@ func TestUpload(t *testing.T) {
 			},
 			contentEncoding: "gzip",
 		},
-		"public/logs/certificate.json.gpg": {
+		"public/logs/chainOfTrust.json.asc": {
 			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
 			// 8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f  ./_/X.txt
 			// a0ed21ab50992121f08da55365da0336062205fd6e7953dbff781a7de0d625b7  ./b/c/d.jpg
 			extracts: []string{
-				"sha256:8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
+				"8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
 			},
 			contentEncoding: "gzip",
 		},
@@ -502,7 +502,7 @@ func TestUpload(t *testing.T) {
 
 	// now check content was uploaded to Amazon, and is correct
 
-	// signer of public/logs/certificate.json.gpg
+	// signer of public/logs/chainOfTrust.json.asc
 	signer := &openpgp.Entity{}
 	cotCert := &ChainOfTrustCertificate{}
 
@@ -537,7 +537,7 @@ func TestUpload(t *testing.T) {
 			t.Fatalf("Content-Type in Signed URL response does not match Content-Type of artifact")
 		}
 		// check openpgp signature is valid
-		if artifact == "public/logs/certificate.json.gpg" {
+		if artifact == "public/logs/chainOfTrust.json.asc" {
 			pubKey, err := os.Open(filepath.Join("test", "public-openpgp-key"))
 			if err != nil {
 				t.Fatalf("Error opening public key file")
@@ -550,19 +550,19 @@ func TestUpload(t *testing.T) {
 			block, _ := clearsign.Decode(b)
 			signer, err = openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
 			if err != nil {
-				t.Fatalf("Not able to validate openpgp signature of public/logs/certificate.json.gpg")
+				t.Fatalf("Not able to validate openpgp signature of public/logs/chainOfTrust.json.asc")
 			}
 			err = json.Unmarshal(block.Plaintext, cotCert)
 			if err != nil {
-				t.Fatalf("Could not interpret public/logs/certificate.json as json")
+				t.Fatalf("Could not interpret public/logs/chainOfTrust.json as json")
 			}
 		}
 	}
 	if signer == nil {
-		t.Fatalf("Signer of public/logs/certificate.json.gpg could not be established (is nil)")
+		t.Fatalf("Signer of public/logs/chainOfTrust.json.asc could not be established (is nil)")
 	}
 	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
-		t.Fatalf("Did not get correct signer identity in public/logs/certificate.json.gpg - %#v", signer.Identities)
+		t.Fatalf("Did not get correct signer identity in public/logs/chainOfTrust.json.asc - %#v", signer.Identities)
 	}
 
 	// This trickery is to convert a TaskDefinitionResponse into a
@@ -605,19 +605,19 @@ func TestUpload(t *testing.T) {
 	if cotCert.WorkerID != "test-worker-id" {
 		t.Fatalf("Expected workerGroup to be \"test-worker-id\" but was %q", cotCert.WorkerID)
 	}
-	if cotCert.Extra.PublicIPAddress != "12.34.56.78" {
-		t.Fatalf("Expected publicIpAddress to be 12.34.56.78 but was %v", cotCert.Extra.PublicIPAddress)
+	if cotCert.Environment.PublicIPAddress != "12.34.56.78" {
+		t.Fatalf("Expected publicIpAddress to be 12.34.56.78 but was %v", cotCert.Environment.PublicIPAddress)
 	}
-	if cotCert.Extra.PrivateIPAddress != "87.65.43.21" {
-		t.Fatalf("Expected privateIpAddress to be 87.65.43.21 but was %v", cotCert.Extra.PrivateIPAddress)
+	if cotCert.Environment.PrivateIPAddress != "87.65.43.21" {
+		t.Fatalf("Expected privateIpAddress to be 87.65.43.21 but was %v", cotCert.Environment.PrivateIPAddress)
 	}
-	if cotCert.Extra.InstanceID != "test-instance-id" {
-		t.Fatalf("Expected instanceId to be \"test-instance-id\" but was %v", cotCert.Extra.InstanceID)
+	if cotCert.Environment.InstanceID != "test-instance-id" {
+		t.Fatalf("Expected instanceId to be \"test-instance-id\" but was %v", cotCert.Environment.InstanceID)
 	}
-	if cotCert.Extra.InstanceType != "p3.enormous" {
-		t.Fatalf("Expected instanceType to be \"p3.enormous\" but was %v", cotCert.Extra.InstanceType)
+	if cotCert.Environment.InstanceType != "p3.enormous" {
+		t.Fatalf("Expected instanceType to be \"p3.enormous\" but was %v", cotCert.Environment.InstanceType)
 	}
-	if cotCert.Extra.Region != "outer-space" {
-		t.Fatalf("Expected region to be \"outer-space\" but was %v", cotCert.Extra.Region)
+	if cotCert.Environment.Region != "outer-space" {
+		t.Fatalf("Expected region to be \"outer-space\" but was %v", cotCert.Environment.Region)
 	}
 }
