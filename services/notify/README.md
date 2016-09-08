@@ -9,27 +9,27 @@ No longer will you need to keep going back to the task-inspector page to know if
 Testing
 -------
 
-
-
-THINGS TO DO BEFORE THIS IS READY:
-1. tests
-3. make each of the api calls idempotent
-
-
-
-
-
-
-
-*WRITE SOMETHING HERE ABOUT NEEDED CREDS AND CONFIG*
+You'll first need to set up your credentials based on how they are in `user-config-example.yml`. Ask a Taskcluster team member for the aws keys, etc.
 `npm install` and `npm test`. You can set `DEBUG=taskcluster-notify,test` if you want to see what's going on.
 
 Deploying
 ---------
 
-This service will auto-deploy in Heroku once merged into master and CI runs are successful. If you need to force a deploy because we've broken CI in some way and this urgently needs to be deployed, you can do it from the [Heroku console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github). Once the new version has been deployed, you can verify it is working by *WRITE MORE HERE!!!!!!!!!!!!!!!!!!*
+This service will auto-deploy in Heroku once merged into master and CI runs are successful. If you need to force a deploy because we've broken CI in some way and this urgently needs to be deployed, you can do it from the [Heroku console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github). Once the new version has been deployed, you can verify it is working by submitting a task from the [Task Creator](https://tools.taskcluster.net/task-creator/) with the routes
+
+```
+"routes": [
+  "test-notify.email.<you@you.com>.on-any",
+  "test-notify.irc-user.<your-mozilla-irc-nick>.on-any"
+]
+```
 
 License
 -------
 
 [Mozilla Public License Version 2.0](https://github.com/taskcluster/taskcluster-lib-monitor/blob/master/LICENSE)
+
+TODO
+----
+
+*  make each of the api calls idempotent

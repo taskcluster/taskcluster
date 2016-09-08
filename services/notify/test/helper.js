@@ -28,6 +28,25 @@ if (!cfg.pulse || !cfg.aws) {
   process.exit(1);
 }
 
+helper.checkSqsMessage = (queueUrl, done, check) => {
+  helper.sqs.receiveMessage({
+    QueueUrl:             queueUrl,
+    AttributeNames:       ['ApproximateReceiveCount'],
+    MaxNumberOfMessages:  10,
+    VisibilityTimeout:    30,
+    WaitTimeSeconds:      20,
+  }).promise().then(async (resp) => {
+    let m = resp.data.Messages;
+    assert.equal(m.length, 1);
+    await helper.sqs.deleteMessage({
+      QueueUrl:       queueUrl,
+      ReceiptHandle:  m[0].ReceiptHandle,
+    }).promise();
+    check(JSON.parse(m[0].Body));
+    done();
+  }).catch(done);
+};
+
 let webServer = null;
 
 // Setup before tests
@@ -111,6 +130,10 @@ mocha.before(async () => {
       Endpoint: emailAttr.QueueArn,
     }).promise();
   }
+  // Create queueEvents and Queue client
+  helper.queue = new taskcluster.Queue({
+    credentials: cfg.taskcluster.credentials,
+  });
 });
 
 mocha.after(async () => {
