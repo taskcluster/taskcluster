@@ -41,8 +41,3 @@ License
 -------
 
 [Mozilla Public License Version 2.0](https://github.com/taskcluster/taskcluster-lib-monitor/blob/master/LICENSE)
-
-TODO
-----
-
-*  make each of the api calls idempotent
