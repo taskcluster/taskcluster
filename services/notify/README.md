@@ -4,7 +4,7 @@ TaskCluster Notifications Service
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-notify.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-notify)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-No longer will you need to keep going back to the task-inspector page to know if your task is complete! Merely add some routes and we will tell you when your task is done!
+No longer will you need to keep going back to the task-inspector page to know if your task is complete! Merely add some routes and we will tell you when your task is done! Note: You'll need to have the appropriate scopes to add these routes.
 
 Example routes:
 
