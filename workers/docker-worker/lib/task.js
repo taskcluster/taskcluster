@@ -848,8 +848,8 @@ export class Task extends EventEmitter {
 
       monitor.count('task.image.pullFailed');
       return await this.abortRun(
-        fmtErrorLog("Pulling docker image %s has failed: %s",
-                    JSON.stringify(this.task.payload.image), e.message)
+        fmtErrorLog('Pulling docker image has failed.') +
+        fmtErrorLog(`Error: ${e.message}`)
       );
     }
 
