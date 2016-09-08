@@ -49,6 +49,12 @@ class Handler {
 
     return Promise.all(message.routes.map(entry => {
       let route = entry.split('.');
+
+      // convert from on- syntax to state. e.g. on-exception -> exception
+      let decider = _.join(_.slice(route[route.length -1], 3), '');
+      if (decider !== 'any' && status.status.state !== decider) {
+        return;
+      }
       switch (route[1]) {
         case 'irc-user':
           this.monitor.count('notification-requested.irc-user');
