@@ -4,7 +4,20 @@ TaskCluster Notifications Service
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-notify.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-notify)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-No longer will you need to keep going back to the task-inspector page to know if your task is complete! Merely add a route and some `task.extra` config and we will tell you when your task is done! Further specification of this is contained in the docs.
+No longer will you need to keep going back to the task-inspector page to know if your task is complete! Merely add some routes and we will tell you when your task is done!
+
+Example routes:
+
+```
+"routes": [
+  "notify.email.<you@you.com>.on-any",
+  "notify.irc-user.<your-mozilla-irc-nick>.on-failed",
+  "notify.irc-channel.<a-mozilla-irc-channel>.on-completed",
+  "notify.pulse.<a-pulse-routing-key>.on-exception"
+]
+```
+
+Further specification of this is contained in the docs.
 
 Testing
 -------
@@ -19,8 +32,8 @@ This service will auto-deploy in Heroku once merged into master and CI runs are 
 
 ```
 "routes": [
-  "test-notify.email.<you@you.com>.on-any",
-  "test-notify.irc-user.<your-mozilla-irc-nick>.on-any"
+  "notify.email.<you@you.com>.on-any",
+  "notify.irc-user.<your-mozilla-irc-nick>.on-any"
 ]
 ```
 
