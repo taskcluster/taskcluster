@@ -70,7 +70,7 @@ func main() {
 			region := tokens[0]
 			newAmi := tokens[1]
 			oldAmi := ""
-			for i, _ := range regions {
+			for i := range regions {
 				regionObj := regions[i].(map[string]interface{})
 				if regionObj["region"] == region {
 					launchSpec := regionObj["launchSpec"].(map[string]interface{})

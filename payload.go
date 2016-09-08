@@ -19,12 +19,13 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Generic worker payload",
-  "description": "This schema defines the structure of the ` + "`payload`" + ` property referred to in a Task Cluster Task definition.",
+  "description": "This schema defines the structure of the ` + "`payload`" + ` property referred to in a\nTaskCluster Task definition.",
   "type": "object",
   "required": [
     "command",
     "maxRunTime"
   ],
+  "additionalProperties": false,
   "properties": {
     "command": {
       "title": "Commands to run",
@@ -37,7 +38,7 @@ func taskPayloadSchema() string {
           "type": "string"
         }
       },
-	  "description": "One array per command (each command is an array of arguments). Several arrays for several commands."
+	  "description": "One array per command (each command is an array of arguments). Several arrays\nfor several commands."
     },
     "env": {
       "title": "Environment variable mappings.",
@@ -55,15 +56,16 @@ func taskPayloadSchema() string {
     "artifacts": {
       "type": "array",
       "title": "Artifacts to be published",
-	  "description": "Artifacts to be published. For example: ` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
+	  "description": "Artifacts to be published. For example:\n` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
       "items": {
         "type": "object",
-          "properties": {
+        "additionalProperties": false,
+        "properties": {
           "type": {
             "title": "Artifact upload type.",
             "type": "string",
             "enum": ["file", "directory"],
-			"description": "Artifacts can be either an individual ` + "`file`" + ` or a ` + "`directory`" + ` containing potentially multiple files with recursively included subdirectories"
+			"description": "Artifacts can be either an individual ` + "`file`" + ` or a ` + "`directory`" + ` containing\npotentially multiple files with recursively included subdirectories."
           },
           "path": {
             "title": "Artifact location",
@@ -78,6 +80,19 @@ func taskPayloadSchema() string {
           }
         },
         "required": ["type", "path", "expires"]
+      }
+    },
+    "features": {
+      "title": "Feature flags",
+      "description": "Feature flags enable additional functionality.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "chainOfTrust": {
+          "type": "boolean",
+          "title": "Enable generation of a openpgp signed Chain of Trust artifact",
+          "description": "An artifact named chainOfTrust.json.asc should be generated\nwhich will include information for downstream tasks to build\na level of trust for the artifacts produced by the task and\nthe environment it ran in."
+        }
       }
     }
   }

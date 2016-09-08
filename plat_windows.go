@@ -231,7 +231,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
 	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
-	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskId + "..." + "\r\n"
+	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
 	// At the end of each command we export all the env vars, and import them
@@ -589,6 +589,8 @@ type (
 		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
 		// "darwin" }```
 		Env map[string]string `json:"env"`
+		// Feature flags enable additional functionality.
+		Features EnabledFeatures `json:"features,omitempty"`
 		// Maximum time the task container can run in seconds
 		MaxRunTime int `json:"maxRunTime"`
 	}

@@ -86,6 +86,9 @@ $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v
 # enable DEBUG logs for generic-worker install
 $env:DEBUG = "*"
 
+# generate OpenPGP key
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-openpgp-keypair --file C:\generic-worker\generic-worker-gpg-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-signing-key.log -RedirectStandardError C:\generic-worker\generate-signing-key.err
+
 # install generic-worker
 Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 

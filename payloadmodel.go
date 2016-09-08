@@ -29,6 +29,8 @@ type (
 		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
 		// "darwin" }```
 		Env map[string]string `json:"env"`
+		// Feature flags enable additional functionality.
+		Features EnabledFeatures `json:"features,omitempty"`
 		// Maximum time the task container can run in seconds
 		MaxRunTime int `json:"maxRunTime"`
 	}

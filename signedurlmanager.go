@@ -29,7 +29,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		// When a worker wants to poll for pending tasks it must call
 		// `queue.pollTaskUrls(provisionerId, workerType)` which then returns
 		// an array of objects on the form `{signedPollUrl, signedDeleteUrl}`.
-		signedURLs, err = Queue.PollTaskUrls(config.ProvisionerId, config.WorkerType)
+		signedURLs, err = Queue.PollTaskUrls(config.ProvisionerID, config.WorkerType)
 		// TODO: not sure if this is the right thing to do. If Queue has an outage, maybe better to
 		// do expoenential backoff indefinitely?
 		if err != nil {

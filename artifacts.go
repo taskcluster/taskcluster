@@ -1,9 +1,10 @@
 package main
 
 import (
-	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -99,43 +100,77 @@ func (errArtifact ErrorArtifact) ResponseObject() interface{} {
 	return new(queue.ErrorArtifactResponse)
 }
 
-func (artifact S3Artifact) ProcessResponse(resp interface{}) error {
+// gzipCompressFile gzip-compresses the file at path rawContentFile and writes
+// it to a temporary file. The file path of the generated temporary file is returned.
+// It is the responsibility of the caller to delete the temporary file.
+func gzipCompressFile(rawContentFile string) (string, error) {
+	baseName := filepath.Base(rawContentFile)
+	tmpFile, err := ioutil.TempFile("", baseName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tmpFile.Close()
+	gzipLogWriter := gzip.NewWriter(tmpFile)
+	gzipLogWriter.Name = baseName
+	rawContent, err := os.Open(rawContentFile)
+	if err != nil {
+		return "", err
+	}
+	defer rawContent.Close()
+	io.Copy(gzipLogWriter, rawContent)
+	gzipLogWriter.Close()
+	return tmpFile.Name(), nil
+}
+
+func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 	response := resp.(*queue.S3ArtifactResponse)
+	rawContentFile := filepath.Join(TaskUser.HomeDir, artifact.Base().CanonicalPath)
+
+	// if Content-Encoding is gzip then we will need to gzip content...
+	transferContentFile := rawContentFile
+	if artifact.ContentEncoding == "gzip" {
+		transferContentFile, err = gzipCompressFile(rawContentFile)
+		if err != nil {
+			return err
+		}
+		defer os.Remove(transferContentFile)
+	}
+
+	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}
 	httpCall := func() (*http.Response, error, error) {
-		// instead of using fileReader, read it into memory and then use a
-		// bytes.Reader since then http.NewRequest will properly set
-		// Content-Length header for us, which is needed by the API we call
-		fileReader, err := os.Open(filepath.Join(TaskUser.HomeDir, artifact.Base().CanonicalPath))
-		requestPayload, err := ioutil.ReadAll(fileReader)
+		transferContent, err := os.Open(transferContentFile)
 		if err != nil {
 			return nil, nil, err
 		}
-		defer fileReader.Close()
-		bytesReader := bytes.NewReader(requestPayload)
-		// http.NewRequest automatically sets Content-Length correctly for bytes.Reader
-		httpRequest, err := http.NewRequest("PUT", response.PutURL, bytesReader)
+		defer transferContent.Close()
+		transferContentFileInfo, err := transferContent.Stat()
 		if err != nil {
 			return nil, nil, err
 		}
-		log.Printf("Content-Type in S3 PUT request: %v", artifact.MimeType)
+		transferContentLength := transferContentFileInfo.Size()
+
+		httpRequest, err := http.NewRequest("PUT", response.PutURL, transferContent)
+		if err != nil {
+			return nil, nil, err
+		}
 		httpRequest.Header.Set("Content-Type", artifact.MimeType)
-		if artifact.ContentEncoding != "" {
-			httpRequest.Header.Set("Content-Encoding", artifact.ContentEncoding)
-			log.Printf("Content-Encoding in put request: %v", artifact.ContentEncoding)
+		httpRequest.ContentLength = transferContentLength
+		if enc := artifact.ContentEncoding; enc != "" {
+			httpRequest.Header.Set("Content-Encoding", enc)
 		}
-		// request body could be a) binary and b) massive, so don't show it...
-		requestFull, dumpError := httputil.DumpRequestOut(httpRequest, false)
+		requestHeaders, dumpError := httputil.DumpRequestOut(httpRequest, false)
 		if dumpError != nil {
 			log.Println("Could not dump request, never mind...")
 		} else {
 			log.Println("Request")
-			log.Println(string(requestFull))
+			log.Println(string(requestHeaders))
 		}
 		putResp, err := httpClient.Do(httpRequest)
 		return putResp, err, nil
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
+	defer putResp.Body.Close()
 	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
 	respBody, dumpError := httputil.DumpResponse(putResp, true)
 	if dumpError != nil {
@@ -275,7 +310,7 @@ func canonicalPath(path string) string {
 }
 
 func (task *TaskRun) uploadLiveLog() error {
-	maxRunTimeDeadline := time.Time(task.TaskClaimResponse.Status.Runs[task.RunId].Started).Add(time.Duration(task.Payload.MaxRunTime) * time.Second)
+	maxRunTimeDeadline := time.Time(task.TaskClaimResponse.Status.Runs[task.RunID].Started).Add(time.Duration(task.Payload.MaxRunTime) * time.Second)
 	// deduce stateless DNS name to use
 	statelessHostname := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
 	getURL, err := url.Parse(task.liveLog.GetURL)
@@ -320,8 +355,8 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 	}
 	par := queue.PostArtifactRequest(json.RawMessage(payload))
 	parsp, err := task.Queue.CreateArtifact(
-		task.TaskId,
-		strconv.Itoa(int(task.RunId)),
+		task.TaskID,
+		strconv.Itoa(int(task.RunID)),
 		artifact.Base().CanonicalPath,
 		&par,
 	)
