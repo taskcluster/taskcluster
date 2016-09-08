@@ -30,6 +30,7 @@ class Notifier {
   }
 
   async email({address, subject, content, link, replyTo}) {
+    debug(`Sending email to ${address}`);
     // It is very, very important that this uses the sanitize option
     let formatted  = marked(content, {
       gfm:          true,
@@ -68,10 +69,12 @@ class Notifier {
   }
 
   async pulse({routingKey, message}) {
+    debug(`Publishing message on ${routingKey}`);
     return this.publisher.notify({message}, [routingKey]);
   }
 
   async irc({channel, user, message}) {
+    debug(`sending irc message to ${user || channel}.`);
     return this.sqs.sendMessage({
       QueueUrl:       await this.queueUrl,
       MessageBody:    JSON.stringify({channel, user, message}),

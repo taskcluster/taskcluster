@@ -37,7 +37,6 @@ api.declare({
     return;
   }
   await this.notifier.email(req.body);
-  debug(`Email sent to ${req.body.address}`);
   res.sendStatus(200);
 });
 
@@ -59,7 +58,6 @@ api.declare({
     return;
   }
   await this.notifier.pulse(req.body);
-  debug(`Message published on ${req.body.routingKey}`);
   res.sendStatus(200);
 });
 
@@ -100,7 +98,6 @@ api.declare({
     return;
   }
   await this.notifier.irc(input);
-  debug(`irc message sent to ${input.user || input.channel}.`);
   res.sendStatus(200);
 });
 
