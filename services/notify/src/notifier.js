@@ -1,10 +1,11 @@
 let debug = require('debug')('notify');
 let _ = require('lodash');
+let path = require('path');
 let assert = require('assert');
 let aws = require('aws-sdk');
+let crypto = require('crypto');
 let marked = require('marked');
 let EmailTemplate = require('email-templates').EmailTemplate;
-let path = require('path');
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -16,6 +17,7 @@ class Notifier {
     this.options = _.defaults({}, options, {
 
     });
+    this.hashCache = [];
     this.ses = new aws.SES(_.defaults({
       params: {
         Source: options.email,
@@ -29,7 +31,27 @@ class Notifier {
     }).promise().then(req => req.data.QueueUrl);
   }
 
+  key(...idents) {
+    return crypto
+      .createHash('md5')
+      .update(_.join(_.flatMapDeep(idents, id => id ? id.toString() : '')))
+      .digest('hex');
+  }
+
+  isDuplicate(...idents) {
+    return _.indexOf(this.hashCache, this.key(idents)) !== -1;
+  }
+
+  markSent(...idents) {
+    this.hashCache.unshift(this.key(idents));
+    this.hashCache = _.take(this.hashCache, 1000);
+  }
+
   async email({address, subject, content, link, replyTo}) {
+    if (this.isDuplicate(address, subject, content, link, replyTo)) {
+      debug('Duplicate email send detected. Not attempting resend.');
+      return;
+    }
     debug(`Sending email to ${address}`);
     // It is very, very important that this uses the sanitize option
     let formatted  = marked(content, {
@@ -65,21 +87,38 @@ class Notifier {
           },
         },
       },
-    }).promise();
+    }).promise().then(res => {
+      this.markSent(address, subject, content, link, replyTo);
+      return res;
+    });
   }
 
   async pulse({routingKey, message}) {
+    if (this.isDuplicate(routingKey, message)) {
+      debug('Duplicate pulse send detected. Not attempting resend.');
+      return;
+    }
     debug(`Publishing message on ${routingKey}`);
-    return this.publisher.notify({message}, [routingKey]);
+    return this.publisher.notify({message}, [routingKey]).then(res => {
+      this.markSent(routingKey, message);
+      return res;
+    });
   }
 
   async irc({channel, user, message}) {
+    if (this.isDuplicate(channel, user, message)) {
+      debug('Duplicate irc message send detected. Not attempting resend.');
+      return;
+    }
     debug(`sending irc message to ${user || channel}.`);
     return this.sqs.sendMessage({
       QueueUrl:       await this.queueUrl,
       MessageBody:    JSON.stringify({channel, user, message}),
       DelaySeconds:   0,
-    }).promise();
+    }).promise().then(res => {
+      this.markSent(channel, user, message);
+      return res;
+    });
   }
 };
 
