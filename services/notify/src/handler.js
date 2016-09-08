@@ -44,7 +44,7 @@ class Handler {
     let groupHref = `https://tools.taskcluster.net/task-group-inspector/#${task.taskGroupId}`;
     let runCount = status.status.runs.length;
 
-    debug(`Recieved message for ${taskId} with notify routes. Finding notifications.`);
+    debug(`Received message for ${taskId} with notify routes. Finding notifications.`);
     this.monitor.count('notification-requested.any');
 
     return Promise.all(message.routes.map(entry => {
