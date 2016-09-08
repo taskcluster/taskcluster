@@ -504,7 +504,7 @@ func TestUpload(t *testing.T) {
 
 	// signer of public/logs/chainOfTrust.json.asc
 	signer := &openpgp.Entity{}
-	cotCert := &ChainOfTrustCertificate{}
+	cotCert := &ChainOfTrustData{}
 
 	for artifact, content := range expectedArtifacts {
 		url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)

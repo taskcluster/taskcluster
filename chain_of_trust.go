@@ -16,14 +16,14 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
-type ChainOfTrust struct {
+type ChainOfTrustFeature struct {
 }
 
 type ArtifactHash struct {
 	SHA256 string `json:"sha256"`
 }
 
-type CotExtra struct {
+type CoTEnvironment struct {
 	PublicIPAddress  string `json:"publicIpAddress"`
 	PrivateIPAddress string `json:"privateIpAddress"`
 	InstanceID       string `json:"instanceId"`
@@ -31,7 +31,7 @@ type CotExtra struct {
 	Region           string `json:"region"`
 }
 
-type ChainOfTrustCertificate struct {
+type ChainOfTrustData struct {
 	Version     int                          `json:"chainOfTrustVersion"`
 	Artifacts   map[string]ArtifactHash      `json:"artifacts"`
 	Task        queue.TaskDefinitionResponse `json:"task"`
@@ -39,23 +39,23 @@ type ChainOfTrustCertificate struct {
 	RunID       uint                         `json:"runId"`
 	WorkerGroup string                       `json:"workerGroup"`
 	WorkerID    string                       `json:"workerId"`
-	Environment CotExtra                     `json:"environment"`
+	Environment CoTEnvironment               `json:"environment"`
 }
 
-func (cot *ChainOfTrust) Initialise() error {
+func (cot *ChainOfTrustFeature) Initialise() error {
 	return nil
 }
 
-func (cot *ChainOfTrust) RequiredScopes() scopes.Required {
+func (cot *ChainOfTrustFeature) RequiredScopes() scopes.Required {
 	// let's not require any scopes, as I see no reason to control access to this feature
 	return scopes.Required{}
 }
 
-func (cot *ChainOfTrust) IsEnabled(fl EnabledFeatures) bool {
+func (cot *ChainOfTrustFeature) IsEnabled(fl EnabledFeatures) bool {
 	return fl.ChainOfTrust
 }
 
-func (cot *ChainOfTrust) Killed(task *TaskRun) error {
+func (cot *ChainOfTrustFeature) Killed(task *TaskRun) error {
 	logFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
 	certifiedLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "certified.log")
 	signedCert := filepath.Join(TaskUser.HomeDir, "public", "logs", "chainOfTrust.json.asc")
@@ -82,7 +82,7 @@ func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 		}
 	}
 
-	cotCert := &ChainOfTrustCertificate{
+	cotCert := &ChainOfTrustData{
 		Version:     1,
 		Artifacts:   artifactHashes,
 		Task:        task.Definition,
@@ -90,7 +90,7 @@ func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 		RunID:       task.RunID,
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
-		Environment: CotExtra{
+		Environment: CoTEnvironment{
 			PublicIPAddress:  config.PublicIP.String(),
 			PrivateIPAddress: config.PrivateIP.String(),
 			InstanceID:       config.InstanceID,
@@ -141,7 +141,7 @@ func (cot *ChainOfTrust) Killed(task *TaskRun) error {
 	return nil
 }
 
-func (cot *ChainOfTrust) Created(task *TaskRun) error {
+func (cot *ChainOfTrustFeature) Created(task *TaskRun) error {
 	return nil
 }
 

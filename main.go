@@ -59,7 +59,7 @@ var (
 	config             *Config
 	configFile         string
 	Features           []Feature = []Feature{
-		&ChainOfTrust{},
+		&ChainOfTrustFeature{},
 	}
 
 	version = "5.2.0"
