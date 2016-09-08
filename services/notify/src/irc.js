@@ -42,8 +42,10 @@ class IRCBot {
       autoConnect: false,
       secure: true,
       debug: true,
+      showErrors: true,
     });
-    this.client.addListener('error', message => {
+    this.client.addListener('error', err => {
+      console.log(err);
       // We add this listener because this library
       // emits an error for any message it receives
       // and we don't really care about anything
