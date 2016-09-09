@@ -7,6 +7,7 @@ var taskcluster   = require('taskcluster-client');
 var slugid        = require('slugid');
 var https         = require('https');
 var http          = require('http');
+var api           = require('./api');
 
 var makeTask = () => {
   return {
@@ -30,7 +31,7 @@ var launch = async function(cfg) {
     return Math.round(n * 100) / 100;
   };
 
-  const CYCLE_SECONDS = 10 * 60; // Normally 3
+  const CYCLE_SECONDS = 3 * 60; //10 * 60; // Normally 3
 
   var success = 0;
   var failed  = 0;
@@ -54,37 +55,56 @@ var launch = async function(cfg) {
         start:        taskcluster.fromNow('- 15 min'),
         expiry:       taskcluster.fromNow('4 hours'),
         scopes: [
-          'queue:*',
-          'index:*',
-          'assume:*',
-          'scheduler:*',
-          'auth:azure-table-access:taskclusterdev/*',
-          'docker-worker:cache:*',
-          'docker-worker:image:taskcluster/*',
-          'docker-worker:capability:device:loopbackVideo',
-          'docker-worker:capability:device:loopbackAudio',
+          'queue:create-task:no-provisioner/test-worker',
+          'queue:claim-task:no-provisioner/test-worker',
+          'queue:claim-work:no-provisioner/test-worker',
+          'queue:worker-id:no-worker/dummy-worker',
         ],
         credentials:  cfg.taskcluster.credentials,
       });
-      var queue = new taskcluster.Queue({
+      let reference = api.reference({
+        baseUrl:          cfg.server.publicUrl + '/v1',
+      });
+      let Queue = taskcluster.createClient(reference);
+      var queue = new Queue({
         credentials:      tempCreds,
         retries:          0,
         baseUrl:          cfg.server.publicUrl + '/v1',
         agent:            agent,
         authorizedScopes: [
           'queue:create-task:no-provisioner/test-worker',
-          'index:-random-scope.that-is-a-non-trivial.string',
-          'assume:*',
-          'scheduler:-random-scope.that-is-a-non-trivial.string',
-          'auth:azure-table-access:taskclusterdev/*',
-          'docker-worker:cache:*',
-          'docker-worker:image:taskcluster/*',
-          'docker-worker:capability:device:loopbackVideo',
-          'docker-worker:capability:device:loopbackAudio',
+          'queue:claim-task:no-provisioner/test-worker',
+          'queue:claim-work:no-provisioner/test-worker',
+          'queue:worker-id:no-worker/dummy-worker',
         ],
       });
       while (true) {
-        await queue.createTask(slugid.v4(), makeTask()).then(() => {
+        await (async() => {
+          let taskId = slugid.v4();
+          await queue.createTask(taskId, makeTask());
+          
+          let result = await queue.claimTask(taskId, 0, {
+            workerGroup:  'no-worker',
+            workerId:     'dummy-worker',
+          });//*/
+          /*let r = await queue.claimWork('no-provisioner', 'test-worker', {
+            workerGroup:  'no-worker',
+            workerId:     'dummy-worker',
+            tasks: 1,
+          });
+          let result = r.tasks[0];
+          if (!result) {
+            failed += 1;
+            return;
+          }*/
+          let q2 = new Queue({
+            credentials:      result.credentials,
+            baseUrl:          cfg.server.publicUrl + '/v1',
+            retries:          0,
+            agent:            agent,
+          });
+          await q2.reportCompleted(result.status.taskId, 0);
+        })().then(() => {
           success += 1;
         }, (err) => {
           failed += 1;
@@ -104,7 +124,7 @@ var launch = async function(cfg) {
   };
 
   //  2 req in parallel
-  while (loops < 2) { startLoop(); }
+  /*while (loops < 2) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
@@ -116,26 +136,28 @@ var launch = async function(cfg) {
   while (loops < 8) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
+  */
   // 16 req in parallel
   while (loops < 16) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
-
+/*
   // 32 req in parallel
   while (loops < 32) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
+*/
 
   // 48 req in parallel
   while (loops < 48) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   //*/
-/*
   // 64 req in parallel
   while (loops < 64) { startLoop(); }
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
+  /*
 
   // 128 req in parallel
   while (loops < 128{ ) startLoop(); }
@@ -148,4 +170,3 @@ var launch = async function(cfg) {
 
 // Export launch in-case anybody cares
 module.exports = launch;
-

@@ -1,0 +1,55 @@
+$schema:          http://json-schema.org/draft-04/schema#
+title:            "Claim Work Response"
+description: |
+  Response to an attempt to claim tasks for a worker to process.
+type:             object
+properties:
+  tasks:
+    type:         array
+    description: |
+      List of task claims, may be empty if no tasks was claimed, in which case
+      the worker should sleep a tiny bit before polling again.
+    items:
+      type:       object
+      properties:
+        status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+        runId:
+          description: |
+            `run-id` assigned to this run of the task
+          type:         integer
+          minimum:      {$const: min-run-id}
+          maximum:      {$const: max-run-id}
+        workerGroup:
+          description: |
+            Identifier for the worker-group within which this run started.
+          type:         string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
+        workerId:
+          description: |
+            Identifier for the worker executing this run.
+          type:         string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
+        takenUntil:
+          description: |
+            Time at which the run expires and is resolved as `exception`,
+            with reason `claim-expired` if the run haven't been reclaimed.
+          type:         string
+          format:       date-time
+        task: {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
+        credentials:  {$const: task-credentials}
+      additionalProperties: false
+      required:
+        - status
+        - runId
+        - workerGroup
+        - workerId
+        - takenUntil
+        - task
+        - credentials
+additionalProperties: false
+required:
+  - tasks

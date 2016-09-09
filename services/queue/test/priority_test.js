@@ -1,5 +1,5 @@
 suite('task.priority', () => {
-  var debug       = require('debug')('test:createDefaults');
+  var debug       = require('debug')('test:priority');
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');

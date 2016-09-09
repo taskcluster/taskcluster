@@ -1,0 +1,32 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Claim Work Request"
+description: |
+  Request to claim a task for a worker to process.
+type:               object
+properties:
+  workerGroup:
+    description: |
+      Identifier for group that worker claiming the task is a part of.
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  workerId:
+    description: |
+      Identifier for worker within the given workerGroup
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  tasks:
+    description: |
+      Number of tasks to attempt to claim.
+    default: 1
+    type:    integer
+    minimum: 1
+    maximum: 32
+additionalProperties: false
+required:
+  - workerGroup
+  - workerId
+  - tasks
