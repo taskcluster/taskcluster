@@ -1,4 +1,4 @@
-Generated: 1473179185
+Generated: 1473445392
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5673,6 +5673,19 @@ with `claimTask`, and afterwards you should always delete the message.'
 Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'post'
+    Entry Route       = '/claim-work/<provisionerId>/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'claimWork'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[[queue:claim-work:<provisionerId>/<workerType> queue:worker-id:<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#'
+    Entry Title       = 'Claim Work'
+    Entry Description = 'Claim any task, more to be added later... long polling up to 20s.'
+Entry 11    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/claim'
     Entry Args        = '[taskId runId]'
     Entry Query        = '[]'
@@ -5681,9 +5694,9 @@ Entry 10    =
     Entry Scopes      = '[[queue:claim-task assume:worker-type:<provisionerId>/<workerType> assume:worker-id:<workerGroup>/<workerId>] [queue:claim-task:<provisionerId>/<workerType> queue:worker-id:<workerGroup>/<workerId>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
-    Entry Title       = 'Claim task'
+    Entry Title       = 'Claim Task'
     Entry Description = 'claim a task, more to be added later...'
-Entry 11    =
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/reclaim'
@@ -5696,7 +5709,7 @@ Entry 11    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
     Entry Title       = 'Reclaim task'
     Entry Description = 'reclaim a task more to be added later...'
-Entry 12    =
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/completed'
@@ -5709,7 +5722,7 @@ Entry 12    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Run Completed'
     Entry Description = 'Report a task completed, resolving the run as `completed`.'
-Entry 13    =
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/failed'
@@ -5728,7 +5741,7 @@ For example the task exited non-zero, or didn't produce expected output.
 Do not use this if the task couldn't be run because if malformed
 payload, or other unexpected condition. In these cases we have a task
 exception, which should be reported with `reportException`.'
-Entry 14    =
+Entry 15    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/exception'
@@ -5752,7 +5765,7 @@ failed instead of exception. You should `reportException` if,
 Do not use this to signal that some user-specified code crashed for any
 reason specific to this code. If user-specific code hits a resource that
 is temporarily unavailable worker should report task _failed_.'
-Entry 15    =
+Entry 16    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
@@ -5822,7 +5835,7 @@ Such as worker-host overwriting artifact created by worker-code.
 As a special case the `url` property on _reference artifacts_ can be
 updated. You should only use this to update the `url` property for
 reference artifacts your process has created.'
-Entry 16    =
+Entry 17    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
@@ -5845,7 +5858,7 @@ authorization is not necessary to fetch the artifact.
 stored externally. Either way, the response may not be JSON. So API
 client users might want to generate a signed URL for this end-point and
 use that URL with a normal HTTP client.'
-Entry 17    =
+Entry 18    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts/<name>'
@@ -5872,7 +5885,7 @@ use that URL with a normal HTTP client.
 **Remark**, this end-point is slightly slower than
 `queue.getArtifact`, so consider that if you already know the `runId` of
 the latest run. Otherwise, just us the most convenient API end-point.'
-Entry 18    =
+Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts'
@@ -5893,7 +5906,7 @@ again with the `continuationToken` as the query-string option:
 
 By default this end-point will list up-to 1000 artifacts in a single page
 you may limit this with the query-string parameter `limit`.'
-Entry 19    =
+Entry 20    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts'
@@ -5915,7 +5928,7 @@ again with the `continuationToken` as the query-string option:
 
 By default this end-point will list up-to 1000 artifacts in a single page
 you may limit this with the query-string parameter `limit`.'
-Entry 20    =
+Entry 21    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/pending/<provisionerId>/<workerType>'
@@ -5934,7 +5947,7 @@ The underlying Azure Storage Queues only promises to give us an estimate.
 Furthermore, we cache the result in memory for 20 seconds. So consumers
 should be no means expect this to be an accurate number.
 It is, however, a solid estimate of the number of pending tasks.'
-Entry 21    =
+Entry 22    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -5949,6 +5962,163 @@ Entry 21    =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Request to claim a task for a worker to process.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
+Properties
+  Property 'tasks' =
+    Default                = '1'
+    Description            = 'Number of tasks to attempt to claim.
+    '
+    Maximum                = '32'
+    Minimum                = '1'
+    Type                   = 'integer'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/tasks'
+  Property 'workerGroup' =
+    Description            = 'Identifier for group that worker claiming the task is a part of.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerGroup'
+  Property 'workerId' =
+    Description            = 'Identifier for worker within the given workerGroup
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerId'
+Required               = '[workerGroup workerId tasks]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Claim Work Request'
+Type                   = 'object'
+TypeName               = 'ClaimWorkRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/claim-work-response.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Response to an attempt to claim tasks for a worker to process.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#'
+Properties
+  Property 'tasks' =
+    Description            = 'List of task claims, may be empty if no tasks was claimed, in which case
+    the worker should sleep a tiny bit before polling again.
+    '
+    Items
+      Additional Properties  = 'false'
+      Properties
+        Property 'credentials' =
+          Description            = 'Temporary credentials granting `task.scopes` and the scope:
+          `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+          the task, upload artifacts and report task resolution.
+          
+          The temporary credentials are set to expire after `takenUntil`. They
+          won't expire exactly at `takenUntil` but shortly after, hence, requests
+          coming close `takenUntil` won't have problems even if there is a little
+          clock drift.
+          
+          Workers should use these credentials when making requests on behalf of
+          a task. This includes requests to create artifacts, reclaiming the task
+          reporting the task `completed`, `failed` or `exception`.
+          
+          Note, a new set of temporary credentials is issued when the worker
+          reclaims the task.
+          '
+          Properties
+            Property 'accessToken' =
+              Description            = 'The `accessToken` for the temporary credentials.
+              '
+              MinLength              = '1'
+              Type                   = 'string'
+              TypeName               = ''
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/accessToken'
+            Property 'certificate' =
+              Description            = 'The `certificate` for the temporary credentials, these are required
+              for the temporary credentials to work.
+              '
+              MinLength              = '1'
+              Type                   = 'string'
+              TypeName               = ''
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/certificate'
+            Property 'clientId' =
+              Description            = 'The `clientId` for the temporary credentials.
+              '
+              MinLength              = '1'
+              Type                   = 'string'
+              TypeName               = ''
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/clientId'
+          Required               = '[clientId accessToken certificate]'
+          Type                   = 'object'
+          TypeName               = 'Credentials'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials'
+        Property 'runId' =
+          Description            = '`run-id` assigned to this run of the task
+          '
+          Maximum                = '1000'
+          Minimum                = '0'
+          Type                   = 'integer'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId'
+        Property 'status' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/status'
+        Property 'takenUntil' =
+          Description            = 'Time at which the run expires and is resolved as `exception`,
+          with reason `claim-expired` if the run haven't been reclaimed.
+          '
+          Format                 = 'date-time'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/takenUntil'
+        Property 'task' =
+          Ref                    = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/task'
+        Property 'workerGroup' =
+          Description            = 'Identifier for the worker-group within which this run started.
+          '
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerGroup'
+        Property 'workerId' =
+          Description            = 'Identifier for the worker executing this run.
+          '
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerId'
+      Required               = '[status runId workerGroup workerId takenUntil task credentials]'
+      Type                   = 'object'
+      TypeName               = 'TasksEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items'
+    Type                   = 'array'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks'
+Required               = '[tasks]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Claim Work Response'
+Type                   = 'object'
+TypeName               = 'ClaimWorkResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/create-task-request.json#

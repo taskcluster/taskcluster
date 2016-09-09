@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 6 Sep 2016 at 16:26:00 UTC. The code was generated
+// Fri, 9 Sep 2016 at 18:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -322,6 +322,19 @@ func (myQueue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskU
 func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.ConnectionData(*myQueue)
 	return (&cd).SignedURL("/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
+}
+
+// Claim any task, more to be added later... long polling up to 20s.
+//
+// Required scopes:
+//   * queue:claim-work:<provisionerId>/<workerType>, and
+//   * queue:worker-id:<workerGroup>/<workerId>
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#claimWork
+func (myQueue *Queue) ClaimWork(provisionerId, workerType string, payload *ClaimWorkRequest) (*ClaimWorkResponse, error) {
+	cd := tcclient.ConnectionData(*myQueue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/claim-work/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(ClaimWorkResponse), nil)
+	return responseObject.(*ClaimWorkResponse), err
 }
 
 // claim a task, more to be added later...
