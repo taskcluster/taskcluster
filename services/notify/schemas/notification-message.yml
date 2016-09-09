@@ -1,7 +1,7 @@
 $schema:            http://json-schema.org/draft-04/schema#
 title:              "Notification Message"
 description: |
-  WRITE MORE HERE
+  This can be pretty much anything you want it to be.
 type: object
 properties:
   version: {$const: message-version}
