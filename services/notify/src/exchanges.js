@@ -5,7 +5,9 @@ let assert    = require('assert');
 let exchanges = new Exchanges({
   title:      'Notify AMQP Exchanges',
   description: [
-    'Write something here!',
+    'This pretty much only contains the simple free-form',
+    'message that can be published from this service from a request',
+    'by anybody with the proper scopes.',
   ].join('\n'),
   schemaPrefix:         'http://schemas.taskcluster.net/notify/v1/',
 });
@@ -59,6 +61,11 @@ exchanges.declare({
   description: [
     'An arbitrary message that a taskcluster user',
     'can trigger if they like.',
+    '',
+    'The standard one that is published by us watching',
+    'for the completion of tasks is just the task status',
+    'data that we pull from the queue `status()` endpoint',
+    'when we notice a task is complete.',
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
   schema:             'notification-message.json#',
