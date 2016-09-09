@@ -154,6 +154,15 @@ class QueueService {
           msg.messageId,
           msg.popReceipt,
         ),
+        release:  this.client.updateMessage.bind(
+          this.client,
+          queue,
+          msg.messageText,
+          msg.messageId,
+          msg.popReceipt, {
+            visibilityTimeout: 0,
+          },
+        ),
       };
     });
   }
@@ -634,6 +643,46 @@ class QueueService {
     return {queues, expiry};
   }
 
+  /**
+   * Return pending queues as list of poll(count) in order of priority.
+   *
+   * A poll(count) function returns up-to count messages, where each message
+   * is on the form:
+   * {
+   *   taskId:  '...',        // taskId from the message
+   *   runId:   0,            // runId from the message
+   *   remove:  function() {} // Async function to delete the message
+   *   release: function() {} // Async function that makes the message visible
+   * }
+   */
+  async pendingQueues(provisionerId, workerType) {
+    // Find names of azure queues
+    let queueNames = await this.ensurePendingQueue(
+      provisionerId, workerType,
+    );
+    // Order by priority (and convert to array)
+    let queues = PRIORITIES.map(priority => queueNames[priority]);
+
+    // For each queue, return poll(count) function
+    return queues.map(queue => {
+      return async (count) => {
+        // Get messages
+        let messages = await this._getMessages(queue, {
+          visibility: 5 * 60,
+          count,
+        });
+        return messages.map(m => {
+          return {
+            taskId:   m.payload.taskId,
+            runId:    m.payload.runId,
+            remove:   m.remove,
+            release:  m.release,
+          };
+        });
+      };
+    });
+  }
+
   /** Returns promise for number of messages pending in pending task queue */
   async countPendingMessages(provisionerId, workerType) {
     // Find cache entry
@@ -657,7 +706,7 @@ class QueueService {
         }));
 
         // Sum up the messageCount property
-        return _.sum(results, 'messageCount');
+        return _.sumBy(results, 'messageCount');
       })();
     }
 

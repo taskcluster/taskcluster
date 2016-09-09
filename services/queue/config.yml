@@ -117,6 +117,9 @@ defaults:
     region:           us-west-2
     apiVersion:       2014-01-01
 
+  monitor:
+    mock:             true
+
 # Configuration in production
 production:
   app:
@@ -142,6 +145,8 @@ production:
     env:              production
     forceSSL:         true
     trustProxy:       true
+  monitor:
+    mock:             false
 
 # Configuration of tests
 test:
@@ -190,3 +195,26 @@ test:
     publicUrl:        http://localhost:60401
     port:             60401
     env:              development
+load-test:
+  app:
+    publishMetaData:              false
+    publicArtifactBucket:         'test-bucket-for-any-garbage'
+    privateArtifactBucket:        'test-bucket-for-any-garbage2'
+    artifactContainer:            'artifacts'
+    queuePrefix:                  'lta'
+    taskTableName:                'LoadTestTasks2'
+    artifactTableName:            'LoadTestArtifacts2'
+    taskGroupTableName:           'LoadTestTaskGroups2'
+    taskGroupMemberTableName:     'LoadTestTaskGroupMembers2'
+    taskGroupActiveSetTableName:  'LoadTestTaskSizeMembers2'
+    taskRequirementTableName:     'LoadTestTaskRequirement2'
+    taskDependencyTableName:      'LoadTestTaskDependency2'
+    claimQueue:                   'load-test-claim-queue'
+    deadlineQueue:                'load-test-deadline-queue'
+    publicArtifactBucketProxies:
+      'us-east-1':    'proxy-for-us-east-1'
+  server:
+    publicUrl:        https://tc-queue-load-test.herokuapp.com
+    env:              development
+    forceSSL:         true
+    trustProxy:       true
