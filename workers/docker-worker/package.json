@@ -20,8 +20,7 @@
   "bugs": "https://github.com/taskcluster/docker-worker/issues",
   "homepage": "https://github.com/taskcluster/docker-worker",
   "dependencies": {
-    "aws-sdk": "^2.1.5",
-    "aws-sdk-promise": "0.0.2",
+    "aws-sdk": "^2.5.5",
     "azure-storage": "^0.3.0",
     "babel": "^4.7",
     "cli-color": "^0.3.2",

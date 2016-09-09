@@ -6,7 +6,7 @@ resources. That and the fact that we could have thousands of workers makes
 auto pushing schema's tricky. For now this script does the uploads manually.
 */
 
-var aws = require('aws-sdk-promise');
+var aws = require('aws-sdk');
 var fs = require('fs');
 
 var base = require('taskcluster-base');
