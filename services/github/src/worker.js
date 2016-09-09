@@ -20,8 +20,8 @@ worker.webHookHandler = async function(message, context) {
   // We must attempt to convert the sanitized fields back to normal here. 
   // Further discussion of how to deal with this cleanly is in
   // https://github.com/taskcluster/taskcluster-github/issues/52
-  message.payload.organization = message.payload.organization.replace('%', '.');
-  message.payload.repository = message.payload.repository.replace('%', '.');
+  message.payload.organization = message.payload.organization.replace(/%/g, '.');
+  message.payload.repository = message.payload.repository.replace(/%/g, '.');
 
   debug('handling webhook: ', message);
   let taskclusterConfig = undefined;
@@ -37,6 +37,15 @@ worker.webHookHandler = async function(message, context) {
     if (e.status === 404) {
       debug(`${message.payload.organization}/${message.payload.repository} has no '.taskcluster.yml'. Skipping.`);
       return;
+    }
+    if (_.endsWith(e.message, '</body>\n</html>\n') && e.message.length > 10000){
+      // We kept getting full html 500/400 pages from github in the logs.
+      // I consider this to be a hard-to-fix bug in octokat, so let's make
+      // the logs usable for now and try to fix this later. It's a relatively
+      // rare occurence.
+      debug('Detected an extremeley long error. Truncating!');
+      e.message = _.join(_.take(e.message, 100).concat('...'), '');
+      e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
     }
     throw e;
   }
