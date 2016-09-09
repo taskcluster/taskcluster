@@ -13,6 +13,7 @@ mocha                             \
   .test/minimumtask_test.js       \
   .test/gettask_test.js           \
   .test/claimtask_test.js         \
+  .test/claimwork_test.js         \
   .test/resolvetask_test.js       \
   .test/polltask_test.js          \
   .test/priority_test.js          \

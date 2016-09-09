@@ -17,6 +17,7 @@ let DeadlineResolver    = require('./deadlineresolver');
 let ClaimResolver       = require('./claimresolver');
 let DependencyTracker   = require('./dependencytracker');
 let DependencyResolver  = require('./dependencyresolver');
+let WorkClaimer         = require('./workclaimer');
 
 // Create component loader
 let load = base.loader({
@@ -30,7 +31,7 @@ let load = base.loader({
     setup: ({process, profile, cfg}) => base.monitor({
       project: 'taskcluster-queue',
       credentials: cfg.taskcluster.credentials,
-      mock: profile === 'test',
+      mock: cfg.monitor.mock,
       process,
     }),
   },
@@ -218,6 +219,19 @@ let load = base.loader({
     }),
   },
 
+  // Create workClaimer
+  workClaimer: {
+    requires: ['cfg', 'publisher', 'Task', 'queueService', 'monitor'],
+    setup: ({cfg, publisher, Task, queueService, monitor}) => new WorkClaimer({
+      publisher,
+      Task,
+      queueService,
+      monitor:        monitor.prefix('work-claimer'),
+      claimTimeout:   cfg.app.claimTimeout,
+      credentials:    cfg.taskcluster.credentials,
+    }),
+  },
+
   // Create dependencyTracker
   dependencyTracker: {
     requires: [
@@ -245,6 +259,7 @@ let load = base.loader({
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
+      'workClaimer',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -268,6 +283,7 @@ let load = base.loader({
         cloudMirrorHost:  ctx.cfg.app.cloudMirrorHost,
         artifactRegion:   ctx.cfg.aws.region,
         monitor:          ctx.monitor.prefix('api-context'),
+        workClaimer:      ctx.workClaimer,
       },
       validator:        ctx.validator,
       authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
