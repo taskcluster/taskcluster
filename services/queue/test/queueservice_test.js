@@ -190,6 +190,61 @@ suite('queue/QueueService', function() {
     assert(res.ok, 'Message failed to delete');
   });
 
+  test('put, poll, release, poll, delete (priority: normal)', async () => {
+    var taskId  = slugid.v4();
+    var runId   = 0;
+    var task    = {
+      taskId:             taskId,
+      provisionerId:      provisionerId,
+      workerType:         workerType,
+      priority:           'normal',
+      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
+    };
+
+    // Put message into pending queue
+    debug('### Putting message in pending queue');
+    await queueService.putPendingMessage(task, runId);
+
+    // Get poll functions for queues
+    let poll = await queueService.pendingQueues(provisionerId, workerType);
+
+    // Poll for the message
+    let message = await base.testing.poll(async () => {
+      for (let i = 0; i < poll.length; i++) {
+        let messages = await poll[i](1);
+        if (messages.length === 1) {
+          return messages[0];
+        }
+      }
+      throw new Error('Expected message');
+    });
+
+    // Check message
+    assert(message.taskId === taskId);
+    assert(message.runId === runId);
+
+    // Release the message back into the queue
+    await message.release();
+
+    // Poll message again
+    message = await base.testing.poll(async () => {
+      for (let i = 0; i < poll.length; i++) {
+        let messages = await poll[i](1);
+        if (messages.length === 1) {
+          return messages[0];
+        }
+      }
+      throw new Error('Expected message to return');
+    });
+
+    // Check message
+    assert(message.taskId === taskId);
+    assert(message.runId === runId);
+
+    // Remove message
+    await message.remove();
+  });
+
   test('put, get, delete (priority: high)', async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
