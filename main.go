@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -23,7 +22,6 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -59,6 +57,7 @@ var (
 	config             *Config
 	configFile         string
 	Features           []Feature = []Feature{
+		&LiveLogFeature{},
 		&ChainOfTrustFeature{},
 	}
 
@@ -908,32 +907,11 @@ func (task *TaskRun) run() error {
 	if err != nil {
 		return WorkerShutdown(err)
 	}
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
-	defer func(liveLog *livelog.LiveLog) {
-		errClose := liveLog.LogWriter.Close()
-		if errClose != nil {
-			// no need to raise an exception
-			log.Printf("WARN: could not close livelog writer: %s", errClose)
-		}
-		errTerminate := liveLog.Terminate()
-		if errTerminate != nil {
-			// no need to raise an exception
-			log.Printf("WARN: could not close livelog writer: %s", errTerminate)
-		}
-	}(liveLog)
-	if err != nil {
-		log.Printf("WARN: could not create livelog: %s", err)
-		task.logWriter = logFileHandle
-	} else {
-		task.liveLog = liveLog
-		task.logWriter = io.MultiWriter(liveLog.LogWriter, logFileHandle)
-		err = task.uploadLiveLog()
-		if err != nil {
-			log.Printf("WARN: could not upload livelog: %s", err)
-		}
-	}
+	task.logWriter = logFileHandle
 
-	// start features
+	taskFeatures := []TaskFeature{}
+
+	// create task features
 	for _, feature := range Features {
 		if feature.IsEnabled(task.Payload.Features) {
 			if !scopes.Given(task.Definition.Scopes).Satisfies(feature.RequiredScopes()) {
@@ -945,10 +923,15 @@ func (task *TaskRun) run() error {
 					TaskStatus: Errored,
 				}
 			}
-			err = feature.Created(task)
-			if err != nil {
-				return WorkerShutdown(err)
-			}
+			taskFeatures = append(taskFeatures, feature.NewTaskFeature(task))
+		}
+	}
+
+	// start task features
+	for _, taskFeature := range taskFeatures {
+		err = taskFeature.Start()
+		if err != nil {
+			return WorkerShutdown(err)
 		}
 	}
 
@@ -1019,13 +1002,11 @@ func (task *TaskRun) run() error {
 		}
 	}
 
-	// stop features
-	for _, feature := range Features {
-		if feature.IsEnabled(task.Payload.Features) {
-			err = feature.Killed(task)
-			if err != nil {
-				return WorkerShutdown(err)
-			}
+	// stop task features, but in reverse order to how they were started
+	for i := len(taskFeatures) - 1; i >= 0; i-- {
+		err = taskFeatures[i].Stop()
+		if err != nil {
+			return WorkerShutdown(err)
 		}
 	}
 
@@ -1061,25 +1042,6 @@ func (task *TaskRun) postTaskActions() error {
 		return WorkerShutdown(err)
 	}
 
-	log.Println("Redirecting live.log to live_backing.log")
-	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, task.TaskID, task.RunID, "public/logs/live_backing.log")
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-	err = task.uploadArtifact(
-		RedirectArtifact{
-			BaseArtifact: BaseArtifact{
-				CanonicalPath: "public/logs/live.log",
-				// same expiry as underlying log it points to
-				Expires: task.Definition.Expires,
-			},
-			MimeType: "text/plain; charset=utf-8",
-			URL:      logURL,
-		},
-	)
-	if err != nil {
-		return WorkerShutdown(err)
-	}
 	return nil
 }
 

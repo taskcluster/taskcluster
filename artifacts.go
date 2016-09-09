@@ -10,15 +10,12 @@ import (
 	"mime"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/taskcluster/httpbackoff"
-	"github.com/taskcluster/stateless-dns-go/hostname"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
@@ -307,29 +304,6 @@ func canonicalPath(path string) string {
 		return path
 	}
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
-}
-
-func (task *TaskRun) uploadLiveLog() error {
-	maxRunTimeDeadline := time.Time(task.TaskClaimResponse.Status.Runs[task.RunID].Started).Add(time.Duration(task.Payload.MaxRunTime) * time.Second)
-	// deduce stateless DNS name to use
-	statelessHostname := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
-	getURL, err := url.Parse(task.liveLog.GetURL)
-	if err != nil {
-		return err
-	}
-	getURL.Scheme = "https"
-	getURL.Host = statelessHostname + ":60023"
-	return task.uploadArtifact(
-		RedirectArtifact{
-			BaseArtifact: BaseArtifact{
-				CanonicalPath: "public/logs/live.log",
-				// livelog expires when task must have completed
-				Expires: tcclient.Time(maxRunTimeDeadline),
-			},
-			MimeType: "text/plain; charset=utf-8",
-			URL:      getURL.String(),
-		},
-	)
 }
 
 func (task *TaskRun) uploadLog(logFile string) error {

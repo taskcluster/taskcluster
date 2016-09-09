@@ -5,10 +5,14 @@ import "github.com/taskcluster/taskcluster-base-go/scopes"
 type (
 	Feature interface {
 		Initialise() error
-		Created(task *TaskRun) error
-		Killed(task *TaskRun) error
 		IsEnabled(fl EnabledFeatures) bool
 		RequiredScopes() scopes.Required
+		NewTaskFeature(task *TaskRun) TaskFeature
+	}
+
+	TaskFeature interface {
+		Start() error
+		Stop() error
 	}
 
 	EnabledFeatures struct {

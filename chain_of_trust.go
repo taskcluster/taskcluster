@@ -42,20 +42,34 @@ type ChainOfTrustData struct {
 	Environment CoTEnvironment               `json:"environment"`
 }
 
-func (cot *ChainOfTrustFeature) Initialise() error {
+type ChainOfTrustTaskFeature struct {
+	task *TaskRun
+}
+
+func (feature *ChainOfTrustFeature) Initialise() error {
 	return nil
 }
 
-func (cot *ChainOfTrustFeature) RequiredScopes() scopes.Required {
+func (feature *ChainOfTrustFeature) RequiredScopes() scopes.Required {
 	// let's not require any scopes, as I see no reason to control access to this feature
 	return scopes.Required{}
 }
 
-func (cot *ChainOfTrustFeature) IsEnabled(fl EnabledFeatures) bool {
+func (feature *ChainOfTrustFeature) IsEnabled(fl EnabledFeatures) bool {
 	return fl.ChainOfTrust
 }
 
-func (cot *ChainOfTrustFeature) Killed(task *TaskRun) error {
+func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
+	return &ChainOfTrustTaskFeature{
+		task: task,
+	}
+}
+
+func (cot *ChainOfTrustTaskFeature) Start() error {
+	return nil
+}
+
+func (cot *ChainOfTrustTaskFeature) Stop() error {
 	logFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
 	certifiedLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "certified.log")
 	signedCert := filepath.Join(TaskUser.HomeDir, "public", "logs", "chainOfTrust.json.asc")
@@ -63,12 +77,12 @@ func (cot *ChainOfTrustFeature) Killed(task *TaskRun) error {
 	if err != nil {
 		return err
 	}
-	err = task.uploadLog("public/logs/certified.log")
+	err = cot.task.uploadLog("public/logs/certified.log")
 	if err != nil {
 		return err
 	}
 	artifactHashes := map[string]ArtifactHash{}
-	for _, artifact := range task.Artifacts {
+	for _, artifact := range cot.task.Artifacts {
 		switch a := artifact.(type) {
 		case S3Artifact:
 			// make sure SHA256 is calculated
@@ -85,9 +99,9 @@ func (cot *ChainOfTrustFeature) Killed(task *TaskRun) error {
 	cotCert := &ChainOfTrustData{
 		Version:     1,
 		Artifacts:   artifactHashes,
-		Task:        task.Definition,
-		TaskID:      task.TaskID,
-		RunID:       task.RunID,
+		Task:        cot.task.Definition,
+		TaskID:      cot.task.TaskID,
+		RunID:       cot.task.RunID,
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
 		Environment: CoTEnvironment{
@@ -134,14 +148,10 @@ func (cot *ChainOfTrustFeature) Killed(task *TaskRun) error {
 	w.Close()
 	out.Write([]byte{'\n'})
 	out.Close()
-	err = task.uploadLog("public/logs/chainOfTrust.json.asc")
+	err = cot.task.uploadLog("public/logs/chainOfTrust.json.asc")
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (cot *ChainOfTrustFeature) Created(task *TaskRun) error {
 	return nil
 }
 

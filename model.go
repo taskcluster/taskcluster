@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/taskcluster/generic-worker/livelog"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -80,11 +79,7 @@ type (
 		// not exported
 		reclaimTimer *time.Timer
 		logWriter    io.Writer
-		// The canonical name of the log file as reported to the Queue, which
-		// is typically the relative location of the log file to the user home
-		// directory
-		liveLog *livelog.LiveLog
-		Queue   *queue.Queue `json:"-"`
+		Queue        *queue.Queue `json:"-"`
 	}
 
 	// Regardless of platform, we will have to call out to system commands to run tasks,
