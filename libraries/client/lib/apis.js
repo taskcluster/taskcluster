@@ -1337,7 +1337,7 @@ module.exports = {
           "query": [
           ],
           "route": "/task/<namespace>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
         },
@@ -1353,7 +1353,7 @@ module.exports = {
           "query": [
           ],
           "route": "/namespaces/<namespace>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List Namespaces",
           "type": "function"
         },
@@ -1369,7 +1369,7 @@ module.exports = {
           "query": [
           ],
           "route": "/tasks/<namespace>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List Tasks",
           "type": "function"
         },
@@ -1390,7 +1390,7 @@ module.exports = {
               "index:insert-task:<namespace>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Insert Task into Index",
           "type": "function"
         },
@@ -1410,7 +1410,7 @@ module.exports = {
               "queue:get-artifact:<name>"
             ]
           ],
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get Artifact From Indexed Task",
           "type": "function"
         },
@@ -1899,6 +1899,29 @@ module.exports = {
         },
         {
           "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "Claim any task, more to be added later... long polling up to 20s.",
+          "input": "http://schemas.taskcluster.net/queue/v1/claim-work-request.json#",
+          "method": "post",
+          "name": "claimWork",
+          "output": "http://schemas.taskcluster.net/queue/v1/claim-work-response.json#",
+          "query": [
+          ],
+          "route": "/claim-work/<provisionerId>/<workerType>",
+          "scopes": [
+            [
+              "queue:claim-work:<provisionerId>/<workerType>",
+              "queue:worker-id:<workerGroup>/<workerId>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Claim Work",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskId",
             "runId"
           ],
@@ -1922,7 +1945,7 @@ module.exports = {
             ]
           ],
           "stability": "stable",
-          "title": "Claim task",
+          "title": "Claim Task",
           "type": "function"
         },
         {
@@ -2687,7 +2710,7 @@ module.exports = {
             {
               "multipleWords": false,
               "name": "schedulerId",
-              "required": false,
+              "required": true,
               "summary": "`schedulerId` for the task-group this message concerns"
             },
             {
