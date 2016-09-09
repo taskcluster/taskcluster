@@ -1,8 +1,8 @@
 /**
- * The Certificate of Trust feature allows tasks to include an artifact that
- * hashes the tasks artifacts and some other pieces of information so that
- * downstream consumers can validate the environment that the task ran in and what
- * was produce.  This artifact is then signed.
+ * The Chain of Trust feature allows tasks to include an artifact that hashes
+ * the tasks artifacts and some other pieces of information so that downstream
+ * consumers can validate the environment that the task ran in and what was
+ * produce. This artifact is then (openpgp) signed.
  */
 import crypto from 'crypto';
 import stream from 'stream';
@@ -16,9 +16,9 @@ import zlib from 'zlib';
 
 let debug = Debug('taskcluster-docker-worker:features:cot');
 
-export default class CertificateOfTrust {
+export default class ChainOfTrust {
   constructor() {
-    this.featureName = 'certificateOfTrust';
+    this.featureName = 'chainOfTrust';
   }
 
   async created(task) {
@@ -67,17 +67,17 @@ export default class CertificateOfTrust {
       throw err;
     }
 
-    let artifact = {name: 'public/logs/certified.log', hash: `sha256:${this.hash.digest('hex')}`};
-    task.artifactHashes.push(artifact);
+    task.artifactHashes['public/logs/certified.log'] = {sha256: `${this.hash.digest('hex')}`};
 
     let certificate = {
+      chainOfTrustVersion: 1,
       artifacts: task.artifactHashes,
       task: task.task,
       taskId: task.status.taskId,
       runId: task.runId,
       workerGroup: task.runtime.workerGroup,
       workerId: task.runtime.workerId,
-      extra: {
+      environment: {
         publicIpAddress: task.runtime.publicIp,
         privateIpAddress: task.runtime.privateIp,
         imageHash: task.imageHash
@@ -90,20 +90,20 @@ export default class CertificateOfTrust {
       }
     });
 
-    let signedCertificate = await openpgp.sign({
+    let signedChainOfTrust = await openpgp.sign({
       data: JSON.stringify(certificate),
       privateKeys: this.key
     });
 
     // Initiate a buffer stream to read from when uploading
     var bufferStream = new stream.PassThrough();
-    bufferStream.end(new Buffer(signedCertificate.data));
+    bufferStream.end(new Buffer(signedChainOfTrust.data));
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
-                       bufferStream, 'public/certificate.json.gpg', expiration, {
+                       bufferStream, 'public/chainOfTrust.json.asc', expiration, {
         'content-type': 'text/plain',
-        'content-length': signedCertificate.data.length
+        'content-length': signedChainOfTrust.data.length
       });
     } catch (err) {
       debug(err);

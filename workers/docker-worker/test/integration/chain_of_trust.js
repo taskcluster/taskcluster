@@ -14,7 +14,7 @@ suite('certificate of trust', () => {
       payload: {
         image: 'taskcluster/test-ubuntu',
         features: {
-          generateCertificate: true
+          chainOfTrust: true
         },
         command: cmd(
           'mkdir /artifacts/',
@@ -44,19 +44,19 @@ suite('certificate of trust', () => {
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     let expectedArtifacts = ['public/logs/certified.log',
-                             'public/certificate.json.gpg',
+                             'public/chainOfTrust.json.asc',
                              'public/logs/live.log',
                              'public/logs/live_backing.log',
                              'public/xfoo',
                              'public/bar'].sort();
     assert.deepEqual(Object.keys(result.artifacts).sort(), expectedArtifacts);
 
-    let signedCertificate = await getArtifact(result, 'public/certificate.json.gpg');
+    let signedChainOfTrust = await getArtifact(result, 'public/chainOfTrust.json.asc');
     let armoredKey = fs.readFileSync('test/fixtures/gpg_signing_key.asc', 'ascii');
     let key = openpgp.key.readArmored(armoredKey);
     let opts = {
       publicKeys: key.keys,
-      message: openpgp.cleartext.readArmored(signedCertificate)
+      message: openpgp.cleartext.readArmored(signedChainOfTrust)
     };
     let verified = await openpgp.verify(opts);
 

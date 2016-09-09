@@ -16,13 +16,14 @@ const features = {
     module: require('./features/local_live_log')
   },
 
-  generateCertificate: {
-    title: 'Enable generation of a certificate for Chain of Trust',
-    description: 'A certificate should be generated which will include information ' +
-                 'for downstream tasks to build a level of trust for the artifacts ' +
-                 'produced by the task and the environment it ran in.',
+  chainOfTrust: {
+    title: 'Enable generation of a openpgp signed Chain of Trust artifact',
+    description: 'An artifact named chainOfTrust.json.asc should be generated ' +
+                 'which will include information for downstream tasks to build ' +
+                 'a level of trust for the artifacts produced by the task and ' +
+                 'the environment it ran in.',
     defaults: false,
-    module: require('./features/certificate_of_trust')
+    module: require('./features/chain_of_trust')
   },
 
   // the structure is [name] = { defaults: true/false, module: Handler }

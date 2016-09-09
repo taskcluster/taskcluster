@@ -120,5 +120,5 @@ export default async function uploadToS3 (
     tmp.unlink();
   }
 
-  return `sha256:${digest}`;
+  return digest;
 }
