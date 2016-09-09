@@ -304,6 +304,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.rerunTask(taskId) : result`
  * `queue.cancelTask(taskId) : result`
  * `queue.pollTaskUrls(provisionerId, workerType) : result`
+ * `queue.claimWork(provisionerId, workerType, payload) : result`
  * `queue.claimTask(taskId, runId, payload) : result`
  * `queue.reclaimTask(taskId, runId) : result`
  * `queue.reportCompleted(taskId, runId) : result`
