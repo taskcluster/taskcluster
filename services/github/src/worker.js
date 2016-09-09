@@ -38,7 +38,7 @@ worker.webHookHandler = async function(message, context) {
       debug(`${message.payload.organization}/${message.payload.repository} has no '.taskcluster.yml'. Skipping.`);
       return;
     }
-    if (_.endsWith(e.message, '</body>\n</html>\n') && e.message.length > 10000){
+    if (_.endsWith(e.message, '</body>\n</html>\n') && e.message.length > 10000) {
       // We kept getting full html 500/400 pages from github in the logs.
       // I consider this to be a hard-to-fix bug in octokat, so let's make
       // the logs usable for now and try to fix this later. It's a relatively
