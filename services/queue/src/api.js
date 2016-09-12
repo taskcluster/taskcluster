@@ -96,6 +96,7 @@ var api = new base.API({
     workerGroup:      GENERIC_ID_PATTERN,
     workerId:         GENERIC_ID_PATTERN,
     runId:            RUN_ID_PATTERN,
+    name:             /^[\x20-\x7e]+$/, // Artifact names must be printable ASCII
   },
   errorCodes: {
     // TODO: Remove this when upgrading to new taskcluster-lib-api
