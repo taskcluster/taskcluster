@@ -108,12 +108,13 @@ suite('End to End', () => {
 
   test('test publish tarball', async function() {
     let doc = await documenter({
-      project: 'testing',
+      project: 'docs-testing',
       schemas: validate.schemas,
       tier,
       credentials,
       docsFolder: './test/docs/',
       references,
+      bucket: cfg.bucket,
       publish: true,
     });
     assert.ok(doc.tgz);
@@ -126,6 +127,7 @@ suite('End to End', () => {
     });
     let shoulds = [
       'taskcluster-lib-docs/docs/example.md',
+      'taskcluster-lib-docs/docs/nested/nested-example.md',
     ];
     assertInTarball(shoulds, doc.tgz, done);
   });
@@ -136,8 +138,8 @@ suite('End to End', () => {
       tier,
     });
     let shoulds = [
-      'taskcluster-lib-docs/schema/foo.json',
-      'taskcluster-lib-docs/schema/bar.json',
+      'taskcluster-lib-docs/schemas/foo.json',
+      'taskcluster-lib-docs/schemas/bar.json',
     ];
     assertInTarball(shoulds, doc.tgz, done);
   });
@@ -164,14 +166,15 @@ suite('End to End', () => {
   test('download tarball contains project', async function() {
 
     let stream = await downloader({
-      project: 'testing',
+      project: 'docs-testing',
+      bucket: cfg.bucket,
       credentials,
     });
 
     let files = await getObjectsInStream(stream);
 
     let shoulds = [
-      'testing/metadata.json',
+      'docs-testing/metadata.json',
     ];
 
     for (let should of shoulds) {

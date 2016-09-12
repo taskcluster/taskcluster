@@ -2,7 +2,8 @@
 defaults:
   taskcluster:
     # This client should have the following scopes:
-    # [ auth:aws-s3:read-write:taskcluster-raw-docs/testing ]
+    # [ auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/ ]
+    # Don't forget the trailing slash!
     #
     # The client can be created at:
     # https://tools.taskcluster.net/auth/clients/
