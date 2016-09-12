@@ -18,7 +18,8 @@ async function documenter(options) {
     tier: null,
     schemas: {},
     menuIndex: 10,
-    docsFolder: rootdir.get() + '/docs',
+    docsFolder: path.join(rootdir.get(), '/docs'),
+    bucket: 'taskckluster-raw-docs',
     references: [],
     publish: process.env.NODE_ENV == 'production',
   });
@@ -33,14 +34,14 @@ async function documenter(options) {
   }
 
   function headers(name, dir) {
-    dir = dir || '';
-    return {name: path.join(options.project, dir, name)};
+    return {name: path.join(options.project, dir || '', name)};
   }
 
   let tarball = tar.pack();
 
   let metadata = {
     version: 1,
+    project: options.project,
     tier: options.tier,
     menuIndex: options.menuIndex,
   };
@@ -50,61 +51,56 @@ async function documenter(options) {
     JSON.stringify(metadata, null, 2)
   );
 
-  _.forEach(options.schemas, (schema, name) => {
-    tarball.entry(headers(name, 'schema'), schema);
-  });
+  _.forEach(options.schemas, (schema, name) => tarball.entry(
+    headers(name, 'schemas'),
+    schema
+  ));
 
-  _.forEach(options.references, (reference) => {
-    let data = JSON.stringify(reference.reference, null, 2);
-    tarball.entry(headers(reference.name + '.json', 'references'), data);
-  });
+  _.forEach(options.references, reference => tarball.entry(
+    headers(reference.name + '.json', 'references'),
+    JSON.stringify(reference.reference, null, 2)
+  ));
 
   try {
-    let readme = await fs.readFile(path.join(rootdir.get(), 'README.md'));
-    tarball.entry(headers('README.md'), readme);
+    tarball.entry(
+      headers('README.md'),
+      await fs.readFile(path.join(rootdir.get(), 'README.md'))
+    );
   } catch (err) {
     if (err.code !== 'ENOENT') {
       throw err;
     }
-    debug('README.md does not exist.');
+    debug('README.md does not exist. Continuing.');
   }
 
-  if (options.docsFolder) {
-    try {
-      let docs = options.docsFolder;
-      let files = recursiveReadSync(options.docsFolder);
-      await Promise.all(files.map(async (file) => {
-        let relativePath = path.basename(file);
-        let data = await fs.readFile(file, {encoding: 'utf8'});
-        tarball.entry(headers(relativePath, 'docs'), data);
-      }));
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err;
-      }
-      debug('Docs folder does not exist');
+  try {
+    await Promise.all(recursiveReadSync(options.docsFolder).map(async file => {
+      let relativePath = path.relative(options.docsFolder, file);
+      tarball.entry(headers(relativePath, 'docs'), await fs.readFile(file, {encoding: 'utf8'}));
+    }));
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err;
     }
+    debug('Docs folder does not exist. Continuing.');
   }
 
-  // the stream was added
-  // no more entries
   tarball.finalize();
 
-  let gzip = zlib.createGzip();
-  let tgz = tarball.pipe(gzip);
+  let tgz = tarball.pipe(zlib.createGzip());
 
   if (options.publish) {
     let auth = new client.Auth({
       credentials: options.credentials,
     });
 
-    let creds = await auth.awsS3Credentials('read-write', 'taskcluster-raw-docs', options.project + '/');
+    let creds = await auth.awsS3Credentials('read-write', options.bucket, options.project + '/');
 
     let s3 = new aws.S3(creds.credentials);
     let s3Stream = S3UploadStream(s3);
 
     let upload = s3Stream.upload({
-      Bucket: 'taskcluster-raw-docs',
+      Bucket: options.bucket,
       Key: options.project + '/latest.tar.gz',
     });
 
@@ -132,15 +128,15 @@ async function documenter(options) {
     await uploadPromise;
   }
 
-  let output = {
+  return {
     tgz,
   };
-  return output;
 }
 
 async function downloader(options) {
   options = _.defaults({}, options, {
     credentials: {},
+    bucket: 'taskckluster-raw-docs',
     project: null,
   });
 
@@ -148,12 +144,12 @@ async function downloader(options) {
     credentials: options.credentials,
   });
 
-  let creds = await auth.awsS3Credentials('read-write', 'taskcluster-raw-docs', options.project + '/');
+  let creds = await auth.awsS3Credentials('read-only', options.bucket, options.project + '/');
 
   let s3 = new aws.S3(creds.credentials);
 
   let readStream = s3.getObject({
-    Bucket: 'taskcluster-raw-docs',
+    Bucket: options.bucket,
     Key: options.project + '/latest.tar.gz',
   }).createReadStream();
 
