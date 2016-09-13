@@ -31,10 +31,10 @@ class Notifier {
     }).promise().then(req => req.data.QueueUrl);
   }
 
-  key(...idents) {
+  key(idents) {
     return crypto
       .createHash('md5')
-      .update(_.join(_.flatMapDeep(idents, id => id ? id.toString() : '')))
+      .update(JSON.stringify(idents))
       .digest('hex');
   }
 
