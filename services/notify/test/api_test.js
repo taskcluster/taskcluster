@@ -29,6 +29,18 @@ suite('API', () => {
     });
   });
 
+  test('email without link', async (done) => {
+    helper.checkSqsMessage(helper.emailSqsQueueUrl, done, body => {
+      let j = JSON.parse(body.Message);
+      assert.deepEqual(j.delivery.recipients, ['success@simulator.amazonses.com']);
+    });
+    await helper.notify.email({
+      address:'success@simulator.amazonses.com',
+      subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
+      content:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
+    });
+  });
+
   test('irc', async (done) => {
     helper.checkSqsMessage(helper.sqsQueueUrl, done, body => {
       assert.equal(body.channel, '#taskcluster-test');
