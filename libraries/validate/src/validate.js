@@ -18,8 +18,8 @@ async function validator(options) {
   let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
 
   let cfg = _.defaults(options, {
-    constants: rootdir.get() + '/schemas/constants.yml',
-    folder: rootdir.get() + '/schemas',
+    constants: path.join(rootdir.get(), 'schemas', 'constants.yml'),
+    folder: path.join(rootdir.get(), 'schemas'),
     publish: process.env.NODE_ENV == 'production',
     baseUrl: 'http://schemas.taskcluster.net/',
     bucket: 'schemas.taskcluster.net',
@@ -55,7 +55,7 @@ async function validator(options) {
 
     if (schema.id) {
       debug('Schema incorrectly attempts to set own id: %s', name);
-      throw new Error('Schema ' + root + '/' + name + ' attempts to set own id!');
+      throw new Error('Schema ' + path.join(root, name) + ' attempts to set own id!');
     }
     name = name.replace(/\.ya?ml$/, '.json');
     schema.id = urljoin(cfg.baseUrl, cfg.prefix, name) + '#';
