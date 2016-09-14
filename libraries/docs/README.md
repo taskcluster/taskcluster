@@ -25,10 +25,54 @@ below.
 This will automatically take any markdown files in a top-level `docs/` directory and turn them into rendered pages on the docs site. In addition,
 any schemas and references can be passed in, and they'll be turned into documentation as well.
 
+Example
+-------
+
+```js
+let docs              = require('taskcluster-lib-docs');
+let load = loader({
+  cfg: {
+    requires: ['profile'],
+    setup: ({profile}) => base.config({profile}),
+  },
+  validator: {
+    requires: ['cfg'],
+    setup: ({cfg}) => base.validator({
+      prefix: 'service/v1/',
+      aws: cfg.aws,
+    }),
+  },
+  reference: {
+    requires: ['cfg'],
+    setup: ({cfg}) => exchanges.reference({
+      exchangePrefix:   cfg.app.exchangePrefix,
+      credentials:      cfg.pulse,
+    }),
+  },
+  docs: {
+    requires: ['cfg', 'validator', 'reference'],
+    setup: ({cfg, validator, reference}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        }, {
+          name: 'events',
+          reference: reference,
+        },
+      ],
+    }),
+  },
+}, ['profile', 'process']);
+```
+
 Options and Defaults
 --------------------
 
-The following are the options that can be passed to this library. They are listed with their defaults.
+The following are the options that can be passed to the publisher function in this library. They are listed with their defaults.
 
 ```js
     // A set of Taskcluster credentials that must contain both 'clientId' and 'accessToken' fields
