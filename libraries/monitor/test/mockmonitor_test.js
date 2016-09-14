@@ -140,7 +140,13 @@ suite('MockMonitor', () => {
     await ec2.describeAvailabilityZones().promise().catch(err => {
       debug('Ignored ec2 error, we measure duration, not success, err: ', err);
     });
-    let data = monitor.measures['mm.ec2.describeAvailabilityZones.duration'];
+    let data = monitor.measures['mm.ec2.global.describeAvailabilityZones.duration'];
     assert(data.length === 1);
+    data = monitor.measures['mm.ec2.us-west-2.describeAvailabilityZones.duration'];
+    assert(data.length === 1);
+    data = monitor.counts['mm.ec2.global.describeAvailabilityZones.count'];
+    assert(data === 1);
+    data = monitor.counts['mm.ec2.us-west-2.describeAvailabilityZones.count'];
+    assert(data === 1);
   });
 });
