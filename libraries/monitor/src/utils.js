@@ -129,7 +129,13 @@ export function patchAWS(monitor, service) {
     let r = makeRequest.call(this, operation, params, callback);
     r.on('complete', () => {
       let requestTime = (new Date()).getTime() - r.startTime.getTime();
-      monitor.measure(operation + '.duration', requestTime);
+      monitor.measure(`global.${operation}.duration`, requestTime);
+      monitor.count(`global.${operation}.count`, 1);
+      if (service.config && service.config.region) {
+        let region = service.config.region;
+        monitor.measure(`${region}.${operation}.duration`, requestTime);
+        monitor.count(`${region}.${operation}.count`, 1);
+      }
     });
     return r;
   };
