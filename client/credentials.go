@@ -68,7 +68,6 @@ func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, erro
 		return nil, err
 	}
 	a.Method = method
-	a.Nonce = nonce()
 
 	// Add ext, if needed
 	var e ext
@@ -100,6 +99,7 @@ func (c *Credentials) SignHeader(method, url string, h hash.Hash) (string, error
 	if err != nil {
 		return "", err
 	}
+	a.Nonce = nonce()
 	return a.RequestHeader(), nil
 }
 
