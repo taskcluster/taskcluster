@@ -1,10 +1,13 @@
 package client
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -45,6 +48,15 @@ type ext struct {
 	AuthorizedScopes *[]string    `json:"authorizedScopes,omitempty"`
 }
 
+func nonce() string {
+	b := make([]byte, 8)
+	_, err := io.ReadFull(rand.Reader, b)
+	if err != nil {
+		panic(err)
+	}
+	return base64.StdEncoding.EncodeToString(b)[:8]
+}
+
 func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, error) {
 	// Create a hawk auth
 	a, err := hawk.NewURLAuth(url, &hawk.Credentials{
@@ -56,6 +68,7 @@ func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, erro
 		return nil, err
 	}
 	a.Method = method
+	a.Nonce = nonce()
 
 	// Add ext, if needed
 	var e ext
