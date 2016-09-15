@@ -6,10 +6,10 @@ This service monitors all of the repositories associated with an organization fo
 
 This project is tested in both Travis and Taskcluster.
 
-###Docs
+### Docs
 See: https://docs.taskcluster.net/manual/vcs/github
 
-##Components
+## Components
 
 ### API Server
 Listens for WebHooks and, if they are valid, forwards them to a pulse exchange.
@@ -17,9 +17,9 @@ Listens for WebHooks and, if they are valid, forwards them to a pulse exchange.
 ### Worker
 Listens for WebHook triggered pulse messages and attempts to schedule TaskCluster tasks for any events related to a repository which contains a `.taskcluster.yml` file.
 
-##Contributing
+## Contributing
 
-###Run Tests
+### Run Tests
 From the project's base run ``npm test``
 *note:* Initially, this will only run unit tests. To run integration tests add pulse credentials to ``user-config.yml``. An example is available at ``user-config-example.yml``.
 
