@@ -41,6 +41,7 @@ let load = base.loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
+      project: 'github',
       references: [
         {
           name: 'api',
