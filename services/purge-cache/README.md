@@ -1,5 +1,7 @@
-TaskCluster Purge Worker Cache Service [![Circle CI](https://circleci.com/gh/taskcluster/taskcluster-purge-cache.svg?style=badge)](https://circleci.com/gh/taskcluster/taskcluster-purge-cache)
+TaskCluster Purge Worker Cache Service
 ======================================
+
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-purge-cache.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-purge-cache)
 
 Many taskcluster workers implements some generic form cache folders.
 These cache often have a `name` that identifies them, for example a task
