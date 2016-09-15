@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/taskcluster-cli/extpoints"
-	"github.com/taskcluster/taskcluster-client-go/tcclient"
+	"github.com/taskcluster/taskcluster-client-go"
 	"gopkg.in/yaml.v2"
 )
 
