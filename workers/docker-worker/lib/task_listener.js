@@ -398,8 +398,12 @@ export default class TaskListener extends EventEmitter {
       totalRunTime += Date.now() - task.startTime;
     });
 
-    let efficiency = totalRunTime / (this.capacity * this.host.billingCycleUptime);
-    this.runtime.workerTypeMonitor.measure('total-efficiency', efficiency * 100);
+    let uptime = this.host.billingCycleUptime();
+    let efficiency = (totalRunTime / (this.capacity * uptime)) * 100;
+    this.runtime.log(
+        'reporting efficiency',
+        {efficiency, uptime, totalRunTime, capacity: this.capcity});
+    this.runtime.workerTypeMonitor.measure('total-efficiency', efficiency);
   }
 
   /**
