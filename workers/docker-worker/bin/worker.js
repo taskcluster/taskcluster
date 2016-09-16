@@ -184,9 +184,10 @@ async () => {
     reportUsage: false
   });
 
-  config.monitor = monitor.prefix(
-    `${config.provisionerId}.` +
-    `${config.workerGroup}.${config.workerType}.` +
+  config.workerTypeMonitor = monitor.prefix(
+    `${config.provisionerId}.${config.workerType}`
+  );
+  config.monitor = config.workerTypeMonitor.prefix(
     `${config.workerNodeType.replace('.', '')}`
   );
 

@@ -29,7 +29,17 @@ export default class TaskListener extends EventEmitter {
     this.lastTaskEvent = Date.now();
     this.host = runtime.hostManager;
     this.supersedingTimeout = 5000;
-
+    this.lastKnownCapacity = 0;
+    this.totalRunTime = 0;
+    this.lastCapacityState = {
+      time: new Date(),
+      idle: this.lastKnownCapacity,
+      busy: this.runningTasks.length
+    };
+    this.reportCapacityStateIntervalId = setInterval(
+      this.reportCapacityState.bind(this), 60 * 1000
+    );
+    this.capacityMonitor = this.runtime.workerTypeMonitor.prefix('capacity');
     this.deviceManager = new DeviceManager(runtime);
   }
 
@@ -236,6 +246,7 @@ export default class TaskListener extends EventEmitter {
   }
 
   async close() {
+    clearInterval(this.reportCapacityStateIntervalId);
     clearTimeout(this.pollTimeoutId);
     if (this.cancelListener) return await this.cancelListener.close();
   }
@@ -274,9 +285,6 @@ export default class TaskListener extends EventEmitter {
   }
 
   recordCapacity () {
-    if (this.lastKnownCapacity === undefined) {
-      this.lastKnownCapacity = 0;
-    }
     this.runtime.monitor.measure(
       'capacity.duration.lastTaskEvent',
       Date.now() - this.lastTaskEvent
@@ -322,10 +330,76 @@ export default class TaskListener extends EventEmitter {
     this.recordCapacity();
 
     this.cleanupRunningState(runningState);
+    this.totalRunTime += Date.now() - runningState.startTime;
     this.runningTasks.splice(taskIndex, 1);
     this.lastKnownCapacity += 1;
 
     if (this.isIdle()) this.emit('idle', this);
+  }
+
+  reportCapacityState() {
+    let state = {
+      time: new Date(),
+      idle: this.lastKnownCapacity,
+      busy: this.runningTasks.length,
+    };
+    let time = (
+      state.time.getTime() - this.lastCapacityState.time.getTime()
+    ) / 1000;
+    this.capacityMonitor.count('capacity-busy', this.lastCapacityState.busy * time);
+    this.capacityMonitor.count('capacity-idle', this.lastCapacityState.idle * time);
+    if (this.lastCapacityState.busy === 0) {
+      this.capacityMonitor.count('running-eq-0', time);
+    }
+    if (this.lastCapacityState.busy >= 1) {
+      this.capacityMonitor.count('running-ge-1', time);
+    }
+    if (this.lastCapacityState.busy >= 2) {
+      this.capacityMonitor.count('running-ge-2', time);
+    }
+    if (this.lastCapacityState.busy >= 3) {
+      this.capacityMonitor.count('running-ge-3', time);
+    }
+    if (this.lastCapacityState.busy >= 4) {
+      this.capacityMonitor.count('running-ge-4', time);
+    }
+    if (this.lastCapacityState.busy >= 6) {
+      this.capacityMonitor.count('running-ge-6', time);
+    }
+    if (this.lastCapacityState.busy >= 8) {
+      this.capacityMonitor.count('running-ge-8', time);
+    }
+
+    if (this.lastCapacityState.idle === 0) {
+      this.capacityMonitor.count('idle-eq-0', time);
+    }
+    if (this.lastCapacityState.idle >= 1) {
+      this.capacityMonitor.count('idle-ge-1', time);
+    }
+    if (this.lastCapacityState.idle >= 2) {
+      this.capacityMonitor.count('idle-ge-2', time);
+    }
+    if (this.lastCapacityState.idle >= 3) {
+      this.capacityMonitor.count('idle-ge-3', time);
+    }
+    if (this.lastCapacityState.idle >= 4) {
+      this.capacityMonitor.count('idle-ge-4', time);
+    }
+    if (this.lastCapacityState.idle >= 6) {
+      this.capacityMonitor.count('idle-ge-6', time);
+    }
+    if (this.lastCapacityState.idle >= 8) {
+      this.capacityMonitor.count('idle-ge-8', time);
+    }
+    this.lastCapacityState = state;
+
+    let totalRunTime = this.totalRunTime;
+    this.runningTasks.forEach(task => {
+      totalRunTime += Date.now() - task.startTime;
+    });
+
+    let efficiency = totalRunTime / (this.capacity * this.host.billingCycleUptime);
+    this.runtime.workerTypeMonitor.measure('total-efficiency', efficiency * 100);
   }
 
   /**
@@ -426,6 +500,7 @@ export default class TaskListener extends EventEmitter {
 
       // Reference to state of this request...
       runningState = {
+        startTime: Date.now(),
         devices: {},
         taskId: claim.status.taskId,
         runId: claim.runId
