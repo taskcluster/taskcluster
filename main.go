@@ -64,14 +64,21 @@ func main() {
 	usage += "\n"
 
 	// Parse arguments
-	arguments, _ := docopt.Parse(usage, nil, true, "taskcluster", true)
+	arguments, _ := docopt.Parse(usage, nil, true, "TaskCluster version 1.0", true)
 	cmd := arguments["<command>"].(string)
 	args := arguments["<args>"].([]string)
 
 	// Special case for handling "taskcluster help" ensuring it's the same as
-	// "taskcluster --help". This should be the only special case necessary!
+	// "taskcluster --help".
 	if cmd == "help" && len(args) == 0 {
 		fmt.Print(usage)
+		return
+	}
+
+	// Special case for handling "taskcluster version" ensuring it's the same as
+	// "taskcluster --version".
+	if cmd == "version" && len(args) == 0 {
+		fmt.Println("TaskCluster version 1.0")
 		return
 	}
 
@@ -87,7 +94,7 @@ func main() {
 	// Parse args for command provider
 	subArguments, _ := docopt.Parse(
 		provider.Usage(), append([]string{cmd}, args...),
-		true, "taskcluster", false,
+		true, "TaskCluster version 1.0", false,
 	)
 
 	// Create credentials, if available in configuration
