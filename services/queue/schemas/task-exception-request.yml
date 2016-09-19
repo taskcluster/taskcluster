@@ -12,6 +12,7 @@ properties:
       - resource-unavailable
       - internal-error
       - superseded
+      - intermittent-task
     description: |
       Reason that the task is resolved with an exception. This is a subset
       of the values for `resolvedReason` given in the task status structure.
@@ -44,6 +45,10 @@ properties:
       convention in this case to create an artifact entitled
       `public/superseded-by` containing the taskId of the task that superseded
       this one.
+      **Report `intermittent-task`** if the task explicitely requested a retry
+      because task is intermittent. Workers can choose whether or not to
+      support this, but workers shouldn't blindly report this for every task
+      that fails.
 additionalProperties:   false
 required:
   - reason
