@@ -1,9 +1,6 @@
 ---
-layout: post
-title: Announcing Taskcluster Notifications
+title: Enable Notifications
 ---
-
-One of the most requested features for Taskcluster has been a way to be notified on task completion rather than checking back in on the task-inspector tab every few minutes. As of today, taskcluster-notify makes that easy to do. If you have any experience indexing artifacts with routes in a task definition, you're already familiar with the mechanism for adding notifications to your tasks. If not, it's quite easy to figure out!
 
 This service can also be used via a simple api, if you have the correct scopes.
 
@@ -96,8 +93,3 @@ tasks:
       owner: "{{ event.head.user.email }}"
       source: "{{ event.head.repo.url }}"
 ```
-
-
-### Next Steps
-
-We're working now to enable this to be triggered not only on tasks but also task-groups. Work is ongoing with that project. If you have any questions or suggestions, say hi in the ``#taskcluster`` channel on Mozilla irc.
