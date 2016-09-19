@@ -420,6 +420,8 @@ suite('Resolve task', function() {
     var m1 = await helper.events.waitFor('pending');
     assume(m1.payload.status).deep.equals(r1.status);
     assume(m1.payload.runId).equals(1);
+    assume(m1.payload.status.runs[0].reasonResolved).equals('worker-shutdown');
+    assume(m1.payload.status.runs[1].reasonCreated).equals('retry');
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
@@ -460,5 +462,71 @@ suite('Resolve task', function() {
     }, function(err) {
       debug('Got expected authentication error: %s', err);
     });
+  });
+
+  test('reportException (intermittent-task) is idempotent', async () => {
+    var taskId = slugid.v4();
+    var allowedToBeException = false;
+    var gotMessage = null;
+
+    await helper.events.listenFor('except', helper.queueEvents.taskException({
+      taskId,
+    }));
+
+    var gotMessage = helper.events.waitFor('except').then((message) => {
+      assert(allowedToBeException, 'Exception at wrong time');
+      return message;
+    });
+
+    debug('### Creating task');
+    await helper.queue.createTask(taskId, taskDef);
+
+    debug('### Claiming task');
+    // First runId is always 0, so we should be able to claim it here
+    await helper.queue.claimTask(taskId, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker',
+    });
+
+    await helper.events.listenFor('pending', helper.queueEvents.taskPending({
+      taskId,
+    }));
+
+    debug('### Reporting task exception (intermittent-task)');
+    helper.scopes(
+      'queue:resolve-task',
+      'assume:worker-id:my-worker-group/my-worker',
+    );
+    var r1 = await helper.queue.reportException(taskId, 0, {
+      reason:     'intermittent-task',
+    });
+    assume(r1.status.runs.length).equals(2);
+    assume(r1.status.runs[0].state).equals('exception');
+    assume(r1.status.runs[1].state).equals('pending');
+    await helper.queue.reportException(taskId, 0, {
+      reason:     'intermittent-task',
+    });
+
+    var m1 = await helper.events.waitFor('pending');
+    assume(m1.payload.status).deep.equals(r1.status);
+    assume(m1.payload.runId).equals(1);
+    assume(m1.payload.status.runs[0].reasonResolved).equals('intermittent-task');
+    assume(m1.payload.status.runs[1].reasonCreated).equals('task-retry');
+
+    helper.scopes();
+    await helper.queue.claimTask(taskId, 1, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker',
+    });
+
+    debug('### Reporting task exception (again)');
+    allowedToBeException = true;
+    await helper.queue.reportException(taskId, 1, {
+      reason:     'intermittent-task',
+    });
+
+    var m1 = await gotMessage;
+    assume(m1.payload.status.runs[1].state).equals('exception');
+    assume(m1.payload.status.runs.length).equals(2);
   });
 });

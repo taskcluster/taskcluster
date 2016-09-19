@@ -1770,8 +1770,9 @@ api.declare({
     '  * The `task.payload` is invalid,',
     '  * Non-existent resources are referenced,',
     '  * Declared actions cannot be executed due to unavailable resources,',
-    '  * The worker had to shutdown prematurely, or,',
-    '  * The worker experienced an unknown error.',
+    '  * The worker had to shutdown prematurely,',
+    '  * The worker experienced an unknown error, or,',
+    '  * The task explicitely requested a retry.',
     '',
     'Do not use this to signal that some user-specified code crashed for any',
     'reason specific to this code. If user-specific code hits a resource that',
@@ -1841,6 +1842,15 @@ api.declare({
         scheduled:        new Date().toJSON(),
       });
     }
+    // Add task-retry, if this was an intermittent-task and we have retries
+    if (reason === 'intermittent-task' && task.retriesLeft > 0) {
+      task.retriesLeft -= 1;
+      task.runs.push({
+        state:            'pending',
+        reasonCreated:    'task-retry',
+        scheduled:        new Date().toJSON(),
+      });
+    }
   });
 
   // Find the run that we (may) have modified
@@ -1869,7 +1879,8 @@ api.declare({
   if (newRun &&
       task.runs.length - 1  === runId + 1 &&
       newRun.state          === 'pending' &&
-      newRun.reasonCreated  === 'retry') {
+      (newRun.reasonCreated  === 'retry' ||
+       newRun.reasonCreated  === 'task-retry')) {
     await Promise.all([
       this.queueService.putPendingMessage(task, runId + 1),
       this.publisher.taskPending({
