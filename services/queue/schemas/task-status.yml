@@ -104,6 +104,7 @@ properties:
           enum:
             - scheduled
             - retry
+            - task-retry
             - rerun
             - exception
         reasonResolved:
@@ -125,6 +126,7 @@ properties:
             - malformed-payload
             - resource-unavailable
             - internal-error
+            - intermittent-task
         workerGroup:
           title:        "Worker Group"
           description: |
