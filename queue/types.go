@@ -1165,6 +1165,10 @@ type (
 		// convention in this case to create an artifact entitled
 		// `public/superseded-by` containing the taskId of the task that superseded
 		// this one.
+		// **Report `intermittent-task`** if the task explicitely requested a retry
+		// because task is intermittent. Workers can choose whether or not to
+		// support this, but workers shouldn't blindly report this for every task
+		// that fails.
 		//
 		// Possible values:
 		//   * "worker-shutdown"
@@ -1172,6 +1176,7 @@ type (
 		//   * "resource-unavailable"
 		//   * "internal-error"
 		//   * "superseded"
+		//   * "intermittent-task"
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-request.json#/properties/reason
 		Reason string `json:"reason"`
@@ -1317,6 +1322,7 @@ type (
 			// Possible values:
 			//   * "scheduled"
 			//   * "retry"
+			//   * "task-retry"
 			//   * "rerun"
 			//   * "exception"
 			//
@@ -1339,6 +1345,7 @@ type (
 			//   * "malformed-payload"
 			//   * "resource-unavailable"
 			//   * "internal-error"
+			//   * "intermittent-task"
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
 			ReasonResolved string `json:"reasonResolved,omitempty"`

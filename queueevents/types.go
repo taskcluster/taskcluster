@@ -397,6 +397,7 @@ type (
 			// Possible values:
 			//   * "scheduled"
 			//   * "retry"
+			//   * "task-retry"
 			//   * "rerun"
 			//   * "exception"
 			//
@@ -419,6 +420,7 @@ type (
 			//   * "malformed-payload"
 			//   * "resource-unavailable"
 			//   * "internal-error"
+			//   * "intermittent-task"
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
 			ReasonResolved string `json:"reasonResolved,omitempty"`

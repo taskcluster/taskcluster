@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 9 Sep 2016 at 18:23:00 UTC. The code was generated
+// Mon, 19 Sep 2016 at 21:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -401,8 +401,9 @@ func (myQueue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, e
 //   * The `task.payload` is invalid,
 //   * Non-existent resources are referenced,
 //   * Declared actions cannot be executed due to unavailable resources,
-//   * The worker had to shutdown prematurely, or,
-//   * The worker experienced an unknown error.
+//   * The worker had to shutdown prematurely,
+//   * The worker experienced an unknown error, or,
+//   * The task explicitely requested a retry.
 //
 // Do not use this to signal that some user-specified code crashed for any
 // reason specific to this code. If user-specific code hits a resource that
