@@ -554,7 +554,7 @@ func (subSchema *JsonSubSchema) setSourceURL(url string) {
 func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error) {
 	var body io.ReadCloser
 	if strings.HasPrefix(URL, "file://") {
-		body, err = os.Open(URL[7:])
+		body, err = os.Open(URL[7:len(URL-1)]) // need to strip trailing '#'
 		if err != nil {
 			return
 		}
