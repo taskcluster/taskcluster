@@ -31,7 +31,7 @@ worker.webHookHandler = async function(message, context) {
     taskclusterConfig = await context.github.repos(
       message.payload.organization, message.payload.repository
     ).contents('.taskcluster.yml').read({
-      ref: message.payload.details['event.head.sha'],
+      sha: message.payload.details['event.head.sha'],
     });
   } catch (e) {
     if (e.status === 404) {
