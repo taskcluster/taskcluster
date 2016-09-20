@@ -399,7 +399,7 @@ export default class TaskListener extends EventEmitter {
     });
 
     let uptime = this.host.billingCycleUptime();
-    let efficiency = (totalRunTime / (this.capacity * uptime)) * 100;
+    let efficiency = (totalRunTime / (this.capacity * (uptime * 1000))) * 100;
     this.runtime.log(
         'reporting efficiency',
         {efficiency, uptime, totalRunTime, capacity: this.capcity});
