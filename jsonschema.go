@@ -552,28 +552,30 @@ func (subSchema *JsonSubSchema) setSourceURL(url string) {
 }
 
 func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error) {
-	var resp *http.Response
-	u, err := url.Parse(URL)
-	if err != nil {
-		return
-	}
 	var body io.ReadCloser
-	// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
-	switch u.Scheme {
-	case "http", "https":
-		resp, err = http.Get(URL)
+	if strings.HasPrefix(URL, "file://") {
+		body, err = os.Open(URL[7:])
 		if err != nil {
 			return
 		}
-		body = resp.Body
-	case "file":
-		body, err = os.Open(u.Path)
+	} else {
+		u, err := url.Parse(URL)
 		if err != nil {
-			return
+			return subSchema, err
 		}
-	default:
-		fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
-		fmt.Printf("URL: '%s'\n", URL)
+		var resp *http.Response
+		// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
+		switch u.Scheme {
+		case "http", "https":
+			resp, err = http.Get(URL)
+			if err != nil {
+				return subSchema, err
+			}
+			body = resp.Body
+		default:
+			fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
+			fmt.Printf("URL: '%s'\n", URL)
+		}
 	}
 	defer body.Close()
 	data, err := ioutil.ReadAll(body)
