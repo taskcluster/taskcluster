@@ -65,5 +65,5 @@ func TestCredentials(t *testing.T){
 
 	cred.SignRequest(request,test.hash)
 	auth, errors := cred.newAuth(test.meth , test.url,test.hash)
-	t.assert(errors,nil)
+	t.assert(errors,Equals,nil)
 }
