@@ -86,7 +86,7 @@ production:
 
 test:
   webhook:
-    secret:                       'c-etait-un-secret'
+    secret:                       'abc123'
 
   taskcluster:
     credentials:

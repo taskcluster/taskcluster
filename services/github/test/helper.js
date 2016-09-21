@@ -56,8 +56,6 @@ helper.jsonHttpRequest = function (jsonFile, options) {
   });
 };
 
-// Hold reference to authServer
-let authServer = null;
 let webServer = null;
 
 // Setup before tests

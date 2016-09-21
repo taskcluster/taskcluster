@@ -39,8 +39,8 @@ suite('TaskCluster-GitHub-Integration', () => {
       listenFor:    'pull-request',
       exchangeFunc: 'pullRequest',
       routingKey:   {
-        organization: 'ninethings',
-        repository:   'website',
+        organization: 'TaskClusterRobot',
+        repository:   'hooks-testing',
         action:       'opened',
       },
       details:      {},
@@ -52,8 +52,8 @@ suite('TaskCluster-GitHub-Integration', () => {
       listenFor:    'push',
       exchangeFunc: 'push',
       routingKey:   {
-        organization: 'ninethings',
-        repository:   'website',
+        organization: 'TaskClusterRobot',
+        repository:   'hooks-testing',
       },
       details:      {
         'event.head.ref': 'refs/heads/master',
@@ -61,18 +61,6 @@ suite('TaskCluster-GitHub-Integration', () => {
         'event.base.repo.branch': 'master',
       },
       jsonFile:     'webhook.push.json',
-    });
-
-    pulseTest({
-      testName:     'Publish Push With Dots In Name',
-      listenFor:    'push',
-      exchangeFunc: 'push',
-      routingKey:   {
-        organization: 'ninethings',
-        repository:   'website%test',
-      },
-      details:      {},
-      jsonFile:     'webhook.push.dots_in_name.json',
     });
   };
 });
