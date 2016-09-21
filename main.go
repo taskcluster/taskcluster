@@ -12,6 +12,7 @@ import (
 	"github.com/taskcluster/taskcluster-cli/client"
 	"github.com/taskcluster/taskcluster-cli/config"
 	"github.com/taskcluster/taskcluster-cli/extpoints"
+	"github.com/taskcluster/taskcluster-cli/version"
 )
 
 func pad(s string, length int) string {
@@ -64,7 +65,7 @@ func main() {
 	usage += "\n"
 
 	// Parse arguments
-	arguments, _ := docopt.Parse(usage, nil, true, "taskcluster", true)
+	arguments, _ := docopt.Parse(usage, nil, true, version.VersionNumber, true)
 	cmd := arguments["<command>"].(string)
 	args := arguments["<args>"].([]string)
 
@@ -87,7 +88,7 @@ func main() {
 	// Parse args for command provider
 	subArguments, _ := docopt.Parse(
 		provider.Usage(), append([]string{cmd}, args...),
-		true, "taskcluster", false,
+		true, version.VersionNumber, false,
 	)
 
 	// Create credentials, if available in configuration
