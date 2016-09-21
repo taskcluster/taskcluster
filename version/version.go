@@ -1,10 +1,12 @@
-package main
+package version
 
 import (
 	"fmt"
 
 	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
+
+var VersionNumber = fmt.Sprintf("taskcluster (TaskCluster CLI) version %d.%d.%d", 1, 0, 0)
 
 func init() {
 	extpoints.Register("version", version{})
@@ -20,21 +22,23 @@ func (version) Summary() string {
 	return "Prints the TaskCluster version."
 }
 
+func usage() string {
+	return `Usage:
+  taskcluster VERSION
+`
+}
+
 func (version) Usage() string {
-	usage := "Prints the TaskCluster version\n"
-	usage += "\n"
-	usage += "Usage:\n"
-	usage += "  taskcluster version\n"
-	return usage
+	return usage()
 }
 
 func (version) Execute(context extpoints.Context) bool {
-	command := context.Arguments["<command>"].(string)
+	command := context.Arguments["VERSION"].(string)
 	provider := extpoints.CommandProviders()[command]
 	if provider == nil {
-		fmt.Println("Unknown command: ", command)
+		panic(fmt.Sprintf("Unknown command: %s", command))
 		return false
 	}
-	fmt.Print(provider.Usage())
+	fmt.Println(VersionNumber)
 	return true
 }

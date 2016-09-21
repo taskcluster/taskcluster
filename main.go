@@ -12,6 +12,7 @@ import (
 	"github.com/taskcluster/taskcluster-cli/client"
 	"github.com/taskcluster/taskcluster-cli/config"
 	"github.com/taskcluster/taskcluster-cli/extpoints"
+	"github.com/taskcluster/taskcluster-cli/version"
 )
 
 func pad(s string, length int) string {
@@ -64,21 +65,14 @@ func main() {
 	usage += "\n"
 
 	// Parse arguments
-	arguments, _ := docopt.Parse(usage, nil, true, "TaskCluster version 1.0", true)
+	arguments, _ := docopt.Parse(usage, nil, true, version.VersionNumber, true)
 	cmd := arguments["<command>"].(string)
 	args := arguments["<args>"].([]string)
 
 	// Special case for handling "taskcluster help" ensuring it's the same as
-	// "taskcluster --help".
+	// "taskcluster --help". This should be the only special case necessary!
 	if cmd == "help" && len(args) == 0 {
 		fmt.Print(usage)
-		return
-	}
-
-	// Special case for handling "taskcluster version" ensuring it's the same as
-	// "taskcluster --version".
-	if cmd == "version" && len(args) == 0 {
-		fmt.Println("TaskCluster version 1.0")
 		return
 	}
 
@@ -94,7 +88,7 @@ func main() {
 	// Parse args for command provider
 	subArguments, _ := docopt.Parse(
 		provider.Usage(), append([]string{cmd}, args...),
-		true, "TaskCluster version 1.0", false,
+		true, version.VersionNumber, false,
 	)
 
 	// Create credentials, if available in configuration
