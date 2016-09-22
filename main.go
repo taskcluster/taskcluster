@@ -64,7 +64,7 @@ var (
 		&ChainOfTrustFeature{},
 	}
 
-	version = "5.2.0"
+	version = "5.3.0"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
