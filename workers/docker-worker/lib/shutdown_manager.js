@@ -103,7 +103,6 @@ export default class ShutdownManager extends EventEmitter {
       if (terminated) {
         this.config.capacity = 0;
         this.emit('nodeTermination', terminated);
-        this.monitor.count('spotTermination');
       }
 
       this.terminationTimeout = setTimeout(

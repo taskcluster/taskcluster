@@ -49,6 +49,7 @@ export default class TaskListener extends EventEmitter {
       this.runtime.shutdownManager.once(
         'nodeTermination', () => {
           debug('nodeterm');
+          this.runtime.monitor.count('spotTermination');
           async () => {
             await this.pause();
             for(let state of this.runningTasks) {
