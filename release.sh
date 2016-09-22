@@ -98,4 +98,4 @@ find . -name userdata | while read file; do
 done
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
-git push "${OFFICIAL_GIT_REPO}" "+refs/tags/${NEW_VERSION}:refs/tags/${NEW_VERSION}" "+refs/tags/${NEW_VERSION}:refs/heads/master"
+git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
