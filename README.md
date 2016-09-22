@@ -221,11 +221,13 @@ go test -v ./...
 
 # Making a new generic worker release
 
-1. Bump the version number in `main.go` [here](https://github.com/taskcluster/generic-worker/blob/d1e48692122dd3e295defda1e61acc8509ad7e23/main.go#L58).
-2. Commit the change, e.g. `git add main.go; git commit -m "Bumped version number"`.
-3. Tag the repo, e.g. `git tag v5.3.0`
-4. Push to github taskcluster repo master branch, e.g. `git push; git push --tags`
-5. Wait for binary releases to magically appear [here](https://github.com/taskcluster/generic-worker/releases) (travis will push them if tests pass).
+Run the `release.sh` script like so:
+
+```
+$ ./release.sh 5.3.0
+```
+
+This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
 
 # Creating and updating worker types
 

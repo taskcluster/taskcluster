@@ -96,7 +96,7 @@ if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   exit 70
 fi
 
-inline_sed README.md 's/`git tag v'"${OLD_VERSION//./\\.}"'`/`git tag v'"${NEW_VERSION}"'`/'
+inline_sed README.md "s/.\/release.sh ${OLD_VERSION//./\\.}/.\/release.sh ${NEW_VERSION}/"
 inline_sed main.go 's/version = "'"${OLD_VERSION//./\\.}"'"$/version = "'"${NEW_VERSION}"'"/'
 find . -name userdata | while read file; do
   inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_VERSION//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_VERSION}/:g"
