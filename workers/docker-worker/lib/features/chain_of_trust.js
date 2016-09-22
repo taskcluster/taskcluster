@@ -86,7 +86,7 @@ export default class ChainOfTrust {
 
     ['instanceId', 'instanceType', 'region'].forEach(tag => {
       if (task.runtime[tag]) {
-        certificate.extra[tag] = task.runtime[tag];
+        certificate.environment[tag] = task.runtime[tag];
       }
     });
 
