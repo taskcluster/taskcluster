@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"net"
+	"path/filepath"
 	"runtime"
 	"testing"
 )
 
 func TestMissingIPConfig(t *testing.T) {
-	const file = "test/config/noip.json"
+	file := filepath.Join("testdata", "config", "noip.json")
 	const setting = "publicIP"
 	_, err := loadConfig(file, false)
 	if err == nil {
@@ -28,7 +29,7 @@ func TestMissingIPConfig(t *testing.T) {
 }
 
 func TestValidConfig(t *testing.T) {
-	const file = "test/config/valid.json"
+	file := filepath.Join("testdata", "config", "valid.json")
 	const ipaddr = "2.1.2.1"
 	const workerType = "some-worker-type"
 	config, err := loadConfig(file, false)
@@ -44,7 +45,7 @@ func TestValidConfig(t *testing.T) {
 }
 
 func TestInvalidIPConfig(t *testing.T) {
-	const file = "test/config/invalid-ip.json"
+	file := filepath.Join("testdata", "config", "invalid-ip.json")
 	_, err := loadConfig(file, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
@@ -58,7 +59,7 @@ func TestInvalidIPConfig(t *testing.T) {
 }
 
 func TestInvalidJsonConfig(t *testing.T) {
-	const file = "test/config/invalid-json.json"
+	file := filepath.Join("testdata", "config", "invalid-json.json")
 	_, err := loadConfig(file, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
@@ -72,7 +73,7 @@ func TestInvalidJsonConfig(t *testing.T) {
 }
 
 func TestMissingConfigFile(t *testing.T) {
-	const file = "test/config/non-existent-json.json"
+	file := filepath.Join("testdata", "config", "non-existent-json.json")
 	_, err := loadConfig(file, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
@@ -86,7 +87,7 @@ func TestMissingConfigFile(t *testing.T) {
 }
 
 func TestWorkerTypeMetadata(t *testing.T) {
-	const file = "test/config/worker-type-metadata.json"
+	file := filepath.Join("testdata", "config", "worker-type-metadata.json")
 	config, err := loadConfig(file, false)
 	if err != nil {
 		t.Fatalf("Config should pass validation, but get:\n%s", err)

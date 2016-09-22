@@ -40,9 +40,9 @@ func setup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Test failed during setup phase!")
 	}
-	TaskUser.HomeDir = filepath.Join(cwd, "test")
+	TaskUser.HomeDir = filepath.Join(cwd, "testdata")
 
-	expiry = tcclient.Time(time.Now().Add(time.Minute * 1))
+	expiry = tcclient.Time(time.Now().Add(time.Hour * 1))
 }
 
 func validateArtifacts(
@@ -70,9 +70,10 @@ func validateArtifacts(
 	}
 }
 
-// See the test/SampleArtifacts subdirectory of this project. This simulates
-// adding it as a directory artifact in a task payload, and checks that all
-// files underneath this directory are discovered and created as s3 artifacts.
+// See the testdata/SampleArtifacts subdirectory of this project. This
+// simulates adding it as a directory artifact in a task payload, and checks
+// that all files underneath this directory are discovered and created as s3
+// artifacts.
 func TestDirectoryArtifacts(t *testing.T) {
 
 	setup(t)
@@ -237,6 +238,8 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestUpload(t *testing.T) {
 
+	setup(t)
+
 	// check we have all the env vars we need to run this test
 	clientID := os.Getenv("TASKCLUSTER_CLIENT_ID")
 	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
@@ -259,7 +262,7 @@ func TestUpload(t *testing.T) {
 
 	// configure the worker
 	config = &Config{
-		SigningKeyLocation:         "test/private-opengpg-key",
+		SigningKeyLocation:         filepath.Join("testdata", "private-opengpg-key"),
 		AccessToken:                accessToken,
 		Certificate:                certificate,
 		ClientID:                   clientID,
@@ -276,6 +279,7 @@ func TestUpload(t *testing.T) {
 		InstanceType:               "p3.enormous",
 		Region:                     "outer-space",
 		Subdomain:                  "taskcluster-worker.net",
+		RunTasksAsCurrentUser:      true,
 		WorkerTypeMetadata: map[string]interface{}{
 			"aws": map[string]string{
 				"ami-id":            "test-ami",
@@ -361,8 +365,30 @@ func TestUpload(t *testing.T) {
 	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
 	// deadline in one days' time
 	deadline := created.AddDate(0, 0, 1)
-	// expiry in one month, in case we need test results
-	expires := created.AddDate(0, 1, 0)
+	// expiry in one day, in case we need test results
+	expires := created.AddDate(0, 0, 1)
+
+	var command string
+	switch runtime.GOOS {
+	case "windows":
+		command = `
+			"command": [
+				"echo hello world!",
+				"echo goodbye world!"
+			]`
+	default:
+		command = `
+			"command": [
+				[
+					"echo",
+					"hello world!"
+				],
+				[
+					"echo",
+					"goodbye world!"
+				]
+			]`
+	}
 
 	td := &queue.TaskDefinitionRequest{
 		Created:      tcclient.Time(created),
@@ -384,17 +410,7 @@ func TestUpload(t *testing.T) {
 		},
 		Payload: json.RawMessage(`
 		
-		{
-			"command": [
-				[
-					"echo",
-					"hello world!"
-				],
-				[
-					"echo",
-					"goodbye world!"
-				]
-			],
+		{` + command + `,
 			"maxRunTime": 7200,
 			"artifacts": [
 				{
@@ -403,9 +419,9 @@ func TestUpload(t *testing.T) {
 					"type": "file"
 				}
 			],
-            "features": {
-              "chainOfTrust": true
-            }
+			"features": {
+				"chainOfTrust": true
+			}
 		}
 		
 		`),
@@ -517,6 +533,9 @@ func TestUpload(t *testing.T) {
 		}
 		client := &http.Client{Transport: tr}
 		rawResp, _, err := httpbackoff.ClientGet(client, url.String())
+		if err != nil {
+			t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
+		}
 		resp, _, err := httpbackoff.Get(url.String())
 		if err != nil {
 			t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
@@ -538,7 +557,7 @@ func TestUpload(t *testing.T) {
 		}
 		// check openpgp signature is valid
 		if artifact == "public/logs/chainOfTrust.json.asc" {
-			pubKey, err := os.Open(filepath.Join("test", "public-openpgp-key"))
+			pubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
 			if err != nil {
 				t.Fatalf("Error opening public key file")
 			}

@@ -1,3 +1,6 @@
+//go:generate gw-codegen all-unix-style.yml generated_all-unix-style.go !windows
+//go:generate gw-codegen windows.yml generated_windows.go
+
 package main
 
 import (
@@ -78,7 +81,7 @@ and reports back results to the queue.
                                             [--username       USERNAME]
                                             [--password       PASSWORD]
     generic-worker show-payload-schema
-    generic-worker new-openpgp-keypair  --file PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker --help
     generic-worker --version
 
@@ -101,9 +104,6 @@ and reports back results to the queue.
                                             key will be written to the specified file.
 
   Options:
-    --configure-for-aws                     This will create the CONFIG-FILE for an AWS
-                                            installation by querying the AWS environment
-                                            and setting appropriate values.
     --config CONFIG-FILE                    Json configuration file to use. See
                                             configuration section below to see what this
                                             file should contain. When calling the install
@@ -111,23 +111,26 @@ and reports back results to the queue.
                                             installation should use, rather than the
                                             config to use during install.
                                             [default: generic-worker.config]
-    --help                                  Display this help text.
+    --configure-for-aws                     This will create the CONFIG-FILE for an AWS
+                                            installation by querying the AWS environment
+                                            and setting appropriate values.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for
                                             installing the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
-    --password PASSWORD                     The password for the username specified
-                                            with -u|--username option. If not specified
-                                            a random password will be generated.
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
     --username USERNAME                     The Windows user to run the generic worker
                                             Windows service as. If the user does not
                                             already exist on the system, it will be
                                             created. [default: GenericWorker]
+    --password PASSWORD                     The password for the username specified
+                                            with -u|--username option. If not specified
+                                            a random password will be generated.
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
+    --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 
 
@@ -201,6 +204,10 @@ and reports back results to the queue.
                                             machine).
           signingKeyLocation                The PGP signing key for signing artifacts with.
                                             If not set, tasks will not be signed.
+          runTasksAsCurrentUser             If true, users will not be created for tasks, but
+                                            the current OS user will be used. Useful if not an
+                                            administrator, e.g. when running tests. Should not
+                                            be used in production! [default: false]
 
     Here is an syntactically valid example configuration file:
 
@@ -236,6 +243,7 @@ func main() {
 	switch {
 	case arguments["show-payload-schema"]:
 		fmt.Println(taskPayloadSchema())
+
 	case arguments["run"]:
 		configureForAws := arguments["--configure-for-aws"].(bool)
 		configFile = arguments["--config"].(string)
@@ -288,7 +296,10 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogExecutable:          "livelog",
 		RefreshUrlsPrematurelySecs: 310,
 		UsersDir:                   "C:\\Users",
+		CachesDir:                  "C:\\generic-worker\\caches",
+		DownloadsDir:               "C:\\generic-worker\\downloads",
 		CleanUpTaskDirs:            true,
+		RunTasksAsCurrentUser:      false,
 		IdleShutdownTimeoutSecs:    0,
 		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker": map[string]string{
@@ -354,6 +365,7 @@ func runWorker() chan<- bool {
 	err := startup()
 	// any errors are fatal
 	if err != nil {
+		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
 	}
 
@@ -484,19 +496,20 @@ func FindAndRunTask() bool {
 				Status: Errored,
 				Reason: "malformed-payload", // "invalid-payload"
 			}
-			reportPossibleError(<-taskStatusUpdateErr)
+			task.reportPossibleError(<-taskStatusUpdateErr)
 			break
 		}
 		err = task.run()
-		reportPossibleError(err)
+		task.reportPossibleError(err)
 		break
 	}
 	return taskFound
 }
 
-func reportPossibleError(err error) {
+func (task *TaskRun) reportPossibleError(err error) {
 	if err != nil {
 		log.Printf("%v", err)
+		task.Log(err.Error())
 	}
 }
 
@@ -718,13 +731,14 @@ func (task *TaskRun) setReclaimTimer() {
 			err := <-taskStatusUpdateErr
 			if err != nil {
 				log.Println("TASK EXCEPTION due to reclaim failure")
+				task.Log("TASK EXCEPTION due to reclaim failure - please report this in #taskcluster as it is a serious error")
 				log.Printf("%v", err)
 				taskStatusUpdate <- TaskStatusUpdate{
 					Task:   task,
 					Status: Errored,
 					Reason: "worker-shutdown", // internal error ("reclaim-failed")
 				}
-				reportPossibleError(<-taskStatusUpdateErr)
+				task.reportPossibleError(<-taskStatusUpdateErr)
 				return
 			}
 			// only set another reclaim timer if the previous reclaim succeeded
@@ -787,7 +801,7 @@ func (task *TaskRun) validatePayload() error {
 			Status: Errored,
 			Reason: "malformed-payload",
 		}
-		reportPossibleError(<-taskStatusUpdateErr)
+		task.reportPossibleError(<-taskStatusUpdateErr)
 		return fmt.Errorf("Validation of payload failed for task %v", task.TaskID)
 	}
 	err = json.Unmarshal(jsonPayload, &task.Payload)
@@ -817,8 +831,10 @@ func WorkerShutdown(err error) *CommandExecutionError {
 }
 
 func (task *TaskRun) Log(message string) {
-	for _, line := range strings.Split(message, "\n") {
-		task.logWriter.Write([]byte("[taskcluster " + tcclient.Time(time.Now()).String() + "] " + line + "\n"))
+	if task.logWriter != nil {
+		for _, line := range strings.Split(message, "\n") {
+			task.logWriter.Write([]byte("[taskcluster " + tcclient.Time(time.Now()).String() + "] " + line + "\n"))
+		}
 	}
 }
 
@@ -868,8 +884,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 func (task *TaskRun) run() error {
 
-	log.Println("Running task!")
-	log.Println(task.String())
+	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
 
 	// Terminating the Worker Early
 	// ----------------------------
@@ -888,7 +903,7 @@ func (task *TaskRun) run() error {
 			IfStatusIn: map[TaskStatus]bool{Claimed: true, Reclaimed: true},
 			Reason:     "malformed-payload", // "max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded"
 		}
-		reportPossibleError(<-taskStatusUpdateErr)
+		task.reportPossibleError(<-taskStatusUpdateErr)
 	}()
 
 	task.Commands = make([]Command, len(task.Payload.Command))
@@ -914,8 +929,10 @@ func (task *TaskRun) run() error {
 	// create task features
 	for _, feature := range Features {
 		if feature.IsEnabled(task.Payload.Features) {
-			if !scopes.Given(task.Definition.Scopes).Satisfies(feature.RequiredScopes()) {
-				errorString := fmt.Sprintf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.RequiredScopes(), scopes.Given(task.Definition.Scopes))
+			taskFeature := feature.NewTaskFeature(task)
+			requiredScopes := taskFeature.RequiredScopes()
+			if !scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes) {
+				errorString := fmt.Sprintf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", requiredScopes, scopes.Given(task.Definition.Scopes))
 				task.Log(errorString)
 				return &CommandExecutionError{
 					Cause:      errors.New(errorString),
@@ -923,7 +940,7 @@ func (task *TaskRun) run() error {
 					TaskStatus: Errored,
 				}
 			}
-			taskFeatures = append(taskFeatures, feature.NewTaskFeature(task))
+			taskFeatures = append(taskFeatures, taskFeature)
 		}
 	}
 
@@ -960,16 +977,6 @@ func (task *TaskRun) run() error {
 	// don't fret if we can't close this
 	_ = logFileHandle.Close()
 
-	if err != nil {
-		log.Printf("%#v", err)
-		if finalError == nil {
-			log.Println("TASK EXCEPTION when running post-task actions")
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
-			finalError = err
-		}
-	}
-
 	for _, artifact := range task.PayloadArtifacts() {
 		err := task.uploadArtifact(artifact)
 		if err != nil {
@@ -983,16 +990,16 @@ func (task *TaskRun) run() error {
 				case httpbackoff.BadHttpResponseCode:
 					// if not a 5xx error, then not worth retrying...
 					if t.HttpResponseCode/100 != 5 {
-						log.Printf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
+						task.Log(fmt.Sprintf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
 						finalTaskStatus = Failed
 					} else {
-						log.Printf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact)
+						task.Log(fmt.Sprintf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
 						finalTaskStatus = Errored
 						finalReason = "worker-shutdown" // internal error (upload-failure)
 					}
 					finalError = err
 				default:
-					log.Printf("TASK EXCEPTION due to error of type %T", t)
+					task.Log(fmt.Sprintf("TASK EXCEPTION due to error %#v", t))
 					// could not upload for another reason
 					finalTaskStatus = Errored
 					finalReason = "worker-shutdown" // internal error (upload-failure)
@@ -1006,11 +1013,26 @@ func (task *TaskRun) run() error {
 	for i := len(taskFeatures) - 1; i >= 0; i-- {
 		err = taskFeatures[i].Stop()
 		if err != nil {
-			return WorkerShutdown(err)
+			task.Log(fmt.Sprintf("TASK EXCEPTION due to error %#v", err))
+			if finalError == nil {
+				finalTaskStatus = Errored
+				finalReason = "worker-shutdown" // internal error (upload-failure)
+				finalError = err
+			}
 		}
 	}
 
 	err = task.postTaskActions()
+
+	if err != nil {
+		log.Printf("%#v", err)
+		if finalError == nil {
+			log.Println("TASK EXCEPTION when running post-task actions")
+			finalTaskStatus = Errored
+			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
+			finalError = err
+		}
+	}
 
 	// When the worker has completed the task successfully it should call
 	// `queue.reportCompleted`.

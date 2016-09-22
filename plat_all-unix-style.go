@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -57,7 +58,10 @@ func (task *TaskRun) generateCommand(index int) error {
 	cmd.Stderr = task.logWriter
 	// cmd.Stdout = log
 	// cmd.Stderr = log
-	task.prepEnvVars(cmd)
+	err := task.prepEnvVars(cmd)
+	if err != nil {
+		return err
+	}
 	task.Commands[index] = Command{osCommand: cmd}
 	return nil
 }
@@ -70,7 +74,7 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
-func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
+func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) error {
 	workerEnv := os.Environ()
 	taskEnv := []string{}
 	for _, j := range workerEnv {
@@ -79,12 +83,20 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 			taskEnv = append(taskEnv, j)
 		}
 	}
-	for i, j := range task.Payload.Env {
-		log.Printf("Setting env var: %v=%v", i, j)
-		taskEnv = append(taskEnv, i+"="+j)
+	if task.Payload.Env != nil {
+		envVars := map[string]string{}
+		err := json.Unmarshal(task.Payload.Env, &envVars)
+		if err != nil {
+			return err
+		}
+		for i, j := range envVars {
+			log.Printf("Setting env var: %v=%v", i, j)
+			taskEnv = append(taskEnv, i+"="+j)
+		}
+		cmd.Env = taskEnv
 	}
-	cmd.Env = taskEnv
 	log.Printf("Environment: %v", taskEnv)
+	return nil
 }
 
 func (task *TaskRun) describeCommand(index int) string {

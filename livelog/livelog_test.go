@@ -5,11 +5,19 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"runtime"
 	"testing"
 )
 
 func TestLiveLog(t *testing.T) {
-	ll, err := New("livelog", "", "")
+	var executable string
+	switch runtime.GOOS {
+	case "windows":
+		executable = "livelog.exe"
+	default:
+		executable = "livelog"
+	}
+	ll, err := New(executable, "", "")
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	//

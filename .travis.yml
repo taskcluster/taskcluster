@@ -24,20 +24,26 @@ before_install:
   - export GOARCH="${MY_GOARCH}"
   - go version
   - go env
-  - go get github.com/axw/gocov/gocov
-  - go get github.com/mattn/goveralls
-  - go get github.com/pierrre/gotestcover
+  - "test $GOOS.$GOARCH != linux.amd64 || go get github.com/axw/gocov/gocov github.com/mattn/goveralls github.com/pierrre/gotestcover"
 
 install:
-  - "go get -d -t ./..."
   - "go get github.com/taskcluster/livelog"
+  - "go get github.com/gordonklaus/ineffassign"
 
 script:
-  - "go install -v ./..."
+  - export GOOS=linux
+  - export GOARCH=amd64
+  - "go get ./gw-codegen"
+  - "go generate"
+  - "export GOOS=${MY_GOOS}"
+  - "export GOARCH=${MY_GOARCH}"
+  - "test $(git status --porcelain | wc -l) == 0"
+  - "go get -v -t ./..."
   - "if test $GOOS.$GOARCH = linux.amd64; then ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report ./... && go tool cover -func=coverage.report; fi"
+  - "test $GOOS.$GOARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 
 after_script:
-  - "$HOME/gopath/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
+  - "test $GOOS.$GOARCH != linux.amd64 || ${GOPATH}/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
 
 before_deploy:
   - "source .travis_rename_releases.sh"

@@ -50,11 +50,6 @@ func (feature *ChainOfTrustFeature) Initialise() error {
 	return nil
 }
 
-func (feature *ChainOfTrustFeature) RequiredScopes() scopes.Required {
-	// let's not require any scopes, as I see no reason to control access to this feature
-	return scopes.Required{}
-}
-
 func (feature *ChainOfTrustFeature) IsEnabled(fl EnabledFeatures) bool {
 	return fl.ChainOfTrust
 }
@@ -63,6 +58,11 @@ func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &ChainOfTrustTaskFeature{
 		task: task,
 	}
+}
+
+func (cot *ChainOfTrustTaskFeature) RequiredScopes() scopes.Required {
+	// let's not require any scopes, as I see no reason to control access to this feature
+	return scopes.Required{}
 }
 
 func (cot *ChainOfTrustTaskFeature) Start() error {

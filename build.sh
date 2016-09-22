@@ -20,6 +20,9 @@ elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 7 ]; then
   exit 65
 fi
 
+go get github.com/taskcluster/generic-worker/gw-codegen
+go generate ./...
+
 function install {
   # GOOS="${1}" GOARCH="${2}" go get -u ./...
   GOOS="${1}" GOARCH="${2}" go get ./...
@@ -29,30 +32,44 @@ function install {
 # build windows first
 install windows 386
 install windows amd64
+# darwin
+install darwin     386
+install darwin     amd64
+# linux
+install linux      386
+install linux      amd64
 
 # now the rest
-install darwin 386
-install darwin amd64
-install dragonfly amd64
-install freebsd 386
-install freebsd amd64
-install freebsd arm
-install linux 386
-install linux amd64
-install linux arm
-install netbsd 386
-install netbsd amd64
-install netbsd arm
-install openbsd 386
-install openbsd amd64
-# install plan9 386
-# install plan9 amd64
-install solaris amd64
+## install android    arm
+##install darwin     arm
+##install darwin     arm64
+#install dragonfly  amd64
+#install freebsd    386
+#install freebsd    amd64
+#install freebsd    arm
+#install linux      arm
+#install linux      arm64
+#install linux      ppc64
+#install linux      ppc64le
+#install linux      mips64
+#install linux      mips64le
+#install netbsd     386
+#install netbsd     amd64
+#install netbsd     arm
+#install openbsd    386
+#install openbsd    amd64
+#install openbsd    arm
+##install plan9      386
+##install plan9      amd64
+#install solaris    amd64
 
 find "${GOPATH}/bin" -name 'generic-worker*'
 
 go test -v ./...
 go vet ./...
 golint ./...
+go get github.com/gordonklaus/ineffassign
+ineffassign .
 
 echo "Build successful!"
+git status

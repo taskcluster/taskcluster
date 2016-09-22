@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/xeipuuv/gojsonschema"
@@ -12,7 +13,7 @@ func TestPayloadSchemaValid(t *testing.T) {
 	schemaLoader := gojsonschema.NewStringLoader(payloadSchema)
 	_, err := gojsonschema.NewSchema(schemaLoader)
 	if err != nil {
-		t.Log("Generic Worker payload schema is not a valid json schema.")
+		t.Logf("Generic Worker payload schema is not a valid json schema for platform %v.", runtime.GOOS)
 		t.Log("Payload schema:")
 		t.Log(payloadSchema)
 		t.Log("Error:")

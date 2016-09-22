@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -17,7 +18,6 @@ import (
 	"github.com/contester/runlib/subprocess"
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/os/exec"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -245,9 +245,16 @@ func (task *TaskRun) generateCommand(index int) error {
 	// If this is first command, take env from task payload, and cd into home
 	// directory
 	if index == 0 {
-		for envVar, envValue := range task.Payload.Env {
-			log.Printf("Setting env var: %v=%v", envVar, envValue)
-			contents += "set " + envVar + "=" + envValue + "\r\n"
+		envVars := map[string]string{}
+		if task.Payload.Env != nil {
+			err := json.Unmarshal(task.Payload.Env, &envVars)
+			if err != nil {
+				return err
+			}
+			for envVar, envValue := range envVars {
+				log.Printf("Setting env var: %v=%v", envVar, envValue)
+				contents += "set " + envVar + "=" + envValue + "\r\n"
+			}
 		}
 		contents += "cd \"" + TaskUser.HomeDir + "\"" + "\r\n"
 
@@ -296,9 +303,6 @@ func (task *TaskRun) generateCommand(index int) error {
 
 	// exit with stored exit code
 	contents += "exit /b %tcexitcode%\r\n"
-
-	log.Println("Generating script:")
-	log.Println(contents)
 
 	// now generate the .bat script that runs all of this
 	err := ioutil.WriteFile(
@@ -350,6 +354,20 @@ func (task *TaskRun) generateCommand(index int) error {
 }
 
 func taskCleanup() error {
+	if config.RunTasksAsCurrentUser {
+		// dir, err := ioutil.TempDir("", "generic-worker")
+		// if err != nil {
+		// 	return err
+		// }
+		// TaskUser = OSUser{
+		// 	HomeDir: dir,
+		// }
+		err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	// note if this fails, we carry on without throwing an error
 	deleteExistingOSUsers()
 	// this needs to succeed, so return an error if it doesn't
@@ -543,7 +561,7 @@ func ExePath() (string, error) {
 	}
 	if filepath.Ext(p) == "" {
 		p += ".exe"
-		fi, err := os.Stat(p)
+		fi, err = os.Stat(p)
 		if err == nil {
 			if !fi.Mode().IsDir() {
 				return p, nil
@@ -564,57 +582,6 @@ func Error(c *exec.Cmd) ([]byte, error) {
 	err := c.Run()
 	return b.Bytes(), err
 }
-
-// The following code is AUTO-GENERATED. Please DO NOT edit.
-type (
-	// This schema defines the structure of the `payload` property referred to in a
-	// TaskCluster Task definition.
-	GenericWorkerPayload struct {
-
-		// Artifacts to be published. For example:
-		// `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
-		Artifacts []struct {
-
-			// Date when artifact should expire must be in the future
-			Expires tcclient.Time `json:"expires"`
-
-			// Filesystem path of artifact
-			Path string `json:"path"`
-
-			// Artifacts can be either an individual `file` or a `directory` containing
-			// potentially multiple files with recursively included subdirectories
-			//
-			// Possible values:
-			//   * "file"
-			//   * "directory"
-			Type string `json:"type"`
-		} `json:"artifacts,omitempty"`
-
-		// One entry per command (consider each entry to be interpreted as a full line of
-		// a Windows™ .bat file). For example:
-		// `["set", "echo hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
-		Command []string `json:"command"`
-
-		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS": "darwin" }```
-		Env map[string]string `json:"env,omitempty"`
-
-		// Feature flags enable additional functionality.
-		Features struct {
-
-			// An artifact named chainOfTrust.json.asc should be generated
-			// which will include information for downstream tasks to build
-			// a level of trust for the artifacts produced by the task and
-			// the environment it ran in.
-			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
-		} `json:"features,omitempty"`
-
-		// Maximum time the task container can run in seconds
-		//
-		// Mininum:    1
-		// Maximum:    86400
-		MaxRunTime int `json:"maxRunTime"`
-	}
-)
 
 func (task *TaskRun) describeCommand(index int) string {
 	return task.Payload.Command[index]

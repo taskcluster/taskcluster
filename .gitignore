@@ -26,11 +26,18 @@ _testmain.go
 # Coverage report
 coverage.report
 
-# test artifacts
-test/public/logs
-
 # other
 *.secrets
 *.id_rsa
 *.log
 *.latest-ami
+
+# Created by generic worker tests
+/downloads/
+/caches/
+/testdata/command_*
+/testdata/dir.txt
+/testdata/env.txt
+/testdata/my-task-caches/
+/testdata/preloaded/
+/testdata/public/logs/

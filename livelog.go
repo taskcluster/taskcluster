@@ -20,11 +20,6 @@ func (feature *LiveLogFeature) Initialise() error {
 	return nil
 }
 
-func (feature *LiveLogFeature) RequiredScopes() scopes.Required {
-	// let's not require any scopes, as I see no reason to control access to this feature
-	return scopes.Required{}
-}
-
 // livelog is always enabled
 func (feature *LiveLogFeature) IsEnabled(fl EnabledFeatures) bool {
 	return true
@@ -42,6 +37,11 @@ func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &LiveLogTask{
 		task: task,
 	}
+}
+
+func (l *LiveLogTask) RequiredScopes() scopes.Required {
+	// let's not require any scopes, as I see no reason to control access to this feature
+	return scopes.Required{}
 }
 
 func (l *LiveLogTask) Start() error {

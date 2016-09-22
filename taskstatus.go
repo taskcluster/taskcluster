@@ -82,7 +82,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 			return err
 		}
 		task.TaskClaimResponse.Status = tsr.Status
-		log.Println(task.String())
+		// log.Println(task.String())
 		return nil
 	}
 

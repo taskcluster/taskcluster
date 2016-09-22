@@ -37,10 +37,13 @@ type (
 		Region                     string                 `json:"region"`
 		WorkerType                 string                 `json:"workerType"`
 		UsersDir                   string                 `json:"usersDir"`
+		CachesDir                  string                 `json:"cachesDir"`
+		DownloadsDir               string                 `json:"downloadsDir"`
 		CleanUpTaskDirs            bool                   `json:"cleanUpTaskDirs"`
 		IdleShutdownTimeoutSecs    int                    `json:"idleShutdownTimeoutSecs"`
 		WorkerTypeMetadata         map[string]interface{} `json:"workerTypeMetadata"`
 		SigningKeyLocation         string                 `json:"signingKeyLocation"`
+		RunTasksAsCurrentUser      bool                   `json:"runTasksAsCurrentUser"`
 	}
 
 	// Used for modelling the xml we get back from Azure

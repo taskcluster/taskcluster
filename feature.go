@@ -6,11 +6,11 @@ type (
 	Feature interface {
 		Initialise() error
 		IsEnabled(fl EnabledFeatures) bool
-		RequiredScopes() scopes.Required
 		NewTaskFeature(task *TaskRun) TaskFeature
 	}
 
 	TaskFeature interface {
+		RequiredScopes() scopes.Required
 		Start() error
 		Stop() error
 	}
