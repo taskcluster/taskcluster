@@ -35,6 +35,11 @@ fi
 echo "Previous release: ${OLD_VERSION}"
 echo "New release:      ${NEW_VERSION}"
 
+if [ "${OLD_VERSION}" == "${NEW_VERSION}" ]; then
+  echo "Cannot release since release version specified is the same as the current release number" >&2
+  exit 66
+fi
+
 function inline_sed {
   tempfile="$(mktemp -t inline_sed.XXXXXX)"
   local file="${1}"
@@ -50,7 +55,7 @@ function inline_sed {
 if [ "$(git ls-remote -t "${OFFICIAL_GIT_REPO}" "${NEW_VERSION}" 2>&1 | wc -l | tr -d ' ')" != '0' ]; then
   echo "git tag '${NEW_VERSION}' already exists remotely on ${OFFICIAL_GIT_REPO},"
   echo "or there was an error checking whether it existed."
-  exit 66
+  exit 67
 fi
 
 # Local changes will not be in the release, so they should be dealt with before
@@ -63,7 +68,7 @@ if [ -n "$modified" ]; then
   echo 'revert or stash them!'
   echo
   git status
-  exit 67
+  exit 68
 fi
 
 # Check that the current HEAD is also the tip of the official repo master
@@ -75,7 +80,7 @@ if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
   echo "Locally, you are on commit ${localMasterSha}."
   echo "The remote taskcluster repo is on commit ${remoteMasterSha}."
   echo "Make sure to git push/pull so that they both point to the same commit."
-  exit 68
+  exit 69
 fi
 
 # Make sure that build environment is clean
@@ -88,7 +93,7 @@ if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   echo
   echo "This will have the following effect:"
   git clean -ndx
-  exit 68
+  exit 70
 fi
 
 inline_sed README.md 's/`git tag v'"${OLD_VERSION//./\\.}"'`/`git tag v'"${NEW_VERSION}"'`/'
