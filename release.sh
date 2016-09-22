@@ -91,10 +91,10 @@ if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   exit 68
 fi
 
-inline_sed README.md 's/`git tag v'"${OLD_RELEASE//./\\.}"'`/`git tag v'"${NEW_RELEASE}"'`/'
-inline_sed main.go 's/version = "'"${OLD_RELEASE//./\\.}"'"$/version = "'"${NEW_RELEASE}"'"/'
+inline_sed README.md 's/`git tag v'"${OLD_VERSION//./\\.}"'`/`git tag v'"${NEW_VERSION}"'`/'
+inline_sed main.go 's/version = "'"${OLD_VERSION//./\\.}"'"$/version = "'"${NEW_VERSION}"'"/'
 find . -name userdata | while read file; do
-  inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_RELEASE//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_RELEASE}/:g"
+  inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_VERSION//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_VERSION}/:g"
 done
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
