@@ -169,7 +169,13 @@ export default class TaskListener extends EventEmitter {
 
   async getTasks() {
     let availableCapacity = await this.availableCapacity();
-    if (availableCapacity === 0)  return;
+    if (availableCapacity === 0) {
+      return;
+    }
+
+    // Run a garbage collection cycle to clean up containers and release volumes.
+    // Only run a full garbage collection cycle if no tasks are running.
+    await this.runtime.gc.sweep(this.runningTasks.length === 0);
 
     var exceedsThreshold = await exceedsDiskspaceThreshold(
       this.runtime.dockerVolume,

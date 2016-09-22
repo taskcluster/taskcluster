@@ -41,8 +41,6 @@ function GarbageCollector(config) {
   this.log = config.log;
   this.monitor = config.monitor;
   this.taskListener = config.taskListener;
-  // Garbage collection interval in milliseconds
-  this.interval = config.interval || 60 * 1000;
   // Minimum diskspace required per task in bytes
   this.diskspaceThreshold = config.diskspaceThreshold || 10 * 1000000000;
   // Time in milliseconds until image is considered expired
@@ -52,7 +50,6 @@ function GarbageCollector(config) {
   this.ignoredContainers = [];
   this.markedImages = {};
   this.retries = 5;
-  this.scheduleSweep(this.interval);
   this.managers = [];
   EventEmitter.call(this);
 }
@@ -202,12 +199,7 @@ GarbageCollector.prototype = {
     }
   },
 
-  scheduleSweep: function (interval) {
-    this.sweepTimeoutId = setTimeout(this.sweep.bind(this), interval);
-  },
-
-  sweep: async function () {
-    clearTimeout(this.sweepTimeoutId);
+  sweep: async function (full=false) {
     this.emit('gc:sweep:start');
     this.log('garbage collection started');
     await this.markStaleContainers();
@@ -234,7 +226,10 @@ GarbageCollector.prototype = {
                           'Removing only expired images.'
                 });
     }
-    await this.removeUnusedImages(exceedsThreshold);
+
+    if (full) {
+      await this.removeUnusedImages(exceedsThreshold);
+    }
 
     for (var i = 0; i < this.managers.length; i++) {
       await this.managers[i].clear(exceedsThreshold);
@@ -242,7 +237,6 @@ GarbageCollector.prototype = {
 
     this.log('garbage collection finished');
     this.emit('gc:sweep:stop');
-    this.scheduleSweep(this.interval);
   }
 };
 

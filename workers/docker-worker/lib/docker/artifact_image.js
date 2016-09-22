@@ -1,6 +1,7 @@
 import {createHash} from 'crypto';
 import Debug from 'debug';
 import fs from 'mz/fs';
+import { spawn } from 'child_process';
 import slugid from 'slugid';
 import {Transform} from 'stream';
 import path from 'path';
@@ -14,6 +15,46 @@ import downloadArtifact from '../util/artifact_download';
 import sleep from '../util/sleep';
 
 let debug = Debug('docker-worker:artifactImage');
+
+async function decompressLz4File(inputFile) {
+  let outputFile = path.join(path.dirname(inputFile), path.basename(inputFile, '.lz4'));
+  let proc = spawn('lz4', ['-d', inputFile, outputFile]);
+  let err = [];
+  proc.stderr.on('data', data => {
+    err.push(data);
+  });
+
+  await new Promise((accept) => {
+    proc.on('exit', accept);
+  });
+
+  if (proc.exitCode !== 0) {
+    throw new Error(
+        'Could not decompress image file.' +
+        `Exit Code: ${proc.exitCode} Errors: ${err.join('\n')}`);
+  }
+  return outputFile;
+}
+
+async function decompressZstdFile(inputFile) {
+  let outputFile = path.join(path.dirname(inputFile), path.basename(inputFile, '.zst'));
+  let proc = spawn('zstd', ['-d', inputFile, '-o', outputFile]);
+  let err = [];
+  proc.stderr.on('data', data => {
+    err.push(data);
+  });
+
+  await new Promise((accept) => {
+    proc.on('exit', accept);
+  });
+
+  if (proc.exitCode !== 0) {
+    throw new Error(
+        'Could not decompress image file.' +
+        `Exit Code: ${proc.exitCode} Errors: ${err.join('\n')}`);
+  }
+  return outputFile;
+}
 
 /*
  * Image manager for task artifact images.
@@ -62,11 +103,12 @@ export default class ArtifactImage {
   }
 
   async _downloadArtifact() {
+    let tarballPath;
     let start = Date.now();
     let downloadDir = path.join(this.runtime.dockerVolume, 'tmp-docker-images', slugid.nice());
     await makeDir(downloadDir);
 
-    let originalTarball = path.join(downloadDir, 'image.tar');
+    let downloadedFile = path.join(downloadDir, path.basename(this.artifactPath));
 
     try {
       await downloadArtifact(
@@ -74,12 +116,30 @@ export default class ArtifactImage {
           this.stream,
           this.taskId,
           this.artifactPath,
-          originalTarball,
+          downloadedFile,
           this.runtime.dockerConfig
       );
       this.runtime.monitor.measure('task.taskImage.downloadTime', Date.now() - start);
 
-      await this.renameAndLoad(this.imageName, originalTarball);
+      switch (path.extname(downloadedFile)) {
+        case '.lz4':
+          this.stream.write(fmtLog('Decompressing downloaded image'));
+          tarballPath = await decompressLz4File(downloadedFile);
+          fs.unlink(downloadedFile);
+          break;
+        case '.zst':
+          this.stream.write(fmtLog('Decompressing downloaded image'));
+          tarballPath = await decompressZstdFile(downloadedFile);
+          fs.unlink(downloadedFile);
+          break;
+        case '.tar':
+          tarballPath = downloadedFile;
+          break;
+        default:
+          throw new Error('Unsupported image file format. Expected tarball with optional lz4 compression');
+      }
+
+      await this.renameAndLoad(this.imageName, tarballPath);
 
     } catch(e) {
       debug(`Error loading docker image. ${e.stack}`);

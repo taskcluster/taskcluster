@@ -1,14 +1,25 @@
 import fs from 'fs';
 import slugid from 'slugid';
 import co from 'co';
+import * as settings from '../settings';
 import taskcluster from 'taskcluster-client';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
 
 suite('Cancel Task', () => {
   test("cancel", async () => {
-    var queue = new taskcluster.Queue();
-    var task = {
+    settings.configure({
+      task: {
+        // just use crazy high reclaim divisor... This will result in way to
+        // frequent reclaims but allow us to easily test that it reclaims at
+        // least once...
+        reclaimDivisor: 1000,
+        dequeueCount: 15
+      }
+    });
+
+    let queue = new taskcluster.Queue();
+    let task = {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command:        [
@@ -20,13 +31,13 @@ suite('Cancel Task', () => {
         maxRunTime: 60 * 60
       }
     };
-    var taskId = slugid.v4();
-    var worker = new TestWorker(DockerWorker);
+    let taskId = slugid.v4();
+    let worker = new TestWorker(DockerWorker);
     let canceledTask;
     worker.on('task run', co(function* () { yield queue.cancelTask(taskId); }));
     worker.on('cancel task', () => { canceledTask = true });
-    var launch = await worker.launch();
-    var result = await worker.postToQueue(task, taskId);
+    let launch = await worker.launch();
+    let result = await worker.postToQueue(task, taskId);
     await worker.terminate();
     assert.ok(canceledTask, 'task execution should have been canceled');
     assert.equal(result.run.reasonResolved, 'canceled', 'Task not marked as canceled');

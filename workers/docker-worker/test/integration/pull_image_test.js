@@ -2,8 +2,7 @@ import assert from 'assert';
 import testworker from '../post_task';
 import Docker from '../../lib/docker';
 import cmd from './helper/cmd';
-import {NAMESPACE} from '../fixtures/image_artifacts';
-import {TASK_ID} from '../fixtures/image_artifacts';
+import {ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, NAMESPACE} from '../fixtures/image_artifacts';
 import {createHash} from 'crypto';
 import {removeImage} from '../../lib/util/remove_image';
 
@@ -53,6 +52,57 @@ suite('pull image', () => {
     assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
   });
 
+  test('ensure public lz4 compressed image from a task can be pulled', async () => {
+    let image = {
+      type: 'task-image',
+      taskId: LZ4_TASK_ID,
+      path: 'public/image.tar.lz4'
+    };
+
+    let hashedName = createHash('md5')
+                      .update(`${LZ4_TASK_ID}${image.path}`)
+                      .digest('hex');
+
+    await removeImage(docker, hashedName);
+
+    let result = await testworker({
+      payload: {
+        image: image,
+        command: cmd('ls /bin'),
+        maxRunTime: 5 * 60
+      }
+    });
+
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
+  });
+
+  test('ensure public zstd compressed image from a task can be pulled', async () => {
+    let image = {
+      type: 'task-image',
+      taskId: ZSTD_TASK_ID,
+      path: 'public/image.tar.zst'
+    };
+
+    let hashedName = createHash('md5')
+                      .update(`${ZSTD_TASK_ID}${image.path}`)
+                      .digest('hex');
+
+    await removeImage(docker, hashedName);
+
+    let result = await testworker({
+      payload: {
+        image: image,
+        command: cmd('ls /bin'),
+        maxRunTime: 5 * 60
+      }
+    });
+
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
+  });
 
   test('ensure public indexed image can be pulled', async () => {
     let image = {

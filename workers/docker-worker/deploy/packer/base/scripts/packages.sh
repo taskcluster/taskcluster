@@ -80,7 +80,17 @@ sudo apt-get install -y \
     rsyslog-gnutls \
     openvpn \
     lxc \
-    rng-tools
+    rng-tools \
+    liblz4-tool
+
+# Clone and build Zstandard
+sudo git clone https://github.com/facebook/zstd /zstd
+cd /zstd
+sudo make zstd
+sudo mv zstd /usr/bin
+cd /
+sudo rm -rf /zstd
+
 
 ## Clear mounts created in base image so fstab is empty in other builds...
 sudo sh -c 'echo "" > /etc/fstab'
