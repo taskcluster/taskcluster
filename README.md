@@ -46,14 +46,15 @@ the taskcluster component that executes tasks. It requests tasks from the taskcl
 and reports back results to the queue.
 
   Usage:
-    generic-worker run                     [--config         CONFIG-FILE]
-                                           [--configure-for-aws]
-    generic-worker install                 [--config         CONFIG-FILE]
-                                           [--nssm           NSSM-EXE]
-                                           [--password       PASSWORD]
-                                           [--service-name   SERVICE-NAME]
-                                           [--username       USERNAME]
+    generic-worker run                      [--config         CONFIG-FILE]
+                                            [--configure-for-aws]
+    generic-worker install (startup|service [--nssm           NSSM-EXE]
+                                            [--service-name   SERVICE-NAME])
+                                            [--config         CONFIG-FILE]
+                                            [--username       USERNAME]
+                                            [--password       PASSWORD]
     generic-worker show-payload-schema
+    generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker --help
     generic-worker --version
 
@@ -70,28 +71,39 @@ and reports back results to the queue.
                                             does not already exist on the system, the user
                                             will be created. This user will be used to run
                                             the service.
+    new-openpgp-keypair                     This will generate a fresh, new OpenPGP
+                                            compliant private/public key pair. The public
+                                            key will be written to stdout and the private
+                                            key will be written to the specified file.
 
   Options:
+    --config CONFIG-FILE                    Json configuration file to use. See
+                                            configuration section below to see what this
+                                            file should contain. When calling the install
+                                            target, this is the config file that the
+                                            installation should use, rather than the
+                                            config to use during install.
+                                            [default: generic-worker.config]
     --configure-for-aws                     This will create the CONFIG-FILE for an AWS
                                             installation by querying the AWS environment
                                             and setting appropriate values.
-    --config CONFIG-FILE                    Json configuration file to use. See
-                                            configuration section below to see what this
-                                            file should contain.
-                                            [default: generic-worker.config]
-    --help                                  Display this help text.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for
                                             installing the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
-    --password PASSWORD                     The password for the username specified
-                                            with -u|--username option. If not specified
-                                            a random password will be generated.
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
     --username USERNAME                     The Windows user to run the generic worker
                                             Windows service as. If the user does not
                                             already exist on the system, it will be
                                             created. [default: GenericWorker]
+    --password PASSWORD                     The password for the username specified
+                                            with -u|--username option. If not specified
+                                            a random password will be generated.
+    --file PRIVATE-KEY-FILE                 The path to the file to write the private key
+                                            to. The parent directory must already exist.
+                                            If the file exists it will be overwritten,
+                                            otherwise it will be created.
+    --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 
 
@@ -142,6 +154,33 @@ and reports back results to the queue.
                                             logs over https. If not set, http will be used.
           livelogKey                        SSL key to be used by livelog for hosting logs
                                             over https. If not set, http will be used.
+          usersDir                          The location where user home directories should be
+                                            created on the worker. [default: C:\Users]
+          cleanUpTaskDirs                   Whether to delete the home directories of the task
+                                            users after the task completes. Normally you would
+                                            want to do this to avoid filling up disk space,
+                                            but for one-off troubleshooting, it can be useful
+                                            to (temporarily) leave home directories in place.
+                                            Accepted values: true or false. [default: true]
+          idleShutdownTimeoutSecs           How many seconds to wait without getting a new
+                                            task to perform, before shutting down the computer.
+                                            An integer, >= 0. A value of 0 means "do not shut
+                                            the computer down" - i.e. continue running
+                                            indefinitely.
+          workerTypeMetaData                This arbitrary json blob will be uploaded as an
+                                            artifact called worker_type_metadata.json with each
+                                            task. Providing information here, such as a URL to
+                                            the code/config used to set up the worker type will
+                                            mean that people running tasks on the worker type
+                                            will have more information about how it was set up
+                                            (for example what has been installed on the
+                                            machine).
+          signingKeyLocation                The PGP signing key for signing artifacts with.
+                                            If not set, tasks will not be signed.
+          runTasksAsCurrentUser             If true, users will not be created for tasks, but
+                                            the current OS user will be used. Useful if not an
+                                            administrator, e.g. when running tests. Should not
+                                            be used in production! [default: false]
 
     Here is an syntactically valid example configuration file:
 
