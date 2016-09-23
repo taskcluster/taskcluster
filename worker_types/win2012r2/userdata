@@ -117,6 +117,10 @@ Expand-ZIPFile -File "C:\go1.7.1.windows-amd64.zip" -Destination "C:\" -Url "htt
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
 Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassThru
 
+# install node
+$client.DownloadFile("https://nodejs.org/dist/v6.6.0/node-v6.6.0-x64.msi", "C:\NodeSetup.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\NodeSetup.msi /quiet" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\node-install.log" -RedirectStandardError "C:\node-install.err"
+
 # set permanent env vars
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
 [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd", "Machine")
