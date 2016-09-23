@@ -305,6 +305,12 @@ let load = base.loader({
     },
   },
 
+  // CLI utility to scan tasks
+  scan: {
+    requires: ['cfg', 'Artifact', 'Task', 'publicArtifactBucket'],
+    setup: options => require('./scan')(options),
+  },
+
   // Create the claim-reaper process
   'claim-reaper': {
     requires: [
