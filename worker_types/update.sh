@@ -13,7 +13,8 @@ USER_DATA="$(cat userdata)"
 AMI="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=platform,Values=windows" "Name=name,Values=Windows_Server-2012-R2_RTM-English-64Bit-Base*" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
 log "Latest Windows 2012 R2 AMI is: ${AMI}"
 
-. ../delete.sh
+# don't delete - baaaaaad
+# . ../delete.sh
 
 # make sure we have an ssh security group in this region
 # note if we *try* to create a security group that already exists (regardless of whether it is successful or not), there will be a cloudwatch alarm, so avoid this
