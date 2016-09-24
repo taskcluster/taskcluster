@@ -2,18 +2,21 @@ package client
 
 import (
 	"testing"
-	"strconv"	
+	"strconv"
+	"github.com/stretchr/testify/assert"	
 )
 
 func TestCredentials(t *testing.T){
 
-	cred := &Credentials{
-		ClientID          : "tester"
-		AccessToken       : "no-secret"
+	 assert := assert.New(t)
+
+	credentials := &Credentials{
+		ClientID          : "tester" ,
+		AccessToken       : "no-secret",
 	}
 
 	var credentialsTests = []struct {
-		meth string
+		method string
 		url  string
 		host string
 		port int
@@ -23,47 +26,29 @@ func TestCredentials(t *testing.T){
 		verr error
 		key  string
 		hash func() hash.Hash
-		rply bool
+		reply bool
 	}
 	{
 		{
 			hdr:  `Hawk id="1", ts="1353788437", nonce="k3j4h2", mac="zy79QQ5/EYFmQqutVnYb73gAc/U=", ext="hello"`,
 			hash: sha1.New,
+			method : "GET",
+			url : "/resource/4?filter=a",
+			host : "example.com",
+			port : 8080,
+			now: 1353788437,
+			key : "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
 		},
 	}
 
-	for k, test := range credentialsTests {
-			if test.meth == "" {
-				test.meth = "GET"
-			}
-			if test.url == "" {
-				test.url = "/resource/4?filter=a"
-			}
-			if test.host == "" {
-				test.host = "example.com"
-			}
-			if test.port == 0 {
-				test.port = 8080
-			}
-			if test.now == 0 {
-				test.now = 1353788437
-			}
-			if test.hash == nil {
-				test.hash = sha256.New
-			}
-			if test.key == "" {
-				test.key = "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn"
-			}
-	}
-
 	request := &http.Request{
-				Method:     test.meth,
-				RequestURI: test.url,
-				Host:       test.host + ":" + strconv.Itoa(test.port),
-				Header:     http.Header{"Authorization": {test.hdr}},
+				Method:     credentialsTests.method,
+				RequestURI: credentialsTests.url,
+				Host:       credentialsTests.host + ":" + strconv.Itoa(credentialsTests.port),
+				Header:     http.Header{"Authorization": {credentialsTests.hdr}},
 			}
 
-	cred.SignRequest(request,test.hash)
-	auth, errors := cred.newAuth(test.meth , test.url,test.hash)
-	t.assert(errors,Equals,nil)
+	credentials.SignRequest(request,credentialsTests.hash)
+	auth, errors := credentials.newAuth(credentialsTests.method ,credentialsTests.url,credentialsTests.hash)
+	assert.Nil(errors)
 }
