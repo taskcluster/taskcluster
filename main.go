@@ -161,7 +161,6 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
           signingKeyLocation                The PGP signing key for signing artifacts with.
-                                            If not set, tasks will not be signed.
 
         ** OPTIONAL ** properties
         =========================
