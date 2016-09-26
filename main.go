@@ -28,6 +28,7 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/auth"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -159,6 +160,8 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
+          signingKeyLocation                The PGP signing key for signing artifacts with.
+                                            If not set, tasks will not be signed.
 
         ** OPTIONAL ** properties
         =========================
@@ -202,8 +205,6 @@ and reports back results to the queue.
                                             will have more information about how it was set up
                                             (for example what has been installed on the
                                             machine).
-          signingKeyLocation                The PGP signing key for signing artifacts with.
-                                            If not set, tasks will not be signed.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
@@ -348,6 +349,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.UsersDir, name: "usersDir", disallowed: ""},
+		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
 	}
 
 	for _, f := range fields {
@@ -931,7 +933,11 @@ func (task *TaskRun) run() error {
 		if feature.IsEnabled(task.Payload.Features) {
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			if !scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes) {
+			scopesSatisfied, err := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.New(nil))
+			if err != nil {
+				return WorkerShutdown(err)
+			}
+			if !scopesSatisfied {
 				errorString := fmt.Sprintf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", requiredScopes, scopes.Given(task.Definition.Scopes))
 				task.Log(errorString)
 				return &CommandExecutionError{

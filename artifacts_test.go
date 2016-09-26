@@ -240,13 +240,7 @@ func TestUpload(t *testing.T) {
 
 	setup(t)
 
-	// check we have all the env vars we need to run this test
-	clientID := os.Getenv("TASKCLUSTER_CLIENT_ID")
-	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
-	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
-	if clientID == "" || accessToken == "" {
-		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
-	}
+	creds := requireTaskClusterCredentials(t)
 
 	pulseUsername := os.Getenv("PULSE_USERNAME")
 	pulsePassword := os.Getenv("PULSE_PASSWORD")
@@ -263,9 +257,9 @@ func TestUpload(t *testing.T) {
 	// configure the worker
 	config = &Config{
 		SigningKeyLocation:         filepath.Join("testdata", "private-opengpg-key"),
-		AccessToken:                accessToken,
-		Certificate:                certificate,
-		ClientID:                   clientID,
+		AccessToken:                creds.AccessToken,
+		Certificate:                creds.Certificate,
+		ClientID:                   creds.ClientID,
 		ProvisionerID:              provisionerID,
 		RefreshUrlsPrematurelySecs: 310,
 		WorkerGroup:                "test-worker-group",
@@ -352,13 +346,7 @@ func TestUpload(t *testing.T) {
 	)
 
 	// create dummy task
-	myQueue := queue.New(
-		&tcclient.Credentials{
-			ClientID:    clientID,
-			AccessToken: accessToken,
-			Certificate: certificate,
-		},
-	)
+	myQueue := queue.New(creds)
 
 	created := time.Now().UTC()
 	// reset nanoseconds
