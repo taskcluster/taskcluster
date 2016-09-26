@@ -47,11 +47,18 @@ type (
 	Required [][]string
 )
 
+// Note, this is trivially implemented by *Auth in
+// github.com/taskcluster/taskcluster-client-go/auth package, so typically
+// auth.New(nil) will satisfy this interface.
+type ScopeExpander interface {
+	ExpandScopes(*auth.SetOfScopes) (*auth.SetOfScopes, error)
+}
+
 // Returns `true` if the given scopes satisfy the required scopes.
 //
 // This function is ported from
 // https://github.com/taskcluster/taskcluster-base/blob/218225942212e24596cee211389c276b2b985ffe/utils.js#L37-L68
-func (given Given) Satisfies(required Required, myAuth *auth.Auth) (bool, error) {
+func (given Given) Satisfies(required Required, scopeExpander ScopeExpander) (bool, error) {
 	// special case: no required scopes is always satisfied
 	if len(required) == 0 {
 		return true, nil
@@ -81,14 +88,14 @@ func (given Given) Satisfies(required Required, myAuth *auth.Auth) (bool, error)
 	if checkFunc(given, required) {
 		return true, nil
 	}
-	expandedGiven, err := given.Expand(myAuth)
+	expandedGiven, err := given.Expand(scopeExpander)
 	if err != nil {
 		return false, err
 	}
 	return checkFunc(expandedGiven, required), nil
 }
 
-func (given Given) Expand(myAuth *auth.Auth) (expanded Given, err error) {
+func (given Given) Expand(scopeExpander ScopeExpander) (expanded Given, err error) {
 	for _, scope := range given {
 		if strings.HasPrefix(scope, "assume:") {
 			goto hasAssume
@@ -102,7 +109,7 @@ hasAssume:
 	scopes := &auth.SetOfScopes{
 		Scopes: given,
 	}
-	s, err := myAuth.ExpandScopes(scopes)
+	s, err := scopeExpander.ExpandScopes(scopes)
 	if err != nil {
 		return nil, err
 	}
