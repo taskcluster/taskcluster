@@ -63,6 +63,7 @@ var (
 	Features           []Feature = []Feature{
 		&LiveLogFeature{},
 		&ChainOfTrustFeature{},
+		&MountsFeature{},
 	}
 
 	version = "5.3.1"
@@ -185,6 +186,11 @@ and reports back results to the queue.
                                             over https. If not set, http will be used.
           usersDir                          The location where user home directories should be
                                             created on the worker. [default: C:\Users]
+          downloadsDir                      The location where resources are downloaded for
+                                            populating preloaded caches and readonly mounts.
+                                            [default: C:\generic-worker\downloads]
+          cachesDir                         The location where task caches should be stored on
+                                            the worker. [default: C:\generic-worker\caches]
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,
@@ -208,6 +214,11 @@ and reports back results to the queue.
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
                                             be used in production! [default: false]
+          requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
+                                            number of megabytes of disk space are available
+                                            when each task starts. If it cannot free enough
+                                            disk space, the worker will shut itself down.
+                                            [default: 10240]
 
     Here is an syntactically valid example configuration file:
 
@@ -310,6 +321,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 				"version":    version,
 			},
 		},
+		RequiredDiskSpaceMegabytes: 10240,
 	}
 
 	configFileBytes, err := ioutil.ReadFile(filename)
