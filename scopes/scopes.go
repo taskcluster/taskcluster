@@ -7,6 +7,8 @@ package scopes
 
 import (
 	"strings"
+
+	"github.com/taskcluster/taskcluster-client-go/auth"
 )
 
 type (
@@ -49,28 +51,62 @@ type (
 //
 // This function is ported from
 // https://github.com/taskcluster/taskcluster-base/blob/218225942212e24596cee211389c276b2b985ffe/utils.js#L37-L68
-func (given Given) Satisfies(required Required) bool {
+func (given Given) Satisfies(required Required, myAuth *auth.Auth) (bool, error) {
 	// special case: no required scopes is always satisfied
 	if len(required) == 0 {
-		return true
+		return true, nil
 	}
-checkRequired:
-	// outer loop - any scope set can pass in order to pass scope sets
-	for _, set := range required {
-		// inner loop - all scopes have to pass in order to pass scope set
-		for _, scope := range set {
-			// just need to find one given scope to satisfy required scope
-			for _, pattern := range given {
-				if scope == pattern || (strings.HasSuffix(pattern, "*") && strings.HasPrefix(scope, pattern[0:len(pattern)-1])) {
-					goto scopeMatch
+	checkFunc := func(given Given, required Required) bool {
+	checkRequired:
+		// outer loop - any scope set can pass in order to pass scope sets
+		for _, set := range required {
+			// inner loop - all scopes have to pass in order to pass scope set
+			for _, scope := range set {
+				// just need to find one given scope to satisfy required scope
+				for _, pattern := range given {
+					if scope == pattern || (strings.HasSuffix(pattern, "*") && strings.HasPrefix(scope, pattern[0:len(pattern)-1])) {
+						goto scopeMatch
+					}
 				}
+				continue checkRequired
+			scopeMatch:
 			}
-			continue checkRequired
-		scopeMatch:
+			return true
 		}
-		return true
+		return false
 	}
-	return false
+	// Only expand scopes if we have to. First try with non-expanded scopes,
+	// and if required is already satisfied, no need to do the extra work of
+	// expanding given.
+	if checkFunc(given, required) {
+		return true, nil
+	}
+	expandedGiven, err := given.Expand(myAuth)
+	if err != nil {
+		return false, err
+	}
+	return checkFunc(expandedGiven, required), nil
+}
+
+func (given Given) Expand(myAuth *auth.Auth) (expanded Given, err error) {
+	for _, scope := range given {
+		if strings.HasPrefix(scope, "assume:") {
+			goto hasAssume
+		}
+	}
+	expanded = make(Given, 0, len(given))
+	copy(expanded, given)
+	return
+
+hasAssume:
+	scopes := &auth.SetOfScopes{
+		Scopes: given,
+	}
+	s, err := myAuth.ExpandScopes(scopes)
+	if err != nil {
+		return nil, err
+	}
+	return Given(s.Scopes), nil
 }
 
 // Returns "<scope> and <scope> and ... and <scope>" for all scopes in given.

@@ -2,17 +2,41 @@ package scopes
 
 import (
 	"fmt"
+	"os"
 	"testing"
+
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/auth"
 )
 
+var myAuth *auth.Auth
+
+func init() {
+	myAuth = auth.New(
+		&tcclient.Credentials{
+			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		},
+	)
+}
+
 func accept(t *testing.T, given Given, required Required) {
-	if !given.Satisfies(required) {
+	satisfied, err := given.Satisfies(required, myAuth)
+	if err != nil {
+		t.Fatalf("Hit error: %v", err)
+	}
+	if !satisfied {
 		t.Errorf("Expected given scopes %q to satisfy required scopes %q, but did not.", given, required)
 	}
 }
 
 func reject(t *testing.T, given Given, required Required) {
-	if given.Satisfies(required) {
+	satisfied, err := given.Satisfies(required, myAuth)
+	if err != nil {
+		t.Fatalf("Hit error: %v", err)
+	}
+	if satisfied {
 		t.Errorf("Expected given scopes %q *not* to satisfy required scopes %q, but it did.", given, required)
 	}
 }
@@ -228,12 +252,16 @@ func TestStarNotExpandedWhenNotAtEnd(t *testing.T) {
 // character.
 func ExampleGiven_Satisfies_wildcard() {
 	given := Given{"queue:*"}
-	fmt.Println(given.Satisfies(Required{{"queue:route:*"}}))
-	fmt.Println(given.Satisfies(Required{{"queue:*"}}))
-	fmt.Println(given.Satisfies(Required{{"*"}}))
+	out, _ := given.Satisfies(Required{{"queue:route:*"}}, myAuth)
+	fmt.Println(out)
+	out, _ = given.Satisfies(Required{{"queue:*"}}, myAuth)
+	fmt.Println(out)
+	out, _ = given.Satisfies(Required{{"*"}}, myAuth)
+	fmt.Println(out)
 
 	given = Given{"queue:route"}
-	fmt.Println(given.Satisfies(Required{{"queue:*"}}))
+	out, _ = given.Satisfies(Required{{"queue:*"}}, myAuth)
+	fmt.Println(out)
 	// Output:
 	// true
 	// true
@@ -251,25 +279,52 @@ func ExampleGiven_Satisfies_compound() {
 		"AB:*",
 	}
 
-	fmt.Println(
-		given.Satisfies(
-			Required{
-				{
-					"abc:def",  // satisfied by "abc:*"
-					"AB:CD:EF", // satisfied by "AB:*"
-				}, // => satisfied since all scopes in set are satisfied
-				{
-					"123:4:5", // NOT satisfied
-				}, // => NOT satisfied since not all scopes in set are satisfied
-				{
-					"abc:def", // satisfied by "abc:*"
-					"123:4",   // NOT satisfied
-				}, // => NOT satisfied since not all scopes in set are satisfied
-				{
-					"Xxyz", // NOT satisfied
-				}, // => NOT satisfied since not all scopes in set are satisfied
-			}, // => satisfied since at least one set above is satisfied
-		),
+	satisfies, _ := given.Satisfies(
+		Required{
+			{
+				"abc:def",  // satisfied by "abc:*"
+				"AB:CD:EF", // satisfied by "AB:*"
+			}, // => satisfied since all scopes in set are satisfied
+			{
+				"123:4:5", // NOT satisfied
+			}, // => NOT satisfied since not all scopes in set are satisfied
+			{
+				"abc:def", // satisfied by "abc:*"
+				"123:4",   // NOT satisfied
+			}, // => NOT satisfied since not all scopes in set are satisfied
+			{
+				"Xxyz", // NOT satisfied
+			}, // => NOT satisfied since not all scopes in set are satisfied
+		}, // => satisfied since at least one set above is satisfied
+		myAuth,
 	)
+	fmt.Println(satisfies)
+	// Output: true
+}
+
+func ExampleGiven_Satisfies_expanded() {
+	given := Given{
+		"assume:repo:github.com/bugzilla/bugzilla:*",
+	}
+	satisfies, _ := given.Satisfies(
+		Required{
+			{
+				"assume:repo:github.com/bugzilla/bugzilla:*",
+				"queue:create-task:aws-provisioner-v1/b2gtest",
+				"queue:create-task:aws-provisioner-v1/github-worker",
+				"queue:route:gaia-taskcluster",
+				"queue:route:index.garbage.*",
+				"queue:route:tc-treeherder-stage.v2.bugzilla/bugzilla.*",
+				"queue:route:tc-treeherder.bugzilla-master.*",
+				"queue:route:tc-treeherder.bugzilla.*",
+				"queue:route:tc-treeherder.v2.bugzilla/bugzilla-master.*",
+				"queue:route:tc-treeherder.v2.bugzilla/bugzilla.*",
+				"secrets:get:garbage/*",
+				"secrets:set:garbage/*",
+			},
+		},
+		myAuth,
+	)
+	fmt.Println(satisfies)
 	// Output: true
 }
