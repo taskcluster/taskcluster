@@ -65,25 +65,27 @@ let load = Loader({
   },
 
   Client: {
-    requires: ['cfg', 'resolver'],
-    setup: ({cfg, resolver}) =>
+    requires: ['cfg', 'resolver', 'monitor'],
+    setup: ({cfg, resolver, monitor}) =>
       data.Client.setup({
         table:        cfg.app.clientTableName,
         credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
         cryptoKey:    cfg.app.tableCryptoKey,
-        context:      {resolver}
+        context:      {resolver},
+        monitor:      monitor.prefix('table.clients'),
       })
   },
 
   Role: {
-    requires: ['cfg', 'resolver'],
-    setup: ({cfg, resolver}) =>
+    requires: ['cfg', 'resolver', 'monitor'],
+    setup: ({cfg, resolver, monitor}) =>
       data.Role.setup({
         table:        cfg.app.rolesTableName,
         credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
-        context:      {resolver}
+        context:      {resolver},
+        monitor:      monitor.prefix('table.roles'),
       })
   },
 
@@ -96,8 +98,8 @@ let load = Loader({
   },
 
   publisher: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) =>
+    requires: ['cfg', 'validator', 'monitor'],
+    setup: ({cfg, validator, monitor}) =>
       exchanges.setup({
         credentials:      cfg.pulse,
         exchangePrefix:   cfg.app.exchangePrefix,
@@ -105,16 +107,17 @@ let load = Loader({
         referencePrefix:  'auth/v1/exchanges.json',
         publish:          cfg.app.publishMetaData,
         aws:              cfg.aws,
+        monitor:          monitor.prefix('publisher'),
       })
   },
 
   api: {
     requires: [
       'cfg', 'Client', 'Role', 'validator', 'publisher', 'resolver',
-      'sentryManager'
+      'sentryManager', 'monitor',
     ],
     setup: async ({
-      cfg, Client, Role, validator, publisher, resolver, sentryManager
+      cfg, Client, Role, validator, publisher, resolver, sentryManager, monitor
     }) => {
       // Set up the Azure tables
       await Role.ensureTable();
@@ -157,6 +160,7 @@ let load = Loader({
         baseUrl:            cfg.server.publicUrl + '/v1',
         referencePrefix:    'auth/v1/api.json',
         aws:                cfg.aws,
+        monitor:            monitor.prefix('api'),
       });
     }
   },
