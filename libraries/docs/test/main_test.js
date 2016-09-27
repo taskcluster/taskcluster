@@ -140,6 +140,7 @@ suite('End to End', () => {
     let shoulds = [
       'taskcluster-lib-docs/schemas/foo.json',
       'taskcluster-lib-docs/schemas/bar.json',
+      'taskcluster-lib-docs/docs/format.md',
     ];
     assertInTarball(shoulds, doc.tgz, done);
   });
@@ -152,6 +153,7 @@ suite('End to End', () => {
     let shoulds = [
       'taskcluster-lib-docs/references/api.json',
       'taskcluster-lib-docs/references/events.json',
+      'taskcluster-lib-docs/docs/format.md',
     ];
     assertInTarball(shoulds, doc.tgz, done);
   });
@@ -160,7 +162,10 @@ suite('End to End', () => {
     let doc = await documenter({
       tier,
     });
-    assertInTarball([], doc.tgz, done);
+    let shoulds = [
+      'taskcluster-lib-docs/docs/format.md',
+    ];
+    assertInTarball(shoulds, doc.tgz, done);
   });
 
   test('download tarball contains project', async function() {
