@@ -141,9 +141,9 @@ func TestMounts(t *testing.T) {
 	if actualRequiredScopes != expectedRequiredScopes {
 		t.Fatalf("Expected required scopes %q but got %q", expectedRequiredScopes, actualRequiredScopes)
 	}
-	err = tf.Start()
-	if err != nil {
-		t.Fatalf("Encountered error when starting mounts feature for task: %v", err)
+	e := tf.Start()
+	if e != nil {
+		t.Fatalf("Encountered error when starting mounts feature for task: %#v", e)
 	}
 
 	// check a sample of the files that should should have been extracted...
@@ -179,9 +179,9 @@ func TestMounts(t *testing.T) {
 		t.Fatalf("Could not create file foo.bat in devtools-app cache")
 	}
 
-	err = tf.Stop()
-	if err != nil {
-		t.Fatalf("Encountered error when stopping mounts feature for task: %v", err)
+	e = tf.Stop()
+	if e != nil {
+		t.Fatalf("Encountered error when stopping mounts feature for task: %v", e)
 	}
 
 	checkSHA256(

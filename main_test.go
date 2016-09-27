@@ -36,10 +36,7 @@ func TestBadPayloadValidate(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
 	}
-	switch err.(type) {
-	case *json.SyntaxError:
-		// received *json.SyntaxError as expected - all ok
-	default:
-		t.Errorf("Bad task payload should have retured a *json.SyntaxError error, but actually returned a %T error. The unexpected %T error was:\n%s", err, err, err)
+	if err.Reason != "malformed-payload" || err.TaskStatus != Errored {
+		t.Errorf("Bad task payload should have retured malformed-payload, but actually returned:\n%#v", err)
 	}
 }

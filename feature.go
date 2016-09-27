@@ -11,8 +11,8 @@ type (
 
 	TaskFeature interface {
 		RequiredScopes() scopes.Required
-		Start() error
-		Stop() error
+		Start() *CommandExecutionError
+		Stop() *CommandExecutionError
 	}
 
 	EnabledFeatures struct {

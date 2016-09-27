@@ -233,9 +233,9 @@ func clearCaches() error {
 }
 
 // called when a task starts
-func (taskMount *TaskMount) Start() error {
+func (taskMount *TaskMount) Start() *CommandExecutionError {
 	if taskMount.payloadError != nil {
-		return taskMount.payloadError
+		return MalformedPayload(taskMount.payloadError)
 	}
 	// Let's perform a garbage collection here before running the task. In
 	// taskcluster-worker this will run in its own thread, and here it only
@@ -244,25 +244,25 @@ func (taskMount *TaskMount) Start() error {
 	// sufficient for generic worker.
 	err := clearCaches()
 	if err != nil {
-		return err
+		panic(err)
 	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
 		err = mount.Mount()
 		if err != nil {
-			return err
+			panic(err)
 		}
 	}
 	return nil
 }
 
 // called when a task has completed
-func (taskMount *TaskMount) Stop() error {
+func (taskMount *TaskMount) Stop() *CommandExecutionError {
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
 		err := mount.Unmount()
 		if err != nil {
-			return err
+			panic(err)
 		}
 	}
 	return nil

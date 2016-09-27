@@ -9,6 +9,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -476,45 +477,10 @@ func FindAndRunTask() bool {
 			// continue...
 			continue
 		}
-		// Now we found a task, run it, and then exit the loop. This is because
-		// the loop is in order of priority, most important first, so we will
-		// run the most important task we find, and then return, ignorning
-		// remaining urls for lower priority tasks that might still be left to
-		// loop through, since by the time we complete the first task, maybe
-		// higher priority jobs are waiting, so we need to poll afresh.
-		log.Println("Task found")
-
 		// from this point on we should "break" rather than "continue", since
 		// there could be more tasks on the same queue - we only "continue"
 		// to next queue if we found nothing on this queue...
 		taskFound = true
-
-		// If there is one or more messages the worker must claim the tasks
-		// referenced in the messages, and delete the messages.
-		taskStatusUpdate <- TaskStatusUpdate{
-			Task:   task,
-			Status: Claimed,
-		}
-		err = <-taskStatusUpdateErr
-		if err != nil {
-			log.Printf("WARN: Not able to claim task %v", task.TaskID)
-			log.Printf("%v", err)
-			break
-		}
-		task.setReclaimTimer()
-		task.fetchTaskDefinition()
-		err = task.validatePayload()
-		if err != nil {
-			log.Printf("TASK EXCEPTION: Not able to validate task payload for task %v", task.TaskID)
-			log.Printf("%#v", err)
-			taskStatusUpdate <- TaskStatusUpdate{
-				Task:   task,
-				Status: Errored,
-				Reason: "malformed-payload", // "invalid-payload"
-			}
-			task.reportPossibleError(<-taskStatusUpdateErr)
-			break
-		}
 		err = task.run()
 		task.reportPossibleError(err)
 		break
@@ -524,7 +490,7 @@ func FindAndRunTask() bool {
 
 func (task *TaskRun) reportPossibleError(err error) {
 	if err != nil {
-		log.Printf("%v", err)
+		log.Printf("ERROR encountered: %#v", err)
 		task.Log(err.Error())
 	}
 }
@@ -768,21 +734,19 @@ func (task *TaskRun) fetchTaskDefinition() {
 	task.Definition = task.TaskClaimResponse.Task
 }
 
-func (task *TaskRun) validatePayload() error {
+func (task *TaskRun) validatePayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
-	log.Printf("Json Payload: %s", jsonPayload)
+	log.Printf("JSON payload: %s", jsonPayload)
 	schemaLoader := gojsonschema.NewStringLoader(taskPayloadSchema())
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	if err != nil {
-		return err
+		return MalformedPayload(err)
 	}
-	if result.Valid() {
-		log.Println("The task payload is valid.")
-	} else {
-		log.Println("TASK FAIL since the task payload is invalid. See errors:")
+	if !result.Valid() {
+		task.Log("TASK FAIL since the task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
-			log.Printf("- %s", desc)
+			task.Log(fmt.Sprintf("- %s", desc))
 		}
 		// Dealing with Invalid Task Payloads
 		// ----------------------------------
@@ -812,21 +776,15 @@ func (task *TaskRun) validatePayload() error {
 		// failed. The difference is whether or not the unexpected behavior
 		// happened before or after the execution of task specific Turing
 		// complete code.
-		taskStatusUpdate <- TaskStatusUpdate{
-			Task:   task,
-			Status: Errored,
-			Reason: "malformed-payload",
-		}
-		task.reportPossibleError(<-taskStatusUpdateErr)
-		return fmt.Errorf("Validation of payload failed for task %v", task.TaskID)
+		return MalformedPayload(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 	}
 	err = json.Unmarshal(jsonPayload, &task.Payload)
 	if err != nil {
-		return err
+		return MalformedPayload(err)
 	}
 	for _, artifact := range task.Payload.Artifacts {
 		if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
-			return errors.New("Malformed payload: artifact expiration before task deadline")
+			return MalformedPayload(errors.New("Malformed payload: artifact expiration before task deadline"))
 		}
 	}
 	return nil
@@ -838,12 +796,31 @@ type CommandExecutionError struct {
 	Reason     string
 }
 
-func WorkerShutdown(err error) *CommandExecutionError {
+func executionError(reason string, status TaskStatus, err error) *CommandExecutionError {
+	if err == nil {
+		return nil
+	}
 	return &CommandExecutionError{
 		Cause:      err,
-		Reason:     "worker-shutdown",
-		TaskStatus: Errored,
+		Reason:     reason,
+		TaskStatus: status,
 	}
+}
+
+func ResourceUnavailable(err error) *CommandExecutionError {
+	return executionError("resource-unavailable", Errored, err)
+}
+
+func MalformedPayload(err error) *CommandExecutionError {
+	return executionError("malformed-payload", Errored, err)
+}
+
+func WorkerShutdown(err error) *CommandExecutionError {
+	return executionError("worker-shutdown", Errored, err)
+}
+
+func Failure(err error) *CommandExecutionError {
+	return executionError("", Failed, err)
 }
 
 func (task *TaskRun) Log(message string) {
@@ -854,7 +831,7 @@ func (task *TaskRun) Log(message string) {
 	}
 }
 
-func (err CommandExecutionError) Error() string {
+func (err *CommandExecutionError) Error() string {
 	return fmt.Sprintf("TASK NOT SUCCESSFUL: status %v with reason: %q due to %s", err.TaskStatus, err.Reason, err.Cause)
 }
 
@@ -898,10 +875,61 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	return nil
 }
 
-func (task *TaskRun) run() error {
+func (task *TaskRun) claim() (err *CommandExecutionError) {
+	// If there is one or more messages the worker must claim the tasks
+	// referenced in the messages, and delete the messages.
+	taskStatusUpdate <- TaskStatusUpdate{
+		Task:   task,
+		Status: Claimed,
+	}
+	e := <-taskStatusUpdateErr
+	if e != nil {
+		return ResourceUnavailable(fmt.Errorf("Not able to claim task %v due to %v", task.TaskID, e))
+	}
+	return nil
+}
 
-	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
+type executionErrors []*CommandExecutionError
 
+func (e *executionErrors) add(err *CommandExecutionError) {
+	if err == nil {
+		return
+	}
+	if e == nil {
+		*e = executionErrors{err}
+	} else {
+		*e = append(*e, err)
+	}
+}
+
+func (err *executionErrors) Error() string {
+	text := ""
+	if err != nil {
+		for i, e := range *err {
+			text += fmt.Sprintf("%v) %v\n", i, e)
+		}
+	}
+	return text
+}
+
+func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
+	if e == nil {
+		taskStatusUpdate <- TaskStatusUpdate{
+			Task:   task,
+			Status: Succeeded,
+			Reason: "",
+		}
+		return ResourceUnavailable(<-taskStatusUpdateErr)
+	}
+	taskStatusUpdate <- TaskStatusUpdate{
+		Task:   task,
+		Status: (*e)[0].TaskStatus,
+		Reason: (*e)[0].Reason,
+	}
+	return ResourceUnavailable(<-taskStatusUpdateErr)
+}
+
+func (task *TaskRun) setMaxRunTimer() {
 	// Terminating the Worker Early
 	// ----------------------------
 	// If the worker finds itself having to terminate early, for example a spot
@@ -921,24 +949,63 @@ func (task *TaskRun) run() error {
 		}
 		task.reportPossibleError(<-taskStatusUpdateErr)
 	}()
+}
 
-	task.Commands = make([]Command, len(task.Payload.Command))
-
-	// We only report the status at the end of the method, e.g.
-	// if a command fails, we still try to upload log files
-	// and artifacts. Therefore use these variables to store
-	// failure or exception, and at the end of the method
-	// report status based on these...
-	var finalTaskStatus TaskStatus = Succeeded
-	var finalReason string
-	var finalError error = nil
-
+func (task *TaskRun) createLogFile() io.WriteCloser {
 	absLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
-		return WorkerShutdown(err)
+		panic(err)
 	}
 	task.logWriter = logFileHandle
+	return logFileHandle
+}
+
+func (task *TaskRun) logHeader() {
+	jsonBytes, err := json.MarshalIndent(config.WorkerTypeMetadata, "  ", "  ")
+	if err != nil {
+		panic(err)
+	}
+	task.Log("Worker Type (" + config.WorkerType + ") settings:")
+	task.Log("  " + string(jsonBytes))
+	task.Log("=== Task Starting ===")
+}
+
+func (task *TaskRun) run() (err *executionErrors) {
+
+	// Now we found a task, run it, and then exit the loop. This is because
+	// the loop is in order of priority, most important first, so we will
+	// run the most important task we find, and then return, ignorning
+	// remaining urls for lower priority tasks that might still be left to
+	// loop through, since by the time we complete the first task, maybe
+	// higher priority jobs are waiting, so we need to poll afresh.
+	log.Println("Task found")
+
+	err.add(task.claim())
+	if err != nil {
+		return
+	}
+	defer func() {
+		err.add(task.resolve(err))
+	}()
+
+	task.setReclaimTimer()
+	task.fetchTaskDefinition()
+
+	logHandle := task.createLogFile()
+	defer func() {
+		task.closeLog(logHandle)
+		err.add(task.uploadLog("public/logs/live_backing.log"))
+	}()
+
+	err.add(task.validatePayload())
+	if err != nil {
+		return
+	}
+	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
+	task.setMaxRunTimer()
+
+	task.Commands = make([]Command, len(task.Payload.Command))
 
 	taskFeatures := []TaskFeature{}
 
@@ -947,126 +1014,55 @@ func (task *TaskRun) run() error {
 		if feature.IsEnabled(task.Payload.Features) {
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			scopesSatisfied, err := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.New(nil))
-			if err != nil {
-				return WorkerShutdown(err)
+			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.New(nil))
+			if scopeValidationErr != nil {
+				err.add(ResourceUnavailable(scopeValidationErr))
+				continue
 			}
 			if !scopesSatisfied {
-				errorString := fmt.Sprintf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", requiredScopes, scopes.Given(task.Definition.Scopes))
-				task.Log(errorString)
-				return &CommandExecutionError{
-					Cause:      errors.New(errorString),
-					Reason:     "malformed-payload",
-					TaskStatus: Errored,
-				}
+				err.add(MalformedPayload(fmt.Errorf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", requiredScopes, scopes.Given(task.Definition.Scopes))))
+				continue
 			}
 			taskFeatures = append(taskFeatures, taskFeature)
 		}
 	}
+	if err != nil {
+		return
+	}
 
 	// start task features
 	for _, taskFeature := range taskFeatures {
-		err = taskFeature.Start()
+		err.add(taskFeature.Start())
 		if err != nil {
-			return WorkerShutdown(err)
+			return
+		}
+		defer func(taskFeature TaskFeature) {
+			err.add(taskFeature.Stop())
+		}(taskFeature)
+	}
+
+	defer func() {
+		for _, artifact := range task.PayloadArtifacts() {
+			err.add(task.uploadArtifact(artifact))
+		}
+	}()
+
+	task.logHeader()
+
+	started := time.Now()
+
+	for i, _ := range task.Payload.Command {
+		err.add(task.ExecuteCommand(i))
+		if err != nil {
+			return
 		}
 	}
 
-	jsonBytes, err := json.MarshalIndent(config.WorkerTypeMetadata, "  ", "  ")
-	if err != nil {
-		return WorkerShutdown(err)
-	}
-	task.Log("Worker Type (" + config.WorkerType + ") settings:")
-	task.Log("  " + string(jsonBytes))
-	task.Log("=== Task Starting ===")
-	started := time.Now()
-	for i, _ := range task.Payload.Command {
-		err := task.ExecuteCommand(i)
-		if err != nil {
-			log.Printf("TASK EXCEPTION OR FAILURE: Error executing command %v: %#v", i, err.Error())
-			finalError = err.Cause
-			finalReason = err.Reason
-			finalTaskStatus = err.TaskStatus
-			break
-		}
-	}
 	finished := time.Now()
 	task.Log("=== Task Finished ===")
 	task.Log("Task Duration: " + finished.Sub(started).String())
 
-	// don't fret if we can't close this
-	_ = logFileHandle.Close()
-
-	for _, artifact := range task.PayloadArtifacts() {
-		err := task.uploadArtifact(artifact)
-		if err != nil {
-			log.Printf("%#v", err)
-			if finalError == nil {
-				switch t := err.(type) {
-				case *os.PathError:
-					// artifact does not exist or is not readable...
-					finalTaskStatus = Failed
-					finalError = err
-				case httpbackoff.BadHttpResponseCode:
-					// if not a 5xx error, then not worth retrying...
-					if t.HttpResponseCode/100 != 5 {
-						task.Log(fmt.Sprintf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
-						finalTaskStatus = Failed
-					} else {
-						task.Log(fmt.Sprintf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
-						finalTaskStatus = Errored
-						finalReason = "worker-shutdown" // internal error (upload-failure)
-					}
-					finalError = err
-				default:
-					task.Log(fmt.Sprintf("TASK EXCEPTION due to error %#v", t))
-					// could not upload for another reason
-					finalTaskStatus = Errored
-					finalReason = "worker-shutdown" // internal error (upload-failure)
-					finalError = err
-				}
-			}
-		}
-	}
-
-	// stop task features, but in reverse order to how they were started
-	for i := len(taskFeatures) - 1; i >= 0; i-- {
-		err = taskFeatures[i].Stop()
-		if err != nil {
-			task.Log(fmt.Sprintf("TASK EXCEPTION due to error %#v", err))
-			if finalError == nil {
-				finalTaskStatus = Errored
-				finalReason = "worker-shutdown" // internal error (upload-failure)
-				finalError = err
-			}
-		}
-	}
-
-	err = task.postTaskActions()
-
-	if err != nil {
-		log.Printf("%#v", err)
-		if finalError == nil {
-			log.Println("TASK EXCEPTION when running post-task actions")
-			finalTaskStatus = Errored
-			finalReason = "worker-shutdown" // internal error (log-concatenation-failure)
-			finalError = err
-		}
-	}
-
-	// When the worker has completed the task successfully it should call
-	// `queue.reportCompleted`.
-	taskStatusUpdate <- TaskStatusUpdate{
-		Task:   task,
-		Status: finalTaskStatus,
-		Reason: finalReason,
-	}
-	err = <-taskStatusUpdateErr
-	if err != nil && finalError == nil {
-		log.Printf("%#v", err)
-		finalError = err
-	}
-	return finalError
+	return
 }
 
 func writeToFileAsJSON(obj interface{}, filename string) error {
@@ -1077,7 +1073,14 @@ func writeToFileAsJSON(obj interface{}, filename string) error {
 	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
 }
 
-func (task *TaskRun) postTaskActions() error {
+func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
+	err := logHandle.Close()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (task *TaskRun) uploadBackingLog() *CommandExecutionError {
 	log.Println("Uploading full log file")
 	err := task.uploadLog("public/logs/live_backing.log")
 	if err != nil {
