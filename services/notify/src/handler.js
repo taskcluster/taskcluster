@@ -89,7 +89,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 **Owner:** ${task.metadata.owner}
 **Source:** ${task.metadata.source}
             `,
-            subject: `Task complete: ${task.metadata.name} - ${taskId}`,
+            subject: `Task ${status.status.state}: ${task.metadata.name} - ${taskId}`,
             link: {text: 'Inspect Task', href},
           });
         default:
