@@ -38,19 +38,20 @@ let load = Loader({
         process,
         mock: profile === 'test',
         statsumToken: async (project) => {
-          let key = await this.sentryManager.projectDSN(project);
-          return {
-            project,
-            dsn: _.pick(key.dsn, ['secret', 'public']),
-            expires: key.expires.toJSON(),
-          };
-        },
-        sentryDNS: async (project) => {
           return {
             project,
             token:    Statsum.createToken(project, cfg.app.statsum.secret, '25h'),
             baseUrl:  cfg.app.statsum.baseUrl,
             expires:  taskcluster.fromNowJSON('24 hours'),
+          };
+
+        },
+        sentryDSN: async (project) => {
+          let key = await this.sentryManager.projectDSN(project);
+          return {
+            project,
+            dsn: _.pick(key.dsn, ['secret', 'public']),
+            expires: key.expires.toJSON(),
           };
         },
       });
