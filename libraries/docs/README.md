@@ -18,6 +18,8 @@ This is tested on and should run on any of node `{0.12, 4, 5, 6}`.
 Usage
 -----
 
+**Do not forget to add the scopes before pushing your service to production! `[auth:aws-s3:read-write:taskcluster-raw-docs/<project>/]`**
+
 This library should be included as a component in a [Taskcluster Component Loader](https://github.com/taskcluster/taskcluster-lib-loader)
 setup so that it is called upon a service starting in Heroku or as a post-publish step in a library. Options and defaults are listed
 below.
