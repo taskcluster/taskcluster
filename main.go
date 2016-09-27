@@ -393,6 +393,13 @@ func runWorker() chan<- bool {
 
 	done := make(chan bool)
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("Shutting down immediately - panic occurred!")
+				log.Printf("Cause: %#v", r)
+				immediateShutdown()
+			}
+		}()
 		// Queue is the object we will use for accessing queue api
 		Queue = queue.New(
 			&tcclient.Credentials{
@@ -481,6 +488,14 @@ func FindAndRunTask() bool {
 		// there could be more tasks on the same queue - we only "continue"
 		// to next queue if we found nothing on this queue...
 		taskFound = true
+
+		// Now we found a task, run it, and then exit the loop. This is because
+		// the loop is in order of priority, most important first, so we will
+		// run the most important task we find, and then return, ignorning
+		// remaining urls for lower priority tasks that might still be left to
+		// loop through, since by the time we complete the first task, maybe
+		// higher priority jobs are waiting, so we need to poll afresh.
+		log.Println("Task found")
 		err = task.run()
 		task.reportPossibleError(err)
 		break
@@ -973,19 +988,24 @@ func (task *TaskRun) logHeader() {
 
 func (task *TaskRun) run() (err *executionErrors) {
 
-	// Now we found a task, run it, and then exit the loop. This is because
-	// the loop is in order of priority, most important first, so we will
-	// run the most important task we find, and then return, ignorning
-	// remaining urls for lower priority tasks that might still be left to
-	// loop through, since by the time we complete the first task, maybe
-	// higher priority jobs are waiting, so we need to poll afresh.
-	log.Println("Task found")
+	// err is essentially a list of all errors that occur. We'll base the task
+	// resolution on the first error that occurs. The err.add(<error-or-nil>)
+	// function is a simple way of adding an error to the list, if one occurs,
+	// otherwise not adding it, if it is nil
+
+	// note, since we return the value pointed to by `err`, we can continue
+	// to manipulate `err` even in defer statements, and this will affect
+	// return value of this method.
 
 	err.add(task.claim())
 	if err != nil {
 		return
 	}
 	defer func() {
+		if r := recover(); r != nil {
+			err.add(WorkerShutdown(fmt.Errorf("%#v", r)))
+			defer panic(r)
+		}
 		err.add(task.resolve(err))
 	}()
 
@@ -994,6 +1014,14 @@ func (task *TaskRun) run() (err *executionErrors) {
 
 	logHandle := task.createLogFile()
 	defer func() {
+		// log any errors that occurred
+		if err != nil {
+			task.Log(err.Error())
+		}
+		if r := recover(); r != nil {
+			task.Log(fmt.Sprintf("%#v", r))
+			defer panic(r)
+		}
 		task.closeLog(logHandle)
 		err.add(task.uploadLog("public/logs/live_backing.log"))
 	}()
@@ -1016,6 +1044,8 @@ func (task *TaskRun) run() (err *executionErrors) {
 			requiredScopes := taskFeature.RequiredScopes()
 			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.New(nil))
 			if scopeValidationErr != nil {
+				// presumably we couldn't expand assume:* scopes due to auth
+				// service unavailability
 				err.add(ResourceUnavailable(scopeValidationErr))
 				continue
 			}
