@@ -15,6 +15,11 @@ Requirements
 
 This is tested on and should run on any of node `{0.12, 4, 5, 6}`.
 
+Documentation Tarball Format
+----------------------------
+
+The format for the tarball that is uploaded to s3 is [documented here](https://github.com/taskcluster/taskcluster-lib-docs/blob/master/docs/format.md).
+
 Usage
 -----
 
