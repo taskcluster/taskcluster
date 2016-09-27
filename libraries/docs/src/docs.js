@@ -19,7 +19,7 @@ async function documenter(options) {
     schemas: {},
     menuIndex: 10,
     docsFolder: path.join(rootdir.get(), '/docs'),
-    bucket: 'taskckluster-raw-docs',
+    bucket: 'taskcluster-raw-docs',
     references: [],
     publish: process.env.NODE_ENV == 'production',
   });
@@ -136,7 +136,7 @@ async function documenter(options) {
 async function downloader(options) {
   options = _.defaults({}, options, {
     credentials: {},
-    bucket: 'taskckluster-raw-docs',
+    bucket: 'taskcluster-raw-docs',
     project: null,
   });
 
