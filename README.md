@@ -36,8 +36,6 @@ func main() {
 }
 ```
 
-*NOTE* this library does not respect `assume` scopes. See the TODO section.
-
 See [formal definitions](https://docs.taskcluster.net/presentations/scopes/#/definitions)
 for more information about scope satisfaction.
 
@@ -51,4 +49,4 @@ are posted to irc channel #taskcluster-bots on irc.mozilla.org:6697.
 
 ## TODO
 
-* [ ] Respect `assume` scopes (query auth service to expand scopes)
+* [x] Respect `assume` scopes (query auth service to expand scopes)
