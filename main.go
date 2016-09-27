@@ -230,7 +230,8 @@ and reports back results to the queue.
               "workerType":                 "win2008-worker",
               "provisionerId":              "my-provisioner",
               "livelogSecret":              "baNaNa-SouP4tEa",
-              "publicIP":                   "12.24.35.46"
+              "publicIP":                   "12.24.35.46",
+              "signingKeyLocation":         "C:\\generic-worker\\generic-worker-gpg-signing-key.key"
             }
 
 
