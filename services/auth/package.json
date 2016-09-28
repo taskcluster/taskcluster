@@ -39,7 +39,7 @@
     "taskcluster-client": "^1.2.0",
     "azure-entities": "^1.0.2",
     "pulse-publisher": "^1.1.0",
-    "taskcluster-lib-api": "^1.1.0",
+    "taskcluster-lib-api": "^2.0.1",
     "taskcluster-lib-app": "^1.0.0",
     "taskcluster-lib-docs": "^2.0.0",
     "taskcluster-lib-iterate": "^1.0.2",
