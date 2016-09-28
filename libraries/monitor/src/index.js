@@ -14,8 +14,8 @@ let Monitor = require('./monitor');
  *   project: '...',
  *   patchGlobal:  true,
  *   reportStatsumErrors: true,
- *   resourceInterval: 10 * 1000,
- *   crashTimeout: 5 * 1000,
+ *   resourceInterval: 10, // seconds
+ *   crashTimeout: 5 * 1000, //milliseconds
  *   mock: false,
  *   credentials: {
  *     clientId:       '...',
@@ -30,7 +30,7 @@ async function monitor(options) {
   options = _.defaults({}, options, {
     patchGlobal: true,
     reportStatsumErrors: true,
-    resourceInterval: 10 * 1000,
+    resourceInterval: 10,
     crashTimeout: 5 * 1000,
     mock: false,
   });
