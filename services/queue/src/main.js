@@ -246,7 +246,7 @@ let load = base.loader({
     requires: ['cfg'],
     setup: async ({cfg}) => {
       let regionResolver = new EC2RegionResolver(
-        cfg.app.useCloudMirror ? cfg.app.cloudMirrorRegions : []
+        cfg.app.useCloudMirror ? [...cfg.app.cloudMirrorRegions, cfg.aws.region] : []
       );
       await regionResolver.loadIpRanges();
       return regionResolver;
