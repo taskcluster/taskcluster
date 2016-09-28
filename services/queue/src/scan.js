@@ -26,7 +26,10 @@ let _                   = require('lodash');
  *  buildbot-bridge -- tasks run via bbb
  *  mshal-testing -- old indexing-testing jobs
  */
-let branchRoutePattern = /^(index\.garbage\.staging|index\.buildbot\.branches|index\.gecko\.v[12]|tc-treeherder(-stage)?(\.v2)?)\.([^.]*)\..*/;
+let branchRoutePattern = new RegExp(
+  '^(index\\.garbage\\.staging|index\\.buildbot\\.branches|index\\.gecko\\.v[12]' +
+  '|tc-treeherder(-stage)?(\\.v2)?)\\.([^.]*)\\..*/'
+);
 let taskBranch = (task) => {
   if (task.workerType == 'cratertest') {
     return 'cratertest';
@@ -44,7 +47,7 @@ let taskBranch = (task) => {
 
   // null-provisioner is what mozharness uses when it uploads artifacts
   if (branch && task.provisionerId === 'null-provisioner') {
-    branch = branch + '-bb';
+    branch += '-bb';
   }
 
   if (!branch) {
@@ -78,7 +81,7 @@ let taskPlatform = (task) => {
 let scanTasks = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
   await Task.scan({
     // add basic filters here to speed up the scan, e.g.,
-    provisionerId: base.Entity.op.eq("aws-provisioner-v1"),
+    provisionerId: base.Entity.op.eq('aws-provisioner-v1'),
   }, {
     limit: 500,
     handler: async (task) => {
