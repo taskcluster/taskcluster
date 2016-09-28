@@ -354,6 +354,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
 
     if (bucket === this.publicBucket.bucket) {
       if (!region) {
+        debug('artifact from CDN for ip: %s', req.headers['x-forwarded-for']);
         url = this.publicBucket.createGetUrl(prefix);
       } else if (this.artifactRegion === region) {
         url = this.publicBucket.createGetUrl(prefix, true);
