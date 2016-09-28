@@ -65,19 +65,19 @@ func (cot *ChainOfTrustTaskFeature) RequiredScopes() scopes.Required {
 	return scopes.Required{}
 }
 
-func (cot *ChainOfTrustTaskFeature) Start() error {
+func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 	return nil
 }
 
-func (cot *ChainOfTrustTaskFeature) Stop() error {
+func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	logFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
 	certifiedLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "certified.log")
 	signedCert := filepath.Join(TaskUser.HomeDir, "public", "logs", "chainOfTrust.json.asc")
-	err := copyFileContents(logFile, certifiedLogFile)
-	if err != nil {
-		return err
+	e := copyFileContents(logFile, certifiedLogFile)
+	if e != nil {
+		panic(e)
 	}
-	err = cot.task.uploadLog("public/logs/certified.log")
+	err := cot.task.uploadLog("public/logs/certified.log")
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() error {
 			// make sure SHA256 is calculated
 			hash, err := calculateHash(a)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			artifactHashes[a.CanonicalPath] = ArtifactHash{
 				SHA256: hash,
@@ -113,37 +113,37 @@ func (cot *ChainOfTrustTaskFeature) Stop() error {
 		},
 	}
 
-	certBytes, err := json.MarshalIndent(cotCert, "", "  ")
-	if err != nil {
-		return err
+	certBytes, e := json.MarshalIndent(cotCert, "", "  ")
+	if e != nil {
+		panic(e)
 	}
 	// separate signature from json with a new line
 	certBytes = append(certBytes, '\n')
 
 	in := bytes.NewBuffer(certBytes)
-	out, err := os.Create(signedCert)
-	if err != nil {
-		return err
+	out, e := os.Create(signedCert)
+	if e != nil {
+		panic(e)
 	}
 	defer out.Close()
 
-	privKeyFile, err := os.Open(config.SigningKeyLocation)
-	if err != nil {
-		return err
+	privKeyFile, e := os.Open(config.SigningKeyLocation)
+	if e != nil {
+		panic(e)
 	}
 	defer privKeyFile.Close()
-	entityList, err := openpgp.ReadArmoredKeyRing(privKeyFile)
-	if err != nil {
-		return err
+	entityList, e := openpgp.ReadArmoredKeyRing(privKeyFile)
+	if e != nil {
+		panic(e)
 	}
 	privKey := entityList[0].PrivateKey
-	w, err := clearsign.Encode(out, privKey, nil)
-	if err != nil {
-		return err
+	w, e := clearsign.Encode(out, privKey, nil)
+	if e != nil {
+		panic(e)
 	}
-	_, err = io.Copy(w, in)
-	if err != nil {
-		return err
+	_, e = io.Copy(w, in)
+	if e != nil {
+		panic(e)
 	}
 	w.Close()
 	out.Write([]byte{'\n'})

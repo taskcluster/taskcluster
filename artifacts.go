@@ -306,7 +306,7 @@ func canonicalPath(path string) string {
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
-func (task *TaskRun) uploadLog(logFile string) error {
+func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 	return task.uploadArtifact(
 		S3Artifact{
 			BaseArtifact: BaseArtifact{
@@ -320,12 +320,12 @@ func (task *TaskRun) uploadLog(logFile string) error {
 	)
 }
 
-func (task *TaskRun) uploadArtifact(artifact Artifact) error {
+func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	log.Println("Uploading artifact: " + artifact.Base().CanonicalPath)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
-		return err
+		panic(err)
 	}
 	par := queue.PostArtifactRequest(json.RawMessage(payload))
 	parsp, err := task.Queue.CreateArtifact(
@@ -335,15 +335,26 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) error {
 		&par,
 	)
 	if err != nil {
-		log.Printf("Could not upload artifact: %v", artifact)
-		log.Printf("%v", parsp)
-		return err
+		switch t := err.(type) {
+		case *os.PathError:
+			// artifact does not exist or is not readable...
+			return Failure(err)
+		case httpbackoff.BadHttpResponseCode:
+			// if not a 5xx error, then not worth retrying...
+			if t.HttpResponseCode/100 == 5 {
+				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
+			} else {
+				panic(fmt.Errorf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
+			}
+		default:
+			panic(fmt.Errorf("TASK EXCEPTION due to error when uploading artifact: %v", t))
+		}
 	}
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
-	err = json.Unmarshal(json.RawMessage(*parsp), resp)
-	if err != nil {
-		return err
+	e := json.Unmarshal(json.RawMessage(*parsp), resp)
+	if e != nil {
+		panic(e)
 	}
-	return artifact.ProcessResponse(resp)
+	return ResourceUnavailable(artifact.ProcessResponse(resp))
 }

@@ -4,11 +4,34 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type (
+	ArtifactContent struct {
+
+		// Max length: 1024
+		Artifact string `json:"artifact"`
+
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+	}
+
+	Content json.RawMessage
+
+	DirectoryMount json.RawMessage
+
+	FileMount struct {
+
+		// Content of the file to be mounted
+		Content Content `json:"content"`
+
+		// The filesystem location to mount the file
+		File string `json:"file"`
+	}
+
 	// This schema defines the structure of the `payload` property referred to in a
 	// TaskCluster Task definition.
 	GenericWorkerPayload struct {
@@ -55,8 +78,91 @@ type (
 		// Mininum:    1
 		// Maximum:    86400
 		MaxRunTime int `json:"maxRunTime"`
+
+		// Directories and/or files to be mounted
+		Mounts []json.RawMessage `json:"mounts,omitempty"`
+	}
+
+	ReadOnlyDirectory struct {
+
+		// Contents of read only directory.
+		Content Content `json:"content"`
+
+		// The filesystem location to mount the directory volume
+		Directory string `json:"directory"`
+
+		// Archive format of content for read only directory
+		//
+		// Possible values:
+		//   * "tar.gz"
+		//   * "zip"
+		Format string `json:"format"`
+	}
+
+	// URL to download content from
+	URLContent struct {
+
+		// URL to download content from
+		URL string `json:"url"`
+	}
+
+	Var FileMount
+
+	Var1 DirectoryMount
+
+	WritableDirectoryCache struct {
+
+		// Implies a read/write cache directory volume. A unique name for the cache volume. Note if this cache is loaded from an artifact, you will require scope `queue:get-artifact:<artifact-name>` to use this cache.
+		CacheName string `json:"cacheName"`
+
+		// Optional content to be loaded when initially creating the cache.
+		Content Content `json:"content,omitempty"`
+
+		// The filesystem location to mount the directory volume
+		Directory string `json:"directory"`
+
+		// Archive format of content for writable directory cache
+		//
+		// Possible values:
+		//   * "rar"
+		//   * "tar.bz2"
+		//   * "tar.gz"
+		//   * "zip"
+		Format string `json:"format,omitempty"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Content is of type json.RawMessage...
+func (this *Content) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Content) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Content: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// DirectoryMount is of type json.RawMessage...
+func (this *DirectoryMount) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *DirectoryMount) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("DirectoryMount: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
 
 // Returns json schema for the payload part of the task definition. Please
 // note we use a go string and do not load an external file, since we want this
@@ -74,6 +180,152 @@ func taskPayloadSchema() string {
 	return `{
   "$schema": "http://json-schema.org/draft-04/schema#",
   "additionalProperties": false,
+  "definitions": {
+    "content": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "taskId": {
+              "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "taskId",
+            "artifact"
+          ],
+          "title": "Artifact Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "URL to download content from",
+          "properties": {
+            "url": {
+              "description": "URL to download content from",
+              "format": "uri",
+              "title": "URL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "title": "URL Content",
+          "type": "object"
+        }
+      ]
+    },
+    "directoryMount": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "dependencies": {
+            "content": [
+              "format"
+            ],
+            "format": [
+              "content"
+            ]
+          },
+          "properties": {
+            "cacheName": {
+              "description": "Implies a read/write cache directory volume. A unique name for the cache volume. Note if this cache is loaded from an artifact, you will require scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.",
+              "title": "Cache Name",
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Optional content to be loaded when initially creating the cache.",
+              "title": "Content",
+              "type": "object"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume",
+              "title": "Directory Volume",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for writable directory cache",
+              "enum": [
+                "rar",
+                "tar.bz2",
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "cacheName"
+          ],
+          "title": "Writable Directory Cache",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "$ref": "#/definitions/content",
+              "description": "Contents of read only directory.",
+              "title": "Content",
+              "type": "object"
+            },
+            "directory": {
+              "description": "The filesystem location to mount the directory volume",
+              "title": "Directory",
+              "type": "string"
+            },
+            "format": {
+              "description": "Archive format of content for read only directory",
+              "enum": [
+                "tar.gz",
+                "zip"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "content",
+            "format"
+          ],
+          "title": "Read Only Directory",
+          "type": "object"
+        }
+      ],
+      "type": "object"
+    },
+    "fileMount": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/content",
+          "description": "Content of the file to be mounted",
+          "title": "Content",
+          "type": "object"
+        },
+        "file": {
+          "description": "The filesystem location to mount the file",
+          "title": "File",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "content"
+      ],
+      "type": "object"
+    }
+  },
   "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskCluster Task definition.",
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
@@ -147,6 +399,22 @@ func taskPayloadSchema() string {
       "multipleOf": 1,
       "title": "Maximum run time in seconds",
       "type": "integer"
+    },
+    "mounts": {
+      "description": "Directories and/or files to be mounted",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/fileMount"
+          },
+          {
+            "$ref": "#/definitions/directoryMount"
+          }
+        ],
+        "type": "object"
+      },
+      "title": "Mounts",
+      "type": "array"
     }
   },
   "required": [

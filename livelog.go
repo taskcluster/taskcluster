@@ -44,7 +44,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 	return scopes.Required{}
 }
 
-func (l *LiveLogTask) Start() error {
+func (l *LiveLogTask) Start() *CommandExecutionError {
 	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
 	if err != nil {
 		log.Printf("WARN: could not create livelog: %s", err)
@@ -60,7 +60,7 @@ func (l *LiveLogTask) Start() error {
 	return nil
 }
 
-func (l *LiveLogTask) Stop() error {
+func (l *LiveLogTask) Stop() *CommandExecutionError {
 	// if livelog couldn't be started, nothing to do here...
 	if l.liveLog == nil {
 		return nil

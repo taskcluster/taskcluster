@@ -44,6 +44,7 @@ type (
 		WorkerTypeMetadata         map[string]interface{} `json:"workerTypeMetadata"`
 		SigningKeyLocation         string                 `json:"signingKeyLocation"`
 		RunTasksAsCurrentUser      bool                   `json:"runTasksAsCurrentUser"`
+		RequiredDiskSpaceMegabytes int                    `json:"requiredDiskSpaceMegabytes"`
 	}
 
 	// Used for modelling the xml we get back from Azure
