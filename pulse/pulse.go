@@ -35,11 +35,16 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 29 Sep 2016 at 17:45:00 UTC. The code was generated
+// Thu, 29 Sep 2016 at 22:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
-import tcclient "github.com/taskcluster/taskcluster-client-go"
+import (
+	"net/url"
+	"time"
+
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+)
 
 type Pulse tcclient.ConnectionData
 
@@ -95,4 +100,31 @@ func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
 	cd := tcclient.ConnectionData(*myPulse)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/overview", new(RabbitOverviewResponse), nil)
 	return responseObject.(*RabbitOverviewResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Creates a namespace, given the taskcluster credentials with scopes.
+//
+// **Warning** this api end-point is **not stable**.
+//
+// Required scopes:
+//   * pulse:namespace:<namespace>
+//
+// See https://docs.do.not.exist.yet.service.not.in.production#namespace
+func (myPulse *Pulse) Namespace(namespace string) error {
+	cd := tcclient.ConnectionData(*myPulse)
+	_, _, err := (&cd).APICall(nil, "GET", "/namespace/"+url.QueryEscape(namespace), nil, nil)
+	return err
+}
+
+// Returns a signed URL for Namespace, valid for the specified duration.
+//
+// Required scopes:
+//   * pulse:namespace:<namespace>
+//
+// See Namespace for more details.
+func (myPulse *Pulse) Namespace_SignedURL(namespace string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myPulse)
+	return (&cd).SignedURL("/namespace/"+url.QueryEscape(namespace), nil, duration)
 }

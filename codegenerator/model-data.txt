@@ -1,4 +1,4 @@
-Generated: 1475171152
+Generated: 1475187780
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5210,6 +5210,21 @@ Entry 1     =
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json'
     Entry Title       = 'Rabbit Overview'
     Entry Description = 'An overview of the Rabbit cluster
+
+**Warning** this api end-point is **not stable**.'
+Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/namespace/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Query        = '[]'
+    Entry Name        = 'namespace'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[pulse:namespace:<namespace>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Create a namespace'
+    Entry Description = 'Creates a namespace, given the taskcluster credentials with scopes.
 
 **Warning** this api end-point is **not stable**.'
 
