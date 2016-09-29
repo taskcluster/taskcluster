@@ -119,8 +119,12 @@ func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, error) {
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listTaskGroup
 func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string) (*ListTaskGroupResponse, error) {
 	v := url.Values{}
-	v.Add("continuationToken", continuationToken)
-	v.Add("limit", limit)
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
 	return responseObject.(*ListTaskGroupResponse), err
@@ -146,8 +150,12 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listDependentTasks
 func (myQueue *Queue) ListDependentTasks(taskId, continuationToken, limit string) (*ListDependentTasksResponse, error) {
 	v := url.Values{}
-	v.Add("continuationToken", continuationToken)
-	v.Add("limit", limit)
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/dependents", new(ListDependentTasksResponse), v)
 	return responseObject.(*ListDependentTasksResponse), err
@@ -575,8 +583,12 @@ func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration 
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listArtifacts
 func (myQueue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*ListArtifactsResponse, error) {
 	v := url.Values{}
-	v.Add("continuationToken", continuationToken)
-	v.Add("limit", limit)
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), err
@@ -598,8 +610,12 @@ func (myQueue *Queue) ListArtifacts(taskId, runId, continuationToken, limit stri
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listLatestArtifacts
 func (myQueue *Queue) ListLatestArtifacts(taskId, continuationToken, limit string) (*ListArtifactsResponse, error) {
 	v := url.Values{}
-	v.Add("continuationToken", continuationToken)
-	v.Add("limit", limit)
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.ConnectionData(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), err

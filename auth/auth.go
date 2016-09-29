@@ -110,7 +110,9 @@ func New(credentials *tcclient.Credentials) *Auth {
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#listClients
 func (myAuth *Auth) ListClients(prefix string) (*ListClientResponse, error) {
 	v := url.Values{}
-	v.Add("prefix", prefix)
+	if prefix != "" {
+		v.Add("prefix", prefix)
+	}
 	cd := tcclient.ConnectionData(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/", new(ListClientResponse), v)
 	return responseObject.(*ListClientResponse), err

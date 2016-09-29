@@ -102,8 +102,12 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 // See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#allPurgeRequests
 func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenPurgeRequestList, error) {
 	v := url.Values{}
-	v.Add("continuationToken", continuationToken)
-	v.Add("limit", limit)
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.ConnectionData(*purgeCache)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/list", new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
@@ -118,7 +122,9 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 // See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeRequests
 func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*OpenPurgeRequestList, error) {
 	v := url.Values{}
-	v.Add("since", since)
+	if since != "" {
+		v.Add("since", since)
+	}
 	cd := tcclient.ConnectionData(*purgeCache)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
