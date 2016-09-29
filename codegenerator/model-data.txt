@@ -1,4 +1,4 @@
-Generated: 1474320197
+Generated: 1475171152
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5168,6 +5168,86 @@ Title                  = 'Post Pulse Message Request'
 Type                   = 'object'
 TypeName               = 'PostPulseMessageRequest'
 SourceURL              = 'http://schemas.taskcluster.net/notify/v1/pulse-request.json#'
+
+
+http://references.taskcluster.net/pulse/v1/api.json
+===================================================
+Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
+Title       = 'Pulse Management Service'
+Description = 'The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
+manages pulse credentials for taskcluster users.
+
+A service to manage Pulse credentials for anything using
+Taskcluster credentials. This allows us self-service and
+greater control within the Taskcluster project.'
+Base URL    = 'https://pulse.taskcluster.net/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Documented later...
+
+**Warning** this api end-point is **not stable**.'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/overview'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'overview'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json'
+    Entry Title       = 'Rabbit Overview'
+    Entry Description = 'An overview of the Rabbit cluster
+
+**Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#
+=============================================================
+Additional Properties  = 'false'
+Description            = 'Rabbit overview response
+'
+ID                     = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#'
+Properties
+  Property 'cluster_name' =
+    Description            = 'The name of the cluster'
+    MinLength              = '1'
+    Title                  = 'Cluster Name'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#/properties/cluster_name'
+  Property 'management_version' =
+    Description            = 'The version of the management'
+    MinLength              = '1'
+    Title                  = 'Management Version'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#/properties/management_version'
+  Property 'rabbitmq_version' =
+    Description            = 'The version of RabbitMQ'
+    MinLength              = '1'
+    Title                  = 'RabbitMQ Version'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#/properties/rabbitmq_version'
+Required               = '[rabbitmq_version cluster_name management_version]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Rabbit Overview Response'
+Type                   = 'object'
+TypeName               = 'RabbitOverviewResponse'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#'
 
 
 http://references.taskcluster.net/purge-cache/v1/api.json
