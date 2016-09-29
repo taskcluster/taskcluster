@@ -12,11 +12,6 @@
       "from": "ajv@>=3.8.5 <4.0.0",
       "resolved": "https://registry.npmjs.org/ajv/-/ajv-3.8.10.tgz"
     },
-    "amdefine": {
-      "version": "1.0.0",
-      "from": "amdefine@>=0.0.4",
-      "resolved": "https://registry.npmjs.org/amdefine/-/amdefine-1.0.0.tgz"
-    },
     "amqplib": {
       "version": "0.4.2",
       "from": "amqplib@>=0.4.0 <0.5.0",
@@ -43,9 +38,9 @@
       "resolved": "https://registry.npmjs.org/app-root-dir/-/app-root-dir-1.0.2.tgz"
     },
     "argparse": {
-      "version": "1.0.7",
+      "version": "1.0.9",
       "from": "argparse@>=1.0.7 <2.0.0",
-      "resolved": "https://registry.npmjs.org/argparse/-/argparse-1.0.7.tgz"
+      "resolved": "https://registry.npmjs.org/argparse/-/argparse-1.0.9.tgz"
     },
     "array-flatten": {
       "version": "1.1.1",
@@ -400,9 +395,9 @@
       }
     },
     "babel-helper-remap-async-to-generator": {
-      "version": "6.16.0",
+      "version": "6.16.2",
       "from": "babel-helper-remap-async-to-generator@>=6.16.0 <7.0.0",
-      "resolved": "https://registry.npmjs.org/babel-helper-remap-async-to-generator/-/babel-helper-remap-async-to-generator-6.16.0.tgz"
+      "resolved": "https://registry.npmjs.org/babel-helper-remap-async-to-generator/-/babel-helper-remap-async-to-generator-6.16.2.tgz"
     },
     "babel-helper-replace-supers": {
       "version": "6.16.0",
@@ -577,9 +572,9 @@
       "resolved": "https://registry.npmjs.org/babel-preset-taskcluster/-/babel-preset-taskcluster-3.0.0.tgz"
     },
     "babel-register": {
-      "version": "6.16.0",
+      "version": "6.16.3",
       "from": "babel-register@>=6.16.0 <7.0.0",
-      "resolved": "https://registry.npmjs.org/babel-register/-/babel-register-6.16.0.tgz",
+      "resolved": "https://registry.npmjs.org/babel-register/-/babel-register-6.16.3.tgz",
       "dependencies": {
         "core-js": {
           "version": "2.4.1",
@@ -2023,16 +2018,9 @@
       "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.5.6.tgz"
     },
     "source-map-support": {
-      "version": "0.4.2",
+      "version": "0.4.3",
       "from": "source-map-support@>=0.4.2 <0.5.0",
-      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.4.2.tgz",
-      "dependencies": {
-        "source-map": {
-          "version": "0.1.32",
-          "from": "source-map@0.1.32",
-          "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.1.32.tgz"
-        }
-      }
+      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.4.3.tgz"
     },
     "sprintf-js": {
       "version": "1.0.3",
@@ -3502,9 +3490,9 @@
       }
     },
     "taskcluster-lib-monitor": {
-      "version": "4.3.0",
-      "from": "taskcluster-lib-monitor@>=4.2.0 <5.0.0",
-      "resolved": "https://registry.npmjs.org/taskcluster-lib-monitor/-/taskcluster-lib-monitor-4.3.0.tgz",
+      "version": "4.3.1",
+      "from": "taskcluster-lib-monitor@>=4.3.1 <5.0.0",
+      "resolved": "https://registry.npmjs.org/taskcluster-lib-monitor/-/taskcluster-lib-monitor-4.3.1.tgz",
       "dependencies": {
         "cookie": {
           "version": "0.1.0",
