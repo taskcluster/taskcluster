@@ -44,7 +44,7 @@
     "taskcluster-lib-docs": "^2.0.0",
     "taskcluster-lib-iterate": "^1.0.2",
     "taskcluster-lib-loader": "^1.0.0",
-    "taskcluster-lib-monitor": "^4.2.0",
+    "taskcluster-lib-monitor": "^4.3.1",
     "taskcluster-lib-scopes": "^1.0.0",
     "taskcluster-lib-testing": "^1.0.1",
     "taskcluster-lib-validate": "^2.0.0",
