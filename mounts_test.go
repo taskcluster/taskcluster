@@ -30,6 +30,12 @@ func TestMounts(t *testing.T) {
 			}`),
 		},
 		&FileMount{
+			File: filepath.Join("preloaded", "check-shasums.ps1"),
+			Content: Content(`{
+				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/check-shasums.ps1"
+			}`),
+		},
+		&FileMount{
 			File: filepath.Join("preloaded", "shasums"),
 			Content: Content(`{
 				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/shasums"

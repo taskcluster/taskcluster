@@ -6,3 +6,9 @@ func helloGoodbye() []string {
 		"echo goodbye world!",
 	}
 }
+
+func checkSHASums() []string {
+	return []string{
+		"powershell -file preloaded\\check-shasums.ps1",
+	}
+}
