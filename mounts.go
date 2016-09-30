@@ -356,7 +356,7 @@ func (w *WritableDirectoryCache) Mount() error {
 		// bump counter
 		directoryCaches[w.CacheName].Hits++
 		// move it into place...
-		err := os.Rename(directoryCaches[w.CacheName].Location, filepath.Join(TaskUser.HomeDir, w.Directory))
+		err := RenameCrossDevice(directoryCaches[w.CacheName].Location, filepath.Join(TaskUser.HomeDir, w.Directory))
 		if err != nil {
 			return fmt.Errorf("Not able to rename dir: %v", err)
 		}
@@ -399,7 +399,7 @@ func (w *WritableDirectoryCache) Mount() error {
 func (w *WritableDirectoryCache) Unmount() error {
 	cacheDir := directoryCaches[w.CacheName].Location
 	log.Printf("Moving %q to %q", filepath.Join(TaskUser.HomeDir, w.Directory), cacheDir)
-	err := os.Rename(filepath.Join(TaskUser.HomeDir, w.Directory), cacheDir)
+	err := RenameCrossDevice(filepath.Join(TaskUser.HomeDir, w.Directory), cacheDir)
 	if err != nil {
 		return err
 	}

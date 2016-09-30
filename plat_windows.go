@@ -13,11 +13,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/contester/runlib/subprocess"
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/os/exec"
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -599,4 +601,22 @@ func makeDirUnreadable(dir string) error {
 	return runCommands(false, "", "",
 		[]string{"icacls", dir, "/remove:g", TaskUser.Name},
 	)
+}
+
+// The windows implementation of os.Rename(...) doesn't allow renaming files
+// across drives (i.e. copy and delete semantics) - this alternative
+// implementation is identical to the os.Rename(...) implementation, but
+// additionally sets the flag windows.MOVEFILE_COPY_ALLOWED in order to cater
+// for oldpath and newpath being on different drives. See:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240(v=vs.85).aspx
+func RenameCrossDevice(oldpath, newpath string) error {
+	from, err := syscall.UTF16PtrFromString(oldpath)
+	if err != nil {
+		return err
+	}
+	to, err := syscall.UTF16PtrFromString(newpath)
+	if err != nil {
+		return err
+	}
+	return windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
 }
