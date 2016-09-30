@@ -17,6 +17,8 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/purgecache"
 )
 
 var (
@@ -30,14 +32,20 @@ var (
 	// a preloaded cache will have an associated file cache for the archive it
 	// was created from. The key is the cache name.
 	directoryCaches CacheMap = CacheMap{}
+	// service to call to see if any caches need to be purged. See
+	// https://docs.taskcluster.net/reference/core/purge-cache
+	pc *purgecache.PurgeCache = purgecache.New(&tcclient.Credentials{})
+	// we track this in order to reduce number of results we get back from
+	// purge cache service
+	lastQueriedPurgeCacheService time.Time
 )
 
 type CacheMap map[string]*Cache
 
-func (fc CacheMap) SortedResources() Resources {
-	r := make(Resources, len(fc))
+func (cm CacheMap) SortedResources() Resources {
+	r := make(Resources, len(cm))
 	i := 0
-	for _, cache := range fc {
+	for _, cache := range cm {
 		r[i] = cache
 		i++
 	}
@@ -46,14 +54,19 @@ func (fc CacheMap) SortedResources() Resources {
 }
 
 type Cache struct {
+	Created time.Time
 	// the full path to the cache on disk (could be file or directory)
 	Location string
-	// the number of times this file has been included in a MountEntry on a
+	// the number of times this cache has been included in a MountEntry on a
 	// task run on this worker
 	Hits int
+	// The map that tracks the cache, needed for expunging the cache
+	Owner CacheMap
+	// The key used in the CacheMap
+	Key string
 	// the size of the file in bytes (cached for performance, as it is
 	// immutable file)
-	Size int64
+	// Size int64
 }
 
 // Rating determines how valuable the file cache is compared to other file
@@ -61,24 +74,38 @@ type Cache struct {
 // The more times it was referenced in a task that already ran on this
 // worker, the higher the rating will be. For now we'll disregard disk
 // space taken up.
-func (fc *Cache) Rating() float64 {
-	return float64(fc.Hits)
+func (cache *Cache) Rating() float64 {
+	return float64(cache.Hits)
 }
 
-func (fc *Cache) Expunge() error {
-	return os.RemoveAll(fc.Location)
+func (cache *Cache) Expunge() error {
+	// delete the cache on the file system
+	err := os.RemoveAll(cache.Location)
+	if err != nil {
+		return err
+	}
+	// remove the cache from the CacheMap
+	delete(cache.Owner, cache.Key)
+	return nil
 }
 
 // Represents the Mounts feature as a whole - one global instance
 type MountsFeature struct {
 }
 
+func (feature *MountsFeature) Name() string {
+	return "Mounts/Caches"
+}
 func (feature *MountsFeature) Initialise() error {
 	err := ensureEmptyDir(config.CachesDir)
 	if err != nil {
-		return fmt.Errorf("Could not empty dir %v when initialising mounts feature - error: %v", config.CachesDir, err)
+		return fmt.Errorf("Could not empty caches dir %v when initialising mounts feature - error: %v", config.CachesDir, err)
 	}
-	return ensureEmptyDir(config.DownloadsDir)
+	err = ensureEmptyDir(config.DownloadsDir)
+	if err != nil {
+		return fmt.Errorf("Could not empty downloads dir %v when initialising mounts feature - error: %v", config.DownloadsDir, err)
+	}
+	return nil
 }
 
 func ensureEmptyDir(dir string) error {
@@ -226,7 +253,7 @@ func (taskMount *TaskMount) initRequiredScopes() {
 // writable directory caches, since writable directory caches are typically the
 // result of a compilation, which is slow, whereas downloading files is
 // relatively quick in comparison.
-func clearCaches() error {
+func garbageCollection() error {
 	r := fileCaches.SortedResources()
 	r = append(r, directoryCaches.SortedResources()...)
 	return runGarbageCollection(r)
@@ -242,9 +269,24 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	// works as we have a single job running at a time, so we don't need to
 	// worry about concurrency etc. But it is ugly to do it here, but
 	// sufficient for generic worker.
-	err := clearCaches()
+	err := garbageCollection()
 	if err != nil {
 		panic(err)
+	}
+	// Check if any caches need to be purged. See:
+	//   https://docs.taskcluster.net/reference/core/purge-cache
+	err = taskMount.purgeCaches()
+	// Two possible strategies if we can't reach purgecache service:
+	//
+	//   1) be optimistic, assume caches are ok, and don't purge them
+	//   2) be pessemistic, and delete existing caches
+	//
+	// Let's go with 1) for now, as 2) could cause tree closures if purgecache
+	// services has an outage. Although 1) could not be part of an obscure
+	// attack strategy (although releases shouldn't use caches).
+	if err != nil {
+		taskMount.task.Log("WARNING: Could not reach purgecache service to see if caches need purging!")
+		taskMount.task.Log(err.Error())
 	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
@@ -314,19 +356,25 @@ func (w *WritableDirectoryCache) Mount() error {
 		// bump counter
 		directoryCaches[w.CacheName].Hits++
 		// move it into place...
-		err := os.Rename(directoryCaches[w.CacheName].Location, filepath.Join(TaskUser.HomeDir, w.Directory))
+		err := RenameCrossDevice(directoryCaches[w.CacheName].Location, filepath.Join(TaskUser.HomeDir, w.Directory))
 		if err != nil {
 			return fmt.Errorf("Not able to rename dir: %v", err)
 		}
-		err = os.Chmod(filepath.Join(TaskUser.HomeDir, w.Directory), 0777)
+		err = makeDirReadable(filepath.Join(TaskUser.HomeDir, w.Directory))
 		if err != nil {
 			return fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err)
 		}
 		return nil
 	}
 	// new cache, let's initialise it...
+	basename := slugid.Nice()
+	file := filepath.Join(config.CachesDir, basename)
 	directoryCaches[w.CacheName] = &Cache{
-		Hits: 1,
+		Hits:     1,
+		Created:  time.Now(),
+		Location: file,
+		Owner:    directoryCaches,
+		Key:      w.CacheName,
 	}
 	// preloaded content?
 	if w.Content != nil {
@@ -348,6 +396,20 @@ func (w *WritableDirectoryCache) Mount() error {
 	return nil
 }
 
+func (w *WritableDirectoryCache) Unmount() error {
+	cacheDir := directoryCaches[w.CacheName].Location
+	log.Printf("Moving %q to %q", filepath.Join(TaskUser.HomeDir, w.Directory), cacheDir)
+	err := RenameCrossDevice(filepath.Join(TaskUser.HomeDir, w.Directory), cacheDir)
+	if err != nil {
+		return err
+	}
+	err = makeDirUnreadable(cacheDir)
+	if err != nil {
+		return fmt.Errorf("Not able to make cache %v unreadable and unwritable to all task users when unmounting it: %v", w.CacheName, err)
+	}
+	return nil
+}
+
 func (r *ReadOnlyDirectory) Mount() error {
 	c, err := r.Content.FSContent()
 	if err != nil {
@@ -356,57 +418,38 @@ func (r *ReadOnlyDirectory) Mount() error {
 	return extract(c, r.Format, filepath.Join(TaskUser.HomeDir, r.Directory))
 }
 
-func (f *FileMount) Mount() error {
-	c, err := f.Content.FSContent()
-	if err != nil {
-		return err
-	}
-	err = mountFile(c, filepath.Join(TaskUser.HomeDir, f.File))
-	if err != nil {
-		return err
-	}
-	err = os.Chmod(filepath.Join(TaskUser.HomeDir, f.File), 0644)
-	if err != nil {
-		return fmt.Errorf("Not able to make file %v read-only to task user: %v", f.File, err)
-	}
-	return nil
-}
-
-func (w *WritableDirectoryCache) Unmount() error {
-	basename := slugid.Nice()
-	file := filepath.Join(config.CachesDir, basename)
-	directoryCaches[w.CacheName] = &Cache{Location: file}
-	log.Printf("Moving %q to %q", filepath.Join(TaskUser.HomeDir, w.Directory), file)
-	err := os.Rename(filepath.Join(TaskUser.HomeDir, w.Directory), file)
-	if err != nil {
-		return err
-	}
-	err = os.Chmod(file, 0700)
-	if err != nil {
-		return fmt.Errorf("Not able to make cache %v unreadable and unwritable to all task users when unmounting it: %v", w.CacheName, err)
-	}
-	return nil
-}
-
 // Nothing to do - original archive file wasn't moved
 func (r *ReadOnlyDirectory) Unmount() error {
 	return nil
 }
 
+func (f *FileMount) Mount() error {
+	fsContent, err := f.Content.FSContent()
+	if err != nil {
+		return err
+	}
+	cacheFile, err := ensureCached(fsContent)
+	if err != nil {
+		return err
+	}
+	file := filepath.Join(TaskUser.HomeDir, f.File)
+	parentDir := filepath.Dir(file)
+	err = os.MkdirAll(parentDir, 0777)
+	if err != nil {
+		return err
+	}
+	// Let's copy rather than move, since we want to be totally sure that the
+	// task can't modify the contents, and setting as read-only is not enough -
+	// the user could change the rights and then modify it.
+	err = copyFileContents(cacheFile, file)
+	if err != nil {
+		return fmt.Errorf("Could not copy file %v to %v due to:\n%v", cacheFile, file, err)
+	}
+	return nil
+}
+
+// Nothing to do - original archive file was copied, not moved
 func (f *FileMount) Unmount() error {
-	fsContent, err := f.FSContent()
-	if err != nil {
-		return err
-	}
-	log.Printf("Moving %q to %q", filepath.Join(TaskUser.HomeDir, f.File), fileCaches[fsContent.UniqueKey()])
-	err = os.Rename(filepath.Join(TaskUser.HomeDir, f.File), fileCaches[fsContent.UniqueKey()].Location)
-	if err != nil {
-		return err
-	}
-	err = os.Chmod(fileCaches[fsContent.UniqueKey()].Location, 0600)
-	if err != nil {
-		return fmt.Errorf("Not able to make file mount %v unreadable and unwritable to all task users when unmounting it: %v", f.File, err)
-	}
 	return nil
 }
 
@@ -418,38 +461,17 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 		if err != nil {
 			return "", err
 		}
-		// now check the file size ...
-		f, err := os.Open(file)
-		if err != nil {
-			return "", err
+		fileCaches[cacheKey] = &Cache{
+			Location: file,
+			Hits:     1,
+			Created:  time.Now(),
+			Owner:    fileCaches,
+			Key:      cacheKey,
 		}
-		defer f.Close()
-		fi, err := f.Stat()
-		if err != nil {
-			return "", err
-		}
-		fileCaches[cacheKey] = &Cache{Location: file, Hits: 1, Size: fi.Size()}
 	} else {
 		fileCaches[cacheKey].Hits += 1
 	}
 	return fileCaches[cacheKey].Location, nil
-}
-
-func mountFile(fsContent FSContent, file string) error {
-	cacheFile, err := ensureCached(fsContent)
-	if err != nil {
-		return err
-	}
-	parentDir := filepath.Dir(file)
-	err = os.MkdirAll(parentDir, 0777)
-	if err != nil {
-		return err
-	}
-	err = os.Rename(cacheFile, file)
-	if err != nil {
-		return fmt.Errorf("Could not rename file %v as %v due to %v", cacheFile, file, err)
-	}
-	return nil
 }
 
 func extract(fsContent FSContent, format string, dir string) error {
@@ -552,6 +574,55 @@ func downloadURLToFile(url, file string) error {
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (taskMount *TaskMount) purgeCaches() error {
+	// Don't bother to query purge cache service if this task uses no writable
+	// caches, and we queried already less than 6 hours ago. Service keeps
+	// history for 24 hours, but is an implementation detail that could change.
+	// Until we have a formal guarantee, let's run after 6 hours to be super
+	// safe.
+	writableCaches := []*WritableDirectoryCache{}
+	for _, mount := range taskMount.mounts {
+		switch t := mount.(type) {
+		case *WritableDirectoryCache:
+			writableCaches = append(writableCaches, t)
+		}
+	}
+	if len(writableCaches) == 0 && time.Now().Sub(lastQueriedPurgeCacheService) < 6*time.Hour {
+		return nil
+	}
+	// In case of clock drift, let's query all purge cache requests created
+	// since 5 mins before our last request. In the worst case, it means we'll
+	// get back more results than we need, but it won't cause us to clear
+	// caches we shouldn't. This helps if the worker clock is up to 5 minutes
+	// ahead of the purgecache service clock. If the worker clock is behind the
+	// purgecache service clock, that is also no problem.  If this is the first
+	// request since the worker started, we won't pass in a "since" date at
+	// all.
+	since := ""
+	if !lastQueriedPurgeCacheService.IsZero() {
+		since = tcclient.Time(lastQueriedPurgeCacheService.Add(-5 * time.Minute)).String()
+	}
+	lastQueriedPurgeCacheService = time.Now()
+	purgeRequests, err := pc.PurgeRequests(config.ProvisionerID, config.WorkerType, since)
+	if err != nil {
+		return err
+	}
+	// Loop through results, and purge caches when we find an entry. Note,
+	// again to account for clock drift, let's remove caches up to 5 minutes
+	// older than the given "before" date.
+	for _, request := range purgeRequests.Requests {
+		if cache, exists := directoryCaches[request.CacheName]; exists {
+			if cache.Created.Add(-5 * time.Minute).Before(time.Time(request.Before)) {
+				err := cache.Expunge()
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
 	}
 	return nil
 }

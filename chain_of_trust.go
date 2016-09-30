@@ -46,6 +46,10 @@ type ChainOfTrustTaskFeature struct {
 	task *TaskRun
 }
 
+func (feature *ChainOfTrustFeature) Name() string {
+	return "Chain of Trust"
+}
+
 func (feature *ChainOfTrustFeature) Initialise() error {
 	return nil
 }
@@ -153,29 +157,6 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 		return err
 	}
 	return nil
-}
-
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
-	}
-	err = out.Sync()
-	return
 }
 
 func calculateHash(artifact S3Artifact) (hash string, err error) {

@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"syscall"
@@ -220,6 +221,15 @@ and reports back results to the queue.
                                             when each task starts. If it cannot free enough
                                             disk space, the worker will shut itself down.
                                             [default: 10240]
+          shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
+                                            error (such as not being able to write to a
+                                            required file) it will shutdown the host
+                                            computer. Note this is generally only desired
+                                            for machines running in production, such as on AWS
+                                            EC2 spot instances. Use with caution!
+                                            [default: false]
+          runOneTaskOnly                    If true, after completeing one task, the worker
+                                            will exit. [default: false]
 
     Here is an syntactically valid example configuration file:
 
@@ -271,8 +281,6 @@ func main() {
 			os.Exit(64)
 		}
 		runWorker()
-		forever := make(chan bool)
-		<-forever
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
@@ -306,16 +314,19 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 
 	// first assign defaults
 	c := &Config{
-		Subdomain:                  "taskcluster-worker.net",
-		ProvisionerID:              "aws-provisioner-v1",
-		LiveLogExecutable:          "livelog",
-		RefreshUrlsPrematurelySecs: 310,
-		UsersDir:                   "C:\\Users",
-		CachesDir:                  "C:\\generic-worker\\caches",
-		DownloadsDir:               "C:\\generic-worker\\downloads",
-		CleanUpTaskDirs:            true,
-		RunTasksAsCurrentUser:      false,
-		IdleShutdownTimeoutSecs:    0,
+		Subdomain:                      "taskcluster-worker.net",
+		ProvisionerID:                  "aws-provisioner-v1",
+		LiveLogExecutable:              "livelog",
+		RefreshUrlsPrematurelySecs:     310,
+		UsersDir:                       "C:\\Users",
+		CachesDir:                      "C:\\generic-worker\\caches",
+		DownloadsDir:                   "C:\\generic-worker\\downloads",
+		CleanUpTaskDirs:                true,
+		RunTasksAsCurrentUser:          false,
+		IdleShutdownTimeoutSecs:        0,
+		RequiredDiskSpaceMegabytes:     10240,
+		ShutdownMachineOnInternalError: false,
+		RunOneTaskOnly:                 false,
 		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker": map[string]string{
 				"go-arch":    runtime.GOARCH,
@@ -325,7 +336,6 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 				"version":    version,
 			},
 		},
-		RequiredDiskSpaceMegabytes: 10240,
 	}
 
 	configFileBytes, err := ioutil.ReadFile(filename)
@@ -376,8 +386,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	return c, nil
 }
 
-// returns a channel that you can send 'true' to, to shut it down
-func runWorker() chan<- bool {
+func runWorker() {
 	// Any custom startup per platform...
 	err := startup()
 	// any errors are fatal
@@ -391,67 +400,62 @@ func runWorker() chan<- bool {
 		feature.Initialise()
 	}
 
-	done := make(chan bool)
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Printf("Shutting down immediately - panic occurred!")
-				log.Printf("Cause: %#v", r)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Shutting down immediately - panic occurred!")
+			log.Println(string(debug.Stack()))
+			log.Printf("Cause: %#v", r)
+			if config.ShutdownMachineOnInternalError {
 				immediateShutdown()
 			}
-		}()
-		// Queue is the object we will use for accessing queue api
-		Queue = queue.New(
-			&tcclient.Credentials{
-				ClientID:    config.ClientID,
-				AccessToken: config.AccessToken,
-				Certificate: config.Certificate,
-			},
-		)
+		}
+	}()
+	// Queue is the object we will use for accessing queue api
+	Queue = queue.New(
+		&tcclient.Credentials{
+			ClientID:    config.ClientID,
+			AccessToken: config.AccessToken,
+			Certificate: config.Certificate,
+		},
+	)
 
-		// Start the SignedURLsManager in a dedicated go routine, to take care of
-		// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
-		signedURLsRequestChan, signedURLsResponseChan, signedDoneChan = SignedURLsManager()
+	// Start the SignedURLsManager in a dedicated go routine, to take care of
+	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
+	signedURLsRequestChan, signedURLsResponseChan, signedDoneChan = SignedURLsManager()
 
-		// Start the TaskStatusHandler in a dedicated go routine, to take care of
-		// all communication with Queue regarding the status of a TaskRun.
-		taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
+	// Start the TaskStatusHandler in a dedicated go routine, to take care of
+	// all communication with Queue regarding the status of a TaskRun.
+	taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
 
-		// loop forever claiming and running tasks!
-		lastActive := time.Now()
-		for {
-			// make sure at least 1 second passes between iterations
-			waitASec := time.NewTimer(time.Second * 1)
-			taskFound := FindAndRunTask()
-			if !taskFound {
-				log.Println("No task claimed...")
-				if config.IdleShutdownTimeoutSecs > 0 {
-					idleTime := time.Now().Sub(lastActive)
-					if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
+	// loop forever claiming and running tasks!
+	lastActive := time.Now()
+	for {
+		// make sure at least 1 second passes between iterations
+		waitASec := time.NewTimer(time.Second * 1)
+		taskFound := FindAndRunTask()
+		if !taskFound {
+			log.Println("No task claimed...")
+			if config.IdleShutdownTimeoutSecs > 0 {
+				idleTime := time.Now().Sub(lastActive)
+				if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
+					if config.ShutdownMachineOnInternalError {
 						immediateShutdown()
-						break
 					}
+					break
 				}
-			} else {
-				taskCleanup()
-				lastActive = time.Now()
 			}
-			// To avoid hammering queue, make sure there is at least a second
-			// between consecutive requests. Note we do this even if a task ran,
-			// since a task could complete in less than a second.
-			select {
-			case <-waitASec.C:
-				continue
-			case <-done:
-				fmt.Println("Shutting down worker...")
-				close(done)
+		} else {
+			taskCleanup()
+			if config.RunOneTaskOnly {
 				break
 			}
+			lastActive = time.Now()
 		}
-		// signedDoneChan <- true
-		// taskStatusDoneChan <- true
-	}()
-	return done
+		// To avoid hammering queue, make sure there is at least a second
+		// between consecutive requests. Note we do this even if a task ran,
+		// since a task could complete in less than a second.
+		<-waitASec.C
+	}
 }
 
 // FindAndRunTask loops through the Azure queues in order, to find a task to
@@ -505,7 +509,7 @@ func FindAndRunTask() bool {
 
 func (task *TaskRun) reportPossibleError(err error) {
 	if err != nil {
-		log.Printf("ERROR encountered: %#v", err)
+		log.Printf("ERROR encountered: %v", err)
 		task.Log(err.Error())
 	}
 }
@@ -830,10 +834,6 @@ func MalformedPayload(err error) *CommandExecutionError {
 	return executionError("malformed-payload", Errored, err)
 }
 
-func WorkerShutdown(err error) *CommandExecutionError {
-	return executionError("worker-shutdown", Errored, err)
-}
-
 func Failure(err error) *CommandExecutionError {
 	return executionError("", Failed, err)
 }
@@ -847,20 +847,20 @@ func (task *TaskRun) Log(message string) {
 }
 
 func (err *CommandExecutionError) Error() string {
-	return fmt.Sprintf("TASK NOT SUCCESSFUL: status %v with reason: %q due to %s", err.TaskStatus, err.Reason, err.Cause)
+	return fmt.Sprintf("%v", err.Cause)
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	err := task.generateCommand(index) // platform specific
 	if err != nil {
-		return WorkerShutdown(err)
+		panic(err)
 	}
 
 	task.Log("Executing command " + strconv.Itoa(index) + ": " + task.describeCommand(index))
 	err = task.Commands[index].osCommand.Start()
 	if err != nil {
-		return WorkerShutdown(err)
+		panic(err)
 	}
 
 	log.Println("Waiting for command to finish...")
@@ -885,7 +885,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		return exceptionOrFailure(errCommand)
 	}
 	if err != nil {
-		return WorkerShutdown(err)
+		panic(err)
 	}
 	return nil
 }
@@ -918,17 +918,23 @@ func (e *executionErrors) add(err *CommandExecutionError) {
 }
 
 func (err *executionErrors) Error() string {
-	text := ""
-	if err != nil {
-		for i, e := range *err {
-			text += fmt.Sprintf("%v) %v\n", i, e)
-		}
+	if !err.Occurred() {
+		return ""
+	}
+	text := "Task not successful due to following exception(s):\n"
+	for i, e := range *err {
+		text += fmt.Sprintf("Exception %v)\n%v\n", i+1, e)
 	}
 	return text
 }
 
+func (err *executionErrors) Occurred() bool {
+	return len(*err) > 0
+}
+
 func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
-	if e == nil {
+	log.Println("Resolving task...")
+	if !e.Occurred() {
 		taskStatusUpdate <- TaskStatusUpdate{
 			Task:   task,
 			Status: Succeeded,
@@ -997,13 +1003,15 @@ func (task *TaskRun) run() (err *executionErrors) {
 	// to manipulate `err` even in defer statements, and this will affect
 	// return value of this method.
 
+	err = &executionErrors{}
+
 	err.add(task.claim())
-	if err != nil {
+	if err.Occurred() {
 		return
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			err.add(WorkerShutdown(fmt.Errorf("%#v", r)))
+			err.add(executionError("worker-shutdown", Errored, fmt.Errorf("%#v", r)))
 			defer panic(r)
 		}
 		err.add(task.resolve(err))
@@ -1015,10 +1023,11 @@ func (task *TaskRun) run() (err *executionErrors) {
 	logHandle := task.createLogFile()
 	defer func() {
 		// log any errors that occurred
-		if err != nil {
+		if err.Occurred() {
 			task.Log(err.Error())
 		}
 		if r := recover(); r != nil {
+			task.Log(string(debug.Stack()))
 			task.Log(fmt.Sprintf("%#v", r))
 			defer panic(r)
 		}
@@ -1027,7 +1036,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 	}()
 
 	err.add(task.validatePayload())
-	if err != nil {
+	if err.Occurred() {
 		return
 	}
 	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
@@ -1050,20 +1059,20 @@ func (task *TaskRun) run() (err *executionErrors) {
 				continue
 			}
 			if !scopesSatisfied {
-				err.add(MalformedPayload(fmt.Errorf("Feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", requiredScopes, scopes.Given(task.Definition.Scopes))))
+				err.add(MalformedPayload(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
 				continue
 			}
 			taskFeatures = append(taskFeatures, taskFeature)
 		}
 	}
-	if err != nil {
+	if err.Occurred() {
 		return
 	}
 
 	// start task features
 	for _, taskFeature := range taskFeatures {
 		err.add(taskFeature.Start())
-		if err != nil {
+		if err.Occurred() {
 			return
 		}
 		defer func(taskFeature TaskFeature) {
@@ -1083,7 +1092,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 
 	for i, _ := range task.Payload.Command {
 		err.add(task.ExecuteCommand(i))
-		if err != nil {
+		if err.Occurred() {
 			return
 		}
 	}
@@ -1114,7 +1123,7 @@ func (task *TaskRun) uploadBackingLog() *CommandExecutionError {
 	log.Println("Uploading full log file")
 	err := task.uploadLog("public/logs/live_backing.log")
 	if err != nil {
-		return WorkerShutdown(err)
+		return ResourceUnavailable(err)
 	}
 
 	return nil

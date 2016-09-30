@@ -21,7 +21,7 @@ func exceptionOrFailure(errCommand error) *CommandExecutionError {
 			TaskStatus: Failed,
 		}
 	}
-	return WorkerShutdown(errCommand)
+	panic(errCommand)
 }
 
 func immediateShutdown() {
@@ -56,12 +56,8 @@ func (task *TaskRun) generateCommand(index int) error {
 	cmd := exec.Command(task.Payload.Command[index][0], task.Payload.Command[index][1:]...)
 	cmd.Stdout = task.logWriter
 	cmd.Stderr = task.logWriter
-	// cmd.Stdout = log
-	// cmd.Stderr = log
-	err := task.prepEnvVars(cmd)
-	if err != nil {
-		return err
-	}
+	cmd.Dir = TaskUser.HomeDir
+	task.prepEnvVars(cmd)
 	task.Commands[index] = Command{osCommand: cmd}
 	return nil
 }
@@ -74,7 +70,7 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
-func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) error {
+func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	workerEnv := os.Environ()
 	taskEnv := []string{}
 	for _, j := range workerEnv {
@@ -87,7 +83,7 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) error {
 		envVars := map[string]string{}
 		err := json.Unmarshal(task.Payload.Env, &envVars)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		for i, j := range envVars {
 			log.Printf("Setting env var: %v=%v", i, j)
@@ -96,9 +92,24 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) error {
 		cmd.Env = taskEnv
 	}
 	log.Printf("Environment: %v", taskEnv)
-	return nil
 }
 
 func (task *TaskRun) describeCommand(index int) string {
 	return fmt.Sprintf("%q", task.Payload.Command[index])
+}
+
+func makeDirReadable(dir string) error {
+	return os.Chmod(dir, 0777)
+}
+
+func makeDirUnreadable(dir string) error {
+	return os.Chmod(dir, 0700)
+}
+
+func RenameCrossDevice(oldpath, newpath string) error {
+	// TODO: here we should be able to rename when oldpath and newpath are on
+	// different partitions - for now this will cover 99% of cases, and we
+	// currently don't have non-windows platforms in production, so not
+	// currently high priority
+	return os.Rename(oldpath, newpath)
 }

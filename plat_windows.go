@@ -13,11 +13,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/contester/runlib/subprocess"
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/os/exec"
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -37,7 +39,7 @@ func exceptionOrFailure(errCommand error) *CommandExecutionError {
 			TaskStatus: Failed,
 		}
 	}
-	return WorkerShutdown(errCommand)
+	panic(errCommand)
 }
 
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
@@ -312,7 +314,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	)
 
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// Now make the actual task a .bat script
@@ -333,7 +335,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	log.Println(string(fileContents))
 
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// can't use runCommands(...) here because we don't want to execute, only create
@@ -585,4 +587,36 @@ func Error(c *exec.Cmd) ([]byte, error) {
 
 func (task *TaskRun) describeCommand(index int) string {
 	return task.Payload.Command[index]
+}
+
+// see http://ss64.com/nt/icacls.html
+func makeDirReadable(dir string) error {
+	return runCommands(false, "", "",
+		[]string{"icacls", dir, "/grant:r", TaskUser.Name + ":(OI)(CI)F"},
+	)
+}
+
+// see http://ss64.com/nt/icacls.html
+func makeDirUnreadable(dir string) error {
+	return runCommands(false, "", "",
+		[]string{"icacls", dir, "/remove:g", TaskUser.Name},
+	)
+}
+
+// The windows implementation of os.Rename(...) doesn't allow renaming files
+// across drives (i.e. copy and delete semantics) - this alternative
+// implementation is identical to the os.Rename(...) implementation, but
+// additionally sets the flag windows.MOVEFILE_COPY_ALLOWED in order to cater
+// for oldpath and newpath being on different drives. See:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240(v=vs.85).aspx
+func RenameCrossDevice(oldpath, newpath string) error {
+	from, err := syscall.UTF16PtrFromString(oldpath)
+	if err != nil {
+		return err
+	}
+	to, err := syscall.UTF16PtrFromString(newpath)
+	if err != nil {
+		return err
+	}
+	return windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
 }

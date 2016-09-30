@@ -100,7 +100,7 @@ func (errArtifact ErrorArtifact) ResponseObject() interface{} {
 // gzipCompressFile gzip-compresses the file at path rawContentFile and writes
 // it to a temporary file. The file path of the generated temporary file is returned.
 // It is the responsibility of the caller to delete the temporary file.
-func gzipCompressFile(rawContentFile string) (string, error) {
+func gzipCompressFile(rawContentFile string) string {
 	baseName := filepath.Base(rawContentFile)
 	tmpFile, err := ioutil.TempFile("", baseName)
 	if err != nil {
@@ -111,12 +111,12 @@ func gzipCompressFile(rawContentFile string) (string, error) {
 	gzipLogWriter.Name = baseName
 	rawContent, err := os.Open(rawContentFile)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	defer rawContent.Close()
 	io.Copy(gzipLogWriter, rawContent)
 	gzipLogWriter.Close()
-	return tmpFile.Name(), nil
+	return tmpFile.Name()
 }
 
 func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
@@ -126,10 +126,7 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 	// if Content-Encoding is gzip then we will need to gzip content...
 	transferContentFile := rawContentFile
 	if artifact.ContentEncoding == "gzip" {
-		transferContentFile, err = gzipCompressFile(rawContentFile)
-		if err != nil {
-			return err
-		}
+		transferContentFile = gzipCompressFile(rawContentFile)
 		defer os.Remove(transferContentFile)
 	}
 
@@ -340,14 +337,14 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 			// artifact does not exist or is not readable...
 			return Failure(err)
 		case httpbackoff.BadHttpResponseCode:
-			// if not a 5xx error, then not worth retrying...
 			if t.HttpResponseCode/100 == 5 {
 				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
 			} else {
+				// if not a 5xx error, then a problem with the request == worker bug
 				panic(fmt.Errorf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
 			}
 		default:
-			panic(fmt.Errorf("TASK EXCEPTION due to error when uploading artifact: %v", t))
+			panic(fmt.Errorf("TASK EXCEPTION due to non-recoverable error when uploading artifact: %v", t))
 		}
 	}
 	// unmarshal response into object
@@ -356,5 +353,6 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	if e != nil {
 		panic(e)
 	}
+	// note: this only returns an error, if ProcessResponse returns an error...
 	return ResourceUnavailable(artifact.ProcessResponse(resp))
 }

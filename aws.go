@@ -167,6 +167,7 @@ func Unzip(b []byte, dest string) error {
 }
 
 func (c *Config) updateConfigWithAmazonSettings() error {
+	c.ShutdownMachineOnInternalError = true
 	userData, err := queryUserData()
 	if err != nil {
 		return err
