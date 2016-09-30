@@ -23,8 +23,10 @@ func TestMounts(t *testing.T) {
 		t.Fatal("Cannot establish current working directory")
 	}
 	config = &Config{
-		CachesDir:    filepath.Join(cwd, "caches"),
-		DownloadsDir: filepath.Join(cwd, "downloads"),
+		CachesDir:     filepath.Join(cwd, "caches"),
+		DownloadsDir:  filepath.Join(cwd, "downloads"),
+		ProvisionerID: "test-provisioner",
+		WorkerType:    "test-worker-type",
 	}
 	TaskUser.HomeDir = filepath.Join(cwd, "testdata")
 

@@ -7,6 +7,7 @@ type (
 		Initialise() error
 		IsEnabled(fl EnabledFeatures) bool
 		NewTaskFeature(task *TaskRun) TaskFeature
+		Name() string
 	}
 
 	TaskFeature interface {

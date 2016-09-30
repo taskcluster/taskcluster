@@ -46,6 +46,10 @@ type ChainOfTrustTaskFeature struct {
 	task *TaskRun
 }
 
+func (feature *ChainOfTrustFeature) Name() string {
+	return "Chain of Trust"
+}
+
 func (feature *ChainOfTrustFeature) Initialise() error {
 	return nil
 }

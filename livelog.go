@@ -16,6 +16,10 @@ import (
 type LiveLogFeature struct {
 }
 
+func (feature *LiveLogFeature) Name() string {
+	return "Live Log"
+}
+
 func (feature *LiveLogFeature) Initialise() error {
 	return nil
 }
@@ -89,7 +93,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 		},
 	)
 	if err != nil {
-		return WorkerShutdown(err)
+		return ResourceUnavailable(err)
 	}
 	return nil
 }

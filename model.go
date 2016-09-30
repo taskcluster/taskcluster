@@ -18,33 +18,34 @@ type ExecCommand interface {
 type (
 	// Generic Worker config
 	Config struct {
-		AccessToken                string                 `json:"accessToken"`
-		ClientID                   string                 `json:"clientId"`
-		LiveLogCertificate         string                 `json:"livelogCertificate"`
-		LiveLogExecutable          string                 `json:"livelogExecutable"`
-		LiveLogKey                 string                 `json:"livelogKey"`
-		LiveLogSecret              string                 `json:"livelogSecret"`
-		Certificate                string                 `json:"certificate"`
-		ProvisionerID              string                 `json:"provisionerId"`
-		RefreshUrlsPrematurelySecs int                    `json:"refreshURLsPrematurelySecs"`
-		PublicIP                   net.IP                 `json:"publicIP"`
-		PrivateIP                  net.IP                 `json:"privateIP"`
-		Subdomain                  string                 `json:"subdomain"`
-		WorkerGroup                string                 `json:"workerGroup"`
-		WorkerID                   string                 `json:"workerId"`
-		InstanceID                 string                 `json:"instanceId"`
-		InstanceType               string                 `json:"instanceType"`
-		Region                     string                 `json:"region"`
-		WorkerType                 string                 `json:"workerType"`
-		UsersDir                   string                 `json:"usersDir"`
-		CachesDir                  string                 `json:"cachesDir"`
-		DownloadsDir               string                 `json:"downloadsDir"`
-		CleanUpTaskDirs            bool                   `json:"cleanUpTaskDirs"`
-		IdleShutdownTimeoutSecs    int                    `json:"idleShutdownTimeoutSecs"`
-		WorkerTypeMetadata         map[string]interface{} `json:"workerTypeMetadata"`
-		SigningKeyLocation         string                 `json:"signingKeyLocation"`
-		RunTasksAsCurrentUser      bool                   `json:"runTasksAsCurrentUser"`
-		RequiredDiskSpaceMegabytes int                    `json:"requiredDiskSpaceMegabytes"`
+		AccessToken                    string                 `json:"accessToken"`
+		ClientID                       string                 `json:"clientId"`
+		LiveLogCertificate             string                 `json:"livelogCertificate"`
+		LiveLogExecutable              string                 `json:"livelogExecutable"`
+		LiveLogKey                     string                 `json:"livelogKey"`
+		LiveLogSecret                  string                 `json:"livelogSecret"`
+		Certificate                    string                 `json:"certificate"`
+		ProvisionerID                  string                 `json:"provisionerId"`
+		RefreshUrlsPrematurelySecs     int                    `json:"refreshURLsPrematurelySecs"`
+		PublicIP                       net.IP                 `json:"publicIP"`
+		PrivateIP                      net.IP                 `json:"privateIP"`
+		Subdomain                      string                 `json:"subdomain"`
+		WorkerGroup                    string                 `json:"workerGroup"`
+		WorkerID                       string                 `json:"workerId"`
+		InstanceID                     string                 `json:"instanceId"`
+		InstanceType                   string                 `json:"instanceType"`
+		Region                         string                 `json:"region"`
+		WorkerType                     string                 `json:"workerType"`
+		UsersDir                       string                 `json:"usersDir"`
+		CachesDir                      string                 `json:"cachesDir"`
+		DownloadsDir                   string                 `json:"downloadsDir"`
+		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
+		IdleShutdownTimeoutSecs        int                    `json:"idleShutdownTimeoutSecs"`
+		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
+		SigningKeyLocation             string                 `json:"signingKeyLocation"`
+		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
+		RequiredDiskSpaceMegabytes     int                    `json:"requiredDiskSpaceMegabytes"`
+		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
 	}
 
 	// Used for modelling the xml we get back from Azure

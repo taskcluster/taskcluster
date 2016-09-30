@@ -37,7 +37,7 @@ func exceptionOrFailure(errCommand error) *CommandExecutionError {
 			TaskStatus: Failed,
 		}
 	}
-	return WorkerShutdown(errCommand)
+	panic(errCommand)
 }
 
 func processCommandOutput(callback func(line string), prog string, options ...string) error {
@@ -312,7 +312,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	)
 
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// Now make the actual task a .bat script
@@ -333,7 +333,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	log.Println(string(fileContents))
 
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// can't use runCommands(...) here because we don't want to execute, only create
@@ -585,4 +585,18 @@ func Error(c *exec.Cmd) ([]byte, error) {
 
 func (task *TaskRun) describeCommand(index int) string {
 	return task.Payload.Command[index]
+}
+
+// see http://ss64.com/nt/icacls.html
+func makeDirReadable(dir string) error {
+	return runCommands(false, "", "",
+		[]string{"icacls", dir, "/grant:r", TaskUser.Name + ":(OI)(CI)F"},
+	)
+}
+
+// see http://ss64.com/nt/icacls.html
+func makeDirUnreadable(dir string) error {
+	return runCommands(false, "", "",
+		[]string{"icacls", dir, "/remove:g", TaskUser.Name},
+	)
 }
