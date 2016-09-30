@@ -18,12 +18,6 @@ func helloGoodbye() [][]string {
 func checkSHASums() [][]string {
 	return [][]string{
 		{
-			"pwd",
-		},
-		{
-			"ls",
-		},
-		{
 			"chmod",
 			"u+x",
 			"preloaded/check-shasums.sh",
