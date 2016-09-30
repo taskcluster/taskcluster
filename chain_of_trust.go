@@ -159,29 +159,6 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	return nil
 }
 
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
-	}
-	err = out.Sync()
-	return
-}
-
 func calculateHash(artifact S3Artifact) (hash string, err error) {
 	rawContentFile := filepath.Join(TaskUser.HomeDir, artifact.Base().CanonicalPath)
 	rawContent, err := os.Open(rawContentFile)

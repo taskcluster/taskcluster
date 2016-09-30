@@ -396,30 +396,6 @@ func (w *WritableDirectoryCache) Mount() error {
 	return nil
 }
 
-func (r *ReadOnlyDirectory) Mount() error {
-	c, err := r.Content.FSContent()
-	if err != nil {
-		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
-	}
-	return extract(c, r.Format, filepath.Join(TaskUser.HomeDir, r.Directory))
-}
-
-func (f *FileMount) Mount() error {
-	c, err := f.Content.FSContent()
-	if err != nil {
-		return err
-	}
-	err = mountFile(c, filepath.Join(TaskUser.HomeDir, f.File))
-	if err != nil {
-		return err
-	}
-	err = os.Chmod(filepath.Join(TaskUser.HomeDir, f.File), 0644)
-	if err != nil {
-		return fmt.Errorf("Not able to make file %v read-only to task user: %v", f.File, err)
-	}
-	return nil
-}
-
 func (w *WritableDirectoryCache) Unmount() error {
 	cacheDir := directoryCaches[w.CacheName].Location
 	log.Printf("Moving %q to %q", filepath.Join(TaskUser.HomeDir, w.Directory), cacheDir)
@@ -434,27 +410,46 @@ func (w *WritableDirectoryCache) Unmount() error {
 	return nil
 }
 
+func (r *ReadOnlyDirectory) Mount() error {
+	c, err := r.Content.FSContent()
+	if err != nil {
+		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
+	}
+	return extract(c, r.Format, filepath.Join(TaskUser.HomeDir, r.Directory))
+}
+
 // Nothing to do - original archive file wasn't moved
 func (r *ReadOnlyDirectory) Unmount() error {
 	return nil
 }
 
+func (f *FileMount) Mount() error {
+	fsContent, err := f.Content.FSContent()
+	if err != nil {
+		return err
+	}
+	cacheFile, err := ensureCached(fsContent)
+	if err != nil {
+		return err
+	}
+	file := filepath.Join(TaskUser.HomeDir, f.File)
+	parentDir := filepath.Dir(file)
+	err = os.MkdirAll(parentDir, 0777)
+	if err != nil {
+		return err
+	}
+	// Let's copy rather than move, since we want to be totally sure that the
+	// task can't modify the contents, and setting as read-only is not enough -
+	// the user could change the rights and then modify it.
+	err = copyFileContents(cacheFile, file)
+	if err != nil {
+		return fmt.Errorf("Could not copy file %v to %v due to:\n%v", cacheFile, file, err)
+	}
+	return nil
+}
+
+// Nothing to do - original archive file was copied, not moved
 func (f *FileMount) Unmount() error {
-	fsContent, err := f.FSContent()
-	if err != nil {
-		return err
-	}
-	mountedFile := filepath.Join(TaskUser.HomeDir, f.File)
-	unmountedFile := fileCaches[fsContent.UniqueKey()].Location
-	log.Printf("Moving %q to %q", mountedFile, unmountedFile)
-	err = os.Rename(mountedFile, unmountedFile)
-	if err != nil {
-		return err
-	}
-	err = os.Chmod(unmountedFile, 0600)
-	if err != nil {
-		return fmt.Errorf("Not able to make file mount %v unreadable and unwritable to all task users when unmounting it: %v", mountedFile, err)
-	}
 	return nil
 }
 
@@ -466,20 +461,6 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 		if err != nil {
 			return "", err
 		}
-		// Keeping this code here in case we want to enable it - this would be
-		// if we want to track disk usage...
-		//
-		// // now check the file size ...
-		// f, err := os.Open(file)
-		// if err != nil {
-		// 	return "", err
-		// }
-		// defer f.Close()
-		// fi, err := f.Stat()
-		// if err != nil {
-		// 	return "", err
-		// }
-		// fileCaches[cacheKey] = &Cache{Location: file, Hits: 1, Size: fi.Size()}
 		fileCaches[cacheKey] = &Cache{
 			Location: file,
 			Hits:     1,
@@ -491,23 +472,6 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 		fileCaches[cacheKey].Hits += 1
 	}
 	return fileCaches[cacheKey].Location, nil
-}
-
-func mountFile(fsContent FSContent, file string) error {
-	cacheFile, err := ensureCached(fsContent)
-	if err != nil {
-		return err
-	}
-	parentDir := filepath.Dir(file)
-	err = os.MkdirAll(parentDir, 0777)
-	if err != nil {
-		return err
-	}
-	err = os.Rename(cacheFile, file)
-	if err != nil {
-		return fmt.Errorf("Could not rename file %v as %v due to %v", cacheFile, file, err)
-	}
-	return nil
 }
 
 func extract(fsContent FSContent, format string, dir string) error {
