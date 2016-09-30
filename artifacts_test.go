@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -18,32 +16,17 @@ import (
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
 
-	"github.com/streadway/amqp"
 	"github.com/taskcluster/httpbackoff"
-	"github.com/taskcluster/pulse-go/pulse"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
-	"github.com/taskcluster/taskcluster-client-go/queueevents"
 )
 
 var (
-	expiry tcclient.Time
 	// all tests can share taskGroupId so we can view all test tasks in same
 	// graph later for troubleshooting
 	taskGroupID string = slugid.Nice()
 )
-
-func setup(t *testing.T) {
-	// some basic setup...
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Test failed during setup phase!")
-	}
-	TaskUser.HomeDir = filepath.Join(cwd, "testdata")
-
-	expiry = tcclient.Time(time.Now().Add(time.Hour * 1))
-}
 
 func validateArtifacts(
 	t *testing.T,
@@ -85,7 +68,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
-			Expires: expiry,
+			Expires: inAnHour,
 			Path:    "SampleArtifacts",
 			Type:    "directory",
 		}},
@@ -95,21 +78,21 @@ func TestDirectoryArtifacts(t *testing.T) {
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/%%%/v/X",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				MimeType: "application/octet-stream",
 			},
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				MimeType: "text/plain; charset=utf-8",
 			},
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				MimeType: "image/jpeg",
 			},
@@ -128,7 +111,7 @@ func TestMissingFileArtifact(t *testing.T) {
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
-			Expires: expiry,
+			Expires: inAnHour,
 			Path:    "TestMissingFileArtifact/no_such_file",
 			Type:    "file",
 		}},
@@ -138,7 +121,7 @@ func TestMissingFileArtifact(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "TestMissingFileArtifact/no_such_file",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				Message: "Could not read file '" + filepath.Join(TaskUser.HomeDir, "TestMissingFileArtifact", "no_such_file") + "'",
 				Reason:  "file-missing-on-worker",
@@ -158,7 +141,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
-			Expires: expiry,
+			Expires: inAnHour,
 			Path:    "TestMissingDirectoryArtifact/no_such_dir",
 			Type:    "directory",
 		}},
@@ -168,7 +151,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "TestMissingDirectoryArtifact/no_such_dir",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				Message: "Could not read directory '" + filepath.Join(TaskUser.HomeDir, "TestMissingDirectoryArtifact", "no_such_dir") + "'",
 				Reason:  "file-missing-on-worker",
@@ -188,7 +171,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
-			Expires: expiry,
+			Expires: inAnHour,
 			Path:    "SampleArtifacts/b/c",
 			Type:    "file",
 		}},
@@ -198,7 +181,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				Message: "File artifact '" + filepath.Join(TaskUser.HomeDir, "SampleArtifacts", "b", "c") + "' exists as a directory, not a file, on the worker",
 				Reason:  "invalid-resource-on-worker",
@@ -218,7 +201,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
-			Expires: expiry,
+			Expires: inAnHour,
 			Path:    "SampleArtifacts/b/c/d.jpg",
 			Type:    "directory",
 		}},
@@ -228,7 +211,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
-					Expires:       expiry,
+					Expires:       inAnHour,
 				},
 				Message: "Directory artifact '" + filepath.Join(TaskUser.HomeDir, "SampleArtifacts", "b", "c", "d.jpg") + "' exists as a file, not a directory, on the worker",
 				Reason:  "invalid-resource-on-worker",
@@ -240,200 +223,38 @@ func TestUpload(t *testing.T) {
 
 	setup(t)
 
-	creds := requireTaskClusterCredentials(t)
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
-	pulseUsername := os.Getenv("PULSE_USERNAME")
-	pulsePassword := os.Getenv("PULSE_PASSWORD")
-	if pulseUsername == "" || pulsePassword == "" {
-		t.Skip("Skipping test since PULSE_USERNAME and/or PULSE_PASSWORD env vars are not set")
-	}
-
-	// define a unique workerType/provisionerId combination for this session
-	provisionerID := "test-provisioner"
-	// this should be sufficiently unique
-	workerType := slugid.Nice()
-	taskID := slugid.Nice()
-
-	// configure the worker
-	config = &Config{
-		SigningKeyLocation:         filepath.Join("testdata", "private-opengpg-key"),
-		AccessToken:                creds.AccessToken,
-		Certificate:                creds.Certificate,
-		ClientID:                   creds.ClientID,
-		ProvisionerID:              provisionerID,
-		RefreshUrlsPrematurelySecs: 310,
-		WorkerGroup:                "test-worker-group",
-		WorkerID:                   "test-worker-id",
-		WorkerType:                 workerType,
-		LiveLogExecutable:          "livelog",
-		LiveLogSecret:              "xyz",
-		PublicIP:                   net.ParseIP("12.34.56.78"),
-		PrivateIP:                  net.ParseIP("87.65.43.21"),
-		InstanceID:                 "test-instance-id",
-		InstanceType:               "p3.enormous",
-		Region:                     "outer-space",
-		Subdomain:                  "taskcluster-worker.net",
-		RunTasksAsCurrentUser:      true,
-		WorkerTypeMetadata: map[string]interface{}{
-			"aws": map[string]string{
-				"ami-id":            "test-ami",
-				"availability-zone": "outer-space",
-				"instance-id":       "test-instance-id",
-				"instance-type":     "p3.enormous",
-				"public-ipv4":       "12.34.56.78",
-				"local-ipv4":        "87.65.43.21",
-			},
-			"generic-worker": map[string]string{
-				"go-arch":    runtime.GOARCH,
-				"go-os":      runtime.GOOS,
-				"go-version": runtime.Version(),
-				"release":    "test-release-url",
-				"version":    version,
-			},
-			"machine-setup": map[string]string{
-				"maintainer": "pmoore@mozilla.com",
-				"script":     "test-script-url",
-			},
-		},
-	}
-
-	// get the worker started
-	// killWorkerChan := runWorker()
-	runWorker()
-
-	artifactCreatedMessages := make(map[string]*queueevents.ArtifactCreatedMessage)
-	// size 1 so that we don't block writing on taskCompleted
-	artifactsCreatedChan := make(chan bool, 1)
-	taskCompleted := make(chan bool)
-	// timeout after 60 seconds - that should be plenty
-	timeoutTimer := time.NewTimer(time.Second * 60)
-
-	// start a listener for published artifacts
-	// (uses PULSE_USERNAME, PULSE_PASSWORD and prod url)
-	pulseConn := pulse.NewConnection("", "", "")
-	pulseConn.Consume(
-		"", // anonymous queue
-		func(message interface{}, delivery amqp.Delivery) {
-			switch message.(type) {
-			case *queueevents.ArtifactCreatedMessage:
-				a := message.(*queueevents.ArtifactCreatedMessage)
-				artifactCreatedMessages[a.Artifact.Name] = a
-				// Finish after 5 artifacts have been created. Note: the second
-				// publish of the livelog artifact (for redirecting to the
-				// underlying file rather than the livelog stream) doesn't
-				// cause a new pulse message, hence this is 5 not 6.
-				if len(artifactCreatedMessages) == 3 {
-					// killWorkerChan <- true
-					// pulseConn.AMQPConn.Close()
-					artifactsCreatedChan <- true
-				}
-			case *queueevents.TaskCompletedMessage:
-				taskCompleted <- true
-			}
-		},
-		1,    // prefetch
-		true, // auto-ack
-		queueevents.ArtifactCreated{
-			TaskID:        taskID,
-			WorkerType:    workerType,
-			ProvisionerID: provisionerID,
-		},
-		queueevents.TaskCompleted{
-			TaskID:        taskID,
-			WorkerType:    workerType,
-			ProvisionerID: provisionerID,
-		},
-	)
-
-	// create dummy task
-	myQueue := queue.New(creds)
-
-	created := time.Now().UTC()
-	// reset nanoseconds
-	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
-	// deadline in one days' time
-	deadline := created.AddDate(0, 0, 1)
-	// expiry in one day, in case we need test results
-	expires := created.AddDate(0, 0, 1)
-
-	var command string
-	switch runtime.GOOS {
-	case "windows":
-		command = `
-			"command": [
-				"echo hello world!",
-				"echo goodbye world!"
-			]`
-	default:
-		command = `
-			"command": [
-				[
-					"echo",
-					"hello world!"
-				],
-				[
-					"echo",
-					"goodbye world!"
-				]
-			]`
-	}
-
-	td := &queue.TaskDefinitionRequest{
-		Created:      tcclient.Time(created),
-		Deadline:     tcclient.Time(deadline),
-		Expires:      tcclient.Time(expires),
-		Extra:        json.RawMessage(`{}`),
-		Dependencies: []string{},
-		Requires:     "all-completed",
-		Metadata: struct {
-			Description string `json:"description"`
-			Name        string `json:"name"`
-			Owner       string `json:"owner"`
-			Source      string `json:"source"`
+	payload := GenericWorkerPayload{
+		Command:    helloGoodbye(),
+		MaxRunTime: 7200,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
 		}{
-			Description: "Test task",
-			Name:        "[TC] TestUpload",
-			Owner:       "pmoore@mozilla.com",
-			Source:      "https://github.com/taskcluster/generic-worker/blob/master/artifacts_test.go",
+			{
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+			},
 		},
-		Payload: json.RawMessage(`
-		
-		{` + command + `,
-			"maxRunTime": 7200,
-			"artifacts": [
-				{
-					"path": "SampleArtifacts/_/X.txt",
-					"expires": "` + tcclient.Time(expires).String() + `",
-					"type": "file"
-				}
-			],
-			"features": {
-				"chainOfTrust": true
-			}
-		}
-		
-		`),
-		ProvisionerID: provisionerID,
-		Retries:       1,
-		Routes:        []string{},
-		SchedulerID:   "test-scheduler",
-		Scopes:        []string{},
-		Tags:          json.RawMessage(`{"createdForUser":"pmoore@mozilla.com"}`),
-		Priority:      "normal",
-		TaskGroupID:   taskGroupID,
-		WorkerType:    workerType,
+		Features: struct {
+			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+		}{
+			ChainOfTrust: true,
+		},
 	}
 
-	_, err := myQueue.CreateTask(taskID, td)
+	td := testTask()
 
-	if err != nil {
-		t.Fatalf("Suffered error when posting task to Queue in test setup:\n%s", err)
-	}
+	taskID, myQueue := runTask(t, td, payload)
 
 	// some required substrings - not all, just a selection
 	expectedArtifacts := map[string]struct {
 		extracts        []string
 		contentEncoding string
+		expires         tcclient.Time
 	}{
 		"public/logs/live_backing.log": {
 			extracts: []string{
@@ -442,6 +263,7 @@ func TestUpload(t *testing.T) {
 				`"instance-type": "p3.enormous"`,
 			},
 			contentEncoding: "gzip",
+			expires:         td.Expires,
 		},
 		"public/logs/live.log": {
 			extracts: []string{
@@ -451,6 +273,7 @@ func TestUpload(t *testing.T) {
 				"Exit Code: 0",
 			},
 			contentEncoding: "gzip",
+			expires:         td.Expires,
 		},
 		"public/logs/certified.log": {
 			extracts: []string{
@@ -460,6 +283,7 @@ func TestUpload(t *testing.T) {
 				"Exit Code: 0",
 			},
 			contentEncoding: "gzip",
+			expires:         td.Expires,
 		},
 		"public/logs/chainOfTrust.json.asc": {
 			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
@@ -469,38 +293,44 @@ func TestUpload(t *testing.T) {
 				"8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
 			},
 			contentEncoding: "gzip",
+			expires:         td.Expires,
 		},
 		"SampleArtifacts/_/X.txt": {
 			extracts: []string{
 				"test artifact",
 			},
 			contentEncoding: "",
+			expires:         payload.Artifacts[0].Expires,
 		},
 	}
 
-	// wait for task to complete, so we know artifact upload also completed
-	select {
-	case <-timeoutTimer.C:
-		t.Fatalf("Test timed out waiting for artifacts to be published")
-	case <-taskCompleted:
+	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	// now check artifact metadata is ok
-	select {
-	case <-timeoutTimer.C:
-		t.Fatalf("Test timed out waiting for artifacts to be published")
-	case <-artifactsCreatedChan:
-		for artifact := range expectedArtifacts {
-			if a := artifactCreatedMessages[artifact]; a != nil {
-				if a.Artifact.ContentType != "text/plain; charset=utf-8" {
-					t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, a.Artifact.ContentType)
-				}
-				if a.Artifact.Expires.String() != tcclient.Time(expires).String() {
-					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, tcclient.Time(expires), a.Artifact.Expires)
-				}
-			} else {
-				t.Errorf("Artifact '%s' not created", artifact)
+	actualArtifacts := make(map[string]struct {
+		ContentType string        `json:"contentType"`
+		Expires     tcclient.Time `json:"expires"`
+		Name        string        `json:"name"`
+		StorageType string        `json:"storageType"`
+	}, len(artifacts.Artifacts))
+
+	for _, actualArtifact := range artifacts.Artifacts {
+		actualArtifacts[actualArtifact.Name] = actualArtifact
+	}
+
+	for artifact := range expectedArtifacts {
+		if a, ok := actualArtifacts[artifact]; ok {
+			if a.ContentType != "text/plain; charset=utf-8" {
+				t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, a.ContentType)
 			}
+			if a.Expires.String() != expectedArtifacts[artifact].expires.String() {
+				t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, expires, a.Expires)
+			}
+		} else {
+			t.Errorf("Artifact '%s' not created", artifact)
 		}
 	}
 

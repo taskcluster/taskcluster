@@ -1,49 +1,15 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
-	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
+	"strings"
 	"testing"
-
-	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
 func TestMounts(t *testing.T) {
 
-	creds := requireTaskClusterCredentials(t)
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Cannot establish current working directory")
-	}
-	config = &Config{
-		CachesDir:     filepath.Join(cwd, "caches"),
-		DownloadsDir:  filepath.Join(cwd, "downloads"),
-		ProvisionerID: "test-provisioner",
-		WorkerType:    "test-worker-type",
-	}
-	TaskUser.HomeDir = filepath.Join(cwd, "testdata")
-
-	// clear any data from previous runs...
-	for _, dir := range []string{
-		"my-task-caches",
-		"preloaded",
-	} {
-		err := ensureEmptyDir(filepath.Join(TaskUser.HomeDir, dir))
-		if err != nil {
-			t.Fatalf("Could not delete contents of directory %q", filepath.Join(TaskUser.HomeDir, dir))
-		}
-	}
-
-	Queue = queue.New(creds)
-	mf := MountsFeature{}
-	mf.Initialise()
+	setup(t)
 
 	mounts := []MountEntry{
 
@@ -56,11 +22,17 @@ func TestMounts(t *testing.T) {
 			}`),
 		},
 
-		// file mount from url
+		// file mounts from urls
 		&FileMount{
-			File: filepath.Join("preloaded", "some-audio.sh"),
+			File: filepath.Join("preloaded", "check-shasums.sh"),
 			Content: Content(`{
-				"url": "https://raw.githubusercontent.com/taskcluster/generic-worker/9e7ee7638f7d27ccf37ef0d5ca119ede106c73ca/tutorial-audio.sh"
+				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/check-shasums.sh"
+			}`),
+		},
+		&FileMount{
+			File: filepath.Join("preloaded", "shasums"),
+			Content: Content(`{
+				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/shasums"
 			}`),
 		},
 
@@ -111,79 +83,29 @@ func TestMounts(t *testing.T) {
 		},
 	}
 
-	b, err := json.Marshal(&mounts)
+	payload := GenericWorkerPayload{
+		Mounts:     toRawMessageArray(t, &mounts),
+		Command:    checkSHASums(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask()
+	td.Scopes = []string{
+		"queue:get-artifact:SampleArtifacts/_/X.txt",
+		"generic-worker:cache:banana-cache",
+		"generic-worker:cache:tomato-cache",
+		"generic-worker:cache:devtools-app",
+	}
+
+	taskID, myQueue := runTask(t, td, payload)
+
+	// check task succeeded
+	tsr, err := myQueue.Status(taskID)
 	if err != nil {
-		t.Fatalf("Could not convert MountEntries to json")
+		t.Fatalf("Problem querying status of task %v: %v", taskID, err)
 	}
-
-	mountEntries := []json.RawMessage{}
-	err = json.Unmarshal(b, &mountEntries)
-	if err != nil {
-		t.Fatalf("Could not convert json bytes to []json.RawMessage")
-	}
-
-	task := &TaskRun{
-		Payload: GenericWorkerPayload{
-			Mounts: mountEntries,
-		},
-	}
-	tf := mf.NewTaskFeature(task).(*TaskMount)
-	if tf.payloadError != nil {
-		t.Logf("ERROR: %v", tf.payloadError)
-	}
-	reqScopes := tf.RequiredScopes()
-	actualRequiredScopes := fmt.Sprintf("%v", [][]string(reqScopes))
-	expectedRequiredScopes :=
-		"[[" +
-			"queue:get-artifact:SampleArtifacts/_/X.txt" +
-			" generic-worker:cache:banana-cache" +
-			" generic-worker:cache:tomato-cache" +
-			" generic-worker:cache:devtools-app" +
-			"]]"
-	if actualRequiredScopes != expectedRequiredScopes {
-		t.Fatalf("Expected required scopes %q but got %q", expectedRequiredScopes, actualRequiredScopes)
-	}
-	e := tf.Start()
-	if e != nil {
-		t.Fatalf("Encountered error when starting mounts feature for task: %#v", e)
-	}
-
-	// check a sample of the files that should should have been extracted...
-	checkSHA256(
-		t,
-		"d75c26a5bb47c4786ef15819d894e0e4e61829ee177b941e25b46f0de66d8148",
-		filepath.Join("testdata", "my-task-caches", "devtools-app", "index.html"),
-	)
-	checkSHA256(
-		t,
-		"29d3f3c2822c48770bc77dfd9965bec4676c9902f182796eac6fac5c986540e0",
-		filepath.Join("testdata", "my-task-caches", "mozharness", "mozharness", "configs", "beetmover", "l10n_changesets.tmpl"),
-	)
-	checkSHA256(
-		t,
-		"5d6977130018253e9c655e95b4abeb4f6f7c1deac989032b22a77a6a2f5605bc",
-		filepath.Join("testdata", "my-task-caches", "mozharness", "mozharness", "configs", "builds", "releng_sub_linux_configs", "32_debug.py"),
-	)
-	checkSHA256(
-		t,
-		"7cacc851d921716497bbd3d35134fa8ab34e6c5ae072954fae89b20f2977fc44",
-		filepath.Join("testdata", "my-task-caches", "tomatoes", "mozharness", "docs", "gaia_integration.rst"),
-	)
-	checkSHA256(
-		t,
-		"4bb5b3476d844fa4d27fcff48bc8b24990f907e68637dab5abfe1d8d72ccd6f0",
-		filepath.Join("testdata", "my-task-caches", "tomatoes", "mozharness", "unit.sh"),
-	)
-
-	// alter a cache by adding a file...
-	err = ioutil.WriteFile(filepath.Join("testdata", "my-task-caches", "devtools-app", "foo.bar"), []byte("dummy file"), 0666)
-	if err != nil {
-		t.Fatalf("Could not create file foo.bat in devtools-app cache")
-	}
-
-	e = tf.Stop()
-	if e != nil {
-		t.Fatalf("Encountered error when stopping mounts feature for task: %v", e)
+	if tsr.Status.State != "completed" {
+		t.Fatalf("Task %v did not complete successfully - it has state %q but should have state \"completed\"", taskID, tsr.Status.State)
 	}
 
 	checkSHA256(
@@ -203,8 +125,8 @@ func TestMounts(t *testing.T) {
 	)
 	checkSHA256(
 		t,
-		"e2f4c7554a5ef2992da54b122e7383d2d4531aaa54ae3ea5794631e53532e79c",
-		fileCaches["urlcontent:https://raw.githubusercontent.com/taskcluster/generic-worker/9e7ee7638f7d27ccf37ef0d5ca119ede106c73ca/tutorial-audio.sh"].Location,
+		"8da97cd31517c99029c8d2bc69e276f8a0d96e6ce9409dab819b8be19114c44d",
+		fileCaches["urlcontent:https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/check-shasums.sh"].Location,
 	)
 	checkSHA256(
 		t,
@@ -225,17 +147,51 @@ func TestMounts(t *testing.T) {
 	)
 }
 
-func checkSHA256(t *testing.T, sha256Hex string, file string) {
-	hasher := sha256.New()
-	f, err := os.Open(file)
+func TestMissingScopes(t *testing.T) {
+	setup(t)
+	mounts := []MountEntry{
+		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
+		&FileMount{
+			File: filepath.Join("preloaded", "Mr X.txt"),
+			Content: Content(`{
+				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"artifact": "SampleArtifacts/_/X.txt"
+			}`),
+		},
+		// requires scope "generic-worker:cache:banana-cache"
+		&WritableDirectoryCache{
+			CacheName: "banana-cache",
+			Directory: filepath.Join("my-task-caches", "bananas"),
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toRawMessageArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask()
+	// don't set any scopes
+
+	taskID, myQueue := runTask(t, td, payload)
+
+	// check task had exception/malformed-payload
+	tsr, err := myQueue.Status(taskID)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Problem querying status of task %v: %v", taskID, err)
 	}
-	defer f.Close()
-	if _, err := io.Copy(hasher, f); err != nil {
-		t.Fatal(err)
+	if tsr.Status.State != "exception" || tsr.Status.Runs[0].ReasonResolved != "malformed-payload" {
+		t.Fatalf("Task %v did not complete as intended - it resolved as %v/%v but should have resolved as exception/malformed-payload", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
 	}
-	if actualSHA256Hex := hex.EncodeToString(hasher.Sum(nil)); actualSHA256Hex != sha256Hex {
-		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
+
+	// check log mentions both missing scopes
+	bytes, err := ioutil.ReadFile(filepath.Join("testdata/public/logs/live_backing.log"))
+	if err != nil {
+		t.Fatalf("Error when trying to read log file: %v", err)
+	}
+	logtext := string(bytes)
+	if !strings.Contains(logtext, "queue:get-artifact:SampleArtifacts/_/X.txt") || !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
+		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
 	}
 }

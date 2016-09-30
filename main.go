@@ -228,6 +228,8 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
+          runOneTaskOnly                    If true, after completeing one task, the worker
+                                            will exit. [default: false]
 
     Here is an syntactically valid example configuration file:
 
@@ -279,8 +281,6 @@ func main() {
 			os.Exit(64)
 		}
 		runWorker()
-		forever := make(chan bool)
-		<-forever
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
@@ -326,6 +326,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		IdleShutdownTimeoutSecs:        0,
 		RequiredDiskSpaceMegabytes:     10240,
 		ShutdownMachineOnInternalError: false,
+		RunOneTaskOnly:                 false,
 		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker": map[string]string{
 				"go-arch":    runtime.GOARCH,
@@ -385,8 +386,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	return c, nil
 }
 
-// returns a channel that you can send 'true' to, to shut it down
-func runWorker() chan<- bool {
+func runWorker() {
 	// Any custom startup per platform...
 	err := startup()
 	// any errors are fatal
@@ -400,72 +400,62 @@ func runWorker() chan<- bool {
 		feature.Initialise()
 	}
 
-	done := make(chan bool)
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Printf("Shutting down immediately - panic occurred!")
-				log.Println(string(debug.Stack()))
-				log.Printf("Cause: %#v", r)
-				if config.ShutdownMachineOnInternalError {
-					immediateShutdown()
-				}
-			}
-		}()
-		// Queue is the object we will use for accessing queue api
-		Queue = queue.New(
-			&tcclient.Credentials{
-				ClientID:    config.ClientID,
-				AccessToken: config.AccessToken,
-				Certificate: config.Certificate,
-			},
-		)
-
-		// Start the SignedURLsManager in a dedicated go routine, to take care of
-		// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
-		signedURLsRequestChan, signedURLsResponseChan, signedDoneChan = SignedURLsManager()
-
-		// Start the TaskStatusHandler in a dedicated go routine, to take care of
-		// all communication with Queue regarding the status of a TaskRun.
-		taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
-
-		// loop forever claiming and running tasks!
-		lastActive := time.Now()
-		for {
-			// make sure at least 1 second passes between iterations
-			waitASec := time.NewTimer(time.Second * 1)
-			taskFound := FindAndRunTask()
-			if !taskFound {
-				log.Println("No task claimed...")
-				if config.IdleShutdownTimeoutSecs > 0 {
-					idleTime := time.Now().Sub(lastActive)
-					if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
-						if config.ShutdownMachineOnInternalError {
-							immediateShutdown()
-						}
-						break
-					}
-				}
-			} else {
-				taskCleanup()
-				lastActive = time.Now()
-			}
-			// To avoid hammering queue, make sure there is at least a second
-			// between consecutive requests. Note we do this even if a task ran,
-			// since a task could complete in less than a second.
-			select {
-			case <-waitASec.C:
-				continue
-			case <-done:
-				fmt.Println("Shutting down worker...")
-				close(done)
-				break
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Shutting down immediately - panic occurred!")
+			log.Println(string(debug.Stack()))
+			log.Printf("Cause: %#v", r)
+			if config.ShutdownMachineOnInternalError {
+				immediateShutdown()
 			}
 		}
-		// signedDoneChan <- true
-		// taskStatusDoneChan <- true
 	}()
-	return done
+	// Queue is the object we will use for accessing queue api
+	Queue = queue.New(
+		&tcclient.Credentials{
+			ClientID:    config.ClientID,
+			AccessToken: config.AccessToken,
+			Certificate: config.Certificate,
+		},
+	)
+
+	// Start the SignedURLsManager in a dedicated go routine, to take care of
+	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
+	signedURLsRequestChan, signedURLsResponseChan, signedDoneChan = SignedURLsManager()
+
+	// Start the TaskStatusHandler in a dedicated go routine, to take care of
+	// all communication with Queue regarding the status of a TaskRun.
+	taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
+
+	// loop forever claiming and running tasks!
+	lastActive := time.Now()
+	for {
+		// make sure at least 1 second passes between iterations
+		waitASec := time.NewTimer(time.Second * 1)
+		taskFound := FindAndRunTask()
+		if !taskFound {
+			log.Println("No task claimed...")
+			if config.IdleShutdownTimeoutSecs > 0 {
+				idleTime := time.Now().Sub(lastActive)
+				if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
+					if config.ShutdownMachineOnInternalError {
+						immediateShutdown()
+					}
+					break
+				}
+			}
+		} else {
+			taskCleanup()
+			if config.RunOneTaskOnly {
+				break
+			}
+			lastActive = time.Now()
+		}
+		// To avoid hammering queue, make sure there is at least a second
+		// between consecutive requests. Note we do this even if a task ran,
+		// since a task could complete in less than a second.
+		<-waitASec.C
+	}
 }
 
 // FindAndRunTask loops through the Azure queues in order, to find a task to

@@ -46,6 +46,7 @@ type (
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		RequiredDiskSpaceMegabytes     int                    `json:"requiredDiskSpaceMegabytes"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
+		RunOneTaskOnly                 bool                   `json:"runOneTaskOnly"`
 	}
 
 	// Used for modelling the xml we get back from Azure

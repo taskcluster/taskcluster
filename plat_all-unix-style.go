@@ -56,8 +56,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	cmd := exec.Command(task.Payload.Command[index][0], task.Payload.Command[index][1:]...)
 	cmd.Stdout = task.logWriter
 	cmd.Stderr = task.logWriter
-	// cmd.Stdout = log
-	// cmd.Stderr = log
+	cmd.Dir = TaskUser.HomeDir
 	task.prepEnvVars(cmd)
 	task.Commands[index] = Command{osCommand: cmd}
 	return nil
