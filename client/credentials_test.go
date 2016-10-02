@@ -19,7 +19,7 @@ func TestCredentials(t *testing.T) {
 		AccessToken: "no-secret",
 	}
 
-	var credentialsTests = []struct {
+	type CredentialsTests struct {
 		method string
 		url    string
 		host   string
@@ -31,26 +31,31 @@ func TestCredentials(t *testing.T) {
 		key    string
 		hash   hash.Hash
 		reply  bool
-	}{
-
-		{
-			hdr:    `Hawk id="1", ts="1353788437", nonce="k3j4h2", mac="zy79QQ5/EYFmQqutVnYb73gAc/U=", ext="hello"`,
-			hash:   sha1.New(),
-			method: "POST",
-			url:    "https://auth.taskcluster.net/v1/test-authenticate",
-			host:   "example.com",
-			port:   8080,
-			now:    1353788437,
-			key:    "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
-		},
+		nonce  string
+		ext    string
 	}
 
-	request, _ := http.NewRequest(credentialsTests[0].method, credentialsTests[0].url, nil)
-	credentials.SignRequest(request, credentialsTests[0].hash)
-	auth, errors := credentials.newAuth(credentialsTests[0].method, credentialsTests[0].url, credentialsTests[0].hash)
-	auth.Timestamp = time.Unix(1475317496, 0)
-	auth.MAC = []byte("Jcelngt+a8loOSi7f7M9vCgdxBsXT4o+6kwkEqSMONg=")
+	test_credentials := &CredentialsTests{
+		hdr:    `Hawk id="tester", mac="oA/FLh//qt/xu+eE8f8ikM8aDWBm1eMc+torOHKPuFQ=", ts="1353788437", nonce="k3j4h2", hash="cYU8YZemp/Ii2w8ZeMfLIyuHxe4=", ext="hello"`,
+		hash:   sha1.New(),
+		method: "POST",
+		url:    "https://auth.taskcluster.net/v1/test-authenticate",
+		host:   "example.com",
+		port:   8080,
+		now:    1353788437,
+		key:    "Jcelngt+a8loOSi7f7M9vCgdxBsXT4o+6kwkEqSMONg=",
+		nonce:  "k3j4h2",
+		ext:    "hello",
+	}
+
+	request, _ := http.NewRequest(test_credentials.method, test_credentials.url, nil)
+	credentials.SignRequest(request, test_credentials.hash)
+	auth, errors := credentials.newAuth(test_credentials.method, test_credentials.url, test_credentials.hash)
+	auth.Timestamp = time.Unix(test_credentials.now, 0)
+	auth.MAC = []byte(test_credentials.key)
+	auth.Ext = test_credentials.ext
+	auth.Nonce = test_credentials.nonce
 	assert.Equal(nil, errors)
-	assert.Equal(auth.RequestHeader(), `Hawk id="tester", mac="mmUrSFCwMjlJ2rOwBhPoiVAhBuSvJX07gKwCPA8pdSE=", ts="1475317496", nonce="", hash="cYU8YZemp/Ii2w8ZeMfLIyuHxe4="`)
+	assert.Equal(auth.RequestHeader(), test_credentials.hdr)
 
 }
