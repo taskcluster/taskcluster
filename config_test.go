@@ -105,3 +105,17 @@ func TestWorkerTypeMetadata(t *testing.T) {
 		t.Fatalf("Was expecting machine-setup to be set properly\n%#v", config)
 	}
 }
+
+func TestBoolAsString(t *testing.T) {
+	file := filepath.Join("testdata", "config", "bool-as-string.json")
+	_, err := loadConfig(file, false)
+	if err == nil {
+		t.Fatal("Was expecting to get an error back due to a bool being specified as a string, but didn't get one!")
+	}
+	switch err.(type) {
+	case *json.UnmarshalTypeError:
+		// all ok
+	default:
+		t.Fatalf("Was expecting an error of type *json.UnmarshalTypeError but received error of type %T", err)
+	}
+}
