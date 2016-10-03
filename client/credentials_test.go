@@ -35,7 +35,7 @@ func TestCredentials(t *testing.T) {
 		ext    string
 	}
 
-	test_credentials := &CredentialsTests{
+	testCredentials := &CredentialsTests{
 		hdr:    `Hawk id="tester", mac="oA/FLh//qt/xu+eE8f8ikM8aDWBm1eMc+torOHKPuFQ=", ts="1353788437", nonce="k3j4h2", hash="cYU8YZemp/Ii2w8ZeMfLIyuHxe4=", ext="hello"`,
 		hash:   sha1.New(),
 		method: "POST",
@@ -48,14 +48,14 @@ func TestCredentials(t *testing.T) {
 		ext:    "hello",
 	}
 
-	request, _ := http.NewRequest(test_credentials.method, test_credentials.url, nil)
-	credentials.SignRequest(request, test_credentials.hash)
-	auth, errors := credentials.newAuth(test_credentials.method, test_credentials.url, test_credentials.hash)
-	auth.Timestamp = time.Unix(test_credentials.now, 0)
-	auth.MAC = []byte(test_credentials.key)
-	auth.Ext = test_credentials.ext
-	auth.Nonce = test_credentials.nonce
+	request, _ := http.NewRequest(testCredentials.method, testCredentials.url, nil)
+	credentials.SignRequest(request, testCredentials.hash)
+	auth, errors := credentials.newAuth(testCredentials.method, testCredentials.url, testCredentials.hash)
+	auth.Timestamp = time.Unix(testCredentials.now, 0)
+	auth.MAC = []byte(testCredentials.key)
+	auth.Ext = testCredentials.ext
+	auth.Nonce = testCredentials.nonce
 	assert.Equal(nil, errors)
-	assert.Equal(auth.RequestHeader(), test_credentials.hdr)
+	assert.Equal(auth.RequestHeader(), testCredentials.hdr)
 
 }
