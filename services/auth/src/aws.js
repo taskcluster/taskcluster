@@ -78,12 +78,14 @@ api.declare({
     });
   }
 
+  // Construct scope-sets requires (one of sets in the scopesets must be satisfied
+  let scopesets = [[`auth:aws-s3:${level}:${bucket}/${prefix}`]];
+  // If level is read-only, a scope with read-write should also be sufficient
+  if (level == 'read-only') {
+    scopesets.push([`auth:aws-s3:read-write:${bucket}/${prefix}`]);
+  }
   // Check that the client is authorized to access given bucket and prefix
-  if (!req.satisfies({
-    level:      level,
-    bucket:     bucket,
-    prefix:     prefix
-  })) {
+  if (!req.satisfies(scopesets)) {
     return;
   }
 
