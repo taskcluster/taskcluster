@@ -118,7 +118,8 @@ type (
 		Password string
 	}
 
-	TaskStatus string
+	TaskStatus       string
+	TaskUpdateReason string
 )
 
 // Custom Unmarshaller in order to interpret time formats in the azure expected

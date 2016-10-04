@@ -15,19 +15,27 @@ type TaskStatusUpdate struct {
 	Task       *TaskRun
 	Status     TaskStatus
 	IfStatusIn map[TaskStatus]bool
-	Reason     string
+	Reason     TaskUpdateReason
 }
 
 // Enumerate task status to aid life-cycle decision making
 // Use strings for benefit of simple logging/reporting
 const (
-	Aborted   TaskStatus = "Aborted"
 	Cancelled TaskStatus = "Cancelled"
 	Succeeded TaskStatus = "Succeeded"
 	Failed    TaskStatus = "Failed"
 	Errored   TaskStatus = "Errored"
 	Claimed   TaskStatus = "Claimed"
 	Reclaimed TaskStatus = "Reclaimed"
+)
+
+const (
+	WorkerShutdown      TaskUpdateReason = "worker-shutdown"
+	MalformedPayload    TaskUpdateReason = "malformed-payload"
+	ReousrceUnavailable TaskUpdateReason = "resource-unavailable"
+	InternalError       TaskUpdateReason = "internal-error"
+	Superseded          TaskUpdateReason = "superseded"
+	IntermittentTask    TaskUpdateReason = "intermittent-task"
 )
 
 // TaskStatusHandler is the single point of contact
@@ -48,8 +56,8 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 	// appropriate channels is the only way to trigger them, to ensure
 	// proper concurrency handling
 
-	reportException := func(task *TaskRun, reason string) error {
-		ter := queue.TaskExceptionRequest{Reason: reason}
+	reportException := func(task *TaskRun, reason TaskUpdateReason) error {
+		ter := queue.TaskExceptionRequest{Reason: string(reason)}
 		tsr, err := Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
 		if err != nil {
 			log.Printf("Not able to report exception for task %v:", task.TaskID)
@@ -156,15 +164,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 		return nil
 	}
 
-	abort := func(task *TaskRun, reason string) error {
-		log.Printf("Aborting task %v due to: %v...", task.TaskID, reason)
-		task.Status = Aborted
-		// TODO: need to kill running jobs! Need a go routine to track running
-		// jobs, and kill them on aborts
-		return reportException(task, "task-cancelled")
-	}
-
-	cancel := func(task *TaskRun, reason string) error {
+	cancel := func(task *TaskRun, reason TaskUpdateReason) error {
 		//TODO: implement cancelling of tasks
 		return nil
 	}
@@ -184,9 +184,6 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 					task := update.Task
 					task.Status = update.Status
 					switch update.Status {
-					// Aborting is when you stop running a job you already claimed
-					case Aborted:
-						e <- abort(task, update.Reason)
 					// Cancelling is when you decide not to run a job which you haven't yet claimed
 					case Cancelled:
 						e <- cancel(task, update.Reason)

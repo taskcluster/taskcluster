@@ -2,6 +2,8 @@
 
 package main
 
+import "strconv"
+
 func helloGoodbye() [][]string {
 	return [][]string{
 		{
@@ -47,6 +49,15 @@ func incrementCounterInCache() [][]string {
               let x=$(cat "my-task-caches/test-modifications/counter")+1
 			  echo -n "${x}" > "my-task-caches/test-modifications/counter"
 			fi`,
+		},
+	}
+}
+
+func sleep(seconds uint) [][]string {
+	return [][]string{
+		{
+			"sleep",
+			strconv.Itoa(int(seconds)),
 		},
 	}
 }

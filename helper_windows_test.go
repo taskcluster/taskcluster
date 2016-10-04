@@ -1,5 +1,7 @@
 package main
 
+import "strconv"
+
 func helloGoodbye() []string {
 	return []string{
 		"echo hello world!",
@@ -34,4 +36,12 @@ func incrementCounterInCache() []string {
 		)
 `
 	return []string{command}
+}
+
+func sleep(seconds uint) [][]string {
+	return []string{
+		{
+			"ping 127.0.0.1 -n " + strconv.Itoa(int(seconds+1)) + " > nul",
+		},
+	}
 }

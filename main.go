@@ -731,19 +731,25 @@ func (task *TaskRun) setReclaimTimer() {
 			taskStatusUpdate <- TaskStatusUpdate{
 				Task:   task,
 				Status: Reclaimed,
+				IfStatusIn: map[TaskStatus]bool{
+					Claimed: true,
+				},
 			}
 			err := <-taskStatusUpdateErr
 			if err != nil {
-				log.Println("TASK EXCEPTION due to reclaim failure")
-				task.Log("TASK EXCEPTION due to reclaim failure - please report this in #taskcluster as it is a serious error")
-				log.Printf("%v", err)
-				taskStatusUpdate <- TaskStatusUpdate{
-					Task:   task,
-					Status: Errored,
-					Reason: "worker-shutdown", // internal error ("reclaim-failed")
+				// this could be:
+				//   1) task was cancelled
+				//   2) something else - serious problem!
+				// let's check!
+				status, err2 := task.Queue.Status(task.TaskID)
+				if err2 != nil {
+					// can't reach queue - time to shutdown...
+					panic(err)
 				}
-				task.reportPossibleError(<-taskStatusUpdateErr)
-				return
+				if reason := status.Status.Runs[task.RunID].ReasonResolved; reason != "canceled" {
+					task.Log("TASK EXCEPTION when reclaiming - current status is \"" + reason + "\" - please report this in #taskcluster as it is a serious error.")
+					panic(err)
+				}
 			}
 			// only set another reclaim timer if the previous reclaim succeeded
 			task.setReclaimTimer()
@@ -763,7 +769,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 	docLoader := gojsonschema.NewStringLoader(string(jsonPayload))
 	result, err := gojsonschema.Validate(schemaLoader, docLoader)
 	if err != nil {
-		return MalformedPayload(err)
+		return MalformedPayloadError(err)
 	}
 	if !result.Valid() {
 		task.Log("TASK FAIL since the task payload is invalid. See errors:")
@@ -798,15 +804,15 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		// failed. The difference is whether or not the unexpected behavior
 		// happened before or after the execution of task specific Turing
 		// complete code.
-		return MalformedPayload(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
+		return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 	}
 	err = json.Unmarshal(jsonPayload, &task.Payload)
 	if err != nil {
-		return MalformedPayload(err)
+		return MalformedPayloadError(err)
 	}
 	for _, artifact := range task.Payload.Artifacts {
 		if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
-			return MalformedPayload(errors.New("Malformed payload: artifact expiration before task deadline"))
+			return MalformedPayloadError(errors.New("Malformed payload: artifact expiration before task deadline"))
 		}
 	}
 	return nil
@@ -815,10 +821,10 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 type CommandExecutionError struct {
 	TaskStatus TaskStatus
 	Cause      error
-	Reason     string
+	Reason     TaskUpdateReason
 }
 
-func executionError(reason string, status TaskStatus, err error) *CommandExecutionError {
+func executionError(reason TaskUpdateReason, status TaskStatus, err error) *CommandExecutionError {
 	if err == nil {
 		return nil
 	}
@@ -833,7 +839,7 @@ func ResourceUnavailable(err error) *CommandExecutionError {
 	return executionError("resource-unavailable", Errored, err)
 }
 
-func MalformedPayload(err error) *CommandExecutionError {
+func MalformedPayloadError(err error) *CommandExecutionError {
 	return executionError("malformed-payload", Errored, err)
 }
 
@@ -941,7 +947,11 @@ func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
 		taskStatusUpdate <- TaskStatusUpdate{
 			Task:   task,
 			Status: Succeeded,
-			Reason: "",
+			Reason: TaskUpdateReason(""),
+			IfStatusIn: map[TaskStatus]bool{
+				Claimed:   true,
+				Reclaimed: true,
+			},
 		}
 		return ResourceUnavailable(<-taskStatusUpdateErr)
 	}
@@ -949,6 +959,10 @@ func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
 		Task:   task,
 		Status: (*e)[0].TaskStatus,
 		Reason: (*e)[0].Reason,
+		IfStatusIn: map[TaskStatus]bool{
+			Claimed:   true,
+			Reclaimed: true,
+		},
 	}
 	return ResourceUnavailable(<-taskStatusUpdateErr)
 }
@@ -964,12 +978,15 @@ func (task *TaskRun) setMaxRunTimer() {
 	// additional retries left.
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
+		task.Log("Aborting task - max run time exceeded!")
 		taskStatusUpdate <- TaskStatusUpdate{
 			Task:   task,
-			Status: Aborted,
+			Status: Failed,
 			// only abort task if it is still running...
-			IfStatusIn: map[TaskStatus]bool{Claimed: true, Reclaimed: true},
-			Reason:     "malformed-payload", // "max run time (" + strconv.Itoa(task.Payload.MaxRunTime) + "s) exceeded"
+			IfStatusIn: map[TaskStatus]bool{
+				Claimed:   true,
+				Reclaimed: true,
+			},
 		}
 		task.reportPossibleError(<-taskStatusUpdateErr)
 	}()
@@ -1062,7 +1079,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 				continue
 			}
 			if !scopesSatisfied {
-				err.add(MalformedPayload(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
+				err.add(MalformedPayloadError(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
 				continue
 			}
 			taskFeatures = append(taskFeatures, taskFeature)

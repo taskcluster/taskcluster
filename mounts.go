@@ -262,7 +262,7 @@ func garbageCollection() error {
 // called when a task starts
 func (taskMount *TaskMount) Start() *CommandExecutionError {
 	if taskMount.payloadError != nil {
-		return MalformedPayload(taskMount.payloadError)
+		return MalformedPayloadError(taskMount.payloadError)
 	}
 	// Let's perform a garbage collection here before running the task. In
 	// taskcluster-worker this will run in its own thread, and here it only
