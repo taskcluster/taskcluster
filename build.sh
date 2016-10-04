@@ -77,6 +77,9 @@ grep -q PANIC codegenerator/model-data.txt && exit 68
 go get github.com/golang/lint/golint
 "${GOPATH}/bin/golint" codegenerator/...; "${GOPATH}/bin/golint" integrationtest/...; "${GOPATH}/bin/golint" .
 
+go get github.com/gordonklaus/ineffassign
+"${GOPATH}/bin/ineffassign" .
+
 # finally check that generated files have been committed, and that formatting
 # code resulted in no changes...
 git status
