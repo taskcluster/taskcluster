@@ -282,6 +282,12 @@ var createSignatureValidator = function(options) {
           if (artifacts.hash) {
             result.hash = artifacts.hash;
           }
+
+          // TODO: log this in a structured format when structured logging is
+          // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
+          console.log(
+              `Authenticated ${result.clientId} for ${req.method.toUpperCase()} access to ` +
+              `https://${req.host}:${req.port}${req.resource}`)
         }
         return accept(result);
       };
