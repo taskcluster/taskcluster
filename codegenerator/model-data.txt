@@ -1,4 +1,4 @@
-Generated: 1475187780
+Generated: 1475605490
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5214,19 +5214,53 @@ Entry 1     =
 **Warning** this api end-point is **not stable**.'
 Entry 2     =
     Entry Type        = 'function'
-    Entry Method      = 'get'
+    Entry Method      = 'post'
     Entry Route       = '/namespace/<namespace>'
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
     Entry Name        = 'namespace'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[[pulse:namespace:<namespace>]]'
-    Entry Input       = ''
+    Entry Input       = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json'
     Entry Output      = ''
     Entry Title       = 'Create a namespace'
     Entry Description = 'Creates a namespace, given the taskcluster credentials with scopes.
 
 **Warning** this api end-point is **not stable**.'
+
+
+http://schemas.taskcluster.net/pulse/v1/namespace-request.json#
+===============================================================
+Additional Properties  = 'false'
+Description            = 'Namespace creation request
+'
+ID                     = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#'
+Properties
+  Property 'contact' =
+    Description            = 'The contact Information'
+    Properties
+      Property 'id' =
+        Description            = 'The contact id (eg. username, email address)'
+        Title                  = 'The contact id'
+        Type                   = 'string'
+        TypeName               = ''
+        SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/properties/id'
+      Property 'method' =
+        Description            = 'The contact method (eg. irc, email)'
+        Title                  = 'Contact Method'
+        Type                   = 'string'
+        TypeName               = ''
+        SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/properties/method'
+    Title                  = 'Contact Information'
+    Type                   = 'object'
+    TypeName               = 'Contact'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact'
+Required               = '[contact]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Namespace Creation Request'
+Type                   = 'object'
+TypeName               = 'NamespaceCreationRequest'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#'
 
 
 http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#

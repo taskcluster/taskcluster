@@ -3,6 +3,28 @@
 package pulse
 
 type (
+	// Namespace creation request
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#
+	NamespaceCreationRequest struct {
+
+		// The contact Information
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact
+		Contact struct {
+
+			// The contact id (eg. username, email address)
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/properties/id
+			ID string `json:"id,omitempty"`
+
+			// The contact method (eg. irc, email)
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/properties/method
+			Method string `json:"method,omitempty"`
+		} `json:"contact"`
+	}
+
 	// Rabbit overview response
 	//
 	// See http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#
