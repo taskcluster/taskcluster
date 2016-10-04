@@ -228,8 +228,8 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
-          runOneTaskOnly                    If true, after completeing one task, the worker
-                                            will exit. [default: false]
+          numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
+                                            this many tasks, exit. [default: 0]
 
     Here is an syntactically valid example configuration file:
 
@@ -326,7 +326,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		IdleShutdownTimeoutSecs:        0,
 		RequiredDiskSpaceMegabytes:     10240,
 		ShutdownMachineOnInternalError: false,
-		RunOneTaskOnly:                 false,
+		NumberOfTasksToRun:             0,
 		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker": map[string]string{
 				"go-arch":    runtime.GOARCH,
@@ -446,7 +446,8 @@ func runWorker() {
 			}
 		} else {
 			taskCleanup()
-			if config.RunOneTaskOnly {
+			config.NumberOfTasksToRun--
+			if config.NumberOfTasksToRun == 0 {
 				break
 			}
 			lastActive = time.Now()

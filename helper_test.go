@@ -78,7 +78,7 @@ func setup(t *testing.T) {
 		CachesDir:               filepath.Join(cwd, "caches"),
 		DownloadsDir:            filepath.Join(cwd, "downloads"),
 		IdleShutdownTimeoutSecs: 60,
-		RunOneTaskOnly:          true,
+		NumberOfTasksToRun:      1,
 	}
 
 	// useful for expiry dates of tasks
