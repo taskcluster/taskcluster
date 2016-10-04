@@ -147,7 +147,9 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 
 		// check if an error occurred...
 		if err != nil {
+			// probably task was cancelled - in any case, we should kill the running task...
 			log.Printf("%v", err)
+			task.kill()
 			return err
 		}
 

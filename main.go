@@ -979,10 +979,14 @@ func (task *TaskRun) setMaxRunTimer() {
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
 		task.Log("Aborting task - max run time exceeded!")
-		for index := range task.Commands {
-			task.abortProcess(index)
-		}
+		task.kill()
 	}()
+}
+
+func (task *TaskRun) kill() {
+	for index := range task.Commands {
+		task.abortProcess(index)
+	}
 }
 
 func (task *TaskRun) createLogFile() io.WriteCloser {
