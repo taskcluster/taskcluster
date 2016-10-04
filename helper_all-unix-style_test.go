@@ -27,3 +27,11 @@ func checkSHASums() [][]string {
 		},
 	}
 }
+
+func failCommand() [][]string {
+	return [][]string{
+		{
+			"false",
+		},
+	}
+}

@@ -12,3 +12,9 @@ func checkSHASums() []string {
 		"powershell -file preloaded\\check-shasums.ps1",
 	}
 }
+
+func failCommand() []string {
+	return []string{
+		"exit 1",
+	}
+}

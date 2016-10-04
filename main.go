@@ -500,8 +500,10 @@ func FindAndRunTask() bool {
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
 		log.Println("Task found")
-		err = task.run()
-		task.reportPossibleError(err)
+		execErr := task.run()
+		if execErr.Occurred() {
+			task.reportPossibleError(execErr)
+		}
 		break
 	}
 	return taskFound
