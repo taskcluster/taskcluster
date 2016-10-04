@@ -979,16 +979,9 @@ func (task *TaskRun) setMaxRunTimer() {
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
 		task.Log("Aborting task - max run time exceeded!")
-		taskStatusUpdate <- TaskStatusUpdate{
-			Task:   task,
-			Status: Failed,
-			// only abort task if it is still running...
-			IfStatusIn: map[TaskStatus]bool{
-				Claimed:   true,
-				Reclaimed: true,
-			},
+		for index := range task.Commands {
+			task.abortProcess(index)
 		}
-		task.reportPossibleError(<-taskStatusUpdateErr)
 	}()
 }
 

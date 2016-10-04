@@ -620,3 +620,9 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	}
 	return windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
 }
+
+func (task *TaskRun) abortProcess(index int) {
+	if c := task.Commands[index].osCommand; c != nil {
+		c.(*exec.Cmd).Process.Kill()
+	}
+}

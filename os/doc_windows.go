@@ -45,3 +45,14 @@ func (p *ProcessState) success() bool {
 func (p *ProcessState) Sys() interface{} {
 	return p.sys()
 }
+
+// Kill causes the Process to exit immediately.
+func (p *Process) Kill() error {
+	return p.kill()
+}
+
+// Signal sends a signal to the Process.
+// Sending Interrupt on Windows is not implemented.
+func (p *Process) Signal(sig os.Signal) error {
+	return p.signal(sig)
+}

@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
@@ -47,8 +48,8 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	setup(t)
 	payload := GenericWorkerPayload{
-		Command:    sleep(2),
-		MaxRunTime: 1,
+		Command:    sleep(4),
+		MaxRunTime: 3,
 	}
 	td := testTask()
 	taskID, myQueue := submitTask(t, td, payload)
@@ -61,10 +62,21 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	if tsr.Status.State != "failed" {
 		t.Fatalf("Was expecting state %q but got %q", "failed", tsr.Status.State)
 	}
-	// check log mentions abortion
-	bytes, err := ioutil.ReadFile(filepath.Join("testdata/public/logs/live_backing.log"))
+	// check uploaded log mentions abortion
+	// note: we do this rather than local log, to check also log got uploaded
+	// as failure path requires that task is resolved before logs are uploaded
+	url, err := myQueue.GetLatestArtifact_SignedURL(taskID, "public/logs/live_backing.log", 10*time.Minute)
 	if err != nil {
-		t.Fatalf("Error when trying to read log file: %v", err)
+		t.Fatalf("Cannot retrieve url for live_backing.log: %v", err)
+	}
+	resp, _, err := httpbackoff.Get(url.String())
+	if err != nil {
+		t.Fatalf("Could not download log: %v", err)
+	}
+	defer resp.Body.Close()
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error when trying to read log file over http: %v", err)
 	}
 	logtext := string(bytes)
 	if !strings.Contains(logtext, "max run time exceeded") {

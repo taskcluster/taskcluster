@@ -11,6 +11,8 @@ import (
 	mysyscall "github.com/taskcluster/generic-worker/syscall"
 )
 
+var Kill os.Signal = syscall.SIGKILL
+
 func startProcess(name string, argv []string, attr *os.ProcAttr, username, password string) (p *Process, err error) {
 	// If there is no SysProcAttr (ie. no Chroot or changed
 	// UID/GID), double-check existence of the directory we want
@@ -139,4 +141,37 @@ func newProcess(pid int, handle uintptr) *Process {
 
 func (p *Process) setDone() {
 	atomic.StoreUint32(&p.isdone, 1)
+}
+
+func (p *Process) signal(sig os.Signal) error {
+	handle := atomic.LoadUintptr(&p.handle)
+	if handle == uintptr(syscall.InvalidHandle) {
+		return syscall.EINVAL
+	}
+	if p.done() {
+		return errors.New("os: process already finished")
+	}
+	if sig == Kill {
+		return terminateProcess(p.Pid, 1)
+	}
+	// TODO(rsc): Handle Interrupt too?
+	return syscall.Errno(syscall.EWINDOWS)
+}
+
+func terminateProcess(pid, exitcode int) error {
+	h, e := syscall.OpenProcess(syscall.PROCESS_TERMINATE, false, uint32(pid))
+	if e != nil {
+		return os.NewSyscallError("OpenProcess", e)
+	}
+	defer syscall.CloseHandle(h)
+	e = syscall.TerminateProcess(h, uint32(exitcode))
+	return os.NewSyscallError("TerminateProcess", e)
+}
+
+func (p *Process) done() bool {
+	return atomic.LoadUint32(&p.isdone) > 0
+}
+
+func (p *Process) kill() error {
+	return p.Signal(os.Kill)
 }

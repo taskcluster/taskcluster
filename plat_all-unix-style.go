@@ -113,3 +113,9 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	// currently high priority
 	return os.Rename(oldpath, newpath)
 }
+
+func (task *TaskRun) abortProcess(index int) {
+	if c := task.Commands[index].osCommand; c != nil {
+		c.(*exec.Cmd).Process.Kill()
+	}
+}
