@@ -20,15 +20,18 @@ func failCommand() []string {
 }
 
 func incrementCounterInCache() []string {
+	// The `echo | set /p dummyName...` construction is to avoid printing a
+	// newline. See answer by xmechanix on:
+	// http://stackoverflow.com/questions/7105433/windows-batch-echo-without-new-line/19468559#19468559
 	command := `
 		setlocal EnableDelayedExpansion
 		if exist my-task-caches\test-modifications\counter (
 		  set /p counter=<my-task-caches\test-modifications\counter
 		  set /a counter=counter+1
-		  echo !counter! > my-task-caches\test-modifications\counter
+		  echo | set /p dummyName="!counter!" > my-task-caches\test-modifications\counter
 		) else (
-		  echo 1 > my-task-caches\test-modifications\counter
+		  echo | set /p dummyName="1" > my-task-caches\test-modifications\counter
 		)
 `
-	return []string(command)
+	return []string{command}
 }
