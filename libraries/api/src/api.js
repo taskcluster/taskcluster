@@ -461,6 +461,12 @@ var remoteAuthentication = function(options, entry) {
 
         // Test that we have scope intersection, and hence, is authorized
         var retval = scopes.scopeMatch(result.scopes, scopesets);
+        if (retval) {
+          // TODO: log this in a structured format when structured logging is
+          // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
+          console.log(
+              `Authorized ${clientId} for ${req.method} access to ${req.originalUrl}`)
+        }
         if (!retval && !noReply) {
           res.reportError('InsufficientScopes', [
             "You do not have sufficient scopes. This request requires you",
