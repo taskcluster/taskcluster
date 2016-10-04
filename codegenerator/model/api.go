@@ -62,7 +62,7 @@ func (api *API) generateAPICode(apiName string) string {
 	// character is not can't switch case for whatever
 	// reason, prefix variable name with "my"
 	exampleVarName := api.apiDef.ExampleVarName
-	exampleCall := ""
+	var exampleCall string
 	// here we choose an example API method to call, just the first one in the list of api.Entries
 	// We need to first see if it returns one or two variables...
 	if api.Entries[0].Output == "" {
