@@ -176,7 +176,7 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 				// only update if either IfStatusIn is nil
 				// or it is non-nil but it has "true" value
 				// for key of current status
-				if update.IfStatusIn == nil || update.IfStatusIn[update.Status] {
+				if update.IfStatusIn == nil || update.IfStatusIn[task.Status] {
 					task := update.Task
 					task.Status = update.Status
 					switch update.Status {
