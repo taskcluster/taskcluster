@@ -64,7 +64,8 @@ func setup(t *testing.T) {
 				"local-ipv4":        "87.65.43.21",
 			},
 			"generic-worker": map[string]string{
-				"go-arch":    runtime.GOARCH,
+				"go-arch": runtime.GOARCH,
+
 				"go-os":      runtime.GOOS,
 				"go-version": runtime.Version(),
 				"release":    "test-release-url",
@@ -85,7 +86,7 @@ func setup(t *testing.T) {
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
 }
 
-func runTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
+func submitTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
 	taskID = slugid.Nice()
 	// check we have all the env vars we need to run this test
 	if config.ClientID == "" || config.AccessToken == "" {
@@ -98,7 +99,6 @@ func runTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorke
 	}
 	myQueue = queue.New(creds)
 
-	// submit task
 	b, err := json.Marshal(&payload)
 	if err != nil {
 		t.Fatalf("Could not convert task payload to json")
@@ -112,14 +112,14 @@ func runTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorke
 
 	td.Payload = payloadJSON
 
+	// submit task
 	_, err = myQueue.CreateTask(taskID, td)
 	if err != nil {
-		t.Fatalf("Could not run task: %v", err)
+		t.Fatalf("Could not submit task: %v", err)
 	}
 
 	// run the worker for one task only - note, the function will also return
 	// if there is a minute of idle time (see config above)
-	runWorker()
 	return
 }
 

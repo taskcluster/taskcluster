@@ -254,7 +254,7 @@ func (task *TaskRun) generateCommand(index int) error {
 				return err
 			}
 			for envVar, envValue := range envVars {
-				log.Printf("Setting env var: %v=%v", envVar, envValue)
+				// log.Printf("Setting env var: %v=%v", envVar, envValue)
 				contents += "set " + envVar + "=" + envValue + "\r\n"
 			}
 		}

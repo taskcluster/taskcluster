@@ -18,3 +18,17 @@ func failCommand() []string {
 		"exit 1",
 	}
 }
+
+func incrementCounterInCache() []string {
+	command := `
+		setlocal EnableDelayedExpansion
+		if exist my-task-caches\test-modifications\counter (
+		  set /p counter=<my-task-caches\test-modifications\counter
+		  set /a counter=counter+1
+		  echo !counter! > my-task-caches\test-modifications\counter
+		) else (
+		  echo 1 > my-task-caches\test-modifications\counter
+		)
+`
+	return []string(command)
+}

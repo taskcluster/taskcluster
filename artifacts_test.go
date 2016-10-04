@@ -248,7 +248,8 @@ func TestUpload(t *testing.T) {
 
 	td := testTask()
 
-	taskID, myQueue := runTask(t, td, payload)
+	taskID, myQueue := submitTask(t, td, payload)
+	runWorker()
 
 	// some required substrings - not all, just a selection
 	expectedArtifacts := map[string]struct {

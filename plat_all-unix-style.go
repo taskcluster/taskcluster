@@ -75,7 +75,7 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 	taskEnv := []string{}
 	for _, j := range workerEnv {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
-			log.Printf("Setting env var: %v", j)
+			// log.Printf("Setting env var: %v", j)
 			taskEnv = append(taskEnv, j)
 		}
 	}
@@ -86,7 +86,7 @@ func (task *TaskRun) prepEnvVars(cmd *exec.Cmd) {
 			panic(err)
 		}
 		for i, j := range envVars {
-			log.Printf("Setting env var: %v=%v", i, j)
+			// log.Printf("Setting env var: %v=%v", i, j)
 			taskEnv = append(taskEnv, i+"="+j)
 		}
 		cmd.Env = taskEnv

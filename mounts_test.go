@@ -103,7 +103,8 @@ func TestMounts(t *testing.T) {
 		"generic-worker:cache:devtools-app",
 	}
 
-	taskID, myQueue := runTask(t, td, payload)
+	taskID, myQueue := submitTask(t, td, payload)
+	runWorker()
 
 	// check task succeeded
 	tsr, err := myQueue.Status(taskID)
@@ -180,7 +181,8 @@ func TestMissingScopes(t *testing.T) {
 	td := testTask()
 	// don't set any scopes
 
-	taskID, myQueue := runTask(t, td, payload)
+	taskID, myQueue := submitTask(t, td, payload)
+	runWorker()
 
 	// check task had exception/malformed-payload
 	tsr, err := myQueue.Status(taskID)
@@ -199,5 +201,44 @@ func TestMissingScopes(t *testing.T) {
 	logtext := string(bytes)
 	if !strings.Contains(logtext, "queue:get-artifact:SampleArtifacts/_/X.txt") || !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
 		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
+	}
+}
+
+func TestCachesCanBeModified(t *testing.T) {
+	setup(t)
+	// We're going to run three consecutive tasks here. The first will create
+	// a file called `counter` in the cache and the contents of the file will
+	// be `1`. The next task will overwrite this file with the number `2`. The
+	// third task will overwrite the file with the number `3`. Then we check
+	// the file `counter` has the number `3` as its contents.
+	config.NumberOfTasksToRun = 3
+
+	mounts := []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "test-modifications",
+			Directory: filepath.Join("my-task-caches", "test-modifications"),
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toRawMessageArray(t, &mounts),
+		Command:    incrementCounterInCache(),
+		MaxRunTime: 20,
+	}
+
+	for i := 0; i < 3; i++ {
+		td := testTask()
+		td.Scopes = []string{"generic-worker:cache:test-modifications"}
+		submitTask(t, td, payload)
+	}
+	runWorker()
+
+	counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
+	bytes, err := ioutil.ReadFile(counterFile)
+	if err != nil {
+		t.Fatalf("Error when trying to real cache file: %v", err)
+	}
+	if string(bytes) != "3" {
+		t.Fatalf("Was expecting file %v to have content %q but had %q", counterFile, "3", string(bytes))
 	}
 }
