@@ -176,7 +176,11 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 				// only update if either IfStatusIn is nil
 				// or it is non-nil but it has "true" value
 				// for key of current status
-				if update.IfStatusIn == nil || update.IfStatusIn[task.Status] {
+				// note - task could have been aborted externally, so update.Task.Status
+				// may not be correct in case of task canellation, but this race
+				// condition will always exist, even if we add a check for the current
+				// value, so then better to fail with a 409 RequestConflict
+				if update.IfStatusIn == nil || update.IfStatusIn[update.Task.Status] {
 					task := update.Task
 					task.Status = update.Status
 					switch update.Status {
