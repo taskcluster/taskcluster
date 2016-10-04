@@ -1,4 +1,4 @@
-Generated: 1475605490
+Generated: 1475607694
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4074,7 +4074,7 @@ ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.js
 Properties
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **failed** if not resolved by other means
+    resolved as **exception** if not resolved by other means
     before the deadline. Note, deadline cannot be more than
     5 days into the future
     '
@@ -6267,7 +6267,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created'
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **failed** if not resolved by other means
+    resolved as **exception** if not resolved by other means
     before the deadline. Note, deadline cannot be more than
     5 days into the future
     '
@@ -7823,7 +7823,7 @@ ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.js
 Properties
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **failed** if not resolved by other means
+    resolved as **exception** if not resolved by other means
     before the deadline. Note, deadline cannot be more than
     5 days into the future
     '
@@ -8051,7 +8051,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/created'
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **failed** if not resolved by other means
+    resolved as **exception** if not resolved by other means
     before the deadline. Note, deadline cannot be more than
     5 days into the future
     '
@@ -9332,7 +9332,7 @@ ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.js
 Properties
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **failed** if not resolved by other means
+    resolved as **exception** if not resolved by other means
     before the deadline. Note, deadline cannot be more than
     5 days into the future
     '
@@ -9776,7 +9776,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created'
   Property 'deadline' =
     Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **failed** if not resolved by other means
+    resolved as **exception** if not resolved by other means
     before the deadline. Note, deadline cannot be more than
     5 days into the future
     '
