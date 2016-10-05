@@ -626,3 +626,11 @@ func (task *TaskRun) abortProcess(index int) {
 		c.(*exec.Cmd).Process.Kill()
 	}
 }
+
+func addGroupsToUser(groups []string, user string) error {
+	commands := make([][]string, len(groups), len(groups))
+	for i, group := range groups {
+		commands[i] = []string{"net", "localgroup", group, "/add", user}
+	}
+	return runCommands(false, "", "", commands...)
+}

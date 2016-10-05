@@ -119,3 +119,10 @@ func (task *TaskRun) abortProcess(index int) {
 		c.(*exec.Cmd).Process.Kill()
 	}
 }
+
+func addGroupsToUser(groups []string, user string) error {
+	if len(groups) > 0 {
+		return fmt.Errorf("Not able to add groups %v to user %v on platform %v - feature not supported.", groups, user, runtime.GOOS)
+	}
+	return nil
+}

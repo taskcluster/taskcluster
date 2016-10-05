@@ -88,6 +88,12 @@ properties:
       oneOf:
       - "$ref": "#/definitions/fileMount"
       - "$ref": "#/definitions/directoryMount"
+  osGroups:
+    type: array
+    title: OS Groups
+    description: A list of OS Groups that the task user should be a member of
+    items:
+      type: string
 definitions:
   fileMount:
     type: object

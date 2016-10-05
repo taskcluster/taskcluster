@@ -82,6 +82,9 @@ type (
 
 		// Directories and/or files to be mounted
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
+
+		// A list of OS Groups that the task user should be a member of
+		OSGroups []string `json:"osGroups,omitempty"`
 	}
 
 	ReadOnlyDirectory struct {
@@ -416,6 +419,14 @@ func taskPayloadSchema() string {
         "type": "object"
       },
       "title": "Mounts",
+      "type": "array"
+    },
+    "osGroups": {
+      "description": "A list of OS Groups that the task user should be a member of",
+      "items": {
+        "type": "string"
+      },
+      "title": "OS Groups",
       "type": "array"
     }
   },
