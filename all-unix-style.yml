@@ -93,7 +93,9 @@ properties:
   osGroups:
     type: array
     title: OS Groups
-    description: A list of OS Groups that the task user should be a member of
+    description: |-
+      A list of OS Groups that the task user should be a member of. Requires
+      scope `generic-worker:os-group:<os-group>` for each group listed.
     items:
       type: string
 definitions:

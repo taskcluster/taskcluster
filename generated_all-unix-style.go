@@ -83,7 +83,8 @@ type (
 		// Directories and/or files to be mounted
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
-		// A list of OS Groups that the task user should be a member of
+		// A list of OS Groups that the task user should be a member of. Requires
+		// scope `generic-worker:os-group:<os-group>` for each group listed.
 		OSGroups []string `json:"osGroups,omitempty"`
 	}
 
@@ -426,7 +427,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of",
+      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.",
       "items": {
         "type": "string"
       },
