@@ -19,14 +19,9 @@ defaults:
 
   # Github Configuration
   github:
-    config:
-      version: '3.0.0'
-      debug: false
-      protocol: 'https'
-      timeout: 5000
     credentials:
       token: !env GITHUB_OAUTH_TOKEN
-      type: "oauth"
+      type: 'oauth'
 
   webhook:
     secret:                       !env WEBHOOK_SECRET

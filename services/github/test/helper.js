@@ -33,7 +33,7 @@ if (!cfg.pulse.password) {
 
 // Build an http request from a json file with fields describing
 // headers and a body
-helper.jsonHttpRequest = function (jsonFile, options) {
+helper.jsonHttpRequest = function(jsonFile, options) {
   let defaultOptions = {
     hostname: 'localhost',
     port: cfg.server.port,
@@ -45,7 +45,7 @@ helper.jsonHttpRequest = function (jsonFile, options) {
 
   let jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
-  return new Promise (function (accept, reject) {
+  return new Promise (function(accept, reject) {
     try {
       let req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));

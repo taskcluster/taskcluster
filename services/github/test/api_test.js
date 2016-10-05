@@ -1,9 +1,9 @@
-suite('TaskCluster-Github', () => {
+suite('api', () => {
   let helper = require('./helper');
   let assert = require('assert');
 
   // Check the status code returned from a request containing some test data
-  function statusTest (testName, jsonFile, statusCode) {
+  function statusTest(testName, jsonFile, statusCode) {
     test(testName, async () => {
       let response = await helper.jsonHttpRequest('./test/data/webhooks/' + jsonFile);
       assert.equal(response.statusCode, statusCode);
