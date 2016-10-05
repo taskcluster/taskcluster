@@ -26,12 +26,13 @@ worker.webHookHandler = async function(message, context) {
 
   // Try to fetch a .taskcluster.yml file for every request
   try {
-    repoconf = new Buffer(await context.github.repos.getContent({
+    let tcyml = await context.github.repos.getContent({
       user: organization,
       repo: repository,
       path: '.taskcluster.yml',
       ref: message.payload.details['event.head.sha'],
-    }), 'base64').toString();
+    });
+    repoconf = new Buffer(tcyml.content, 'base64').toString();
   } catch (e) {
     if (e.code === 404) {
       debug(`${organization}/${repository} has no '.taskcluster.yml'. Skipping.`);
