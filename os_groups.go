@@ -40,7 +40,7 @@ func (osGroups *OSGroups) RequiredScopes() scopes.Required {
 }
 
 func (osGroups *OSGroups) Start() *CommandExecutionError {
-	return MalformedPayloadError(addGroupsToUser(osGroups.Task.Payload.OSGroups, TaskUser.Name))
+	return MalformedPayloadError(osGroups.Task.addGroupsToUser(osGroups.Task.Payload.OSGroups))
 }
 
 func (osGroups *OSGroups) Stop() *CommandExecutionError {

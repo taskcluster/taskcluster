@@ -775,7 +775,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 	if !result.Valid() {
 		task.Log("TASK FAIL since the task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
-			task.Log(fmt.Sprintf("- %s", desc))
+			task.Logf("- %s", desc)
 		}
 		// Dealing with Invalid Task Payloads
 		// ----------------------------------
@@ -846,6 +846,10 @@ func MalformedPayloadError(err error) *CommandExecutionError {
 
 func Failure(err error) *CommandExecutionError {
 	return executionError("", Failed, err)
+}
+
+func (task *TaskRun) Logf(format string, v ...interface{}) {
+	task.Log(fmt.Sprintf(format, v...))
 }
 
 func (task *TaskRun) Log(message string) {
@@ -1046,7 +1050,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 		}
 		if r := recover(); r != nil {
 			task.Log(string(debug.Stack()))
-			task.Log(fmt.Sprintf("%#v", r))
+			task.Logf("%#v", r)
 			defer panic(r)
 		}
 		task.closeLog(logHandle)

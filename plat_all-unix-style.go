@@ -120,9 +120,13 @@ func (task *TaskRun) abortProcess(index int) {
 	}
 }
 
-func addGroupsToUser(groups []string, user string) error {
-	if len(groups) > 0 {
-		return fmt.Errorf("Not able to add groups %v to user %v on platform %v - feature not supported.", groups, user, runtime.GOOS)
+func (task *TaskRun) addGroupsToUser(groups []string) error {
+	if len(groups) == 0 {
+		return nil
 	}
-	return nil
+	if config.RunTasksAsCurrentUser {
+		task.Logf("Not adding user %v to groups %v since we are running as current user.", TaskUser.Name, groups)
+		return nil
+	}
+	return fmt.Errorf("Not able to add groups %v to user %v on platform %v - feature not supported.", groups, TaskUser.Name, runtime.GOOS)
 }
