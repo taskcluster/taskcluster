@@ -3,7 +3,7 @@
 // the test each time.
 export const NAMESPACE = 'garbage.docker-worker-tests.docker-images.P3nOQmLVSzGaFZzUcYzHMw';
 
-export const TASK_ID = 'Nj-YlJwFSMez_eqh2fBI3g';
+export const TASK_ID = 'RIRVA9wFSBGzhFhuDMb-xQ';
 
 // LZ4 compressed image
 export const LZ4_TASK_ID = 'Bs7M5ZpLRy-Wz_WdwjJrNw';
