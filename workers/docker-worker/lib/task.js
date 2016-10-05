@@ -569,8 +569,27 @@ export class Task extends EventEmitter {
    */
   async completeRun(success) {
     let queue = this.queue;
-    let reporter = success ? queue.reportCompleted : queue.reportFailed;
     let reportDetails = [this.status.taskId, this.runId];
+    let reporter;
+    let taskState;
+
+    if (success) {
+      reporter = queue.reportCompleted;
+      taskState = 'completed';
+    } else if (!this.task.payload.onExitStatus) {
+      reporter = queue.reportFailed;
+      taskState = 'failed';
+    } else {
+      let retry = this.task.payload.onExitStatus.retry;
+      if (retry && retry.includes(this.exitCode)) {
+        taskState = 'retry';
+        reportDetails.push({reason: 'intermittent-task'});
+        reporter = queue.reportException;
+      } else {
+        reporter = queue.reportFailed;
+        taskState = 'failed';
+      }
+    }
 
     // mark any tasks that this one superseded as resolved, adding the
     // necessary artifacts pointing to this build
@@ -581,7 +600,7 @@ export class Task extends EventEmitter {
     this.runtime.log('task resolved', {
       taskId: this.status.taskId,
       runId: this.runId,
-      taskState: success ? 'completed' : 'failed'
+      taskState: taskState
     });
   }
 
@@ -899,10 +918,9 @@ export class Task extends EventEmitter {
 
     this.runtime.log('task run');
     this.stream.write(fmtLog('=== Task Starting ==='));
-    let exitCode;
     try {
       let taskStart = new Date();
-      exitCode = await dockerProc.run({
+      this.exitCode = await dockerProc.run({
         // Do not pull the image as part of the docker run we handle it +
         // authentication above...
         pull: false
@@ -922,12 +940,12 @@ export class Task extends EventEmitter {
       });
       this.stream.write(fmtErrorLog('Failure to properly start execution environment.'));
       this.stream.write(fmtErrorLog(error.message));
-      exitCode = -1;
+      this.exitCode = -1;
     }
 
     this.stream.write(fmtLog('=== Task Finished ==='));
 
-    let success = exitCode === 0;
+    let success = this.exitCode === 0;
 
     clearTimeout(runtimeTimeoutId);
 
@@ -953,13 +971,13 @@ export class Task extends EventEmitter {
       // to fail if the task did not finish successfully.
       if (success) {
         success = false;
-        exitCode = -1;
+        this.exitCode = -1;
       }
 
       this.stream.write(fmtErrorLog(e.message));
     }
 
-    this.stream.write(this.logFooter(success, exitCode, this.taskStart, new Date()));
+    this.stream.write(this.logFooter(success, this.exitCode, this.taskStart, new Date()));
 
     // Wait for the stream to end entirely before killing remaining containers.
     await this.stream.end();
@@ -983,6 +1001,7 @@ export class Task extends EventEmitter {
     if (this.isCanceled() || this.isAborted()) {
       return await this.abortRun();
     }
+
     return success;
   }
 
