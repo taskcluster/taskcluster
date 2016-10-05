@@ -43,8 +43,7 @@ Defaults:
     region:           us-west-2
     apiVersion:       2014-01-01
   persona:
-    allowedAudiences:
-      - https://tools.taskcluster.net:443
+    allowedAudiences: !env:list PERSONA_ALLOWED_AUDIENCES
   mozillians:
     # NOTE: this API key needs to have the "Mozillians" level in order to access
     # non-public profiles; see https://bugzilla.mozilla.org/show_bug.cgi?id=1259059
