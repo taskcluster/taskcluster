@@ -1,5 +1,5 @@
 import base from 'taskcluster-base';
-import github from './github';
+import crypto from 'crypto';
 import _ from 'lodash';
 
 // Common schema prefix
@@ -7,13 +7,13 @@ let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
-function sanitizeGitHubField (field) {
+function sanitizeGitHubField(field) {
   return field.replace(/[^a-zA-Z0-9-_\.]/gi, '').replace(/\./g, '%');
 };
 
 // Reduce a pull request WebHook's data to only fields needed to checkout a
 // revision
-function getPullRequestDetails (eventData) {
+function getPullRequestDetails(eventData) {
   return {
     'event.type': 'pull_request.' + eventData.action,
     'event.base.repo.branch': eventData.pull_request.base.label.split(':')[1],
@@ -30,7 +30,7 @@ function getPullRequestDetails (eventData) {
   };
 };
 
-function getPushDetails (eventData) {
+function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
   // to get a branch name
@@ -45,6 +45,28 @@ function getPushDetails (eventData) {
     'event.head.ref': ref,
     'event.base.sha': eventData.before,
   };
+};
+
+/**
+ * Hashes a payload by some secret, using the same algorithm that
+ * GitHub uses to compute their X-Hub-Signature HTTP header. Used
+ * for verifying the legitimacy of WebHooks.
+ **/
+function generateXHubSignature(secret, payload) {
+  return 'sha1=' + crypto.createHmac('sha1', secret).update(payload).digest('hex');
+};
+
+/**
+ * Compare hmac.digest('hex') signatures in constant time
+ * Double hmac verification is the preferred way to do this
+ * since we can't predict optimizations performed by the runtime.
+ * https: *www.isecpartners.com/blog/2011/february/double-hmac-verification.aspx
+ **/
+function compareSignatures(sOne, sTwo) {
+  let secret = Math.random().toString();
+  let h1 = crypto.createHmac('sha1', secret).update(sOne);
+  let h2 = crypto.createHmac('sha1', secret).update(sTwo);
+  return h1.digest('hex') === h2.digest('hex');
 };
 
 /** API end-point for version v1/
@@ -102,9 +124,9 @@ api.declare({
     return;
   } else if (webhookSecret && xHubSignature) {
     // Verify that our payload is legitimate
-    let calculatedSignature = github.generateXHubSignature(webhookSecret,
+    let calculatedSignature = generateXHubSignature(webhookSecret,
       JSON.stringify(body));
-    if (!github.compareSignatures(calculatedSignature, xHubSignature)) {
+    if (!compareSignatures(calculatedSignature, xHubSignature)) {
       res.status(403).send('Bad Signature');
       return;
     }
@@ -131,9 +153,9 @@ api.declare({
   // Not all webhook payloads include an e-mail for the user who triggered
   // an event.
   let headUser = msg.details['event.head.user.login'];
-  let userDetails = await this.github.users(headUser).fetch();
+  let userDetails = await this.github.users.get(headUser);
 
-  msg.details['event.head.user.email'] = userDetails.email || headUser + '@noreply.github.com';
+  msg.details['event.head.user.email'] = userDetails.email || headUser + '@users.noreply.github.com';
   msg.repository = sanitizeGitHubField(body.repository.name);
 
   await this.publisher[publisherKey](msg);
@@ -153,7 +175,7 @@ api.declare({
     '',
     '**Warning** this api end-point is **not stable**.',
   ].join('\n'),
-}, function (req, res) {
+}, function(req, res) {
 
   res.status(200).json({
     alive:    true,
