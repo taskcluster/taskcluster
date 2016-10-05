@@ -11,6 +11,7 @@ import (
 )
 
 type (
+	// Requires scope `queue:get-artifact:<artifact-name>`
 	ArtifactContent struct {
 
 		// Max length: 1024
@@ -112,7 +113,7 @@ type (
 
 	WritableDirectoryCache struct {
 
-		// Implies a read/write cache directory volume. A unique name for the cache volume. Note if this cache is loaded from an artifact, you will require scope `queue:get-artifact:<artifact-name>` to use this cache.
+		// Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope `generic-worker:cache:<cache-name>`. Note if this cache is loaded from an artifact, you will also require scope `queue:get-artifact:<artifact-name>` to use this cache.
 		CacheName string `json:"cacheName"`
 
 		// Optional content to be loaded when initially creating the cache.
@@ -185,6 +186,7 @@ func taskPayloadSchema() string {
       "oneOf": [
         {
           "additionalProperties": false,
+          "description": "Requires scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + `",
           "properties": {
             "artifact": {
               "maxLength": 1024,
@@ -235,7 +237,7 @@ func taskPayloadSchema() string {
           },
           "properties": {
             "cacheName": {
-              "description": "Implies a read/write cache directory volume. A unique name for the cache volume. Note if this cache is loaded from an artifact, you will require scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.",
+              "description": "Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope ` + "`" + `generic-worker:cache:\u003ccache-name\u003e` + "`" + `. Note if this cache is loaded from an artifact, you will also require scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.",
               "title": "Cache Name",
               "type": "string"
             },

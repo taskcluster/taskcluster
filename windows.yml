@@ -65,15 +65,6 @@ properties:
       - type
       - path
       - expires
-  mounts:
-    type: array
-    title: Mounts
-    description: Directories and/or files to be mounted
-    items:
-      type: object
-      oneOf:
-      - "$ref": "#/definitions/fileMount"
-      - "$ref": "#/definitions/directoryMount"
   features:
     title: Feature flags
     description: Feature flags enable additional functionality.
@@ -88,6 +79,15 @@ properties:
           which will include information for downstream tasks to build
           a level of trust for the artifacts produced by the task and
           the environment it ran in.
+  mounts:
+    type: array
+    title: Mounts
+    description: Directories and/or files to be mounted
+    items:
+      type: object
+      oneOf:
+      - "$ref": "#/definitions/fileMount"
+      - "$ref": "#/definitions/directoryMount"
 definitions:
   fileMount:
     type: object
@@ -119,8 +119,9 @@ definitions:
           title: Cache Name
           type: string
           description: Implies a read/write cache directory volume. A unique name
-            for the cache volume. Note if this cache is loaded from an artifact, you
-            will require scope `queue:get-artifact:<artifact-name>` to use this cache.
+            for the cache volume. Requires scope `generic-worker:cache:<cache-name>`.
+            Note if this cache is loaded from an artifact, you will also require
+            scope `queue:get-artifact:<artifact-name>` to use this cache.
         content:
           title: Content
           type: object
@@ -171,6 +172,7 @@ definitions:
   content:
     oneOf:
     - title: Artifact Content
+      description: Requires scope `queue:get-artifact:<artifact-name>`
       type: object
       properties:
         taskId:
