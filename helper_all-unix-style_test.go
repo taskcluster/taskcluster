@@ -2,7 +2,12 @@
 
 package main
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"testing"
+)
 
 func helloGoodbye() [][]string {
 	return [][]string{
@@ -59,5 +64,13 @@ func sleep(seconds uint) [][]string {
 			"sleep",
 			strconv.Itoa(int(seconds)),
 		},
+	}
+}
+
+func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
+	substring := fmt.Sprintf("Not adding user  to groups %v", groups)
+	if !strings.Contains(logtext, substring) {
+		t.Logf("Was expecting log to contain string %v", substring)
+		t.Fatalf("Actual log was:\n%v", logtext)
 	}
 }

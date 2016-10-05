@@ -1,6 +1,10 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+	"testing"
+)
 
 func helloGoodbye() []string {
 	return []string{
@@ -41,5 +45,18 @@ func incrementCounterInCache() []string {
 func sleep(seconds uint) []string {
 	return []string{
 		"ping 127.0.0.1 -n " + strconv.Itoa(int(seconds+1)) + " > nul",
+	}
+}
+
+func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
+	// when running as a test, we can't actually issue the `net localgroup`
+	// command, so we log it instead. This checks the log that the correct
+	// command would have been executed if it had not been a test.
+	for _, group := range groups {
+		substring := `[]string{"net", "localgroup", "` + group + `", "/add", ""}`
+		if !strings.Contains(logtext, substring) {
+			t.Log(logtext)
+			t.Fatalf("Was expecting log to contain string %v", substring)
+		}
 	}
 }

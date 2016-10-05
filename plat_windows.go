@@ -626,3 +626,21 @@ func (task *TaskRun) abortProcess(index int) {
 		c.(*exec.Cmd).Process.Kill()
 	}
 }
+
+func (task *TaskRun) addGroupsToUser(groups []string) error {
+	if len(groups) == 0 {
+		return nil
+	}
+	commands := make([][]string, len(groups), len(groups))
+	for i, group := range groups {
+		commands[i] = []string{"net", "localgroup", group, "/add", TaskUser.Name}
+	}
+	if config.RunTasksAsCurrentUser {
+		task.Logf("Not adding user %v to groups %v since we are running as current user. Skipping following commands:", TaskUser.Name, groups)
+		for _, command := range commands {
+			task.Logf("%#v", command)
+		}
+		return nil
+	}
+	return runCommands(false, "", "", commands...)
+}
