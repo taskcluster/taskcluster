@@ -7,6 +7,8 @@ metadata:
 tasks:
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
+    scopes:
+      - "secrets:get:repo:github.com/taskcluster/taskcluster-github*"
     routes:
       - "notify.email.{{event.head.user.email}}.on-any"
       - "notify.irc-channel.#taskcluster-notifications.on-failed"
@@ -22,10 +24,14 @@ tasks:
     payload:
       maxRunTime: 3600
       image: "node:5"
+      env:
+        DEBUG: "* -babel* -mocha* -nock* -express* -body-parser* -morgan -eslint* -follow-redirects"
+      features:
+        taskclusterProxy: true
       command:
         - "/bin/bash"
         - "-lc"
-        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install . && npm test"
+        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install . && npm run compile && $(node .test/fetch_secrets.js) && npm test"
     metadata:
       name: "TaskCluster GitHub Tests"
       description: "All non-integration tests"

@@ -1,4 +1,4 @@
-suite('TaskCluster-GitHub-Integration', () => {
+suite('integration', () => {
   let helper = require('./helper');
   let assert = require('assert');
 
@@ -13,7 +13,7 @@ suite('TaskCluster-GitHub-Integration', () => {
    *  details:      {...}, a dict of details we expect to seein the msg payload
    *  jsonFile:     'data file'
    **/
-  function pulseTest (params) {
+  function pulseTest(params) {
     test(params.testName, async () => {
       // Start listening for message
       await helper.events.listenFor(params.listenFor,
