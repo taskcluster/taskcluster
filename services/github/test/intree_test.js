@@ -1,6 +1,6 @@
-suite('TaskCluster-Github Config', () => {
+suite('intree config', () => {
   let  fs         = require('fs');
-  let  tcconfig   = require('../lib/taskcluster-config');
+  let  intree     = require('../lib/intree');
   let  assert     = require('assert');
   let  _          = require('lodash');
   let  helper     = require('./helper');
@@ -9,7 +9,7 @@ suite('TaskCluster-Github Config', () => {
    * Test github data, like one would see in a pulse message
    * after a pull request
    **/
-  function buildMessage (params) {
+  function buildMessage(params) {
     let defaultMessage = {
       organization: 'testorg',
       repository:   'testrepo',
@@ -33,24 +33,6 @@ suite('TaskCluster-Github Config', () => {
   };
 
   /**
-   * Retrieve values from deeply nested objects.
-   **/
-  function getNestedValue (keys, obj) {
-    let arrayExp = RegExp('\\[([0-9]+)\\]');
-    keys = keys.split('.');
-    for (let key of keys) {
-      let arrayMatch = arrayExp.exec(key);
-      if (arrayMatch) {
-        // Here we handle array accesses of the form a.b[2]
-        obj = obj[key.split('[')[0]][arrayMatch[1]];
-      } else {
-        obj = obj[key];
-      }
-    }
-    return obj;
-  };
-
-  /**
    * Make sure that data merges properly when building configs
    * testName:    '', A label for the current test case
    * configPath:  '', Path to a taskclusterConfig file
@@ -60,14 +42,14 @@ suite('TaskCluster-Github Config', () => {
    *              }
    * expected:    {}, keys=>values expected to exist in the compiled config
    **/
-  let buildConfigTest = function (testName, configPath, params, expected) {
+  let buildConfigTest = function(testName, configPath, params, expected) {
     test(testName, async () => {
-      params.taskclusterConfig = fs.readFileSync(configPath);
+      params.config = fs.readFileSync(configPath);
       params.schema = 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#';
       params.validator = helper.validator;
-      let config = await tcconfig.processConfig(params);
+      let config = intree(params);
       for (let key of Object.keys(expected)) {
-        assert.deepEqual(getNestedValue(key, config), expected[key]);
+        assert.deepEqual(_.get(config, key), expected[key]);
       }
     });
   };

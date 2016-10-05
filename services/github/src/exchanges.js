@@ -6,7 +6,7 @@ import _ from 'lodash';
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
 
 /** Build common routing key construct for `exchanges.declare` */
-let commonRoutingKey = function (options) {
+let commonRoutingKey = function(options) {
   options = options || {};
   let routingKey = [
     {
@@ -46,7 +46,7 @@ let commonRoutingKey = function (options) {
   return routingKey;
 };
 
-let commonMessageBuilder = function (msg) {
+let commonMessageBuilder = function(msg) {
   msg.version = 1;
   return msg;
 };

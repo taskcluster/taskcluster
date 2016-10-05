@@ -1,13 +1,11 @@
 import Debug from 'debug';
-import tcconfig from './taskcluster-config';
-import github from './github';
-import utils from './utils';
+import intree from './intree';
 import taskcluster from 'taskcluster-client';
 import slugid from 'slugid';
 import yaml from 'js-yaml';
 import _ from 'lodash';
 
-let debug = Debug('taskcluster-github:worker');
+let debug = Debug('taskcluster-github');
 let worker = module.exports = {};
 
 const INSPECTOR_URL = 'https://tools.taskcluster.net/task-graph-inspector/#';
@@ -20,22 +18,23 @@ worker.webHookHandler = async function(message, context) {
   // We must attempt to convert the sanitized fields back to normal here. 
   // Further discussion of how to deal with this cleanly is in
   // https://github.com/taskcluster/taskcluster-github/issues/52
-  message.payload.organization = message.payload.organization.replace(/%/g, '.');
-  message.payload.repository = message.payload.repository.replace(/%/g, '.');
+  organization = organization.replace(/%/g, '.');
+  repository = repository.replace(/%/g, '.');
 
   debug('handling webhook: ', message);
-  let taskclusterConfig = undefined;
+  let repoconf = undefined;
 
   // Try to fetch a .taskcluster.yml file for every request
   try {
-    taskclusterConfig = await context.github.repos(
-      message.payload.organization, message.payload.repository
-    ).contents('.taskcluster.yml').read({
+    repoconf = new Buffer(await context.github.repos.getContent({
+      user: organization,
+      repo: repository,
+      path: '.taskcluster.yml',
       ref: message.payload.details['event.head.sha'],
-    });
+    }), 'base64').toString();
   } catch (e) {
-    if (e.status === 404) {
-      debug(`${message.payload.organization}/${message.payload.repository} has no '.taskcluster.yml'. Skipping.`);
+    if (e.code === 404) {
+      debug(`${organization}/${repository} has no '.taskcluster.yml'. Skipping.`);
       return;
     }
     if (_.endsWith(e.message, '</body>\n</html>\n') && e.message.length > 10000) {
@@ -52,11 +51,11 @@ worker.webHookHandler = async function(message, context) {
 
   // Check if this is meant to be built by tc-github at all.
   // This is a bit of a hack, but is needed for bug 1274077 for now
-  let c = yaml.safeLoad(taskclusterConfig);
+  let c = yaml.safeLoad(repoconf);
   c.tasks = (c.tasks || []).filter((task) => _.has(task, 'extra.github'));
   if (c.tasks.length === 0) {
     debug('Skipping tasks because no task with "extra.github" exists!');
-    debug(`Repository: ${message.payload.organization}/${message.payload.repository}`);
+    debug(`Repository: ${organization}/${repository}`);
     return;
   }
 
@@ -64,27 +63,42 @@ worker.webHookHandler = async function(message, context) {
   let login = message.payload.details['event.head.user.login'];
   let isCollaborator = false;
 
-  if (login == message.payload.organization) {
+  if (login === organization) {
     isCollaborator = true;
   }
 
   if (!isCollaborator) {
-    isCollaborator = await context.github.orgs(
-      message.payload.organization
-    ).members.contains(login);
+    // If the user is in the org, we consider them
+    // qualified to trigger any job in that org.
+    try {
+      github.orgs.checkMembership({
+        org: organization,
+        user: login,
+      });
+      isCollaborator = true;
+    } catch (e) {
+      if (e.code == 404) {
+        // Only a 404 error means the user isn't a member
+        // anything else should just throw like normal
+      } else {
+        throw e;
+      }
+    }
   }
 
   if (!isCollaborator) {
     // GithubAPI's collaborator check returns an error if a user isn't
     // listed as a collaborator.
     try {
-      await context.github.repos(
-        message.payload.organization, message.payload.repository
-      ).collaborators(login).fetch();
+      await context.github.repos.checkCollaborator({
+        user: organization,
+        repo: repository,
+        collabuser: login,
+      });
       // No error, the user is a collaborator
       isCollaborator = true;
     } catch (e) {
-      if (e.status == 404) {
+      if (e.code == 404) {
         // Only a 404 error means the user isn't a collaborator
         // anything else should just throw like normal
       } else {
@@ -97,36 +111,36 @@ worker.webHookHandler = async function(message, context) {
   // and ignore the request
   if (!isCollaborator) {
     let msg = `@${login} does not have permission to trigger tasks.`;
-    await github.addCommitComment(
-      context.github,
-      message.payload.organization,
-      message.payload.repository,
-      message.payload.details['event.head.sha'],
-      'TaskCluster: ' + msg);
-    debug(msg + ' skipping.');
+    debug(`${login} does not have permissions for ${organization}/${repository}. Skipping.`);
+    await context.github.repos.createCommitComment({
+      user: organization,
+      repo: repository,
+      sha: message.payload.details['event.head.sha'],
+      body: 'TaskCluster: ' + msg,
+    });
   }
 
   // Now we can try processing the config and kicking off a task.
   try {
-    let graphConfig = await tcconfig.processConfig({
-      taskclusterConfig:  taskclusterConfig,
-      payload:            message.payload,
-      validator:          context.validator,
-      schema:             'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#',
+    let graphConfig = intree({
+      config: repoconf,
+      payload: message.payload,
+      validator: context.validator,
+      schema: 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#',
     });
     if (graphConfig.tasks.length) {
       let graph = await context.scheduler.createTaskGraph(slugid.nice(), graphConfig);
       // On pushes, leave a comment on the commit
       if (message.payload.details['event.type'] == 'push') {
-        await github.addCommitComment(
-          context.github,
-          message.payload.organization,
-          message.payload.repository,
-          message.payload.details['event.head.sha'],
-          'TaskCluster-GitHub: ' + INSPECTOR_URL + graph.status.taskGraphId);
+        await context.github.repos.createCommitComment({
+          user: organization,
+          repo: repository,
+          sha: message.payload.details['event.head.sha'],
+          body: 'TaskCluster: ' + INSPECTOR_URL + graph.status.taskGraphId + '/',
+        });
       }
     } else {
-      debug('graphConfig compiled with zero tasks: skipping');
+      debug('intree config compiled with zero tasks. Skipping');
     }
   } catch (e) {
     let errorMessage = e.message;
@@ -137,33 +151,42 @@ worker.webHookHandler = async function(message, context) {
     }
     // Warn the user know that there was a problem processing their
     // config file with a comment.
-    await github.addCommitComment(context.github,
-      message.payload.organization,
-      message.payload.repository,
-      message.payload.details['event.head.sha'],
-      'Submitting the task to TaskCluster failed. ' + errorMessage
-      + 'Details:\n\n```js\n' +  errorBody + '\n```');
+    await context.github.repos.createCommitComment({
+      user: organization,
+      repo: repository,
+      sha: message.payload.details['event.head.sha'],
+      body: 'Submitting the task to TaskCluster failed. ' + errorMessage
+      + 'Details:\n\n```js\n' +  errorBody + '\n```',
+    });
     throw e;
   }
 };
 
 /**
  * Post updates to GitHub, when the status of a task changes.
+ * TaskCluster States: http://docs.taskcluster.net/queue/exchanges/
+ * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
 worker.graphStateChangeHandler = async function(message, context) {
+  let statusMapping = {
+    running:  'pending',
+    blocked:  'failure',
+    finished: 'success',
+  };
+  debug('handling state change for message: ', message);
+  let route = message.routes[0].split('.');
   try {
-    debug('handling state change for message: ', message);
-    let statusMessage = {
-      state:        github.StatusMap[message.payload.status.state],
-      target_url:   INSPECTOR_URL + message.payload.status.taskGraphId,
+    await context.github.repos.createStatus({
+      user: route[0],
+      repo: route[1],
+      sha: route[2],
+      state:        StatusMapping[message.payload.status.state],
+      target_url:   INSPECTOR_URL + message.payload.status.taskGraphId + '/',
       description:  'TaskGraph: ' + message.payload.status.state,
-      context:      'TaskCluster',
-    };
-    let route = message.routes[0].split('.');
-    await github.updateStatus(context.github, route[1], route[2], route[3],
-       statusMessage);
+      context:      'Taskcluster',
+    });
   } catch (e) {
-    debug('Failed to update GitHub commit status!');
+    debug(`Failed to update status: ${route[0]}/${route[1]}@${route[2]}`);
     throw e;
   }
 };
