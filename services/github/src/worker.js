@@ -18,8 +18,8 @@ worker.webHookHandler = async function(message, context) {
   // We must attempt to convert the sanitized fields back to normal here. 
   // Further discussion of how to deal with this cleanly is in
   // https://github.com/taskcluster/taskcluster-github/issues/52
-  organization = organization.replace(/%/g, '.');
-  repository = repository.replace(/%/g, '.');
+  organization = message.payload.organization.replace(/%/g, '.');
+  repository = message.payload.repository.replace(/%/g, '.');
 
   debug('handling webhook: ', message);
   let repoconf = undefined;
