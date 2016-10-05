@@ -72,7 +72,7 @@ worker.webHookHandler = async function(message, context) {
     // If the user is in the org, we consider them
     // qualified to trigger any job in that org.
     try {
-      github.orgs.checkMembership({
+      context.github.orgs.checkMembership({
         org: organization,
         user: login,
       });
@@ -181,7 +181,7 @@ worker.graphStateChangeHandler = async function(message, context) {
       user: route[0],
       repo: route[1],
       sha: route[2],
-      state:        StatusMapping[message.payload.status.state],
+      state:        statusMapping[message.payload.status.state],
       target_url:   INSPECTOR_URL + message.payload.status.taskGraphId + '/',
       description:  'TaskGraph: ' + message.payload.status.state,
       context:      'Taskcluster',
