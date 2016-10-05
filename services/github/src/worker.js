@@ -178,16 +178,16 @@ worker.graphStateChangeHandler = async function(message, context) {
   let route = message.routes[0].split('.');
   try {
     await context.github.repos.createStatus({
-      user: route[0],
-      repo: route[1],
-      sha: route[2],
+      user: route[1],
+      repo: route[2],
+      sha: route[3],
       state:        statusMapping[message.payload.status.state],
       target_url:   INSPECTOR_URL + message.payload.status.taskGraphId + '/',
       description:  'TaskGraph: ' + message.payload.status.state,
       context:      'Taskcluster',
     });
   } catch (e) {
-    debug(`Failed to update status: ${route[0]}/${route[1]}@${route[2]}`);
+    debug(`Failed to update status: ${route[1]}/${route[2]}@${route[3]}`);
     throw e;
   }
 };
