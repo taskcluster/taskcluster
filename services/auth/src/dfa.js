@@ -410,6 +410,23 @@ let generateDFA = (roles, i, n, k, sets, implied) => {
 exports.generateDFA = generateDFA;
 
 /**
+ * Finds the set identifier given a scope and initial state.
+ */
+let executeDFA = (state, scope, depth = 0) => {
+  // If scope ends here and this is a terminal state, return the terminal
+  if (state.end !== undefined && scope.length === depth) {
+    return state.end;
+  }
+  // Find next state given current character, and traverse next state
+  let next = state[scope[depth]];
+  if (next !== undefined) {
+    return executeDFA(next, scope, depth+1);
+  }
+  // If no next state, return the default result or zero if no-default result.
+  return state.default || 0;
+};
+
+/**
  * Builds a pair {resolver, sets} where sets is a list of lists of roles,
  * and given a scope `resolver(scope)`` returns an index from sets.
  *
@@ -439,42 +456,12 @@ let buildResolver = (roles) => {
   let sets = [[]];
   let dfa = generateDFA(roles, 0, roles.length, 0, sets, 0);
 
-  // Render a DFA state to code
-  let renderDFA = (state, depth) => {
-    var d = '';
-    while (d.length < depth * 4) d += '    ';
-    var c = '';
-    if (typeof(state.end) === 'number') {
-      c += d + 'if (n === ' + depth + ') {\n';
-      c += d + '  return ' + state.end;
-      c += d + '}\n'
-    }
-    // In each state we switch on the `scope` variable at the given depth.
-    c += d + 'switch(scope[' + depth + ']) {\n';
-    _.forEach(state, (s, character) => {
-      if (character === 'default' || character === 'end') {
-        return;
-      }
-      // For each key of the state object that isn't 'prefix' or 'end' we have
-      // a transition to another state. So we render the switch for that DFA.
-      c += d + '  case ' + JSON.stringify(character) + ':\n';
-      c += renderDFA(s, depth + 1);
-      c += d + '    break;\n';
-    });
-    c += d + '  default:\n';
-    c += d + '    return ' + (state.default || 0) + ';\n';
-    c += d + '}\n';
-    return c;
-  };
-  // Initially the implied roles is the empty set [] == sets[0], which is why
-  // we call with sets = [[]] and i = 0. Obviously, we start at character offset
-  // zero, hence, depth = 0.
-  let body = 'var n = scope.length;\n' + renderDFA(dfa, 0);
+  // compileDFA is very slow, and doesn't play nice with the GC pushing RSS
+  // to several GBs. See compile-dfa.js for the code.
+  // let resolver = compileDFA(dfa);
 
-  // Create resolver function and give it both sets and scopes as parameters
-  // then bind sets so that'll always return an entry from sets.
-  let resolver = new Function('sets', 'scope', body);
-  resolver = resolver.bind(null, sets);
+  let resolver = (scope) => executeDFA(dfa, scope);
+
   return {sets, resolver: (scope) => {
       // Optimization so our DFA only has to operate on roleId
       if (scope.startsWith('assume:')) {
