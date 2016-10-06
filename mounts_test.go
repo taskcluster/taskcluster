@@ -242,3 +242,12 @@ func TestCachesCanBeModified(t *testing.T) {
 		t.Fatalf("Was expecting file %v to have content %q but had %q", counterFile, "3", string(bytes))
 	}
 }
+
+func Test32BitOverflow(t *testing.T) {
+	config = &Config{
+		RequiredDiskSpaceMegabytes: 1024 * 10,
+	}
+	if requiredFreeSpace := requiredSpaceBytes(); requiredFreeSpace != 10737418240 {
+		t.Fatalf("Some kind of int overflow problem: requiredFreeSpace is %v but expected it to be 10737418240", requiredFreeSpace)
+	}
+}

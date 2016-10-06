@@ -49,7 +49,7 @@ func runGarbageCollection(r Resources) error {
 	if err != nil {
 		return fmt.Errorf("Could not calculate free disk space in dir %v due to error %#v", TaskUser.HomeDir, err)
 	}
-	requiredFreeSpace := uint64(config.RequiredDiskSpaceMegabytes) * 1024 * 1024
+	requiredFreeSpace := requiredSpaceBytes()
 	for currentFreeSpace < requiredFreeSpace {
 		// need to free up space
 		if r.Empty() {
@@ -68,4 +68,11 @@ func runGarbageCollection(r Resources) error {
 		return fmt.Errorf("Not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete.", requiredFreeSpace, currentFreeSpace)
 	}
 	return nil
+}
+
+func requiredSpaceBytes() uint64 {
+	// note it used to be:
+	// uint64(config.RequiredDiskSpaceMegabytes * 1024 * 1024)
+	// but then it overflows on 32 bit systems
+	return uint64(config.RequiredDiskSpaceMegabytes) * 1024 * 1024
 }
