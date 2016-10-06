@@ -71,7 +71,7 @@
     "tar-stream": "^1.2.1",
     "taskcluster-azure-blobstream": "^0.3.0",
     "taskcluster-base": "^0.13.0",
-    "taskcluster-client": "^0.22.0",
+    "taskcluster-client": "^1.4.0",
     "taskcluster-lib-monitor": "^4.2.0",
     "taskcluster-task-factory": "^0.6.1",
     "temporary": "0.0.8",
