@@ -49,7 +49,7 @@ func runGarbageCollection(r Resources) error {
 	if err != nil {
 		return fmt.Errorf("Could not calculate free disk space in dir %v due to error %#v", TaskUser.HomeDir, err)
 	}
-	requiredFreeSpace := uint64(config.RequiredDiskSpaceMegabytes * 1024 * 1024)
+	requiredFreeSpace := uint64(config.RequiredDiskSpaceMegabytes) * 1024 * 1024
 	for currentFreeSpace < requiredFreeSpace {
 		// need to free up space
 		if r.Empty() {
