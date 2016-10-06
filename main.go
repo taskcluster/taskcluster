@@ -430,6 +430,7 @@ func runWorker() {
 
 	// loop forever claiming and running tasks!
 	lastActive := time.Now()
+	tasksResolved := uint(0)
 	for {
 		// make sure at least 1 second passes between iterations
 		waitASec := time.NewTimer(time.Second * 1)
@@ -447,8 +448,8 @@ func runWorker() {
 			}
 		} else {
 			taskCleanup()
-			config.NumberOfTasksToRun--
-			if config.NumberOfTasksToRun == 0 {
+			tasksResolved++
+			if tasksResolved == config.NumberOfTasksToRun {
 				break
 			}
 			lastActive = time.Now()
