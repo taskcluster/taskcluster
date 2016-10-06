@@ -57,7 +57,7 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 		for {
 			select {
 			// request comes in for the current signed urls, which should be valid
-			case replyChan := <-signedURLsRequestChan:
+			case replyChan := <-requestChan:
 				if updateNeeded {
 					updateUrls()
 					updateNeeded = false
