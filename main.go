@@ -1130,6 +1130,7 @@ func writeToFileAsJSON(obj interface{}, filename string) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("Saving generic worker config in file %v with content:\n%v\n", filename, string(jsonBytes))
 	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
 }
 
