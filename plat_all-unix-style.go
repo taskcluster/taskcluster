@@ -52,6 +52,10 @@ func startup() error {
 	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
 }
 
+func (task *TaskRun) prepareCommand(index int) error {
+	return nil
+}
+
 func (task *TaskRun) generateCommand(index int) error {
 	cmd := exec.Command(task.Payload.Command[index][0], task.Payload.Command[index][1:]...)
 	cmd.Stdout = task.logWriter

@@ -864,6 +864,7 @@ func (c *Command) Start() error {
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	task.Log("Executing command " + strconv.Itoa(index) + ": " + task.describeCommand(index))
+	task.prepareCommand(index)
 	err := task.Commands[index].Start()
 	if err != nil {
 		panic(err)

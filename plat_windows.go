@@ -226,6 +226,19 @@ func deleteOSUserAccount(line string) {
 }
 
 func (task *TaskRun) generateCommand(index int) error {
+	commandName := fmt.Sprintf("command_%06d", index)
+	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
+	cmd := exec.Command(wrapper)
+	cmd.Username = TaskUser.Name
+	cmd.Password = TaskUser.Password
+	cmd.Dir = TaskUser.HomeDir
+	cmd.Stdout = task.logWriter
+	cmd.Stderr = task.logWriter
+	task.Commands[index] = Command{osCommand: cmd}
+	return nil
+}
+
+func (task *TaskRun) prepareCommand(index int) error {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
 	env := filepath.Join(TaskUser.HomeDir, "env.txt")
@@ -337,21 +350,6 @@ func (task *TaskRun) generateCommand(index int) error {
 	if err != nil {
 		panic(err)
 	}
-
-	// can't use runCommands(...) here because we don't want to execute, only create
-	command := []string{
-		wrapper,
-	}
-
-	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Username = TaskUser.Name
-	cmd.Password = TaskUser.Password
-	cmd.Dir = TaskUser.HomeDir
-	log.Println("Running command: '" + strings.Join(command, "' '") + "'")
-	cmd.Stdout = task.logWriter
-	cmd.Stderr = task.logWriter
-	// cmd.Stdin = strings.NewReader("blah blah")
-	task.Commands[index] = Command{osCommand: cmd}
 	return nil
 }
 
