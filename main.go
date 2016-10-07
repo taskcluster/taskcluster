@@ -1063,7 +1063,6 @@ func (task *TaskRun) run() (err *executionErrors) {
 		return
 	}
 	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
-	task.setMaxRunTimer()
 
 	task.Commands = make([]Command, len(task.Payload.Command))
 
@@ -1110,6 +1109,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 	}()
 
 	task.logHeader()
+	task.setMaxRunTimer()
 
 	started := time.Now()
 
