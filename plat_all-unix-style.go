@@ -114,10 +114,10 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func (task *TaskRun) abortProcess(index int) {
-	if c := task.Commands[index].osCommand; c != nil {
-		c.(*exec.Cmd).Process.Kill()
-	}
+func (task *TaskRun) abortProcess(c *Command) {
+	c.Lock()
+	defer c.Unlock()
+	c.osCommand.(*exec.Cmd).Process.Kill()
 }
 
 func (task *TaskRun) addGroupsToUser(groups []string) error {

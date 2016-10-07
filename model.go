@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -91,6 +92,7 @@ type (
 	// Regardless of platform, we will have to call out to system commands to run tasks,
 	// and each command execution should write to a file.
 	Command struct {
+		sync.RWMutex
 		osCommand ExecCommand
 	}
 

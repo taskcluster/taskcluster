@@ -865,15 +865,16 @@ func (err *CommandExecutionError) Error() string {
 	return fmt.Sprintf("%v", err.Cause)
 }
 
+func (c *Command) Start() error {
+	c.Lock()
+	defer c.Unlock()
+	return c.osCommand.Start()
+}
+
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
-	err := task.generateCommand(index) // platform specific
-	if err != nil {
-		panic(err)
-	}
-
 	task.Log("Executing command " + strconv.Itoa(index) + ": " + task.describeCommand(index))
-	err = task.Commands[index].osCommand.Start()
+	err := task.Commands[index].Start()
 	if err != nil {
 		panic(err)
 	}
@@ -991,7 +992,7 @@ func (task *TaskRun) setMaxRunTimer() {
 
 func (task *TaskRun) kill() {
 	for index := range task.Commands {
-		task.abortProcess(index)
+		task.abortProcess(&task.Commands[index])
 	}
 }
 
@@ -1065,6 +1066,13 @@ func (task *TaskRun) run() (err *executionErrors) {
 	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
 
 	task.Commands = make([]Command, len(task.Payload.Command))
+	// generate commands, in case features want to modify them
+	for i, _ := range task.Payload.Command {
+		err := task.generateCommand(i) // platform specific
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	taskFeatures := []TaskFeature{}
 
