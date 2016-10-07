@@ -6,7 +6,7 @@ clone_folder: c:\gopath\src\github.com\taskcluster\generic-worker
 
 environment:
   GOPATH: c:\gopath
-  CGO_ENABLED: 0
+  CGO_ENABLED: 1
   TASKCLUSTER_CLIENT_ID: project/taskcluster/generic-worker/appveyor-ci
   TASKCLUSTER_ACCESS_TOKEN:
     secure: y6boO7fth23zAJI91z4utmcYizD6nlbN/pLLtPiJOZb8n/Vrv+SUz6wkO9xWzmS0
