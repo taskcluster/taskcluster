@@ -205,9 +205,8 @@ func TaskStatusHandler() (request chan<- TaskStatusUpdate, err <-chan error, don
 					}
 				} else {
 					// current status is such that we shouldn't update to new
-					// status, so just report that no error occurred...
-					log.Printf("Not able to update status to %v - current status %v, allowed current status for update: %v", update.Status, update.Task.Status, update.IfStatusIn)
-					e <- nil
+					// status, so report that state transition was not allowed
+					e <- fmt.Errorf("Not able to update status from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", update.Task.Status, update.Status, update.Status, update.IfStatusIn)
 				}
 			case <-d:
 				close(d)

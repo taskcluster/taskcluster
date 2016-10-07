@@ -728,35 +728,25 @@ func (task *TaskRun) setReclaimTimer() {
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
-	task.reclaimTimer = time.AfterFunc(
-		waitTimeUntilReclaim, func() {
-			taskStatusUpdate <- TaskStatusUpdate{
-				Task:   task,
-				Status: Reclaimed,
-				IfStatusIn: map[TaskStatus]bool{
-					Claimed: true,
-				},
-			}
-			err := <-taskStatusUpdateErr
-			if err != nil {
-				// this could be:
-				//   1) task was cancelled
-				//   2) something else - serious problem!
-				// let's check!
-				status, err2 := task.Queue.Status(task.TaskID)
-				if err2 != nil {
-					// can't reach queue - time to shutdown...
-					panic(err)
+	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue
+	if waitTimeUntilReclaim.Seconds() > 30 {
+		task.reclaimTimer = time.AfterFunc(
+			waitTimeUntilReclaim, func() {
+				taskStatusUpdate <- TaskStatusUpdate{
+					Task:   task,
+					Status: Reclaimed,
+					IfStatusIn: map[TaskStatus]bool{
+						Claimed: true,
+					},
 				}
-				if reason := status.Status.Runs[task.RunID].ReasonResolved; reason != "canceled" {
-					task.Log("TASK EXCEPTION when reclaiming - current status is \"" + reason + "\" - please report this in #taskcluster as it is a serious error.")
-					panic(err)
+				err := <-taskStatusUpdateErr
+				if err != nil {
+					// only set another reclaim timer if the previous reclaim succeeded
+					task.setReclaimTimer()
 				}
-			}
-			// only set another reclaim timer if the previous reclaim succeeded
-			task.setReclaimTimer()
-		},
-	)
+			},
+		)
+	}
 }
 
 func (task *TaskRun) fetchTaskDefinition() {
