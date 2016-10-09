@@ -43,7 +43,7 @@ func TestOSGroupsRespected(t *testing.T) {
 	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
-		MaxRunTime: 3,
+		MaxRunTime: 30,
 		OSGroups:   []string{"abc", "def"},
 	}
 	td := testTask()

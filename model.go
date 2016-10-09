@@ -84,9 +84,10 @@ type (
 		Status              TaskStatus                   `json:"-"`
 		Commands            []Command                    `json:"-"`
 		// not exported
-		reclaimTimer *time.Timer
-		logWriter    io.Writer
-		Queue        *queue.Queue `json:"-"`
+		reclaimTimer  *time.Timer
+		logWriter     io.Writer
+		Queue         *queue.Queue       `json:"-"`
+		StatusManager *TaskStatusManager `json:"-"`
 	}
 
 	// Regardless of platform, we will have to call out to system commands to run tasks,

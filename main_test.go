@@ -20,7 +20,7 @@ func TestBadPayloadValidate(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
 	}
-	if err.Reason != "malformed-payload" || err.TaskStatus != Errored {
+	if err.Reason != "malformed-payload" || err.TaskStatus != errored {
 		t.Errorf("Bad task payload should have retured malformed-payload, but actually returned:\n%#v", err)
 	}
 }

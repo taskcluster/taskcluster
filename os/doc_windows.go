@@ -48,6 +48,9 @@ func (p *ProcessState) Sys() interface{} {
 
 // Kill causes the Process to exit immediately.
 func (p *Process) Kill() error {
+	if p == nil || p.handle == 0 {
+		return nil
+	}
 	return p.kill()
 }
 

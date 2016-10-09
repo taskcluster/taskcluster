@@ -18,7 +18,7 @@ func exceptionOrFailure(errCommand error) *CommandExecutionError {
 	case *exec.ExitError:
 		return &CommandExecutionError{
 			Cause:      errCommand,
-			TaskStatus: Failed,
+			TaskStatus: failed,
 		}
 	}
 	panic(errCommand)

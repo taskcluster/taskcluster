@@ -36,7 +36,7 @@ func exceptionOrFailure(errCommand error) *CommandExecutionError {
 	case *exec.ExitError:
 		return &CommandExecutionError{
 			Cause:      errCommand,
-			TaskStatus: Failed,
+			TaskStatus: failed,
 		}
 	}
 	panic(errCommand)
@@ -73,7 +73,7 @@ func deleteHomeDir(path string, user string) error {
 	if err == nil && string(password) != "" {
 		log.Println("Trying to remove directory '" + path + "' via del command as task user...")
 		err = runCommands(false, user, string(password), []string{
-			"cmd", "/c", "del", "/s", "/q", "/f", path,
+			"cmd", "/c", "del", "/q", "/f", path,
 		})
 		if err == nil {
 			return nil

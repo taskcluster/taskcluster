@@ -50,19 +50,9 @@ var (
 	// to. In future we might require more channels to perform requests in
 	// parallel, in which case we won't have a single global package var.
 	signedURLsResponseChan chan *queue.PollTaskUrlsResponse
-	// write to this to close signedurlmanager
-	signedDoneChan chan<- bool
-	// Channel to request task status updates to the TaskStatusHandler (from
-	// any goroutine)
-	taskStatusUpdate chan<- TaskStatusUpdate
-	// Channel to read errors from after requesting a task status update on
-	// taskStatusUpdate channel
-	taskStatusUpdateErr <-chan error
-	// write to this to close task status update manager
-	taskStatusDoneChan chan<- bool
-	config             *Config
-	configFile         string
-	Features           []Feature = []Feature{
+	config                 *Config
+	configFile             string
+	Features               []Feature = []Feature{
 		&OSGroupsFeature{},
 		&LiveLogFeature{},
 		&ChainOfTrustFeature{},
@@ -422,11 +412,7 @@ func runWorker() {
 
 	// Start the SignedURLsManager in a dedicated go routine, to take care of
 	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
-	signedURLsRequestChan, signedURLsResponseChan, signedDoneChan = SignedURLsManager()
-
-	// Start the TaskStatusHandler in a dedicated go routine, to take care of
-	// all communication with Queue regarding the status of a TaskRun.
-	taskStatusUpdate, taskStatusUpdateErr, taskStatusDoneChan = TaskStatusHandler()
+	signedURLsRequestChan, signedURLsResponseChan = SignedURLsManager()
 
 	// loop forever claiming and running tasks!
 	lastActive := time.Now()
@@ -495,6 +481,7 @@ func FindAndRunTask() bool {
 		// there could be more tasks on the same queue - we only "continue"
 		// to next queue if we found nothing on this queue...
 		taskFound = true
+		task.StatusManager = NewTaskStatusManager(task)
 
 		// Now we found a task, run it, and then exit the loop. This is because
 		// the loop is in order of priority, most important first, so we will
@@ -732,14 +719,7 @@ func (task *TaskRun) setReclaimTimer() {
 	if waitTimeUntilReclaim.Seconds() > 30 {
 		task.reclaimTimer = time.AfterFunc(
 			waitTimeUntilReclaim, func() {
-				taskStatusUpdate <- TaskStatusUpdate{
-					Task:   task,
-					Status: Reclaimed,
-					IfStatusIn: map[TaskStatus]bool{
-						Claimed: true,
-					},
-				}
-				err := <-taskStatusUpdateErr
+				err := task.StatusManager.Reclaim()
 				if err != nil {
 					// only set another reclaim timer if the previous reclaim succeeded
 					task.setReclaimTimer()
@@ -828,15 +808,15 @@ func executionError(reason TaskUpdateReason, status TaskStatus, err error) *Comm
 }
 
 func ResourceUnavailable(err error) *CommandExecutionError {
-	return executionError("resource-unavailable", Errored, err)
+	return executionError("resource-unavailable", errored, err)
 }
 
 func MalformedPayloadError(err error) *CommandExecutionError {
-	return executionError("malformed-payload", Errored, err)
+	return executionError("malformed-payload", errored, err)
 }
 
 func Failure(err error) *CommandExecutionError {
-	return executionError("", Failed, err)
+	return executionError("", failed, err)
 }
 
 func (task *TaskRun) Logf(format string, v ...interface{}) {
@@ -891,20 +871,13 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	if errCommand != nil {
 		return exceptionOrFailure(errCommand)
 	}
-	if err != nil {
-		panic(err)
-	}
 	return nil
 }
 
 func (task *TaskRun) claim() (err *CommandExecutionError) {
 	// If there is one or more messages the worker must claim the tasks
 	// referenced in the messages, and delete the messages.
-	taskStatusUpdate <- TaskStatusUpdate{
-		Task:   task,
-		Status: Claimed,
-	}
-	e := <-taskStatusUpdateErr
+	e := task.StatusManager.Claim()
 	if e != nil {
 		return ResourceUnavailable(fmt.Errorf("Not able to claim task %v due to %v", task.TaskID, e))
 	}
@@ -942,27 +915,12 @@ func (err *executionErrors) Occurred() bool {
 func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
 	log.Println("Resolving task...")
 	if !e.Occurred() {
-		taskStatusUpdate <- TaskStatusUpdate{
-			Task:   task,
-			Status: Succeeded,
-			Reason: TaskUpdateReason(""),
-			IfStatusIn: map[TaskStatus]bool{
-				Claimed:   true,
-				Reclaimed: true,
-			},
-		}
-		return ResourceUnavailable(<-taskStatusUpdateErr)
+		return ResourceUnavailable(task.StatusManager.ReportCompleted())
 	}
-	taskStatusUpdate <- TaskStatusUpdate{
-		Task:   task,
-		Status: (*e)[0].TaskStatus,
-		Reason: (*e)[0].Reason,
-		IfStatusIn: map[TaskStatus]bool{
-			Claimed:   true,
-			Reclaimed: true,
-		},
+	if (*e)[0].TaskStatus == failed {
+		return ResourceUnavailable(task.StatusManager.ReportFailed())
 	}
-	return ResourceUnavailable(<-taskStatusUpdateErr)
+	return ResourceUnavailable(task.StatusManager.ReportException((*e)[0].Reason))
 }
 
 func (task *TaskRun) setMaxRunTimer() {
@@ -976,8 +934,8 @@ func (task *TaskRun) setMaxRunTimer() {
 	// additional retries left.
 	go func() {
 		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
-		task.Log("Aborting task - max run time exceeded!")
-		task.kill()
+		// ignore any error - in the wrong go routine to properly handle it
+		task.StatusManager.Abort()
 	}()
 }
 
@@ -1026,7 +984,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			err.add(executionError("worker-shutdown", Errored, fmt.Errorf("%#v", r)))
+			err.add(executionError("worker-shutdown", errored, fmt.Errorf("%#v", r)))
 			defer panic(r)
 		}
 		err.add(task.resolve(err))

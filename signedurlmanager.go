@@ -9,10 +9,9 @@ import (
 
 // This function is called in a dedicated go routine to both serve signed urls
 // and to update them before they expire
-func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.PollTaskUrlsResponse, chan<- bool) {
+func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.PollTaskUrlsResponse) {
 	requestChan := make(chan chan *queue.PollTaskUrlsResponse)
 	responseChan := make(chan *queue.PollTaskUrlsResponse)
-	doneChan := make(chan bool)
 	// prematurity specifies the number of seconds prior to expiry that new
 	// signed urls should be fetched, in order that stale credentials are not
 	// used. Should be at least a few seconds.
@@ -69,12 +68,8 @@ func SignedURLsManager() (chan chan *queue.PollTaskUrlsResponse, chan *queue.Pol
 			case <-updateMe:
 				// update the signed urls
 				updateNeeded = true
-				// to close the manager
-			case <-doneChan:
-				close(doneChan)
-				break
 			}
 		}
 	}()
-	return requestChan, responseChan, doneChan
+	return requestChan, responseChan
 }

@@ -108,7 +108,7 @@ func (l *LiveLogTask) uploadLiveLog() error {
 	}
 	getURL.Scheme = "https"
 	getURL.Host = statelessHostname + ":60023"
-	return l.task.uploadArtifact(
+	uploadErr := l.task.uploadArtifact(
 		RedirectArtifact{
 			BaseArtifact: BaseArtifact{
 				CanonicalPath: "public/logs/live.log",
@@ -119,4 +119,9 @@ func (l *LiveLogTask) uploadLiveLog() error {
 			URL:      getURL.String(),
 		},
 	)
+	if uploadErr != nil {
+		return uploadErr
+	}
+	// note this will be error(nil) not *CommandExecutionError(nil)
+	return nil
 }
