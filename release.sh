@@ -106,10 +106,11 @@ git tag "v${NEW_VERSION}"
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
 
 echo
-echo Will you also be deploying this release to production? If so, please run:
+echo 'Will you also be deploying this release to production? If so, please run:'
 echo
-echo   ***** ./publish-payload-schema.sh *****
+echo '  ***** ./publish-payload-schema.sh *****'
 echo
-echo This will update:
+echo 'This will update:'
 echo
-echo   https://docs.taskcluster.net/manual/execution/workers/generic-worker \!
+echo '  https://docs.taskcluster.net/manual/execution/workers/generic-worker !'
+echo
