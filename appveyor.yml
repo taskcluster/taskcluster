@@ -33,7 +33,8 @@ build: off
 
 test_script:
   - go vet ./...
-  - GORACE=history_size=7 go test -v -race -timeout 1h ./...
+  - set GORACE=history_size=7
+  - go test -v -race -timeout 1h ./...
   - ineffassign .
 
 after_test:
