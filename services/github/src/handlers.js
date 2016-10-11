@@ -91,7 +91,7 @@ module.exports = Handlers;
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
 async function statusHandler(message) {
-  debug('handling state change for message: ', message);
+  debug(`handling state change "${message.payload.status.state}" for ${message.payload.status.taskGraphId}`);
   let route = message.routes[0].split('.');
   try {
     await this.context.github.repos.createStatus({
