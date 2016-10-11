@@ -94,7 +94,7 @@ async function statusHandler(message) {
   debug('handling state change for message: ', message);
   let route = message.routes[0].split('.');
   try {
-    await context.github.repos.createStatus({
+    await this.context.github.repos.createStatus({
       user: route[1],
       repo: route[2],
       sha: route[3],
