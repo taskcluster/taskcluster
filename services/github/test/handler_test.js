@@ -35,7 +35,7 @@ suite('handlers', () => {
 
     // For now let's just sleep. We can get all of this
     // cleaned up and async/await later
-    await testing.sleep(1000);
+    await testing.sleep(2000);
     try {
       assert(helper.stubs.comment.calledOnce);
       assert.equal(helper.stubs.comment.args[0][0].user, 'TaskClusterRobot');
