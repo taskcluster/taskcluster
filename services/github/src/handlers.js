@@ -189,7 +189,7 @@ async function jobHandler(message) {
         });
       }
     } else {
-      debug('intree config compiled with zero tasks. Skipping');
+      debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
     }
   } catch (e) {
     let errorMessage = e.message;

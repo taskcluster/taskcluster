@@ -127,4 +127,15 @@ suite('intree config', () => {
     {
       tasks: [],
     });
+
+  buildConfigTest(
+    'Star Pull Config',
+    configPath + 'taskcluster.star.yml',
+    {
+      payload:    buildMessage(),
+    },
+    {
+      'tasks[0].task.extra.github.events': ['pull_request.*'],
+      'metadata.owner': 'test@test.com',
+    });
 });
