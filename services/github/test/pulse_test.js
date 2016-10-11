@@ -1,4 +1,4 @@
-suite('integration', () => {
+suite('pulse', () => {
   let helper = require('./helper');
   let assert = require('assert');
 
@@ -33,34 +33,32 @@ suite('integration', () => {
     });
   };
 
-  if (helper.canRunIntegrationTests) {
-    pulseTest({
-      testName:     'Publish Pull Request',
-      listenFor:    'pull-request',
-      exchangeFunc: 'pullRequest',
-      routingKey:   {
-        organization: 'TaskClusterRobot',
-        repository:   'hooks-testing',
-        action:       'opened',
-      },
-      details:      {},
-      jsonFile:     'webhook.pull_request.open.json',
-    });
+  pulseTest({
+    testName:     'Publish Pull Request',
+    listenFor:    'pull-request',
+    exchangeFunc: 'pullRequest',
+    routingKey:   {
+      organization: 'TaskClusterRobot',
+      repository:   'hooks-testing',
+      action:       'opened',
+    },
+    details:      {},
+    jsonFile:     'webhook.pull_request.open.json',
+  });
 
-    pulseTest({
-      testName:     'Publish Push',
-      listenFor:    'push',
-      exchangeFunc: 'push',
-      routingKey:   {
-        organization: 'TaskClusterRobot',
-        repository:   'hooks-testing',
-      },
-      details:      {
-        'event.head.ref': 'refs/heads/master',
-        'event.head.repo.branch': 'master',
-        'event.base.repo.branch': 'master',
-      },
-      jsonFile:     'webhook.push.json',
-    });
-  };
+  pulseTest({
+    testName:     'Publish Push',
+    listenFor:    'push',
+    exchangeFunc: 'push',
+    routingKey:   {
+      organization: 'TaskClusterRobot',
+      repository:   'hooks-testing',
+    },
+    details:      {
+      'event.head.ref': 'refs/heads/master',
+      'event.head.repo.branch': 'master',
+      'event.base.repo.branch': 'master',
+    },
+    jsonFile:     'webhook.push.json',
+  });
 });

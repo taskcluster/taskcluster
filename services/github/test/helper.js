@@ -10,6 +10,8 @@ import taskcluster from 'taskcluster-client';
 import mocha from 'mocha';
 import exchanges from '../lib/exchanges';
 import load from '../lib/main';
+import slugid from 'slugid';
+import sinon from 'sinon';
 
 // Load configuration
 let cfg = base.config({profile: 'test'});
@@ -21,15 +23,6 @@ let testClients = {
 
 // Create and export helper object
 let helper = module.exports = {};
-
-// Turn integration tests on or off depending on pulse credentials being set
-helper.canRunIntegrationTests = true;
-let mockPublisher = false;
-if (!cfg.pulse.password) {
-  helper.canRunIntegrationTests = false;
-  mockPublisher = true;
-  console.log('No pulse credentials: integration tests will be skipped.');
-}
 
 // Build an http request from a json file with fields describing
 // headers and a body
@@ -67,24 +60,36 @@ mocha.before(async () => {
     aws: cfg.aws,
   });
 
-  webServer = await load('server', {profile: 'test', process: 'test', mockPublisher});
+  // Fake scheduler createTaskGraph "implemementation"
+  let scheduler = {
+    createTaskGraph: (...rest) => {return {status: {taskGraphId: slugid.v4()}};},
+  };
 
-  if (helper.canRunIntegrationTests) {
-    // Configure PulseTestReceiver
-    helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
-    // Create client for binding to reference
-    let exchangeReference = exchanges.reference({
-      exchangePrefix:   cfg.taskclusterGithub.exchangePrefix,
-      credentials:      cfg.pulse,
-    });
-    helper.TaskclusterGitHubEvents = taskcluster.createClient(exchangeReference);
-    helper.taskclusterGithubEvents = new helper.TaskclusterGitHubEvents();
-  }
+  // Stub out github operations that write and need higher permissions
+  helper.stubs = {};
+  let github = await load('github', {profile: 'test', process: 'test'});
+  helper.stubs['comment'] = sinon.stub(github.repos, 'createCommitComment');
+
+  webServer = await load('server', {profile: 'test', process: 'test'});
+  helper.handlers = await load('handlers', {profile: 'test', process: 'test', scheduler, github});
+
+  // Configure pulse receiver
+  helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
+  let exchangeReference = exchanges.reference({
+    exchangePrefix:   cfg.app.exchangePrefix,
+    credentials:      cfg.pulse,
+  });
+  helper.TaskclusterGitHubEvents = taskcluster.createClient(exchangeReference);
+  helper.taskclusterGithubEvents = new helper.TaskclusterGitHubEvents();
+
+  // Configure pulse publisher
+  helper.publisher = await load('publisher', {profile: 'test', process: 'test'});
 });
 
 // Cleanup after tests
 mocha.after(async () => {
   // Kill webServer
   await webServer.terminate();
+  await helper.handlers.terminate();
   base.testing.fakeauth.stop();
 });
