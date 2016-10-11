@@ -3,3 +3,8 @@ defaults:
   pulse:
    username: '...'
    password: '...'
+  # Github credentials can be helpful if you're hitting
+  # api limits. Use https://github.com/settings/tokens
+  github:
+    credentials:
+      token: '...'
