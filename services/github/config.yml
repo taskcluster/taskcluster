@@ -1,93 +1,64 @@
 ---
 defaults:
-  # TaskCluster GitHub configuration
-  taskclusterGithub:
-    # Publish references and schemas
-    publishMetaData:             !env:bool PUBLISH_METADATA
+  app:
+    exchangePrefix: 'v1/'
+    jobQueue: null
+    statusQueue: null
 
-    # Prefix for exchanges declared
-    exchangePrefix:               'v1/'
-
-  # TaskCluster configuration
   taskcluster:
     # TaskCluster credentials for this server, these must have scopes:
     # auth:credentials
     # (typically configured using environment variables)
     credentials:
-      clientId:                   !env TASKCLUSTER_CLIENT_ID
-      accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
+      clientId: !env TASKCLUSTER_CLIENT_ID
+      accessToken: !env TASKCLUSTER_ACCESS_TOKEN
 
-  # Github Configuration
   github:
     credentials:
       token: !env GITHUB_OAUTH_TOKEN
       type: 'oauth'
 
   webhook:
-    secret:                       !env WEBHOOK_SECRET
+    secret: !env WEBHOOK_SECRET
 
-  influx:
-    # Usually provided as environment variables, must be on the form:
-    # https://<user>:<pwd>@<host>:<port>/db/<database>
-    connectionString:               !env INFLUX_CONNECTION_STRING
-
-    # Maximum delay before submitting pending points
-    maxDelay:                       5 * 60
-
-    # Maximum pending points in memory
-    maxPendingPoints:               250
-
-  # Server configuration
   server:
-    # Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'https://github.taskcluster.net'
-
-    # Port to listen for requests on
-    port:                           !env:number PORT
-
-    # Environment 'development' or 'production'
-    env:                            'development'
-
-    # Force SSL, not useful when runnning locally
-    forceSSL:                       false
-
-    # Trust a forwarding proxy
-    trustProxy:                     false
+    publicUrl: 'https://github.taskcluster.net'
+    port: !env:number PORT
+    env: 'development'
+    forceSSL: false
+    trustProxy: false
 
   pulse:
-    username:                       !env PULSE_USERNAME
-    password:                       !env PULSE_PASSWORD
+    username: !env PULSE_USERNAME
+    password: !env PULSE_PASSWORD
 
-  # AWS SDK configuration for publication of schemas and references
   aws:
-    accessKeyId:                    !env AWS_ACCESS_KEY
-    secretAccessKey:                !env AWS_SECRET_KEY
-
-    # Default AWS region, this is where the S3 bucket lives
-    region:                         'us-west-2'
-
-    # Lock API version to use the latest API from 2013, this is fuzzy locking
-    # but it does the trick...
-    apiVersion:                     '2014-01-01'
+    accessKeyId: !env AWS_ACCESS_KEY
+    secretAccessKey: !env AWS_SECRET_KEY
+    region: 'us-west-2'
+    apiVersion: '2014-01-01'
 
 production:
+  app:
+    jobQueue: 'jobs'
+    statusQueue: 'statuses'
   server:
-    publicUrl:                    'https://github.taskcluster.net'
-    env:                          'production'
-    forceSSL:                     true
+    publicUrl: 'https://github.taskcluster.net'
+    env: 'production'
+    forceSSL: true
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
     # is a proxy, so we have to trust it.
-    trustProxy:                   true
+    trustProxy: true
 
 test:
   webhook:
-    secret:                       'abc123'
+    secret: 'abc123'
 
   taskcluster:
     credentials:
-      clientId:                   "test-server"
-      accessToken:                "none"
+      clientId: 'test-server'
+      accessToken: 'none'
 
   server:
-    publicUrl:                    'http://localhost:60415'
-    port:                         60415
+    publicUrl: 'http://localhost:60415'
+    port: 60415
