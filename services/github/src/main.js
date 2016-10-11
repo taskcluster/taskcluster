@@ -4,7 +4,7 @@ import api from './api';
 import path from 'path';
 import Promise from 'promise';
 import exchanges from './exchanges';
-import worker from './worker';
+import Handlers from './handlers';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import Github from 'github';
@@ -55,25 +55,16 @@ let load = base.loader({
   },
 
   publisher: {
-    requires: ['cfg', 'monitor', 'validator', 'mockPublisher'],
-    setup: async ({cfg, monitor, validator, mockPublisher}) => {
-      if (mockPublisher) {
-        return {
-          push: data => Promise.resolve(data),
-          pullRequest: data => Promise.resolve(data),
-        };
-      } else {
-        return await exchanges.setup({
-          credentials:        cfg.pulse,
-          exchangePrefix:     cfg.taskclusterGithub.exchangePrefix,
-          validator:          validator,
-          referencePrefix:    'github/v1/exchanges.json',
-          publish:            cfg.taskclusterGithub.publishMetaData,
-          aws:                cfg.aws,
-          monitor:            monitor.prefix('publisher'),
-        });
-      }
-    },
+    requires: ['cfg', 'monitor', 'validator'],
+    setup: async ({cfg, monitor, validator}) => exchanges.setup({
+      credentials:        cfg.pulse,
+      exchangePrefix:     cfg.app.exchangePrefix,
+      validator:          validator,
+      referencePrefix:    'github/v1/exchanges.json',
+      publish:            process.env.NODE_ENV === 'production',
+      aws:                cfg.aws,
+      monitor:            monitor.prefix('publisher'),
+    }),
   },
 
   github: {
@@ -94,7 +85,7 @@ let load = base.loader({
     setup: ({cfg, monitor, validator, github, publisher}) => api.setup({
       context:          {publisher, cfg, github},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      publish:          cfg.taskclusterGithub.publishMetaData,
+      publish:          process.env.NODE_ENV === 'production',
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'github/v1/api.json',
       aws:              cfg.aws,
@@ -119,72 +110,36 @@ let load = base.loader({
     setup: ({cfg}) => new taskcluster.Scheduler(cfg.taskcluster),
   },
 
-  webhooks: {
-    requires: ['cfg', 'profile'],
-    setup: ({cfg, profile}) => new taskcluster.PulseListener({
-      queueName:  profile,
-      credentials: {
-        username: cfg.pulse.username,
-        password: cfg.pulse.password,
-      },
-    }),
-  },
-
   reference: {
     requires: ['cfg'],
     setup: ({cfg}) => exchanges.reference({
-      exchangePrefix:   cfg.taskclusterGithub.exchangePrefix,
+      exchangePrefix:   cfg.app.exchangePrefix,
       credentials:      cfg.pulse,
     }),
   },
 
-  worker: {
-    requires: ['cfg', 'github', 'monitor', 'scheduler', 'validator', 'reference', 'webhooks'],
-    setup: async ({cfg, github, monitor, scheduler, validator, reference, webhooks}) => {
-
-      let context = {cfg, github, scheduler, validator};
-      let GitHubEvents = taskcluster.createClient(reference);
-      let githubEvents = new GitHubEvents();
-
-      // Attempt to launch jobs for any possible pull request action
-      await webhooks.bind(githubEvents.pullRequest(
-        {organization: '*', repository: '*', action: '*'}));
-
-      // Launch jobs for push events as well.
-      await webhooks.bind(githubEvents.push(
-        {organization: '*', repository: '*'}));
-
-      // Listen for, and handle, changes in graph/task state: to reset status
-      // messages, send notifications, etc....
-      let schedulerEvents = new taskcluster.SchedulerEvents();
-      let route = 'route.taskcluster-github.*.*.*';
-      webhooks.bind(schedulerEvents.taskGraphRunning(route));
-      webhooks.bind(schedulerEvents.taskGraphBlocked(route));
-      webhooks.bind(schedulerEvents.taskGraphFinished(route));
-
-      // Route recieved messages to an appropriate handler via matching
-      // exchange names to a regular expression
-      let webHookHandlerExp = RegExp('(.*pull-request|.*push)', 'i');
-      let graphChangeHandlerExp = RegExp('exchange/taskcluster-scheduler/.*', 'i');
-      webhooks.on('message', monitor.timedHandler('message-handler', function(message) {
-        if (webHookHandlerExp.test(message.exchange)) {
-          worker.webHookHandler(message, context);
-        } else if (graphChangeHandlerExp.test(message.exchange)) {
-          worker.graphStateChangeHandler(message, context);
-        } else {
-          debug('Ignoring message from unsupported exchange:', message.exchange);
-        }
-      }));
-      await webhooks.resume();
-    },
+  handlers: {
+    requires: ['cfg', 'github', 'monitor', 'scheduler', 'validator', 'reference'],
+    setup: async ({cfg, github, monitor, scheduler, validator, reference}) => new Handlers({
+      credentials: cfg.pulse,
+      monitor: monitor.prefix('handlers'),
+      reference,
+      jobQueueName: cfg.app.jobQueueName,
+      statusQueueName: cfg.app.statusQueueName,
+      context: {cfg, github, scheduler, validator},
+    }),
   },
-}, ['profile', 'process', 'mockPublisher']);
+
+  worker: {
+    requires: ['handlers'],
+    setup: async ({handlers}) => handlers.setup(),
+  },
+}, ['profile', 'process']);
 
 if (!module.parent) {
   load(process.argv[2], {
     process: process.argv[2],
     profile: process.env.NODE_ENV,
-    mockPublisher: false,
   }).catch(err => {
     console.log(err.stack);
     process.exit(1);
