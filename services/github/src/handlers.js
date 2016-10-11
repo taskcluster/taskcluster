@@ -93,6 +93,7 @@ module.exports = Handlers;
 async function statusHandler(message) {
   debug(`handling state change "${message.payload.status.state}" for ${message.payload.status.taskGraphId}`);
   let route = message.routes[0].split('.');
+  debug(`Attempting to update status for ${route[1]}/${route[2]}@${route[3]}`);
   try {
     await this.context.github.repos.createStatus({
       user: route[1],
@@ -121,8 +122,9 @@ async function jobHandler(message) {
   // https://github.com/taskcluster/taskcluster-github/issues/52
   let organization = message.payload.organization.replace(/%/g, '.');
   let repository = message.payload.repository.replace(/%/g, '.');
+  let sha = message.payload.details['event.head.sha'];
 
-  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}`);
+  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
   let repoconf = undefined;
 
   // Try to fetch a .taskcluster.yml file for every request
@@ -131,7 +133,7 @@ async function jobHandler(message) {
       user: organization,
       repo: repository,
       path: '.taskcluster.yml',
-      ref: message.payload.details['event.head.sha'],
+      ref: sha,
     });
     repoconf = new Buffer(tcyml.content, 'base64').toString();
   } catch (e) {
@@ -163,7 +165,9 @@ async function jobHandler(message) {
 
   // Decide if a user has permissions to run tasks.
   let login = message.payload.details['event.head.user.login'];
-  let isCollaborator = checkCollaborator({login, organization, repository, message, context});
+  if (!isCollaborator({login, organization, repository, sha, context})) {
+    return;
+  }
 
   // Now we can try processing the config and kicking off a task.
   try {
@@ -180,7 +184,7 @@ async function jobHandler(message) {
         await context.github.repos.createCommitComment({
           user: organization,
           repo: repository,
-          sha: message.payload.details['event.head.sha'],
+          sha,
           body: 'TaskCluster: ' + INSPECTOR_URL + graph.status.taskGraphId + '/',
         });
       }
@@ -199,7 +203,7 @@ async function jobHandler(message) {
     await context.github.repos.createCommitComment({
       user: organization,
       repo: repository,
-      sha: message.payload.details['event.head.sha'],
+      sha,
       body: 'Submitting the task to TaskCluster failed. ' + errorMessage
       + 'Details:\n\n```js\n' +  errorBody + '\n```',
     });
@@ -207,63 +211,59 @@ async function jobHandler(message) {
   }
 }
 
-async function checkCollaborator({login, organization, repository, message, context}) {
-  let isCollaborator = false;
+async function isCollaborator({login, organization, repository, sha, context}) {
   if (login === organization) {
-    isCollaborator = true;
+    debug(`Checking collaborator: ${login} === ${organization}: True!`);
+    return true;
   }
 
-  if (!isCollaborator) {
-    // If the user is in the org, we consider them
-    // qualified to trigger any job in that org.
-    try {
-      context.github.orgs.checkMembership({
-        org: organization,
-        user: login,
-      });
-      isCollaborator = true;
-    } catch (e) {
-      if (e.code == 404) {
-        // Only a 404 error means the user isn't a member
-        // anything else should just throw like normal
-      } else {
-        throw e;
-      }
+  // If the user is in the org, we consider them
+  // qualified to trigger any job in that org.
+  try {
+    context.github.orgs.checkMembership({
+      org: organization,
+      user: login,
+    });
+    debug(`Checking collaborator: ${login} is a member of ${organization}: True!`);
+    return true;
+  } catch (e) {
+    if (e.code == 404) {
+      // Only a 404 error means the user isn't a member
+      // anything else should just throw like normal
+    } else {
+      throw e;
     }
   }
 
-  if (!isCollaborator) {
-    // GithubAPI's collaborator check returns an error if a user isn't
-    // listed as a collaborator.
-    try {
-      await context.github.repos.checkCollaborator({
-        user: organization,
-        repo: repository,
-        collabuser: login,
-      });
-      // No error, the user is a collaborator
-      isCollaborator = true;
-    } catch (e) {
-      if (e.code == 404) {
-        // Only a 404 error means the user isn't a collaborator
-        // anything else should just throw like normal
-      } else {
-        throw e;
-      }
+  // GithubAPI's collaborator check returns an error if a user isn't
+  // listed as a collaborator.
+  try {
+    await context.github.repos.checkCollaborator({
+      user: organization,
+      repo: repository,
+      collabuser: login,
+    });
+    // No error, the user is a collaborator
+    debug(`Checking collaborator: ${login} is a collaborator on ${organization}/${repository}: True!`);
+    return true;
+  } catch (e) {
+    if (e.code == 404) {
+      // Only a 404 error means the user isn't a collaborator
+      // anything else should just throw like normal
+    } else {
+      throw e;
     }
   }
 
   // If all of the collaborator checks fail, we should post to the commit
   // and ignore the request
-  if (!isCollaborator) {
-    let msg = `@${login} does not have permission to trigger tasks.`;
-    debug(`${login} does not have permissions for ${organization}/${repository}. Skipping.`);
-    await context.github.repos.createCommitComment({
-      user: organization,
-      repo: repository,
-      sha: message.payload.details['event.head.sha'],
-      body: 'TaskCluster: ' + msg,
-    });
-  }
-  return isCollaborator;
+  let msg = `@${login} does not have permission to trigger tasks.`;
+  debug(`${login} does not have permissions for ${organization}/${repository}. Skipping.`);
+  await context.github.repos.createCommitComment({
+    user: organization,
+    repo: repository,
+    sha,
+    body: 'TaskCluster: ' + msg,
+  });
+  return false;
 }
