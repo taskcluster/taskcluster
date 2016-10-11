@@ -1,8 +1,11 @@
+import Debug from 'debug';
 import yaml from 'js-yaml';
 import slugid from 'slugid';
 import tc from 'taskcluster-client';
 import jparam from 'json-parameterization';
 import _ from 'lodash';
+
+const debug = Debug('taskcluster-github');
 
 /**
  * Attach fields to a compiled taskcluster github config so that
@@ -68,6 +71,7 @@ module.exports = function({config, payload, validator, schema}) {
   if (errors) {
     throw new Error(errors);
   }
+  debug(`intree config for ${payload.organization}/${payload.repository} matches valid schema.`);
 
   // We need to toss out the config version number; it's the only
   // field that's not also in graph/task definitions
@@ -97,7 +101,7 @@ module.exports = function({config, payload, validator, schema}) {
     // being handled
     let events = task.task.extra.github.events;
     let branches = task.task.extra.github.branches;
-    return _.includes(events, payload.details['event.type']) && (!branches || branches &&
+    return _.some(events, ev => RegExp(ev).test(payload.details['event.type'])) && (!branches || branches &&
       _.includes(branches, payload.details['event.base.repo.branch']));
   });
   return completeInTreeConfig(config, payload);
