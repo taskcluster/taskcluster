@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 4 Oct 2016 at 19:01:00 UTC. The code was generated
+// Wed, 12 Oct 2016 at 21:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -100,7 +100,7 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 // provisionerId.
 //
 // See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#allPurgeRequests
-func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenPurgeRequestList, error) {
+func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenAllPurgeRequestsList, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -109,8 +109,8 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 		v.Add("limit", limit)
 	}
 	cd := tcclient.ConnectionData(*purgeCache)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/list", new(OpenPurgeRequestList), v)
-	return responseObject.(*OpenPurgeRequestList), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/list", new(OpenAllPurgeRequestsList), v)
+	return responseObject.(*OpenAllPurgeRequestsList), err
 }
 
 // Stability: *** EXPERIMENTAL ***
