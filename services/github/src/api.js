@@ -1,6 +1,7 @@
-import base from 'taskcluster-base';
-import crypto from 'crypto';
-import _ from 'lodash';
+let debug = require('debug')('taskcluster-github');
+let base = require('taskcluster-base');
+let crypto = require('crypto');
+let _ = require('lodash');
 
 // Common schema prefix
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
@@ -69,6 +70,11 @@ function compareSignatures(sOne, sTwo) {
   return h1.digest('hex') === h2.digest('hex');
 };
 
+function resolve(res, status, message) {
+  debug(message);
+  return res.status(status).send(message);
+}
+
 /** API end-point for version v1/
  *
  * In this API implementation we shall assume the following context:
@@ -105,30 +111,27 @@ api.declare({
 }, async function(req, res) {
   let eventType = req.headers['x-github-event'];
   if (!eventType) {
-    res.status(400).send('Missing X-GitHub-Event');
+    return resolve(res, 400, 'Missing X-GitHub-Event');
   }
 
   let body = req.body;
   if (!body) {
-    req.status(400).send('Request missing a body');
+    return resolve(res, 400, 'Request missing a body');
   }
 
   let webhookSecret = this.cfg.webhook.secret;
   let xHubSignature = req.headers['x-hub-signature'];
 
   if (xHubSignature && !webhookSecret) {
-    res.status(400).send('Server is not setup to handle secrets');
-    return;
+    return resolve(res, 400, 'Server is not setup to handle secrets');
   } else if (webhookSecret && !xHubSignature) {
-    res.status(400).send('Request missing a secret');
-    return;
+    return resolve(res, 400, 'Request missing a secret');
   } else if (webhookSecret && xHubSignature) {
     // Verify that our payload is legitimate
     let calculatedSignature = generateXHubSignature(webhookSecret,
       JSON.stringify(body));
     if (!compareSignatures(calculatedSignature, xHubSignature)) {
-      res.status(403).send('Bad Signature');
-      return;
+      return resolve(res, 403, 'Bad Signature');
     }
   }
 
@@ -144,10 +147,10 @@ api.declare({
     msg.organization = sanitizeGitHubField(body.repository.owner.name),
     msg.details = getPushDetails(body);
     publisherKey = 'push';
+  } else if (eventType == 'ping') {
+    return resolve(res, 200, 'Received ping event!');
   } else {
-    // Looks like no publisherKey is available
-    res.status(400).send('No publisher available for X-GitHub-Event: ' + eventType);
-    return;
+    return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
   }
 
   // Not all webhook payloads include an e-mail for the user who triggered
