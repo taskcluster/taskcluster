@@ -165,7 +165,7 @@ async function jobHandler(message) {
 
   // Decide if a user has permissions to run tasks.
   let login = message.payload.details['event.head.user.login'];
-  if (!isCollaborator({login, organization, repository, sha, context})) {
+  if (! await isCollaborator({login, organization, repository, sha, context})) {
     return;
   }
 
