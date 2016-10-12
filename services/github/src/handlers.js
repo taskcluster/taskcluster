@@ -193,7 +193,7 @@ async function jobHandler(message) {
     }
   } catch (e) {
     let errorMessage = e.message;
-    let errorBody = e.message || e.body.error;
+    let errorBody = e.body && e.body.error || e.message;
     // Let's prettify any objects
     if (typeof errorBody == 'object') {
       errorBody = JSON.stringify(errorBody, null, 4);
@@ -205,7 +205,7 @@ async function jobHandler(message) {
       repo: repository,
       sha,
       body: 'Submitting the task to TaskCluster failed. ' + errorMessage
-      + 'Details:\n\n```js\n' +  errorBody + '\n```',
+      + '\nDetails:\n\n```js\n' +  errorBody + '\n```',
     });
     throw e;
   }
