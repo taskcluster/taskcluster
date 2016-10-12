@@ -96,7 +96,7 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:     'allPurgeRequests',
-  output:   SCHEMA_PREFIX_CONST + 'purge-cache-request-list.json#',
+  output:   SCHEMA_PREFIX_CONST + 'all-purge-cache-request-list.json#',
   title:    'All Open Purge Requests',
   description: [
     'This is useful mostly for administors to view',
@@ -110,7 +110,6 @@ api.declare({
   let limit = parseInt(req.query.limit || 1000, 10);
   let openRequests = await this.CachePurge.scan({}, {continuation, limit});
   return res.reply({
-    cacheHit: false,
     continuationToken: openRequests.continuation || '',
     requests: _.map(openRequests.entries, entry => {
       return {
