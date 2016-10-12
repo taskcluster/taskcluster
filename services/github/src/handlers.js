@@ -220,7 +220,7 @@ async function isCollaborator({login, organization, repository, sha, context}) {
   // If the user is in the org, we consider them
   // qualified to trigger any job in that org.
   try {
-    context.github.orgs.checkMembership({
+    await context.github.orgs.checkMembership({
       org: organization,
       owner: login,
     });
