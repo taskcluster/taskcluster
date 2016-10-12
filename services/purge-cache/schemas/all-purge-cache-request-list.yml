@@ -1,12 +1,12 @@
 $schema:  http://json-schema.org/draft-04/schema#
-title:        "Open Purge Request List"
+title:        "Open All Purge Requests List"
 description: |
-  A list of currently open purge-cache requests.
+  A list of currently open purge-cache requests. Should not be used by workers.
 type:         object
 properties:
-  cacheHit:
-    type: boolean
-    description: True if the cache has been used in this request.
+  continuationToken:
+    type: string
+    description: Passed back from Azure to allow us to page through long result sets.
   requests:
     type:         array
     description: |
@@ -37,4 +37,3 @@ properties:
 additionalProperties: false
 required:
   - requests
-  - cacheHit
