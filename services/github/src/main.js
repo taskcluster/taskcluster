@@ -1,25 +1,28 @@
-import Debug from 'debug';
-import base from 'taskcluster-base';
-import api from './api';
-import path from 'path';
-import Promise from 'promise';
-import exchanges from './exchanges';
-import Handlers from './handlers';
-import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
-import Github from 'github';
+let debug = require('debug')('taskcluster-github');
+let api = require('./api');
+let path = require('path');
+let Promise = require('promise');
+let exchanges = require('./exchanges');
+let Handlers = require('./handlers');
+let _ = require('lodash');
+let taskcluster = require('taskcluster-client');
+let Github = require('github');
+let config = require('typed-env-config');
+let monitor = require('taskcluster-lib-monitor');
+let validator = require('taskcluster-lib-validate');
+let loader = require('taskcluster-lib-loader');
+let docs = require('taskcluster-lib-docs');
+let App = require('taskcluster-lib-app');
 
-let debug = Debug('taskcluster-github');
-
-let load = base.loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => config({profile}),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => base.monitor({
+    setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-github',
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -29,7 +32,7 @@ let load = base.loader({
 
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => base.validator({
+    setup: ({cfg}) => validator({
       prefix: 'github/v1/',
       aws: cfg.aws,
     }),
@@ -37,7 +40,7 @@ let load = base.loader({
 
   docs: {
     requires: ['cfg', 'validator', 'reference'],
-    setup: ({cfg, validator, reference}) => base.docs({
+    setup: ({cfg, validator, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
@@ -99,7 +102,7 @@ let load = base.loader({
     setup: ({cfg, api, docs}) => {
 
       debug('Launching server.');
-      let app = base.app(cfg.server);
+      let app = App(cfg.server);
       app.use('/v1', api);
       return app.createServer();
     },

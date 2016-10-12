@@ -96,7 +96,7 @@ async function statusHandler(message) {
   debug(`Attempting to update status for ${route[1]}/${route[2]}@${route[3]}`);
   try {
     await this.context.github.repos.createStatus({
-      user: route[1],
+      owner: route[1],
       repo: route[2],
       sha: route[3],
       state: STATUS_MAPPING[message.payload.status.state],
@@ -130,7 +130,7 @@ async function jobHandler(message) {
   // Try to fetch a .taskcluster.yml file for every request
   try {
     let tcyml = await context.github.repos.getContent({
-      user: organization,
+      owner: organization,
       repo: repository,
       path: '.taskcluster.yml',
       ref: sha,
@@ -182,7 +182,7 @@ async function jobHandler(message) {
       // On pushes, leave a comment on the commit
       if (message.payload.details['event.type'] == 'push') {
         await context.github.repos.createCommitComment({
-          user: organization,
+          owner: organization,
           repo: repository,
           sha,
           body: 'TaskCluster: ' + INSPECTOR_URL + graph.status.taskGraphId + '/',
@@ -201,7 +201,7 @@ async function jobHandler(message) {
     // Warn the user know that there was a problem processing their
     // config file with a comment.
     await context.github.repos.createCommitComment({
-      user: organization,
+      owner: organization,
       repo: repository,
       sha,
       body: 'Submitting the task to TaskCluster failed. ' + errorMessage
@@ -222,7 +222,7 @@ async function isCollaborator({login, organization, repository, sha, context}) {
   try {
     context.github.orgs.checkMembership({
       org: organization,
-      user: login,
+      owner: login,
     });
     debug(`Checking collaborator: ${login} is a member of ${organization}: True!`);
     return true;
@@ -239,7 +239,7 @@ async function isCollaborator({login, organization, repository, sha, context}) {
   // listed as a collaborator.
   try {
     await context.github.repos.checkCollaborator({
-      user: organization,
+      owner: organization,
       repo: repository,
       collabuser: login,
     });
@@ -260,7 +260,7 @@ async function isCollaborator({login, organization, repository, sha, context}) {
   let msg = `@${login} does not have permission to trigger tasks.`;
   debug(`${login} does not have permissions for ${organization}/${repository}. Skipping.`);
   await context.github.repos.createCommitComment({
-    user: organization,
+    owner: organization,
     repo: repository,
     sha,
     body: 'TaskCluster: ' + msg,

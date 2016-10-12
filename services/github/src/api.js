@@ -1,6 +1,6 @@
 let debug = require('debug')('taskcluster-github');
-let base = require('taskcluster-base');
 let crypto = require('crypto');
+let API = require('taskcluster-lib-api');
 let _ = require('lodash');
 
 // Common schema prefix
@@ -82,7 +82,7 @@ function resolve(res, status, message) {
  *   publisher:      // publisher from base.Exchanges
  * }
  */
-let api = new base.API({
+let api = new API({
   title:        'TaskCluster GitHub API Documentation',
   description: [
     'The github service, typically available at',
