@@ -14,27 +14,34 @@
   },
   "dependencies": {
     "babel-compile": "^2.0.0",
-    "babel-eslint": "^6.0.3",
     "babel-preset-taskcluster": "^3.0.0",
     "babel-runtime": "^6.6.1",
     "debug": "^2.1.3",
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
-    "github": "^3.1.1",
+    "github": "^5.2.0",
     "js-yaml": "^3.6.1",
     "json-parameterization": "^0.2.0",
     "lodash": "^4.11.1",
     "mocha": "^2.2.1",
     "mocha-eslint": "^2.0.2",
     "promise": "^7.1.1",
+    "pulse-publisher": "^1.1.1",
     "sinon": "^1.17.6",
     "slugid": "^1.1.0",
     "source-map-support": "^0.4.0",
-    "taskcluster-base": "^6.2.0",
-    "taskcluster-client": "^0.23.17"
+    "taskcluster-client": "^1.4.0",
+    "taskcluster-lib-api": "^2.1.0",
+    "taskcluster-lib-app": "^1.0.0",
+    "taskcluster-lib-docs": "^3.0.2",
+    "taskcluster-lib-loader": "^1.0.0",
+    "taskcluster-lib-monitor": "^4.3.1",
+    "taskcluster-lib-testing": "^1.0.3",
+    "taskcluster-lib-validate": "^2.0.0",
+    "typed-env-config": "^1.1.0"
   },
   "engines": {
-    "node": "^5.8.0",
-    "npm": "^3.7.3"
+    "node": "^6.7.0",
+    "npm": "^3.10.3"
   }
 }

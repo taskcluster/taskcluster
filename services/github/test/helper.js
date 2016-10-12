@@ -1,20 +1,22 @@
-import assert from 'assert';
-import http from 'http';
-import Promise from 'promise';
-import path from 'path';
-import fs from 'fs';
-import _ from 'lodash';
-import base from 'taskcluster-base';
-import api from '../lib/api';
-import taskcluster from 'taskcluster-client';
-import mocha from 'mocha';
-import exchanges from '../lib/exchanges';
-import load from '../lib/main';
-import slugid from 'slugid';
-import sinon from 'sinon';
+let assert = require('assert');
+let http = require('http');
+let Promise = require('promise');
+let path = require('path');
+let fs = require('fs');
+let _ = require('lodash');
+let api = require('../lib/api');
+let taskcluster = require('taskcluster-client');
+let mocha = require('mocha');
+let exchanges = require('../lib/exchanges');
+let load = require('../lib/main');
+let slugid = require('slugid');
+let sinon = require('sinon');
+let config = require('typed-env-config');
+let testing = require('taskcluster-lib-testing');
+let validator = require('taskcluster-lib-validate');
 
 // Load configuration
-let cfg = base.config({profile: 'test'});
+let cfg = config({profile: 'test'});
 
 let testClients = {
   'test-server': ['*'],
@@ -53,9 +55,9 @@ let webServer = null;
 
 // Setup before tests
 mocha.before(async () => {
-  base.testing.fakeauth.start(testClients);
+  testing.fakeauth.start(testClients);
 
-  helper.validator = await base.validator({
+  helper.validator = await validator({
     prefix: 'github/v1/',
     aws: cfg.aws,
   });
@@ -74,7 +76,7 @@ mocha.before(async () => {
   helper.handlers = await load('handlers', {profile: 'test', process: 'test', scheduler, github});
 
   // Configure pulse receiver
-  helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
+  helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
   let exchangeReference = exchanges.reference({
     exchangePrefix:   cfg.app.exchangePrefix,
     credentials:      cfg.pulse,
@@ -91,5 +93,5 @@ mocha.after(async () => {
   // Kill webServer
   await webServer.terminate();
   await helper.handlers.terminate();
-  base.testing.fakeauth.stop();
+  testing.fakeauth.stop();
 });
