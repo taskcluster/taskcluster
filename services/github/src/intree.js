@@ -1,11 +1,9 @@
-import Debug from 'debug';
-import yaml from 'js-yaml';
-import slugid from 'slugid';
-import tc from 'taskcluster-client';
-import jparam from 'json-parameterization';
-import _ from 'lodash';
-
-const debug = Debug('taskcluster-github');
+let debug = require('debug')('taskcluster-github');
+let yaml = require('js-yaml');
+let slugid = require('slugid');
+let tc = require('taskcluster-client');
+let jparam = require('json-parameterization');
+let _ = require('lodash');
 
 /**
  * Attach fields to a compiled taskcluster github config so that

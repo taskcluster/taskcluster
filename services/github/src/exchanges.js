@@ -1,6 +1,6 @@
-import base from 'taskcluster-base';
-import assert from 'assert';
-import _ from 'lodash';
+let Exchanges = require('pulse-publisher');
+let assert = require('assert');
+let _ = require('lodash');
 
 // Common schema prefix
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
@@ -52,7 +52,7 @@ let commonMessageBuilder = function(msg) {
 };
 
 /** Declaration of exchanges offered by the github */
-let exchanges = new base.Exchanges({
+let exchanges = new Exchanges({
   title:      'TaskCluster-Github Exchanges',
   description: [
     'The github service, typically available at',

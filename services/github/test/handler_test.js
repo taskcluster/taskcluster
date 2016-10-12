@@ -38,7 +38,7 @@ suite('handlers', () => {
     await testing.sleep(2000);
     try {
       assert(helper.stubs.comment.calledOnce);
-      assert.equal(helper.stubs.comment.args[0][0].user, 'TaskClusterRobot');
+      assert.equal(helper.stubs.comment.args[0][0].owner, 'TaskClusterRobot');
       assert.equal(helper.stubs.comment.args[0][0].repo, 'hooks-testing');
       assert.equal(helper.stubs.comment.args[0][0].sha, 'baac77fbb0089838ad2c57eab598efe4241e0e8f');
       assert(helper.stubs.comment.args[0][0].body.startsWith(
