@@ -10,7 +10,6 @@ let mocha = require('mocha');
 let exchanges = require('../lib/exchanges');
 let load = require('../lib/main');
 let slugid = require('slugid');
-let sinon = require('sinon');
 let config = require('typed-env-config');
 let testing = require('taskcluster-lib-testing');
 let validator = require('taskcluster-lib-validate');
@@ -62,18 +61,7 @@ mocha.before(async () => {
     aws: cfg.aws,
   });
 
-  // Fake scheduler createTaskGraph "implemementation"
-  let scheduler = {
-    createTaskGraph: (...rest) => {return {status: {taskGraphId: slugid.v4()}};},
-  };
-
-  // Stub out github operations that write and need higher permissions
-  helper.stubs = {};
-  let github = await load('github', {profile: 'test', process: 'test'});
-  helper.stubs['comment'] = sinon.stub(github.repos, 'createCommitComment');
-
   webServer = await load('server', {profile: 'test', process: 'test'});
-  helper.handlers = await load('handlers', {profile: 'test', process: 'test', scheduler, github});
 
   // Configure pulse receiver
   helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
@@ -92,6 +80,5 @@ mocha.before(async () => {
 mocha.after(async () => {
   // Kill webServer
   await webServer.terminate();
-  await helper.handlers.terminate();
   testing.fakeauth.stop();
 });
