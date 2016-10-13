@@ -250,6 +250,17 @@ async function isCollaborator({login, organization, repository, sha, context}) {
     if (e.code == 404) {
       // Only a 404 error means the user isn't a collaborator
       // anything else should just throw like normal
+    } else if (e.code == 403) {
+      let msg = `Taskcluster does not have permission to check for repository collaborators.
+        Ensure that it is a member of a team with __write__ access to this repository!`;
+      debug(`Insufficient permissions to check for collaborators of ${organization}/${repository}. Skipping.`);
+      await context.github.repos.createCommitComment({
+        owner: organization,
+        repo: repository,
+        sha,
+        body: msg,
+      });
+      return false;
     } else {
       throw e;
     }
