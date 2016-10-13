@@ -293,7 +293,8 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 			} else {
 				// current status is such that we shouldn't update to new
 				// status, so report that state transition was not allowed
-				e <- fmt.Errorf("Not able to update status from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", task.Status, update.Status, update.Status, update.IfStatusIn)
+				log.Printf("Not updating status of task %v run %v from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", task.TaskID, task.RunID, task.Status, update.Status, update.Status, update.IfStatusIn)
+				e <- fmt.Errorf("Not updating status from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", task.Status, update.Status, update.Status, update.IfStatusIn)
 			}
 		}
 	}()

@@ -705,18 +705,23 @@ func (task *TaskRun) setReclaimTimer() {
 	// attempted a few minutes prior to expiration, to allow for clock drift.
 
 	// First time we need to check claim response, after that, need to check reclaim response
+	log.Println("Setting reclaim timer...")
 	var takenUntil time.Time
 	if len(task.TaskReclaimResponse.Status.Runs) > 0 {
 		takenUntil = time.Time(task.TaskReclaimResponse.Status.Runs[task.RunID].TakenUntil)
 	} else {
 		takenUntil = time.Time(task.TaskClaimResponse.Status.Runs[task.RunID].TakenUntil)
 	}
+	log.Printf("Current claim will expire at %v", takenUntil)
 
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
+	log.Printf("Reclaiming 3 mins earlier, at %v", reclaimTime)
 	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
+	log.Printf("Time to wait until then is %v", waitTimeUntilReclaim)
 	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue
 	if waitTimeUntilReclaim.Seconds() > 30 {
+		log.Println("This is more than 30 seconds away - so setting a timer")
 		task.reclaimTimer = time.AfterFunc(
 			waitTimeUntilReclaim, func() {
 				err := task.StatusManager.Reclaim()
@@ -726,6 +731,8 @@ func (task *TaskRun) setReclaimTimer() {
 				}
 			},
 		)
+	} else {
+		log.Println("WARNING ******************** This is NOT more than 30 seconds away - so NOT setting a timer")
 	}
 }
 
