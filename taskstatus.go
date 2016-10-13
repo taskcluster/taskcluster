@@ -91,7 +91,8 @@ func (tsm *TaskStatusManager) Reclaim() error {
 	tsm.request <- taskStatusUpdate{
 		Status: reclaimed,
 		IfStatusIn: map[TaskStatus]bool{
-			claimed: true,
+			claimed:   true,
+			reclaimed: true,
 		},
 	}
 	return <-tsm.err
