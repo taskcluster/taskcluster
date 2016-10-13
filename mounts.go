@@ -485,13 +485,13 @@ func extract(fsContent FSContent, format string, dir string) error {
 	}
 	switch format {
 	case "zip":
-		return archiver.Unzip(cacheFile, dir)
+		return archiver.Zip.Open(cacheFile, dir)
 	case "tar.gz":
-		return archiver.UntarGz(cacheFile, dir)
+		return archiver.TarGz.Open(cacheFile, dir)
 	case "rar":
-		return archiver.Unrar(cacheFile, dir)
+		return archiver.Rar.Open(cacheFile, dir)
 	case "tar.bz2":
-		return archiver.UntarBz2(cacheFile, dir)
+		return archiver.TarBz2.Open(cacheFile, dir)
 	}
 	log.Fatalf("Unsupported format %v", format)
 	return nil
