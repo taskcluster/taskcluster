@@ -621,6 +621,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	taskRun := TaskRun{
 		QueueMessage:  qm,
 		SignedURLPair: urlPair,
+		Status:        unclaimed,
 	}
 
 	// now populate remaining json fields of TaskRun from json string m
