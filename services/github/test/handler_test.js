@@ -13,7 +13,6 @@ suite('handlers', () => {
   let helper = require('./helper');
   let assert = require('assert');
   let testing = require('taskcluster-lib-testing');
-  let mocha = require('mocha');
   let load = require('../lib/main');
   let sinon = require('sinon');
   let slugid = require('slugid');
@@ -21,7 +20,7 @@ suite('handlers', () => {
   let stubs = null;
   let Handlers = null;
   let handlers = null;
-  mocha.beforeEach(async () => {
+  setup(async () => {
     // Fake scheduler createTaskGraph "implemementation"
     let scheduler = {
       createTaskGraph: (...rest) => {return {status: {taskGraphId: slugid.v4()}};},
@@ -36,7 +35,7 @@ suite('handlers', () => {
     handlers = await Handlers.setup();
   });
 
-  mocha.afterEach(async () => {
+  teardown(async () => {
     await Handlers.terminate();
   });
 
