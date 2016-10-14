@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 12 Oct 2016 at 21:23:00 UTC. The code was generated
+// Fri, 14 Oct 2016 at 14:26:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -522,11 +522,8 @@ func (myAuth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
 	return responseObject.(*TestAuthenticateResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
-// Documented later...
-//
-// **Warning** this api end-point is **not stable**.
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#ping
 func (myAuth *Auth) Ping() error {
