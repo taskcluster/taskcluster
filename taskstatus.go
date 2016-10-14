@@ -222,14 +222,12 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 	currentStatus := tsm.task.Status
 	for _, allowedStatus := range fromStatuses {
 		if currentStatus == allowedStatus {
-			goto allowed
+			tsm.task.Status = ts
+			return f(tsm.task)
 		}
 	}
 	log.Printf("Not updating status of task %v run %v from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", tsm.task.TaskID, tsm.task.RunID, tsm.task.Status, ts, ts, fromStatuses)
 	return fmt.Errorf("Not updating status from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", tsm.task.Status, ts, ts, fromStatuses)
-allowed:
-	tsm.task.Status = ts
-	return f(tsm.task)
 }
 
 func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
