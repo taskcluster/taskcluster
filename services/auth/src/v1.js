@@ -877,12 +877,11 @@ api.declare({
   method:   'get',
   route:    '/ping',
   name:     'ping',
-  stability:  'experimental',
-  title:    "Ping Server",
+  stability:  'stable',
+  title:    'Ping Server',
   description: [
-    "Documented later...",
-    "",
-    "**Warning** this api end-point is **not stable**."
+    'Respond without doing anything.',
+    'This endpoint is used to check that the service is up.'
   ].join('\n')
 }, function(req, res) {
   res.status(200).json({
