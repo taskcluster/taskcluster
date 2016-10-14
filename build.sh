@@ -31,7 +31,7 @@ docker rm -v "${uid}"
 echo "Building proxy server..."
 # Output folder
 mkdir -p target
-GOARCH=amd64 GOOS=linux go build -o target/taskcluster-proxy .
+GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -o target/taskcluster-proxy .
 
 echo "Building docker image for proxy server"
 docker build -t $1 .
