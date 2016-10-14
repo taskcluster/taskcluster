@@ -2,3 +2,6 @@
 
 # Coverage report
 coverage.report
+
+# generated as part of docker build
+/ca-certificates.crt

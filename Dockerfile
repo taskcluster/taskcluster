@@ -1,7 +1,6 @@
-FROM ubuntu:14.04
+FROM scratch
 
-RUN apt-get update
-RUN apt-get install -y ca-certificates
 EXPOSE 80
 COPY target/taskcluster-proxy /taskcluster-proxy
+COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]

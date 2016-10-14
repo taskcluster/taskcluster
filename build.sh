@@ -17,6 +17,17 @@ then
   exit 0
 fi
 
+# step into directory of script
+cd "$(dirname "${0}")"
+
+uid="$(date +%s)"
+
+echo "Generating ca certs using latest ubuntu version..."
+docker build --pull -t "${uid}" -f cacerts.docker .
+docker run --name "${uid}" "${uid}"
+docker cp "${uid}:/etc/ssl/certs/ca-certificates.crt" .
+docker rm -v "${uid}"
+
 echo "Building proxy server..."
 # Output folder
 mkdir -p target
