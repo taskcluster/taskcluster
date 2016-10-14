@@ -17,10 +17,22 @@ then
   exit 0
 fi
 
-echo "Building proxy server..."
+# step into directory of script
+cd "$(dirname "${0}")"
+
+uid="$(date +%s)"
+
 # Output folder
 mkdir -p target
-GOARCH=amd64 GOOS=linux go build -o target/taskcluster-proxy .
+
+echo "Generating ca certs using latest ubuntu version..."
+docker build --pull -t "${uid}" -f cacerts.docker .
+docker run --name "${uid}" "${uid}"
+docker cp "${uid}:/etc/ssl/certs/ca-certificates.crt" target
+docker rm -v "${uid}"
+
+echo "Building proxy server..."
+GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -o target/taskcluster-proxy .
 
 echo "Building docker image for proxy server"
 docker build -t $1 .
