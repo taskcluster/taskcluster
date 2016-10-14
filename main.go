@@ -725,9 +725,14 @@ func (task *TaskRun) setReclaimTimer() {
 		task.reclaimTimer = time.AfterFunc(
 			waitTimeUntilReclaim, func() {
 				err := task.StatusManager.Reclaim()
-				if err != nil {
+				if err == nil {
 					// only set another reclaim timer if the previous reclaim succeeded
 					task.setReclaimTimer()
+				} else {
+					log.Printf("Encountered exception when reclaiming task %v: %v", task.TaskID, err)
+					log.Printf("Killing task %v since I cannot reclaim it", task.TaskID)
+					task.Logf("Killing process since task reclaim resulted in exception: %v", err)
+					task.kill()
 				}
 			},
 		)
