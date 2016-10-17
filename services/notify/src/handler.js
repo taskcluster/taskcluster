@@ -27,7 +27,7 @@ class Handler {
     this.listener.bind(qe.taskException(`route.${routePrefix}.#.on-any.#`));
 
     // Handle messages
-    this.listener.on('message', m => this.onMessage(m));
+    this.listener.on('message', this.monitor.timedHandler('notification', this.onMessage.bind(this)));
   }
 
   async listen() {

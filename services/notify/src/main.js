@@ -86,8 +86,8 @@ let load = loader({
   },
 
   irc: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
       let client = new IRC(_.merge(cfg.irc, {
         aws: cfg.aws,
         queueName: cfg.app.sqsQueueName,
