@@ -1,38 +1,39 @@
-var _           = require('lodash');
-var Promise     = require('promise');
-var debug       = require('debug')('app:queue');
-var assert      = require('assert');
-var base32      = require('thirty-two');
-var querystring = require('querystring');
-var url         = require('url');
-var base        = require('taskcluster-base');
-var azure       = require('fast-azure-storage');
-var crypto      = require('crypto');
-var taskcluster = require('taskcluster-client');
+let _           = require('lodash');
+let Promise     = require('promise');
+let debug       = require('debug')('app:queue');
+let assert      = require('assert');
+let base32      = require('thirty-two');
+let querystring = require('querystring');
+let url         = require('url');
+let base        = require('taskcluster-base');
+let azure       = require('fast-azure-storage');
+let crypto      = require('crypto');
+let taskcluster = require('taskcluster-client');
+let slugid      = require('slugid');
 
 /** Timeout for azure queue requests */
-var AZURE_QUEUE_TIMEOUT     = 7 * 1000;
+const AZURE_QUEUE_TIMEOUT = 7 * 1000;
 
 /** Azure queue agent used for all instances of the queue client */
-var globalAzureQueueAgent = new azure.Agent({
+let globalAzureQueueAgent = new azure.Agent({
   keepAlive:        true,
   maxSockets:       100,
   maxFreeSockets:   100,
 });
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
-var decodeUrlSafeBase64 = function(data) {
+let decodeUrlSafeBase64 = data => {
   return new Buffer(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 };
 
 /** Get seconds until `target` relative to now (by default) */
-var secondsTo = function(target, relativeTo = new Date()) {
+let secondsTo = (target, relativeTo = new Date()) => {
   var delta = Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
   return Math.max(delta, 0); // never return negative time
 };
 
 /** Validate task description object */
-var validateTask = function(task) {
+let validateTask = task => {
   assert(typeof task.taskId === 'string', 'Expected task.taskId');
   assert(typeof task.provisionerId === 'string',
          'Expected task.provisionerId');
@@ -588,6 +589,7 @@ class QueueService {
     return this._putMessage(queueNames[task.priority], {
       taskId:     task.taskId,
       runId:      runId,
+      hintId:     slugid.v4(),
     }, {
       ttl:          timeToDeadline,
       visibility:   0,
