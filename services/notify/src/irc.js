@@ -41,7 +41,7 @@ class IRCBot {
       port: options.port,
       autoConnect: false,
       secure: true,
-      debug: false,
+      debug: options.debug || false,
       showErrors: true,
     });
     this.sqs = new aws.SQS(options.aws);
