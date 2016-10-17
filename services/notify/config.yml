@@ -36,6 +36,7 @@ defaults:
     realName:         !env IRC_REAL_NAME
     password:         !env IRC_PASSWORD
     port:             !env IRC_PORT
+    debug:            !env IRC_DEBUG
 
 # Configuration in production
 production:
