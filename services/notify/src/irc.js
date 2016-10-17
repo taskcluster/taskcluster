@@ -99,6 +99,7 @@ class IRCBot {
         }
         debug(`Deleted ${success} message from sqs.`);
       }
+      debug('Stopping irc sqs loop');
     })();
   }
 
