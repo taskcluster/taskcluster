@@ -110,12 +110,8 @@ class IRCBot {
       // Time this out after 10 seconds to avoid blocking forever
       await new Promise((accept, reject) => this.client.join(channel, accept))
         .timeout(10000)
-        .catch(err => {
-          if (err.code === 'TimeoutError') {
-            console.log('Timed out joining channel, may be ok. Proceeding.');
-          } else {
-            throw err;
-          }
+        .catch(Promise.TimeoutError, err => {
+          console.log('Timed out joining channel, may be ok. Proceeding.');
         });
     }
     // Post message to user or channel (which ever is given)
