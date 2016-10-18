@@ -105,12 +105,18 @@ class IRCBot {
 
   async notify({channel, user, message}) {
     debug(`Sending message to ${user || channel}: ${message}.`);
-    // If a channel is specified we need to join it, we just do this every time
-    // as it probably doesn't do any harm...
     if (channel) {
       // This callback does not ever have an error. If it triggers, we have succeeded
       // Time this out after 10 seconds to avoid blocking forever
-      await new Promise((accept, reject) => this.client.join(channel, accept)).timeout(10000);
+      await new Promise((accept, reject) => this.client.join(channel, accept))
+        .timeout(10000)
+        .catch(err => {
+          if (err === 'TimeoutError') {
+            console.log('Timed out joining channel, may be ok. Proceeding.');
+          } else {
+            throw err;
+          }
+        });
     }
     // Post message to user or channel (which ever is given)
     this.client.say(user || channel, message);
