@@ -8,3 +8,7 @@ defaults:
   github:
     credentials:
       token: '...'
+  taskcluster:
+    credentials:
+      clientId: '...'
+      accessToken: '...'
