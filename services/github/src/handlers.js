@@ -239,7 +239,6 @@ async function jobHandler(message) {
       debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
     }
   } catch (e) {
-    let errorMessage = e.message;
     let errorBody = e.body && e.body.error || e.message;
     // Let's prettify any objects
     if (typeof errorBody == 'object') {
@@ -251,8 +250,8 @@ async function jobHandler(message) {
       owner: organization,
       repo: repository,
       sha,
-      body: 'Submitting the task to TaskCluster failed. ' + errorMessage
-      + '\nDetails:\n\n```js\n' +  errorBody + '\n```',
+      body: 'Submitting the task to Taskcluster failed. ' +
+      '\nDetails:\n\n```js\n' +  errorBody + '\n```',
     });
     throw e;
   }
