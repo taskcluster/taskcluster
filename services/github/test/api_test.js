@@ -1,23 +1,39 @@
+/**
+ * Tests of endpoints in the api _other than_
+ * the github webhook endpoint which is tested
+ * in webhook_test.js
+ */
 suite('api', () => {
   let helper = require('./helper');
   let assert = require('assert');
 
-  // Check the status code returned from a request containing some test data
-  function statusTest(testName, jsonFile, statusCode) {
-    test(testName, async () => {
-      let response = await helper.jsonHttpRequest('./test/data/webhooks/' + jsonFile);
-      assert.equal(response.statusCode, statusCode);
-      response.connection.destroy();
+  test('builds', async function(done) {
+    await helper.Builds.create({
+      organization: 'abc123',
+      repository: 'def456',
+      sha: '7650871208002a13ba35cf232c0e30d2c3d64783',
+      state: 'pending',
+      taskGroupId: 'biizERCQQwi9ZS_WkCSjXQ',
+      created: new Date(),
+      updated: new Date(),
     });
-  };
-
-  // Good data: should all return 200 responses
-  statusTest('Pull Request Opened', 'webhook.pull_request.open.json', 204);
-  statusTest('Pull Request Closed', 'webhook.pull_request.close.json', 204);
-  statusTest('Push', 'webhook.push.json', 204);
-
-  // Bad data: should all return 400 responses
-  statusTest('Push without secret', 'webhook.push.no_secret.json', 400);
-  statusTest('Unknown Event', 'webhook.unknown_event.json', 400);
-  statusTest('Push with bad secret', 'webhook.push.bad_secret.json', 403);
+    await helper.Builds.create({
+      organization: 'ghi789',
+      repository: 'jkl101112',
+      sha: '8650871208002a13ba35cf232c0e30d2c3d64783',
+      state: 'success',
+      taskGroupId: 'aiizERCQQwi9ZS_WkCSjXQ',
+      created: new Date(),
+      updated: new Date(),
+    });
+    let builds = await helper.github.builds();
+    try {
+      assert.equal(builds.builds.length, 2);
+      assert.equal(builds.builds[0].organization, 'abc123');
+      assert.equal(builds.builds[1].organization, 'ghi789');
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
 });
