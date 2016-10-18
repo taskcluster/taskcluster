@@ -9,6 +9,7 @@ tasks:
     workerType: "{{ taskcluster.docker.workerType }}"
     scopes:
       - "secrets:get:repo:github.com/taskcluster/taskcluster-github*"
+      - "assume:project:taskcluster:github"
     routes:
       - "notify.email.{{event.head.user.email}}.on-any"
       - "notify.irc-channel.#taskcluster-notifications.on-failed"
@@ -23,9 +24,10 @@ tasks:
           - push
     payload:
       maxRunTime: 3600
-      image: "node:5"
+      image: "node:6"
       env:
         DEBUG: "* -babel* -mocha* -nock* -express* -body-parser* -morgan -eslint* -follow-redirects"
+        QUEUE_BASE_URL: 'taskcluster/queue/v1'
       features:
         taskclusterProxy: true
       command:

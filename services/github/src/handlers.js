@@ -1,17 +1,11 @@
 let debug = require('debug')('taskcluster-github');
-let intree = require('./intree');
 let taskcluster = require('taskcluster-client');
 let slugid = require('slugid');
 let yaml = require('js-yaml');
 let assert = require('assert');
 let _ = require('lodash');
 
-let INSPECTOR_URL = 'https://tools.taskcluster.net/task-graph-inspector/#';
-let STATUS_MAPPING = {
-  running:  'pending',
-  blocked:  'failure',
-  finished: 'success',
-};
+let INSPECTOR_URL = 'https://tools.taskcluster.net/push-inspector/#/';
 
 /**
  * Create handlers
@@ -28,14 +22,16 @@ let STATUS_MAPPING = {
  * }
  */
 class Handlers {
-  constructor({credentials, monitor, reference, jobQueueName, statusQueueName, context}) {
+  constructor({credentials, monitor, reference, jobQueueName, statusQueueName, intree, context}) {
     assert(credentials.username, 'credentials.username must be provided');
     assert(credentials.password, 'credentials.password must be provided');
     assert(monitor, 'monitor is required for statistics');
     assert(monitor, 'reference must be provided');
+    assert(intree, 'intree configuration builder must be provided');
     this.credentials = credentials;
     this.monitor = monitor;
     this.reference = reference;
+    this.intree = intree;
     this.connection = null;
     this.statusListener = null;
     this.jobListener = null;
@@ -59,15 +55,17 @@ class Handlers {
     // Listen for new jobs created via the api webhook endpoint
     let GithubEvents = taskcluster.createClient(this.reference);
     let githubEvents = new GithubEvents();
-    await this.jobListener.bind(githubEvents.pullRequest({organization: '*', repository: '*', action: '*'}));
-    await this.jobListener.bind(githubEvents.push({organization: '*', repository: '*'}));
+    await this.jobListener.bind(githubEvents.pullRequest());
+    await this.jobListener.bind(githubEvents.push());
 
-    // Listen for state changes to the taskcluster taskgraph
-    let schedulerEvents = new taskcluster.SchedulerEvents();
-    let route = 'route.taskcluster-github.*.*.*';
-    await this.statusListener.bind(schedulerEvents.taskGraphRunning(route));
-    await this.statusListener.bind(schedulerEvents.taskGraphBlocked(route));
-    await this.statusListener.bind(schedulerEvents.taskGraphFinished(route));
+    // Listen for state changes to the taskcluster tasks and taskgroups
+    // We only need to listen for failure and exception events on
+    // tasks. We wait for the entire group to be resolved before checking
+    // for success.
+    let queueEvents = new taskcluster.QueueEvents();
+    await this.statusListener.bind(queueEvents.taskFailed({schedulerId: 'taskcluster-github'}));
+    await this.statusListener.bind(queueEvents.taskException({schedulerId: 'taskcluster-github'}));
+    await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId: 'taskcluster-github'}));
 
     this.jobListener.on('message', this.monitor.timedHandler('joblistener', jobHandler.bind(this)));
     this.statusListener.on('message', this.monitor.timedHandler('statuslistener', statusHandler.bind(this)));
@@ -91,21 +89,42 @@ module.exports = Handlers;
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
 async function statusHandler(message) {
-  debug(`handling state change "${message.payload.status.state}" for ${message.payload.status.taskGraphId}`);
-  let route = message.routes[0].split('.');
-  debug(`Attempting to update status for ${route[1]}/${route[2]}@${route[3]}`);
+  let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
+  debug(`handling state change for task-group ${taskGroupId}`);
+
+  let state = 'success';
+  if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
+    state = 'failure';
+  } else {
+    let tasks = await this.context.queue.listTaskGroup(taskGroupId);
+    tasks.tasks.map((task) => {
+      if (task.status.state != 'completed') {
+        state = 'failure';
+      }
+    });
+  }
+
+  let build = await this.context.Builds.load({
+    taskGroupId,
+  });
+  await build.modify((b) => {
+    b.state = state;
+    b.updated = new Date();
+  });
+
+  debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
   try {
     await this.context.github.repos.createStatus({
-      owner: route[1],
-      repo: route[2],
-      sha: route[3],
-      state: STATUS_MAPPING[message.payload.status.state],
-      target_url: INSPECTOR_URL + message.payload.status.taskGraphId + '/',
-      description: 'TaskGraph: ' + message.payload.status.state,
+      owner: build.organization,
+      repo: build.repository,
+      sha: build.sha,
+      state,
+      target_url: INSPECTOR_URL + taskGroupId,
+      description: 'TaskGroup: ' + state,
       context: 'Taskcluster',
     });
   } catch (e) {
-    debug(`Failed to update status: ${route[1]}/${route[2]}@${route[3]}`);
+    debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
     throw e;
   }
 }
@@ -171,23 +190,51 @@ async function jobHandler(message) {
 
   // Now we can try processing the config and kicking off a task.
   try {
-    let graphConfig = intree({
+    let graphConfig = this.intree({
       config: repoconf,
       payload: message.payload,
       validator: context.validator,
       schema: 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#',
     });
     if (graphConfig.tasks.length) {
-      let graph = await context.scheduler.createTaskGraph(slugid.nice(), graphConfig);
-      // On pushes, leave a comment on the commit
-      if (message.payload.details['event.type'] == 'push') {
-        await context.github.repos.createCommitComment({
-          owner: organization,
-          repo: repository,
-          sha,
-          body: 'TaskCluster: ' + INSPECTOR_URL + graph.status.taskGraphId + '/',
+      let taskGroupId = graphConfig.tasks[0].task.taskGroupId;
+      await Promise.all(graphConfig.tasks.map(t => context.queue.createTask(t.taskId, t.task)));
+
+      // We used to comment on every commit, but setting the status
+      // is a nicer thing to do instead. It contains all of the same
+      // information.
+      await context.github.repos.createStatus({
+        owner: organization,
+        repo: repository,
+        sha,
+        state: 'pending',
+        target_url: INSPECTOR_URL + taskGroupId,
+        description: 'TaskGroup: Running',
+        context: 'Taskcluster',
+      });
+
+      let now = new Date();
+      await context.Builds.create({
+        organization,
+        repository,
+        sha,
+        taskGroupId,
+        state: 'pending',
+        created: now,
+        updated: now,
+      }).catch(async (err) => {
+        if (err.code !== 'EntityAlreadyExists') {
+          throw err;
+        }
+        let build = await this.Builds.load({
+          taskGroupId,
         });
-      }
+        assert.equal(build.state, 'pending', `State for ${organization}/${repository}@${sha}
+          already exists but is set to ${build.state} instead of pending!`);
+        assert.equal(build.organization, organization);
+        assert.equal(build.repository, repository);
+        assert.equal(build.sha, sha);
+      });
     } else {
       debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
     }
