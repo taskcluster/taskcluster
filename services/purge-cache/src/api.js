@@ -6,6 +6,9 @@ let taskcluster = require('taskcluster-client');
 // Common schema prefix
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/purge-cache/v1/';
 
+// Common patterns URL parameters
+const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
+
 /** API end-point for version v1/ */
 let api = new API({
   title:        'Purge Cache API Documentation',
@@ -15,6 +18,10 @@ let api = new API({
     'CachePurge',      // A data.CachePurge instance
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
   ],
+  params: {
+    provisionerId:    GENERIC_ID_PATTERN,
+    workerType:       GENERIC_ID_PATTERN,
+  },
   description: [
     'The purge-cache service, typically available at',
     '`purge-cache.taskcluster.net`, is responsible for publishing a pulse',
