@@ -1,9 +1,8 @@
 suite('intree config', () => {
-  let  fs         = require('fs');
-  let  intree     = require('../lib/intree');
-  let  assert     = require('assert');
-  let  _          = require('lodash');
-  let  helper     = require('./helper');
+  let fs = require('fs');
+  let assert = require('assert');
+  let _ = require('lodash');
+  let helper = require('./helper');
 
   /**
    * Test github data, like one would see in a pulse message
@@ -47,7 +46,7 @@ suite('intree config', () => {
       params.config = fs.readFileSync(configPath);
       params.schema = 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#';
       params.validator = helper.validator;
-      let config = intree(params);
+      let config = helper.intree(params);
       for (let key of Object.keys(expected)) {
         assert.deepEqual(_.get(config, key), expected[key]);
       }

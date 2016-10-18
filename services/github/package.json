@@ -13,6 +13,7 @@
     "url": "https://github.com/taskcluster/taskcluster-github.git"
   },
   "dependencies": {
+    "azure-entities": "^1.0.3",
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0",
     "babel-runtime": "^6.6.1",

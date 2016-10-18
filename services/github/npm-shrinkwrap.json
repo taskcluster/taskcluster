@@ -182,7 +182,7 @@
     },
     "azure-entities": {
       "version": "1.0.3",
-      "from": "azure-entities@>=1.0.2 <2.0.0",
+      "from": "azure-entities@latest",
       "resolved": "https://registry.npmjs.org/azure-entities/-/azure-entities-1.0.3.tgz",
       "dependencies": {
         "asap": {

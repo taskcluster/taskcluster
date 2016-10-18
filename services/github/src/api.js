@@ -92,6 +92,8 @@ let api = new API({
     'This document describes the API end-point for consuming GitHub',
     'web hooks',
   ].join('\n'),
+  schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
+  context: ['Builds'],
 });
 
 // Export API
@@ -166,7 +168,41 @@ api.declare({
   res.status(204).send();
 });
 
-/** Check that the server is a alive */
+api.declare({
+  method:     'get',
+  route:      '/builds',
+  name:       'builds',
+  title:      'All Builds',
+  stability:  'experimental',
+  output:     'build-list.json#',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  description: [
+    'A paginated list of all builds that have been run in',
+    'taskcluster. They are sorted in order of submission.',
+  ].join('\n'),
+}, async function(req, res) {
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
+  let builds = await this.Builds.scan({}, {continuation, limit});
+  return res.reply({
+    continuationToken: builds.continuation || '',
+    builds: builds.entries.map(entry => {
+      return {
+        organization: entry.organization,
+        repository: entry.repository,
+        sha: entry.sha,
+        state: entry.state,
+        taskGroupId: entry.taskGroupId,
+        created: entry.created.toJSON(),
+        updated: entry.updated.toJSON(),
+      };
+    }),
+  });
+});
+
 api.declare({
   method:     'get',
   route:      '/ping',

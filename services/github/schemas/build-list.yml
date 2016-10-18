@@ -1,0 +1,63 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Builds"
+description: |
+  A paginated list of builds
+type:         object
+properties:
+  continuationToken:
+    type: string
+    description: Passed back from Azure to allow us to page through long result sets.
+  builds:
+    type:         array
+    description: |
+      A simple list of builds.
+    items:
+      type: object
+      properties:
+        organization:
+          type: string
+          minLength: {$const: github-identifier-min-length}
+          maxLength: {$const: github-identifier-max-length}
+          pattern: {$const: github-identifier-pattern}
+          description: Github organization associated with the build.
+        repository:
+          type: string
+          minLength: {$const: github-identifier-min-length}
+          maxLength: {$const: github-identifier-max-length}
+          pattern: {$const: github-identifier-pattern}
+          description: Github repository associated with the build.
+        sha:
+          type: string
+          minLength: 40
+          maxLength: 40
+          description: Github revision associated with the build.
+        state:
+          type: string
+          enum: ['pending', 'success', 'error', 'failure']
+          description: Github status associated with the build.
+        taskGroupId:
+          type: string
+          pattern: {$const: slugid-pattern}
+          description: Taskcluster task-group associated with the build.
+        created:
+          type: string
+          format: date-time
+          description: |
+            The initial creation time of the build. This is when it became pending.
+        updated:
+          type: string
+          format: date-time
+          description: |
+            The last updated of the build. If it is done, this is when it finished.
+      additionalProperties: false
+      required:
+        - organization
+        - repository
+        - sha
+        - state
+        - taskGroupId
+        - created
+        - updated
+additionalProperties: false
+required:
+  - builds

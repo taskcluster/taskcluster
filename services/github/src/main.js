@@ -4,6 +4,8 @@ let path = require('path');
 let Promise = require('promise');
 let exchanges = require('./exchanges');
 let Handlers = require('./handlers');
+let Intree = require('./intree');
+let data = require('./data');
 let _ = require('lodash');
 let taskcluster = require('taskcluster-client');
 let Github = require('github');
@@ -83,10 +85,30 @@ let load = loader({
     },
   },
 
+  intree: {
+    requires: ['cfg'],
+    setup: ({cfg}) => Intree.setup(cfg),
+  },
+
+  Builds: {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
+      var build = await data.Build.setup({
+        account: cfg.azure.account,
+        table: cfg.app.buildTableName,
+        credentials: cfg.taskcluster.credentials,
+        monitor: monitor.prefix(cfg.app.buildTableName.toLowerCase()),
+      });
+
+      await build.ensureTable();
+      return build;
+    },
+  },
+
   api: {
-    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher'],
-    setup: ({cfg, monitor, validator, github, publisher}) => api.setup({
-      context:          {publisher, cfg, github},
+    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher', 'Builds'],
+    setup: ({cfg, monitor, validator, github, publisher, Builds}) => api.setup({
+      context:          {publisher, cfg, github, Builds},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          process.env.NODE_ENV === 'production',
       baseUrl:          cfg.server.publicUrl + '/v1',
@@ -108,9 +130,12 @@ let load = loader({
     },
   },
 
-  scheduler: {
+  queue: {
     requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.Scheduler(cfg.taskcluster),
+    setup: ({cfg}) => new taskcluster.Queue({
+      baseUrl: cfg.taskcluster.queueBaseUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
   },
 
   reference: {
@@ -122,14 +147,15 @@ let load = loader({
   },
 
   handlers: {
-    requires: ['cfg', 'github', 'monitor', 'scheduler', 'validator', 'reference'],
-    setup: async ({cfg, github, monitor, scheduler, validator, reference}) => new Handlers({
+    requires: ['cfg', 'github', 'monitor', 'intree', 'queue', 'validator', 'reference', 'Builds'],
+    setup: async ({cfg, github, monitor, intree, queue, validator, reference, Builds}) => new Handlers({
       credentials: cfg.pulse,
       monitor: monitor.prefix('handlers'),
+      intree,
       reference,
       jobQueueName: cfg.app.jobQueueName,
       statusQueueName: cfg.app.statusQueueName,
-      context: {cfg, github, scheduler, validator},
+      context: {cfg, github, queue, validator, Builds},
     }),
   },
 
