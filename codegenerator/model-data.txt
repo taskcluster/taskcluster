@@ -1,4 +1,4 @@
-Generated: 1476811428
+Generated: 1476815132
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3010,20 +3010,6 @@ or pull request.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/builds'
-    Entry Args        = '[]'
-    Entry Query        = '[continuationToken limit]'
-    Entry Name        = 'builds'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/github/v1/build-list.json#'
-    Entry Title       = 'All Builds'
-    Entry Description = 'A paginated list of all builds that have been run in
-taskcluster. They are sorted in order of submission.'
-Entry 2     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Query        = '[]'
@@ -3036,88 +3022,6 @@ Entry 2     =
     Entry Description = 'Documented later...
 
 **Warning** this api end-point is **not stable**.'
-
-
-http://schemas.taskcluster.net/github/v1/build-list.json#
-=========================================================
-Additional Properties  = 'false'
-Description            = 'A paginated list of builds
-'
-ID                     = 'http://schemas.taskcluster.net/github/v1/build-list.json#'
-Properties
-  Property 'builds' =
-    Description            = 'A simple list of builds.
-    '
-    Items
-      Additional Properties  = 'false'
-      Properties
-        Property 'created' =
-          Description            = 'The initial creation time of the build. This is when it became pending.
-          '
-          Format                 = 'date-time'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/created'
-        Property 'organization' =
-          Description            = 'Github organization associated with the build.'
-          MaxLength              = '100'
-          MinLength              = '1'
-          Pattern                = '^([a-zA-Z0-9-_%]*)$'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/organization'
-        Property 'repository' =
-          Description            = 'Github repository associated with the build.'
-          MaxLength              = '100'
-          MinLength              = '1'
-          Pattern                = '^([a-zA-Z0-9-_%]*)$'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/repository'
-        Property 'sha' =
-          Description            = 'Github revision associated with the build.'
-          MaxLength              = '40'
-          MinLength              = '40'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/sha'
-        Property 'state' =
-          Description            = 'Github status associated with the build.'
-          Enum                   = '[pending success error failure]'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/state'
-        Property 'taskGroupId' =
-          Description            = 'Taskcluster task-group associated with the build.'
-          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/taskGroupId'
-        Property 'updated' =
-          Description            = 'The last updated of the build. If it is done, this is when it finished.
-          '
-          Format                 = 'date-time'
-          Type                   = 'string'
-          TypeName               = ''
-          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/updated'
-      Required               = '[organization repository sha state taskGroupId created updated]'
-      Type                   = 'object'
-      TypeName               = 'BuildsEntry'
-      SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items'
-    Type                   = 'array'
-    TypeName               = ''
-    SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds'
-  Property 'continuationToken' =
-    Description            = 'Passed back from Azure to allow us to page through long result sets.'
-    Type                   = 'string'
-    TypeName               = ''
-    SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/continuationToken'
-Required               = '[builds]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Builds'
-Type                   = 'object'
-TypeName               = 'Builds1'
-SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#'
 
 
 http://references.taskcluster.net/github/v1/exchanges.json
