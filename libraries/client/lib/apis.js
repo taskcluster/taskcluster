@@ -405,13 +405,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
@@ -1051,6 +1051,25 @@ module.exports = {
         {
           "args": [
           ],
+          "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
+          "method": "get",
+          "name": "builds",
+          "output": "http://schemas.taskcluster.net/github/v1/build-list.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "organization",
+            "repository",
+            "sha"
+          ],
+          "route": "/builds",
+          "stability": "experimental",
+          "title": "List of Builds",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
           "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "ping",
@@ -1556,6 +1575,65 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/notify/v1/api.json"
   },
+  "Pulse": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://pulse.taskcluster.net/v1",
+      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows us self-service and\ngreater control within the Taskcluster project.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "experimental",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "An overview of the Rabbit cluster\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "overview",
+          "output": "http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json",
+          "query": [
+          ],
+          "route": "/overview",
+          "stability": "experimental",
+          "title": "Rabbit Overview",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Creates a namespace, given the taskcluster credentials with scopes.\n\n**Warning** this api end-point is **not stable**.",
+          "input": "http://schemas.taskcluster.net/pulse/v1/namespace-request.json",
+          "method": "post",
+          "name": "namespace",
+          "query": [
+          ],
+          "route": "/namespace/<namespace>",
+          "scopes": [
+            [
+              "pulse:namespace:<namespace>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Create a namespace",
+          "type": "function"
+        }
+      ],
+      "title": "Pulse Management Service",
+      "version": 0
+    },
+    "referenceUrl": "http://references.taskcluster.net/pulse/v1/api.json"
+  },
   "PurgeCache": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
@@ -1589,7 +1667,7 @@ module.exports = {
           "description": "This is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
           "method": "get",
           "name": "allPurgeRequests",
-          "output": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#",
+          "output": "http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#",
           "query": [
             "continuationToken",
             "limit"
@@ -1619,13 +1697,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
@@ -2028,7 +2106,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely, or,\n  * The worker experienced an unknown error.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
+          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely,\n  * The worker experienced an unknown error, or,\n  * The task explicitely requested a retry.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
           "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
           "method": "post",
           "name": "reportException",

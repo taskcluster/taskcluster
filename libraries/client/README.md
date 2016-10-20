@@ -226,6 +226,7 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
 var github = new taskcluster.Github(options);
 ```
  * `github.githubWebHookConsumer() : void`
+ * `github.builds([options]) : result`
  * `github.ping() : void`
 
 ### Methods in `taskcluster.Hooks`
@@ -276,6 +277,16 @@ var notify = new taskcluster.Notify(options);
  * `notify.pulse(payload) : void`
  * `notify.irc(payload) : void`
  * `notify.ping() : void`
+
+### Methods in `taskcluster.Pulse`
+```js
+// Create Pulse client instance with default baseUrl:
+//  - https://pulse.taskcluster.net/v1
+var pulse = new taskcluster.Pulse(options);
+```
+ * `pulse.ping() : void`
+ * `pulse.overview() : result`
+ * `pulse.namespace(namespace, payload) : void`
 
 ### Methods in `taskcluster.PurgeCache`
 ```js
