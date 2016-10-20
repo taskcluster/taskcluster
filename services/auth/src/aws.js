@@ -62,8 +62,13 @@ api.declare({
     "credentials may allow access to unexpected keys, as S3 does not treat",
     "slashes specially.  For example, a prefix of `my-folder` will allow",
     "access to `my-folder/file.txt` as expected, but also to `my-folder.txt`,",
-    "which may not be intended."
-
+    "which may not be intended.",
+    "",
+    "Finally, note that the `PutObjectAcl` call is not allowed.  Passing a canned",
+    "ACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and",
+    "will result in an access-denied error from AWS.  This limitation is due to a",
+    "security flaw in Amazon S3 which might otherwise allow indefinite access to",
+    "uploaded objects.",
   ].join('\n')
 }, async function(req, res) {
   var level   = req.params.level;
