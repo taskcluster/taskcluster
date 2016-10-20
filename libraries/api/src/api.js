@@ -24,6 +24,24 @@ var typeis        = require('type-is');
 // Default baseUrl for authentication server
 var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
 
+var ping = {
+  method:   'get',
+  route:    '/ping',
+  name:     'ping',
+  stability:  'stable',
+  title:    'Ping Server',
+  description: [
+    'Respond without doing anything.',
+    'This endpoint is used to check that the service is up.'
+  ].join('\n'),
+  handler: function(req, res) {
+    res.status(200).json({
+      alive:    true,
+      uptime:   process.uptime()
+    });
+  }
+};
+
 /**
  * Create parameter validation middle-ware instance, given a mapping from
  * parameter to regular expression or function that returns a message as string
@@ -769,7 +787,7 @@ API.prototype.router = function(options) {
   }
 
   // Add entries to router
-  this._entries.forEach(entry => {
+  _.concat(this._entries, [ping]).forEach(entry => {
     // Route pattern
     var middleware = [entry.route];
 
@@ -840,7 +858,7 @@ API.prototype.reference = function(options) {
     title:              this._options.title,
     description:        this._options.description,
     baseUrl:            options.baseUrl,
-    entries: this._entries.map(function(entry) {
+    entries: _.concat(this._entries, [ping]).map(function(entry) {
       // Find parameters for entry
       var params  = [];
       // Note: express uses the NPM module path-to-regexp for parsing routes
