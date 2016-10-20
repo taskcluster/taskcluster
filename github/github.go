@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 18 Oct 2016 at 19:24:00 UTC. The code was generated
+// Thu, 20 Oct 2016 at 01:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -89,17 +89,27 @@ func (myGithub *Github) GithubWebHookConsumer() error {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// A paginated list of all builds that have been run in
-// taskcluster. They are sorted in order of submission.
+// A paginated list of builds that have been run in
+// Taskcluster. Can be filtered on various git-specific
+// fields.
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#builds
-func (myGithub *Github) Builds(continuationToken, limit string) (*Builds1, error) {
+func (myGithub *Github) Builds(continuationToken, limit, organization, repository, sha string) (*Builds1, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
 	}
 	if limit != "" {
 		v.Add("limit", limit)
+	}
+	if organization != "" {
+		v.Add("organization", organization)
+	}
+	if repository != "" {
+		v.Add("repository", repository)
+	}
+	if sha != "" {
+		v.Add("sha", sha)
 	}
 	cd := tcclient.ConnectionData(*myGithub)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(Builds1), v)

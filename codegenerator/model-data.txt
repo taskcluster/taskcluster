@@ -1,4 +1,4 @@
-Generated: 1476818672
+Generated: 1476926589
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3012,15 +3012,16 @@ Entry 1     =
     Entry Method      = 'get'
     Entry Route       = '/builds'
     Entry Args        = '[]'
-    Entry Query        = '[continuationToken limit]'
+    Entry Query        = '[continuationToken limit organization repository sha]'
     Entry Name        = 'builds'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/github/v1/build-list.json#'
-    Entry Title       = 'All Builds'
-    Entry Description = 'A paginated list of all builds that have been run in
-taskcluster. They are sorted in order of submission.'
+    Entry Title       = 'List of Builds'
+    Entry Description = 'A paginated list of builds that have been run in
+Taskcluster. Can be filtered on various git-specific
+fields.'
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
