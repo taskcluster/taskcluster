@@ -172,21 +172,26 @@ api.declare({
   method:     'get',
   route:      '/builds',
   name:       'builds',
-  title:      'All Builds',
+  title:      'List of Builds',
   stability:  'experimental',
   output:     'build-list.json#',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
+    organization: /^([a-zA-Z0-9-_%]*)$/,
+    repository: /^([a-zA-Z0-9-_%]*)$/,
+    sha: /./,
   },
   description: [
-    'A paginated list of all builds that have been run in',
-    'taskcluster. They are sorted in order of submission.',
+    'A paginated list of builds that have been run in',
+    'Taskcluster. Can be filtered on various git-specific',
+    'fields.',
   ].join('\n'),
 }, async function(req, res) {
   let continuation = req.query.continuationToken || null;
   let limit = parseInt(req.query.limit || 1000, 10);
-  let builds = await this.Builds.scan({}, {continuation, limit});
+  let query = _.pick(req.query, ['organization', 'repository', 'sha']);
+  let builds = await this.Builds.scan(query, {continuation, limit});
   return res.reply({
     continuationToken: builds.continuation || '',
     builds: builds.entries.map(entry => {
