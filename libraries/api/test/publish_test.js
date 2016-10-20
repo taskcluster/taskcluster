@@ -58,7 +58,7 @@ suite("api/publish", function() {
     }).then(function(res) {
       var reference = JSON.parse(res.Body);
       assert(reference.entries, "Missing entries");
-      assert(reference.entries.length == 1, "Should have one entry");
+      assert(reference.entries.length == 2, "Should have two entries");
       assert(reference.title, "Missing title");
     });
   });
