@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 20 Oct 2016 at 20:23:00 UTC. The code was generated
+// Fri, 21 Oct 2016 at 00:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -365,12 +365,6 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // slashes specially.  For example, a prefix of `my-folder` will allow
 // access to `my-folder/file.txt` as expected, but also to `my-folder.txt`,
 // which may not be intended.
-//
-// Finally, note that the `PutObjectAcl` call is not allowed.  Passing a canned
-// ACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and
-// will result in an access-denied error from AWS.  This limitation is due to a
-// security flaw in Amazon S3 which might otherwise allow indefinite access to
-// uploaded objects.
 //
 // Required scopes:
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
