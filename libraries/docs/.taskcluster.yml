@@ -25,7 +25,7 @@ tasks:
       - "-lc"
       - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install && npm test"
     metadata:
-      name: "taskcluster-lib-docs"
+      name: "taskcluster-lib-docs test run"
       description: "Generate, build and upload documents for taskcluster projects"
       licence: "MPL-2.0"
       owner: "{{ event.head.user.email }}"
