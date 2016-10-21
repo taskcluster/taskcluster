@@ -130,7 +130,10 @@ suite('Spot Node Termination', () => {
   test('task is not claimed on startup if node terminated', async () => {
     settings.configure({
       taskQueue: {
-        pollInterval: 500
+        pollInterval: 500,
+        expiration: 5 * 60 * 1000,
+        maxRetries: 5,
+        requestRetryInterval: 2 * 1000
       },
       shutdown: {
         enabled: true,
