@@ -385,8 +385,11 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "env": {
+      "additionalProperties": {
+        "type": "string"
+      },
       "description": "Example: ` + "`" + `` + "`" + `` + "`" + `{ \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\", \"GOOS\": \"darwin\" }` + "`" + `` + "`" + `` + "`" + `",
-      "title": "Environment variable mappings.",
+      "title": "Environment variable mappings. Must be strings.",
       "type": "object"
     },
     "features": {
