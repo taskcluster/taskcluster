@@ -22,10 +22,12 @@ properties:
       a Windows™ .bat file). For example:
       `["set", "echo hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
   env:
-    title: Environment variable mappings.
+    title: Environment variable mappings. Must be strings.
     description: 'Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
       "darwin" }```'
     type: object
+    additionalProperties:
+      type: string
   maxRunTime:
     type: integer
     title: Maximum run time in seconds

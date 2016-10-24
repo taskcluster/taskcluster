@@ -24,10 +24,12 @@ properties:
       One array per command (each command is an array of arguments). Several arrays
       for several commands.
   env:
-    title: Environment variable mappings.
+    title: Environment variable mappings. Must be strings.
     description: 'Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
       "darwin" }```'
     type: object
+    additionalProperties:
+      type: string
   maxRunTime:
     type: integer
     title: Maximum run time in seconds
