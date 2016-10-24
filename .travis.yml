@@ -9,7 +9,7 @@ go:
   - 1.6
 
 before_install:
-  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz
+  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz
   - tar -C $HOME -xf go.tar.gz
   - rm go.tar.gz
   - export GOROOT="${HOME}/go"
