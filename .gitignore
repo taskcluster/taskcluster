@@ -41,3 +41,6 @@ coverage.report
 /testdata/my-task-caches/
 /testdata/preloaded/
 /testdata/public/logs/
+
+# For any releases made locally
+/target/
