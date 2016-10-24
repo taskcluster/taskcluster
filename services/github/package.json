@@ -32,7 +32,7 @@
     "slugid": "^1.1.0",
     "source-map-support": "^0.4.0",
     "taskcluster-client": "^1.4.0",
-    "taskcluster-lib-api": "^2.1.0",
+    "taskcluster-lib-api": "^3.0.0",
     "taskcluster-lib-app": "^1.0.0",
     "taskcluster-lib-docs": "^3.0.2",
     "taskcluster-lib-loader": "^1.0.0",
