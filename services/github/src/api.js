@@ -207,22 +207,3 @@ api.declare({
     }),
   });
 });
-
-api.declare({
-  method:     'get',
-  route:      '/ping',
-  name:       'ping',
-  title:      'Ping Server',
-  stability:  'experimental',
-  description: [
-    'Documented later...',
-    '',
-    '**Warning** this api end-point is **not stable**.',
-  ].join('\n'),
-}, function(req, res) {
-
-  res.status(200).json({
-    alive:    true,
-    uptime:   process.uptime(),
-  });
-});
