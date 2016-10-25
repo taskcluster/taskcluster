@@ -181,6 +181,7 @@ suite('queue/QueueService', function() {
 
       return [message, payload];
     }).catch(err => {throw new Error('Failed to poll queue');});
+    assert(payload.hintId, 'missing hintId');
 
     debug('### Delete pending message');
     var deleteMessageUrl = queue.signedDeleteUrl
@@ -240,6 +241,7 @@ suite('queue/QueueService', function() {
     // Check message
     assert(message.taskId === taskId);
     assert(message.runId === runId);
+    assert(message.hintId, 'missing hintId');
 
     // Remove message
     await message.remove();
@@ -298,6 +300,7 @@ suite('queue/QueueService', function() {
 
       return [message, payload];
     }).catch(err => {throw new Error('Failed to poll queue');});
+    assert(typeof payload.hintId === 'string', 'Missing hintId');
 
     debug('### Delete pending message');
     var deleteMessageUrl = queue.signedDeleteUrl
