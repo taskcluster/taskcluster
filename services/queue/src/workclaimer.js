@@ -164,7 +164,7 @@ class WorkClaimer extends events.EventEmitter {
         try {
           // Try to claim task from hint
           let result = await this.claimTask(
-            hint.taskId, hint.runId, workerGroup, workerId,
+            hint.taskId, hint.runId, workerGroup, workerId, null, hint.hintId,
           );
           // Remove hint, if successfully used (don't block)
           hint.remove().catch(err => {
@@ -189,7 +189,7 @@ class WorkClaimer extends events.EventEmitter {
         return 'error-claiming';
       }));
 
-      // Remove entries from promises resolved as null (because of error)
+      // Remove entries from claims resolved as string (which indicates error)
       claims = claims.filter(claim => typeof claim !== 'string');
     }
     return claims;
@@ -200,7 +200,7 @@ class WorkClaimer extends events.EventEmitter {
    * 'task-not-found' or 'task-not-found' if not found.
    * If claim works out this returns a claim structure.
    */
-  async claimTask(taskId, runId, workerGroup, workerId, task = null) {
+  async claimTask(taskId, runId, workerGroup, workerId, task = null, hintId = null) {
     // Load task, if not given
     if (!task) {
       task = await this._Task.load({taskId}, true);
@@ -234,6 +234,7 @@ class WorkClaimer extends events.EventEmitter {
       run.state         = 'running';
       run.workerGroup   = workerGroup;
       run.workerId      = workerId;
+      run.hintId        = hintId;
       run.takenUntil    = takenUntil.toJSON();
       run.started       = new Date().toJSON();
 
@@ -252,7 +253,8 @@ class WorkClaimer extends events.EventEmitter {
     if (task.runs.length - 1  !== runId ||
         run.state             !== 'running' ||
         run.workerGroup       !== workerGroup ||
-        run.workerId          !== workerId) {
+        run.workerId          !== workerId ||
+        run.hintId            !== hintId) {
       return 'conflict';
     }
 
