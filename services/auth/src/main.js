@@ -66,26 +66,24 @@ let load = Loader({
   },
 
   Client: {
-    requires: ['cfg', 'resolver', 'monitor'],
-    setup: ({cfg, resolver, monitor}) =>
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) =>
       data.Client.setup({
         table:        cfg.app.clientTableName,
         credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
         cryptoKey:    cfg.app.tableCryptoKey,
-        context:      {resolver},
         monitor:      monitor.prefix('table.clients'),
       })
   },
 
   Role: {
-    requires: ['cfg', 'resolver', 'monitor'],
-    setup: ({cfg, resolver, monitor}) =>
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) =>
       data.Role.setup({
         table:        cfg.app.rolesTableName,
         credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
-        context:      {resolver},
         monitor:      monitor.prefix('table.roles'),
       })
   },
