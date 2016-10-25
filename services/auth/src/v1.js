@@ -119,7 +119,7 @@ api.declare({
   await this.Client.scan({}, {
     handler: client => {
       if (!prefix || client.clientId.startsWith(prefix)) {
-        clients.push(client.json());
+        clients.push(client.json(this.resolver));
       }
     }
   });
@@ -150,7 +150,7 @@ api.declare({
     return res.status(404).json({message: "Client not found!"});
   }
 
-  res.reply(client.json());
+  res.reply(client.json(this.resolver));
 });
 
 
@@ -241,7 +241,7 @@ api.declare({
   ]);
 
   // Create result with access token
-  let result = client.json();
+  let result = client.json(this.resolver);
   result.accessToken = client.accessToken;
   return res.reply(result);
 });
@@ -294,7 +294,7 @@ api.declare({
   ]);
 
   // Create result with access token
-  let result = client.json(this.resovler);
+  let result = client.json(this.resolver);
   result.accessToken = client.accessToken;
   return res.reply(result);
 });
@@ -354,7 +354,7 @@ api.declare({
     this.resolver.reloadClient(clientId)
   ]);
 
-  return res.reply(client.json());
+  return res.reply(client.json(this.resolver));
 });
 
 
@@ -401,7 +401,7 @@ api.declare({
     this.resolver.reloadClient(clientId)
   ]);
 
-  return res.reply(client.json());
+  return res.reply(client.json(this.resolver));
 });
 
 
@@ -447,7 +447,7 @@ api.declare({
     this.resolver.reloadClient(clientId)
   ]);
 
-  return res.reply(client.json());
+  return res.reply(client.json(this.resolver));
 });
 
 
@@ -500,7 +500,7 @@ api.declare({
   // Load all roles
   let roles = [];
   await this.Role.scan({}, {
-    handler: role => roles.push(role.json())
+    handler: role => roles.push(role.json(this.resolver))
   });
 
   res.reply(roles);
@@ -530,7 +530,7 @@ api.declare({
     return res.status(404).json({message: "Role not found!"});
   }
 
-  res.reply(role.json());
+  res.reply(role.json(this.resolver));
 });
 
 
@@ -607,7 +607,7 @@ api.declare({
   ]);
 
   // Send result
-  return res.reply(role.json());
+  return res.reply(role.json(this.resolver));
 });
 
 
@@ -662,7 +662,7 @@ api.declare({
     this.resolver.reloadRole(roleId)
   ]);
 
-  return res.reply(role.json());
+  return res.reply(role.json(this.resolver));
 });
 
 
