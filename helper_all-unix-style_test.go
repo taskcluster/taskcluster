@@ -22,6 +22,19 @@ func helloGoodbye() [][]string {
 	}
 }
 
+func rawHelloGoodbye() string {
+	return `"command": [
+    [
+      "echo",
+      "hello world!"
+    ],
+    [
+      "echo",
+      "goodbye world!"
+    ]
+  ]`
+}
+
 func checkSHASums() [][]string {
 	return [][]string{
 		{

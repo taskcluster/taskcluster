@@ -1,11 +1,48 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"runtime"
 	"testing"
+	"time"
 
+	"github.com/taskcluster/slugid-go/slugid"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/xeipuuv/gojsonschema"
 )
+
+func taskWithPayload(payload string) TaskRun {
+	return TaskRun{
+		TaskID: slugid.Nice(),
+		Definition: queue.TaskDefinitionResponse{
+			Payload: json.RawMessage(payload),
+		},
+		logWriter: &bytes.Buffer{},
+	}
+}
+
+func ensureValidPayload(t *testing.T, task TaskRun) {
+	err := task.validatePayload()
+	if err != nil {
+		t.Logf("Task log:\n%v", task.logWriter)
+		t.Logf("%v", err.Cause)
+		t.Fatalf("Valid task payload should have passed validation")
+	}
+}
+
+func ensureMalformedPayload(t *testing.T, task TaskRun) {
+	err := task.validatePayload()
+	if err == nil {
+		t.Fatalf("Bad task payload should not have passed validation")
+	}
+	t.Logf("Task log:\n%v", task.logWriter)
+	t.Logf("%v", err.Cause)
+	if err.Reason != "malformed-payload" || err.TaskStatus != errored {
+		t.Errorf("Bad task payload should have retured malformed-payload, but actually returned:\n%#v", err)
+	}
+}
 
 // Test that the burned in payload schema is a valid json schema
 func TestPayloadSchemaValid(t *testing.T) {
@@ -19,4 +56,99 @@ func TestPayloadSchemaValid(t *testing.T) {
 		t.Log("Error:")
 		t.Fatalf("%s", err)
 	}
+}
+
+// Badly formatted json payload should result in *json.SyntaxError error in task.validatePayload()
+func TestTotallyMalformedPayload(t *testing.T) {
+	ensureMalformedPayload(t, taskWithPayload(`bad payload, not even json`))
+}
+
+// Make sure only strings can be specified for env vars. In this test,
+// GITHUB_PULL_REQUEST is specified as a number, rather than a string.
+func TestEnvVarsMustBeStrings(t *testing.T) {
+	ensureMalformedPayload(t, taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip",
+    "GITHUB_PULL_REQUEST": 37,
+    "GITHUB_BASE_BRANCH": "master"
+  },
+  "maxRunTime": 1200,
+  `+rawHelloGoodbye()+`
+}`))
+}
+
+// Extra fields not allowed
+func TestExtraFieldsNotAllowed(t *testing.T) {
+	ensureMalformedPayload(t, taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  "extraField": "This field is not allowed!",
+  `+rawHelloGoodbye()+`
+}`))
+}
+
+// At least one command must be specified
+func TestNoCommandsSpecified(t *testing.T) {
+	ensureMalformedPayload(t, taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  "command": []
+}`))
+}
+
+// Valid payload should pass validation
+func TestValidPayload(t *testing.T) {
+	ensureValidPayload(t, taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  `+rawHelloGoodbye()+`
+}`))
+}
+
+// If an artifact expires before task deadline we should get a Malformed Payload
+func TestArtifactExpiresBeforeDeadline(t *testing.T) {
+	now := time.Now()
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  ` + rawHelloGoodbye() + `,
+  "artifacts": [
+    {
+      "type": "file",
+      "path": "public/some/artifact",
+      "expires": "` + tcclient.Time(now.Add(time.Minute*5)).String() + `"
+    }
+  ]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	ensureMalformedPayload(t, task)
+}
+
+// If artifact expires after task deadline, we should not get a Malformed Payload
+func TestArtifactExpiresAfterDeadline(t *testing.T) {
+	now := time.Now()
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  ` + rawHelloGoodbye() + `,
+  "artifacts": [
+    {
+      "type": "file",
+      "path": "public/some/artifact",
+      "expires": "` + tcclient.Time(now.Add(time.Minute*10)).String() + `"
+    }
+  ]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 5))
+	ensureValidPayload(t, task)
 }

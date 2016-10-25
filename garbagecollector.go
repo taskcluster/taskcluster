@@ -28,16 +28,16 @@ func (r *Resources) ExpungeNext() error {
 }
 
 // Implement sort.Interface to sort by deletion order.
-func (rs Resources) Len() int {
-	return len(rs)
+func (r Resources) Len() int {
+	return len(r)
 }
 
-func (rs Resources) Less(i, j int) bool {
-	return rs[i].Rating() < rs[j].Rating()
+func (r Resources) Less(i, j int) bool {
+	return r[i].Rating() < r[j].Rating()
 }
 
-func (rs Resources) Swap(i, j int) {
-	rs[i], rs[j] = rs[j], rs[i]
+func (r Resources) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }
 
 // Note ideally this would run in an independent thread, but since we have one

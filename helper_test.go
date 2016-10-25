@@ -30,17 +30,14 @@ func setup(t *testing.T) {
 		t.Fatalf("Test failed during setup phase!")
 	}
 	TaskUser.HomeDir = filepath.Join(cwd, "testdata")
-	clientID := os.Getenv("TASKCLUSTER_CLIENT_ID")
-	accessToken := os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
-	certificate := os.Getenv("TASKCLUSTER_CERTIFICATE")
 
 	// configure the worker
 	config = &Config{
 		ProvisionerID:              "test-provisioner",
 		SigningKeyLocation:         filepath.Join("testdata", "private-opengpg-key"),
-		AccessToken:                accessToken,
-		Certificate:                certificate,
-		ClientID:                   clientID,
+		AccessToken:                os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		Certificate:                os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		ClientID:                   os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		RefreshUrlsPrematurelySecs: 310,
 		WorkerGroup:                "test-worker-group",
 		WorkerID:                   "test-worker-id",

@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -797,7 +796,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 	}
 	for _, artifact := range task.Payload.Artifacts {
 		if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
-			return MalformedPayloadError(errors.New("Malformed payload: artifact expiration before task deadline"))
+			return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
 		}
 	}
 	return nil
@@ -857,7 +856,10 @@ func (c *Command) Start() error {
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	task.Log("Executing command " + strconv.Itoa(index) + ": " + task.describeCommand(index))
-	task.prepareCommand(index)
+	cee := task.prepareCommand(index)
+	if cee != nil {
+		panic(cee)
+	}
 	err := task.Commands[index].Start()
 	if err != nil {
 		panic(err)

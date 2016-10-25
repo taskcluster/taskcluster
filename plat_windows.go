@@ -238,7 +238,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	return nil
 }
 
-func (task *TaskRun) prepareCommand(index int) error {
+func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
 	env := filepath.Join(TaskUser.HomeDir, "env.txt")
@@ -264,7 +264,7 @@ func (task *TaskRun) prepareCommand(index int) error {
 		if task.Payload.Env != nil {
 			err := json.Unmarshal(task.Payload.Env, &envVars)
 			if err != nil {
-				return err
+				return MalformedPayloadError(err)
 			}
 			for envVar, envValue := range envVars {
 				// log.Printf("Setting env var: %v=%v", envVar, envValue)
@@ -278,7 +278,7 @@ func (task *TaskRun) prepareCommand(index int) error {
 		for _, x := range [2][2]string{{env, "set "}, {dir, "cd "}} {
 			file, err := os.Open(x[0])
 			if err != nil {
-				return err
+				panic(err)
 			}
 			defer file.Close()
 
@@ -288,7 +288,7 @@ func (task *TaskRun) prepareCommand(index int) error {
 			}
 
 			if err := scanner.Err(); err != nil {
-				return err
+				panic(err)
 			}
 		}
 	}
