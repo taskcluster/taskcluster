@@ -148,6 +148,7 @@ let Task = base.Entity.configure({
      * - reasonResolved (required)
      * - workerGroup
      * - workerId
+     * - hintId         (optional)
      * - takenUntil
      * - scheduled
      * - started
@@ -202,7 +203,17 @@ Task.prototype.status = function() {
     retriesLeft:      this.retriesLeft,
     state:            this.state(),
     runs:             this.runs.map((run, runId) => {
-      return _.defaults({runId}, run);
+      return _.defaults({runId}, _.pick(run, [
+        'state',
+        'reasonCreated',
+        'reasonResolved',
+        'workerGroup',
+        'workerId',
+        'takenUntil',
+        'scheduled',
+        'started',
+        'resolved',
+      ]));
     }),
   };
 };

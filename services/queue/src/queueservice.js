@@ -653,6 +653,7 @@ class QueueService {
    * {
    *   taskId:  '...',        // taskId from the message
    *   runId:   0,            // runId from the message
+   *   hintId:  '...',        // hintId from the message
    *   remove:  function() {} // Async function to delete the message
    *   release: function() {} // Async function that makes the message visible
    * }
@@ -677,6 +678,7 @@ class QueueService {
           return {
             taskId:   m.payload.taskId,
             runId:    m.payload.runId,
+            hintId:   m.payload.hintId,
             remove:   m.remove,
             release:  m.release,
           };

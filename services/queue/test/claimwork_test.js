@@ -12,7 +12,7 @@ suite('queue.claimWork', () => {
   // Generate random workerType id to use for this test
   var workerType  = slugid.v4();
 
-  var makeTask = (priority) => {
+  var makeTask = (priority, workerType) => {
     return {
       provisionerId:    'no-provisioner',
       workerType:       workerType,
@@ -81,7 +81,7 @@ suite('queue.claimWork', () => {
     }));
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, makeTask('normal'));
+    await helper.queue.createTask(taskId, makeTask('normal', workerType));
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
@@ -129,7 +129,7 @@ suite('queue.claimWork', () => {
     }));
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, makeTask('normal'));
+    await helper.queue.createTask(taskId, makeTask('normal', workerType));
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
@@ -181,8 +181,8 @@ suite('queue.claimWork', () => {
     let taskIdB = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskIdB, makeTask('normal'));
-    await helper.queue.createTask(taskIdA, makeTask('high'));
+    await helper.queue.createTask(taskIdB, makeTask('normal', workerType));
+    await helper.queue.createTask(taskIdA, makeTask('high', workerType));
 
     debug('### ClaimWork');
     let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
@@ -203,5 +203,47 @@ suite('queue.claimWork', () => {
     });
     assert(r2.tasks.length === 1, 'Expected a task');
     assert(r2.tasks[0].status.taskId === taskIdB, 'Expected high priorty task');
+
+    debug('### reportCompleted');
+    // Report completed with temp creds from claimWork
+    let queueA = new helper.Queue({credentials: r1.tasks[0].credentials});
+    await queueA.reportCompleted(taskIdA, 0);
+
+    debug('### reportCompleted');
+    // Report completed with temp creds from claimWork
+    let queueB = new helper.Queue({credentials: r2.tasks[0].credentials});
+    await queueB.reportCompleted(taskIdB, 0);
+  });
+
+  test('createTask twice, claimWork, reportCompleted', async() => {
+    let workerType = slugid.v4(); // need a fresh workerType
+    let taskId = slugid.v4();
+    let task = makeTask('normal', workerType);
+
+    debug('### Creating task');
+    await helper.queue.createTask(taskId, task);
+    debug('### Creating task (again)');
+    await helper.queue.createTask(taskId, task);
+
+    debug('Sleep giving messages time to arrive in azure queue');
+    // this test will be intermittent, if it doesn't work, can't make it fail
+    // consistently, sorry... Though it's feel consistent :)
+    await new Promise(accept => setTimeout(accept, 3000));
+
+    debug('### Claim task');
+    let before = new Date();
+    let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
+      workerGroup:  'my-worker-group',
+      workerId:     'my-worker',
+      tasks:        2,
+    });
+    assert(r1.tasks.length === 1, 'Expected a single task');
+    assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
+    assert(r1.tasks[0].runId === 0, 'Expected runId = 0');
+
+    debug('### reportCompleted');
+    // Report completed with temp creds from claimWork
+    let queue = new helper.Queue({credentials: r1.tasks[0].credentials});
+    await queue.reportCompleted(taskId, 0);
   });
 });
