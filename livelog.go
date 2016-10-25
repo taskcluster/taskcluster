@@ -77,7 +77,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 	errTerminate := l.liveLog.Terminate()
 	if errTerminate != nil {
 		// no need to raise an exception
-		log.Printf("WARN: could not close livelog writer: %s", errTerminate)
+		log.Printf("WARN: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Println("Redirecting live.log to live_backing.log")
 	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, l.task.TaskID, l.task.RunID, "public/logs/live_backing.log")
