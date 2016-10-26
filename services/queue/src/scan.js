@@ -107,7 +107,7 @@ let scanObjectVersions = async ({cfg, Artifact, Task, publicArtifactBucket}) => 
   // This operation is parallelized into 64 simultaneous operations, to avoid
   // the awful slowness of a single chained ListObjects call
   await Promise.all(SLUGID_CHARACTERS.map(async initialChar => {
-    const params = { MaxKeys: 10000, Prefix: initialChar };
+    const params = {MaxKeys: 10000, Prefix: initialChar};
     while (1) {
       let res = await s3.listObjectVersions(params).promise();
 
@@ -135,7 +135,7 @@ let scanObjects = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
   // This operation is parallelized into 64 simultaneous operations, to avoid
   // the awful slowness of a single chained ListObjects call
   await Promise.all(SLUGID_CHARACTERS.map(async initialChar => {
-    const params = { MaxKeys: 10000, Prefix: initialChar };
+    const params = {MaxKeys: 10000, Prefix: initialChar};
     while (1) {
       const res = await s3.listObjects(params).promise();
 
@@ -147,8 +147,9 @@ let scanObjects = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
         break;
       }
 
-      // use the key from the last object
-      params.Marker = res.data.Contents[res.data.Contents.length-1].Key;
+      // use the NextMarker key from the last object
+      const contents = res.data.Contents
+      params.Marker = res.data.NextMarker || contents[contents.length-1].Key;
     }
   }));
 };
