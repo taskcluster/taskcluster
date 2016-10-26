@@ -148,7 +148,7 @@ let scanObjects = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
       }
 
       // use the NextMarker key from the last object
-      const contents = res.data.Contents
+      const contents = res.data.Contents;
       params.Marker = res.data.NextMarker || contents[contents.length-1].Key;
     }
   }));
