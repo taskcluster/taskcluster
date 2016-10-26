@@ -17,6 +17,12 @@
 let base                = require('taskcluster-base');
 let _                   = require('lodash');
 
+const SLUGID_CHARACTERS = (
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+  'abcdefghijklmnopqrstuvwxyz' +
+  '0123456789_-'
+).split('');
+
 /**
  * Determine the gecko branch for a task, if it has one
  *
@@ -96,25 +102,55 @@ let scanTasks = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
  * all but the latest version.
  */
 let scanObjectVersions = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
-  // TODO: this could be a lot faster if done with 64 parallel list operations, one
-  // for each of the allowed slugid characters.
-  let s3 = publicArtifactBucket.s3;
-  let params = {MaxKeys: 10000};
+  const s3 = publicArtifactBucket.s3;
 
-  while (1) {
-    let res = await s3.listObjectVersions(params).promise();
+  // This operation is parallelized into 64 simultaneous operations, to avoid
+  // the awful slowness of a single chained ListObjects call
+  await Promise.all(SLUGID_CHARACTERS.map(async initialChar => {
+    const params = { MaxKeys: 10000, Prefix: initialChar };
+    while (1) {
+      let res = await s3.listObjectVersions(params).promise();
 
-    res.data.Versions.forEach((obj) => {
-      // ...
-    });
+      res.data.Versions.forEach((obj) => {
+        // ...
+      });
 
-    res.data.DeleteMarkers.forEach((obj) => {
-      // ...
-    });
+      res.data.DeleteMarkers.forEach((obj) => {
+        // ...
+      });
 
-    params.KeyMarker = res.data.NextKeyMarker;
-    params.VersionIdMarker = res.data.NextVersionIdMarker;
-  };
+      if (!res.data.IsTruncated) {
+        break;
+      }
+
+      params.KeyMarker = res.data.NextKeyMarker;
+      params.VersionIdMarker = res.data.NextVersionIdMarker;
+    };
+  }));
 };
 
-module.exports = scanTasks;
+let scanObjects = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
+  const s3 = publicArtifactBucket.s3;
+
+  // This operation is parallelized into 64 simultaneous operations, to avoid
+  // the awful slowness of a single chained ListObjects call
+  await Promise.all(SLUGID_CHARACTERS.map(async initialChar => {
+    const params = { MaxKeys: 10000, Prefix: initialChar };
+    while (1) {
+      const res = await s3.listObjects(params).promise();
+
+      res.data.Contents.forEach((obj) => {
+        // ...
+      });
+
+      if (!res.data.IsTruncated) {
+        break;
+      }
+
+      // use the key from the last object
+      params.Marker = res.data.Contents[res.data.Contents.length-1].Key;
+    }
+  }));
+};
+
+module.exports = scanObjectVersions;
