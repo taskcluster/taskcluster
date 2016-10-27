@@ -25,7 +25,7 @@
 //
 // and then call one or more of myPulse's methods, e.g.:
 //
-//  err := myPulse.Ping(.....)
+//  data, err := myPulse.Overview(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 24 Oct 2016 at 17:24:00 UTC. The code was generated
+// Thu, 27 Oct 2016 at 18:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -62,7 +62,7 @@ type Pulse tcclient.ConnectionData
 //  myPulse := pulse.New(creds)                              // set credentials
 //  myPulse.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myPulse.BaseURL = "http://localhost:1234/api/Pulse/v1"   // alternative API endpoint (production by default)
-//  err := myPulse.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
+//  data, err := myPulse.Overview(.....)                     // for example, call the Overview(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -73,19 +73,6 @@ func New(credentials *tcclient.Credentials) *Pulse {
 		Authenticate: true,
 	})
 	return &myPulse
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
-// Documented later...
-//
-// **Warning** this api end-point is **not stable**.
-//
-// See https://docs.do.not.exist.yet.service.not.in.production#ping
-func (myPulse *Pulse) Ping() error {
-	cd := tcclient.ConnectionData(*myPulse)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -114,5 +101,15 @@ func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
 func (myPulse *Pulse) Namespace(namespace string, payload *NamespaceCreationRequest) error {
 	cd := tcclient.ConnectionData(*myPulse)
 	_, _, err := (&cd).APICall(payload, "POST", "/namespace/"+url.QueryEscape(namespace), nil, nil)
+	return err
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.do.not.exist.yet.service.not.in.production#ping
+func (myPulse *Pulse) Ping() error {
+	cd := tcclient.ConnectionData(*myPulse)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }
