@@ -171,6 +171,8 @@ definitions:
         type: string
         description: Archive format of content for read only directory
         enum:
+        - rar
+        - tar.bz2
         - tar.gz
         - zip
     additionalProperties: false

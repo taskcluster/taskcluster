@@ -99,6 +99,8 @@ type (
 		// Archive format of content for read only directory
 		//
 		// Possible values:
+		//   * "rar"
+		//   * "tar.bz2"
 		//   * "tar.gz"
 		//   * "zip"
 		Format string `json:"format"`
@@ -279,6 +281,8 @@ func taskPayloadSchema() string {
         "format": {
           "description": "Archive format of content for read only directory",
           "enum": [
+            "rar",
+            "tar.bz2",
             "tar.gz",
             "zip"
           ],
