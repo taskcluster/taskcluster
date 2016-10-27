@@ -173,17 +173,3 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
 	}
 }
-
-func toRawMessageArray(t *testing.T, x interface{}) []json.RawMessage {
-	b, err := json.Marshal(x)
-	if err != nil {
-		t.Fatalf("Could not convert %v to json", x)
-	}
-
-	rawMessageArray := []json.RawMessage{}
-	err = json.Unmarshal(b, &rawMessageArray)
-	if err != nil {
-		t.Fatalf("Could not convert json bytes to []json.RawMessage")
-	}
-	return rawMessageArray
-}

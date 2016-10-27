@@ -83,13 +83,10 @@ properties:
           the environment it ran in.
   mounts:
     type: array
-    title: Mounts
     description: Directories and/or files to be mounted
     items:
-      type: object
-      oneOf:
-      - "$ref": "#/definitions/fileMount"
-      - "$ref": "#/definitions/directoryMount"
+      title: Mount
+      "$ref": "#/definitions/mount"
   osGroups:
     type: array
     title: OS Groups
@@ -99,86 +96,88 @@ properties:
     items:
       type: string
 definitions:
+  mount:
+    title: Mount
+    oneOf:
+    - "$ref": "#/definitions/fileMount"
+    - "$ref": "#/definitions/writableDirectoryCache"
+    - "$ref": "#/definitions/readOnlyDirectory"
   fileMount:
     type: object
+    title: File Mount
     properties:
       file:
         title: File
         type: string
         description: The filesystem location to mount the file
       content:
-        title: Content
-        type: object
-        "$ref": "#/definitions/content"
         description: Content of the file to be mounted
+        "$ref": "#/definitions/content"
     additionalProperties: false
     required:
     - file
     - content
-  directoryMount:
+  writableDirectoryCache:
     type: object
-    oneOf:
-    - type: object
-      title: Writable Directory Cache
-      properties:
-        directory:
-          title: Directory Volume
-          type: string
-          description: The filesystem location to mount the directory volume
-        cacheName:
-          title: Cache Name
-          type: string
-          description: Implies a read/write cache directory volume. A unique name
-            for the cache volume. Requires scope `generic-worker:cache:<cache-name>`.
-            Note if this cache is loaded from an artifact, you will also require
-            scope `queue:get-artifact:<artifact-name>` to use this cache.
-        content:
-          title: Content
-          type: object
-          "$ref": "#/definitions/content"
-          description: Optional content to be loaded when initially creating the cache.
-        format:
-          title: Format
-          type: string
-          description: Archive format of content for writable directory cache
-          enum:
-          - rar
-          - tar.bz2
-          - tar.gz
-          - zip
-      additionalProperties: false
-      required:
-      - directory
-      - cacheName
-      dependencies:
-        content:
-        - format
-        format:
-        - content
-    - type: object
-      title: Read Only Directory
-      properties:
-        directory:
-          title: Directory
-          type: string
-          description: The filesystem location to mount the directory volume
-        content:
-          title: Content
-          type: object
-          "$ref": "#/definitions/content"
-          description: Contents of read only directory.
-        format:
-          title: Format
-          type: string
-          description: Archive format of content for read only directory
-          enum:
-          - tar.gz
-          - zip
-      additionalProperties: false
-      required:
-      - directory
-      - content
+    title: Writable Directory Cache
+    properties:
+      directory:
+        title: Directory Volume
+        type: string
+        description: The filesystem location to mount the directory volume
+      cacheName:
+        title: Cache Name
+        type: string
+        description: Implies a read/write cache directory volume. A unique name
+          for the cache volume. Requires scope `generic-worker:cache:<cache-name>`.
+          Note if this cache is loaded from an artifact, you will also require
+          scope `queue:get-artifact:<artifact-name>` to use this cache.
+      content:
+        title: Content
+        description: Optional content to be loaded when initially creating the cache.
+        "$ref": "#/definitions/content"
+      format:
+        title: Format
+        type: string
+        description: Archive format of content for writable directory cache
+        enum:
+        - rar
+        - tar.bz2
+        - tar.gz
+        - zip
+    additionalProperties: false
+    required:
+    - directory
+    - cacheName
+    dependencies:
+      content:
       - format
+      format:
+      - content
+  readOnlyDirectory:
+    type: object
+    title: Read Only Directory
+    properties:
+      directory:
+        title: Directory
+        type: string
+        description: The filesystem location to mount the directory volume
+      content:
+        title: Content
+        description: Contents of read only directory.
+        "$ref": "#/definitions/content"
+      format:
+        title: Format
+        type: string
+        description: Archive format of content for read only directory
+        enum:
+        - tar.gz
+        - zip
+    additionalProperties: false
+    required:
+    - directory
+    - content
+    - format
   content:
     oneOf:
     - title: Artifact Content

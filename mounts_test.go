@@ -1,11 +1,26 @@
 package main
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func toMountArray(t *testing.T, x interface{}) []Mount {
+	b, err := json.Marshal(x)
+	if err != nil {
+		t.Fatalf("Could not convert %v to json", x)
+	}
+
+	rawMessageArray := []Mount{}
+	err = json.Unmarshal(b, &rawMessageArray)
+	if err != nil {
+		t.Fatalf("Could not convert json bytes to []json.RawMessage")
+	}
+	return rawMessageArray
+}
 
 func TestMounts(t *testing.T) {
 
@@ -90,7 +105,7 @@ func TestMounts(t *testing.T) {
 	}
 
 	payload := GenericWorkerPayload{
-		Mounts:     toRawMessageArray(t, &mounts),
+		Mounts:     toMountArray(t, &mounts),
 		Command:    checkSHASums(),
 		MaxRunTime: 180,
 	}
@@ -173,7 +188,7 @@ func TestMissingScopes(t *testing.T) {
 	}
 
 	payload := GenericWorkerPayload{
-		Mounts:     toRawMessageArray(t, &mounts),
+		Mounts:     toMountArray(t, &mounts),
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
 	}
@@ -221,7 +236,7 @@ func TestCachesCanBeModified(t *testing.T) {
 	}
 
 	payload := GenericWorkerPayload{
-		Mounts:     toRawMessageArray(t, &mounts),
+		Mounts:     toMountArray(t, &mounts),
 		Command:    incrementCounterInCache(),
 		MaxRunTime: 20,
 	}

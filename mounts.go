@@ -214,7 +214,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 }
 
 // Utility method to unmarshal a json blob and add it to the mounts in the TaskMount
-func (tm *TaskMount) Unmarshal(rm json.RawMessage, m MountEntry) {
+func (tm *TaskMount) Unmarshal(rm Mount, m MountEntry) {
 	// only update if nil, otherwise we could replace a previous error with nil
 	if tm.payloadError == nil {
 		tm.payloadError = json.Unmarshal(rm, m)

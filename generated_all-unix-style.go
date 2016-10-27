@@ -23,8 +23,6 @@ type (
 
 	Content json.RawMessage
 
-	DirectoryMount json.RawMessage
-
 	FileMount struct {
 
 		// Content of the file to be mounted
@@ -81,12 +79,14 @@ type (
 		MaxRunTime int `json:"maxRunTime"`
 
 		// Directories and/or files to be mounted
-		Mounts []json.RawMessage `json:"mounts,omitempty"`
+		Mounts []Mount `json:"mounts,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
 		OSGroups []string `json:"osGroups,omitempty"`
 	}
+
+	Mount json.RawMessage
 
 	ReadOnlyDirectory struct {
 
@@ -113,7 +113,9 @@ type (
 
 	Var FileMount
 
-	Var1 DirectoryMount
+	Var1 WritableDirectoryCache
+
+	Var2 ReadOnlyDirectory
 
 	WritableDirectoryCache struct {
 
@@ -154,16 +156,16 @@ func (this *Content) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// DirectoryMount is of type json.RawMessage...
-func (this *DirectoryMount) MarshalJSON() ([]byte, error) {
+// Mount is of type json.RawMessage...
+func (this *Mount) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *DirectoryMount) UnmarshalJSON(data []byte) error {
+func (this *Mount) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("DirectoryMount: UnmarshalJSON on nil pointer")
+		return errors.New("Mount: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
@@ -227,97 +229,12 @@ func taskPayloadSchema() string {
         }
       ]
     },
-    "directoryMount": {
-      "oneOf": [
-        {
-          "additionalProperties": false,
-          "dependencies": {
-            "content": [
-              "format"
-            ],
-            "format": [
-              "content"
-            ]
-          },
-          "properties": {
-            "cacheName": {
-              "description": "Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope ` + "`" + `generic-worker:cache:\u003ccache-name\u003e` + "`" + `. Note if this cache is loaded from an artifact, you will also require scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.",
-              "title": "Cache Name",
-              "type": "string"
-            },
-            "content": {
-              "$ref": "#/definitions/content",
-              "description": "Optional content to be loaded when initially creating the cache.",
-              "title": "Content",
-              "type": "object"
-            },
-            "directory": {
-              "description": "The filesystem location to mount the directory volume",
-              "title": "Directory Volume",
-              "type": "string"
-            },
-            "format": {
-              "description": "Archive format of content for writable directory cache",
-              "enum": [
-                "rar",
-                "tar.bz2",
-                "tar.gz",
-                "zip"
-              ],
-              "title": "Format",
-              "type": "string"
-            }
-          },
-          "required": [
-            "directory",
-            "cacheName"
-          ],
-          "title": "Writable Directory Cache",
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "content": {
-              "$ref": "#/definitions/content",
-              "description": "Contents of read only directory.",
-              "title": "Content",
-              "type": "object"
-            },
-            "directory": {
-              "description": "The filesystem location to mount the directory volume",
-              "title": "Directory",
-              "type": "string"
-            },
-            "format": {
-              "description": "Archive format of content for read only directory",
-              "enum": [
-                "tar.gz",
-                "zip"
-              ],
-              "title": "Format",
-              "type": "string"
-            }
-          },
-          "required": [
-            "directory",
-            "content",
-            "format"
-          ],
-          "title": "Read Only Directory",
-          "type": "object"
-        }
-      ],
-      "type": "object"
-    },
     "fileMount": {
       "additionalProperties": false,
       "properties": {
         "content": {
           "$ref": "#/definitions/content",
-          "description": "Content of the file to be mounted",
-          "title": "Content",
-          "type": "object"
+          "description": "Content of the file to be mounted"
         },
         "file": {
           "description": "The filesystem location to mount the file",
@@ -329,6 +246,97 @@ func taskPayloadSchema() string {
         "file",
         "content"
       ],
+      "title": "File Mount",
+      "type": "object"
+    },
+    "mount": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/fileMount"
+        },
+        {
+          "$ref": "#/definitions/writableDirectoryCache"
+        },
+        {
+          "$ref": "#/definitions/readOnlyDirectory"
+        }
+      ],
+      "title": "Mount"
+    },
+    "readOnlyDirectory": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/content",
+          "description": "Contents of read only directory.",
+          "title": "Content"
+        },
+        "directory": {
+          "description": "The filesystem location to mount the directory volume",
+          "title": "Directory",
+          "type": "string"
+        },
+        "format": {
+          "description": "Archive format of content for read only directory",
+          "enum": [
+            "tar.gz",
+            "zip"
+          ],
+          "title": "Format",
+          "type": "string"
+        }
+      },
+      "required": [
+        "directory",
+        "content",
+        "format"
+      ],
+      "title": "Read Only Directory",
+      "type": "object"
+    },
+    "writableDirectoryCache": {
+      "additionalProperties": false,
+      "dependencies": {
+        "content": [
+          "format"
+        ],
+        "format": [
+          "content"
+        ]
+      },
+      "properties": {
+        "cacheName": {
+          "description": "Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope ` + "`" + `generic-worker:cache:\u003ccache-name\u003e` + "`" + `. Note if this cache is loaded from an artifact, you will also require scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.",
+          "title": "Cache Name",
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/definitions/content",
+          "description": "Optional content to be loaded when initially creating the cache.",
+          "title": "Content"
+        },
+        "directory": {
+          "description": "The filesystem location to mount the directory volume",
+          "title": "Directory Volume",
+          "type": "string"
+        },
+        "format": {
+          "description": "Archive format of content for writable directory cache",
+          "enum": [
+            "rar",
+            "tar.bz2",
+            "tar.gz",
+            "zip"
+          ],
+          "title": "Format",
+          "type": "string"
+        }
+      },
+      "required": [
+        "directory",
+        "cacheName"
+      ],
+      "title": "Writable Directory Cache",
       "type": "object"
     }
   },
@@ -416,17 +424,9 @@ func taskPayloadSchema() string {
     "mounts": {
       "description": "Directories and/or files to be mounted",
       "items": {
-        "oneOf": [
-          {
-            "$ref": "#/definitions/fileMount"
-          },
-          {
-            "$ref": "#/definitions/directoryMount"
-          }
-        ],
-        "type": "object"
+        "$ref": "#/definitions/mount",
+        "title": "Mount"
       },
-      "title": "Mounts",
       "type": "array"
     },
     "osGroups": {
