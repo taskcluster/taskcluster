@@ -29,8 +29,9 @@ This library should be included as a component in a [Taskcluster Component Loade
 setup so that it is called upon a service starting in Heroku or as a post-publish step in a library. Options and defaults are listed
 below.
 
-This will automatically take any markdown files in a top-level `docs/` directory and turn them into rendered pages on the docs site. In addition,
-any schemas and references can be passed in, and they'll be turned into documentation as well.
+This will automatically take any markdown files in a top-level `docs/` directory and turn them into rendered pages on the docs site.
+A top-level `README.md` will be uploaded automatically.
+In addition, any schemas and references can be passed in, and they'll be turned into documentation as well.
 
 Example
 -------
