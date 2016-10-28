@@ -1,4 +1,5 @@
 import { scopeMatch } from 'taskcluster-base/utils';
+import taskcluster from 'taskcluster';
 
 /**
  * Do the taskScopes satisfy all of the scopes for the given resources?
@@ -11,7 +12,9 @@ import { scopeMatch } from 'taskcluster-base/utils';
  * @param {object or array} resources
  * @param {array} taskScopes
  */
-export function hasPrefixedScopes(prefix, resources, taskScopes) {
-    let neededScopes = Object.keys(resources).map((r) => { return prefix + r; });
-    return scopeMatch(taskScopes, [neededScopes]);
+export async function hasPrefixedScopes(prefix, resources, taskScopes) {
+  let auth = new taskcluster.Auth();
+  let expandedScopes = await auth.expandScopes(taskScopes);
+  let neededScopes = Object.keys(resources).map((r) => { return prefix + r; });
+  return scopeMatch(expandedScopes, [neededScopes]);
 }
