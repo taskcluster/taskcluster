@@ -132,6 +132,7 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
+          signingKeyLocation                The PGP signing key for signing artifacts with.
 
         ** OPTIONAL ** properties
         =========================
@@ -156,6 +157,11 @@ and reports back results to the queue.
                                             over https. If not set, http will be used.
           usersDir                          The location where user home directories should be
                                             created on the worker. [default: C:\Users]
+          downloadsDir                      The location where resources are downloaded for
+                                            populating preloaded caches and readonly mounts.
+                                            [default: C:\generic-worker\downloads]
+          cachesDir                         The location where task caches should be stored on
+                                            the worker. [default: C:\generic-worker\caches]
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,
@@ -175,12 +181,32 @@ and reports back results to the queue.
                                             will have more information about how it was set up
                                             (for example what has been installed on the
                                             machine).
-          signingKeyLocation                The PGP signing key for signing artifacts with.
-                                            If not set, tasks will not be signed.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
                                             be used in production! [default: false]
+          requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
+                                            number of megabytes of disk space are available
+                                            when each task starts. If it cannot free enough
+                                            disk space, the worker will shut itself down.
+                                            [default: 10240]
+          shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
+                                            error (such as not being able to write to a
+                                            required file) it will shutdown the host
+                                            computer. Note this is generally only desired
+                                            for machines running in production, such as on AWS
+                                            EC2 spot instances. Use with caution!
+                                            [default: false]
+          numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
+                                            this many tasks, exit. [default: 0]
+          deploymentId                      If running with --configure-for-aws, then between
+                                            tasks, at a maximum frequency of once per 30 mins,
+                                            the worker will query the provisioner to get the
+                                            updated worker type definition. If the deploymentId
+                                            in the config of the worker type definition is
+                                            different to the worker's current deploymentId, the
+                                            worker will shut itself down. See
+                                            https://bugzil.la/1298010
 
     Here is an syntactically valid example configuration file:
 
@@ -192,7 +218,8 @@ and reports back results to the queue.
               "workerType":                 "win2008-worker",
               "provisionerId":              "my-provisioner",
               "livelogSecret":              "baNaNa-SouP4tEa",
-              "publicIP":                   "12.24.35.46"
+              "publicIP":                   "12.24.35.46",
+              "signingKeyLocation":         "C:\\generic-worker\\generic-worker-gpg-signing-key.key"
             }
 
 
