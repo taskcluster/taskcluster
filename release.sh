@@ -74,21 +74,6 @@ if [ -n "$modified" ]; then
   exit 68
 fi
 
-# ******** If making a NON-alpha release only **********
-# Check that the current HEAD is also the tip of the official repo master
-# branch. If the commits match, it does not matter what the local branch
-# name is, or even if we have a detached head.
-if ! "${NEW_VERSION}" | grep -q "alpha"; then
-  remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
-  localMasterSha="$(git rev-parse HEAD)"
-  if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
-    echo "Locally, you are on commit ${localMasterSha}."
-    echo "The remote taskcluster repo is on commit ${remoteMasterSha}."
-    echo "Make sure to git push/pull so that they both point to the same commit."
-    exit 69
-  fi
-fi
-
 # Make sure that build environment is clean
 if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   echo "You have local changes to files/directories that are in your git ignore list."
@@ -102,6 +87,21 @@ if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   exit 70
 fi
 
+# ******** If making a NON-alpha release only **********
+# Check that the current HEAD is also the tip of the official repo master
+# branch. If the commits match, it does not matter what the local branch
+# name is, or even if we have a detached head.
+if ! "${NEW_VERSION}" | grep -q "alpha"; then
+  remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
+  localSha="$(git rev-parse HEAD)"
+  if [ "${remoteMasterSha}" != "${localSha}" ]; then
+    echo "Locally, you are on commit ${localSha}."
+    echo "The remote taskcluster repo master branch is on commit ${remoteMasterSha}."
+    echo "Make sure to git push/pull so that they both point to the same commit."
+    exit 69
+  fi
+fi
+
 inline_sed README.md "s/.\/release.sh ${OLD_VERSION//./\\.}/.\/release.sh ${NEW_VERSION}/"
 inline_sed main.go 's/version = "'"${OLD_VERSION//./\\.}"'"$/version = "'"${NEW_VERSION}"'"/'
 find . -name userdata | while read file; do
@@ -109,14 +109,20 @@ find . -name userdata | while read file; do
 done
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
-git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
+# only ensure master is updated if it is a non-alpha release
+if ! "${NEW_VERSION}" | grep -q "alpha"; then
+  git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
+fi
+git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}"
 
-echo
-echo 'Will you also be deploying this release to production? If so, please run:'
-echo
-echo '  ***** ./publish-payload-schema.sh *****'
-echo
-echo 'This will update:'
-echo
-echo '  https://docs.taskcluster.net/manual/execution/workers/generic-worker !'
-echo
+if ! "${NEW_VERSION}" | grep -q "alpha"; then
+  echo
+  echo 'Will you also be deploying this release to production? If so, please run:'
+  echo
+  echo '  ***** ./publish-payload-schema.sh *****'
+  echo
+  echo 'This will update:'
+  echo
+  echo '  https://docs.taskcluster.net/manual/execution/workers/generic-worker !'
+  echo
+fi
