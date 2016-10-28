@@ -91,7 +91,7 @@ fi
 # Check that the current HEAD is also the tip of the official repo master
 # branch. If the commits match, it does not matter what the local branch
 # name is, or even if we have a detached head.
-if ! "${NEW_VERSION}" | grep -q "alpha"; then
+if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
   remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
   localSha="$(git rev-parse HEAD)"
   if [ "${remoteMasterSha}" != "${localSha}" ]; then
@@ -110,12 +110,12 @@ done
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 # only ensure master is updated if it is a non-alpha release
-if ! "${NEW_VERSION}" | grep -q "alpha"; then
+if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
   git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
 fi
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}"
 
-if ! "${NEW_VERSION}" | grep -q "alpha"; then
+if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
   echo
   echo 'Will you also be deploying this release to production? If so, please run:'
   echo
