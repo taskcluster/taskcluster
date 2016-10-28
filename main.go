@@ -394,7 +394,7 @@ func runWorker() {
 		if r := recover(); r != nil {
 			log.Printf("Shutting down immediately - panic occurred!")
 			log.Println(string(debug.Stack()))
-			log.Printf("Cause: %#v", r)
+			log.Printf("Cause: %v", r)
 			if config.ShutdownMachineOnInternalError {
 				immediateShutdown()
 			}
