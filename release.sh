@@ -74,16 +74,19 @@ if [ -n "$modified" ]; then
   exit 68
 fi
 
+# ******** If making a NON-alpha release only **********
 # Check that the current HEAD is also the tip of the official repo master
 # branch. If the commits match, it does not matter what the local branch
 # name is, or even if we have a detached head.
-remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
-localMasterSha="$(git rev-parse HEAD)"
-if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
-  echo "Locally, you are on commit ${localMasterSha}."
-  echo "The remote taskcluster repo is on commit ${remoteMasterSha}."
-  echo "Make sure to git push/pull so that they both point to the same commit."
-  exit 69
+if ! "${NEW_VERSION}" | grep -q "alpha"; then
+  remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
+  localMasterSha="$(git rev-parse HEAD)"
+  if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
+    echo "Locally, you are on commit ${localMasterSha}."
+    echo "The remote taskcluster repo is on commit ${remoteMasterSha}."
+    echo "Make sure to git push/pull so that they both point to the same commit."
+    exit 69
+  fi
 fi
 
 # Make sure that build environment is clean
