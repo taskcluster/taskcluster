@@ -16,6 +16,7 @@ import scanner from './scanner'
 import Authorizer from './authz'
 import PersonaVerifier from './persona'
 import v1 from './v1'
+import LDAPClient from './ldap'
 import tcApp from 'taskcluster-lib-app'
 import validator from 'taskcluster-lib-validate'
 import raven from 'raven'
@@ -199,6 +200,43 @@ let load = loader({
       await scanner(cfg, authorizer);
       // the LDAP connection is still open, so we must exit
       // explicitly or node will wait forever for it to die.
+      process.exit(0);
+    },
+  },
+
+  // utility function to show LDAP groups for a user
+  'show-ldap-user': {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      let email = process.argv[3];
+      if (!email) {
+        console.error("Specify an email address on the command line");
+        process.exit(1);
+        return;
+      }
+
+      let client = new LDAPClient(cfg.ldap);
+      client.bind(cfg.ldap.user, cfg.ldap.password);
+
+      let userDn = await client.dnForEmail(email);
+
+      if (!userDn) {
+        console.error(`no user found for ${email}; skipping LDAP groups`);
+        process.exit(1);
+        return;
+      }
+
+      let entries = await client.search(
+        "dc=mozilla", {
+        scope: 'sub',
+        filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
+        attributes: ['cn'],
+        timeLimit: 10,
+      });
+      let groups = entries.map(entry => entry.object.cn);
+      groups.sort();
+      groups.forEach(gp => console.log(gp));
+
       process.exit(0);
     },
   },
