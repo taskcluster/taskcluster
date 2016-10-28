@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -641,4 +642,11 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 		return nil
 	}
 	return runCommands(false, "", "", commands...)
+}
+
+func setCommandLogWriters(commands []Command, logWriter io.Writer) {
+	for i, _ := range commands {
+		commands[i].osCommand.(*exec.Cmd).Stdout = logWriter
+		commands[i].osCommand.(*exec.Cmd).Stderr = logWriter
+	}
 }

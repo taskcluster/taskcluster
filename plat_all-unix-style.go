@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -133,4 +134,11 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 		return nil
 	}
 	return fmt.Errorf("Not able to add groups %v to user %v on platform %v - feature not supported.", groups, TaskUser.Name, runtime.GOOS)
+}
+
+func setCommandLogWriters(commands []Command, logWriter io.Writer) {
+	for i, _ := range commands {
+		commands[i].osCommand.(*exec.Cmd).Stdout = logWriter
+		commands[i].osCommand.(*exec.Cmd).Stderr = logWriter
+	}
 }

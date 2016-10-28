@@ -57,6 +57,8 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 	}
 	l.liveLog = liveLog
 	l.task.logWriter = io.MultiWriter(liveLog.LogWriter, l.task.logWriter)
+	setCommandLogWriters(l.task.Commands, l.task.logWriter)
+
 	err = l.uploadLiveLog()
 	if err != nil {
 		log.Printf("WARN: could not upload livelog: %s", err)
