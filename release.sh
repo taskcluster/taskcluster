@@ -22,13 +22,16 @@ fi
 
 OLD_VERSION="$(cat main.go | sed -n 's/^[[:space:]]*version = "\(.*\)"$/\1/p')"
 
-if ! echo "${OLD_VERSION}" | grep -q '^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)$'; then
-  echo "Previous release version '${OLD_VERSION}' not allowed (should be x.y.z where x>=1, y>=0, z>=0 and x,y,z are integers, with no leading zeros) - please fix main.go" >&2
+VALID_FORMAT='^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9]\)\([0-9]*alpha[1-9][0-9]*\|[0-9]*\)$'
+FORMAT_EXPLANATION='should be "<a>.<b>.<c>" OR "<a>.<b>.<c>alpha<d>" where a>=1, b>=0, c>=0, d>=1 and a,b,c,d are integers, with no leading zeros'
+
+if ! echo "${OLD_VERSION}" | grep -q "${VALID_FORMAT}"; then
+  echo "Previous release version '${OLD_VERSION}' not allowed (${FORMAT_EXPLANATION}) - please fix main.go" >&2
   exit 64
 fi
 
-if ! echo "${NEW_VERSION}" | grep -q '^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)$'; then
-  echo "Release version '${NEW_VERSION}' not allowed (should be x.y.z where x>=1, y>=0, z>=0 and x,y,z are integers, with no leading zeros)" >&2
+if ! echo "${NEW_VERSION}" | grep -q "${VALID_FORMAT}"; then
+  echo "Release version '${NEW_VERSION}' not allowed (${FORMAT_EXPLANATION})" >&2
   exit 65
 fi
 
