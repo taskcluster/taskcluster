@@ -30,17 +30,21 @@ import (
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/auth"
+	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
+	// Whether we are running under the aws provisioner
+	configureForAws bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	TaskUser OSUser
 	// Queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
-	Queue *queue.Queue
+	Queue       *queue.Queue
+	Provisioner *awsprovisioner.AwsProvisioner
 	// See SignedURLsManager() for more information:
 	// signedURsRequestChan is the channel you can pass a channel to, to get
 	// back signed urls from the Task Cluster Queue, for querying Azure queues.
@@ -220,6 +224,14 @@ and reports back results to the queue.
                                             [default: false]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          deploymentId                      If running with --configure-for-aws, then between
+                                            tasks, at a maximum frequency of once per 30 mins,
+                                            the worker will query the provisioner to get the
+                                            updated worker type definition. If the deploymentId
+                                            in the config of the worker type definition is
+                                            different to the worker's current deploymentId, the
+                                            worker will shut itself down. See
+                                            https://bugzil.la/1298010
 
     Here is an syntactically valid example configuration file:
 
@@ -258,7 +270,7 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 
 	case arguments["run"]:
-		configureForAws := arguments["--configure-for-aws"].(bool)
+		configureForAws = arguments["--configure-for-aws"].(bool)
 		configFile = arguments["--config"].(string)
 		config, err = loadConfig(configFile, configureForAws)
 		// persist before checking for error, so we can see what the problem was...
@@ -408,6 +420,13 @@ func runWorker() {
 			Certificate: config.Certificate,
 		},
 	)
+	Provisioner = awsprovisioner.New(
+		&tcclient.Credentials{
+			ClientID:    config.ClientID,
+			AccessToken: config.AccessToken,
+			Certificate: config.Certificate,
+		},
+	)
 
 	// Start the SignedURLsManager in a dedicated go routine, to take care of
 	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
@@ -415,8 +434,15 @@ func runWorker() {
 
 	// loop forever claiming and running tasks!
 	lastActive := time.Now()
+	lastQueriedProvisioner := time.Now()
 	tasksResolved := uint(0)
 	for {
+		// See https://bugzil.la/1298010 - routinely check if this worker type is
+		// outdated, and shut down if a new deployment is required.
+		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > 30*time.Minute {
+			lastQueriedProvisioner = time.Now()
+			shutdownIfNewDeploymentID()
+		}
 		// make sure at least 1 second passes between iterations
 		waitASec := time.NewTimer(time.Second * 1)
 		taskFound := FindAndRunTask()
