@@ -304,6 +304,7 @@ func (taskMount *TaskMount) Stop() *CommandExecutionError {
 	for _, mount := range taskMount.mounts {
 		err := mount.Unmount()
 		if err != nil {
+			log.Printf("Could not unmount %v due to: %v", mount.FSContent().UniqueKey(), err)
 			panic(err)
 		}
 	}
