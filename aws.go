@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"path/filepath"
@@ -218,7 +219,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	c.Region = awsMetadata["availability-zone"].(string)
 
 	secrets := new(Secrets)
-	json.Unmarshal(secToken.Data, secrets)
+	err = json.Unmarshal(secToken.Data, secrets)
 	if err != nil {
 		return err
 	}
@@ -242,4 +243,31 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 		c.IdleShutdownTimeoutSecs = 3600
 	}
 	return nil
+}
+
+func shutdownIfNewDeploymentID() {
+	log.Print("Checking if there is a new deploymentId...")
+	wtr, err := Provisioner.WorkerType(config.WorkerType)
+	if err != nil {
+		// can't reach provisioner - let's assume the best, and just return
+		log.Printf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)
+		return
+	}
+	secrets := new(Secrets)
+	err = json.Unmarshal(wtr.Secrets, secrets)
+	if err != nil {
+		log.Printf("**** Can't unmarshal worker type secrets - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+		return
+	}
+	c := new(Config)
+	err = json.Unmarshal(secrets.GenericWorker.Config, c)
+	if err != nil {
+		log.Printf("**** Can't unmarshal config - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+		return
+	}
+	if c.DeploymentID != config.DeploymentID {
+		log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
+		immediateShutdown()
+	}
+	log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, c.DeploymentID)
 }

@@ -22,13 +22,16 @@ fi
 
 OLD_VERSION="$(cat main.go | sed -n 's/^[[:space:]]*version = "\(.*\)"$/\1/p')"
 
-if ! echo "${OLD_VERSION}" | grep -q '^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)$'; then
-  echo "Previous release version '${OLD_VERSION}' not allowed (should be x.y.z where x>=1, y>=0, z>=0 and x,y,z are integers, with no leading zeros) - please fix main.go" >&2
+VALID_FORMAT='^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9]\)\([0-9]*alpha[1-9][0-9]*\|[0-9]*\)$'
+FORMAT_EXPLANATION='should be "<a>.<b>.<c>" OR "<a>.<b>.<c>alpha<d>" where a>=1, b>=0, c>=0, d>=1 and a,b,c,d are integers, with no leading zeros'
+
+if ! echo "${OLD_VERSION}" | grep -q "${VALID_FORMAT}"; then
+  echo "Previous release version '${OLD_VERSION}' not allowed (${FORMAT_EXPLANATION}) - please fix main.go" >&2
   exit 64
 fi
 
-if ! echo "${NEW_VERSION}" | grep -q '^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9][0-9]*\)$'; then
-  echo "Release version '${NEW_VERSION}' not allowed (should be x.y.z where x>=1, y>=0, z>=0 and x,y,z are integers, with no leading zeros)" >&2
+if ! echo "${NEW_VERSION}" | grep -q "${VALID_FORMAT}"; then
+  echo "Release version '${NEW_VERSION}' not allowed (${FORMAT_EXPLANATION})" >&2
   exit 65
 fi
 
@@ -71,18 +74,6 @@ if [ -n "$modified" ]; then
   exit 68
 fi
 
-# Check that the current HEAD is also the tip of the official repo master
-# branch. If the commits match, it does not matter what the local branch
-# name is, or even if we have a detached head.
-remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
-localMasterSha="$(git rev-parse HEAD)"
-if [ "${remoteMasterSha}" != "${localMasterSha}" ]; then
-  echo "Locally, you are on commit ${localMasterSha}."
-  echo "The remote taskcluster repo is on commit ${remoteMasterSha}."
-  echo "Make sure to git push/pull so that they both point to the same commit."
-  exit 69
-fi
-
 # Make sure that build environment is clean
 if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   echo "You have local changes to files/directories that are in your git ignore list."
@@ -96,6 +87,21 @@ if [ "$(git clean -ndx 2>&1 | wc -l | tr -d ' ')" != 0 ]; then
   exit 70
 fi
 
+# ******** If making a NON-alpha release only **********
+# Check that the current HEAD is also the tip of the official repo master
+# branch. If the commits match, it does not matter what the local branch
+# name is, or even if we have a detached head.
+if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
+  remoteMasterSha="$(git ls-remote "${OFFICIAL_GIT_REPO}" master | cut -f1)"
+  localSha="$(git rev-parse HEAD)"
+  if [ "${remoteMasterSha}" != "${localSha}" ]; then
+    echo "Locally, you are on commit ${localSha}."
+    echo "The remote taskcluster repo master branch is on commit ${remoteMasterSha}."
+    echo "Make sure to git push/pull so that they both point to the same commit."
+    exit 69
+  fi
+fi
+
 inline_sed README.md "s/.\/release.sh ${OLD_VERSION//./\\.}/.\/release.sh ${NEW_VERSION}/"
 inline_sed main.go 's/version = "'"${OLD_VERSION//./\\.}"'"$/version = "'"${NEW_VERSION}"'"/'
 find . -name userdata | while read file; do
@@ -103,14 +109,20 @@ find . -name userdata | while read file; do
 done
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
-git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
+# only ensure master is updated if it is a non-alpha release
+if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
+  git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
+fi
+git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}"
 
-echo
-echo 'Will you also be deploying this release to production? If so, please run:'
-echo
-echo '  ***** ./publish-payload-schema.sh *****'
-echo
-echo 'This will update:'
-echo
-echo '  https://docs.taskcluster.net/manual/execution/workers/generic-worker !'
-echo
+if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
+  echo
+  echo 'Will you also be deploying this release to production? If so, please run:'
+  echo
+  echo '  ***** ./publish-payload-schema.sh *****'
+  echo
+  echo 'This will update:'
+  echo
+  echo '  https://docs.taskcluster.net/manual/execution/workers/generic-worker !'
+  echo
+fi

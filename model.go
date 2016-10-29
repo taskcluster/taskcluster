@@ -48,6 +48,7 @@ type (
 		RequiredDiskSpaceMegabytes     int                    `json:"requiredDiskSpaceMegabytes"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
+		DeploymentID                   string                 `json:"deploymentId"`
 	}
 
 	// Used for modelling the xml we get back from Azure
