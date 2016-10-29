@@ -1,0 +1,35 @@
+{
+  "provisionerId": "aws-provisioner-v1",
+  "workerType": "ami-test-win2012r2",
+  "schedulerId": "-",
+  "taskGroupId": "aecc6z87RFqa1CtoCE8M6g",
+  "routes": [],
+  "priority": "normal",
+  "retries": 5,
+  "created": "2015-07-07T12:56:35.183Z",
+  "deadline": "2015-07-07T13:56:35.183Z",
+  "expires": "2016-07-07T13:56:35.183Z",
+  "scopes": [],
+  "payload": {
+    "command": [
+      "set",
+      "C:\\test.bat"
+    ],
+    "maxRunTime": 600,
+    "artifacts": [
+      {
+        "type": "file",
+        "path": "test.txt",
+        "expires": "2015-07-08T12:00:00.000Z"
+      }
+    ]
+  },
+  "metadata": {
+    "name": "Generic worker test",
+    "description": "Run C:\\test.bat",
+    "owner": "pmoore@mozilla.com",
+    "source": "http://tools.taskcluster.net/task-creator/"
+  },
+  "tags": {},
+  "extra": {}
+}
