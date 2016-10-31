@@ -3,7 +3,6 @@ var taskcluster = require('taskcluster-client');
 var Promise     = require('promise');
 var debug       = require('debug')('index:handlers');
 var _           = require('lodash');
-var base        = require('taskcluster-base');
 var helpers     = require('./helpers');
 
 /**
