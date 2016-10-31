@@ -42,13 +42,13 @@ suite('handlers', () => {
       organization: 'TaskClusterRobot',
       details: {
         'event.type': 'push',
-        'event.base.repo.branch': 'master',
-        'event.head.repo.branch': 'master',
+        'event.base.repo.branch': 'tc-gh-tests',
+        'event.head.repo.branch': 'tc-gh-tests',
         'event.head.user.login': user,
         'event.head.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
-        'event.head.sha': '795f050fcd34a255d50a847c1a6f40eeafb37c42',
-        'event.head.ref': 'refs/heads/master',
-        'event.base.sha': 'e53d4f89baf16cf6e8047cf59874b68879614a63',
+        'event.head.sha': '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        'event.head.ref': 'refs/heads/tc-gh-tests',
+        'event.base.sha': '2bad4edf90e7d4fb4643456a4df333da348bbed4',
         'event.head.user.email': 'bstack@mozilla.com',
       },
       repository: 'hooks-testing',
@@ -70,7 +70,7 @@ suite('handlers', () => {
       let args = stubs.status.firstCall.args[0];
       assert.equal(args.owner, 'TaskClusterRobot');
       assert.equal(args.repo, 'hooks-testing');
-      assert.equal(args.sha, '795f050fcd34a255d50a847c1a6f40eeafb37c42');
+      assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(urlPrefix));
@@ -101,7 +101,7 @@ suite('handlers', () => {
       let args = stubs.status.secondCall.args[0];
       assert.equal(args.owner, 'TaskClusterRobot');
       assert.equal(args.repo, 'hooks-testing');
-      assert.equal(args.sha, '795f050fcd34a255d50a847c1a6f40eeafb37c42');
+      assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'success');
       assert(args.target_url.startsWith(urlPrefix));
       taskGroupId = args.target_url.replace(urlPrefix, '').trim();
@@ -122,7 +122,7 @@ suite('handlers', () => {
       assert(stubs.comment.calledOnce);
       assert.equal(stubs.comment.args[0][0].owner, 'TaskClusterRobot');
       assert.equal(stubs.comment.args[0][0].repo, 'hooks-testing');
-      assert.equal(stubs.comment.args[0][0].sha, '795f050fcd34a255d50a847c1a6f40eeafb37c42');
+      assert.equal(stubs.comment.args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(stubs.comment.args[0][0].body.startsWith(
         'Taskcluster does not have permission to check for repository collaborators'));
       done();
@@ -141,7 +141,7 @@ suite('handlers', () => {
       assert(stubs.comment.calledOnce);
       assert.equal(stubs.comment.args[0][0].owner, 'TaskClusterRobot');
       assert.equal(stubs.comment.args[0][0].repo, 'hooks-testing');
-      assert.equal(stubs.comment.args[0][0].sha, '795f050fcd34a255d50a847c1a6f40eeafb37c42');
+      assert.equal(stubs.comment.args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(stubs.comment.args[0][0].body.startsWith(
         'TaskCluster: @somebodywhodoesntexist does not have permission'));
       done();

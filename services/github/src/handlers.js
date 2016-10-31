@@ -92,21 +92,20 @@ async function statusHandler(message) {
   let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
   debug(`handling state change for task-group ${taskGroupId}`);
 
-  let state = 'success';
-  if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
-    state = 'failure';
-  } else {
-    let tasks = await this.context.queue.listTaskGroup(taskGroupId);
-    tasks.tasks.map((task) => {
-      if (task.status.state != 'completed') {
-        state = 'failure';
-      }
-    });
-  }
-
   let build = await this.context.Builds.load({
     taskGroupId,
   });
+
+  if (build.state === 'failure') {
+    debug('Task group already marked as failure. Continuing.');
+    return;
+  };
+
+  let state = 'success';
+  if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
+    state = 'failure';
+  }
+
   await build.modify((b) => {
     b.state = state;
     b.updated = new Date();
@@ -198,7 +197,12 @@ async function jobHandler(message) {
     });
     if (graphConfig.tasks.length) {
       let taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-      await Promise.all(graphConfig.tasks.map(t => context.queue.createTask(t.taskId, t.task)));
+      let queue = new taskcluster.Queue({
+        baseUrl: context.cfg.taskcluster.queueBaseUrl,
+        credentials: context.cfg.taskcluster.credentials,
+        authorizedScopes: graphConfig.scopes,
+      });
+      await Promise.all(graphConfig.tasks.map(t => queue.createTask(t.taskId, t.task)));
 
       // We used to comment on every commit, but setting the status
       // is a nicer thing to do instead. It contains all of the same
