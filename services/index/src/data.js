@@ -1,20 +1,20 @@
-var base        = require('taskcluster-base');
 var assert      = require('assert');
 var Promise     = require('promise');
 var _           = require('lodash');
+var Entity      = require('azure-entities');
 
 /** Entities for indexed tasks */
-var IndexedTask = base.Entity.configure({
+var IndexedTask = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.HashKey('namespace'),
-  rowKey:           base.Entity.keys.StringKey('name'),
+  partitionKey:     Entity.keys.HashKey('namespace'),
+  rowKey:           Entity.keys.StringKey('name'),
   properties: {
-    namespace:      base.Entity.types.String,
-    name:           base.Entity.types.String,
-    rank:           base.Entity.types.Number,
-    taskId:         base.Entity.types.SlugId,
-    data:           base.Entity.types.JSON,
-    expires:        base.Entity.types.Date
+    namespace:      Entity.types.String,
+    name:           Entity.types.String,
+    rank:           Entity.types.Number,
+    taskId:         Entity.types.SlugId,
+    data:           Entity.types.JSON,
+    expires:        Entity.types.Date
   }
 });
 
@@ -39,14 +39,14 @@ IndexedTask.prototype.json = function() {
 
 
 /** Entities for namespaces */
-var Namespace = base.Entity.configure({
+var Namespace = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.HashKey('parent'),
-  rowKey:           base.Entity.keys.StringKey('name'),
+  partitionKey:     Entity.keys.HashKey('parent'),
+  rowKey:           Entity.keys.StringKey('name'),
   properties: {
-    parent:         base.Entity.types.String,
-    name:           base.Entity.types.String,
-    expires:        base.Entity.types.Date
+    parent:         Entity.types.String,
+    name:           Entity.types.String,
+    expires:        Entity.types.Date
   }
 });
 

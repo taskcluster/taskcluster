@@ -25,8 +25,11 @@
     "source-map-support": "^0.4.2",
     "superagent": "^1.8.3",
     "superagent-promise": "^1.1.0",
-    "taskcluster-base": "^6.0.0",
-    "taskcluster-client": "^1.2.0"
+    "taskcluster-client": "^1.2.0",
+    "taskcluster-lib-api": "^3.0.0",
+    "taskcluster-lib-app": "^1.0.0",
+    "typed-env-config": "^1.0.0",
+    "taskcluster-lib-monitor": "^4.0.0"
   },
   "engines": {
     "node": "^6.0.0",
