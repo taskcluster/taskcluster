@@ -1,4 +1,4 @@
-Generated: 1477938263
+Generated: 1477956181
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4572,14 +4572,13 @@ Entry 5     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'ping'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Ping Server'
-    Entry Description = 'Documented later...
-
-**Warning** this api end-point is **not stable**.'
+    Entry Description = 'Respond without doing anything.
+This endpoint is used to check that the service is up.'
 
 
 http://schemas.taskcluster.net/index/v1/indexed-task-response.json#
