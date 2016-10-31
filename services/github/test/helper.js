@@ -65,8 +65,12 @@ mocha.before(async () => {
   webServer = await load('server', {profile: 'test', process: 'test'});
 
   helper.intree = await load('intree', {profile: 'test', process: 'test'});
-  helper.queue = await load('queue', {profile: 'test', process: 'test'});
   helper.Builds = await load('Builds', {profile: 'test', process: 'test'});
+
+  helper.queue = new taskcluster.Queue({
+    baseUrl: cfg.taskcluster.queueBaseUrl,
+    credentials: cfg.taskcluster.credentials,
+  });
 
   // Configure pulse receiver
   helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);

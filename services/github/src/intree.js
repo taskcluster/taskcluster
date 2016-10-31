@@ -12,6 +12,7 @@ module.exports = {};
  * it becomes a complete task graph config.
  **/
 function completeInTreeConfig(config, payload) {
+  config.scopes = [];
   if (payload.details['event.type'].startsWith('pull_request')) {
     config.scopes = [
       `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
@@ -22,10 +23,6 @@ function completeInTreeConfig(config, payload) {
       prefix + payload.details['event.base.repo.branch'],
     ];
   }
-
-  config.routes = [
-    `taskcluster-github.${ payload.organization }.${ payload.repository }.` + payload.details['event.head.sha'],
-  ];
 
   // each task can optionally decide if it wants github specific environment
   // variables added to it

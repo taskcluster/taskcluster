@@ -130,14 +130,6 @@ let load = loader({
     },
   },
 
-  queue: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.Queue({
-      baseUrl: cfg.taskcluster.queueBaseUrl,
-      credentials: cfg.taskcluster.credentials,
-    }),
-  },
-
   reference: {
     requires: ['cfg'],
     setup: ({cfg}) => exchanges.reference({
@@ -147,15 +139,15 @@ let load = loader({
   },
 
   handlers: {
-    requires: ['cfg', 'github', 'monitor', 'intree', 'queue', 'validator', 'reference', 'Builds'],
-    setup: async ({cfg, github, monitor, intree, queue, validator, reference, Builds}) => new Handlers({
+    requires: ['cfg', 'github', 'monitor', 'intree', 'validator', 'reference', 'Builds'],
+    setup: async ({cfg, github, monitor, intree, validator, reference, Builds}) => new Handlers({
       credentials: cfg.pulse,
       monitor: monitor.prefix('handlers'),
       intree,
       reference,
       jobQueueName: cfg.app.jobQueueName,
       statusQueueName: cfg.app.statusQueueName,
-      context: {cfg, github, queue, validator, Builds},
+      context: {cfg, github, validator, Builds},
     }),
   },
 
