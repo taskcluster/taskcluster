@@ -2,7 +2,7 @@ var Promise     = require('promise');
 var _           = require('lodash');
 var debug       = require('debug')('routes:api:v1');
 var assert      = require('assert');
-var base        = require('taskcluster-base');
+var API         = require('taskcluster-lib-api');
 var helpers     = require('./helpers');
 
 
@@ -17,7 +17,7 @@ var helpers     = require('./helpers');
  *   Namespace:         // data.Namespace instance
  * }
  */
-var api = new base.API({
+var api = new API({
   title:        "Task Index API Documentation",
   description: [
     "The task index, typically available at `index.taskcluster.net`, is",
@@ -125,7 +125,7 @@ api.declare({
   method:         'get',
   route:          '/task/:namespace',
   name:           'findTask',
-  stability:      base.API.stability.stable,
+  stability:      API.stability.stable,
   output:         'indexed-task-response.json#',
   title:          "Find Indexed Task",
   description: [
@@ -169,7 +169,7 @@ api.declare({
   method:         'post',
   route:          '/namespaces/:namespace?',
   name:           'listNamespaces',
-  stability:      base.API.stability.stable,
+  stability:      API.stability.stable,
   input:          'list-namespaces-request.json#',
   output:         'list-namespaces-response.json#',
   title:          "List Namespaces",
@@ -211,7 +211,7 @@ api.declare({
   method:         'post',
   route:          '/tasks/:namespace?',
   name:           'listTasks',
-  stability:      base.API.stability.stable,
+  stability:      API.stability.stable,
   input:          'list-tasks-request.json#',
   output:         'list-tasks-response.json#',
   title:          "List Tasks",
@@ -251,7 +251,7 @@ api.declare({
   method:         'put',
   route:          '/task/:namespace',
   name:           'insertTask',
-  stability:      base.API.stability.stable,
+  stability:      API.stability.stable,
   deferAuth:      true,
   scopes:         [['index:insert-task:<namespace>']],
   input:          'insert-task-request.json#',
@@ -291,7 +291,7 @@ api.declare({
   method:         'get',
   route:          '/task/:namespace/artifacts/:name(*)',
   name:           'findArtifactFromTask',
-  stability:      base.API.stability.stable,
+  stability:      API.stability.stable,
   deferAuth:      true,
   scopes:         [['queue:get-artifact:<name>']],
   title:          "Get Artifact From Indexed Task",
@@ -354,23 +354,5 @@ api.declare({
         namespace:  req.params.namespace
       }
     });
-  });
-});
-
-/** Check that the server is a alive */
-api.declare({
-  method:   'get',
-  route:    '/ping',
-  name:     'ping',
-  title:    "Ping Server",
-  description: [
-    "Documented later...",
-    "",
-    "**Warning** this api end-point is **not stable**."
-  ].join('\n')
-}, function(req, res) {
-  res.status(200).json({
-    alive:    true,
-    uptime:   process.uptime()
   });
 });
