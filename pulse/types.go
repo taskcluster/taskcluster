@@ -2,27 +2,67 @@
 
 package pulse
 
+import (
+	"encoding/json"
+	"errors"
+)
+
 type (
 	// Namespace creation request
 	//
 	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#
 	NamespaceCreationRequest struct {
 
-		// The contact Information
+		// The contact information which will be handed off to the notification service
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact
-		Contact struct {
+		Contact json.RawMessage `json:"contact"`
+	}
 
-			// The contact id (eg. username, email address)
-			//
-			// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/properties/id
-			ID string `json:"id,omitempty"`
+	// Request to post a message on IRC.
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#
+	PostIRCMessageRequest struct {
 
-			// The contact method (eg. irc, email)
+		// The contact method (eg. irc)
+		//
+		// Possible values:
+		//   * "irc"
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/method
+		Method string `json:"method"`
+
+		// Details for the contact method (eg. irc channel)
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload
+		Payload struct {
+
+			// Channel to post the message in. Please note that you **must** supply
+			// either `user` or `channel`, you cannot supply both.
 			//
-			// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/properties/method
-			Method string `json:"method,omitempty"`
-		} `json:"contact"`
+			// Syntax:     ^[#&][^ ,\u0007]{1,199}$
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/properties/channel
+			Channel string `json:"channel,omitempty"`
+
+			// IRC message to send as plain text.
+			//
+			// Min length: 1
+			// Max length: 510
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/properties/message
+			Message string `json:"message"`
+
+			// User to post the message to. Please note that you **must** supply
+			// either `user` or `channel`, you cannot supply both.
+			//
+			// Syntax:     ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+			// Min length: 1
+			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/properties/user
+			User string `json:"user,omitempty"`
+		} `json:"payload"`
 	}
 
 	// Rabbit overview response
@@ -51,4 +91,118 @@ type (
 		// See http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#/properties/rabbitmq_version
 		Rabbitmq_Version string `json:"rabbitmq_version"`
 	}
+
+	// Request to send an email
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/email-request.json#
+	SendEmailRequest struct {
+
+		// The contact method (eg. email)
+		//
+		// Possible values:
+		//   * "email"
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/method
+		Method string `json:"method"`
+
+		// Details for the contact method (eg. email address)
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload
+		Payload struct {
+
+			// E-mail address to which the message should be sent
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/address
+			Address string `json:"address"`
+
+			// Content of the e-mail as **markdown**, will be rendered to HTML before
+			// the email is sent. Notice that markdown allows for a few HTML tags, but
+			// won't allow inclusion of script tags and other unpleasantries.
+			//
+			// Min length: 1
+			// Max length: 102400
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/content
+			Content string `json:"content"`
+
+			// Optional link that can be added as a button to the email.
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/link
+			Link struct {
+
+				// Where the link should point to.
+				//
+				// Min length: 1
+				// Max length: 1024
+				//
+				// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/link/properties/href
+				Href string `json:"href"`
+
+				// Text to display on link.
+				//
+				// Min length: 1
+				// Max length: 40
+				//
+				// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/link/properties/text
+				Text string `json:"text"`
+			} `json:"link,omitempty"`
+
+			// Reply-to e-mail (this property is optional)
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/replyTo
+			ReplyTo string `json:"replyTo,omitempty"`
+
+			// Subject line of the e-mail, this is plain-text
+			//
+			// Min length: 1
+			// Max length: 255
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/subject
+			Subject string `json:"subject"`
+		} `json:"payload"`
+	}
+
+	// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/oneOf[0]
+	Var json.RawMessage
+
+	// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/oneOf[1]
+	Var1 json.RawMessage
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]
+	Var2 PostIRCMessageRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
+	Var3 SendEmailRequest
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var is of type json.RawMessage...
+func (this *Var) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var1 is of type json.RawMessage...
+func (this *Var1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var1) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var1: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
