@@ -2,16 +2,17 @@ var assert      = require('assert');
 var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
-var base        = require('taskcluster-base');
 var mocha       = require('mocha');
 var api          = require('../lib/api');
 var taskcluster = require('taskcluster-client');
 var load        = require('../lib/main');
+var Config      = require('typed-env-config');
+var testing     = require('taskcluster-lib-testing');
 
 // Load configuration
 const profile = 'test';
 let loadOptions = {profile, process: 'test'};
-var cfg = base.config({profile});
+var cfg = Config({profile});
 
 // Create helper to be tested by test
 var helper = module.exports = {};
@@ -37,7 +38,7 @@ var testclients = {
 
 // Setup server
 mocha.before(async () => {
-  await base.testing.fakeauth.start(testclients);
+  await testing.fakeauth.start(testclients);
   server = await load('server', loadOptions);
   handlers = await load('handlers', loadOptions);
 
@@ -93,5 +94,5 @@ mocha.after(async () => {
   if (handlers) {
     await handlers.terminate();
   }
-  base.testing.fakeauth.stop();
+  testing.fakeauth.stop();
 });

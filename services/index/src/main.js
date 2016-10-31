@@ -2,17 +2,21 @@
 var path        = require('path');
 var Promise     = require('promise');
 var debug       = require('debug')('index:bin:server');
-var base        = require('taskcluster-base');
 var taskcluster = require('taskcluster-client');
 var data        = require('./data');
 var Handlers    = require('./handlers');
 var v1          = require('./api');
+var Config      = require('typed-env-config');
+var loader      = require('taskcluster-lib-loader');
+var monitor     = require('taskcluster-lib-monitor');
+var validator   = require('taskcluster-lib-validate');
+var App         = require('taskcluster-lib-app');
 
 // Create component loader
-var load = base.loader({
+var load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => Config({profile}),
   },
 
   // Configure IndexedTask and Namespace entities
@@ -38,7 +42,7 @@ var load = base.loader({
   // Create a validator
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => base.validator({
+    setup: ({cfg}) => validator({
       prefix: 'index/v1/',
       aws:    cfg.aws
     })
@@ -58,7 +62,7 @@ var load = base.loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => base.monitor({
+    setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-index',
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -88,7 +92,7 @@ var load = base.loader({
   server: {
     requires: ['cfg', 'api'],
     setup: async ({cfg, api}) => {
-      let app = base.app(cfg.server);
+      let app = App(cfg.server);
       app.use('/v1', api);
       return app.createServer();
     }
