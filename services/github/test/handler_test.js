@@ -37,7 +37,7 @@ suite('handlers', () => {
     await Handlers.terminate();
   });
 
-  function publishMessage(user) {
+  function publishMessage({user, head, base}) {
     return helper.publisher.push({
       organization: 'TaskClusterRobot',
       details: {
@@ -46,9 +46,9 @@ suite('handlers', () => {
         'event.head.repo.branch': 'tc-gh-tests',
         'event.head.user.login': user,
         'event.head.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
-        'event.head.sha': '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         'event.head.ref': 'refs/heads/tc-gh-tests',
-        'event.base.sha': '2bad4edf90e7d4fb4643456a4df333da348bbed4',
+        'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
         'event.head.user.email': 'bstack@mozilla.com',
       },
       repository: 'hooks-testing',
@@ -57,7 +57,7 @@ suite('handlers', () => {
   }
 
   test('valid push (owner === owner)', async function(done) {
-    await publishMessage('TaskClusterRobot');
+    await publishMessage({user: 'TaskClusterRobot'});
 
     let urlPrefix = 'https://tools.taskcluster.net/push-inspector/#/';
     let taskGroupId = null;
@@ -112,8 +112,30 @@ suite('handlers', () => {
     done();
   });
 
+  test('trying to use scopes outside the assigned', async function(done) {
+    await publishMessage({
+      user: 'TaskClusterRobot',
+      head: '52f8ebc527e8af90e7d647f22aa07dfc5ad9b280',
+      base: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+    });
+
+    await testing.poll(async () => {
+      assert(stubs.comment.called);
+    }).catch(done);
+    try {
+      assert(stubs.comment.calledOnce);
+      assert.equal(stubs.comment.args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(stubs.comment.args[0][0].repo, 'hooks-testing');
+      assert.equal(stubs.comment.args[0][0].sha, '52f8ebc527e8af90e7d647f22aa07dfc5ad9b280');
+      assert(stubs.comment.args[0][0].body.indexOf('auth:statsum:taskcluster-github') !== -1);
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
+
   test('insufficient permissions to check membership', async function(done) {
-    await publishMessage('imbstack');
+    await publishMessage({user: 'imbstack'});
 
     await testing.poll(async () => {
       assert(stubs.comment.called);
@@ -132,7 +154,7 @@ suite('handlers', () => {
   });
 
   test('invalid push', async function(done) {
-    await publishMessage('somebodywhodoesntexist');
+    await publishMessage({user: 'somebodywhodoesntexist'});
 
     await testing.poll(async () => {
       assert(stubs.comment.called);
