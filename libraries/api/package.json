@@ -15,7 +15,7 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-api.git"
   },
   "dependencies": {
-    "ajv": "^3.8.5",
+    "ajv": "^4.8.2",
     "aws-sdk": "^2.5.3",
     "babel-runtime": "^6.11.6",
     "body-parser": "1.13.3",
