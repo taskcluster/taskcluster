@@ -38,6 +38,7 @@ Example
 
 ```js
 let docs              = require('taskcluster-lib-docs');
+let v1                = require('./v1')  # the API declaration
 let load = loader({
   cfg: {
     requires: ['profile'],
@@ -66,7 +67,7 @@ let load = loader({
       references: [
         {
           name: 'api',
-          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
         }, {
           name: 'events',
           reference: reference,
