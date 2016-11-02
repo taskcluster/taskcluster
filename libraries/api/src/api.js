@@ -894,7 +894,7 @@ API.prototype.reference = function(options) {
     })
   };
 
-  var ajv = Ajv({useDefaults: 'clone', format: 'full', verbose: true, allErrors: true});
+  var ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
   var schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
   var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
   var validate = ajv.compile(JSON.parse(schema));
