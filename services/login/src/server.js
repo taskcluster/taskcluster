@@ -20,6 +20,7 @@ import LDAPClient from './ldap'
 import tcApp from 'taskcluster-lib-app'
 import validator from 'taskcluster-lib-validate'
 import raven from 'raven'
+import docs from 'taskcluster-lib-docs'
 
 require('source-map-support').install();
 
@@ -115,6 +116,22 @@ let load = loader({
     },
   },
 
+  docs: {
+    requires: ['cfg', 'validator'],
+    setup: ({cfg, validator}) => docs.documenter({
+      credentials: cfg.app.credentials,
+      project: 'login',
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        },
+      ],
+    }),
+  },
+
   app: {
     requires: ['cfg', 'authenticators', 'router'],
     setup: ({cfg, authenticators, router}) => {
@@ -187,8 +204,8 @@ let load = loader({
   },
 
   server: {
-    requires: ['cfg', 'app'],
-    setup: async ({cfg, app}) => {
+    requires: ['cfg', 'app', 'docs'],
+    setup: async ({cfg, app, docs}) => {
       // Create server and start listening
       return app.createServer();
     },
