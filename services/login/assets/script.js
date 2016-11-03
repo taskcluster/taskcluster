@@ -96,7 +96,7 @@ function setAllowedHost(host) {
   if (!(hosts instanceof Array)) {
     hosts = [];
   }
-  if (hosts.indexOf(host) !== -1) {
+  if (hosts.indexOf(host) === -1) {
     hosts.push(host);
     localStorage.setItem('allowed-hosts', JSON.stringify(hosts));
   }
