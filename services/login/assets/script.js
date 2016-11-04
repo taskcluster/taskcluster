@@ -45,8 +45,8 @@ jQuery.extend({
 // people to click the "grant-access" button.
 var TRUSTED_TARGETS = [
   'https://tools.taskcluster.net/login/',
-  'https://treeherder.allizom.org/#/login',
-  'https://treeherder.mozilla.org/#/login'
+  'https://treeherder.allizom.org:443/#/login',
+  'https://treeherder.mozilla.org:443/#/login'
 ];
 
 // Okay, this isn't pretty... But we have to store the stuff we got from the
