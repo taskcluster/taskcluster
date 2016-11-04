@@ -38,21 +38,6 @@ assert(scopeUtils.validScope("..."));
 // Checks if the scopes in the sets are valid, and if form of the scope-sets is
 // double nested arrays.
 assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']]));
-
-// Checks if ['*'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['*']));
-
-// Checks if ['c'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['c']));
-
-// Checks if ['a', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['a', 'b']));
-
-// Checks if ['a*', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['a*', 'b']));
-
-// Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
-assert(!scopeUtils.validateScopeSets([['a', 'b'], ['c']], ['b']));
 ```
 
 Satisfaction:
@@ -75,3 +60,21 @@ assert(scopeUtils.scopeMatch(myScopes, [
 ```
 **NOTE:** this function is entirely local and does no expansion of `assume:` scopes.
 Call the authentication service's `expandScopes` endpoint to perform such expansion first, if necessary.
+
+More examples:
+```js
+// Checks if ['*'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
+assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['*']));
+
+// Checks if ['c'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
+assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['c']));
+
+// Checks if ['a', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
+assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['a', 'b']));
+
+// Checks if ['a*', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
+assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['a*', 'b']));
+
+// Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
+assert(!scopeUtils.scopeMatch([['a', 'b'], ['c']], ['b']));
+```
