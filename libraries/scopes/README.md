@@ -64,17 +64,17 @@ Call the authentication service's `expandScopes` endpoint to perform such expans
 More examples:
 ```js
 // Checks if ['*'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['*']));
+assert(scopeUtils.scopeMatch(['*'], [['a', 'b'], ['c']]));
 
 // Checks if ['c'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['c']));
+assert(scopeUtils.scopeMatch(['c'], [['a', 'b'], ['c']]));
 
 // Checks if ['a', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['a', 'b']));
+assert(scopeUtils.scopeMatch(['a', 'b'], [['a', 'b'], ['c']]));
 
 // Checks if ['a*', 'b'] satisfies [['a', 'b'], ['c']] (spoiler alert it does)
-assert(scopeUtils.scopeMatch([['a', 'b'], ['c']], ['a*', 'b']));
+assert(scopeUtils.scopeMatch(['a*', 'b'], [['a', 'b'], ['c']]));
 
 // Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
-assert(!scopeUtils.scopeMatch([['a', 'b'], ['c']], ['b']));
+assert(!scopeUtils.scopeMatch(['b'], [['a', 'b'], ['c']]));
 ```
