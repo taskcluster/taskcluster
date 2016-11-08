@@ -1,8 +1,8 @@
-var base      = require('taskcluster-base');
+var Exchanges = require('pulse-publisher');
 var assert    = require('assert');
 
 /** Declaration of exchanges offered by the queue */
-var exchanges = new base.Exchanges({
+var exchanges = new Exchanges({
   title:      'Queue AMQP Exchanges',
   description: [
     'The queue, typically available at `queue.taskcluster.net`, is responsible',

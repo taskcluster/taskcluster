@@ -1,30 +1,30 @@
-let base    = require('taskcluster-base');
+let Entity  = require('azure-entities');
 let debug   = require('debug')('app:data');
 let assert  = require('assert');
 let Promise = require('promise');
 let _       = require('lodash');
 
 /** Entity for tracking tasks and associated state */
-let Task = base.Entity.configure({
+let Task = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.StringKey('taskId'),
-  rowKey:           base.Entity.keys.ConstantKey('task'),
+  partitionKey:     Entity.keys.StringKey('taskId'),
+  rowKey:           Entity.keys.ConstantKey('task'),
   properties: {
-    taskId:         base.Entity.types.SlugId,
-    provisionerId:  base.Entity.types.String,
-    workerType:     base.Entity.types.String,
-    schedulerId:    base.Entity.types.String,
-    taskGroupId:    base.Entity.types.SlugId,
+    taskId:         Entity.types.SlugId,
+    provisionerId:  Entity.types.String,
+    workerType:     Entity.types.String,
+    schedulerId:    Entity.types.String,
+    taskGroupId:    Entity.types.SlugId,
     /** List of custom routes as strings */
-    routes:         base.Entity.types.JSON,
-    retries:        base.Entity.types.Number,
-    retriesLeft:    base.Entity.types.Number,
-    created:        base.Entity.types.Date,
-    deadline:       base.Entity.types.Date,
-    expires:        base.Entity.types.Date,
+    routes:         Entity.types.JSON,
+    retries:        Entity.types.Number,
+    retriesLeft:    Entity.types.Number,
+    created:        Entity.types.Date,
+    deadline:       Entity.types.Date,
+    expires:        Entity.types.Date,
     /** List of scopes as strings */
-    scopes:         base.Entity.types.JSON,
-    payload:        base.Entity.types.JSON,
+    scopes:         Entity.types.JSON,
+    payload:        Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -33,10 +33,10 @@ let Task = base.Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:       base.Entity.types.JSON,
+    metadata:       Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:           base.Entity.types.JSON,
-    extra:          base.Entity.types.JSON,
+    tags:           Entity.types.JSON,
+    extra:          Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -51,29 +51,29 @@ let Task = base.Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:           base.Entity.types.JSON,
+    runs:           Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:     base.Entity.types.Date,
+    takenUntil:     Entity.types.Date,
   },
 }).configure({
   version:          2,
   properties: {
-    taskId:         base.Entity.types.SlugId,
-    provisionerId:  base.Entity.types.String,
-    workerType:     base.Entity.types.String,
-    schedulerId:    base.Entity.types.String,
-    taskGroupId:    base.Entity.types.SlugId,
+    taskId:         Entity.types.SlugId,
+    provisionerId:  Entity.types.String,
+    workerType:     Entity.types.String,
+    schedulerId:    Entity.types.String,
+    taskGroupId:    Entity.types.SlugId,
     /** List of custom routes as strings */
-    routes:         base.Entity.types.JSON,
-    priority:       base.Entity.types.String,
-    retries:        base.Entity.types.Number,
-    retriesLeft:    base.Entity.types.Number,
-    created:        base.Entity.types.Date,
-    deadline:       base.Entity.types.Date,
-    expires:        base.Entity.types.Date,
+    routes:         Entity.types.JSON,
+    priority:       Entity.types.String,
+    retries:        Entity.types.Number,
+    retriesLeft:    Entity.types.Number,
+    created:        Entity.types.Date,
+    deadline:       Entity.types.Date,
+    expires:        Entity.types.Date,
     /** List of scopes as strings */
-    scopes:         base.Entity.types.JSON,
-    payload:        base.Entity.types.JSON,
+    scopes:         Entity.types.JSON,
+    payload:        Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -82,10 +82,10 @@ let Task = base.Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:       base.Entity.types.JSON,
+    metadata:       Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:           base.Entity.types.JSON,
-    extra:          base.Entity.types.JSON,
+    tags:           Entity.types.JSON,
+    extra:          Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -100,9 +100,9 @@ let Task = base.Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:           base.Entity.types.JSON,
+    runs:           Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:     base.Entity.types.Date,
+    takenUntil:     Entity.types.Date,
   },
   migrate(item) {
     item.priority = 'normal';
@@ -111,24 +111,24 @@ let Task = base.Entity.configure({
 }).configure({
   version:              3,
   properties: {
-    taskId:             base.Entity.types.SlugId,
-    provisionerId:      base.Entity.types.String,
-    workerType:         base.Entity.types.String,
-    schedulerId:        base.Entity.types.String,
-    taskGroupId:        base.Entity.types.SlugId,
-    dependencies:       base.Entity.types.JSON,
-    requires:           base.Entity.types.String,
+    taskId:             Entity.types.SlugId,
+    provisionerId:      Entity.types.String,
+    workerType:         Entity.types.String,
+    schedulerId:        Entity.types.String,
+    taskGroupId:        Entity.types.SlugId,
+    dependencies:       Entity.types.JSON,
+    requires:           Entity.types.String,
     /** List of custom routes as strings */
-    routes:             base.Entity.types.JSON,
-    priority:           base.Entity.types.String,
-    retries:            base.Entity.types.Number,
-    retriesLeft:        base.Entity.types.Number,
-    created:            base.Entity.types.Date,
-    deadline:           base.Entity.types.Date,
-    expires:            base.Entity.types.Date,
+    routes:             Entity.types.JSON,
+    priority:           Entity.types.String,
+    retries:            Entity.types.Number,
+    retriesLeft:        Entity.types.Number,
+    created:            Entity.types.Date,
+    deadline:           Entity.types.Date,
+    expires:            Entity.types.Date,
     /** List of scopes as strings */
-    scopes:             base.Entity.types.JSON,
-    payload:            base.Entity.types.JSON,
+    scopes:             Entity.types.JSON,
+    payload:            Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -137,10 +137,10 @@ let Task = base.Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:           base.Entity.types.JSON,
+    metadata:           Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:               base.Entity.types.JSON,
-    extra:              base.Entity.types.JSON,
+    tags:               Entity.types.JSON,
+    extra:              Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -156,9 +156,9 @@ let Task = base.Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:               base.Entity.types.JSON,
+    runs:               Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:         base.Entity.types.Date,
+    takenUntil:         Entity.types.Date,
   },
   migrate(item) {
     item.dependencies = [];
@@ -240,8 +240,8 @@ Task.prototype.hasClaim = function() {
 Task.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now),
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          (task) => { count++; return task.remove(true); },
@@ -253,16 +253,16 @@ Task.expire = async function(now) {
 exports.Task = Task;
 
 /** Entity for tracking artifacts */
-let Artifact = base.Entity.configure({
+let Artifact = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.CompositeKey('taskId', 'runId'),
-  rowKey:           base.Entity.keys.StringKey('name'),
+  partitionKey:     Entity.keys.CompositeKey('taskId', 'runId'),
+  rowKey:           Entity.keys.StringKey('name'),
   properties: {
-    taskId:         base.Entity.types.SlugId,
-    runId:          base.Entity.types.Number,
-    name:           base.Entity.types.String,
-    storageType:    base.Entity.types.String,
-    contentType:    base.Entity.types.String,
+    taskId:         Entity.types.SlugId,
+    runId:          Entity.types.Number,
+    name:           Entity.types.String,
+    storageType:    Entity.types.String,
+    contentType:    Entity.types.String,
     /**
      * Location details storageType,
      *
@@ -281,8 +281,8 @@ let Artifact = base.Entity.configure({
      *   reason:        Formalized reason for error artifact, see JSON schema.
      *   message:       Human readable error message to return
      */
-    details:        base.Entity.types.JSON,
-    expires:        base.Entity.types.Date,
+    details:        Entity.types.JSON,
+    expires:        Entity.types.Date,
   },
   context: [
     'blobStore',      // BlobStore instance wrapping Azure Blob Storage
@@ -355,7 +355,7 @@ Artifact.prototype.remove = function(ignoreError) {
   // we delete the artifact Entity.
   return deleted.then(() => {
     // Delete entity, if underlying resource was successfully deleted
-    return base.Entity.prototype.remove.call(this, true, true);
+    return Entity.prototype.remove.call(this, true, true);
   }, err => {
     debug('WARNING: Failed to delete expired artifact: %j, details: %j ' +
           'from taskId: %s, runId: %s with error: %s, as JSON: %j',
@@ -375,8 +375,8 @@ Artifact.prototype.remove = function(ignoreError) {
 Artifact.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now),
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          (item) => { count++; return item.remove(true); },
@@ -391,19 +391,19 @@ exports.Artifact = Artifact;
  * Entity for tracking task-group existence
  * Ensuring that all tasks in a task-group has the same schedulerId.
  */
-let TaskGroup = base.Entity.configure({
+let TaskGroup = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.StringKey('taskGroupId'),
-  rowKey:           base.Entity.keys.ConstantKey('task-group'),
+  partitionKey:     Entity.keys.StringKey('taskGroupId'),
+  rowKey:           Entity.keys.ConstantKey('task-group'),
   properties: {
-    taskGroupId:    base.Entity.types.SlugId,
-    schedulerId:    base.Entity.types.String,
+    taskGroupId:    Entity.types.SlugId,
+    schedulerId:    Entity.types.String,
     // Expiration date when this entry can be deleted
     // When adding a task we will update this to task.expires + 72 hours
     // if taskGroup.expires < task.expires. This way the taskGroup entity
     // won't be updated 100 times if we submit 100 tasks sequentially, with
     // slightly higher expiration.
-    expires:        base.Entity.types.Date,
+    expires:        Entity.types.Date,
   },
 });
 
@@ -415,8 +415,8 @@ let TaskGroup = base.Entity.configure({
 TaskGroup.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now),
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          (taskGroup) => {
@@ -436,14 +436,14 @@ exports.TaskGroup = TaskGroup;
  * Existence of this entity only carries value if the task also exists and has
  * the taskId and taskGroupId given here.
  */
-let TaskGroupMember = base.Entity.configure({
+let TaskGroupMember = Entity.configure({
   version:          1,
-  partitionKey:     base.Entity.keys.StringKey('taskGroupId'),
-  rowKey:           base.Entity.keys.StringKey('taskId'),
+  partitionKey:     Entity.keys.StringKey('taskGroupId'),
+  rowKey:           Entity.keys.StringKey('taskId'),
   properties: {
-    taskGroupId:    base.Entity.types.SlugId,
-    taskId:         base.Entity.types.SlugId,
-    expires:        base.Entity.types.Date,
+    taskGroupId:    Entity.types.SlugId,
+    taskId:         Entity.types.SlugId,
+    expires:        Entity.types.Date,
   },
 });
 
@@ -455,8 +455,8 @@ let TaskGroupMember = base.Entity.configure({
 TaskGroupMember.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now),
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          (member) => { count++; return member.remove(true); },
@@ -480,14 +480,14 @@ exports.TaskGroupMember = TaskGroupMember;
  * satisfied. This is tracked by deleting satisfied entries, when no entries
  * remains for taskId, the task must be scheduled.
  */
-let TaskRequirement = base.Entity.configure({
+let TaskRequirement = Entity.configure({
   version:            1,
-  partitionKey:       base.Entity.keys.StringKey('taskId'),
-  rowKey:             base.Entity.keys.StringKey('requiredTaskId'),
+  partitionKey:       Entity.keys.StringKey('taskId'),
+  rowKey:             Entity.keys.StringKey('requiredTaskId'),
   properties: {
-    taskId:           base.Entity.types.SlugId,
-    requiredTaskId:   base.Entity.types.SlugId,
-    expires:          base.Entity.types.Date,
+    taskId:           Entity.types.SlugId,
+    requiredTaskId:   Entity.types.SlugId,
+    expires:          Entity.types.Date,
   },
 });
 
@@ -499,8 +499,8 @@ let TaskRequirement = base.Entity.configure({
 TaskRequirement.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now),
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          entry => { count++; return entry.remove(true); },
@@ -523,16 +523,16 @@ exports.TaskRequirement = TaskRequirement;
  * direction. This relation is used to find tasks to consider for scheduling
  * when taskId is resolved.
  */
-let TaskDependency = base.Entity.configure({
+let TaskDependency = Entity.configure({
   version:            1,
-  partitionKey:       base.Entity.keys.StringKey('taskId'),
-  rowKey:             base.Entity.keys.StringKey('dependentTaskId'),
+  partitionKey:       Entity.keys.StringKey('taskId'),
+  rowKey:             Entity.keys.StringKey('dependentTaskId'),
   properties: {
-    taskId:           base.Entity.types.SlugId,
-    dependentTaskId:  base.Entity.types.SlugId,
+    taskId:           Entity.types.SlugId,
+    dependentTaskId:  Entity.types.SlugId,
     // require is 'completed' or 'resolved' from task.requires
-    require:          base.Entity.types.String,
-    expires:          base.Entity.types.Date,
+    require:          Entity.types.String,
+    expires:          Entity.types.Date,
   },
 });
 
@@ -544,8 +544,8 @@ let TaskDependency = base.Entity.configure({
 TaskDependency.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
-  await base.Entity.scan.call(this, {
-    expires:          base.Entity.op.lessThan(now),
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          entry => { count++; return entry.remove(true); },

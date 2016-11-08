@@ -2,7 +2,7 @@ let debug   = require('debug')('app:artifacts');
 let _       = require('lodash');
 let assert  = require('assert');
 let Promise = require('promise');
-let base    = require('taskcluster-base');
+let API     = require('taskcluster-lib-api');
 let urllib  = require('url');
 let api     = require('./api');
 
@@ -11,7 +11,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'createArtifact',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       'queue:create-artifact:<name>',
@@ -428,7 +428,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'getArtifact',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     ['queue:get-artifact:<name>'],
   ],
@@ -466,7 +466,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts/:name(*)',
   name:       'getLatestArtifact',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     ['queue:get-artifact:<name>'],
   ],
@@ -532,7 +532,7 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listArtifacts',
-  stability:  base.API.stability.experimental,
+  stability:  API.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      'Get Artifacts from Run',
   description: [
@@ -599,7 +599,7 @@ api.declare({
     continuationToken: /./,
     limit: /^[0-9]+$/,
   },
-  stability:  base.API.stability.experimental,
+  stability:  API.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      'Get Artifacts from Latest Run',
   description: [

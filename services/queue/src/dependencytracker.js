@@ -2,7 +2,7 @@ let debug   = require('debug')('app:dependency-tracker');
 let assert  = require('assert');
 let Promise = require('promise');
 let _       = require('lodash');
-let base    = require('taskcluster-base');
+let Entity  = require('azure-entities');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -227,12 +227,12 @@ class DependencyTracker {
 
     // Create query condition
     let condition = {
-      taskId: base.Entity.op.equal(taskId),
+      taskId: Entity.op.equal(taskId),
     };
     if (resolution !== 'completed') {
       // If the resolution wasn't 'completed', we can only remove
       // TaskRequirement entries if the 'require' relation is 'resolved'.
-      condition.require = base.Entity.op.equal('resolved');
+      condition.require = Entity.op.equal('resolved');
     }
 
     await this.TaskDependency.query(condition, {

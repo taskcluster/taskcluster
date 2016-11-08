@@ -14,7 +14,7 @@
  * See src/main.js for the arguments supplied to the scan function.
  */
 
-let base                = require('taskcluster-base');
+let Entity              = require('azure-entities');
 let _                   = require('lodash');
 
 const SLUGID_CHARACTERS = (
@@ -87,7 +87,7 @@ let taskPlatform = (task) => {
 let scanTasks = async ({cfg, Artifact, Task, publicArtifactBucket}) => {
   await Task.scan({
     // add basic filters here to speed up the scan, e.g.,
-    provisionerId: base.Entity.op.eq('aws-provisioner-v1'),
+    provisionerId: Entity.op.eq('aws-provisioner-v1'),
   }, {
     limit: 500,
     handler: async (task) => {

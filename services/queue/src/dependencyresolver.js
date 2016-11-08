@@ -3,7 +3,6 @@ let debug         = require('debug')('app:dependency-resolver');
 let slugid        = require('slugid');
 let assert        = require('assert');
 let _             = require('lodash');
-let base          = require('taskcluster-base');
 let data          = require('./data');
 let QueueService  = require('./queueservice');
 let events        = require('events');

@@ -4,7 +4,7 @@ let slugid      = require('slugid');
 let assert      = require('assert');
 let _           = require('lodash');
 let API         = require('taskcluster-lib-api');
-let base        = require('taskcluster-base');
+let Entity      = require('azure-entities');
 let taskcluster = require('taskcluster-client');
 
 // Maximum number runs allowed
@@ -242,7 +242,7 @@ api.declare({
     this.TaskGroup.load({taskGroupId}, true),
     this.TaskGroupMember.query({
       taskGroupId,
-      expires: base.Entity.op.greaterThanOrEqual(new Date()),
+      expires: Entity.op.greaterThanOrEqual(new Date()),
     }, {continuation, limit}),
   ]);
 
@@ -325,7 +325,7 @@ api.declare({
     this.Task.load({taskId}, true),
     this.TaskDependency.query({
       taskId,
-      expires: base.Entity.op.greaterThanOrEqual(new Date()),
+      expires: Entity.op.greaterThanOrEqual(new Date()),
     }, {continuation, limit}),
   ]);
 
