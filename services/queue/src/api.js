@@ -3,6 +3,7 @@ let debug       = require('debug')('app:api');
 let slugid      = require('slugid');
 let assert      = require('assert');
 let _           = require('lodash');
+let API         = require('taskcluster-lib-api');
 let base        = require('taskcluster-base');
 let taskcluster = require('taskcluster-client');
 
@@ -74,7 +75,7 @@ var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
  *   workClaimer:    // WorkClaimer instance from workclaimer.js
  * }
  */
-var api = new base.API({
+var api = new API({
   title:        'Queue API Documentation',
   description: [
     'The queue, typically available at `queue.taskcluster.net`, is responsible',
@@ -133,7 +134,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId',
   name:       'task',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   idempotent: true,
   output:     'task.json#',
   title:      'Get Task Definition',
@@ -169,7 +170,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/status',
   name:       'status',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   input:      undefined,  // No input is accepted
   output:     'task-status-response.json#',
   title:      'Get task status',
@@ -207,7 +208,7 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listTaskGroup',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   output:     'list-task-group-response.json#',
   title:      'List Task Group',
   description: [
@@ -290,7 +291,7 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listDependentTasks',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   output:     'list-dependent-tasks-response.json#',
   title:      'List Dependent Tasks',
   description: [
@@ -519,7 +520,7 @@ api.declare({
   method:     'put',
   route:      '/task/:taskId',
   name:       'createTask',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   idempotent: true,
   scopes:     [
     [
@@ -722,7 +723,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/define',
   name:       'defineTask',
-  stability:  base.API.stability.deprecated,
+  stability:  API.stability.deprecated,
   scopes:     [
     // Legacy scopes
     ['queue:define-task:<provisionerId>/<workerType>'],
@@ -905,7 +906,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/schedule',
   name:       'scheduleTask',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes:     [
     [
       // Legacy scope
@@ -981,7 +982,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
   name:       'rerunTask',
-  stability:  base.API.stability.deprecated,
+  stability:  API.stability.deprecated,
   scopes:     [
     [
       // Legacy scopes
@@ -1110,7 +1111,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/cancel',
   name:       'cancelTask',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes:     [
     [
       // Legacy scopes
@@ -1241,7 +1242,7 @@ api.declare({
   method:     'get',
   route:      '/poll-task-url/:provisionerId/:workerType',
   name:       'pollTaskUrls',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       // Legacy scopes
@@ -1290,7 +1291,7 @@ api.declare({
   method:     'post',
   route:      '/claim-work/:provisionerId/:workerType',
   name:       'claimWork',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       'queue:claim-work:<provisionerId>/<workerType>',
@@ -1343,7 +1344,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/claim',
   name:       'claimTask',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1439,7 +1440,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/reclaim',
   name:       'reclaimTask',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1682,7 +1683,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/completed',
   name:       'reportCompleted',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1714,7 +1715,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/failed',
   name:       'reportFailed',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1749,7 +1750,7 @@ api.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/exception',
   name:       'reportException',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   scopes: [
     [
       // Legacy
@@ -1918,7 +1919,7 @@ api.declare({
   method:     'get',
   route:      '/pending/:provisionerId/:workerType',
   name:       'pendingTasks',
-  stability:  base.API.stability.stable,
+  stability:  API.stability.stable,
   output:     'pending-tasks-response.json#',
   title:      'Get Number of Pending Tasks',
   description: [
@@ -1944,24 +1945,5 @@ api.declare({
     provisionerId:  provisionerId,
     workerType:     workerType,
     pendingTasks:   count,
-  });
-});
-
-/** Check that the server is a alive */
-api.declare({
-  method:   'get',
-  route:    '/ping',
-  name:     'ping',
-  title:    'Ping Server',
-  description: [
-    'Documented later...',
-    '',
-    '**Warning** this api end-point is **not stable**.',
-  ].join('\n'),
-}, function(req, res) {
-
-  res.status(200).json({
-    alive:    true,
-    uptime:   process.uptime(),
   });
 });
