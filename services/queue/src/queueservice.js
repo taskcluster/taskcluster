@@ -5,7 +5,6 @@ let assert      = require('assert');
 let base32      = require('thirty-two');
 let querystring = require('querystring');
 let url         = require('url');
-let base        = require('taskcluster-base');
 let azure       = require('fast-azure-storage');
 let crypto      = require('crypto');
 let taskcluster = require('taskcluster-client');
