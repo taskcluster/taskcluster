@@ -37,6 +37,7 @@
     "superagent-promise": "^0.2.0",
     "taskcluster-base": "^6.0.0",
     "taskcluster-client": "^0.23.8",
+    "taskcluster-lib-api": "^3.0.0",
     "tc-rules": "^5.0.0",
     "thirty-two": "^0.0.2",
     "url-join": "^0.0.1",
