@@ -136,7 +136,7 @@ export default class ArtifactImage {
           tarballPath = downloadedFile;
           break;
         default:
-          throw new Error('Unsupported image file format. Expected tarball with optional lz4 compression');
+          throw new Error('Unsupported image file format. Expected tarball with extension: .tar.zst, .tar.lz4 or .tar');
       }
 
       await this.renameAndLoad(this.imageName, tarballPath);
