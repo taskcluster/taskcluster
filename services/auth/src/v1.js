@@ -644,7 +644,7 @@ api.declare({
   }
 
   // Check that requester has all the scopes added
-  let added = _.without.apply(_, [input.scopes].concat(role.scopes));
+  let added = _.without(input.scopes, ...role.scopes);
   if (!req.satisfies([added])) {
     return;
   }
