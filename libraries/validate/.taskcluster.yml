@@ -7,10 +7,6 @@ metadata:
 tasks:
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
-    routes:
-      - "notify.email.{{event.head.user.email}}.on-any"
-      - "notify.irc-channel.#taskcluster-notifications.on-failed"
-      - "notify.irc-channel.#taskcluster-notifications.on-exception"
     extra:
       github:
         env: true
