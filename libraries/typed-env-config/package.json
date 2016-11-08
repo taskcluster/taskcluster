@@ -11,6 +11,9 @@
     "pretest": "npm run compile",
     "test": "mocha .test/*_test.js"
   },
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/typed-env-config.git"
