@@ -11,6 +11,9 @@
     "test": "mocha .test/*_test.js"
   },
   "main": "./lib/scopes",
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-lib-scopes.git"
