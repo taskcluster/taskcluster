@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 let debug               = require('debug')('app:main');
-let base                = require('taskcluster-base');
 let _                   = require('lodash');
 let assert              = require('assert');
 let path                = require('path');
@@ -18,17 +17,22 @@ let ClaimResolver       = require('./claimresolver');
 let DependencyTracker   = require('./dependencytracker');
 let DependencyResolver  = require('./dependencyresolver');
 let WorkClaimer         = require('./workclaimer');
+let loader              = require('taskcluster-lib-loader');
+let config              = require('typed-env-config');
+let monitor             = require('taskcluster-lib-monitor');
+let validator           = require('taskcluster-lib-validate');
+let App                 =require('taskcluster-lib-app');
 
 // Create component loader
-let load = base.loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => config({profile}),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => base.monitor({
+    setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-queue',
       credentials: cfg.taskcluster.credentials,
       mock: cfg.monitor.mock,
@@ -39,7 +43,7 @@ let load = base.loader({
   // Validator and publisher
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => base.validator({
+    setup: ({cfg}) => validator({
       prefix:       'queue/v1/',
       aws:           cfg.aws,
     }),
@@ -299,7 +303,7 @@ let load = base.loader({
   server: {
     requires: ['cfg', 'api', 'monitor'],
     setup: ({cfg, api}) => {
-      let app = base.app(cfg.server);
+      let app = App(cfg.server);
       app.use('/v1', api);
       return app.createServer();
     },
