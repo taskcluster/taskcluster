@@ -59,7 +59,7 @@ suite('handlers', () => {
   test('valid push (owner === owner)', async function(done) {
     await publishMessage({user: 'TaskClusterRobot'});
 
-    let urlPrefix = 'https://tools.taskcluster.net/push-inspector/#/';
+    let urlPrefix = 'https://tools.taskcluster.net/task-group-inspector/#/';
     let taskGroupId = null;
 
     await testing.poll(async () => {
