@@ -192,7 +192,6 @@ func (s3Artifact S3Artifact) ResponseObject() interface{} {
 // not include log files)
 func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, 0)
-	log.Println("Artifacts:")
 	for _, artifact := range task.Payload.Artifacts {
 		base := BaseArtifact{
 			CanonicalPath: canonicalPath(artifact.Path),

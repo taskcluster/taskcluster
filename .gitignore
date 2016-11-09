@@ -44,3 +44,4 @@ coverage.report
 
 # For any releases made locally
 /target/
+worker_type_definitions

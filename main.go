@@ -15,17 +15,16 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -40,7 +39,7 @@ var (
 	configureForAws bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
-	TaskUser OSUser
+	TaskUser *OSUser = &OSUser{}
 	// Queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue       *queue.Queue
@@ -62,7 +61,7 @@ var (
 		&MountsFeature{},
 	}
 
-	version = "6.1.0"
+	version = "7.0.0alpha7"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
@@ -873,44 +872,25 @@ func (err *CommandExecutionError) Error() string {
 	return fmt.Sprintf("%v", err.Cause)
 }
 
-func (c *Command) Start() error {
-	c.Lock()
-	defer c.Unlock()
-	return c.osCommand.Start()
-}
-
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
-
-	task.Log("Executing command " + strconv.Itoa(index) + ": " + task.describeCommand(index))
+	task.Logf("Executing command %v: %v", index, task.formatCommand(index))
+	log.Println("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
 	cee := task.prepareCommand(index)
 	if cee != nil {
 		panic(cee)
 	}
-	err := task.Commands[index].Start()
-	if err != nil {
-		panic(err)
-	}
 
-	log.Println("Waiting for command to finish...")
-	errCommand := task.Commands[index].osCommand.Wait()
-	exitStatus := 0
-	if errCommand != nil {
-		if exiterr, ok := errCommand.(*exec.ExitError); ok {
-			// The program has exited with an exit code != 0
+	result := task.Commands[index].Execute()
+	task.Logf("%v", result)
 
-			// This works on both Unix and Windows. Although package
-			// syscall is generally platform dependent, WaitStatus is
-			// defined for both Unix and Windows and in both cases has
-			// an ExitStatus() method with the same signature.
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				exitStatus = status.ExitStatus()
-			}
+	switch {
+	case result.Failed():
+		return &CommandExecutionError{
+			Cause:      result.FailureCause(),
+			TaskStatus: failed,
 		}
-	}
-	task.Log("Exit Code: " + strconv.Itoa(exitStatus))
-
-	if errCommand != nil {
-		return exceptionOrFailure(errCommand)
+	case result.Crashed():
+		panic(result.CrashCause())
 	}
 	return nil
 }
@@ -974,15 +954,15 @@ func (task *TaskRun) setMaxRunTimer() {
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
 	go func() {
-		time.Sleep(time.Second * time.Duration(task.Payload.MaxRunTime))
+		time.Sleep(task.maxRunTimeDeadline.Sub(time.Now()))
 		// ignore any error - in the wrong go routine to properly handle it
 		task.StatusManager.Abort()
 	}()
 }
 
 func (task *TaskRun) kill() {
-	for index := range task.Commands {
-		task.abortProcess(&task.Commands[index])
+	for _, command := range task.Commands {
+		command.Kill()
 	}
 }
 
@@ -1055,7 +1035,9 @@ func (task *TaskRun) run() (err *executionErrors) {
 	}
 	log.Printf("Running task https://tools.taskcluster.net/task-inspector/#%v/%v", task.TaskID, task.RunID)
 
-	task.Commands = make([]Command, len(task.Payload.Command))
+	task.Commands = make([]*process.Command, len(task.Payload.Command))
+	// need to include deadline in commands, so need to set it already here
+	task.maxRunTimeDeadline = time.Now().Add(time.Second * time.Duration(task.Payload.MaxRunTime))
 	// generate commands, in case features want to modify them
 	for i, _ := range task.Payload.Command {
 		err := task.generateCommand(i) // platform specific
