@@ -5,9 +5,9 @@ suite('Claim task', function() {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var base        = require('taskcluster-base');
   var assume      = require('assume');
   var helper      = require('./helper');
+  var testing     = require('taskcluster-lib-testing');
 
   // Use the same task definition for everything
   var taskDef = {
@@ -74,14 +74,14 @@ suite('Claim task', function() {
     assume(r2.status).deep.equals(r1.status);
 
     debug('### reclaimTask');
-    await base.testing.sleep(100);
+    await testing.sleep(100);
     // Again we talking about the first run, so runId must still be 0
     var r3 = await helper.queue.reclaimTask(taskId, 0);
     var takenUntil2 = new Date(r3.takenUntil);
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
 
     debug('### reclaimTask using temp creds from claim');
-    await base.testing.sleep(100);
+    await testing.sleep(100);
     // Works because r1.credentials expires at takenUntil, and are not revoked
     // on reclaimTask
     var queue = new helper.Queue({credentials: r1.credentials});
@@ -91,7 +91,7 @@ suite('Claim task', function() {
     assume(takenUntil3.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
 
     debug('### reclaimTask using temp creds from reclaim');
-    await base.testing.sleep(100);
+    await testing.sleep(100);
     var queue2 = new helper.Queue({credentials: r4.credentials});
     var r5 = await queue2.reclaimTask(taskId, 0);
     var takenUntil4 = new Date(r5.takenUntil);
