@@ -78,7 +78,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/m
 
 # download generic-worker
 md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v6.1.0/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v7.0.0alpha5/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # download livelog
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v0.0.6/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -94,6 +94,12 @@ Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startu
 
 # initial clone of mozilla-central
 # Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
+
+# download Windows Server 2003 Resource Kit Tools
+$client.DownloadFile("https://download.microsoft.com/download/8/e/c/8ec3a7d8-05b4-440a-a71e-ca3ee25fe057/rktools.exe", "C:\rktools.exe")
+
+# download gvim
+$client.DownloadFile("http://artfiles.org/vim.org/pc/gvim80-069.exe", "C:\gvim80-069.exe")
 
 # https://bugzil.la/1274844 download BinScope
 $client.DownloadFile("https://download.microsoft.com/download/2/6/A/26AAA1DE-D060-4246-93B5-7D7C877E4F8F/BinScopeSetup.msi", "C:\BinScopeSetup.msi")
