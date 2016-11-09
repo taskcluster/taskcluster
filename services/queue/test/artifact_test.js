@@ -11,7 +11,6 @@ suite('Artifacts', function() {
   var Bucket        = require('../lib/bucket');
   var BlobStore     = require('../lib/blobstore');
   var data          = require('../lib/data');
-  var base          = require('taskcluster-base');
   var taskcluster   = require('taskcluster-client');
   var {Netmask}     = require('netmask');
   var assume        = require('assume');

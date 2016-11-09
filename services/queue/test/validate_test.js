@@ -1,9 +1,9 @@
-var base        = require('taskcluster-base');
+var testing     = require('taskcluster-lib-testing');
 var path        = require('path');
 
 suite('validate', () => {
   // Run test cases using schemas testing utility from taskcluster-base
-  base.testing.schemas({
+  testing.schemas({
     validator: {
       prefix:   'queue/v1/',
     },

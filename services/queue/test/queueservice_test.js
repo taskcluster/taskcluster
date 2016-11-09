@@ -3,23 +3,25 @@ suite('queue/QueueService', function() {
   var slugid        = require('slugid');
   var assert        = require('assert');
   var QueueService  = require('../lib/queueservice');
-  var base          = require('taskcluster-base');
   var _             = require('lodash');
   var url           = require('url');
   var request       = require('superagent-promise');
   var debug         = require('debug')('test:queueservice');
   var xml2js        = require('xml2js');
   var assume        = require('assume');
+  var config        = require('typed-env-config');
+  var Monitor       = require('taskcluster-lib-monitor');
+  var testing       = require('taskcluster-lib-testing');
 
   // Load configuration
-  var cfg = base.config({profile: 'test'});
+  var cfg = config({profile: 'test'});
 
   // Check that we have an account
   let queueService = null;
   let monitor = null;
   if (cfg.azure && cfg.azure.accountKey) {
     before(async () => {
-      monitor = await base.monitor({
+      monitor = await Monitor({
         credentials: {},
         project: 'test',
         mock: true,
@@ -57,7 +59,7 @@ suite('queue/QueueService', function() {
     await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline);
 
     // Poll for message
-    return base.testing.poll(async () => {
+    return testing.poll(async () => {
       var messages = await queueService.pollDeadlineQueue();
       debug('Received messages: %j', messages);
 
@@ -83,7 +85,7 @@ suite('queue/QueueService', function() {
     await queueService.putClaimMessage(taskId, 0, takenUntil);
 
     // Poll for message
-    return base.testing.poll(async () => {
+    return testing.poll(async () => {
       var messages = await queueService.pollClaimQueue();
       debug('Received messages: %j', messages);
 
@@ -110,7 +112,7 @@ suite('queue/QueueService', function() {
     await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
 
     // Poll for message
-    return base.testing.poll(async () => {
+    return testing.poll(async () => {
       var messages = await queueService.pollResolvedQueue();
       debug('Received messages: %j', messages);
 
@@ -152,7 +154,7 @@ suite('queue/QueueService', function() {
     debug('### Polling for queue for message');
     var i = 0;
     var queue;
-    var [message, payload] = await base.testing.poll(async () => {
+    var [message, payload] = await testing.poll(async () => {
       // Poll azure queue
       debug(' - Polling azure queue: %s', i);
       queue = queues[i++ % queues.length];
@@ -210,7 +212,7 @@ suite('queue/QueueService', function() {
     let poll = await queueService.pendingQueues(provisionerId, workerType);
 
     // Poll for the message
-    let message = await base.testing.poll(async () => {
+    let message = await testing.poll(async () => {
       for (let i = 0; i < poll.length; i++) {
         let messages = await poll[i](1);
         if (messages.length === 1) {
@@ -228,7 +230,7 @@ suite('queue/QueueService', function() {
     await message.release();
 
     // Poll message again
-    message = await base.testing.poll(async () => {
+    message = await testing.poll(async () => {
       for (let i = 0; i < poll.length; i++) {
         let messages = await poll[i](1);
         if (messages.length === 1) {
@@ -271,7 +273,7 @@ suite('queue/QueueService', function() {
     debug('### Polling for queue for message');
     var i = 0;
     var queue;
-    var [message, payload] = await base.testing.poll(async () => {
+    var [message, payload] = await testing.poll(async () => {
       // Poll azure queue
       debug(' - Polling azure queue: %s', i);
       queue = queues[i++ % queues.length];

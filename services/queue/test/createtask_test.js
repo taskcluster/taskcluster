@@ -4,10 +4,10 @@ suite('Create task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
+  var testing       = require('taskcluster-lib-testing');
 
   // Use the same task definition for everything
   var taskDef = {
@@ -145,7 +145,7 @@ suite('Create task', function() {
     });
 
     await helper.queue.defineTask(taskId, taskDef);
-    await base.testing.sleep(500);
+    await testing.sleep(500);
 
     taskIsScheduled = true;
     helper.scopes(

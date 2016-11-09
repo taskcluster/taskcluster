@@ -3,15 +3,15 @@ suite('queue/tasks_store', function() {
   var slugid        = require('slugid');
   var assert        = require('assert');
   var BlobStore     = require('../lib/blobstore');
-  var base          = require('taskcluster-base');
   var _             = require('lodash');
   var url           = require('url');
   var request       = require('superagent-promise');
   var BlobUploader  = require('./azure-blob-uploader-sas');
   var debug         = require('debug')('test:blobstore_test');
+  var config        = require('typed-env-config');
 
   // Load configuration
-  var cfg = base.config({profile: 'test'});
+  var cfg = config({profile: 'test'});
 
   // Check that we have an account
   let blobstore = null;

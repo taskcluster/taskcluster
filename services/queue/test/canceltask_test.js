@@ -4,7 +4,6 @@ suite('Rerun task', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
