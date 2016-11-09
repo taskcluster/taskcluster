@@ -28,12 +28,12 @@ func createNewTaskUser() error {
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
-	TaskUser = OSUser{
+	TaskUser = &OSUser{
 		HomeDir:  "/Users/" + userName,
 		Name:     userName,
 		Password: password,
 	}
-	err := (&TaskUser).createNewOSUser()
+	err := TaskUser.createNewOSUser()
 	if err != nil {
 		return err
 	}

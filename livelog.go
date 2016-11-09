@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/livelog"
+	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/stateless-dns-go/hostname"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -126,4 +127,10 @@ func (l *LiveLogTask) uploadLiveLog() error {
 	}
 	// note this will be error(nil) not *CommandExecutionError(nil)
 	return nil
+}
+
+func setCommandLogWriters(commands []*process.Command, logWriter io.Writer) {
+	for i, _ := range commands {
+		commands[i].DirectOutput(logWriter)
+	}
 }

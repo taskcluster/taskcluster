@@ -60,7 +60,7 @@ func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
 	// command, so we log it instead. This checks the log that the correct
 	// command would have been executed if it had not been a test.
 	for _, group := range groups {
-		substring := `[]string{"net", "localgroup", "` + group + `", "/add", ""}`
+		substring := `"net localgroup \"` + group + `\" /add \"\"`
 		if !strings.Contains(logtext, substring) {
 			t.Log(logtext)
 			t.Fatalf("Was expecting log to contain string %v", substring)

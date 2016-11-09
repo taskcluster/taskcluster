@@ -5,16 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"sync"
 	"time"
 
+	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
-
-type ExecCommand interface {
-	Start() error
-	Wait() error
-}
 
 type (
 	// Generic Worker config
@@ -83,19 +78,13 @@ type (
 		Payload             GenericWorkerPayload         `json:"-"`
 		Artifacts           []Artifact                   `json:"-"`
 		Status              TaskStatus                   `json:"-"`
-		Commands            []Command                    `json:"-"`
+		Commands            []*process.Command           `json:"-"`
 		// not exported
-		reclaimTimer  *time.Timer
-		logWriter     io.Writer
-		Queue         *queue.Queue       `json:"-"`
-		StatusManager *TaskStatusManager `json:"-"`
-	}
-
-	// Regardless of platform, we will have to call out to system commands to run tasks,
-	// and each command execution should write to a file.
-	Command struct {
-		sync.RWMutex
-		osCommand ExecCommand
+		logWriter          io.Writer
+		reclaimTimer       *time.Timer
+		maxRunTimeDeadline time.Time
+		Queue              *queue.Queue       `json:"-"`
+		StatusManager      *TaskStatusManager `json:"-"`
 	}
 
 	// Custom time format to enable unmarshalling of azure xml directly into go
@@ -114,12 +103,6 @@ type (
 		PutURL      string    `json:"putUrl"`
 		Expires     time.Time `json:"expires"`
 		ContentType string    `json:"contentType"`
-	}
-
-	OSUser struct {
-		HomeDir  string
-		Name     string
-		Password string
 	}
 
 	TaskStatus       string

@@ -1,10 +1,12 @@
-#!/bin/bash -ev
+#!/bin/bash -evx
 
 cd "$(dirname "${0}")"
 
 # need to use go 1.7 or later, see e.g.
 # https://github.com/contester/runlib/issues/5
 
+unset CGO_ENABLED
+unset GOOS
 GO_VERSION="$(go version 2>/dev/null | cut -f3 -d' ')"
 GO_MAJ="$(echo "${GO_VERSION}" | cut -f1 -d'.')"
 GO_MIN="$(echo "${GO_VERSION}" | cut -f2 -d'.')"
@@ -25,7 +27,7 @@ go generate ./...
 
 function install {
   # GOOS="${1}" GOARCH="${2}" go get -u ./...
-  GOOS="${1}" GOARCH="${2}" go get ./...
+  GOOS="${1}" GOARCH="${2}" go get -v ./...
   GOOS="${1}" GOARCH="${2}" go vet ./...
 }
 
@@ -68,7 +70,8 @@ find "${GOPATH}/bin" -name 'generic-worker*'
 go get github.com/taskcluster/livelog
 # capital X here ... we only want to delete things that are ignored!
 git clean -fdX
-GORACE="history_size=7" go test -v -race -timeout 1h ./...
+
+CGO_ENABLED=1 GORACE="history_size=7" go test -v -race -timeout 1h ./...
 go vet ./...
 golint ./...
 go get github.com/gordonklaus/ineffassign
