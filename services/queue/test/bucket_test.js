@@ -3,20 +3,21 @@ suite('queue/bucket_test', function() {
   var slugid        = require('slugid');
   var assert        = require('assert');
   var Bucket        = require('../lib/bucket');
-  var base          = require('taskcluster-base');
   var _             = require('lodash');
   var debug         = require('debug')('test:bucket_test');
   var request       = require('superagent-promise');
+  var config        = require('typed-env-config');
+  var Monitor       = require('taskcluster-lib-monitor');
 
   // Load configuration
-  var cfg = base.config({profile: 'test'});
+  var cfg = config({profile: 'test'});
 
   // Check that we have an account
   let bucket = null;
   let monitor = null;
   if (cfg.aws  && cfg.aws.accessKeyId) {
     before(async () => {
-      monitor = await base.monitor({
+      monitor = await Monitor({
         credentials: {},
         project: 'test',
         mock: true,

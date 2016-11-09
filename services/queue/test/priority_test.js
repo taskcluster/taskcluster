@@ -5,11 +5,11 @@ suite('task.priority', () => {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var base        = require('taskcluster-base');
   var assume      = require('assume');
   var request     = require('superagent-promise');
   var xml2js      = require('xml2js');
   var helper      = require('./helper');
+  var testing     = require('taskcluster-lib-testing');
 
   // Generate random workerType id to use for this test
   var workerType  = slugid.v4();
@@ -108,7 +108,7 @@ suite('task.priority', () => {
     // tasks we've created, we store the index of the signedPollUrl from
     // queues and compare them after we've found both
     var i = 0;
-    await base.testing.poll(async () => {
+    await testing.poll(async () => {
       var index = i++ % queues.length;
 
       debug('### Polling azure queue: %s', index);

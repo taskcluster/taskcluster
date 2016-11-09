@@ -4,10 +4,10 @@ suite('Query tasks', function() {
   var slugid      = require('slugid');
   var _           = require('lodash');
   var Promise     = require('promise');
-  var base        = require('taskcluster-base');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
+  var testing     = require('taskcluster-lib-testing');
 
   test('pendingTasks >= 1', async () => {
     let taskDef = {
@@ -67,7 +67,7 @@ suite('Query tasks', function() {
     // Just comment out the return statement below.
     return; // STOP TEST HERE
     console.log('WARNING: Unstable test running, should be disabled on master');
-    await base.testing.poll(async () => {
+    await testing.poll(async () => {
       // At some point in the future we have to got fetch a new result saying
       // more tasks are now in the queue...
       let r3 = await helper.queue.pendingTasks(

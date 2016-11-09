@@ -5,11 +5,11 @@ suite('Poll tasks', function() {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var base        = require('taskcluster-base');
   var assume      = require('assume');
   var request     = require('superagent-promise');
   var xml2js      = require('xml2js');
   var helper      = require('./helper');
+  var testing     = require('taskcluster-lib-testing');
 
   test('pollTaskUrl, getMessage, claimTask, deleteMessage', async () => {
     // Use the same task definition for everything
@@ -73,7 +73,7 @@ suite('Poll tasks', function() {
     // The poll loop retries if there is an error, this is an easy way to write
     // tests. Don't EVER do this is production code! You could end up with a
     // loop that just get messages and there by makes them invisible :)
-    await base.testing.poll(async () => {
+    await testing.poll(async () => {
       debug('### Polling azure queue: %s', i);
       queue = r1.queues[i++ % r1.queues.length];
       var res = await request.get(queue.signedPollUrl).buffer().end();
@@ -108,7 +108,7 @@ suite('Poll tasks', function() {
     var deleteUrl = queue.signedDeleteUrl
      .replace('{{messageId}}', encodeURIComponent(msg.MessageId[0]))
      .replace('{{popReceipt}}', encodeURIComponent(msg.PopReceipt[0]));
-    await base.testing.poll(async () => {
+    await testing.poll(async () => {
       var res = await request.del(deleteUrl).buffer().end();
       if (!res.ok) {
         throw new Error('error deleting message: ' + res.text + ' deleteUrl: ' +

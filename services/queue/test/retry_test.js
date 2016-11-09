@@ -5,9 +5,9 @@ suite('Retry tasks (claim-expired)', function() {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var base        = require('taskcluster-base');
   var assume      = require('assume');
   var helper      = require('./helper');
+  var testing     = require('taskcluster-lib-testing');
 
   // Use the same task definition for everything
   var taskDef = {
@@ -59,7 +59,7 @@ suite('Retry tasks (claim-expired)', function() {
     debug('### Ensure that we got no task-exception message');
     await new Promise(function(accept, reject) {
       helper.events.waitFor('except-0').then(reject, reject);
-      accept(base.testing.sleep(500));
+      accept(testing.sleep(500));
     });
 
     debug('### Stop claimReaper');

@@ -2,13 +2,14 @@ let assert          = require('assert');
 let Promise         = require('promise');
 let path            = require('path');
 let _               = require('lodash');
-let base            = require('taskcluster-base');
 let taskcluster     = require('taskcluster-client');
 let mocha           = require('mocha');
 let debug           = require('debug')('test:helper');
 let v1              = require('../lib/api');
 let exchanges       = require('../lib/exchanges');
 let load            = require('../lib/main');
+var config        = require('typed-env-config');
+var testing       = require('taskcluster-lib-testing');
 
 const profile = 'test';
 let loadOptions = {profile, process: 'test'};
@@ -17,10 +18,10 @@ let loadOptions = {profile, process: 'test'};
 var helper = module.exports = {load, loadOptions};
 
 // Load configuration
-var cfg = base.config({profile});
+var cfg = config({profile});
 
 // Configure PulseTestReceiver
-helper.events = new base.testing.PulseTestReceiver(cfg.pulse, mocha);
+helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
 
 // Allow tests to run expire-artifacts
 helper.expireArtifacts = () => load('expire-artifacts', loadOptions);
@@ -77,7 +78,7 @@ var webServer = null;
 mocha.before(async () => {
   // Create mock authentication server
   debug('### Creating mock authentication server');
-  base.testing.fakeauth.start({
+  testing.fakeauth.start({
     'test-server': ['*'],
     'test-client': ['*'],
   });
@@ -136,5 +137,5 @@ mocha.afterEach(async () => {
 mocha.after(async () => {
   // Kill webServer
   await webServer.terminate();
-  base.testing.fakeauth.stop();
+  testing.fakeauth.stop();
 });

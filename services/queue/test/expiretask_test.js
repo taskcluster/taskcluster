@@ -5,7 +5,6 @@ suite('Task Expiration (expire-tasks)', function() {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var base        = require('taskcluster-base');
   var assume      = require('assume');
   var helper      = require('./helper');
 
