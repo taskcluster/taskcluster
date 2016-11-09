@@ -5,9 +5,9 @@ suite('queue.claimWork', () => {
   var _           = require('lodash');
   var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
-  var base        = require('taskcluster-base');
   var assume      = require('assume');
   var helper      = require('./helper');
+  var testing     = require('taskcluster-lib-testing');
 
   // Generate random workerType id to use for this test
   var workerType  = slugid.v4();
@@ -163,7 +163,7 @@ suite('queue.claimWork', () => {
     assume(r2.status).deep.equals(r1.tasks[0].status);
 
     debug('### reclaimTask');
-    await base.testing.sleep(100);
+    await testing.sleep(100);
     // Use temp creds from claimWork
     let queue = new helper.Queue({credentials: r1.tasks[0].credentials});
     let r3 = await queue.reclaimTask(taskId, 0);
