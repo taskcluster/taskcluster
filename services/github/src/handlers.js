@@ -5,7 +5,7 @@ let yaml = require('js-yaml');
 let assert = require('assert');
 let _ = require('lodash');
 
-let INSPECTOR_URL = 'https://tools.taskcluster.net/push-inspector/#/';
+let INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';
 
 /**
  * Create handlers
