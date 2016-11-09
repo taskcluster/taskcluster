@@ -41,7 +41,7 @@ class Handler {
     let task = await this.queue.task(taskId);
     let status = await this.queue.status(taskId);
     let href = `https://tools.taskcluster.net/task-inspector/#${taskId}`;
-    let groupHref = `https://tools.taskcluster.net/push-inspector/#/${task.taskGroupId}`;
+    let groupHref = `https://tools.taskcluster.net/task-group-inspector/#/${task.taskGroupId}`;
     let runCount = status.status.runs.length;
 
     debug(`Received message for ${taskId} with notify routes. Finding notifications.`);
