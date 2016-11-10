@@ -19,6 +19,32 @@ type (
 		Contact json.RawMessage `json:"contact"`
 	}
 
+	// Namespace creation response
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#
+	NamespaceCreationResponse struct {
+
+		// The contact information which will be handed off to the notification service
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact
+		Contact json.RawMessage `json:"contact"`
+
+		// The name of the namespace created
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/namespace
+		Namespace string `json:"namespace"`
+
+		// The password created for authentication
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/password
+		Password string `json:"password"`
+
+		// The username created for authentication
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/username
+		Username string `json:"username"`
+	}
+
 	// Request to post a message on IRC.
 	//
 	// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#
@@ -64,6 +90,11 @@ type (
 			User string `json:"user,omitempty"`
 		} `json:"payload"`
 	}
+
+	// An array of strings containing the names of exchanges in RabbitMQ
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#
+	RabbitMQExchanges []string
 
 	// Rabbit overview response
 	//
@@ -173,6 +204,12 @@ type (
 
 	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
 	Var3 SendEmailRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
+	Var4 PostIRCMessageRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
+	Var5 SendEmailRequest
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

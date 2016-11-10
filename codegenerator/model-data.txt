@@ -1,4 +1,4 @@
-Generated: 1478640257
+Generated: 1478816670
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5306,7 +5306,7 @@ Entry 1     =
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = ''
+    Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json'
     Entry Title       = 'Rabbit Exchanges'
     Entry Description = 'A list of exchanges in the rabbit cluster
 
@@ -5321,7 +5321,7 @@ Entry 2     =
     Entry Stability   = 'experimental'
     Entry Scopes      = '[[pulse:namespace:<namespace>]]'
     Entry Input       = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json'
-    Entry Output      = ''
+    Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json'
     Entry Title       = 'Create a namespace'
     Entry Description = 'Creates a namespace, given the taskcluster credentials with scopes.
 
@@ -5429,6 +5429,24 @@ Title                  = 'Send Email Request'
 Type                   = 'object'
 TypeName               = 'SendEmailRequest'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
+
+
+http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'An array of strings containing the names of exchanges in RabbitMQ
+'
+ID                     = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#'
+Items
+  Type                   = 'string'
+  TypeName               = ''
+  SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items'
+Required               = '[exchanges]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'RabbitMQ Exchanges'
+Type                   = 'array'
+TypeName               = 'RabbitMQExchanges'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#'
 
 
 http://schemas.taskcluster.net/pulse/v1/irc-request.json#
@@ -5557,6 +5575,68 @@ http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/conta
 Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
 TypeName               = 'Var3'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]'
+
+
+http://schemas.taskcluster.net/pulse/v1/namespace-response.json#
+================================================================
+Additional Properties  = 'false'
+Description            = 'Namespace creation response
+'
+ID                     = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#'
+Properties
+  Property 'contact' =
+    Description            = 'The contact information which will be handed off to the notification service'
+    OneOf
+      Item '0' =
+        Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
+        TypeName               = 'Var4'
+        SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]'
+      Item '1' =
+        Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
+        TypeName               = 'Var5'
+        SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]'
+    Title                  = 'Contact Information'
+    Type                   = 'object'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact'
+  Property 'namespace' =
+    Description            = 'The name of the namespace created'
+    Title                  = 'Namespace'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/namespace'
+  Property 'password' =
+    Description            = 'The password created for authentication'
+    Title                  = 'Password'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/password'
+  Property 'username' =
+    Description            = 'The username created for authentication'
+    Title                  = 'Username'
+    Type                   = 'string'
+    TypeName               = ''
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/username'
+Required               = '[namespace username password contact]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Namespace Creation Response'
+Type                   = 'object'
+TypeName               = 'NamespaceCreationResponse'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#'
+
+
+http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
+============================================================================================
+Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
+TypeName               = 'Var4'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]'
+
+
+http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
+============================================================================================
+Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
+TypeName               = 'Var5'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]'
 
 
 http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#

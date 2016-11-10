@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 8 Nov 2016 at 21:24:00 UTC. The code was generated
+// Thu, 10 Nov 2016 at 22:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -95,10 +95,10 @@ func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
 // **Warning** this api end-point is **not stable**.
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#exchanges
-func (myPulse *Pulse) Exchanges() error {
+func (myPulse *Pulse) Exchanges() (*RabbitMQExchanges, error) {
 	cd := tcclient.ConnectionData(*myPulse)
-	_, _, err := (&cd).APICall(nil, "GET", "/exchanges", nil, nil)
-	return err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/exchanges", new(RabbitMQExchanges), nil)
+	return responseObject.(*RabbitMQExchanges), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -111,10 +111,10 @@ func (myPulse *Pulse) Exchanges() error {
 //   * pulse:namespace:<namespace>
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#namespace
-func (myPulse *Pulse) Namespace(namespace string, payload *NamespaceCreationRequest) error {
+func (myPulse *Pulse) Namespace(namespace string, payload *NamespaceCreationRequest) (*NamespaceCreationResponse, error) {
 	cd := tcclient.ConnectionData(*myPulse)
-	_, _, err := (&cd).APICall(payload, "POST", "/namespace/"+url.QueryEscape(namespace), nil, nil)
-	return err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespace/"+url.QueryEscape(namespace), new(NamespaceCreationResponse), nil)
+	return responseObject.(*NamespaceCreationResponse), err
 }
 
 // Respond without doing anything.
