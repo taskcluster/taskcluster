@@ -31,6 +31,7 @@
     "lodash": "^4.16.1",
     "mozillians-client": "^0.1.1",
     "passport": "^0.3.0",
+    "passport-auth0": "^0.5.2",
     "passport-local": "^1.0.0",
     "passport-persona": "github:jonasfj/passport-persona",
     "passport-saml": "^0.15.0",

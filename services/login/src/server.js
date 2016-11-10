@@ -196,6 +196,8 @@ let load = loader({
           query: req.query,
           flash: req.flash(),
           session: req.session,
+          auth0_domain: cfg.auth0.domain,
+          auth0_client_id: cfg.auth0.clientId,
         });
       });
 
