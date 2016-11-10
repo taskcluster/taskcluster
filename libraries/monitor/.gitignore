@@ -1,5 +1,6 @@
 /user-config.yml
 lib/
+.test/
 
 # Logs
 logs
