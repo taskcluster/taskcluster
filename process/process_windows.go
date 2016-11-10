@@ -160,7 +160,7 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 			CheckIdleness:       false,
 			RestrictUi:          false,
 			ProcessAffinityMask: 0,
-			NoJob:               true,
+			NoJob:               false,
 			Environment:         env,
 			StdIn: &subprocess.Redirect{
 				Mode: subprocess.REDIRECT_NONE,
