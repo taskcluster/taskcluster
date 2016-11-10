@@ -399,6 +399,10 @@ func install(arguments map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
+	err = user.GrantSeAssignPrimaryTokenPrivilege(exePath)
+	if err != nil {
+		return err
+	}
 	switch {
 	case arguments["service"]:
 		nssm := convertNilToEmptyString(arguments["--nssm"])
@@ -428,6 +432,35 @@ func allowError(errString string, command string, args ...string) (bool, error) 
 
 func (user *OSUser) makeAdmin() error {
 	_, err := allowError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
+	return err
+}
+
+func (user *OSUser) GrantSeAssignPrimaryTokenPrivilege(exePath string) error {
+	secPolicyFilePath := filepath.Join(filepath.Dir(exePath), "SeAssignPrimaryTokenPrivilege-GenericWorker.secpolicy")
+	secPolicyContents := []byte(strings.Join([]string{
+		`[Privilege Rights]`,
+		`SeAssignPrimaryTokenPrivilege = ` + user.Name,
+		`[Version]`,
+		`signature="$CHICAGO$"`,
+		`Revision=1`,
+	}, "\r\n"))
+	err := ioutil.WriteFile(secPolicyFilePath, secPolicyContents, 0644)
+	if err != nil {
+		return fmt.Errorf("Was not able to create file %q with access permissions 0644 due to %s", secPolicyFilePath, err)
+	}
+	err = runCommands(
+		false,
+		[]string{
+			"secedit",
+			"/configure",
+			"/db",
+			"C:\\Windows\\security\\local.sdb",
+			"/cfg",
+			secPolicyFilePath,
+			"/areas",
+			"SECURITYPOLICY",
+		},
+	)
 	return err
 }
 
