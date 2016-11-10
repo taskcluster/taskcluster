@@ -13,7 +13,9 @@ Supported authentication systems:
    `taskcluster-email` property in the SAML assertion, giving the user's
    LDAP email.  User identities are of the form `mozilla-ldap/<email>`.
  * Persona - A very basic verification that the user owns an email address.
-   User identities are of the form `persona/<email`.
+   User identities are of the form `persona/<email>`.
+ * Passwordless - Similar to persona, but not deprecated.  User identities are
+ * of the form `email/<email>`.
 
 Supported authorization systems:
  * LDAP - Translates LDAP groups (including POSIX groups) to TaskCluster roles
