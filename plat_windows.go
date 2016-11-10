@@ -399,7 +399,7 @@ func install(arguments map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	err = user.GrantSeAssignPrimaryTokenPrivilege(exePath)
+	err = user.GrantSecurityPrivileges(exePath)
 	if err != nil {
 		return err
 	}
@@ -435,11 +435,12 @@ func (user *OSUser) makeAdmin() error {
 	return err
 }
 
-func (user *OSUser) GrantSeAssignPrimaryTokenPrivilege(exePath string) error {
-	secPolicyFilePath := filepath.Join(filepath.Dir(exePath), "SeAssignPrimaryTokenPrivilege-GenericWorker.secpolicy")
+func (user *OSUser) GrantSecurityPrivileges(exePath string) error {
+	secPolicyFilePath := filepath.Join(filepath.Dir(exePath), "generic-worker.secpol")
 	secPolicyContents := []byte(strings.Join([]string{
 		`[Privilege Rights]`,
 		`SeAssignPrimaryTokenPrivilege = ` + user.Name,
+		// `SeIncreaseQuotaPrivilege = ` + user.Name,
 		`[Version]`,
 		`signature="$CHICAGO$"`,
 		`Revision=1`,
