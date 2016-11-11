@@ -35,7 +35,7 @@ suite('volume cache tests', function () {
   });
 
   test('mount cached volume in docker worker', co(function* () {
-    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
     var fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
@@ -74,8 +74,49 @@ suite('volume cache tests', function () {
     assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')));
   }));
 
+  test('mount cached volume in docker worker using role', co(function* () {
+    // This is the same as the regular success case but instead it uses roles
+    // instead of an explicit scope for the cache
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    var fullCacheDir = path.join(localCacheDir, cacheName);
+    settings.configure({
+      cache: {
+        volumeCachePath: localCacheDir
+      }
+    });
+
+    var task = {
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'echo "foo" > /tmp-obj-dir/foo.txt',
+          'ls /tmp-obj-dir'
+        ),
+        features: {
+          localLiveLog: true
+        },
+        cache: {},
+        maxRunTime: 5 * 60
+      },
+      scopes: ['assume:project:taskcluster:worker-test-scopes']
+    };
+
+    task.payload.cache[cacheName] = '/tmp-obj-dir';
+
+    var result = yield testworker(task);
+
+    // Get task specific results
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
+    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache');
+    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir');
+
+    var objDir = fs.readdirSync(fullCacheDir);
+    assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')));
+  }));
+
   test('mounted cached volumes are not reused between tasks', co(function* () {
-    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
 
     settings.configure({
@@ -125,7 +166,7 @@ suite('volume cache tests', function () {
   }));
 
   test('cached volumes can be reused between tasks', co(function* () {
-    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var fullCacheDir = path.join(localCacheDir, cacheName);
     var neededScope = 'docker-worker:cache:' + cacheName;
 
@@ -183,8 +224,8 @@ suite('volume cache tests', function () {
   }));
 
   test('mount multiple cached volumes in docker worker', co(function* () {
-    var cacheName1 = 'tmp-obj-dir-' + Date.now().toString();
-    var cacheName2 = 'tmp-obj-dir-' + (Date.now()+1).toString();
+    var cacheName1 = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    var cacheName2 = 'docker-worker-garbage-caches-tmp-obj-dir-' + (Date.now()+1).toString();
 
     var neededScopes = [];
     neededScopes.push('docker-worker:cache:' + cacheName1);
@@ -234,8 +275,8 @@ suite('volume cache tests', function () {
 
   test('task unsuccesful when insufficient cache scope is provided',
     co(function* () {
-      var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-      var neededScope = 'docker-worker:cache:1' + cacheName;
+      var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+      var neededScope = 'docker-worker:cache:docker-worker-garbage-caches-1' + cacheName;
       var fullCacheDir = path.join(localCacheDir, cacheName);
 
       var task = {
@@ -244,10 +285,6 @@ suite('volume cache tests', function () {
           command: cmd(
             'echo "foo" > /tmp-obj-dir/foo.txt'
           ),
-          features: {
-            // No need to actually issue live logging...
-            localLiveLog: true
-          },
           cache: {},
           maxRunTime:         5 * 60
         },
@@ -278,7 +315,7 @@ suite('volume cache tests', function () {
 
   test('task unsuccesful when invalid cache name is requested',
     co(function* () {
-      var cacheName = 'tmp-obj-dir::-' + Date.now().toString();
+      var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir::-' + Date.now().toString();
       var neededScope = 'docker-worker:cache:' + cacheName;
       var fullCacheDir = path.join(localCacheDir, cacheName);
 
@@ -321,7 +358,7 @@ suite('volume cache tests', function () {
   );
 
   test('cached volumes of aborted tasks are released', co(function* () {
-    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
     var fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
@@ -370,7 +407,7 @@ suite('volume cache tests', function () {
   }));
 
   test('purge cache after run task', co(function* () {
-    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
     var fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
@@ -422,7 +459,7 @@ suite('volume cache tests', function () {
   }));
 
   test('purge cache during run task', co(function* () {
-    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
     var fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({

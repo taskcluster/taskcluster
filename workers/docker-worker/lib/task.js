@@ -93,7 +93,8 @@ Create a list of cached volumes that will be mounted within the docker container
 @param {object} volumes to mount in the container
  */
 async function buildVolumeBindings(taskVolumeBindings, volumeCache, taskScopes) {
-  if (!hasPrefixedScopes('docker-worker:cache:', taskVolumeBindings, taskScopes)) {
+  let allowed = await hasPrefixedScopes('docker-worker:cache:', taskVolumeBindings, taskScopes);
+  if (!allowed) {
     throw new Error('Insufficient scopes to attach cache volumes.  The task must ' +
     'have scope `docker-worker:cache:<cache-name>` for each cache in `payload.caches`.');
   }
@@ -132,8 +133,10 @@ function runAsPrivileged(task, allowPrivilegedTasks) {
   return true;
 }
 
-function buildDeviceBindings(devices, taskScopes) {
-  if (!hasPrefixedScopes('docker-worker:capability:device:', devices, taskScopes)) {
+async function buildDeviceBindings(devices, taskScopes) {
+  let allowed = await hasPrefixedScopes('docker-worker:capability:device:', devices, taskScopes);
+
+  if (!allowed) {
     throw new Error('Insufficient scopes to attach devices to task container.  The ' +
     'task must have scope `docker-worker:capability:device:<dev-name>` for each device.');
   }
@@ -358,7 +361,7 @@ export class Task extends EventEmitter {
     }
 
     if (this.options.devices) {
-      let bindings = buildDeviceBindings(this.options.devices, this.task.scopes);
+      let bindings = await buildDeviceBindings(this.options.devices, this.task.scopes);
       procConfig.create.HostConfig['Devices'] = bindings;
     }
 

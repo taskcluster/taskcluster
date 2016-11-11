@@ -42,7 +42,7 @@ suite('encrypted private env variables', function() {
         messageVersion: data.messageVersion || defaultMessageVersion,
         taskId: data.taskId,
         startTime: data.startTime || Date.now(),
-        endTime: data.endTime || (Date.now() + 30000),
+        endTime: data.endTime || (Date.now() + 60000),
         name: data.name,
         value: data.value
       };
@@ -69,7 +69,7 @@ suite('encrypted private env variables', function() {
         image: 'taskcluster/test-ubuntu',
         command: ['/bin/bash', '-c', 'echo \"$' + envVar1 + '\";' + 'echo \"$' + envVar2 + '\";'],
         created: data.startTime || Date.now(),
-        deadline: data.endTime || (Date.now() + 30000),
+        deadline: data.endTime || (Date.now() + 60000),
         env: { ENV_VAR: 'env var value'},
         }
     };

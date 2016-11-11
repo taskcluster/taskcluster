@@ -95,7 +95,7 @@ suite('use docker-save', () => {
 
   test('run cacheSave, then check contents', async () => {
     let result = await worker.postToQueue({
-      scopes: ['docker-worker:cache:test-cache'],
+      scopes: ['docker-worker:cache:docker-worker-garbage-caches-test-cache'],
       payload: {
         image: 'busybox',
         command: ['/bin/sh', '-c', 'echo testString > /tmp/test-cache/test.log'],
@@ -104,7 +104,7 @@ suite('use docker-save', () => {
         },
         maxRunTime: 5 * 60,
         cache: {
-          'test-cache': '/tmp/test-cache/'
+          'docker-worker-garbage-caches-test-cache': '/tmp/test-cache/'
         }
       }
     });
@@ -116,7 +116,7 @@ suite('use docker-save', () => {
     let taskId = result.taskId;
     let runId = result.runId;
 
-    let url = `https://queue.taskcluster.net/v1/task/${taskId}/runs/${runId}/artifacts/public/cache/test-cache.tar`;
+    let url = `https://queue.taskcluster.net/v1/task/${taskId}/runs/${runId}/artifacts/public/cache/docker-worker-garbage-caches-test-cache.tar`;
 
     //superagent means no zlib required
     let res = await request.get(url).end();
