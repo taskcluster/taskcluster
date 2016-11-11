@@ -150,4 +150,28 @@ suite('aws S3 (STS)', () => {
       assert(err.statusCode === 403, "Expected 403 access denied");
     }
   });
+
+  test('awsS3Credentials format=iam-role-compat', async () => {
+    let id    = slugid.v4();
+    let text  = slugid.v4();
+    debug("### auth.awsS3Credentials w. format=iam-role-compat");
+    let result = await helper.auth.awsS3Credentials(
+      'read-write',
+      bucket,
+      '', {
+      format: 'iam-role-compat',
+    });
+
+    let s3 = new aws.S3({
+      accessKeyId:     result.AccessKeyId,
+      secretAccessKey: result.SecretAccessKey,
+      sessionToken:    result.Token,
+    });
+    debug("### s3.putObject");
+    await s3.putObject({
+      Bucket:   bucket,
+      Key:      'folder1/' + id,
+      Body:     text
+    }).promise();
+  });
 });

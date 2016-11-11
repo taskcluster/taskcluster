@@ -6,6 +6,9 @@ api.declare({
   name:       'awsS3Credentials',
   input:      undefined,
   output:     'aws-s3-credentials-response.json#',
+  query: {
+    format:   /iam-role-compat/,
+  },
   deferAuth:  true,
   stability:  'stable',
   scopes:     [['auth:aws-s3:<level>:<bucket>/<prefix>']],
@@ -69,6 +72,14 @@ api.declare({
     "will result in an access-denied error from AWS.  This limitation is due to a",
     "security flaw in Amazon S3 which might otherwise allow indefinite access to",
     "uploaded objects.",
+    "",
+    "**EC2 metadata compatibility**, if the querystring parameter",
+    "`?format=iam-role-compat` is given, the response will be compatible",
+    "with the JSON exposed by the EC2 metadata service. This aims to ease",
+    "compatibility for libraries and tools built to auto-refresh credentials.",
+    "For details on the format returned by EC2 metadata service see:",
+    "[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/" +
+    "iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).",
   ].join('\n')
 }, async function(req, res) {
   var level   = req.params.level;
@@ -163,12 +174,26 @@ api.declare({
     DurationSeconds:    60 * 60   // Expire credentials in an hour
   }).promise();
 
+  // Make result compatibility with how EC2 metadata service let's instances
+  // access IAM roles
+  if (req.query.format === 'iam-role-compat') {
+    return res.status(200).json({
+      Code:             'Success',
+      Type:             'AWS-HMAC',
+      LastUpdated:      new Date().toJSON(),
+      AccessKeyId:      iamReq.data.Credentials.AccessKeyId,
+      SecretAccessKey:  iamReq.data.Credentials.SecretAccessKey,
+      Token:            iamReq.data.Credentials.SessionToken,
+      Expiration:       new Date(iamReq.data.Credentials.Expiration).toJSON(),
+    });
+  }
+
   return res.reply({
     credentials: {
       accessKeyId:      iamReq.data.Credentials.AccessKeyId,
       secretAccessKey:  iamReq.data.Credentials.SecretAccessKey,
-      sessionToken:     iamReq.data.Credentials.SessionToken
+      sessionToken:     iamReq.data.Credentials.SessionToken,
     },
-    expires:            new Date(iamReq.data.Credentials.Expiration).toJSON()
+    expires:            new Date(iamReq.data.Credentials.Expiration).toJSON(),
   });
 });
