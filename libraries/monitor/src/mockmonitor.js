@@ -13,6 +13,7 @@ class MockMonitor {
   }
 
   async reportError(err, level='error', tags={}) {
+    debug('reportError: %j', err);
     this.errors.push(err);
     return true;
   }
@@ -23,12 +24,14 @@ class MockMonitor {
 
   count(key, val) {
     let k = this._key(key);
+    debug('count %s by %s', k, val || 1);
     this.counts[k] = (this.counts[k] || 0) + (val || 1);
   }
 
   measure(key, val) {
     let k = this._key(key);
     assert(typeof val === 'number', 'Measurement value must be a number');
+    debug('measure %s at %s', k, val);
     this.measures[k] = (this.measures[k] || []).concat(val);
   }
 
