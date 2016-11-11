@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 10 Nov 2016 at 22:24:00 UTC. The code was generated
+// Fri, 11 Nov 2016 at 22:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -372,13 +372,24 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // security flaw in Amazon S3 which might otherwise allow indefinite access to
 // uploaded objects.
 //
+// **EC2 metadata compatibility**, if the querystring parameter
+// `?format=iam-role-compat` is given, the response will be compatible
+// with the JSON exposed by the EC2 metadata service. This aims to ease
+// compatibility for libraries and tools built to auto-refresh credentials.
+// For details on the format returned by EC2 metadata service see:
+// [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
+//
 // Required scopes:
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#awsS3Credentials
-func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix string) (*AWSS3CredentialsResponse, error) {
+func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3CredentialsResponse, error) {
+	v := url.Values{}
+	if format != "" {
+		v.Add("format", format)
+	}
 	cd := tcclient.ConnectionData(*myAuth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), v)
 	return responseObject.(*AWSS3CredentialsResponse), err
 }
 
@@ -388,9 +399,13 @@ func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix string) (*AWSS3Creden
 //   * auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See AwsS3Credentials for more details.
-func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix string, duration time.Duration) (*url.URL, error) {
+func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if format != "" {
+		v.Add("format", format)
+	}
 	cd := tcclient.ConnectionData(*myAuth)
-	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), nil, duration)
+	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), v, duration)
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure

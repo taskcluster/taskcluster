@@ -1,4 +1,4 @@
-Generated: 1478816670
+Generated: 1478902976
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -285,7 +285,7 @@ Entry 15    =
     Entry Method      = 'get'
     Entry Route       = '/aws/s3/<level>/<bucket>/<prefix>'
     Entry Args        = '[level bucket prefix]'
-    Entry Query        = '[]'
+    Entry Query        = '[format]'
     Entry Name        = 'awsS3Credentials'
     Entry Stability   = 'stable'
     Entry Scopes      = '[[auth:aws-s3:<level>:<bucket>/<prefix>]]'
@@ -349,7 +349,14 @@ Finally, note that the `PutObjectAcl` call is not allowed.  Passing a canned
 ACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and
 will result in an access-denied error from AWS.  This limitation is due to a
 security flaw in Amazon S3 which might otherwise allow indefinite access to
-uploaded objects.'
+uploaded objects.
+
+**EC2 metadata compatibility**, if the querystring parameter
+`?format=iam-role-compat` is given, the response will be compatible
+with the JSON exposed by the EC2 metadata service. This aims to ease
+compatibility for libraries and tools built to auto-refresh credentials.
+For details on the format returned by EC2 metadata service see:
+[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).'
 Entry 16    =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -6412,7 +6419,14 @@ authorization is not necessary to fetch the artifact.
 **API Clients**, this method will redirect you to the artifact, if it is
 stored externally. Either way, the response may not be JSON. So API
 client users might want to generate a signed URL for this end-point and
-use that URL with a normal HTTP client.'
+use that URL with a normal HTTP client.
+
+**Caching**, artifacts may be cached in data centers closer to the
+workers in-order to reduce bandwidth costs. This can lead to longer
+response times. Caching can be skipped by setting the header
+`x-taskcluster-skip-cache: true`, this should only be used for resources
+where request volume is known to be low, and caching not useful.
+(This feature may be disabled in the future, use is sparingly!)'
 Entry 18    =
     Entry Type        = 'function'
     Entry Method      = 'get'

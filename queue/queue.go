@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 10 Nov 2016 at 22:24:00 UTC. The code was generated
+// Fri, 11 Nov 2016 at 22:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -509,6 +509,13 @@ func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostAr
 // stored externally. Either way, the response may not be JSON. So API
 // client users might want to generate a signed URL for this end-point and
 // use that URL with a normal HTTP client.
+//
+// **Caching**, artifacts may be cached in data centers closer to the
+// workers in-order to reduce bandwidth costs. This can lead to longer
+// response times. Caching can be skipped by setting the header
+// `x-taskcluster-skip-cache: true`, this should only be used for resources
+// where request volume is known to be low, and caching not useful.
+// (This feature may be disabled in the future, use is sparingly!)
 //
 // Required scopes:
 //   * queue:get-artifact:<name>
