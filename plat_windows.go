@@ -401,6 +401,7 @@ func install(arguments map[string]interface{}) (err error) {
 		return err
 	}
 	err = ntr.AddPrivilegesToUser(username, "SeAssignPrimaryTokenPrivilege")
+	// err = ntr.AddPrivilegesToUser(username, "SeAssignPrimaryTokenPrivilege", "SeIncreaseQuotaPrivilege")
 	if err != nil {
 		return err
 	}
