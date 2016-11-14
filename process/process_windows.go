@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/contester/runlib/platform"
-	"github.com/contester/runlib/subprocess"
+	"github.com/taskcluster/runlib/platform"
+	"github.com/taskcluster/runlib/subprocess"
 )
 
 type Verdict int
@@ -160,7 +160,7 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 			CheckIdleness:       false,
 			RestrictUi:          false,
 			ProcessAffinityMask: 0,
-			NoJob:               false,
+			NoJob:               true,
 			Environment:         env,
 			StdIn: &subprocess.Redirect{
 				Mode: subprocess.REDIRECT_NONE,

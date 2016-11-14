@@ -17,10 +17,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/contester/runlib/platform"
-	"github.com/contester/runlib/subprocess"
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
+	"github.com/taskcluster/runlib/platform"
+	"github.com/taskcluster/runlib/subprocess"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
