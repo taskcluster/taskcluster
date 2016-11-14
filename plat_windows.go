@@ -19,6 +19,7 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
+	"github.com/taskcluster/ntr"
 	"github.com/taskcluster/runlib/platform"
 	"github.com/taskcluster/runlib/subprocess"
 	"golang.org/x/sys/windows"
@@ -396,6 +397,11 @@ func install(arguments map[string]interface{}) (err error) {
 		return err
 	}
 	err = user.makeAdmin()
+	if err != nil {
+		return err
+	}
+	err = ntr.AddPrivilegesToUser(username, ntr.SE_ASSIGNPRIMARYTOKEN_NAME)
+	// err = ntr.AddPrivilegesToUser(username, "SeAssignPrimaryTokenPrivilege", "SeIncreaseQuotaPrivilege")
 	if err != nil {
 		return err
 	}
