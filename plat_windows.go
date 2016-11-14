@@ -35,7 +35,7 @@ type OSUser struct {
 }
 
 func immediateShutdown() {
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s")
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60")
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
