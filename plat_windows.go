@@ -349,13 +349,6 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 
 func taskCleanup() error {
 	if config.RunTasksAsCurrentUser {
-		// dir, err := ioutil.TempDir("", "generic-worker")
-		// if err != nil {
-		// 	return err
-		// }
-		// TaskUser = OSUser{
-		// 	HomeDir: dir,
-		// }
 		err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
 		if err != nil {
 			return err
@@ -363,7 +356,10 @@ func taskCleanup() error {
 		return nil
 	}
 	// note if this fails, we carry on without throwing an error
-	deleteExistingOSUsers()
+	err := deleteExistingOSUsers()
+	if err != nil {
+		log.Printf("Error deleting OS user accounts: %v", err)
+	}
 	// this needs to succeed, so return an error if it doesn't
 	err := createNewTaskUser()
 	if err != nil {

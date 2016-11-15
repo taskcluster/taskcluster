@@ -457,7 +457,10 @@ func runWorker() {
 				}
 			}
 		} else {
-			taskCleanup()
+			err := taskCleanup()
+			if err != nil {
+				log.Printf("Error cleaning up after task!\n%v", err)
+			}
 			tasksResolved++
 			if tasksResolved == config.NumberOfTasksToRun {
 				break
