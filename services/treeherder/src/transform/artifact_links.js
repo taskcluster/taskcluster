@@ -38,7 +38,8 @@ export default async function(queue, taskId, runId, job) {
       let link = {
         label: 'artifact uploaded',
         linkText: name,
-        url: queue.buildUrl(queue.getArtifact, taskId, runId, artifact.name)
+        url: `https://queue.taskcluster.net/v1/task/${taskId}` +
+             `/runs/${runId}/artifacts/${artifact.name}`,
       };
       return link;
   });
