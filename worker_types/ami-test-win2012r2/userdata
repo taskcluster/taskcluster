@@ -1,7 +1,7 @@
 <powershell>
 
 # capture env
-Get-ChildItem Env: | Out-File "c:\install_env.txt"
+Get-ChildItem Env: | Out-File "C:\install_env.txt"
 
 # needed for making http requests
 $client = New-Object system.net.WebClient
@@ -76,24 +76,8 @@ Set-Acl "C:\builds" $acl
 # download tooltool
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\builds\tooltool.py")
 
-# download generic-worker
-md C:\generic-worker
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v7.0.3alpha1/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
-
-# download livelog
-$client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v0.0.6/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
-
 # enable DEBUG logs for generic-worker install
 $env:DEBUG = "*"
-
-# generate OpenPGP key
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-openpgp-keypair --file C:\generic-worker\generic-worker-gpg-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-signing-key.log -RedirectStandardError C:\generic-worker\generate-signing-key.err
-
-# install generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
-
-# initial clone of mozilla-central
-# Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
 
 # download Windows Server 2003 Resource Kit Tools
 $client.DownloadFile("https://download.microsoft.com/download/8/e/c/8ec3a7d8-05b4-440a-a71e-ca3ee25fe057/rktools.exe", "C:\rktools.exe")
@@ -111,13 +95,13 @@ Start-Process "msiexec" -ArgumentList "/i C:\BinScopeSetup.msi /quiet" -Wait -No
 New-NetFirewallRule -DisplayName "Allow livelog PUT requests" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
 New-NetFirewallRule -DisplayName "Allow livelog GET requests" -Direction Inbound -LocalPort 60023 -Protocol TCP -Action Allow
 
-# install go (not required, but useful)
+# install go
 md "C:\gopath"
 Expand-ZIPFile -File "C:\go1.7.3.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.3.windows-amd64.zip"
 
 # install PSTools
-# md "C:\PSTools"
-# Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
+md "C:\PSTools"
+Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
 
 # install git
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
@@ -140,8 +124,22 @@ $env:GOROOT = "C:\go"
 $env:GOPATH = "C:\gopath"
 $env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd"
 
-# get generic-worker and livelog source code (note required, but useful)
+# build generic-worker and livelog source code
+md C:\generic-worker
 Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
+
+# install livelog
+Copy-Item C:\gopath\bin\livelog.exe C:\generic-worker
+
+# install generic-worker
+Copy-Item C:\gopath\bin\generic-worker.exe C:\generic-worker
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+
+# patch generic worker startup script to rebuild generic worker
+$client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/master/run-generic-worker.bat", "C:\generic-worker\run-generic-worker.bat")
+
+# generate OpenPGP key
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-openpgp-keypair --file C:\generic-worker\generic-worker-gpg-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-signing-key.log -RedirectStandardError C:\generic-worker\generate-signing-key.err
 
 # download cygwin (not required, but useful)
 $client.DownloadFile("https://www.cygwin.com/setup-x86_64.exe", "C:\cygwin-setup-x86_64.exe")
@@ -178,6 +176,9 @@ Expand-ZIPFile -File "C:\depends22_x64.zip" -Destination "C:\DependencyWalker" -
 # install ProcessExplorer (useful utility for troubleshooting, not required)
 md "C:\ProcessExplorer"
 Expand-ZIPFile -File "C:\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
+
+# install ProcessMonitor (useful utility for troubleshooting, not required)
+Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
 
 # now shutdown, in preparation for creating an image
 Stop-Computer
