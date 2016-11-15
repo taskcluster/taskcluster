@@ -29,10 +29,14 @@ class Auth0Login {
   router() {
     let router = new express.Router();
 
-    console.log('setting up auth0/login');
-    router.get('/login', passport.authenticate('auth0', {
-      failureRedirect: '/',
-      failureFlash: true
+    // render the Jade template that shows the lock on get
+    router.get('/login', (req, res) => {
+      res.render('auth0', {
+        auth0_domain: this.cfg.auth0.domain,
+        auth0_client_id: this.cfg.auth0.clientId,
+      });
+    });
+    router.get('/callback', passport.authenticate('auth0', {
     }), (req, res) => {
       res.redirect('/');
       return;
@@ -45,7 +49,6 @@ class Auth0Login {
   auth0Callback(accessToken, refreshToken, extraParams, profile, done) {
     try {
       let user = new User();
-      console.log(profile._json);
       if (!profile._json.email_verified) {
         throw new Error('email is not verified');
       }

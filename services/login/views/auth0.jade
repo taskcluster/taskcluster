@@ -1,0 +1,16 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    title TaskCluster Login
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+
+    // Auth0 passwordless lock - https://github.com/auth0/lock-passwordless
+    script(src="//cdn.auth0.com/js/lock-passwordless-2.2.3.min.js")
+  body
+    script.
+      var lock = new Auth0LockPasswordless('#{auth0_client_id}', '#{auth0_domain}');
+      lock.emailcode({
+        closable: false,
+        callbackURL: window.location.origin + '/auth0/callback',
+      });

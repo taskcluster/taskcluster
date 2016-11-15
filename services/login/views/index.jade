@@ -21,10 +21,6 @@ html(lang='en')
     // Persona login script
     script(src='https://login.persona.org/include.js')
 
-    if query.auth0
-      // Auth0 passwordless lock - https://github.com/auth0/lock-passwordless
-      script(src="//cdn.auth0.com/js/lock-passwordless-2.2.3.min.js")
-
     // Marked for rendering markdown
     script(src='/assets/marked.min.js')
 
@@ -33,18 +29,6 @@ html(lang='en')
 
     // Script with various hacks for this page
     script(src='/assets/script.js')
-    if query.auth0
-      script.
-        var lock = new Auth0LockPasswordless('#{auth0_client_id}', '#{auth0_domain}');
-        $(function() {
-          $('#auth0-form').submit(function(e) {
-            e.preventDefault();
-            lock.emailcode({
-              closable: false,
-              callbackURL: window.location.origin + '/auth0/login',
-            });
-          });
-        });
   body.container
     div.modal#manual-modal(tabindex="-1", role="dialog")
       div.modal-dialog.modal-open
@@ -95,7 +79,7 @@ html(lang='en')
         if query.auth0
           div.row.login-option
             div.col-md-4
-              form#auth0-form(method='post')
+              form#auth0-form(action='/auth0/login', method='get')
                 button.btn.btn-block.btn-primary(type='submit')
                   i.glyphicon.glyphicon-user
                   | &nbsp;Passwordless Sign-In
