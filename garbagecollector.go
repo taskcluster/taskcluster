@@ -45,9 +45,9 @@ func (r Resources) Swap(i, j int) {
 // independent of mounts feature, but let's go with it here as currently that
 // is the only feature that uses it.
 func runGarbageCollection(r Resources) error {
-	currentFreeSpace, err := freeDiskSpaceBytes(TaskUser.HomeDir)
+	currentFreeSpace, err := freeDiskSpaceBytes(TaskUser.TaskDir)
 	if err != nil {
-		return fmt.Errorf("Could not calculate free disk space in dir %v due to error %#v", TaskUser.HomeDir, err)
+		return fmt.Errorf("Could not calculate free disk space in dir %v due to error %#v", TaskUser.TaskDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
 	for currentFreeSpace < requiredFreeSpace {
@@ -59,7 +59,7 @@ func runGarbageCollection(r Resources) error {
 		if err != nil {
 			return err
 		}
-		currentFreeSpace, err = freeDiskSpaceBytes(TaskUser.HomeDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(TaskUser.TaskDir)
 		if err != nil {
 			return err
 		}

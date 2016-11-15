@@ -179,7 +179,7 @@ and reports back results to the queue.
                                             logs over https. If not set, http will be used.
           livelogKey                        SSL key to be used by livelog for hosting logs
                                             over https. If not set, http will be used.
-          usersDir                          The location where user home directories should be
+          tasksDir                          The location where task directories should be
                                             created on the worker. [default: C:\Users]
           downloadsDir                      The location where resources are downloaded for
                                             populating preloaded caches and readonly mounts.
@@ -319,7 +319,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		ProvisionerID:                  "aws-provisioner-v1",
 		LiveLogExecutable:              "livelog",
 		RefreshUrlsPrematurelySecs:     310,
-		UsersDir:                       "C:\\Users",
+		TasksDir:                       "C:\\Users",
 		CachesDir:                      "C:\\generic-worker\\caches",
 		DownloadsDir:                   "C:\\generic-worker\\downloads",
 		CleanUpTaskDirs:                true,
@@ -374,7 +374,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
-		{value: c.UsersDir, name: "usersDir", disallowed: ""},
+		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
 	}
 
@@ -405,9 +405,10 @@ func runWorker() {
 		if r := recover(); r != nil {
 			log.Printf("Shutting down immediately - panic occurred!")
 			log.Println(string(debug.Stack()))
-			log.Printf("Cause: %v", r)
+			cause := fmt.Sprintf("%v", r)
+			log.Print("Cause: " + cause)
 			if config.ShutdownMachineOnInternalError {
-				immediateShutdown()
+				immediateShutdown(cause)
 			}
 		}
 	}()
@@ -451,7 +452,7 @@ func runWorker() {
 				idleTime := time.Now().Sub(lastActive)
 				if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
 					if config.ShutdownMachineOnInternalError {
-						immediateShutdown()
+						immediateShutdown(fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime))
 					}
 					break
 				}
@@ -970,7 +971,7 @@ func (task *TaskRun) kill() {
 }
 
 func (task *TaskRun) createLogFile() io.WriteCloser {
-	absLogFile := filepath.Join(TaskUser.HomeDir, "public", "logs", "live_backing.log")
+	absLogFile := filepath.Join(TaskUser.TaskDir, "public", "logs", "live_backing.log")
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		panic(err)

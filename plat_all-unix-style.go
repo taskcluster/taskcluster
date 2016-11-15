@@ -17,13 +17,13 @@ import (
 )
 
 type OSUser struct {
-	HomeDir  string
+	TaskDir  string
 	Name     string
 	Password string
 }
 
-func immediateShutdown() {
-	cmd := exec.Command("shutdown", "now")
+func immediateShutdown(cause string) {
+	cmd := exec.Command("shutdown", "now", cause)
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +39,7 @@ func init() {
 		panic(err)
 	}
 	TaskUser = &OSUser{
-		HomeDir:  pwd,
+		TaskDir:  pwd,
 		Name:     "",
 		Password: "",
 	}
@@ -47,7 +47,7 @@ func init() {
 
 func startup() error {
 	log.Printf("Detected %s platform", runtime.GOOS)
-	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
+	return os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0700)
 }
 
 func (task *TaskRun) prepareCommand(index int) error {
@@ -56,7 +56,7 @@ func (task *TaskRun) prepareCommand(index int) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], TaskUser.HomeDir, task.EnvVars())
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], TaskUser.TaskDir, task.EnvVars())
 	if err != nil {
 		return err
 	}

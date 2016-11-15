@@ -266,8 +266,9 @@ func shutdownIfNewDeploymentID() {
 		return
 	}
 	if c.DeploymentID != config.DeploymentID {
-		log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
-		immediateShutdown()
+		cause := fmt.Sprintf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
+		log.Print(cause)
+		immediateShutdown(cause)
 	}
 	log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, c.DeploymentID)
 }

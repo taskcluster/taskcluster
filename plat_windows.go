@@ -27,15 +27,15 @@ import (
 )
 
 type OSUser struct {
-	HomeDir   string
+	TaskDir   string
 	Name      string
 	Password  string
 	loginInfo *subprocess.LoginInfo
 	desktop   *platform.ContesterDesktop
 }
 
-func immediateShutdown() {
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60")
+func immediateShutdown(cause string) {
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +71,7 @@ func startup() error {
 	return taskCleanup()
 }
 
-func deleteHomeDir(path string, user string) error {
+func deleteTaskDir(path string, user string) error {
 	if !config.CleanUpTaskDirs {
 		log.Println("*NOT* Removing home directory '" + path + "' as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
 		return nil
@@ -103,7 +103,7 @@ func createNewTaskUser() error {
 	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
 	TaskUser = &OSUser{
-		HomeDir:  filepath.Join(config.UsersDir, userName),
+		TaskDir:  filepath.Join(config.TasksDir, userName),
 		Name:     userName,
 		Password: password,
 	}
@@ -119,7 +119,7 @@ func createNewTaskUser() error {
 	TaskUser.loginInfo = loginInfo
 	TaskUser.desktop = desktop
 
-	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0777)
+	return os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {
@@ -130,7 +130,7 @@ func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
 	log.Println("Creating Windows User " + user.Name + "...")
 	userExisted, err := allowError(
 		"The account already exists",
-		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/homedir:"+user.HomeDir, "/profilepath:"+user.HomeDir, "/y",
+		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no",
 	)
 	if err != nil {
 		return err
@@ -168,7 +168,7 @@ func generatePassword() string {
 }
 
 func deleteExistingOSUsers() {
-	deleteHomeDirs()
+	deleteTaskDirs()
 	log.Println("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
@@ -177,15 +177,15 @@ func deleteExistingOSUsers() {
 	}
 }
 
-func deleteHomeDirs() {
-	homeDirsParent, err := os.Open(config.UsersDir)
+func deleteTaskDirs() {
+	taskDirsParent, err := os.Open(config.TasksDir)
 	if err != nil {
-		log.Println("WARNING: Could not open " + config.UsersDir + " directory to find old home directories to delete")
+		log.Println("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
 		log.Printf("%v", err)
 		return
 	}
-	defer homeDirsParent.Close()
-	fi, err := homeDirsParent.Readdir(-1)
+	defer taskDirsParent.Close()
+	fi, err := taskDirsParent.Readdir(-1)
 	if err != nil {
 		log.Println("WARNING: Could not read complete directory listing to find old home directories to delete")
 		log.Printf("%v", err)
@@ -194,14 +194,14 @@ func deleteHomeDirs() {
 	for _, file := range fi {
 		if file.IsDir() {
 			if fileName := file.Name(); strings.HasPrefix(fileName, "task_") {
-				path := filepath.Join(config.UsersDir, fileName)
+				path := filepath.Join(config.TasksDir, fileName)
 				// fileName could be <user> or <user>.<hostname>...
 				user := fileName
 				if i := strings.IndexRune(user, '.'); i >= 0 {
 					user = user[:i]
 				}
 				// ignore any error occuring here, not a lot we can do about it...
-				deleteHomeDir(path, user)
+				deleteTaskDir(path, user)
 			}
 		}
 	}
@@ -222,8 +222,8 @@ func deleteOSUserAccount(line string) {
 
 func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
-	command, err := process.NewCommand(wrapper, &TaskUser.HomeDir, nil, task.maxRunTimeDeadline, TaskUser.loginInfo, TaskUser.desktop)
+	wrapper := filepath.Join(TaskUser.TaskDir, commandName+"_wrapper.bat")
+	command, err := process.NewCommand(wrapper, &TaskUser.TaskDir, nil, task.maxRunTimeDeadline, TaskUser.loginInfo, TaskUser.desktop)
 	if err != nil {
 		return err
 	}
@@ -235,11 +235,11 @@ func (task *TaskRun) generateCommand(index int) error {
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
-	env := filepath.Join(TaskUser.HomeDir, "env.txt")
-	dir := filepath.Join(TaskUser.HomeDir, "dir.txt")
+	env := filepath.Join(TaskUser.TaskDir, "env.txt")
+	dir := filepath.Join(TaskUser.TaskDir, "dir.txt")
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(TaskUser.HomeDir, commandName+"_wrapper.bat")
-	script := filepath.Join(TaskUser.HomeDir, commandName+".bat")
+	wrapper := filepath.Join(TaskUser.TaskDir, commandName+"_wrapper.bat")
+	script := filepath.Join(TaskUser.TaskDir, commandName+".bat")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
@@ -265,7 +265,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 				contents += "set " + envVar + "=" + envValue + "\r\n"
 			}
 		}
-		contents += "cd \"" + TaskUser.HomeDir + "\"" + "\r\n"
+		contents += "cd \"" + TaskUser.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
 	} else {
@@ -349,17 +349,14 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 
 func taskCleanup() error {
 	if config.RunTasksAsCurrentUser {
-		err := os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0700)
+		err := os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0700)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 	// note if this fails, we carry on without throwing an error
-	err := deleteExistingOSUsers()
-	if err != nil {
-		log.Printf("Error deleting OS user accounts: %v", err)
-	}
+	deleteExistingOSUsers()
 	// this needs to succeed, so return an error if it doesn't
 	err := createNewTaskUser()
 	if err != nil {
@@ -383,11 +380,11 @@ func install(arguments map[string]interface{}) (err error) {
 	user := OSUser{
 		Name:     username,
 		Password: password,
-		HomeDir:  filepath.Dir(exePath),
+		TaskDir:  filepath.Dir(exePath),
 	}
-	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", HomeDir: " + user.HomeDir)
+	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", TaskDir: " + user.TaskDir)
 
-	user.HomeDir = "C:\\Users\\GenericWorker"
+	user.TaskDir = "C:\\Users\\GenericWorker"
 	err = user.ensureUserAccount()
 	if err != nil {
 		return err
@@ -497,7 +494,7 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 	return runCommands(
 		false,
 		[]string{nssm, "install", serviceName, exePath},
-		[]string{nssm, "set", serviceName, "AppDirectory", user.HomeDir},
+		[]string{nssm, "set", serviceName, "AppDirectory", user.TaskDir},
 		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "--configure-for-aws", "run"},
 		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
 		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
@@ -514,8 +511,8 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 		[]string{nssm, "set", serviceName, "AppThrottle", "1500"},
 		[]string{nssm, "set", serviceName, "AppExit", "Default", "Restart"},
 		[]string{nssm, "set", serviceName, "AppRestartDelay", "0"},
-		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(user.HomeDir, "generic-worker.log")},
-		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(user.HomeDir, "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(user.TaskDir, "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(user.TaskDir, "generic-worker.log")},
 		[]string{nssm, "set", serviceName, "AppStdoutCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppStderrCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppRotateFiles", "1"},

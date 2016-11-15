@@ -123,7 +123,7 @@ func TestMissingFileArtifact(t *testing.T) {
 					CanonicalPath: "TestMissingFileArtifact/no_such_file",
 					Expires:       inAnHour,
 				},
-				Message: "Could not read file '" + filepath.Join(TaskUser.HomeDir, "TestMissingFileArtifact", "no_such_file") + "'",
+				Message: "Could not read file '" + filepath.Join(TaskUser.TaskDir, "TestMissingFileArtifact", "no_such_file") + "'",
 				Reason:  "file-missing-on-worker",
 			},
 		})
@@ -153,7 +153,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 					CanonicalPath: "TestMissingDirectoryArtifact/no_such_dir",
 					Expires:       inAnHour,
 				},
-				Message: "Could not read directory '" + filepath.Join(TaskUser.HomeDir, "TestMissingDirectoryArtifact", "no_such_dir") + "'",
+				Message: "Could not read directory '" + filepath.Join(TaskUser.TaskDir, "TestMissingDirectoryArtifact", "no_such_dir") + "'",
 				Reason:  "file-missing-on-worker",
 			},
 		})
@@ -183,7 +183,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 					CanonicalPath: "SampleArtifacts/b/c",
 					Expires:       inAnHour,
 				},
-				Message: "File artifact '" + filepath.Join(TaskUser.HomeDir, "SampleArtifacts", "b", "c") + "' exists as a directory, not a file, on the worker",
+				Message: "File artifact '" + filepath.Join(TaskUser.TaskDir, "SampleArtifacts", "b", "c") + "' exists as a directory, not a file, on the worker",
 				Reason:  "invalid-resource-on-worker",
 			},
 		})
@@ -213,7 +213,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
 				},
-				Message: "Directory artifact '" + filepath.Join(TaskUser.HomeDir, "SampleArtifacts", "b", "c", "d.jpg") + "' exists as a file, not a directory, on the worker",
+				Message: "Directory artifact '" + filepath.Join(TaskUser.TaskDir, "SampleArtifacts", "b", "c", "d.jpg") + "' exists as a file, not a directory, on the worker",
 				Reason:  "invalid-resource-on-worker",
 			},
 		})

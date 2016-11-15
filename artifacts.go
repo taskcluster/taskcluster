@@ -121,7 +121,7 @@ func gzipCompressFile(rawContentFile string) string {
 
 func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 	response := resp.(*queue.S3ArtifactResponse)
-	rawContentFile := filepath.Join(TaskUser.HomeDir, artifact.Base().CanonicalPath)
+	rawContentFile := filepath.Join(TaskUser.TaskDir, artifact.Base().CanonicalPath)
 
 	// if Content-Encoding is gzip then we will need to gzip content...
 	transferContentFile := rawContentFile
@@ -209,7 +209,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 				// I think we don't need to handle incomingErr != nil since
 				// resolve(...) gets called which should catch the same issues
 				// raised in incomingErr - *** I GUESS *** !!
-				relativePath, err := filepath.Rel(TaskUser.HomeDir, path)
+				relativePath, err := filepath.Rel(TaskUser.TaskDir, path)
 				if err != nil {
 					log.Printf("WIERD ERROR - skipping file: %s", err)
 					return nil
@@ -228,7 +228,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 				}
 				return nil
 			}
-			filepath.Walk(filepath.Join(TaskUser.HomeDir, base.CanonicalPath), walkFn)
+			filepath.Walk(filepath.Join(TaskUser.TaskDir, base.CanonicalPath), walkFn)
 		}
 	}
 	return artifacts
@@ -244,7 +244,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
 func resolve(base BaseArtifact, artifactType string) Artifact {
-	fullPath := filepath.Join(TaskUser.HomeDir, base.CanonicalPath)
+	fullPath := filepath.Join(TaskUser.TaskDir, base.CanonicalPath)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact

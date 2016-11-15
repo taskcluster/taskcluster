@@ -12,7 +12,7 @@ import (
 	"github.com/dchest/uniuri"
 )
 
-func deleteHomeDir(path string, user string) error {
+func deleteTaskDir(path string, user string) error {
 	log.Println("Removing home directory '" + path + "'...")
 	err := os.RemoveAll(path)
 	if err != nil {
@@ -29,7 +29,7 @@ func createNewTaskUser() error {
 	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
 	TaskUser = &OSUser{
-		HomeDir:  "/Users/" + userName,
+		TaskDir:  "/Users/" + userName,
 		Name:     userName,
 		Password: password,
 	}
@@ -38,11 +38,11 @@ func createNewTaskUser() error {
 		return err
 	}
 	// store password
-	err = ioutil.WriteFile(filepath.Join(TaskUser.HomeDir, "_Passw0rd"), []byte(TaskUser.Password), 0666)
+	err = ioutil.WriteFile(filepath.Join(TaskUser.TaskDir, "_Passw0rd"), []byte(TaskUser.Password), 0666)
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(filepath.Join(TaskUser.HomeDir, "public", "logs"), 0777)
+	return os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {
@@ -63,13 +63,13 @@ func (user *OSUser) createNewOSUser() error {
 		dscl . -passwd "/Users/${username}" "${password}" 
 		staff="$(dscl . -read /Groups/staff | awk '($1 == "PrimaryGroupID:") { print $2 }')"
 		dscl . -create "/Users/${username}" 'PrimaryGroupID' "${staff}"
-		dscl . -create "/Users/${username}" 'NFSHomeDirectory' "${homedir}"
+		dscl . -create "/Users/${username}" 'NFSTaskDirectory' "${homedir}"
 		cp -R '/System/Library/User Template/English.lproj' "${homedir}"
 		chown -R "${username}:staff" "${homedir}"
 		echo "User '${username}' created."
 	`
 
-	out, err := exec.Command("sudo", "/bin/bash", "-c", createUserScript, user.Name, user.HomeDir, user.Name+" User", user.Password).Output()
+	out, err := exec.Command("sudo", "/bin/bash", "-c", createUserScript, user.Name, user.TaskDir, user.Name+" User", user.Password).Output()
 	log.Println(string(out))
 	return err
 }

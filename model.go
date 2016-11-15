@@ -32,7 +32,7 @@ type (
 		InstanceType                   string                 `json:"instanceType"`
 		Region                         string                 `json:"region"`
 		WorkerType                     string                 `json:"workerType"`
-		UsersDir                       string                 `json:"usersDir"`
+		TasksDir                       string                 `json:"tasksDir"`
 		CachesDir                      string                 `json:"cachesDir"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`

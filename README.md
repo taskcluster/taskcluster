@@ -155,7 +155,7 @@ and reports back results to the queue.
                                             logs over https. If not set, http will be used.
           livelogKey                        SSL key to be used by livelog for hosting logs
                                             over https. If not set, http will be used.
-          usersDir                          The location where user home directories should be
+          tasksDir                          The location where task directories should be
                                             created on the worker. [default: C:\Users]
           downloadsDir                      The location where resources are downloaded for
                                             populating preloaded caches and readonly mounts.
