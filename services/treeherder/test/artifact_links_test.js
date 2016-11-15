@@ -8,7 +8,7 @@ suite('artifact link transform', () => {
     let expectedLink = {
       label: 'artifact uploaded',
       linkText: 'test.log',
-      url: 'https://queue.taskcluster.net/v1/123/0/artifacts/public/test.log'
+      url: 'https://queue.taskcluster.net/v1/task/123/runs/0/artifacts/public/test.log'
     };
     let job = {
       jobInfo: {
@@ -18,9 +18,6 @@ suite('artifact link transform', () => {
     let queue = {
       listArtifacts: () => {
         return {artifacts: [{name: 'public/test.log'}]};
-      },
-      buildUrl: (client, taskId, runId, name) => {
-        return `https:\/\/queue.taskcluster.net/v1/${taskId}/${runId}/artifacts/${name}`;
       }
     };
 
@@ -35,12 +32,12 @@ suite('artifact link transform', () => {
       {
         label: 'artifact uploaded',
         linkText: 'test.log',
-        url: 'https://queue.taskcluster.net/v1/123/0/artifacts/public/test.log'
+        url: 'https://queue.taskcluster.net/v1/task/123/runs/0/artifacts/public/test.log'
       },
       {
         label: 'artifact uploaded',
         linkText: 'test.log (1)',
-        url: 'https://queue.taskcluster.net/v1/123/0/artifacts/public/test/test.log'
+        url: 'https://queue.taskcluster.net/v1/task/123/runs/0/artifacts/public/test/test.log'
       }
     ];
     let job = {
@@ -55,9 +52,6 @@ suite('artifact link transform', () => {
             {name: 'public/test.log'},
             {name: 'public/test/test.log'}
           ]};
-      },
-      buildUrl: (client, taskId, runId, name) => {
-        return `https:\/\/queue.taskcluster.net/v1/${taskId}/${runId}/artifacts/${name}`;
       }
     };
 
@@ -70,12 +64,12 @@ suite('artifact link transform', () => {
       {
         label: 'artifact uploaded',
         linkText: 'test.log',
-        url: 'https://queue.taskcluster.net/v1/123/0/artifacts/public/test.log'
+        url: 'https://queue.taskcluster.net/v1/task/123/runs/0/artifacts/public/test.log'
       },
       {
         label: 'artifact uploaded',
         linkText: 'fatal.log',
-        url: 'https://queue.taskcluster.net/v1/123/0/artifacts/public/fatal.log'
+        url: 'https://queue.taskcluster.net/v1/task/123/runs/0/artifacts/public/fatal.log'
       }
     ];
     let job = {
@@ -97,9 +91,6 @@ suite('artifact link transform', () => {
           artifacts: artifact,
           continuationToken: token
         }
-      },
-      buildUrl: (client, taskId, runId, name) => {
-        return `https:\/\/queue.taskcluster.net/v1/${taskId}/${runId}/artifacts/${name}`;
       }
     };
 

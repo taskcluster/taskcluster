@@ -48,9 +48,8 @@ function resultFromRun(run) {
 // Creates a log entry for Treeherder to retrieve and parse.  This log is
 // displayed on the Treeherder Log Viewer once parsed.
 function createLogReference(queue, taskId, run) {
-  let logUrl = queue.buildUrl(
-    queue.getArtifact, taskId, run.runId, 'public/logs/live_backing.log'
-  );
+  let logUrl = `https://queue.taskcluster.net/v1/task/${taskId}` +
+               `/runs/${run.runId}/artifacts/public/logs/live_backing.log`;
 
   return {
     // XXX: This is a magical name see 1147958 which enables the log viewer.
