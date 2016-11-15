@@ -2,6 +2,7 @@ Defaults:
   app:
     authenticators:
       - persona
+      - auth0
       - sso
     authorizers:
       - ldap
