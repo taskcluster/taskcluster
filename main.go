@@ -448,7 +448,7 @@ func runWorker() {
 	for {
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
-		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > config.CheckForNewDeploymentEverySecs*time.Second {
+		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
 			lastQueriedProvisioner = time.Now()
 			shutdownIfNewDeploymentID()
 		}
