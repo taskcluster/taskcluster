@@ -48,6 +48,6 @@ func freeDiskSpaceBytes2(dir string) (uint64, error) {
 		0,
 		0,
 	)
-	log.Println("Disk space:", r, a, b, lpFreeBytesAvailable, lpTotalNumberOfBytes, lpTotalNumberOfFreeBytes)
+	log.Print("Disk space:", r, a, b, lpFreeBytesAvailable, lpTotalNumberOfBytes, lpTotalNumberOfFreeBytes)
 	return uint64(lpFreeBytesAvailable), nil
 }

@@ -50,7 +50,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 				return err
 			}
 			task.TaskClaimResponse.Status = tsr.Status
-			log.Println(task.String())
+			log.Print(task.String())
 			return nil
 		},
 		claimed,
@@ -70,7 +70,7 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 				return err
 			}
 			task.TaskClaimResponse.Status = tsr.Status
-			log.Println(task.String())
+			log.Print(task.String())
 			return nil
 		},
 		claimed,
@@ -83,7 +83,7 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 	return tsm.updateStatus(
 		succeeded,
 		func(task *TaskRun) error {
-			log.Println("Command finished successfully!")
+			log.Print("Command finished successfully!")
 			tsr, err := Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report successful completion for task %v:", task.TaskID)
@@ -91,7 +91,7 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 				return err
 			}
 			task.TaskClaimResponse.Status = tsr.Status
-			// log.Println(task.String())
+			// log.Print(task.String())
 			return nil
 		},
 		claimed,
@@ -130,7 +130,7 @@ func (tsm *TaskStatusManager) Claim() error {
 						}
 					}
 				}
-				log.Println(task.String())
+				log.Print(task.String())
 				log.Printf("%v", err)
 				return err
 			}

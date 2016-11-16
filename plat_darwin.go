@@ -13,10 +13,10 @@ import (
 )
 
 func deleteTaskDir(path string, user string) error {
-	log.Println("Removing home directory '" + path + "'...")
+	log.Print("Removing home directory '" + path + "'...")
 	err := os.RemoveAll(path)
 	if err != nil {
-		log.Println("WARNING: could not delete directory '" + path + "'")
+		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)
 		return err
 	}
@@ -70,7 +70,7 @@ func (user *OSUser) createNewOSUser() error {
 	`
 
 	out, err := exec.Command("sudo", "/bin/bash", "-c", createUserScript, user.Name, user.TaskDir, user.Name+" User", user.Password).Output()
-	log.Println(string(out))
+	log.Print(string(out))
 	return err
 }
 

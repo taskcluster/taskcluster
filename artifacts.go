@@ -155,10 +155,10 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 		}
 		requestHeaders, dumpError := httputil.DumpRequestOut(httpRequest, false)
 		if dumpError != nil {
-			log.Println("Could not dump request, never mind...")
+			log.Print("Could not dump request, never mind...")
 		} else {
-			log.Println("Request")
-			log.Println(string(requestHeaders))
+			log.Print("Request")
+			log.Print(string(requestHeaders))
 		}
 		putResp, err := httpClient.Do(httpRequest)
 		return putResp, err, nil
@@ -168,10 +168,10 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
 	respBody, dumpError := httputil.DumpResponse(putResp, true)
 	if dumpError != nil {
-		log.Println("Could not dump response output, never mind...")
+		log.Print("Could not dump response output, never mind...")
 	} else {
-		log.Println("Response")
-		log.Println(string(respBody))
+		log.Print("Response")
+		log.Print(string(respBody))
 	}
 	return err
 }
@@ -317,7 +317,7 @@ func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
-	log.Println("Uploading artifact: " + artifact.Base().CanonicalPath)
+	log.Print("Uploading artifact: " + artifact.Base().CanonicalPath)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {

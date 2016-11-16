@@ -43,7 +43,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		log.Println(string(asJSON))
+		log.Print(string(asJSON))
 	}
 
 	log.Print("All done.")

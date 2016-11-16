@@ -404,7 +404,7 @@ func runWorker() {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("Shutting down immediately - panic occurred!")
-			log.Println(string(debug.Stack()))
+			log.Print(string(debug.Stack()))
 			cause := fmt.Sprintf("%v", r)
 			log.Print("Cause: " + cause)
 			if config.ShutdownMachineOnInternalError {
@@ -435,6 +435,7 @@ func runWorker() {
 	// loop forever claiming and running tasks!
 	lastActive := time.Now()
 	lastQueriedProvisioner := time.Now()
+	lastReportedNoTasks := time.Now()
 	tasksResolved := uint(0)
 	for {
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
@@ -447,7 +448,12 @@ func runWorker() {
 		waitASec := time.NewTimer(time.Second * 1)
 		taskFound := FindAndRunTask()
 		if !taskFound {
-			log.Println("No task claimed...")
+			// let's not be over-verbose in logs - has cost implications
+			// so report only once per minute that no task was claimed, not every second
+			if time.Now().Sub(lastReportedNoTasks) > 1*time.Minute {
+				lastReportedNoTasks = time.Now()
+				log.Print("No task claimed...")
+			}
 			if config.IdleShutdownTimeoutSecs > 0 {
 				idleTime := time.Now().Sub(lastActive)
 				if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
@@ -517,7 +523,7 @@ func FindAndRunTask() bool {
 		// remaining urls for lower priority tasks that might still be left to
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
-		log.Println("Task found")
+		log.Print("Task found")
 		execErr := task.run()
 		if execErr.Occurred() {
 			task.reportPossibleError(execErr)
@@ -575,12 +581,11 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	dec := xml.NewDecoder(reader)
 	err = dec.Decode(&queueMessagesList)
 	if err != nil {
-		log.Println("ERROR: not able to xml decode the response from the azure Queue:")
-		log.Println(string(fullBody))
+		log.Print("ERROR: not able to xml decode the response from the azure Queue:")
+		log.Print(string(fullBody))
 		return nil, err
 	}
 	if len(queueMessagesList.QueueMessages) == 0 {
-		log.Println("Zero tasks returned in Azure XML QueueMessagesList")
 		return nil, nil
 	}
 	if size := len(queueMessagesList.QueueMessages); size > 1 {
@@ -623,7 +628,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		log.Printf("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
 		if deleteErr != nil {
-			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
+			log.Print("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
 			log.Printf("%v", deleteErr)
 		}
 	}
@@ -635,11 +640,11 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 	if err != nil {
 		// try to delete from Azure, if it fails, nothing we can do about it
 		// not very serious - another worker will try to delete it
-		log.Println("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
-		log.Println("Deleting from Azure queue as other workers will have the same problem.")
+		log.Print("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
+		log.Print("Deleting from Azure queue as other workers will have the same problem.")
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
 		if deleteErr != nil {
-			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
+			log.Print("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
 			log.Printf("%v", deleteErr)
 		}
 		return nil, err
@@ -659,7 +664,7 @@ func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
 		log.Printf("%v", err)
 		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
 		if deleteErr != nil {
-			log.Println("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
+			log.Print("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
 			log.Printf("%v", deleteErr)
 		}
 		return nil, err
@@ -674,7 +679,7 @@ func (task *TaskRun) deleteFromAzure() error {
 	if task == nil {
 		return fmt.Errorf("Cannot delete task from Azure - task is nil")
 	}
-	log.Println("Deleting task " + task.TaskID + " from Azure queue...")
+	log.Print("Deleting task " + task.TaskID + " from Azure queue...")
 	return deleteFromAzure(task.SignedURLPair.SignedDeleteURL)
 }
 
@@ -734,7 +739,7 @@ func (task *TaskRun) setReclaimTimer() {
 	// attempted a few minutes prior to expiration, to allow for clock drift.
 
 	// First time we need to check claim response, after that, need to check reclaim response
-	log.Println("Setting reclaim timer...")
+	log.Print("Setting reclaim timer...")
 	var takenUntil time.Time
 	if len(task.TaskReclaimResponse.Status.Runs) > 0 {
 		takenUntil = time.Time(task.TaskReclaimResponse.Status.Runs[task.RunID].TakenUntil)
@@ -750,7 +755,7 @@ func (task *TaskRun) setReclaimTimer() {
 	log.Printf("Time to wait until then is %v", waitTimeUntilReclaim)
 	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue
 	if waitTimeUntilReclaim.Seconds() > 30 {
-		log.Println("This is more than 30 seconds away - so setting a timer")
+		log.Print("This is more than 30 seconds away - so setting a timer")
 		task.reclaimTimer = time.AfterFunc(
 			waitTimeUntilReclaim, func() {
 				err := task.StatusManager.Reclaim()
@@ -766,7 +771,7 @@ func (task *TaskRun) setReclaimTimer() {
 			},
 		)
 	} else {
-		log.Println("WARNING ******************** This is NOT more than 30 seconds away - so NOT setting a timer")
+		log.Print("WARNING ******************** This is NOT more than 30 seconds away - so NOT setting a timer")
 	}
 }
 
@@ -878,7 +883,7 @@ func (err *CommandExecutionError) Error() string {
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	task.Logf("Executing command %v: %v", index, task.formatCommand(index))
-	log.Println("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
+	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
 	cee := task.prepareCommand(index)
 	if cee != nil {
 		panic(cee)
@@ -938,7 +943,7 @@ func (err *executionErrors) Occurred() bool {
 }
 
 func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
-	log.Println("Resolving task...")
+	log.Print("Resolving task...")
 	if !e.Occurred() {
 		return ResourceUnavailable(task.StatusManager.ReportCompleted())
 	}
@@ -1128,7 +1133,7 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 }
 
 func (task *TaskRun) uploadBackingLog() *CommandExecutionError {
-	log.Println("Uploading full log file")
+	log.Print("Uploading full log file")
 	err := task.uploadLog("public/logs/live_backing.log")
 	if err != nil {
 		return ResourceUnavailable(err)

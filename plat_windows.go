@@ -67,24 +67,24 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 }
 
 func startup() error {
-	log.Println("Detected Windows platform...")
+	log.Print("Detected Windows platform...")
 	return taskCleanup()
 }
 
 func deleteTaskDir(path string, user string) error {
 	if !config.CleanUpTaskDirs {
-		log.Println("*NOT* Removing home directory '" + path + "' as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
+		log.Print("*NOT* Removing home directory '" + path + "' as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
 		return nil
 	}
 
-	log.Println("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
+	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
 	err := os.RemoveAll(path)
 	if err == nil {
 		return nil
 	}
-	log.Println("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
+	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
-	log.Println("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
+	log.Print("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
 	err = runCommands(
 		false,
 		[]string{
@@ -127,7 +127,7 @@ func (user *OSUser) createNewOSUser() error {
 }
 
 func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
-	log.Println("Creating Windows User " + user.Name + "...")
+	log.Print("Creating Windows User " + user.Name + "...")
 	userExisted, err := allowError(
 		"The account already exists",
 		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
@@ -169,10 +169,10 @@ func generatePassword() string {
 
 func deleteExistingOSUsers() {
 	deleteTaskDirs()
-	log.Println("Looking for existing task users to delete...")
+	log.Print("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
-		log.Println("WARNING: could not list existing Windows user accounts")
+		log.Print("WARNING: could not list existing Windows user accounts")
 		log.Printf("%v", err)
 	}
 }
@@ -180,14 +180,14 @@ func deleteExistingOSUsers() {
 func deleteTaskDirs() {
 	taskDirsParent, err := os.Open(config.TasksDir)
 	if err != nil {
-		log.Println("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
+		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
 		log.Printf("%v", err)
 		return
 	}
 	defer taskDirsParent.Close()
 	fi, err := taskDirsParent.Readdir(-1)
 	if err != nil {
-		log.Println("WARNING: Could not read complete directory listing to find old home directories to delete")
+		log.Print("WARNING: Could not read complete directory listing to find old home directories to delete")
 		log.Printf("%v", err)
 		// don't return, since we may have partial listings
 	}
@@ -211,10 +211,10 @@ func deleteTaskDirs() {
 func deleteOSUserAccount(line string) {
 	if strings.HasPrefix(line, "task_") {
 		user := line
-		log.Println("Attempting to remove Windows user " + user + "...")
+		log.Print("Attempting to remove Windows user " + user + "...")
 		err := runCommands(false, []string{"net", "user", user, "/delete"})
 		if err != nil {
-			log.Println("WARNING: Could not remove Windows user account " + user)
+			log.Print("WARNING: Could not remove Windows user account " + user)
 			log.Printf("%v", err)
 		}
 	}
@@ -338,8 +338,8 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	)
 
 	log.Printf("Script %q:", script)
-	log.Println("Contents:")
-	log.Println(string(fileContents))
+	log.Print("Contents:")
+	log.Print(string(fileContents))
 
 	if err != nil {
 		panic(err)
@@ -414,7 +414,7 @@ func install(arguments map[string]interface{}) (err error) {
 // includes `errString` then true, is returned with no error. Otherwise false
 // is returned, with or without an error.
 func allowError(errString string, command string, args ...string) (bool, error) {
-	log.Println("Running command: '" + strings.Join(append([]string{command}, args...), "' '") + "'")
+	log.Print("Running command: '" + strings.Join(append([]string{command}, args...), "' '") + "'")
 	cmd := exec.Command(command, args...)
 	stderrBytes, err := Error(cmd)
 	if err != nil {
@@ -525,7 +525,7 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 func runCommands(allowFail bool, commands ...[]string) error {
 	var err error
 	for _, command := range commands {
-		log.Println("Running command: '" + strings.Join(command, "' '") + "'")
+		log.Print("Running command: '" + strings.Join(command, "' '") + "'")
 		cmd := exec.Command(command[0], command[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
