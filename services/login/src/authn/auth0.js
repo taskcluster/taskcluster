@@ -36,10 +36,38 @@ class Auth0Login {
         auth0_client_id: this.cfg.auth0.clientId,
       });
     });
+
+    // similarly, but when not coming from the tools site
+    router.get('/login-local', (req, res) => {
+      req.session['auth0-local'] = 1;
+      res.render('auth0', {
+        auth0_domain: this.cfg.auth0.domain,
+        auth0_client_id: this.cfg.auth0.clientId,
+      });
+    });
+
     router.get('/callback', passport.authenticate('auth0', {
     }), (req, res) => {
-      res.redirect('/');
-      return;
+      // if this was a local request, just go back to /
+      if (req.session['auth0-local']) {
+        delete req.session['auth0-local'];
+        res.redirect('/');
+        return;
+      }
+
+      // only do this once..
+      delete req.session['auth0-local'];
+
+      // generate temporary credentials and send them back to tools in a URL query
+      let credentials = req.user.createCredentials(this.cfg.app.temporaryCredentials);
+      var querystring = [];
+      querystring.push('clientId=' + encodeURIComponent(credentials.clientId));
+      querystring.push('accessToken=' + encodeURIComponent(credentials.accessToken));
+      querystring.push('certificate=' + encodeURIComponent(credentials.certificate));
+      querystring = querystring.join('&');
+
+      let url = `https://tools.taskcluster.net/login/?${querystring}`;
+      res.redirect(url)
     });
 
     return router;

@@ -79,7 +79,7 @@ html(lang='en')
         if query.auth0
           div.row.login-option
             div.col-md-4
-              form#auth0-form(action='/auth0/login', method='get')
+              form#auth0-form(action='/auth0/login-local', method='get')
                 button.btn.btn-block.btn-primary(type='submit')
                   i.glyphicon.glyphicon-user
                   | &nbsp;Passwordless Sign-In
