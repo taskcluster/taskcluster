@@ -161,68 +161,16 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
-          certificate                       Taskcluster certificate, when using temporary
-                                            credentials only.
-          provisioner_id                    The taskcluster provisioner which is taking care
-                                            of provisioning environments with generic-worker
-                                            running on them. [default: aws-provisioner-v1]
-          refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
-                                            that the generic worker should refresh them.
-                                            [default: 310]
-          livelogExecutable                 Filepath of LiveLog executable to use; see
-                                            https://github.com/taskcluster/livelog
-          subdomain                         Subdomain to use in stateless dns name for live
-                                            logs; see
-                                            https://github.com/taskcluster/stateless-dns-server
-                                            [default: taskcluster-worker.net]
-          livelogCertificate                SSL certificate to be used by livelog for hosting
-                                            logs over https. If not set, http will be used.
-          livelogKey                        SSL key to be used by livelog for hosting logs
-                                            over https. If not set, http will be used.
-          tasksDir                          The location where task directories should be
-                                            created on the worker. [default: C:\Users]
-          downloadsDir                      The location where resources are downloaded for
-                                            populating preloaded caches and readonly mounts.
-                                            [default: C:\generic-worker\downloads]
           cachesDir                         The location where task caches should be stored on
                                             the worker. [default: C:\generic-worker\caches]
+          certificate                       Taskcluster certificate, when using temporary
+                                            credentials only.
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
-          idleShutdownTimeoutSecs           How many seconds to wait without getting a new
-                                            task to perform, before shutting down the computer.
-                                            An integer, >= 0. A value of 0 means "do not shut
-                                            the computer down" - i.e. continue running
-                                            indefinitely.
-          workerTypeMetaData                This arbitrary json blob will be uploaded as an
-                                            artifact called worker_type_metadata.json with each
-                                            task. Providing information here, such as a URL to
-                                            the code/config used to set up the worker type will
-                                            mean that people running tasks on the worker type
-                                            will have more information about how it was set up
-                                            (for example what has been installed on the
-                                            machine).
-          runTasksAsCurrentUser             If true, users will not be created for tasks, but
-                                            the current OS user will be used. Useful if not an
-                                            administrator, e.g. when running tests. Should not
-                                            be used in production! [default: false]
-          requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
-                                            number of megabytes of disk space are available
-                                            when each task starts. If it cannot free enough
-                                            disk space, the worker will shut itself down.
-                                            [default: 10240]
-          shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
-                                            error (such as not being able to write to a
-                                            required file) it will shutdown the host
-                                            computer. Note this is generally only desired
-                                            for machines running in production, such as on AWS
-                                            EC2 spot instances. Use with caution!
-                                            [default: false]
-          numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
-                                            this many tasks, exit. [default: 0]
           deploymentId                      If running with --configure-for-aws, then between
                                             tasks, at a maximum frequency of once per 30 mins,
                                             the worker will query the provisioner to get the
@@ -231,6 +179,59 @@ and reports back results to the queue.
                                             different to the worker's current deploymentId, the
                                             worker will shut itself down. See
                                             https://bugzil.la/1298010
+          downloadsDir                      The location where resources are downloaded for
+                                            populating preloaded caches and readonly mounts.
+                                            [default: C:\generic-worker\downloads]
+          idleShutdownTimeoutSecs           How many seconds to wait without getting a new
+                                            task to perform, before shutting down the computer.
+                                            An integer, >= 0. A value of 0 means "do not shut
+                                            the computer down" - i.e. continue running
+                                            indefinitely. [default: 0]
+          livelogCertificate                SSL certificate to be used by livelog for hosting
+                                            logs over https. If not set, http will be used.
+          livelogExecutable                 Filepath of LiveLog executable to use; see
+                                            https://github.com/taskcluster/livelog
+                                            [default: livelog]
+          livelogKey                        SSL key to be used by livelog for hosting logs
+                                            over https. If not set, http will be used.
+          numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
+                                            this many tasks, exit. [default: 0]
+          provisioner_id                    The taskcluster provisioner which is taking care
+                                            of provisioning environments with generic-worker
+                                            running on them. [default: aws-provisioner-v1]
+          refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
+                                            that the generic worker should refresh them.
+                                            [default: 310]
+          requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
+                                            number of megabytes of disk space are available
+                                            when each task starts. If it cannot free enough
+                                            disk space, the worker will shut itself down.
+                                            [default: 10240]
+          runTasksAsCurrentUser             If true, users will not be created for tasks, but
+                                            the current OS user will be used. Useful if not an
+                                            administrator, e.g. when running tests. Should not
+                                            be used in production! [default: false]
+          shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
+                                            error (such as not being able to write to a
+                                            required file) it will shutdown the host
+                                            computer. Note this is generally only desired
+                                            for machines running in production, such as on AWS
+                                            EC2 spot instances. Use with caution!
+                                            [default: false]
+          subdomain                         Subdomain to use in stateless dns name for live
+                                            logs; see
+                                            https://github.com/taskcluster/stateless-dns-server
+                                            [default: taskcluster-worker.net]
+          tasksDir                          The location where task directories should be
+                                            created on the worker. [default: C:\Users]
+          workerTypeMetaData                This arbitrary json blob will be uploaded as an
+                                            artifact called worker_type_metadata.json with each
+                                            task. Providing information here, such as a URL to
+                                            the code/config used to set up the worker type will
+                                            mean that people running tasks on the worker type
+                                            will have more information about how it was set up
+                                            (for example what has been installed on the
+                                            machine).
 
     Here is an syntactically valid example configuration file:
 
@@ -315,19 +316,19 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 
 	// first assign defaults
 	c := &Config{
-		Subdomain:                      "taskcluster-worker.net",
-		ProvisionerID:                  "aws-provisioner-v1",
-		LiveLogExecutable:              "livelog",
-		RefreshUrlsPrematurelySecs:     310,
-		TasksDir:                       "C:\\Users",
 		CachesDir:                      "C:\\generic-worker\\caches",
-		DownloadsDir:                   "C:\\generic-worker\\downloads",
 		CleanUpTaskDirs:                true,
-		RunTasksAsCurrentUser:          false,
+		DownloadsDir:                   "C:\\generic-worker\\downloads",
 		IdleShutdownTimeoutSecs:        0,
-		RequiredDiskSpaceMegabytes:     10240,
-		ShutdownMachineOnInternalError: false,
+		LiveLogExecutable:              "livelog",
 		NumberOfTasksToRun:             0,
+		ProvisionerID:                  "aws-provisioner-v1",
+		RefreshUrlsPrematurelySecs:     310,
+		RequiredDiskSpaceMegabytes:     10240,
+		RunTasksAsCurrentUser:          false,
+		ShutdownMachineOnInternalError: false,
+		Subdomain:                      "taskcluster-worker.net",
+		TasksDir:                       "C:\\Users",
 		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker": map[string]string{
 				"go-arch":    runtime.GOARCH,

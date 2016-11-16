@@ -14,7 +14,7 @@ AMI="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filte
 log "Latest Windows 2012 R2 AMI is: ${AMI}"
 
 # intentionally commented out - as workflow is wrong here - need to delete after updating worker types etc
-# . ../delete.sh
+. ../delete.sh
 
 # make sure we have an ssh security group in this region
 # note if we *try* to create a security group that already exists (regardless of whether it is successful or not), there will be a cloudwatch alarm, so avoid this
