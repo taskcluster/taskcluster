@@ -13,6 +13,7 @@ let debug = require('debug')('taskcluster-lib-docs');
 
 async function documenter(options) {
   options = _.defaults({}, options, {
+    aws: null,
     credentials: {},
     project: null,
     tier: null,
@@ -90,11 +91,14 @@ async function documenter(options) {
   let tgz = tarball.pipe(zlib.createGzip());
 
   if (options.publish) {
-    let auth = new client.Auth({
-      credentials: options.credentials,
-    });
+    let creds = options.aws;
+    if (!creds) {
+      let auth = new client.Auth({
+        credentials: options.credentials,
+      });
 
-    let creds = await auth.awsS3Credentials('read-write', options.bucket, options.project + '/');
+      creds = await auth.awsS3Credentials('read-write', options.bucket, options.project + '/');
+    }
 
     let s3 = new aws.S3(creds.credentials);
     let s3Stream = S3UploadStream(s3);
