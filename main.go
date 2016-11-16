@@ -143,12 +143,6 @@ and reports back results to the queue.
                                             to talk to taskcluster queue.
           clientId                          Taskcluster client id used by generic worker to
                                             talk to taskcluster queue.
-          workerGroup                       Typically this would be an aws region - an
-                                            identifier to uniquely identify which pool of
-                                            workers this worker logically belongs to.
-          workerId                          A name to uniquely identify your worker.
-          workerType                        This should match a worker_type managed by the
-                                            provisioner you have specified.
           livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
@@ -157,6 +151,12 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
           signingKeyLocation                The PGP signing key for signing artifacts with.
+          workerGroup                       Typically this would be an aws region - an
+                                            identifier to uniquely identify which pool of
+                                            workers this worker logically belongs to.
+          workerId                          A name to uniquely identify your worker.
+          workerType                        This should match a worker_type managed by the
+                                            provisioner you have specified.
 
         ** OPTIONAL ** properties
         =========================
@@ -165,6 +165,11 @@ and reports back results to the queue.
                                             the worker. [default: C:\generic-worker\caches]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
+          checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
+                                            to the provisioner, to check if there has been a
+                                            new deployment of the current worker type. If a
+                                            new deployment is discovered, worker will shut
+                                            down. See deploymentId property. [default: 1800]
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,
@@ -172,8 +177,9 @@ and reports back results to the queue.
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
           deploymentId                      If running with --configure-for-aws, then between
-                                            tasks, at a maximum frequency of once per 30 mins,
-                                            the worker will query the provisioner to get the
+                                            tasks, at a chosen maximum frequency (see
+                                            checkForNewDeploymentEverySecs property), the
+                                            worker will query the provisioner to get the
                                             updated worker type definition. If the deploymentId
                                             in the config of the worker type definition is
                                             different to the worker's current deploymentId, the
@@ -317,6 +323,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	// first assign defaults
 	c := &Config{
 		CachesDir:                      "C:\\generic-worker\\caches",
+		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
 		DownloadsDir:                   "C:\\generic-worker\\downloads",
 		IdleShutdownTimeoutSecs:        0,
@@ -441,7 +448,7 @@ func runWorker() {
 	for {
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
-		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > 30*time.Minute {
+		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > config.CheckForNewDeploymentEverySecs*time.Second {
 			lastQueriedProvisioner = time.Now()
 			shutdownIfNewDeploymentID()
 		}

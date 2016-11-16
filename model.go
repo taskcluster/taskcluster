@@ -15,35 +15,36 @@ type (
 	// Generic Worker config
 	Config struct {
 		AccessToken                    string                 `json:"accessToken"`
+		CachesDir                      string                 `json:"cachesDir"`
+		Certificate                    string                 `json:"certificate"`
+		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
+		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
+		DeploymentID                   string                 `json:"deploymentId"`
+		DownloadsDir                   string                 `json:"downloadsDir"`
+		IdleShutdownTimeoutSecs        uint                   `json:"idleShutdownTimeoutSecs"`
+		InstanceID                     string                 `json:"instanceId"`
+		InstanceType                   string                 `json:"instanceType"`
 		LiveLogCertificate             string                 `json:"livelogCertificate"`
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
 		LiveLogKey                     string                 `json:"livelogKey"`
 		LiveLogSecret                  string                 `json:"livelogSecret"`
-		Certificate                    string                 `json:"certificate"`
-		ProvisionerID                  string                 `json:"provisionerId"`
-		RefreshUrlsPrematurelySecs     int                    `json:"refreshURLsPrematurelySecs"`
-		PublicIP                       net.IP                 `json:"publicIP"`
+		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
+		ProvisionerID                  string                 `json:"provisionerId"`
+		PublicIP                       net.IP                 `json:"publicIP"`
+		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs"`
+		Region                         string                 `json:"region"`
+		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
+		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
+		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
+		SigningKeyLocation             string                 `json:"signingKeyLocation"`
 		Subdomain                      string                 `json:"subdomain"`
+		TasksDir                       string                 `json:"tasksDir"`
 		WorkerGroup                    string                 `json:"workerGroup"`
 		WorkerID                       string                 `json:"workerId"`
-		InstanceID                     string                 `json:"instanceId"`
-		InstanceType                   string                 `json:"instanceType"`
-		Region                         string                 `json:"region"`
 		WorkerType                     string                 `json:"workerType"`
-		TasksDir                       string                 `json:"tasksDir"`
-		CachesDir                      string                 `json:"cachesDir"`
-		DownloadsDir                   string                 `json:"downloadsDir"`
-		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
-		IdleShutdownTimeoutSecs        int                    `json:"idleShutdownTimeoutSecs"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
-		SigningKeyLocation             string                 `json:"signingKeyLocation"`
-		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
-		RequiredDiskSpaceMegabytes     int                    `json:"requiredDiskSpaceMegabytes"`
-		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
-		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
-		DeploymentID                   string                 `json:"deploymentId"`
 	}
 
 	// Used for modelling the xml we get back from Azure
