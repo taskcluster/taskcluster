@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-docs",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "author": "Kristel Teng <kteng@mozilla.com>",
   "description": "Find and upload documents for taskcluster projects",
   "license": "MPL-2.0",
