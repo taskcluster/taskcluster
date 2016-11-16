@@ -115,6 +115,10 @@ The following are the options that can be passed to the publisher function in th
 
     // Whether or not the generated documentation should be uploaded to s3.
     publish: process.env.NODE_ENV == 'production',
+
+    // A set of aws credentials that allows you to use this library directly. Must contain both 'accessKeyId'
+    // and 'secretAccessKey'.
+    aws: null,
 ```
 
 Testing
