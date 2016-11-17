@@ -99,7 +99,7 @@ func deleteTaskDir(path string, user string) error {
 
 func createNewTaskUser() error {
 	// delete old task user first...
-	if TaskUser.desktop.Desktop != 0 {
+	if TaskUser.desktop != nil {
 		err := TaskUser.desktop.Close()
 		if err != nil {
 			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
