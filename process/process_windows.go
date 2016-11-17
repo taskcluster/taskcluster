@@ -132,6 +132,11 @@ func NewDesktopSession(username, password string) (*subprocess.LoginInfo, *platf
 	if err != nil {
 		return nil, desktop, err
 	}
+	err = desktop.Display()
+	if err != nil {
+		log.Printf("Could not display the newly created desktop, despite successfully logging in:\n%v", err)
+		return loginInfo, desktop, err
+	}
 	return loginInfo, desktop, nil
 }
 
