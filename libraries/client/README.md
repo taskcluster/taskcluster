@@ -181,7 +181,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.deleteRole(roleId) : void`
  * `auth.expandScopes(payload) : result`
  * `auth.currentScopes() : result`
- * `auth.awsS3Credentials(level, bucket, prefix) : result`
+ * `auth.awsS3Credentials(level, bucket, prefix, [options]) : result`
  * `auth.azureTableSAS(account, table) : result`
  * `auth.sentryDSN(project) : result`
  * `auth.statsumToken(project) : result`
@@ -284,9 +284,10 @@ var notify = new taskcluster.Notify(options);
 //  - https://pulse.taskcluster.net/v1
 var pulse = new taskcluster.Pulse(options);
 ```
- * `pulse.ping() : void`
  * `pulse.overview() : result`
- * `pulse.namespace(namespace, payload) : void`
+ * `pulse.exchanges() : result`
+ * `pulse.namespace(namespace, payload) : result`
+ * `pulse.ping() : void`
 
 ### Methods in `taskcluster.PurgeCache`
 ```js
