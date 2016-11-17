@@ -76,8 +76,11 @@ Set-Acl "C:\builds" $acl
 # download tooltool
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\builds\tooltool.py")
 
-# enable DEBUG logs for generic-worker install
-$env:DEBUG = "*"
+# install nssm
+Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm.cc/release/nssm-2.24.zip"
+
+# initial clone of mozilla-central
+# Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\python\Scripts\hg clone -u null https://hg.mozilla.org/mozilla-central C:\gecko" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\hg_initial_clone.log" -RedirectStandardError "C:\hg_initial_clone.err"
 
 # download Windows Server 2003 Resource Kit Tools
 $client.DownloadFile("https://download.microsoft.com/download/8/e/c/8ec3a7d8-05b4-440a-a71e-ca3ee25fe057/rktools.exe", "C:\rktools.exe")
@@ -100,8 +103,8 @@ md "C:\gopath"
 Expand-ZIPFile -File "C:\go1.7.3.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.3.windows-amd64.zip"
 
 # install PSTools
-md "C:\PSTools"
-Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
+# md "C:\PSTools"
+# Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
 
 # install git
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
@@ -133,7 +136,7 @@ Copy-Item C:\gopath\bin\livelog.exe C:\generic-worker
 
 # install generic-worker
 Copy-Item C:\gopath\bin\generic-worker.exe C:\generic-worker
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
 
 # patch generic worker startup script to rebuild generic worker
 $client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/master/run-generic-worker.bat", "C:\generic-worker\run-generic-worker.bat")
