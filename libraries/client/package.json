@@ -24,6 +24,11 @@
     "hawk": "^2.3.1",
     "url-join": "^0.0.1"
   },
+  "files": [
+    "lib",
+    "browser.js",
+    "index.js"
+  ],
   "optionalDependencies": {
     "sockjs-client": "^1.0.3"
   },
