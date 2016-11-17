@@ -76,24 +76,23 @@ html(lang='en')
               | permissions.  You can use this option even if you are not an employee!
               | If you also have a Mozillians account, make sure your
               | LDAP email is included in your Mozillians profile.
-        if query.auth0
-          div.row.login-option
-            div.col-md-4
-              form#auth0-form(action='/auth0/login-local', method='get')
-                button.btn.btn-block.btn-primary(type='submit')
-                  i.glyphicon.glyphicon-user
-                  | &nbsp;Passwordless Sign-In
-            div.col-md-8
-              p
-                | If you are a&nbsp;
-                b Mozillian
-                | , but do not have an LDAP account, sign in with your email address.
-                | You will need to validate your email address with a code.
-                | Your permissions will depend on the Mozillians groups you belong
-                | to.  If you do not have a Mozillians profile,&nbsp;
-                a(href='https://mozillians.org/en-US/')
-                  | set one up
-                | &nbsp;now.  Get vouched to gain access to additional scopes.
+        div.row.login-option
+          div.col-md-4
+            form#auth0-form(action='/auth0/login-local', method='get')
+              button.btn.btn-block.btn-primary(type='submit')
+                i.glyphicon.glyphicon-user
+                | &nbsp;Sign-In with Email
+          div.col-md-8
+            p
+              | If you are a&nbsp;
+              b Mozillian
+              | , but do not have an LDAP account, sign in with your email address.
+              | You will need to validate your email address with a code.
+              | Your permissions will depend on the Mozillians groups you belong
+              | to.  If you do not have a Mozillians profile,&nbsp;
+              a(href='https://mozillians.org/en-US/')
+                | set one up
+              | &nbsp;now.  Get vouched to gain access to additional scopes.
         div.row.login-option
           div.col-md-4
             form#persona-form(action='/persona/login', method='post')
