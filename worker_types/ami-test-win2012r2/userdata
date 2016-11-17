@@ -116,8 +116,8 @@ Start-Process "msiexec" -ArgumentList "/i C:\NodeSetup.msi /quiet" -Wait -NoNewW
 
 # set permanent env vars
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
-[System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd;C:\Program Files\nodejs", "Machine")
-[Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "User")
+[Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd;C:\Program Files\nodejs", "Machine")
+[Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "Machine")
 
 # upgrade python libraries
 Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install --upgrade pip==8.1.1 setuptools==20.7.0 virtualenv==15.0.3 wheel==0.29.0 pypiwin32==219 requests==2.9.1 psutil==4.1.0" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\python_package_upgrades.log" -RedirectStandardError "C:\python_package_upgrades.err"
