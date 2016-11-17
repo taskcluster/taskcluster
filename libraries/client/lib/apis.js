@@ -281,11 +281,12 @@ module.exports = {
             "bucket",
             "prefix"
           ],
-          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the TaskCluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the TaskCluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.",
+          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the TaskCluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the TaskCluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.\n\nFinally, note that the `PutObjectAcl` call is not allowed.  Passing a canned\nACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and\nwill result in an access-denied error from AWS.  This limitation is due to a\nsecurity flaw in Amazon S3 which might otherwise allow indefinite access to\nuploaded objects.\n\n**EC2 metadata compatibility**, if the querystring parameter\n`?format=iam-role-compat` is given, the response will be compatible\nwith the JSON exposed by the EC2 metadata service. This aims to ease\ncompatibility for libraries and tools built to auto-refresh credentials.\nFor details on the format returned by EC2 metadata service see:\n[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).",
           "method": "get",
           "name": "awsS3Credentials",
           "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#",
           "query": [
+            "format"
           ],
           "route": "/aws/s3/<level>/<bucket>/<prefix>",
           "scopes": [
@@ -1070,13 +1071,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
@@ -1436,13 +1437,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
@@ -1559,13 +1560,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
@@ -1584,19 +1585,6 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
-          "method": "get",
-          "name": "ping",
-          "query": [
-          ],
-          "route": "/ping",
-          "stability": "experimental",
-          "title": "Ping Server",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
           "description": "An overview of the Rabbit cluster\n\n**Warning** this api end-point is **not stable**.",
           "method": "get",
           "name": "overview",
@@ -1610,12 +1598,27 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "description": "A list of exchanges in the rabbit cluster\n\n**Warning** this api end-point is **not stable**.",
+          "method": "get",
+          "name": "exchanges",
+          "output": "http://schemas.taskcluster.net/pulse/v1/exchanges-response.json",
+          "query": [
+          ],
+          "route": "/exchanges",
+          "stability": "experimental",
+          "title": "Rabbit Exchanges",
+          "type": "function"
+        },
+        {
+          "args": [
             "namespace"
           ],
           "description": "Creates a namespace, given the taskcluster credentials with scopes.\n\n**Warning** this api end-point is **not stable**.",
           "input": "http://schemas.taskcluster.net/pulse/v1/namespace-request.json",
           "method": "post",
           "name": "namespace",
+          "output": "http://schemas.taskcluster.net/pulse/v1/namespace-response.json",
           "query": [
           ],
           "route": "/namespace/<namespace>",
@@ -1626,6 +1629,19 @@ module.exports = {
           ],
           "stability": "experimental",
           "title": "Create a namespace",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
           "type": "function"
         }
       ],
@@ -2160,7 +2176,7 @@ module.exports = {
             "runId",
             "name"
           ],
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
           "method": "get",
           "name": "getArtifact",
           "query": [
@@ -2249,13 +2265,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
