@@ -98,6 +98,15 @@ func deleteTaskDir(path string, user string) error {
 }
 
 func createNewTaskUser() error {
+	// delete old task user first...
+	if TaskUser.desktop.Desktop != 0 {
+		err := TaskUser.desktop.Close()
+		if err != nil {
+			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
+		}
+	} else {
+		log.Print("No previous task user desktop, so no need to close any open desktops")
+	}
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
