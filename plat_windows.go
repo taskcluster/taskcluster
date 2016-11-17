@@ -393,7 +393,6 @@ func install(arguments map[string]interface{}) (err error) {
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", TaskDir: " + user.TaskDir)
 
-	user.TaskDir = "C:\\Users\\GenericWorker"
 	err = user.ensureUserAccount()
 	if err != nil {
 		return err
