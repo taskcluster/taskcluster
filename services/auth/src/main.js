@@ -1,4 +1,5 @@
 let Loader             = require('taskcluster-lib-loader');
+let Docs               = require('taskcluster-lib-docs');
 let Validate           = require('taskcluster-lib-validate');
 let Monitor            = require('taskcluster-lib-monitor');
 let App                = require('taskcluster-lib-app');
@@ -96,6 +97,30 @@ let load = Loader({
     })
   },
 
+
+  docs: {
+    requires: ['cfg', 'validator'],
+    setup: ({cfg, validator}) => Docs.documenter({
+      aws: cfg.aws,
+      tier: 'platform',
+      schemas: validator.schemas,
+      project: 'auth',
+      references: [
+        {
+          name: 'api',
+          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        }, {
+          name: 'events',
+          reference: exchanges.reference({
+            exchangePrefix:   cfg.app.exchangePrefix,
+            credentials:      cfg.pulse,
+          }),
+        },
+      ],
+    }),
+  },
+
+
   publisher: {
     requires: ['cfg', 'validator', 'monitor'],
     setup: ({cfg, validator, monitor}) =>
@@ -165,8 +190,8 @@ let load = Loader({
   },
 
   server: {
-    requires: ['cfg', 'api'],
-    setup: async ({cfg, api}) => {
+    requires: ['cfg', 'api', 'docs'],
+    setup: async ({cfg, api, docs}) => {
       // Create app
       let serverApp = App(cfg.server);
 
