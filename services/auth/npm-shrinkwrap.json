@@ -3417,14 +3417,14 @@
       }
     },
     "taskcluster-lib-docs": {
-      "version": "2.0.0",
-      "from": "taskcluster-lib-docs@>=2.0.0 <3.0.0",
-      "resolved": "https://registry.npmjs.org/taskcluster-lib-docs/-/taskcluster-lib-docs-2.0.0.tgz",
+      "version": "3.1.0",
+      "from": "taskcluster-lib-docs@3.1.0",
+      "resolved": "https://registry.npmjs.org/taskcluster-lib-docs/-/taskcluster-lib-docs-3.1.0.tgz",
       "dependencies": {
         "lodash": {
-          "version": "4.16.2",
+          "version": "4.17.2",
           "from": "lodash@>=4.13.1 <5.0.0",
-          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.2.tgz"
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.2.tgz"
         }
       }
     },
