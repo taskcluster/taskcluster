@@ -429,7 +429,7 @@ func TestInvalidEndpoint(t *testing.T) {
 
 		req, err := http.NewRequest(
 			"GET",
-			"http://localhost:60024/x", // invalid endpoint
+			"http://localhost:60024/x@/", // invalid endpoint
 			new(bytes.Buffer),
 		)
 		if err != nil {
