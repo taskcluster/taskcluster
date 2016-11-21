@@ -1,18 +1,33 @@
 import crypto from 'crypto';
 import assert from 'assert';
+import Docker from '../../lib/docker';
 import fs from 'mz/fs';
 import getArtifact from './helper/get_artifact';
 import cmd from './helper/cmd';
 import expires from './helper/expires';
 import testworker from '../post_task';
 import * as openpgp from 'openpgp';
+import {removeImage} from '../../lib/util/remove_image';
+import {TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH} from '../fixtures/image_artifacts';
+
+let docker = Docker();
 
 suite('certificate of trust', () => {
   test('create certificate', async () => {
+    let image = {
+      type: 'task-image',
+      taskId: TASK_ID,
+      path: 'public/image.tar'
+    };
+    let hashedName = crypto.createHash('md5')
+                      .update(`${TASK_ID}${image.path}`)
+                      .digest('hex');
+    await removeImage(docker, hashedName);
+
     let expiration = expires();
-    let result = await testworker({
+    let taskDefinition = {
       payload: {
-        image: 'taskcluster/test-ubuntu',
+        image: image,
         features: {
           chainOfTrust: true
         },
@@ -37,7 +52,9 @@ suite('certificate of trust', () => {
         },
         maxRunTime: 5 * 60
       }
-    });
+    };
+
+    let result = await testworker(taskDefinition);
 
     // Get task specific results
     assert.equal(result.run.state, 'completed', 'task should be successful');
@@ -80,5 +97,7 @@ suite('certificate of trust', () => {
     assert.equal(data.environment.publicIpAddress, '127.0.0.1');
     assert.equal(data.environment.instanceId, 'test-worker-instance');
     assert.equal(data.environment.instanceType, 'r3-superlarge');
+    assert.equal(data.environment.imageHash, TASK_IMAGE_HASH);
+    assert.equal(data.environment.imageArtifactHash, TASK_IMAGE_ARTIFACT_HASH);
   });
 });

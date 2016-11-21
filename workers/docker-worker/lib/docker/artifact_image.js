@@ -73,6 +73,7 @@ export default class ArtifactImage {
     this.taskId = imageDetails.taskId;
     this.artifactPath = imageDetails.path;
     this.task = task;
+    this.knownHashes = this.runtime.imageManager.imageHashes;
   }
 
   /*
@@ -111,7 +112,7 @@ export default class ArtifactImage {
     let downloadedFile = path.join(downloadDir, path.basename(this.artifactPath));
 
     try {
-      await downloadArtifact(
+      let hash = await downloadArtifact(
           this.task.queue,
           this.stream,
           this.taskId,
@@ -140,6 +141,8 @@ export default class ArtifactImage {
       }
 
       await this.renameAndLoad(this.imageName, tarballPath);
+      this.knownHashes[`${this.taskId}-${this.artifactPath}`] = hash;
+      this.task.imageArtifactHash = hash;
 
     } catch(e) {
       debug(`Error loading docker image. ${e.stack}`);
@@ -210,14 +213,18 @@ export default class ArtifactImage {
       let image = await this.runtime.docker.getImage(this.imageName);
       let imageDetails = await image.inspect();
       this.imageId = imageDetails.Id;
+      if (this.knownHashes[`${this.taskId}-${this.artifactPath}`]) {
+        this.task.imageArtifactHash = this.knownHashes[`${this.taskId}-${this.artifactPath}`];
+      }
 
       this.stream.write(fmtLog(
         `Image '${this.artifactPath}' from task '${this.taskId}' ` +
         `loaded.  Using image ID ${this.imageId}.`
       ));
 
-      return imageDetails;
+      return true;
     } catch(e) {
+      delete this.knownHashes[`${this.taskId}-${this.artifactPath}`]
       return false;
     }
   }

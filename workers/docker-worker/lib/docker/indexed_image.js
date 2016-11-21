@@ -26,6 +26,7 @@ export default class IndexedImage extends ArtifactImage {
       authorizedScopes: this.taskScopes
     });
     this.task = task;
+    this.knownHashes = this.runtime.imageManager.imageHashes;
   }
 
   /* Downloads an image that is indexed at the given namespace and path.

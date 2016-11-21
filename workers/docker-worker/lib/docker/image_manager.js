@@ -23,6 +23,9 @@ export default class ImageManager {
     this.docker = runtime.docker;
     this.log = runtime.log;
     this._lastImageEnsured = null;
+    //cache of hashes for task images that have been downloaded keyed
+    //by taskId-artifactPath
+    this.imageHashes = {};
   }
 
   /*

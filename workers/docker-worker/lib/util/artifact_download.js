@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import Debug from 'debug';
 import request from 'request';
 import fs from 'mz/fs';
@@ -27,13 +28,13 @@ export default async function(queue, stream, taskId, artifactPath, destination, 
       taskId,
       artifactPath
   );
-
   let attempts = 0;
 
   stream.write(
     fmtLog(`Downloading artifact "${artifactPath}" from task ID: ${taskId}.`)
   );
   while (attempts++ < maxAttempts) {
+    let hash = crypto.createHash('sha256');
     let destinationStream = fs.createWriteStream(destination);
     try {
       let expectedSize = 0;
@@ -46,6 +47,7 @@ export default async function(queue, stream, taskId, artifactPath, destination, 
       });
       req.on('data', (chunk) => {
         receivedSize += chunk.length;
+        hash.update(chunk);
       });
 
       let intervalId = setInterval(() => {
@@ -87,7 +89,7 @@ export default async function(queue, stream, taskId, artifactPath, destination, 
       stream.write(fmtLog(
         `Downloaded ${(expectedSize / 1024 / 1024).toFixed(3)} mb`
       ));
-      return;
+      return `sha256:${hash.digest('hex')}`;
     } catch(e) {
       debug(`Error downloading "${artifactPath}" from task ID "${taskId}". ${e}`);
 

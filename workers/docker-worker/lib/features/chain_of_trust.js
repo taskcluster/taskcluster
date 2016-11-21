@@ -84,6 +84,10 @@ export default class ChainOfTrust {
       }
     };
 
+    if (task.imageArtifactHash) {
+      certificate.environment.imageArtifactHash = task.imageArtifactHash;
+    }
+
     ['instanceId', 'instanceType', 'region'].forEach(tag => {
       if (task.runtime[tag]) {
         certificate.environment[tag] = task.runtime[tag];
