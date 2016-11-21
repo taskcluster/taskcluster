@@ -146,6 +146,9 @@ exports.createClient = function(reference, name) {
       exchangePrefix:   reference.exchangePrefix || ''
     }, _defaultOptions);
 
+    // Remove possible trailing slash from baseUrl
+    this._options.baseUrl = this._options.baseUrl.replace(/\/$/, '')
+
     if (this._options.stats) {
       throw new Error("options.stats is now deprecated! Use options.monitor instead.");
     }
