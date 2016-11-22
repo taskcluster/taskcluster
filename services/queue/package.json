@@ -40,6 +40,7 @@
     "taskcluster-client": "^0.23.8",
     "taskcluster-lib-api": "^3.0.0",
     "taskcluster-lib-app": "^1.0.0",
+    "taskcluster-lib-docs": "^3.0.2",
     "taskcluster-lib-loader": "^1.0.0",
     "taskcluster-lib-monitor": "^4.0.0",
     "taskcluster-lib-testing": "^1.0.0",
