@@ -21,7 +21,8 @@ let loader              = require('taskcluster-lib-loader');
 let config              = require('typed-env-config');
 let monitor             = require('taskcluster-lib-monitor');
 let validator           = require('taskcluster-lib-validate');
-let App                 =require('taskcluster-lib-app');
+let docs                = require('taskcluster-lib-docs');
+let App                 = require('taskcluster-lib-app');
 
 // Create component loader
 let load = loader({
@@ -58,6 +59,26 @@ let load = loader({
       publish:            cfg.app.publishMetaData,
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
+    }),
+  },
+
+  docs: {
+    requires: ['cfg', 'validator'],
+    setup: ({cfg, validator}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'platform',
+      schemas: validator.schemas,
+      project: 'queue',
+      references: [{
+        name: 'api',
+        reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+      }, {
+        name: 'events',
+        reference: exchanges.reference({
+          exchangePrefix:   cfg.app.exchangePrefix,
+          credentials:      cfg.pulse,
+        }),
+      }],
     }),
   },
 
@@ -301,8 +322,8 @@ let load = loader({
 
   // Create the server process
   server: {
-    requires: ['cfg', 'api', 'monitor'],
-    setup: ({cfg, api}) => {
+    requires: ['cfg', 'api', 'monitor', 'docs'],
+    setup: ({cfg, api, monitor, docs}) => {
       let app = App(cfg.server);
       app.use('/v1', api);
       return app.createServer();
