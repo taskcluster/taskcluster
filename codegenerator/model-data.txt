@@ -1,4 +1,4 @@
-Generated: 1480008231
+Generated: 1480022657
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5438,6 +5438,7 @@ Items
       Type                   = 'string'
       TypeName               = ''
       SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/vhost'
+  Title                  = 'Exchange'
   Type                   = 'object'
   TypeName               = ''
   SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items'
