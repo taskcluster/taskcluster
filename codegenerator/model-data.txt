@@ -1,4 +1,4 @@
-Generated: 1479950570
+Generated: 1480008231
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5397,14 +5397,51 @@ SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/email-request.
 http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#
 ================================================================
 Additional Properties  = 'false'
-Description            = 'An array of strings containing the names of exchanges in RabbitMQ
+Description            = 'An array of RabbitMQ exchanges containing the details of RabbitMQ exchanges
 '
 ID                     = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#'
 Items
-  Type                   = 'string'
+  Properties
+    Property 'arguments' =
+      Properties
+      Title                  = 'Arguments'
+      Type                   = 'object'
+      TypeName               = 'Arguments'
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/arguments'
+    Property 'auto-delete' =
+      Description            = 'Whether or not the exchange deletes when all queues are finished using it'
+      Title                  = 'Auto-Delete'
+      Type                   = 'boolean'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/auto-delete'
+    Property 'durable' =
+      Description            = 'Whether or not the exchange survives broker restart'
+      Title                  = 'Durable'
+      Type                   = 'boolean'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/durable'
+    Property 'name' =
+      Description            = 'The exchange's name'
+      Title                  = 'Name'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/name'
+    Property 'type' =
+      Description            = 'The exchange's type'
+      Title                  = 'Type'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/type'
+    Property 'vhost' =
+      Description            = 'The exchange's vhost'
+      Title                  = 'Virtual Host'
+      Type                   = 'string'
+      TypeName               = ''
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/vhost'
+  Type                   = 'object'
   TypeName               = ''
   SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items'
-Required               = '[exchanges]'
+Required               = '[name vhost type]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'RabbitMQ Exchanges'
 Type                   = 'array'
