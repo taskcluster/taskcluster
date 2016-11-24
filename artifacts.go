@@ -20,6 +20,16 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
+var (
+	// for overriding/complementing system mime type mappings
+	customMimeMappings map[string]string = map[string]string{
+
+		// keys *must* be lower-case
+
+		".log": "text/plain",
+	}
+)
+
 type (
 	Artifact interface {
 		ProcessResponse(response interface{}) error
@@ -281,8 +291,14 @@ func resolve(base BaseArtifact, artifactType string) Artifact {
 	if artifactType == "directory" {
 		return nil
 	}
-	mimeType := mime.TypeByExtension(filepath.Ext(base.CanonicalPath))
-	// check we have a mime type!
+	extension := filepath.Ext(base.CanonicalPath)
+	// first look up our own custom mime type mappings
+	mimeType := customMimeMappings[strings.ToLower(extension)]
+	// then fall back to system mime type mappings
+	if mimeType == "" {
+		mimeType = mime.TypeByExtension(extension)
+	}
+	// lastly, fall back to application/octet-stream in the absense of any other value
 	if mimeType == "" {
 		// application/octet-stream is the mime type for "unknown"
 		mimeType = "application/octet-stream"
