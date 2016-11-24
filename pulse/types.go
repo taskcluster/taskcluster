@@ -71,14 +71,6 @@ type (
 			// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/properties/channel
 			Channel string `json:"channel,omitempty"`
 
-			// IRC message to send as plain text.
-			//
-			// Min length: 1
-			// Max length: 510
-			//
-			// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/properties/message
-			Message string `json:"message"`
-
 			// User to post the message to. Please note that you **must** supply
 			// either `user` or `channel`, you cannot supply both.
 			//
@@ -146,50 +138,10 @@ type (
 			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/address
 			Address string `json:"address"`
 
-			// Content of the e-mail as **markdown**, will be rendered to HTML before
-			// the email is sent. Notice that markdown allows for a few HTML tags, but
-			// won't allow inclusion of script tags and other unpleasantries.
-			//
-			// Min length: 1
-			// Max length: 102400
-			//
-			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/content
-			Content string `json:"content"`
-
-			// Optional link that can be added as a button to the email.
-			//
-			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/link
-			Link struct {
-
-				// Where the link should point to.
-				//
-				// Min length: 1
-				// Max length: 1024
-				//
-				// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/link/properties/href
-				Href string `json:"href"`
-
-				// Text to display on link.
-				//
-				// Min length: 1
-				// Max length: 40
-				//
-				// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/link/properties/text
-				Text string `json:"text"`
-			} `json:"link,omitempty"`
-
 			// Reply-to e-mail (this property is optional)
 			//
 			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/replyTo
 			ReplyTo string `json:"replyTo,omitempty"`
-
-			// Subject line of the e-mail, this is plain-text
-			//
-			// Min length: 1
-			// Max length: 255
-			//
-			// See http://schemas.taskcluster.net/pulse/v1/email-request.json#/properties/payload/properties/subject
-			Subject string `json:"subject"`
 		} `json:"payload"`
 	}
 
