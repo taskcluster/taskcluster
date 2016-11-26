@@ -345,7 +345,7 @@ func (p *Properties) postPopulate(job *Job) error {
 		propTypeNames := make(map[string]bool)
 		for _, j := range p.SortedPropertyNames {
 			p.MemberNames[j] = job.MemberNameGenerator(j, !job.HideStructMembers, members)
-			job.SetPropertyTypeName(p.Properties[j], propTypeNames)
+			job.SetTypeName(p.Properties[j], propTypeNames)
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[j].postPopulate(job)
 			if err != nil {
@@ -356,13 +356,12 @@ func (p *Properties) postPopulate(job *Job) error {
 	return nil
 }
 
-func (job *Job) SetPropertyTypeName(subSchema *JsonSubSchema, propTypeNames map[string]bool) {
-	if subSchema.Properties != nil {
-		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, propTypeNames)
-	}
+func (job *Job) SetTypeName(subSchema *JsonSubSchema, blacklist map[string]bool) {
+	// Type names only need to be set for objects and arrays, everything else is a primitive type
+	subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, blacklist)
 	if subSchema.Items != nil {
 		subSchema.Items.PropertyName = subSchema.PropertyName + " entry"
-		job.SetPropertyTypeName(subSchema.Items, propTypeNames)
+		job.SetTypeName(subSchema.Items, blacklist)
 	}
 }
 
@@ -434,10 +433,10 @@ func (items *Items) postPopulate(job *Job) error {
 
 func (subSchema *JsonSubSchema) TypeNameRaw() string {
 	switch {
-	case subSchema.PropertyName != "" && len(subSchema.PropertyName) < 40:
-		return subSchema.PropertyName
 	case subSchema.Title != nil && *subSchema.Title != "" && len(*subSchema.Title) < 40:
 		return *subSchema.Title
+	case subSchema.PropertyName != "" && len(subSchema.PropertyName) < 40:
+		return subSchema.PropertyName
 	case subSchema.Description != nil && *subSchema.Description != "" && len(*subSchema.Description) < 40:
 		return *subSchema.Description
 	case subSchema.RefSubSchema != nil && subSchema.RefSubSchema.TypeName != "":
@@ -454,7 +453,7 @@ func (job *Job) add(subSchema *JsonSubSchema) {
 	}
 	job.result.SchemaSet.used[subSchema.SourceURL] = subSchema
 	if subSchema.TypeName == "" {
-		subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, job.TypeNameBlacklist)
+		job.SetTypeName(subSchema, job.TypeNameBlacklist)
 		job.result.SchemaSet.TypeNames[subSchema.TypeName] = true
 	}
 }
@@ -707,6 +706,9 @@ package ` + job.Package + `
 		content += jsonRawMessageImplementors(rawMessageTypes)
 		// format it
 		job.result.SourceCode, err = format.Source([]byte(content))
+		if err != nil {
+			err = fmt.Errorf("Formatting error: %v\n%v", err, content)
+		}
 		// imports should be good, so no need to run
 		// https://godoc.org/golang.org/x/tools/imports#Process
 	}
