@@ -116,7 +116,7 @@ Expand-ZIPFile -File "C:\go1.7.3.windows-386.zip" -Destination "C:\" -Url "https
 
 # set permanent env vars
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
-[Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd;C:\Program Files\nodejs", "Machine")
+[Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\Program Files\Vim\vim80;C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd;C:\Program Files\nodejs", "Machine")
 [Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "Machine")
 
 # upgrade python libraries
