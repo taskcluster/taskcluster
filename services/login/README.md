@@ -12,10 +12,8 @@ Supported authentication systems:
    supplies multi-factor auth and a host of other benefits.  This expects a
    `taskcluster-email` property in the SAML assertion, giving the user's
    LDAP email.  User identities are of the form `mozilla-ldap/<email>`.
- * Persona - A very basic verification that the user owns an email address.
-   User identities are of the form `persona/<email>`.
- * Passwordless - Similar to persona, but not deprecated.  User identities are
-   of the form `email/<email>`.
+ * Passwordless - Validates email addresses by sending a code.  User identities
+   are of the form `email/<email>`.
 
 Supported authorization systems:
  * LDAP - Translates LDAP groups (including POSIX groups) to TaskCluster roles
@@ -31,7 +29,7 @@ each group.
 Authorization systems look at the identity provided by the authentication
 system, so for example the Mozillians authorization trusts identities from SSO,
 and will issue appropriate groups for a user who authenticated via either SSO
-or Persona.
+or Passwordless.
 
 We restrict LDAP and Mozillians groups under consideration to a fixed set of
 groups, configured with environment variables so new ones are easy to add.

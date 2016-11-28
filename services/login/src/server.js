@@ -14,7 +14,6 @@ import taskcluster from 'taskcluster-client'
 import flash from 'connect-flash'
 import scanner from './scanner'
 import Authorizer from './authz'
-import PersonaVerifier from './persona'
 import v1 from './v1'
 import LDAPClient from './ldap'
 import tcApp from 'taskcluster-lib-app'
@@ -38,15 +37,6 @@ let load = loader({
       let authorizer = new Authorizer(cfg);
       await authorizer.setup();
       return authorizer;
-    },
-  },
-
-  personaVerifier: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      return new PersonaVerifier({
-        allowedAudiences: cfg.persona.allowedAudiences,
-      });
     },
   },
 
@@ -96,8 +86,8 @@ let load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'raven', 'authorizer', 'personaVerifier'],
-    setup: ({cfg, validator, raven, authorizer, personaVerifier}) => {
+    requires: ['cfg', 'validator', 'raven', 'authorizer'],
+    setup: ({cfg, validator, raven, authorizer}) => {
       return v1.setup({
         context: {},
         validator,
@@ -110,7 +100,6 @@ let load = loader({
         context: {
           temporaryCredentials: cfg.app.temporaryCredentials,
           authorizer,
-          personaVerifier,
         }
       });
     },
@@ -149,7 +138,7 @@ let load = loader({
       app.set('views', path.join(__dirname, '..', 'views'));
       app.set('view engine', 'jade');
 
-      // Parse request bodies (required for passport-persona)
+      // Parse request bodies
       app.use(bodyParser.urlencoded({extended: false}));
 
       // Store session in a signed cookie
