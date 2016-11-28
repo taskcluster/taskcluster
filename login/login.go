@@ -14,19 +14,6 @@
 // with TaskCluster, this is probably *not* the service you are looking for.
 // Instead, use the federated login support in the tools site.
 //
-// The API methods described here issue temporary credentials based on
-// an assertion.  The assertion identifies the user, usually with an
-// email-like string.  This string is then passed through a series of
-// authorizers, each of which may supply scopes to be included in the
-// credentials. Finally, the service generates temporary credentials based
-// on those scopes.
-//
-// The generated credentials include scopes to create new, permanent clients
-// with names based on the user's identifier.  These credentials are
-// periodically scanned for scopes that the user does not posess, and disabled
-// if such scopes are discovered.  Thus users can create long-lived credentials
-// that are only usable until the user's access level is reduced.
-//
 // See: https://docs.taskcluster.net/reference/core/login/api-docs
 //
 // How to use this package
@@ -37,7 +24,7 @@
 //
 // and then call one or more of myLogin's methods, e.g.:
 //
-//  data, err := myLogin.CredentialsFromPersonaAssertion(.....)
+//  err := myLogin.Ping(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -47,7 +34,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Sat, 26 Nov 2016 at 18:42:00 UTC. The code was generated
+// Mon, 28 Nov 2016 at 21:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 
@@ -67,10 +54,10 @@ type Login tcclient.ConnectionData
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
-//  myLogin := login.New(creds)                                   // set credentials
-//  myLogin.Authenticate = false                                  // disable authentication (creds above are now ignored)
-//  myLogin.BaseURL = "http://localhost:1234/api/Login/v1"        // alternative API endpoint (production by default)
-//  data, err := myLogin.CredentialsFromPersonaAssertion(.....)   // for example, call the CredentialsFromPersonaAssertion(.....) API endpoint (described further down)...
+//  myLogin := login.New(creds)                              // set credentials
+//  myLogin.Authenticate = false                             // disable authentication (creds above are now ignored)
+//  myLogin.BaseURL = "http://localhost:1234/api/Login/v1"   // alternative API endpoint (production by default)
+//  err := myLogin.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -81,21 +68,6 @@ func New(credentials *tcclient.Credentials) *Login {
 		Authenticate: true,
 	})
 	return &myLogin
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
-// Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.
-//
-// The supplied audience must be on a whitelist of TaskCluster-related
-// sites configured in the login service.  This is not a general-purpose
-// assertion-verification service!
-//
-// See https://docs.taskcluster.net/reference/core/login/api-docs#credentialsFromPersonaAssertion
-func (myLogin *Login) CredentialsFromPersonaAssertion(payload *PersonaAssertionRequest) (*CredentialsResponse, error) {
-	cd := tcclient.ConnectionData(*myLogin)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/persona", new(CredentialsResponse), nil)
-	return responseObject.(*CredentialsResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***
