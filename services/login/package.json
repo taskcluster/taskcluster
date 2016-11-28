@@ -33,7 +33,6 @@
     "passport": "^0.3.0",
     "passport-auth0": "^0.5.2",
     "passport-local": "^1.0.0",
-    "passport-persona": "github:jonasfj/passport-persona",
     "passport-saml": "^0.15.0",
     "promise": "^7.0.4",
     "raven": "^0.12.1",
