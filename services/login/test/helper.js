@@ -21,23 +21,6 @@ class FakeAuthorizer {
   }
 }
 
-class FakePersonaVerifier {
-  constructor() {
-    this.error = null;
-    this.expectedAssertion = "abcd";
-    this.expectedAudience = "https://tools.taskcluster.net:443";
-  }
-
-  async verify(assertion, audience) {
-    assume(assertion).to.equal(this.expectedAssertion);
-    assume(audience).to.equal(this.expectedAudience);
-    if (this.error) {
-      throw this.error;
-    }
-    return "nobody@persona.org";
-  }
-}
-
 // Call this in suites or tests that make API calls, etc; it will set up
 // what's required to respond to those calls.
 helper.setup = function(options) {
@@ -45,12 +28,10 @@ helper.setup = function(options) {
   var webServer = null;
 
   helper.authorizer = new FakeAuthorizer();
-  helper.personaVerifier = new FakePersonaVerifier();
   var loadOptions = {
     profile: 'test',
     process: 'test-helper',
     authorizer: helper.authorizer,
-    personaVerifier: helper.personaVerifier,
   };
 
   // Setup before tests

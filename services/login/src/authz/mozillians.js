@@ -15,8 +15,8 @@ class MozilliansAuthorizer {
     this.mozillians = new Mozillians(options.cfg.mozillians.apiKey);
     this.allowedGroups = options.cfg.mozillians.allowedGroups;
 
-    // trust persona, email, and ldap-authenticated users
-    this.identityProviders = ['mozilla-ldap', 'persona', 'email'];
+    // trust email, and ldap-authenticated users
+    this.identityProviders = ['mozilla-ldap', 'email'];
   }
 
   async setup() {
