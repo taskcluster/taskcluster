@@ -134,12 +134,13 @@ definitions:
           scope `queue:get-artifact:<artifact-name>` to use this cache.
       content:
         title: Content
-        description: Optional content to be loaded when initially creating the cache.
+        description: Optional content to be preloaded when initially creating the
+          cache (if set, `format` must also be provided).
         "$ref": "#/definitions/content"
       format:
         title: Format
         type: string
-        description: Archive format of content for writable directory cache
+        description: Archive format of the preloaded content (if `content` provided).
         enum:
         - rar
         - tar.bz2
