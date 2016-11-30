@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	// "net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
@@ -85,6 +86,10 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 			}
 		}
 		resp, err := (&http.Client{}).Do(callSummary.HTTPRequest)
+		// b, e := httputil.DumpResponse(resp, true)
+		// if e == nil {
+		// 	fmt.Println(string(b))
+		// }
 		return resp, err, nil
 	}
 
