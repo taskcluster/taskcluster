@@ -355,7 +355,12 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 			if t.HttpResponseCode/100 == 5 {
 				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
 			} else {
-				// if not a 5xx error, then a problem with the request == worker bug
+				// if not a 5xx error, then either task cancelled, or a problem with the request == worker bug
+				task.StatusManager.UpdateStatus()
+				status := task.StatusManager.LastKnownStatus()
+				if status == deadlineExceeded || status == cancelled {
+					return nil
+				}
 				panic(fmt.Errorf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
 			}
 		default:

@@ -14,14 +14,16 @@ import (
 // Enumerate task status to aid life-cycle decision making
 // Use strings for benefit of simple logging/reporting
 const (
-	unclaimed TaskStatus = "Unclaimed"
-	claimed   TaskStatus = "Claimed"
-	reclaimed TaskStatus = "Reclaimed"
-	aborted   TaskStatus = "Aborted"
-	cancelled TaskStatus = "Cancelled"
-	succeeded TaskStatus = "Succeeded"
-	failed    TaskStatus = "Failed"
-	errored   TaskStatus = "Errored"
+	unclaimed        TaskStatus = "Unclaimed"
+	claimed          TaskStatus = "Claimed"
+	reclaimed        TaskStatus = "Reclaimed"
+	aborted          TaskStatus = "Aborted"
+	cancelled        TaskStatus = "Cancelled"
+	succeeded        TaskStatus = "Succeeded"
+	failed           TaskStatus = "Failed"
+	errored          TaskStatus = "Errored"
+	unknown          TaskStatus = "Unknown"
+	deadlineExceeded TaskStatus = "Deadline Exceeded"
 )
 
 const (
@@ -38,7 +40,16 @@ type TaskStatusManager struct {
 	task *TaskRun
 }
 
-func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
+type TaskStatusUpdateError struct {
+	Message       string
+	CurrentStatus TaskStatus
+}
+
+func (ue *TaskStatusUpdateError) Error() string {
+	return ue.Message + " (current status: " + string(ue.CurrentStatus) + ")"
+}
+
+func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		errored,
 		func(task *TaskRun) error {
@@ -59,7 +70,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 	)
 }
 
-func (tsm *TaskStatusManager) ReportFailed() error {
+func (tsm *TaskStatusManager) ReportFailed() *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		failed,
 		func(task *TaskRun) error {
@@ -79,7 +90,7 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 	)
 }
 
-func (tsm *TaskStatusManager) ReportCompleted() error {
+func (tsm *TaskStatusManager) ReportCompleted() *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		succeeded,
 		func(task *TaskRun) error {
@@ -99,7 +110,7 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 	)
 }
 
-func (tsm *TaskStatusManager) Claim() error {
+func (tsm *TaskStatusManager) Claim() *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		claimed,
 		func(task *TaskRun) error {
@@ -152,7 +163,7 @@ func (tsm *TaskStatusManager) Claim() error {
 	)
 }
 
-func (tsm *TaskStatusManager) Reclaim() error {
+func (tsm *TaskStatusManager) Reclaim() *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		reclaimed,
 		func(task *TaskRun) error {
@@ -168,9 +179,7 @@ func (tsm *TaskStatusManager) Reclaim() error {
 			}
 
 			task.TaskReclaimResponse = *tcrsp
-			// note we don't need to worry about a mutex here since either old
-			// value or new value can be used for some crossover time, and the
-			// update should be atomic
+			// TODO: probably should use a mutex here
 			task.Queue = queue.New(&tcclient.Credentials{
 				ClientID:    tcrsp.Credentials.ClientID,
 				AccessToken: tcrsp.Credentials.AccessToken,
@@ -184,7 +193,7 @@ func (tsm *TaskStatusManager) Reclaim() error {
 	)
 }
 
-func (tsm *TaskStatusManager) Abort() error {
+func (tsm *TaskStatusManager) Abort() *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
@@ -203,7 +212,7 @@ func (tsm *TaskStatusManager) Abort() error {
 	)
 }
 
-func (tsm *TaskStatusManager) Cancel() error {
+func (tsm *TaskStatusManager) Cancel() *TaskStatusUpdateError {
 	return tsm.updateStatus(
 		cancelled,
 		func(task *TaskRun) error {
@@ -216,18 +225,65 @@ func (tsm *TaskStatusManager) Cancel() error {
 	)
 }
 
-func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) error {
+func (tsm *TaskStatusManager) LastKnownStatus() TaskStatus {
+	tsm.Lock()
+	defer tsm.Unlock()
+	return tsm.task.Status
+}
+
+// Queries the queue to get the latest status. Note, it can't recognise
+// internal states claimed/reclaimed/aborted but is useful for setting
+// failed/cancelled/pending/completed/exception.
+func (tsm *TaskStatusManager) UpdateStatus() {
+	tsm.Lock()
+	defer tsm.Unlock()
+	tsr, err := tsm.task.Queue.Status(tsm.task.TaskID)
+	if err != nil {
+		tsm.task.Status = unknown
+		return
+	}
+
+	taskStatus := tsr.Status.Runs[tsm.task.RunID]
+	switch {
+	case taskStatus.ReasonResolved == "failed":
+		tsm.task.Status = failed
+	case taskStatus.ReasonResolved == "canceled":
+		tsm.task.Status = cancelled
+	case taskStatus.ReasonResolved == "deadline-exceeded":
+		tsm.task.Status = deadlineExceeded
+	case taskStatus.State == "pending":
+		tsm.task.Status = unclaimed
+	case taskStatus.State == "completed":
+		tsm.task.Status = succeeded
+	case taskStatus.State == "exception":
+		tsm.task.Status = errored
+	}
+}
+
+func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) *TaskStatusUpdateError {
 	tsm.Lock()
 	defer tsm.Unlock()
 	currentStatus := tsm.task.Status
 	for _, allowedStatus := range fromStatuses {
 		if currentStatus == allowedStatus {
+			e := f(tsm.task)
+			if e != nil {
+				tsm.UpdateStatus()
+				return &TaskStatusUpdateError{
+					Message:       e.Error(),
+					CurrentStatus: tsm.task.Status,
+				}
+			}
 			tsm.task.Status = ts
-			return f(tsm.task)
+			return nil
 		}
 	}
-	log.Printf("Not updating status of task %v run %v from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", tsm.task.TaskID, tsm.task.RunID, tsm.task.Status, ts, ts, fromStatuses)
-	return fmt.Errorf("Not updating status from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", tsm.task.Status, ts, ts, fromStatuses)
+	warning := fmt.Sprintf("Not updating status of task %v run %v from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", tsm.task.TaskID, tsm.task.RunID, tsm.task.Status, ts, ts, fromStatuses)
+	log.Print(warning)
+	return &TaskStatusUpdateError{
+		Message:       warning,
+		CurrentStatus: tsm.task.Status,
+	}
 }
 
 func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
