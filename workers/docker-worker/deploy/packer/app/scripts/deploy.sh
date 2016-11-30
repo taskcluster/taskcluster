@@ -75,4 +75,5 @@ sudo gpg -a --export-secret-keys > docker-worker-gpg-signing-key.key
 sudo mv docker-worker-gpg-signing-key.key /etc
 
 echo "Public signing key"
-sudo gpg -a --export
+sudo gpg -a --export > /tmp/docker-worker.pub
+

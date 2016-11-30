@@ -38,6 +38,12 @@
     {
       "type":           "shell",
       "inline":         ["sudo unattended-upgrade"]
+    },
+    {
+      "type":           "file",
+      "direction":      "download",
+      "source":          "/tmp/docker-worker.pub",
+      "destination":    "docker-worker-{{build_name}}-{{timestamp}}.pub"
     }
   ],
   "builders": [
