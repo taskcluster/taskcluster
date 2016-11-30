@@ -23,11 +23,14 @@ type OSUser struct {
 }
 
 func immediateShutdown(cause string) {
-	cmd := exec.Command("shutdown", "now", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
+	if config.ShutdownMachineOnInternalError {
+		cmd := exec.Command("shutdown", "now", cause)
+		err := cmd.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+	os.Exit(64)
 }
 
 // we put this in init() instead of startup() as we want tests to be able to change
@@ -74,26 +77,29 @@ func install(arguments map[string]interface{}) (err error) {
 
 func (task *TaskRun) EnvVars() []string {
 	workerEnv := os.Environ()
-	taskEnv := []string{}
+	taskEnv := map[string]string{}
+	taskEnvArray := []string{}
 	for _, j := range workerEnv {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
-			// log.Printf("Setting env var: %v", j)
-			taskEnv = append(taskEnv, j)
+			spl := strings.SplitN(j, "=", 2)
+			if len(spl) != 2 {
+				panic(fmt.Errorf("Could not interpret string %q as `key=value`", j))
+			}
+			taskEnv[spl[0]] = spl[1]
 		}
 	}
 	if task.Payload.Env != nil {
-		envVars := map[string]string{}
-		err := json.Unmarshal(task.Payload.Env, &envVars)
+		err := json.Unmarshal(task.Payload.Env, &taskEnv)
 		if err != nil {
 			panic(err)
 		}
-		for i, j := range envVars {
-			// log.Printf("Setting env var: %v=%v", i, j)
-			taskEnv = append(taskEnv, i+"="+j)
-		}
 	}
-	log.Printf("Environment: %v", taskEnv)
-	return taskEnv
+	taskEnv["TASK_ID"] = task.TaskID
+	for i, j := range taskEnv {
+		taskEnvArray = append(taskEnvArray, i+"="+j)
+	}
+	log.Printf("Environment: %#v", taskEnvArray)
+	return taskEnvArray
 }
 
 func makeDirReadable(dir string) error {

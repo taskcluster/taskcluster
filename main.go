@@ -415,9 +415,7 @@ func runWorker() {
 			log.Print(string(debug.Stack()))
 			cause := fmt.Sprintf("%v", r)
 			log.Print("Cause: " + cause)
-			if config.ShutdownMachineOnInternalError {
-				immediateShutdown(cause)
-			}
+			immediateShutdown(cause)
 		}
 	}()
 	// Queue is the object we will use for accessing queue api
@@ -465,10 +463,7 @@ func runWorker() {
 			if config.IdleShutdownTimeoutSecs > 0 {
 				idleTime := time.Now().Sub(lastActive)
 				if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
-					if config.ShutdownMachineOnInternalError {
-						immediateShutdown(fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime))
-					}
-					break
+					immediateShutdown(fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime))
 				}
 			}
 		} else {

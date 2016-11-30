@@ -35,11 +35,14 @@ type OSUser struct {
 }
 
 func immediateShutdown(cause string) {
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
+	if config.ShutdownMachineOnInternalError {
+		cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
+		err := cmd.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+	os.Exit(64)
 }
 
 func exceptionOrFailure(errCommand error) *CommandExecutionError {
@@ -274,6 +277,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 				contents += "set " + envVar + "=" + envValue + "\r\n"
 			}
 		}
+		contents += "set TASK_ID=" + task.TaskID + "\r\n"
 		contents += "cd \"" + TaskUser.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command

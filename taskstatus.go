@@ -237,6 +237,11 @@ func (tsm *TaskStatusManager) LastKnownStatus() TaskStatus {
 func (tsm *TaskStatusManager) UpdateStatus() {
 	tsm.Lock()
 	defer tsm.Unlock()
+	tsm.queryQueueForLatestStatus()
+}
+
+func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
+	log.Printf("Querying queue to get latest status for task %v...", tsm.task.TaskID)
 	tsr, err := tsm.task.Queue.Status(tsm.task.TaskID)
 	if err != nil {
 		tsm.task.Status = unknown
@@ -258,6 +263,7 @@ func (tsm *TaskStatusManager) UpdateStatus() {
 	case taskStatus.State == "exception":
 		tsm.task.Status = errored
 	}
+	log.Printf("Latest status: %v", tsm.task.Status)
 }
 
 func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) *TaskStatusUpdateError {
@@ -268,7 +274,7 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 		if currentStatus == allowedStatus {
 			e := f(tsm.task)
 			if e != nil {
-				tsm.UpdateStatus()
+				tsm.queryQueueForLatestStatus()
 				return &TaskStatusUpdateError{
 					Message:       e.Error(),
 					CurrentStatus: tsm.task.Status,

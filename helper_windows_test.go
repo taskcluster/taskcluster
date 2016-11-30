@@ -55,6 +55,12 @@ func sleep(seconds uint) []string {
 	}
 }
 
+func goRun(goFile string) []string {
+	return []string{
+		"go run \"" + goFile + "\"",
+	}
+}
+
 func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
 	// when running as a test, we can't actually issue the `net localgroup`
 	// command, so we log it instead. This checks the log that the correct

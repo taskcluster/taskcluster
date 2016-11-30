@@ -80,6 +80,16 @@ func sleep(seconds uint) [][]string {
 	}
 }
 
+func goRun(goFile string) [][]string {
+	return [][]string{
+		{
+			"go",
+			"run",
+			goFile,
+		},
+	}
+}
+
 func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
 	substring := fmt.Sprintf("Not adding user  to groups %v", groups)
 	if !strings.Contains(logtext, substring) {
