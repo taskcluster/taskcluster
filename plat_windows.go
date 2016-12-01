@@ -108,7 +108,7 @@ func deleteTaskDir(path string, user string) error {
 	return err
 }
 
-func createNewTaskUser() error {
+func prepareTaskEnvironment() error {
 	// delete old task user first...
 	if taskContext.DesktopSession != nil {
 		err := taskContext.DesktopSession.desktop.Close()
@@ -382,7 +382,7 @@ func taskCleanup() error {
 	// note if this fails, we carry on without throwing an error
 	deleteExistingOSUsers()
 	// this needs to succeed, so return an error if it doesn't
-	err := createNewTaskUser()
+	err := prepareTaskEnvironment()
 	if err != nil {
 		return err
 	}
