@@ -357,11 +357,11 @@ func (w *WritableDirectoryCache) Mount() error {
 		// bump counter
 		directoryCaches[w.CacheName].Hits++
 		// move it into place...
-		err := RenameCrossDevice(directoryCaches[w.CacheName].Location, filepath.Join(TaskUser.TaskDir, w.Directory))
+		err := RenameCrossDevice(directoryCaches[w.CacheName].Location, filepath.Join(taskContext.TaskDir, w.Directory))
 		if err != nil {
 			return fmt.Errorf("Not able to rename dir: %v", err)
 		}
-		err = makeDirReadable(filepath.Join(TaskUser.TaskDir, w.Directory))
+		err = makeDirReadable(filepath.Join(taskContext.TaskDir, w.Directory))
 		if err != nil {
 			return fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err)
 		}
@@ -383,14 +383,14 @@ func (w *WritableDirectoryCache) Mount() error {
 		if err != nil {
 			return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 		}
-		err = extract(c, w.Format, filepath.Join(TaskUser.TaskDir, w.Directory))
+		err = extract(c, w.Format, filepath.Join(taskContext.TaskDir, w.Directory))
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 	// no preloaded content => just create dir in place
-	err := os.MkdirAll(filepath.Join(TaskUser.TaskDir, w.Directory), 0777)
+	err := os.MkdirAll(filepath.Join(taskContext.TaskDir, w.Directory), 0777)
 	if err != nil {
 		return fmt.Errorf("Not able to create dir: %v", err)
 	}
@@ -399,8 +399,8 @@ func (w *WritableDirectoryCache) Mount() error {
 
 func (w *WritableDirectoryCache) Unmount() error {
 	cacheDir := directoryCaches[w.CacheName].Location
-	log.Printf("Moving %q to %q", filepath.Join(TaskUser.TaskDir, w.Directory), cacheDir)
-	err := RenameCrossDevice(filepath.Join(TaskUser.TaskDir, w.Directory), cacheDir)
+	log.Printf("Moving %q to %q", filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
+	err := RenameCrossDevice(filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
 	if err != nil {
 		return err
 	}
@@ -416,7 +416,7 @@ func (r *ReadOnlyDirectory) Mount() error {
 	if err != nil {
 		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 	}
-	return extract(c, r.Format, filepath.Join(TaskUser.TaskDir, r.Directory))
+	return extract(c, r.Format, filepath.Join(taskContext.TaskDir, r.Directory))
 }
 
 // Nothing to do - original archive file wasn't moved
@@ -433,7 +433,7 @@ func (f *FileMount) Mount() error {
 	if err != nil {
 		return err
 	}
-	file := filepath.Join(TaskUser.TaskDir, f.File)
+	file := filepath.Join(taskContext.TaskDir, f.File)
 	parentDir := filepath.Dir(file)
 	err = os.MkdirAll(parentDir, 0777)
 	if err != nil {

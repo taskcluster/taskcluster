@@ -29,7 +29,7 @@ func setup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Test failed during setup phase!")
 	}
-	TaskUser.TaskDir = filepath.Join(cwd, "testdata")
+	taskContext.TaskDir = filepath.Join(cwd, "testdata")
 
 	// configure the worker
 	config = &Config{

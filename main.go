@@ -39,7 +39,7 @@ var (
 	configureForAws bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
-	TaskUser *OSUser = &OSUser{}
+	taskContext *TaskContext = &TaskContext{}
 	// Queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue       *queue.Queue
@@ -979,7 +979,7 @@ func (task *TaskRun) kill() {
 }
 
 func (task *TaskRun) createLogFile() io.WriteCloser {
-	absLogFile := filepath.Join(TaskUser.TaskDir, "public", "logs", "live_backing.log")
+	absLogFile := filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log")
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		panic(err)

@@ -23,26 +23,28 @@ func deleteTaskDir(path string, user string) error {
 	return nil
 }
 
-func createNewTaskUser() error {
+func createNewTaskContext() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 	password := generatePassword()
-	TaskUser = &OSUser{
-		TaskDir:  "/Users/" + userName,
-		Name:     userName,
-		Password: password,
+	taskContext = &TaskContext{
+		TaskDir: "/Users/" + userName,
+		User: &OSUser{
+			Name:     userName,
+			Password: password,
+		},
 	}
-	err := TaskUser.createNewOSUser()
+	err := taskContext.User.createNewOSUser()
 	if err != nil {
 		return err
 	}
 	// store password
-	err = ioutil.WriteFile(filepath.Join(TaskUser.TaskDir, "_Passw0rd"), []byte(TaskUser.Password), 0666)
+	err = ioutil.WriteFile(filepath.Join(taskContext.TaskDir, "_Passw0rd"), []byte(taskContext.User.Password), 0666)
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0777)
+	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {
@@ -69,7 +71,7 @@ func (user *OSUser) createNewOSUser() error {
 		echo "User '${username}' created."
 	`
 
-	out, err := exec.Command("sudo", "/bin/bash", "-c", createUserScript, user.Name, user.TaskDir, user.Name+" User", user.Password).Output()
+	out, err := exec.Command("sudo", "/bin/bash", "-c", createUserScript, user.Name, user.HomeDir, user.Name+" User", user.Password).Output()
 	log.Print(string(out))
 	return err
 }

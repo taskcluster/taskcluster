@@ -27,11 +27,19 @@ import (
 )
 
 type OSUser struct {
-	TaskDir   string
-	Name      string
-	Password  string
+	Name     string
+	Password string
+}
+
+type DesktopSession struct {
+	User      *OSUser
 	loginInfo *subprocess.LoginInfo
 	desktop   *platform.ContesterDesktop
+}
+
+type TaskContext struct {
+	TaskDir        string
+	DesktopSession *DesktopSession
 }
 
 func immediateShutdown(cause string) {
@@ -102,8 +110,8 @@ func deleteTaskDir(path string, user string) error {
 
 func createNewTaskUser() error {
 	// delete old task user first...
-	if TaskUser.desktop != nil {
-		err := TaskUser.desktop.Close()
+	if taskContext.DesktopSession.desktop != nil {
+		err := taskContext.DesktopSession.desktop.Close()
 		if err != nil {
 			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
 		}
@@ -113,25 +121,35 @@ func createNewTaskUser() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
 	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
-	password := generatePassword()
-	TaskUser = &OSUser{
-		TaskDir:  filepath.Join(config.TasksDir, userName),
-		Name:     userName,
-		Password: password,
+	if config.RunTasksAsCurrentUser {
+		err := os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0700)
+		if err != nil {
+			return err
+		}
 	}
-	err := TaskUser.createNewOSUser()
+	password := generatePassword()
+	taskContext := &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, userName),
+		DesktopSession: &DesktopSession{
+			User: &OSUser{
+				Name:     userName,
+				Password: password,
+			},
+		},
+	}
+	err := taskContext.DesktopSession.User.createNewOSUser()
 	if err != nil {
 		return err
 	}
 	// create desktop and login
-	loginInfo, desktop, err := process.NewDesktopSession(TaskUser.Name, TaskUser.Password)
+	loginInfo, desktop, err := process.NewDesktopSession(taskContext.DesktopSession.User.Name, taskContext.DesktopSession.User.Password)
 	if err != nil {
 		return err
 	}
-	TaskUser.loginInfo = loginInfo
-	TaskUser.desktop = desktop
+	taskContext.DesktopSession.loginInfo = loginInfo
+	taskContext.DesktopSession.desktop = desktop
 
-	return os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0777)
+	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {
@@ -234,8 +252,8 @@ func deleteOSUserAccount(line string) {
 
 func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(TaskUser.TaskDir, commandName+"_wrapper.bat")
-	command, err := process.NewCommand(wrapper, &TaskUser.TaskDir, nil, task.maxRunTimeDeadline, TaskUser.loginInfo, TaskUser.desktop)
+	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
+	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline, taskContext.DesktopSession.loginInfo, taskContext.DesktopSession.desktop)
 	if err != nil {
 		return err
 	}
@@ -247,11 +265,11 @@ func (task *TaskRun) generateCommand(index int) error {
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
-	env := filepath.Join(TaskUser.TaskDir, "env.txt")
-	dir := filepath.Join(TaskUser.TaskDir, "dir.txt")
+	env := filepath.Join(taskContext.TaskDir, "env.txt")
+	dir := filepath.Join(taskContext.TaskDir, "dir.txt")
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(TaskUser.TaskDir, commandName+"_wrapper.bat")
-	script := filepath.Join(TaskUser.TaskDir, commandName+".bat")
+	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
+	script := filepath.Join(taskContext.TaskDir, commandName+".bat")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
@@ -278,7 +296,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			}
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
-		contents += "cd \"" + TaskUser.TaskDir + "\"" + "\r\n"
+		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
 	} else {
@@ -361,12 +379,9 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 }
 
 func taskCleanup() error {
-	if config.RunTasksAsCurrentUser {
-		err := os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0700)
-		if err != nil {
-			return err
-		}
-		return nil
+	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
+	taskContext = &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, userName),
 	}
 	// note if this fails, we carry on without throwing an error
 	deleteExistingOSUsers()
@@ -390,12 +405,11 @@ func install(arguments map[string]interface{}) (err error) {
 	if password == "" {
 		password = generatePassword()
 	}
-	user := OSUser{
+	user := &OSUser{
 		Name:     username,
 		Password: password,
-		TaskDir:  filepath.Dir(exePath),
 	}
-	fmt.Println("User: " + user.Name + ", Password: " + user.Password + ", TaskDir: " + user.TaskDir)
+	fmt.Println("User: " + user.Name + ", Password: " + user.Password)
 
 	err = user.ensureUserAccount()
 	if err != nil {
@@ -414,9 +428,10 @@ func install(arguments map[string]interface{}) (err error) {
 	case arguments["service"]:
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
-		return deployService(&user, configFile, nssm, serviceName, exePath)
+		dir := filepath.Dir(exePath)
+		return deployService(user, configFile, nssm, serviceName, exePath, dir)
 	case arguments["startup"]:
-		return deployStartup(&user, configFile, exePath)
+		return deployStartup(user, configFile, exePath)
 	}
 	log.Fatal("Unknown install target - neither 'service' nor 'startup' have been specified")
 	return nil
@@ -546,11 +561,11 @@ func deployStartup(user *OSUser, configFile string, exePath string) error {
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(user *OSUser, configFile string, nssm string, serviceName string, exePath string) error {
+func deployService(user *OSUser, configFile, nssm, serviceName, exePath, dir string) error {
 	return runCommands(
 		false,
 		[]string{nssm, "install", serviceName, exePath},
-		[]string{nssm, "set", serviceName, "AppDirectory", user.TaskDir},
+		[]string{nssm, "set", serviceName, "AppDirectory", dir},
 		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "--configure-for-aws", "run"},
 		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
 		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
@@ -567,8 +582,8 @@ func deployService(user *OSUser, configFile string, nssm string, serviceName str
 		[]string{nssm, "set", serviceName, "AppThrottle", "1500"},
 		[]string{nssm, "set", serviceName, "AppExit", "Default", "Restart"},
 		[]string{nssm, "set", serviceName, "AppRestartDelay", "0"},
-		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(user.TaskDir, "generic-worker.log")},
-		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(user.TaskDir, "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(dir, "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(dir, "generic-worker.log")},
 		[]string{nssm, "set", serviceName, "AppStdoutCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppStderrCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppRotateFiles", "1"},
@@ -643,7 +658,7 @@ func (task *TaskRun) formatCommand(index int) string {
 func makeDirReadable(dir string) error {
 	return runCommands(
 		false,
-		[]string{"icacls", dir, "/grant:r", TaskUser.Name + ":(OI)(CI)F"},
+		[]string{"icacls", dir, "/grant:r", taskContext.DesktopSession.User.Name + ":(OI)(CI)F"},
 	)
 }
 
@@ -651,7 +666,7 @@ func makeDirReadable(dir string) error {
 func makeDirUnreadable(dir string) error {
 	return runCommands(
 		false,
-		[]string{"icacls", dir, "/remove:g", TaskUser.Name},
+		[]string{"icacls", dir, "/remove:g", taskContext.DesktopSession.User.Name},
 	)
 }
 
@@ -679,10 +694,10 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 	}
 	commands := make([][]string, len(groups), len(groups))
 	for i, group := range groups {
-		commands[i] = []string{"net", "localgroup", group, "/add", TaskUser.Name}
+		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}
 	}
 	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user %v to groups %v since we are running as current user. Skipping following commands:", TaskUser.Name, groups)
+		task.Logf("Not adding user %v to groups %v since we are running as current user. Skipping following commands:", taskContext.DesktopSession.User.Name, groups)
 		for _, command := range commands {
 			task.Logf("%#v", command)
 		}

@@ -74,9 +74,9 @@ func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 }
 
 func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
-	logFile := filepath.Join(TaskUser.TaskDir, "public", "logs", "live_backing.log")
-	certifiedLogFile := filepath.Join(TaskUser.TaskDir, "public", "logs", "certified.log")
-	signedCert := filepath.Join(TaskUser.TaskDir, "public", "logs", "chainOfTrust.json.asc")
+	logFile := filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log")
+	certifiedLogFile := filepath.Join(taskContext.TaskDir, "public", "logs", "certified.log")
+	signedCert := filepath.Join(taskContext.TaskDir, "public", "logs", "chainOfTrust.json.asc")
 	e := copyFileContents(logFile, certifiedLogFile)
 	if e != nil {
 		panic(e)
@@ -160,7 +160,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 }
 
 func calculateHash(artifact S3Artifact) (hash string, err error) {
-	rawContentFile := filepath.Join(TaskUser.TaskDir, artifact.Base().CanonicalPath)
+	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Base().CanonicalPath)
 	rawContent, err := os.Open(rawContentFile)
 	if err != nil {
 		return

@@ -17,9 +17,14 @@ import (
 )
 
 type OSUser struct {
-	TaskDir  string
+	HomeDir  string
 	Name     string
 	Password string
+}
+
+type TaskContext struct {
+	TaskDir string
+	User    *OSUser
 }
 
 func immediateShutdown(cause string) {
@@ -41,16 +46,14 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	TaskUser = &OSUser{
-		TaskDir:  pwd,
-		Name:     "",
-		Password: "",
+	taskContext = &TaskContext{
+		TaskDir: pwd,
 	}
 }
 
 func startup() error {
 	log.Printf("Detected %s platform", runtime.GOOS)
-	return os.MkdirAll(filepath.Join(TaskUser.TaskDir, "public", "logs"), 0700)
+	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0700)
 }
 
 func (task *TaskRun) prepareCommand(index int) error {
@@ -59,7 +62,7 @@ func (task *TaskRun) prepareCommand(index int) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], TaskUser.TaskDir, task.EnvVars())
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars())
 	if err != nil {
 		return err
 	}
@@ -123,10 +126,10 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 		return nil
 	}
 	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user %v to groups %v since we are running as current user.", TaskUser.Name, groups)
+		task.Logf("Not adding user to groups %v since we are running as current user.", groups)
 		return nil
 	}
-	return fmt.Errorf("Not able to add groups %v to user %v on platform %v - feature not supported.", groups, TaskUser.Name, runtime.GOOS)
+	return fmt.Errorf("Not able to add groups %v to user on platform %v - feature not supported.", groups, runtime.GOOS)
 }
 
 func (task *TaskRun) formatCommand(index int) string {
