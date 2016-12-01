@@ -560,6 +560,9 @@ func makeDirReadable(dir string) error {
 
 // see http://ss64.com/nt/icacls.html
 func makeDirUnreadable(dir string) error {
+	if taskContext.DesktopSession == nil {
+		return nil
+	}
 	return runtime.RunCommands(
 		false,
 		[]string{"icacls", dir, "/remove:g", taskContext.DesktopSession.User.Name},
