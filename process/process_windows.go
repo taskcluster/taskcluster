@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/runlib/platform"
 	"github.com/taskcluster/runlib/subprocess"
 )
@@ -70,6 +71,12 @@ type Command struct {
 type Result struct {
 	*subprocess.SubprocessResult
 	SystemError error
+}
+
+type DesktopSession struct {
+	User      *runtime.OSUser
+	LoginInfo *subprocess.LoginInfo
+	Desktop   *platform.ContesterDesktop
 }
 
 func (r *Result) Succeeded() bool {
@@ -140,15 +147,17 @@ func NewDesktopSession(username, password string) (*subprocess.LoginInfo, *platf
 	return loginInfo, desktop, nil
 }
 
-func NewCommand(commandLine string, workingDirectory *string, env *[]string, deadline time.Time, loginInfo *subprocess.LoginInfo, desktop *platform.ContesterDesktop) (*Command, error) {
+func NewCommand(commandLine string, workingDirectory *string, env *[]string, deadline time.Time, desktopSession *DesktopSession) (*Command, error) {
 	if deadline.IsZero() {
 		log.Print("No deadline!")
 	} else {
 		log.Printf("Deadline: %v", deadline)
 	}
 	var desktopName string
-	if desktop != nil {
-		desktopName = desktop.DesktopName
+	var loginInfo *subprocess.LoginInfo
+	if desktopSession != nil {
+		desktopName = desktopSession.Desktop.DesktopName
+		loginInfo = desktopSession.LoginInfo
 	}
 	command := &Command{
 		Subprocess: &subprocess.Subprocess{

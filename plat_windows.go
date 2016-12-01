@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,28 +16,16 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
+	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/ntr"
-	"github.com/taskcluster/runlib/platform"
-	"github.com/taskcluster/runlib/subprocess"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 	"golang.org/x/text/encoding/unicode"
 )
 
-type OSUser struct {
-	Name     string
-	Password string
-}
-
-type DesktopSession struct {
-	User      *OSUser
-	loginInfo *subprocess.LoginInfo
-	desktop   *platform.ContesterDesktop
-}
-
 type TaskContext struct {
 	TaskDir        string
-	DesktopSession *DesktopSession
+	DesktopSession *process.DesktopSession
 }
 
 func immediateShutdown(cause string) {
@@ -88,15 +74,15 @@ func deleteTaskDir(path string, user string) error {
 		return nil
 	}
 
-	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
+	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker runtime...")
 	err := os.RemoveAll(path)
 	if err == nil {
 		return nil
 	}
 	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
-	err = runCommands(
+	log.Print("Trying to remove directory '" + path + "' via del command as GenericWorker runtime...")
+	err = runtime.RunCommands(
 		false,
 		[]string{
 			"cmd", "/c", "del", "/s", "/q", "/f", path,
@@ -111,7 +97,7 @@ func deleteTaskDir(path string, user string) error {
 func prepareTaskEnvironment() error {
 	// delete old task user first...
 	if taskContext.DesktopSession != nil {
-		err := taskContext.DesktopSession.desktop.Close()
+		err := taskContext.DesktopSession.Desktop.Close()
 		if err != nil {
 			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
 		}
@@ -126,11 +112,11 @@ func prepareTaskEnvironment() error {
 	}
 	if !config.RunTasksAsCurrentUser {
 		// create user
-		user := &OSUser{
+		user := &runtime.OSUser{
 			Name:     dir,
 			Password: generatePassword(),
 		}
-		err := user.createNewOSUser()
+		err := user.CreateNew()
 		if err != nil {
 			return err
 		}
@@ -139,45 +125,13 @@ func prepareTaskEnvironment() error {
 		if err != nil {
 			return err
 		}
-		taskContext.DesktopSession = &DesktopSession{
+		taskContext.DesktopSession = &process.DesktopSession{
 			User:      user,
-			loginInfo: loginInfo,
-			desktop:   desktop,
+			LoginInfo: loginInfo,
+			Desktop:   desktop,
 		}
 	}
 	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
-}
-
-func (user *OSUser) createNewOSUser() error {
-	return user.createOSUserAccountForce(false)
-}
-
-func (user *OSUser) createOSUserAccountForce(okIfExists bool) error {
-	log.Print("Creating Windows User " + user.Name + "...")
-	userExisted, err := allowError(
-		"The account already exists",
-		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
-	)
-	if err != nil {
-		return err
-	}
-	if !okIfExists && userExisted {
-		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
-	}
-	err = runCommands(
-		userExisted,
-		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
-		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
-	)
-	// if user existed, the above commands can fail
-	// if it didn't, they can't
-	if !userExisted && err != nil {
-		return err
-	}
-	if okIfExists {
-		return nil
-	}
-	return err
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -238,7 +192,7 @@ func deleteOSUserAccount(line string) {
 	if strings.HasPrefix(line, "task_") {
 		user := line
 		log.Print("Attempting to remove Windows user " + user + "...")
-		err := runCommands(false, []string{"net", "user", user, "/delete"})
+		err := runtime.RunCommands(false, []string{"net", "user", user, "/delete"})
 		if err != nil {
 			log.Print("WARNING: Could not remove Windows user account " + user)
 			log.Printf("%v", err)
@@ -249,7 +203,7 @@ func deleteOSUserAccount(line string) {
 func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
-	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline, taskContext.DesktopSession.loginInfo, taskContext.DesktopSession.desktop)
+	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline, taskContext.DesktopSession)
 	if err != nil {
 		return err
 	}
@@ -275,7 +229,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// command, and cd into it at the beginning of the subsequent command. The
 	// very first command takes the env settings from the payload, and the
 	// current directory is set to the home directory of the newly created
-	// user.
+	// runtime.
 
 	// If this is first command, take env from task payload, and cd into home
 	// directory
@@ -401,17 +355,17 @@ func install(arguments map[string]interface{}) (err error) {
 	if password == "" {
 		password = generatePassword()
 	}
-	user := &OSUser{
+	user := &runtime.OSUser{
 		Name:     username,
 		Password: password,
 	}
 	fmt.Println("User: " + user.Name + ", Password: " + user.Password)
 
-	err = user.ensureUserAccount()
+	err = user.EnsureCreated()
 	if err != nil {
 		return err
 	}
-	err = user.makeAdmin()
+	err = user.MakeAdmin()
 	if err != nil {
 		return err
 	}
@@ -433,31 +387,7 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
-// Runs command `command` with arguments `args`. If standard error from command
-// includes `errString` then true, is returned with no error. Otherwise false
-// is returned, with or without an error.
-func allowError(errString string, command string, args ...string) (bool, error) {
-	log.Print("Running command: '" + strings.Join(append([]string{command}, args...), "' '") + "'")
-	cmd := exec.Command(command, args...)
-	stderrBytes, err := Error(cmd)
-	if err != nil {
-		if strings.Contains(string(stderrBytes), errString) {
-			return true, nil
-		}
-	}
-	return false, err
-}
-
-func (user *OSUser) makeAdmin() error {
-	_, err := allowError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
-	return err
-}
-
-func (user *OSUser) ensureUserAccount() error {
-	return user.createOSUserAccountForce(true)
-}
-
-func deployStartup(user *OSUser, configFile string, exePath string) error {
+func deployStartup(user *runtime.OSUser, configFile string, exePath string) error {
 	scheduledTaskUTF8 := []byte(strings.Replace(`<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -513,7 +443,7 @@ func deployStartup(user *OSUser, configFile string, exePath string) error {
 	if err != nil {
 		return fmt.Errorf("I was not able to write the file \"Run Generic Worker.xml\" to file location %q with 0644 permissions, due to: %s", xmlFilePath, err)
 	}
-	err = runCommands(false, []string{"schtasks", "/create", "/tn", "Run Generic Worker on login", "/xml", xmlFilePath})
+	err = runtime.RunCommands(false, []string{"schtasks", "/create", "/tn", "Run Generic Worker on login", "/xml", xmlFilePath})
 	if err != nil {
 		return fmt.Errorf("Not able to schedule task \"Run Generic Worker on login\" using schtasks command, due to error: %s\n\nAlso see stderr/stdout logs for output of the command that failed.", err)
 	}
@@ -557,8 +487,8 @@ func deployStartup(user *OSUser, configFile string, exePath string) error {
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(user *OSUser, configFile, nssm, serviceName, exePath, dir string) error {
-	return runCommands(
+func deployService(user *runtime.OSUser, configFile, nssm, serviceName, exePath, dir string) error {
+	return runtime.RunCommands(
 		false,
 		[]string{nssm, "install", serviceName, exePath},
 		[]string{nssm, "set", serviceName, "AppDirectory", dir},
@@ -589,25 +519,6 @@ func deployService(user *OSUser, configFile, nssm, serviceName, exePath, dir str
 	)
 }
 
-func runCommands(allowFail bool, commands ...[]string) error {
-	var err error
-	for _, command := range commands {
-		log.Print("Running command: '" + strings.Join(command, "' '") + "'")
-		cmd := exec.Command(command[0], command[1:]...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-
-		if err != nil {
-			log.Printf("%v", err)
-			if !allowFail {
-				return err
-			}
-		}
-	}
-	return err
-}
-
 func ExePath() (string, error) {
 	log.Printf("Command args: %#v", os.Args)
 	prog := os.Args[0]
@@ -635,24 +546,13 @@ func ExePath() (string, error) {
 	return "", err
 }
 
-// Error runs the command and returns its standard error.
-func Error(c *exec.Cmd) ([]byte, error) {
-	if c.Stderr != nil {
-		return nil, errors.New("exec: Stderr already set")
-	}
-	var b bytes.Buffer
-	c.Stderr = &b
-	err := c.Run()
-	return b.Bytes(), err
-}
-
 func (task *TaskRun) formatCommand(index int) string {
 	return task.Payload.Command[index]
 }
 
 // see http://ss64.com/nt/icacls.html
 func makeDirReadable(dir string) error {
-	return runCommands(
+	return runtime.RunCommands(
 		false,
 		[]string{"icacls", dir, "/grant:r", taskContext.DesktopSession.User.Name + ":(OI)(CI)F"},
 	)
@@ -660,7 +560,7 @@ func makeDirReadable(dir string) error {
 
 // see http://ss64.com/nt/icacls.html
 func makeDirUnreadable(dir string) error {
-	return runCommands(
+	return runtime.RunCommands(
 		false,
 		[]string{"icacls", dir, "/remove:g", taskContext.DesktopSession.User.Name},
 	)
@@ -693,11 +593,11 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}
 	}
 	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user %v to groups %v since we are running as current user. Skipping following commands:", taskContext.DesktopSession.User.Name, groups)
+		task.Logf("Not adding user %v to groups %v since we are running as current runtime. Skipping following commands:", taskContext.DesktopSession.User.Name, groups)
 		for _, command := range commands {
 			task.Logf("%#v", command)
 		}
 		return nil
 	}
-	return runCommands(false, commands...)
+	return runtime.RunCommands(false, commands...)
 }
