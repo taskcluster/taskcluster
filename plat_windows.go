@@ -120,35 +120,31 @@ func createNewTaskUser() error {
 	}
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
-	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
-	if config.RunTasksAsCurrentUser {
-		err := os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0700)
+	dir := "task_" + strconv.Itoa((int)(time.Now().Unix()))
+	taskContext := &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, dir),
+	}
+	if !config.RunTasksAsCurrentUser {
+		// create user
+		user := &OSUser{
+			Name:     dir,
+			Password: generatePassword(),
+		}
+		err := user.createNewOSUser()
 		if err != nil {
 			return err
 		}
+		// create desktop and login
+		loginInfo, desktop, err := process.NewDesktopSession(taskContext.DesktopSession.User.Name, taskContext.DesktopSession.User.Password)
+		if err != nil {
+			return err
+		}
+		taskContext.DesktopSession = &DesktopSession{
+			User:      user,
+			loginInfo: loginInfo,
+			desktop:   desktop,
+		}
 	}
-	password := generatePassword()
-	taskContext := &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, userName),
-		DesktopSession: &DesktopSession{
-			User: &OSUser{
-				Name:     userName,
-				Password: password,
-			},
-		},
-	}
-	err := taskContext.DesktopSession.User.createNewOSUser()
-	if err != nil {
-		return err
-	}
-	// create desktop and login
-	loginInfo, desktop, err := process.NewDesktopSession(taskContext.DesktopSession.User.Name, taskContext.DesktopSession.User.Password)
-	if err != nil {
-		return err
-	}
-	taskContext.DesktopSession.loginInfo = loginInfo
-	taskContext.DesktopSession.desktop = desktop
-
 	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
 }
 
