@@ -125,10 +125,6 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 	if len(groups) == 0 {
 		return nil
 	}
-	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user to groups %v since we are running as current user.", groups)
-		return nil
-	}
 	return fmt.Errorf("Not able to add groups %v to user on platform %v - feature not supported.", groups, runtime.GOOS)
 }
 

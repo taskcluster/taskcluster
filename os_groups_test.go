@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -66,5 +67,9 @@ func TestOSGroupsRespected(t *testing.T) {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
 	logtext := string(bytes)
-	checkGroupsAdded(t, payload.OSGroups, logtext)
+	substring := fmt.Sprintf("Not adding user to groups %v since we are running as current user.", payload.OSGroups)
+	if !strings.Contains(logtext, substring) {
+		t.Log(logtext)
+		t.Fatalf("Was expecting log to contain string %v", substring)
+	}
 }

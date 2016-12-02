@@ -1,10 +1,6 @@
 package main
 
-import (
-	"strconv"
-	"strings"
-	"testing"
-)
+import "strconv"
 
 func helloGoodbye() []string {
 	return []string{
@@ -58,18 +54,5 @@ func sleep(seconds uint) []string {
 func goRun(goFile string) []string {
 	return []string{
 		"go run \"" + goFile + "\"",
-	}
-}
-
-func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
-	// when running as a test, we can't actually issue the `net localgroup`
-	// command, so we log it instead. This checks the log that the correct
-	// command would have been executed if it had not been a test.
-	for _, group := range groups {
-		substring := `{"net", "localgroup", "` + group + `", "/add", ""}`
-		if !strings.Contains(logtext, substring) {
-			t.Log(logtext)
-			t.Fatalf("Was expecting log to contain string %v", substring)
-		}
 	}
 }

@@ -598,10 +598,6 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 	if len(groups) == 0 {
 		return nil
 	}
-	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user to groups %v since we are running as current user.")
-		return nil
-	}
 	commands := make([][]string, len(groups), len(groups))
 	for i, group := range groups {
 		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}

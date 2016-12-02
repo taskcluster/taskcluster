@@ -2,12 +2,7 @@
 
 package main
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-	"testing"
-)
+import "strconv"
 
 func helloGoodbye() [][]string {
 	return [][]string{
@@ -87,13 +82,5 @@ func goRun(goFile string) [][]string {
 			"run",
 			goFile,
 		},
-	}
-}
-
-func checkGroupsAdded(t *testing.T, groups []string, logtext string) {
-	substring := fmt.Sprintf("Not adding user to groups %v", groups)
-	if !strings.Contains(logtext, substring) {
-		t.Logf("Was expecting log to contain string %v", substring)
-		t.Fatalf("Actual log was:\n%v", logtext)
 	}
 }
