@@ -556,6 +556,9 @@ func (task *TaskRun) formatCommand(index int) string {
 
 // see http://ss64.com/nt/icacls.html
 func makeDirReadable(dir string) error {
+	if config.RunTasksAsCurrentUser {
+		return nil
+	}
 	return runtime.RunCommands(
 		false,
 		[]string{"icacls", dir, "/grant:r", taskContext.DesktopSession.User.Name + ":(OI)(CI)F"},
