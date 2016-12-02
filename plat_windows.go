@@ -205,6 +205,7 @@ func deleteOSUserAccount(line string) {
 func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
+	log.Printf("Creating wrapper script: %v", wrapper)
 	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline, taskContext.DesktopSession)
 	if err != nil {
 		return err
