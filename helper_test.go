@@ -29,7 +29,6 @@ func setup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Test failed during setup phase!")
 	}
-	taskContext.TaskDir = filepath.Join(cwd, "testdata")
 
 	// configure the worker
 	config = &Config{
@@ -50,6 +49,7 @@ func setup(t *testing.T) {
 		InstanceType:               "p3.enormous",
 		Region:                     "outer-space",
 		Subdomain:                  "taskcluster-worker.net",
+		TasksDir:                   filepath.Join(cwd, "testdata"),
 		RunTasksAsCurrentUser:      true,
 		WorkerTypeMetadata: map[string]interface{}{
 			"aws": map[string]string{
