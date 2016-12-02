@@ -106,11 +106,13 @@ func prepareTaskEnvironment() error {
 	}
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)
-	dir := "task_" + strconv.Itoa((int)(time.Now().Unix()))
-	taskContext := &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, dir),
-	}
+	// note, if we run as current user, we don't want a task_*
+	// subdirectory, we want to run from same directory every time
+	// also important for tests.
 	if !config.RunTasksAsCurrentUser {
+		taskContext := &TaskContext{
+			TaskDir: filepath.Join(config.TasksDir, "task_"+strconv.Itoa((int)(time.Now().Unix()))),
+		}
 		// create user
 		user := &runtime.OSUser{
 			Name:     dir,
@@ -129,6 +131,10 @@ func prepareTaskEnvironment() error {
 			User:      user,
 			LoginInfo: loginInfo,
 			Desktop:   desktop,
+		}
+	} else {
+		taskContext := &TaskContext{
+			TaskDir: config.TasksDir,
 		}
 	}
 	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
@@ -149,13 +155,11 @@ func generatePassword() string {
 
 func deleteExistingOSUsers() {
 	deleteTaskDirs()
-	if !config.RunTasksAsCurrentUser {
-		log.Print("Looking for existing task users to delete...")
-		err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
-		if err != nil {
-			log.Print("WARNING: could not list existing Windows user accounts")
-			log.Printf("%v", err)
-		}
+	log.Print("Looking for existing task users to delete...")
+	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
+	if err != nil {
+		log.Print("WARNING: could not list existing Windows user accounts")
+		log.Printf("%v", err)
 	}
 }
 
@@ -337,7 +341,9 @@ func taskCleanup() error {
 		TaskDir: filepath.Join(config.TasksDir, userName),
 	}
 	// note if this fails, we carry on without throwing an error
-	deleteExistingOSUsers()
+	if !config.RunTasksAsCurrentUser {
+		deleteExistingOSUsers()
+	}
 	// this needs to succeed, so return an error if it doesn't
 	err := prepareTaskEnvironment()
 	if err != nil {
