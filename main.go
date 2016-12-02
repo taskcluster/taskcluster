@@ -881,7 +881,7 @@ func (task *TaskRun) Log(message string) {
 }
 
 func (err *CommandExecutionError) Error() string {
-	return fmt.Sprintf("%#v", err)
+	return fmt.Sprintf("%v", err.Cause)
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
