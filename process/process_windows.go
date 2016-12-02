@@ -189,6 +189,7 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 		},
 		Deadline: deadline,
 	}
+	log.Printf("Created command: %v", commandLine)
 	return command, nil
 }
 
