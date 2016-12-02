@@ -49,7 +49,7 @@ func (ue *TaskStatusUpdateError) Error() string {
 	return ue.Message + " (current status: " + string(ue.CurrentStatus) + ")"
 }
 
-func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 	return tsm.updateStatus(
 		errored,
 		func(task *TaskRun) error {
@@ -70,7 +70,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) *TaskStat
 	)
 }
 
-func (tsm *TaskStatusManager) ReportFailed() *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) ReportFailed() error {
 	return tsm.updateStatus(
 		failed,
 		func(task *TaskRun) error {
@@ -90,7 +90,7 @@ func (tsm *TaskStatusManager) ReportFailed() *TaskStatusUpdateError {
 	)
 }
 
-func (tsm *TaskStatusManager) ReportCompleted() *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) ReportCompleted() error {
 	return tsm.updateStatus(
 		succeeded,
 		func(task *TaskRun) error {
@@ -110,7 +110,7 @@ func (tsm *TaskStatusManager) ReportCompleted() *TaskStatusUpdateError {
 	)
 }
 
-func (tsm *TaskStatusManager) Claim() *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) Claim() error {
 	return tsm.updateStatus(
 		claimed,
 		func(task *TaskRun) error {
@@ -163,7 +163,7 @@ func (tsm *TaskStatusManager) Claim() *TaskStatusUpdateError {
 	)
 }
 
-func (tsm *TaskStatusManager) Reclaim() *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) Reclaim() error {
 	return tsm.updateStatus(
 		reclaimed,
 		func(task *TaskRun) error {
@@ -193,7 +193,7 @@ func (tsm *TaskStatusManager) Reclaim() *TaskStatusUpdateError {
 	)
 }
 
-func (tsm *TaskStatusManager) Abort() *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) Abort() error {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
@@ -212,7 +212,7 @@ func (tsm *TaskStatusManager) Abort() *TaskStatusUpdateError {
 	)
 }
 
-func (tsm *TaskStatusManager) Cancel() *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) Cancel() error {
 	return tsm.updateStatus(
 		cancelled,
 		func(task *TaskRun) error {
@@ -266,7 +266,7 @@ func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 	log.Printf("Latest status: %v", tsm.task.Status)
 }
 
-func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) *TaskStatusUpdateError {
+func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) error {
 	tsm.Lock()
 	defer tsm.Unlock()
 	currentStatus := tsm.task.Status
