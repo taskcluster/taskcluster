@@ -104,18 +104,18 @@ func prepareTaskEnvironment() error {
 	} else {
 		log.Print("No previous task user desktop, so no need to close any open desktops")
 	}
-	// username can only be 20 chars, uuids are too long, therefore
-	// use prefix (5 chars) plus seconds since epoch (10 chars)
-	// note, if we run as current user, we don't want a task_*
-	// subdirectory, we want to run from same directory every time
-	// also important for tests.
 	if !config.RunTasksAsCurrentUser {
+		// username can only be 20 chars, uuids are too long, therefore use
+		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
+		// as current user, we don't want a task_* subdirectory, we want to run
+		// from same directory every time. Also important for tests.
+		userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
 		taskContext := &TaskContext{
-			TaskDir: filepath.Join(config.TasksDir, "task_"+strconv.Itoa((int)(time.Now().Unix()))),
+			TaskDir: filepath.Join(config.TasksDir, userName),
 		}
 		// create user
 		user := &runtime.OSUser{
-			Name:     dir,
+			Name:     userName,
 			Password: generatePassword(),
 		}
 		err := user.CreateNew()
