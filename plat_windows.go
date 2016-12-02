@@ -74,14 +74,14 @@ func deleteTaskDir(path string, user string) error {
 		return nil
 	}
 
-	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker runtime...")
+	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
 	err := os.RemoveAll(path)
 	if err == nil {
 		return nil
 	}
 	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del command as GenericWorker runtime...")
+	log.Print("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
 	err = runtime.RunCommands(
 		false,
 		[]string{
@@ -236,7 +236,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// command, and cd into it at the beginning of the subsequent command. The
 	// very first command takes the env settings from the payload, and the
 	// current directory is set to the home directory of the newly created
-	// runtime.
+	// user.
 
 	// If this is first command, take env from task payload, and cd into home
 	// directory
@@ -598,16 +598,13 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 	if len(groups) == 0 {
 		return nil
 	}
+	if config.RunTasksAsCurrentUser {
+		task.Logf("Not adding user to groups %v since we are running as current user.")
+		return nil
+	}
 	commands := make([][]string, len(groups), len(groups))
 	for i, group := range groups {
 		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}
-	}
-	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user to groups %v since we are running as current runtime. Skipping following commands:", groups)
-		for _, command := range commands {
-			task.Logf("%#v", command)
-		}
-		return nil
 	}
 	return runtime.RunCommands(false, commands...)
 }
