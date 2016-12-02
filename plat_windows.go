@@ -336,10 +336,6 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 }
 
 func taskCleanup() error {
-	userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
-	taskContext = &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, userName),
-	}
 	// note if this fails, we carry on without throwing an error
 	if !config.RunTasksAsCurrentUser {
 		deleteExistingOSUsers()
@@ -349,7 +345,6 @@ func taskCleanup() error {
 	if err != nil {
 		return err
 	}
-	log.Print("Created new task user!")
 	return nil
 }
 

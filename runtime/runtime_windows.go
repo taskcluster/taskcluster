@@ -35,6 +35,7 @@ func (user *OSUser) Create(okIfExists bool) error {
 	if !okIfExists && userExisted {
 		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
 	}
+	log.Print("Created new task user!")
 	err = RunCommands(
 		userExisted,
 		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
