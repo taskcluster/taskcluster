@@ -149,11 +149,13 @@ func generatePassword() string {
 
 func deleteExistingOSUsers() {
 	deleteTaskDirs()
-	log.Print("Looking for existing task users to delete...")
-	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
-	if err != nil {
-		log.Print("WARNING: could not list existing Windows user accounts")
-		log.Printf("%v", err)
+	if !config.RunTasksAsCurrentUser {
+		log.Print("Looking for existing task users to delete...")
+		err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
+		if err != nil {
+			log.Print("WARNING: could not list existing Windows user accounts")
+			log.Printf("%v", err)
+		}
 	}
 }
 
