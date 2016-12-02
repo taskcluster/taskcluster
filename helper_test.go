@@ -79,6 +79,12 @@ func setup(t *testing.T) {
 		NumberOfTasksToRun:      1,
 	}
 
+	// Needed for tests that don't call runWorker()
+	// but test methods/functions directly
+	taskContext = &TaskContext{
+		TaskDir: config.TasksDir,
+	}
+
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
 }
