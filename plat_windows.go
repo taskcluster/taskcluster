@@ -133,7 +133,7 @@ func prepareTaskEnvironment() error {
 			Desktop:   desktop,
 		}
 	} else {
-		taskContext := &TaskContext{
+		taskContext = &TaskContext{
 			TaskDir: config.TasksDir,
 		}
 	}
