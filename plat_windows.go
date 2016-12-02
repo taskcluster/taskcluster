@@ -123,7 +123,7 @@ func prepareTaskEnvironment() error {
 			return err
 		}
 		// create desktop and login
-		loginInfo, desktop, err := process.NewDesktopSession(taskContext.DesktopSession.User.Name, taskContext.DesktopSession.User.Password)
+		loginInfo, desktop, err := process.NewDesktopSession(user.Name, user.Password)
 		if err != nil {
 			return err
 		}
