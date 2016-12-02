@@ -603,7 +603,7 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}
 	}
 	if config.RunTasksAsCurrentUser {
-		task.Logf("Not adding user %v to groups %v since we are running as current runtime. Skipping following commands:", taskContext.DesktopSession.User.Name, groups)
+		task.Logf("Not adding user to groups %v since we are running as current runtime. Skipping following commands:", groups)
 		for _, command := range commands {
 			task.Logf("%#v", command)
 		}
