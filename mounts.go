@@ -357,9 +357,11 @@ func (w *WritableDirectoryCache) Mount() error {
 		// bump counter
 		directoryCaches[w.CacheName].Hits++
 		// move it into place...
-		err := RenameCrossDevice(directoryCaches[w.CacheName].Location, filepath.Join(taskContext.TaskDir, w.Directory))
+		src := directoryCaches[w.CacheName].Location
+		target := filepath.Join(taskContext.TaskDir, w.Directory)
+		err := RenameCrossDevice(src, target)
 		if err != nil {
-			return fmt.Errorf("Not able to rename dir: %v", err)
+			return fmt.Errorf("Not able to rename dir %v as %v: %v", src, target, err)
 		}
 		err = makeDirReadable(filepath.Join(taskContext.TaskDir, w.Directory))
 		if err != nil {
