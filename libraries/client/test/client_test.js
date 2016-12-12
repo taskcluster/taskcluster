@@ -121,8 +121,8 @@ suite('client requests/responses', function() {
   };
 
   teardown(function() {
-    let pending = nock.pendingMocks();
-    assert.deepEqual(pending, []);
+    assert(nock.isDone());
+    nock.cleanAll();
   });
 
   let Fake = taskcluster.createClient(reference);

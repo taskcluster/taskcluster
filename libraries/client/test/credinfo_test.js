@@ -4,12 +4,8 @@ suite('taskcluster.credentialInfo', function() {
   var nock            = require('nock');
 
   teardown(function() {
-    let pending = nock.pendingMocks();
-    assert.deepEqual(pending, []);
-  });
-
-  suiteTeardown(function() {
-    nock.restore();
+    assert(nock.isDone());
+    nock.cleanAll();
   });
 
   var setupNocks = function(options) {
