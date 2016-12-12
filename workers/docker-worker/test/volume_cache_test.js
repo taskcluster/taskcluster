@@ -205,24 +205,27 @@ suite('volume cache test', function () {
 
     yield cache.release(instance1.key);
 
+    let futurePurgeDate = new Date();
+    futurePurgeDate.setHours(futurePurgeDate.getHours() + 5);
+
     // should remove only instance1
-    cache.purge(cacheName);
+    cache.purge(cacheName, futurePurgeDate);
 
     var instance3 = yield cache.get(cacheName);
-    assert.ok(instance3.key !== instance1.key);
+    assert.notEqual(instance3.key !== instance1.key);
 
     yield cache.release(instance2);
     yield cache.release(instance3);
 
-    cache.purge(cacheName);
+    cache.purge(cacheName, futurePurgeDate);
 
     var instance4 = yield cache.get(cacheName);
 
-    assert.ok(instance4.key !== instance3.key);
+    assert.notEqual(instance4.key !== instance3.key);
     assert.ok(instance4.key !== instance2.key);
 
     instance1 = yield cache.get(cacheName);
-    cache.purge(cacheName);
+    cache.purge(cacheName, futurePurgeDate);
     yield cache.release(instance1.key);
 
     // Cannot return a volume marked for purge

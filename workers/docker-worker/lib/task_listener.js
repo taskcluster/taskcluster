@@ -173,6 +173,8 @@ export default class TaskListener extends EventEmitter {
       return;
     }
 
+    await this.runtime.volumeCache.purgeCaches();
+
     // Run a garbage collection cycle to clean up containers and release volumes.
     // Only run a full garbage collection cycle if no tasks are running.
     await this.runtime.gc.sweep(this.runningTasks.length === 0);

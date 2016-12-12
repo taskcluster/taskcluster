@@ -5,6 +5,7 @@
 /worker_config
 /node_modules
 /test/settings/
+/test/tmp
 /deploy.json
 docker-worker.conf.json
 *.box

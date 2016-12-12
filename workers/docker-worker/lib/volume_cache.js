@@ -4,6 +4,7 @@ var Promise = require('promise');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var rmrf = require('rimraf');
+var taskcluster = require('taskcluster-client');
 var uuid = require('uuid');
 import _ from 'lodash';
 
@@ -53,6 +54,8 @@ export default class VolumeCache {
     this.log = config.log;
     this.cache = {};
     this.monitor = config.monitor;
+    this.purgeClient = new taskcluster.PurgeCache();
+    this.lastPurgeRequest = new Date();
   }
 
   /**
@@ -75,12 +78,13 @@ export default class VolumeCache {
       await makeDir(instancePath);
     }
 
-    var lastUsed = Date.now();
+    var created = Date.now();
 
     this.cache[cacheName][instanceId] = {
       path: instancePath,
       mounted: false,
-      lastUsed: lastUsed,
+      created: created,
+      lastUsed: created,
       purge: false
     };
 
@@ -88,7 +92,7 @@ export default class VolumeCache {
     // forma of <cache name>::<instance id>
     var instance = {key: cacheName + KEY_DELIMITER + instanceId,
       path: instancePath,
-      lastUsed: lastUsed
+      lastUsed: created
     };
     return instance;
   }
@@ -259,9 +263,27 @@ export default class VolumeCache {
 
    @param cacheName {String} Name of the cache.
    */
-  purge(cacheName) {
+  purge(cacheName, before) {
     _.forOwn(this.cache[cacheName], (instance) => {
-     instance.purge = true;
+      if (instance.created < new Date(before).getTime()) {
+        instance.purge = true;
+      }
     });
+  }
+
+  async purgeCaches() {
+    if (Object.keys(this.cache).length === 0) {
+      this.lastPurgeRequest = new Date();
+      return;
+    }
+
+    let purgeRequests = await this.purgeClient.purgeRequests(this.config.provisionerId,
+                                                             this.config.workerType,
+                                                             {since: this.lastPurgeRequest});
+    for (let request in purgeRequests) {
+      this.purge(request.CacheName, request.before);
+    }
+
+    this.lastPurgeRequest = new Date();
   }
 }
