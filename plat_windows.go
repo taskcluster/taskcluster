@@ -343,16 +343,21 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 }
 
 func taskCleanup() error {
+	// clean desktop resources before killing user...
+	if taskContext.DesktopSession != nil {
+		err := taskContext.DesktopSession.Desktop.Close()
+		if err != nil {
+			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
+		}
+	} else {
+		log.Print("No previous task user desktop, so no need to close any open desktops")
+	}
 	// note if this fails, we carry on without throwing an error
 	if !config.RunTasksAsCurrentUser {
 		deleteExistingOSUsers()
 	}
 	// this needs to succeed, so return an error if it doesn't
-	err := prepareTaskEnvironment()
-	if err != nil {
-		return err
-	}
-	return nil
+	return prepareTaskEnvironment()
 }
 
 func install(arguments map[string]interface{}) (err error) {
@@ -381,7 +386,7 @@ func install(arguments map[string]interface{}) (err error) {
 		return err
 	}
 	err = ntr.AddPrivilegesToUser(username, ntr.SE_ASSIGNPRIMARYTOKEN_NAME)
-	// err = ntr.AddPrivilegesToUser(username, "SeAssignPrimaryTokenPrivilege", "SeIncreaseQuotaPrivilege")
+	// err = ntr.AddPrivilegesToUser(username, ntr.SE_ASSIGNPRIMARYTOKEN_NAME, ntr.SE_INCREASE_QUOTA_NAME)
 	if err != nil {
 		return err
 	}
