@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/ntr"
+	"github.com/taskcluster/runlib/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 	"golang.org/x/text/encoding/unicode"
@@ -104,6 +105,7 @@ func prepareTaskEnvironment() error {
 	} else {
 		log.Print("No previous task user desktop, so no need to close any open desktops")
 	}
+	hUser := syscall.Handle(0)
 	if !config.RunTasksAsCurrentUser {
 		// username can only be 20 chars, uuids are too long, therefore use
 		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
@@ -132,10 +134,15 @@ func prepareTaskEnvironment() error {
 			LoginInfo: loginInfo,
 			Desktop:   desktop,
 		}
+		hUser = loginInfo.HUser
 	} else {
 		taskContext = &TaskContext{
 			TaskDir: config.TasksDir,
 		}
+	}
+	err := RedirectAppData(hUser, filepath.Join(config.TasksDir, "AppData"))
+	if err != nil {
+		return err
 	}
 	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
 }
@@ -603,4 +610,12 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}
 	}
 	return runtime.RunCommands(false, commands...)
+}
+
+func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
+	err = win32.SetFolder(hUser, &win32.FOLDERID_RoamingAppData, filepath.Join(folder, "Roaming"))
+	if err != nil {
+		return
+	}
+	return win32.SetFolder(hUser, &win32.FOLDERID_LocalAppData, filepath.Join(folder, "Local"))
 }
