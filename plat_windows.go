@@ -105,7 +105,6 @@ func prepareTaskEnvironment() error {
 	} else {
 		log.Print("No previous task user desktop, so no need to close any open desktops")
 	}
-	hUser := syscall.Handle(0)
 	if !config.RunTasksAsCurrentUser {
 		// username can only be 20 chars, uuids are too long, therefore use
 		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
@@ -134,15 +133,17 @@ func prepareTaskEnvironment() error {
 			LoginInfo: loginInfo,
 			Desktop:   desktop,
 		}
-		hUser = loginInfo.HUser
+		// note we only do this if not running as current user, since when running as
+		// current user, this would have no effect on env vars - they are inherited
+		// from parent process
+		err = RedirectAppData(loginInfo.HUser, filepath.Join(config.TasksDir, "AppData"))
+		if err != nil {
+			return err
+		}
 	} else {
 		taskContext = &TaskContext{
 			TaskDir: config.TasksDir,
 		}
-	}
-	err := RedirectAppData(hUser, filepath.Join(config.TasksDir, "AppData"))
-	if err != nil {
-		return err
 	}
 	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
 }
