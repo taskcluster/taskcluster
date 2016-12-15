@@ -91,7 +91,7 @@ properties:
       type:         string
       maxLength:    249
       minLength:    1
-    maxItems:       10
+    maxItems:       64
     uniqueItems:    true
   priority:
     title:          "Task Priority"
