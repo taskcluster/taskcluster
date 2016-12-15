@@ -1,4 +1,4 @@
-Generated: 1480368282
+Generated: 1481819053
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5214,9 +5214,7 @@ Entry 0     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json'
     Entry Title       = 'Rabbit Overview'
-    Entry Description = 'An overview of the Rabbit cluster
-
-**Warning** this api end-point is **not stable**.'
+    Entry Description = 'An overview of the Rabbit cluster'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -5229,25 +5227,34 @@ Entry 1     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json'
     Entry Title       = 'Rabbit Exchanges'
-    Entry Description = 'A list of exchanges in the rabbit cluster
-
-**Warning** this api end-point is **not stable**.'
+    Entry Description = 'A list of exchanges in the rabbit cluster'
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/namespace/<namespace>'
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
-    Entry Name        = 'namespace'
+    Entry Name        = 'createNamespace'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[[pulse:namespace:<namespace>]]'
     Entry Input       = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json'
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json'
     Entry Title       = 'Create a namespace'
-    Entry Description = 'Creates a namespace, given the taskcluster credentials with scopes.
-
-**Warning** this api end-point is **not stable**.'
+    Entry Description = 'Creates a namespace, given the taskcluster credentials with scopes.'
 Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/namespace/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Query        = '[]'
+    Entry Name        = 'namespace'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[pulse:namespace:<namespace>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Get namespace information'
+    Entry Description = 'Gets a namespace, given the taskcluster credentials with scopes.'
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
