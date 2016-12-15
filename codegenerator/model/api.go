@@ -144,19 +144,19 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 	// and then padding with spaces based on max line length and adding comments.
 
 	commentedSection := [][]string{
-		[]string{
+		{
 			"//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(creds)",
 			"// set credentials",
 		},
-		[]string{
+		{
 			"//  " + exampleVarName + ".Authenticate = false",
 			"// disable authentication (creds above are now ignored)",
 		},
-		[]string{
+		{
 			"//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"",
 			"// alternative API endpoint (production by default)",
 		},
-		[]string{
+		{
 			exampleCall,
 			"// for example, call the " + api.Entries[0].MethodName + "(.....) API endpoint (described further down)...",
 		},
