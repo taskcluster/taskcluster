@@ -1051,7 +1051,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 	// need to include deadline in commands, so need to set it already here
 	task.maxRunTimeDeadline = time.Now().Add(time.Second * time.Duration(task.Payload.MaxRunTime))
 	// generate commands, in case features want to modify them
-	for i, _ := range task.Payload.Command {
+	for i := range task.Payload.Command {
 		err := task.generateCommand(i) // platform specific
 		if err != nil {
 			panic(err)
@@ -1105,13 +1105,17 @@ func (task *TaskRun) run() (err *executionErrors) {
 
 	started := time.Now()
 
-	for i, _ := range task.Payload.Command {
+	for i := range task.Payload.Command {
 		err.add(task.ExecuteCommand(i))
 		if err.Occurred() {
 			return
 		}
 	}
 
+	// stop reclaim timer, if possible
+	if !task.reclaimTimer.Stop() {
+		<-task.reclaimTimer.C
+	}
 	finished := time.Now()
 	task.Log("=== Task Finished ===")
 	task.Log("Task Duration: " + finished.Sub(started).String())
