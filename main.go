@@ -1101,9 +1101,21 @@ func (task *TaskRun) run() (err *executionErrors) {
 	}()
 
 	task.logHeader()
+
 	task.setMaxRunTimer()
+	defer func() {
+		// stop reclaim timer, if possible
+		if !task.reclaimTimer.Stop() {
+			<-task.reclaimTimer.C
+		}
+	}()
 
 	started := time.Now()
+	defer func() {
+		finished := time.Now()
+		task.Log("=== Task Finished ===")
+		task.Log("Task Duration: " + finished.Sub(started).String())
+	}()
 
 	for i := range task.Payload.Command {
 		err.add(task.ExecuteCommand(i))
@@ -1111,14 +1123,6 @@ func (task *TaskRun) run() (err *executionErrors) {
 			return
 		}
 	}
-
-	// stop reclaim timer, if possible
-	if !task.reclaimTimer.Stop() {
-		<-task.reclaimTimer.C
-	}
-	finished := time.Now()
-	task.Log("=== Task Finished ===")
-	task.Log("Task Duration: " + finished.Sub(started).String())
 
 	return
 }
