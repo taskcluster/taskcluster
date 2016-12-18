@@ -130,7 +130,7 @@ func (l *LiveLogTask) uploadLiveLog() error {
 }
 
 func setCommandLogWriters(commands []*process.Command, logWriter io.Writer) {
-	for i, _ := range commands {
+	for i := range commands {
 		commands[i].DirectOutput(logWriter)
 	}
 }

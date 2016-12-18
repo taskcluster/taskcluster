@@ -57,20 +57,20 @@ func main() {
 				inst, err := svc.DescribeInstances(
 					&ec2.DescribeInstancesInput{
 						Filters: []*ec2.Filter{
-							&ec2.Filter{
+							{
 								Name: aws.String("tag:WorkerType"),
 								Values: []*string{
 									aws.String("aws-provisioner-v1/" + workerType),
 								},
 							},
-							&ec2.Filter{
+							{
 								Name: aws.String("tag:TC-Windows-Base"),
 								Values: []*string{
 									aws.String("true"),
 								},
 							},
 							// filter out terminated instances
-							&ec2.Filter{
+							{
 								Name: aws.String("instance-state-name"),
 								Values: []*string{
 									aws.String("pending"),
@@ -122,7 +122,7 @@ func main() {
 							snapshots, err := svc.DescribeSnapshots(
 								&ec2.DescribeSnapshotsInput{
 									Filters: []*ec2.Filter{
-										&ec2.Filter{
+										{
 											Name: aws.String("volume-id"),
 											Values: []*string{
 												bdm.Ebs.VolumeId,
@@ -138,7 +138,7 @@ func main() {
 								images, err := svc.DescribeImages(
 									&ec2.DescribeImagesInput{
 										Filters: []*ec2.Filter{
-											&ec2.Filter{
+											{
 												Name: aws.String("block-device-mapping.snapshot-id"),
 												Values: []*string{
 													snap.SnapshotId,
@@ -154,20 +154,20 @@ func main() {
 									inst, err := svc.DescribeInstances(
 										&ec2.DescribeInstancesInput{
 											Filters: []*ec2.Filter{
-												&ec2.Filter{
+												{
 													Name: aws.String("image-id"),
 													Values: []*string{
 														image.ImageId,
 													},
 												},
-												&ec2.Filter{
+												{
 													Name: aws.String("instance-state-name"),
 													Values: []*string{
 														aws.String("running"),
 													},
 												},
 												// filter out terminated instances
-												&ec2.Filter{
+												{
 													Name: aws.String("instance-state-name"),
 													Values: []*string{
 														aws.String("pending"),

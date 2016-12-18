@@ -19,11 +19,8 @@ func TestResolveResolvedTask(t *testing.T) {
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{
-			struct {
-				Expires tcclient.Time `json:"expires"`
-				Path    string        `json:"path"`
-				Type    string        `json:"type"`
-			}{
+
+			{
 				Type:    "file",
 				Path:    "resolvetask.go",
 				Expires: inAnHour,

@@ -101,7 +101,7 @@ func prepareTaskEnvironment() error {
 		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
 		// as current user, we don't want a task_* subdirectory, we want to run
 		// from same directory every time. Also important for tests.
-		userName := "task_" + strconv.Itoa((int)(time.Now().Unix()))
+		userName := "task_" + strconv.Itoa(int(time.Now().Unix()))
 		taskContext = &TaskContext{
 			TaskDir: filepath.Join(config.TasksDir, userName),
 		}
