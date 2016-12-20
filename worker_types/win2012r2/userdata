@@ -79,30 +79,35 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/m
 # install nssm
 Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm.cc/release/nssm-2.24.zip"
 
-# utility function to replace/create a registry key, depending on whether it exists already
-function SetKey($registryPath, $name, $value)
-{
-    if (!(Test-Path $registryPath)) {
-        New-Item -Path $registryPath -Force | Out-Null
-    }
-    New-ItemProperty -Path $registryPath -Name $name -Value $value `
-    -PropertyType ExpandString -Force | Out-Null
-}
-
-# mount default user profile registry hive
-reg load "HKLM\DefaultUser" "C:\Documents and Settings\Default User\ntuser.dat"
-
-# set TMP env var in profile
-SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
-
-# set TEMP env var in profile
-SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TEMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
-
-# clean up handles so we can unmount registry hive
-[gc]::collect()
-
-# unmount registry hive
-reg unload HKLM\DefaultUser
+# Bizarrely, this sets env TEMP/TMP correctly in default user profile, however, if running a
+# task as Administrator, including any subprocesses that creates, even if processes under a
+# different user account, %USERNAME% will be sustituted by 'SYSTEM' rather than the real
+# %USERNAME% which is in the env. Therefore commenting out this section until this is resolved.
+#
+# # utility function to replace/create a registry key, depending on whether it exists already
+# function SetKey($registryPath, $name, $value)
+# {
+#     if (!(Test-Path $registryPath)) {
+#         New-Item -Path $registryPath -Force | Out-Null
+#     }
+#     New-ItemProperty -Path $registryPath -Name $name -Value $value `
+#     -PropertyType ExpandString -Force | Out-Null
+# }
+# 
+# # mount default user profile registry hive
+# reg load "HKLM\DefaultUser" "C:\Documents and Settings\Default User\ntuser.dat"
+# 
+# # set TMP env var in profile
+# SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
+# 
+# # set TEMP env var in profile
+# SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TEMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
+# 
+# # clean up handles so we can unmount registry hive
+# [gc]::collect()
+# 
+# # unmount registry hive
+# reg unload HKLM\DefaultUser
 
 # download generic-worker
 md C:\generic-worker
