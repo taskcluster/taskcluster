@@ -610,9 +610,9 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 }
 
 func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
-	err = win32.SetFolder(hUser, &win32.FOLDERID_RoamingAppData, filepath.Join(folder, "Roaming"))
+	err = win32.SetAndCreateFolder(hUser, &win32.FOLDERID_RoamingAppData, filepath.Join(folder, "Roaming"))
 	if err != nil {
 		return
 	}
-	return win32.SetFolder(hUser, &win32.FOLDERID_LocalAppData, filepath.Join(folder, "Local"))
+	return win32.SetAndCreateFolder(hUser, &win32.FOLDERID_LocalAppData, filepath.Join(folder, "Local"))
 }
