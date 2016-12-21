@@ -411,9 +411,6 @@ api.declare({
   return res.reply(resp);
 });
 
-// XXX disabled for the first draft of this service
-if (0) {
-
 /** Get secret token for a trigger **/
 api.declare({
   method:       'get',
@@ -526,4 +523,3 @@ api.declare({
   let resp = await this.taskcreator.fire(hook, payload);
   return res.reply(resp);
 });
-}
