@@ -43,12 +43,13 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 15 Dec 2016 at 16:24:00 UTC. The code was generated
+// Wed, 21 Dec 2016 at 16:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
 import (
 	"net/url"
+	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
@@ -202,5 +203,57 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerPayload) (*TaskStatusResponse, error) {
 	cd := tcclient.ConnectionData(*myHooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusResponse), nil)
+	return responseObject.(*TaskStatusResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Retrieve a unique secret token for triggering the specified hook. This
+// token can be deactivated with `resetTriggerToken`.
+//
+// Required scopes:
+//   * hooks:get-trigger-token:<hookGroupId>/<hookId>
+//
+// See https://docs.taskcluster.net/reference/core/hooks/api-docs#getTriggerToken
+func (myHooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
+	cd := tcclient.ConnectionData(*myHooks)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
+	return responseObject.(*TriggerTokenResponse), err
+}
+
+// Returns a signed URL for GetTriggerToken, valid for the specified duration.
+//
+// Required scopes:
+//   * hooks:get-trigger-token:<hookGroupId>/<hookId>
+//
+// See GetTriggerToken for more details.
+func (myHooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.ConnectionData(*myHooks)
+	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Reset the token for triggering a given hook. This invalidates token that
+// may have been issued via getTriggerToken with a new token.
+//
+// Required scopes:
+//   * hooks:reset-trigger-token:<hookGroupId>/<hookId>
+//
+// See https://docs.taskcluster.net/reference/core/hooks/api-docs#resetTriggerToken
+func (myHooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
+	cd := tcclient.ConnectionData(*myHooks)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
+	return responseObject.(*TriggerTokenResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This endpoint triggers a defined hook with a valid token.
+//
+// See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
+func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerPayload) (*TaskStatusResponse, error) {
+	cd := tcclient.ConnectionData(*myHooks)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), err
 }
