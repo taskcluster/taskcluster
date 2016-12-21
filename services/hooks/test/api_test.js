@@ -167,14 +167,18 @@ suite('API', function() {
   });
 
   suite("getTriggerToken", function() {
-    // XXX disabled for the first draft of this service
-    this.pending = true;
 
     test("returns the same token", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       var r1 = await helper.hooks.getTriggerToken('foo', 'bar');
       var r2 = await helper.hooks.getTriggerToken('foo', 'bar');
       assume(r1).deep.equals(r2);
+    });
+
+    test("error on requesting token for undefined hook", async () => {
+      await helper.hooks.getTriggerToken('foo', 'bar').then(
+          () => { throw new Error("This operation should have failed!"); },
+          (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -266,8 +270,6 @@ suite('API', function() {
   });
 
   suite("resetTriggerToken", function() {
-    // XXX disabled for the first draft of this service
-    this.pending = true;
 
     test("creates a new token", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
@@ -277,11 +279,16 @@ suite('API', function() {
       var r3 = await helper.hooks.getTriggerToken('foo', 'bar');
       assume(r2).deep.equals(r2);
     });
+
+    test("fails for undefined hook",  async () => {
+      await helper.hooks.resetTriggerToken('foo', 'bar').then(
+        () => { throw new Error("The resource should not exist"); },
+        (err) => { assume(err.statusCode).equals(404); });
+
+    });
   });
 
   suite("triggerHookWithToken", function() {
-    // XXX disabled for the first draft of this service
-    this.pending = true;
 
     test("successfully triggers task with the given payload", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
@@ -312,6 +319,31 @@ suite('API', function() {
       await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload).then(
           () => { throw new Error("This operation should have failed!"); },
           (err) => { assume(err.statusCode).equals(401); });
+    });
+
+    test("fails with undefined hook", async () => {
+      let payload = {}
+      await helper.hooks.triggerHookWithToken('foo', 'bar', 'zzz', payload).then(
+          () => { throw new Error("This operation should have failed!"); },
+          (err) => { assume(err.statusCode).equals(404); });
+    });
+
+    test("trigger task after resetting the trigger token", async () => {
+      let payload = {a: "payload"};
+      await helper.hooks.createHook('foo', 'bar', hookDef);
+      let r1 = await helper.hooks.getTriggerToken('foo', 'bar');
+      var r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
+      var r3 = await helper.hooks.getTriggerToken('foo', 'bar');
+
+      assume(r1).deep.not.equals(r2);
+      assume(r2).deep.equals(r3);
+      await helper.hooks.triggerHookWithToken('foo', 'bar', r3.token, payload);
+      assume(helper.creator.fireCalls).deep.equals([{
+          hookGroupId: 'foo',
+          hookId: 'bar',
+          payload: payload,
+          options: {}
+        }]);
     });
   });
 });
