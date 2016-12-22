@@ -21,7 +21,7 @@ defaults:
       type: 'oauth'
 
   webhook:
-    secret: !env WEBHOOK_SECRET
+    secret: !env:list WEBHOOK_SECRET
 
   intree:
     provisionerId: !env PROVISIONER_ID
@@ -66,7 +66,7 @@ production:
 
 test:
   webhook:
-    secret: 'abc123'
+    secret: ['abc123', 'def456']
 
   azure:
     account: 'inMemory'
