@@ -265,25 +265,50 @@ export default class VolumeCache {
    */
   purge(cacheName, before) {
     _.forOwn(this.cache[cacheName], (instance) => {
+      // Only purge caches that were created before the time specified
       if (instance.created < new Date(before).getTime()) {
         instance.purge = true;
       }
     });
   }
 
+  /**
+   * Set the time to give to the purge cache service so that only purge requests
+   * created after the time are returned.  A 5 minute skew is added to prevent
+   * clock drift and purge request races.
+   */
+  setNextPurgeRequestTime() {
+    let nextRequest = new Date();
+    nextRequest.setMinutes(nextRequest.getMinutes() - 5);
+    this.lastPurgeRequest = nextRequest.toJSON();
+  }
+
   async purgeCaches() {
+    // If there are no caches, no need to make a request
     if (Object.keys(this.cache).length === 0) {
-      this.lastPurgeRequest = new Date();
+      this.setNextPurgeRequestTime();
       return;
     }
 
-    let purgeRequests = await this.purgeClient.purgeRequests(this.config.provisionerId,
-                                                             this.config.workerType,
-                                                             {since: this.lastPurgeRequest});
-    for (let request in purgeRequests) {
-      this.purge(request.CacheName, request.before);
+    // Not being able to reach the purge cache service would effectively make
+    // all workers zombies and not claim tasks.  Rather than have workers get into this
+    // state, let's be optimistic that if the worker can't reach the service,
+    // it can still continue on.
+    let purgeRequests;
+    try {
+      purgeRequests = await this.purgeClient.purgeRequests(this.config.provisionerId,
+                                                           this.config.workerType,
+                                                           {since: this.lastPurgeRequest});
+      this.setNextPurgeRequestTime();
+    } catch (e) {
+      // Report the error, but do not set the last request time if this current
+      // interval failed
+      this.monitor.reportError(e, 'warning');
+      return;
     }
 
-    this.lastPurgeRequest = new Date();
+    for (let request of purgeRequests.requests) {
+      this.purge(request.cacheName, request.before);
+    }
   }
 }
