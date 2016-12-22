@@ -121,18 +121,20 @@ api.declare({
     return resolve(res, 400, 'Request missing a body');
   }
 
-  let webhookSecret = this.cfg.webhook.secret;
+  let webhookSecrets = this.cfg.webhook.secret;
   let xHubSignature = req.headers['x-hub-signature'];
 
-  if (xHubSignature && !webhookSecret) {
+  if (xHubSignature && !webhookSecrets) {
     return resolve(res, 400, 'Server is not setup to handle secrets');
-  } else if (webhookSecret && !xHubSignature) {
+  } else if (webhookSecrets && !xHubSignature) {
     return resolve(res, 400, 'Request missing a secret');
-  } else if (webhookSecret && xHubSignature) {
+  } else if (webhookSecrets && xHubSignature) {
     // Verify that our payload is legitimate
-    let calculatedSignature = generateXHubSignature(webhookSecret,
-      JSON.stringify(body));
-    if (!compareSignatures(calculatedSignature, xHubSignature)) {
+    if (!webhookSecrets.some(webhookSecret => {
+      let calculatedSignature = generateXHubSignature(webhookSecret,
+        JSON.stringify(body));
+      return compareSignatures(calculatedSignature, xHubSignature);
+    })) {
       return resolve(res, 403, 'Bad Signature');
     }
   }
