@@ -77,7 +77,7 @@ staging:
     workerType: 'github-worker'
 
   server:
-    publicUrl: 'https://taskcluster-github-staging.herokuapp.com/'
+    publicUrl: 'https://taskcluster-github-staging.herokuapp.com'
     env: 'production'
     forceSSL: true
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
