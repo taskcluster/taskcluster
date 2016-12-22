@@ -64,6 +64,24 @@ production:
     # is a proxy, so we have to trust it.
     trustProxy: true
 
+staging:
+  app:
+    jobQueue: 'jobs'
+    statusQueue: 'statuses'
+    buildTableName: 'TaskclusterGithubBuildsStaging'
+
+  intree:
+    provisionerId: 'aws-provisioner-v1'
+    workerType: 'github-worker'
+
+  server:
+    publicUrl: 'https://taskcluster-github-staging.herokuapp.com/'
+    env: 'production'
+    forceSSL: true
+    # We trust the proxy on heroku, as the SSL end-point provided by heroku
+    # is a proxy, so we have to trust it.
+    trustProxy: true
+
 test:
   webhook:
     secret: ['abc123', 'def456']
