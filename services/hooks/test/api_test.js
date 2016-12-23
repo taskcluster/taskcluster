@@ -258,8 +258,12 @@ suite('API', function() {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       helper.scopes('hooks:trigger-hook:wrong/scope');
       await helper.hooks.triggerHook('foo', 'bar', {a: "payload"}).then(
-          () => { throw new Error("Expected an authentication error"); },
-          (err) => { debug("Got expected authentication error: %s", err); });
+        (resp) => {
+          assume(resp.statusCode).exists();
+          assume(resp.statusCode).equals(400);
+          assume(resp.error).exists();
+        },
+        (err) => { debug("Got expected authentication error: %s", err); });
     });
 
     test("fails if no hook exists", async () => {
