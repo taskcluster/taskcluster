@@ -408,7 +408,14 @@ api.declare({
     hook.lastFire = lastFire;
   });
 
-  return res.reply(resp);
+
+  if (resp) {
+    return res.reply(resp);
+  } else {
+    return res.status(400).json({
+      error: "could not create task: " + err.toString()
+    });
+  }
 });
 
 /** Get secret token for a trigger **/
