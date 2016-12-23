@@ -120,7 +120,7 @@ async function statusHandler(message) {
       state,
       target_url: INSPECTOR_URL + taskGroupId,
       description: 'TaskGroup: ' + state,
-      context: 'Taskcluster',
+      context: this.context.cfg.app.statusContext,
     });
   } catch (e) {
     debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
@@ -214,7 +214,7 @@ async function jobHandler(message) {
         state: 'pending',
         target_url: INSPECTOR_URL + taskGroupId,
         description: 'TaskGroup: Running',
-        context: 'Taskcluster',
+        context: context.cfg.app.statusContext,
       });
 
       let now = new Date();
