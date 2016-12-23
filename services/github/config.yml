@@ -6,6 +6,7 @@ defaults:
     statusQueue: null
     buildTableName: 'TaskclusterGithubBuilds'
     name: 'taskcluster-github'
+    statusContext: 'Taskcluster'
 
   taskcluster:
     # TaskCluster credentials for this server, these must have scopes:
@@ -71,6 +72,7 @@ staging:
     statusQueue: 'statuses'
     buildTableName: 'TaskclusterGithubBuildsStaging'
     name: 'tc-github-staging'
+    statusContext: 'Taskcluster-Staging'
 
   intree:
     provisionerId: 'aws-provisioner-v1'
