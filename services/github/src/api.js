@@ -93,7 +93,7 @@ let api = new API({
     'web hooks',
   ].join('\n'),
   schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
-  context: ['Builds'],
+  context: ['Builds', 'monitor'],
 });
 
 // Export API
@@ -142,19 +142,24 @@ api.declare({
   let msg = {};
   let publisherKey = '';
 
-  if (eventType == 'pull_request') {
-    msg.organization = sanitizeGitHubField(body.repository.owner.login),
-    msg.action = body.action;
-    msg.details = getPullRequestDetails(body);
-    publisherKey = 'pullRequest';
-  } else if (eventType == 'push') {
-    msg.organization = sanitizeGitHubField(body.repository.owner.name),
-    msg.details = getPushDetails(body);
-    publisherKey = 'push';
-  } else if (eventType == 'ping') {
-    return resolve(res, 200, 'Received ping event!');
-  } else {
-    return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+  try {
+    if (eventType == 'pull_request') {
+      msg.organization = sanitizeGitHubField(body.repository.owner.login),
+      msg.action = body.action;
+      msg.details = getPullRequestDetails(body);
+      publisherKey = 'pullRequest';
+    } else if (eventType == 'push') {
+      msg.organization = sanitizeGitHubField(body.repository.owner.name),
+      msg.details = getPushDetails(body);
+      publisherKey = 'push';
+    } else if (eventType == 'ping') {
+      return resolve(res, 200, 'Received ping event!');
+    } else {
+      return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+    }
+  } catch (e) {
+    e.webhookPayload = body;
+    throw e;
   }
 
   // Not all webhook payloads include an e-mail for the user who triggered
