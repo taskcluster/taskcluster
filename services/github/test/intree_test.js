@@ -79,8 +79,8 @@ suite('intree config', () => {
     });
 
   buildConfigTest(
-    'Push Event (Push Task + Pull Task)',
-    configPath + 'taskcluster.push_task_and_pull_task.yml',
+    'Push Event (Push Task + Pull Task + Release Task)',
+    configPath + 'taskcluster.push_pull_release.yml',
     {
       payload:    buildMessage({details: {'event.type': 'push'}}),
     },
@@ -92,8 +92,8 @@ suite('intree config', () => {
     });
 
   buildConfigTest(
-    'Pull Event (Push Task + Pull Task)',
-    configPath + 'taskcluster.push_task_and_pull_task.yml',
+    'Pull Event (Push Task + Pull Task + Release Task)',
+    configPath + 'taskcluster.push_pull_release.yml',
     {
       payload:    buildMessage(),
     },
@@ -105,7 +105,7 @@ suite('intree config', () => {
     });
 
   buildConfigTest(
-    'Pull Event, Single Task Config, Branch Limited (on branch)',
+    'Push Event, Single Task Config, Branch Limited (on branch)',
     configPath + 'taskcluster.branchlimited.yml',
     {
       payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
@@ -118,7 +118,7 @@ suite('intree config', () => {
     });
 
   buildConfigTest(
-    'Pull Event, Single Task Config, Branch Limited (off branch)',
+    'Push Event, Single Task Config, Branch Limited (off branch)',
     configPath + 'taskcluster.branchlimited.yml',
     {
       payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
@@ -136,5 +136,29 @@ suite('intree config', () => {
     {
       'tasks[0].task.extra.github.events': ['pull_request.*'],
       'metadata.owner': 'test@test.com',
+    });
+
+  buildConfigTest(
+    'Release Event, Single Task Config',
+    configPath + 'taskcluster.release_single.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'release'}}),
+    },
+    {
+      'tasks[0].task.extra.github.events': ['release'],
+      'metadata.owner': 'test@test.com',
+      scopes: ['assume:repo:github.com/testorg/testrepo:release'],
+    });
+
+  buildConfigTest(
+    'Release Event (Push Task + Pull Task + Release Task)',
+    configPath + 'taskcluster.push_pull_release.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'release'}}),
+    },
+    {
+      'tasks[0].task.extra.github.events': ['release'],
+      'metadata.owner': 'test@test.com',
+      scopes: ['assume:repo:github.com/testorg/testrepo:release'],
     });
 });

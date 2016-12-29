@@ -1,0 +1,30 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "GitHub Release Message"
+description: |
+  Message reporting that a GitHub release has occurred
+type:         object
+properties:
+  version:    {$const: message-version}
+  organization:
+    description: |
+      The GitHub `organization` which had an event.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-identifier-pattern}
+  repository:
+    description: |
+      The GitHub `repository` which had an event.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-identifier-pattern}
+  details:
+    type:         object
+    description: |
+      Metadata describing the release.
+additionalProperties: false
+required:
+  - version
+  - organization
+  - repository

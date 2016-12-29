@@ -57,6 +57,7 @@ class Handlers {
     let githubEvents = new GithubEvents();
     await this.jobListener.bind(githubEvents.pullRequest());
     await this.jobListener.bind(githubEvents.push());
+    await this.jobListener.bind(githubEvents.release());
 
     // Listen for state changes to the taskcluster tasks and taskgroups
     // We only need to listen for failure and exception events on
