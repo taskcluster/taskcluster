@@ -61,4 +61,19 @@ suite('pulse', () => {
     },
     jsonFile:     'webhook.push.json',
   });
+
+  pulseTest({
+    testName:     'Publish Release',
+    listenFor:    'release',
+    exchangeFunc: 'release',
+    routingKey:   {
+      organization: 'TaskClusterRobot',
+      repository:   'hooks-testing',
+    },
+    details:      {
+      'event.version': 'testing-789',
+      'event.base.repo.branch': 'master',
+    },
+    jsonFile:     'webhook.release.json',
+  });
 });
