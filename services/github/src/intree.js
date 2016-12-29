@@ -22,6 +22,10 @@ function completeInTreeConfig(config, payload) {
     config.scopes = [
       prefix + payload.details['event.base.repo.branch'],
     ];
+  } else if (payload.details['event.type'] == 'release') {
+    config.scopes = [
+      `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release`,
+    ];
   }
 
   // each task can optionally decide if it wants github specific environment

@@ -48,6 +48,21 @@ function getPushDetails(eventData) {
   };
 };
 
+function getReleaseDetails(eventData) {
+  return {
+    'event.type': 'release',
+    'event.base.repo.branch': eventData.release.target_commitish,
+    'event.head.user.login': eventData.release.author.login,
+    'event.version': eventData.release.tag_name,
+    'event.name': eventData.release.name,
+    'event.head.repo.url': eventData.release.url,
+    'event.prerelease': eventData.release.prerelease,
+    'event.draft': eventData.release.draft,
+    'event.tar': eventData.release.tarball_url,
+    'event.zip': eventData.release.zipball_url,
+  };
+}
+
 /**
  * Hashes a payload by some secret, using the same algorithm that
  * GitHub uses to compute their X-Hub-Signature HTTP header. Used
@@ -107,8 +122,8 @@ api.declare({
   title:      'Consume GitHub WebHook',
   stability:  'experimental',
   description: [
-    'Capture a GitHub event and publish it via pulse, if it\'s a push',
-    'or pull request.',
+    'Capture a GitHub event and publish it via pulse, if it\'s a push,',
+    'release or pull request.',
   ].join('\n'),
 }, async function(req, res) {
   let eventType = req.headers['x-github-event'];
@@ -154,6 +169,10 @@ api.declare({
       publisherKey = 'push';
     } else if (eventType == 'ping') {
       return resolve(res, 200, 'Received ping event!');
+    } else if (eventType == 'release') {
+      msg.organization = sanitizeGitHubField(body.repository.owner.login),
+      msg.details = getReleaseDetails(body);
+      publisherKey = 'release';
     } else {
       return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }

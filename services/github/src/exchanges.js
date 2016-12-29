@@ -98,5 +98,22 @@ exchanges.declare({
   CCBuilder:          () => [],
 });
 
+/** release exchange */
+exchanges.declare({
+  exchange:           'release',
+  name:               'release',
+  title:              'GitHub release Event',
+  description: [
+    'When a GitHub release event is posted it will be broadcast on this',
+    'exchange with the designated `organization` and `repository`',
+    'in the routing-key along with event specific metadata in the payload.',
+  ].join('\n'),
+  routingKey:         commonRoutingKey(),
+  schema:             SCHEMA_PREFIX_CONST + 'github-release-message.json#',
+  messageBuilder:     commonMessageBuilder,
+  routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
+  CCBuilder:          () => [],
+});
+
 // Export exchanges
 module.exports = exchanges;
