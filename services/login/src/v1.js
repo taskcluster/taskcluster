@@ -19,20 +19,42 @@ var api = new API({
 module.exports = api;
 
 api.declare({
-  method: 'get',
-  route: '/ping',
-  name: 'ping',
-  title: 'Ping Server',
+  method:     'post',
+  route:      '/persona',
+  name:       'credentialsFromPersonaAssertion',
+  idempotent: false,
+  input:      'persona-request.json',
+  output:     'credentials-response.json',
+  title:      'Get TaskCluster credentials given a Persona assertion',
   stability:  API.stability.experimental,
   description: [
-    'Documented later...',
-    '',
-    '**Warning** this api end-point is **not stable**.',
-  ].join('\n'),
-}, function (req, res) {
-  res.status(200).json({
-    alive: true,
-    uptime: process.uptime(),
-  });
+    "Given an [assertion](https://developer.mozilla.org/en-US/Persona/" +
+    "Quick_setup), return an appropriate set of temporary credentials.",
+    "",
+    "The supplied audience must be on a whitelist of TaskCluster-related",
+    "sites configured in the login service.  This is not a general-purpose",
+    "assertion-verification service!",
+  ].join('\n')
+}, async function(req, res) {
+  // verify the assertion with the persona service
+  let email;
+  try {
+    email = await this.personaVerifier.verify(req.body.assertion, req.body.audience);
+  } catch(err) {
+    // translate PersonaErrors into 400's; everything else is a 500
+    if (err.code == "PersonaError") {
+      res.reportError('InputError', err.message, err);
+    }
+    throw err;
+  }
+
+  // create and authorize a User
+  let user = new User();
+  user.identity = 'persona/' + email;
+  this.authorizer.authorize(user);
+
+  // create and return temporary credentials
+  let credentials = user.createCredentials(this.temporaryCredentials);
+  return res.reply(credentials);
 });
 
