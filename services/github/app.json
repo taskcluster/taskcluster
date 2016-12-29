@@ -1,0 +1,44 @@
+{
+  "name": "taskcluster-github",
+  "scripts": {
+  },
+  "env": {
+    "AZURE_ACCOUNT_NAME": {
+      "required": true
+    },
+    "DEBUG": {
+      "required": true
+    },
+    "GITHUB_OAUTH_TOKEN": {
+      "required": true
+    },
+    "NODE_ENV": {
+      "required": true
+    },
+    "PULSE_PASSWORD": {
+      "required": true
+    },
+    "PULSE_USERNAME": {
+      "required": true
+    },
+    "TASKCLUSTER_ACCESS_TOKEN": {
+      "required": true
+    },
+    "TASKCLUSTER_CLIENT_ID": {
+      "required": true
+    },
+    "WEBHOOK_SECRET": {
+      "required": true
+    }
+  },
+  "formation": {
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
