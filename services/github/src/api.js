@@ -135,7 +135,7 @@ api.declare({
         JSON.stringify(body));
       return compareSignatures(calculatedSignature, xHubSignature);
     })) {
-      return resolve(res, 403, 'Bad Signature');
+      return resolve(res, 403, 'X-hub-signature does not match; bad webhook secret?');
     }
   }
 
