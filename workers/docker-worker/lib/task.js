@@ -410,7 +410,7 @@ export class Task extends EventEmitter {
     if(this.task.payload.features && this.task.payload.features.allowPtrace) {
       // generate and load a new AppArmor profile specialized to this taskId
       // allowing ptrace within the container
-      let aa_profile = await this.makePtraceAppArmorProfile(this.status.taskId);
+      let aa_profile = await this.makePtraceAppArmorProfile();
 
       // add the equivalent of --security-opt apparmor:docker-ptrace
       let hc = procConfig.create.HostConfig
@@ -421,10 +421,10 @@ export class Task extends EventEmitter {
     return procConfig;
   }
 
-  async makePtraceAppArmorProfile(taskId) {
+  async makePtraceAppArmorProfile() {
     // copy and modify the docker-default profile
     let profile = await fs.readFile("/etc/apparmor.d/docker");
-    let name = "worker-" + taskId;
+    let name = "worker-" + this.status.taskId + '-' + this.runId;
 
     // update the name of the profile
     profile = profile.toString('utf-8');
