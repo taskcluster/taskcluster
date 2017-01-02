@@ -11,6 +11,19 @@ may even specify additional help for sub-commands using
 `taskcluster <command> help <subcommand>`, refer to the individual commands help
 text for details.
 
+Building
+========
+
+Getting the source is as simple as running the following command in your shell.
+Go will download the source and set up the repository in your `$GOPATH`.
+
+```
+go get -d github.com/taskcluster/taskcluster-cli
+```
+
+To actually build the application, simply run `make` which will generate the
+executable in the root of the source. The name will default to `taskcluster`.
+
 Development
 ===========
 A command is just an implementation of the `CommandProvider` interface, which
