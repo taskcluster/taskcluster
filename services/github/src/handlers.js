@@ -141,9 +141,14 @@ async function jobHandler(message) {
   // https://github.com/taskcluster/taskcluster-github/issues/52
   let organization = message.payload.organization.replace(/%/g, '.');
   let repository = message.payload.repository.replace(/%/g, '.');
-  let sha = message.payload.details['event.head.sha'];
+  let ref = message.payload.details['event.head.sha'] || message.payload.details['event.version'];
+  let sha = message.payload.details['event.head.sha'] || await context.github.repos.getShaOfCommitRef({
+    owner: organization,
+    repo: repository,
+    ref: `heads/${message.payload.details['event.base.repo.branch']}`,
+  });
 
-  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
+  debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${ref}`);
   let repoconf = undefined;
 
   // Try to fetch a .taskcluster.yml file for every request
@@ -152,7 +157,7 @@ async function jobHandler(message) {
       owner: organization,
       repo: repository,
       path: '.taskcluster.yml',
-      ref: sha,
+      ref,
     });
     repoconf = new Buffer(tcyml.content, 'base64').toString();
   } catch (e) {
