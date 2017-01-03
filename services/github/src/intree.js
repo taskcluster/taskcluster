@@ -30,13 +30,14 @@ function completeInTreeConfig(config, payload) {
 
   // each task can optionally decide if it wants github specific environment
   // variables added to it
+  let stringify = x => x ? `${x}` : x;
   config.tasks = config.tasks.map((task) => {
     if (task.task.extra.github.env) {
       task.task.payload.env = _.merge(
         task.task.payload.env || {}, {
           GITHUB_EVENT: payload.details['event.type'],
           GITHUB_BRANCH: payload.details['event.base.repo.branch'],
-          GITHUB_PULL_REQUEST: payload.details['event.pullNumber'],
+          GITHUB_PULL_REQUEST: stringify(payload.details['event.pullNumber']),
           GITHUB_BASE_REPO_URL: payload.details['event.base.repo.url'],
           GITHUB_BASE_USER: payload.details['event.base.user.login'],
           GITHUB_BASE_SHA: payload.details['event.base.sha'],
