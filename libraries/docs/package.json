@@ -28,7 +28,6 @@
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
     "tar-stream": "^1.5.2",
-    "taskcluster-base": "^5.1.1",
     "taskcluster-client": "^1.0.1"
   },
   "devDependencies": {
@@ -39,8 +38,11 @@
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "^2.5.3",
     "mocha-eslint": "^2.0.2",
+    "pulse-publisher": "^1.1.2",
     "source-map-support": "^0.4.0",
-    "taskcluster-lib-validate": "^2.0.0"
+    "taskcluster-lib-api": "^3.0.1",
+    "taskcluster-lib-validate": "^2.0.0",
+    "typed-env-config": "^1.1.0"
   },
   "main": "./lib/docs.js"
 }
