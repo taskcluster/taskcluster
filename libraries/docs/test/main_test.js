@@ -7,13 +7,15 @@ suite('End to End', () => {
   let rootdir = require('app-root-dir');
   let zlib = require('zlib');
   let validator = require('taskcluster-lib-validate');
-  let base = require('taskcluster-base');
+  let config = require('typed-env-config');
+  let API = require('taskcluster-lib-api');
+  let Exchanges = require('pulse-publisher');
 
   let validate = null;
   let api = null;
   let exchanges = null;
   let references = null;
-  let cfg = base.config();
+  let cfg = config({});
   let credentials = cfg.taskcluster.credentials;
   let tier = 'core';
 
@@ -23,11 +25,11 @@ suite('End to End', () => {
       baseUrl: 'http://localhost:1203/',
       constants: {'my-constant': 42},
     });
-    api = new base.API({
+    api = new API({
       title: 'Testing Stuff',
       description: 'This is for testing stuff!',
     });
-    exchanges = new base.Exchanges({
+    exchanges = new Exchanges({
       title: 'Testing Stuff Again',
       description: 'Another test!',
     });
