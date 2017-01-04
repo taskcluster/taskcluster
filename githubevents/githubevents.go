@@ -92,6 +92,29 @@ func (binding Push) NewPayloadObject() interface{} {
 	return new(GitHubPushMessage)
 }
 
+// When a GitHub release event is posted it will be broadcast on this
+// exchange with the designated `organization` and `repository`
+// in the routing-key along with event specific metadata in the payload.
+//
+// See https://docs.taskcluster.net/reference/core/github/exchanges#release
+type Release struct {
+	RoutingKeyKind string `mwords:"*"`
+	Organization   string `mwords:"*"`
+	Repository     string `mwords:"*"`
+}
+
+func (binding Release) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding Release) ExchangeName() string {
+	return "exchange/taskcluster-github/v1/release"
+}
+
+func (binding Release) NewPayloadObject() interface{} {
+	return new(GitHubReleaseMessage)
+}
+
 func generateRoutingKey(x interface{}) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())

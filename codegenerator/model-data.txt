@@ -1,4 +1,4 @@
-Generated: 1483089795
+Generated: 1483559820
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3018,8 +3018,8 @@ Entry 0     =
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Consume GitHub WebHook'
-    Entry Description = 'Capture a GitHub event and publish it via pulse, if it's a push
-or pull request.'
+    Entry Description = 'Capture a GitHub event and publish it via pulse, if it's a push,
+release or pull request.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -3205,6 +3205,33 @@ in the routing-key along with event specific metadata in the payload.'
         Element M Words   = 'false'
         Element Required  = 'true'
     Entry Schema      = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#'
+Entry 2     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'release'
+    Entry Name        = 'release'
+    Entry Title       = 'GitHub release Event'
+    Entry Description = 'When a GitHub release event is posted it will be broadcast on this
+exchange with the designated `organization` and `repository`
+in the routing-key along with event specific metadata in the payload.'
+    Routing Key Element 0     = 
+        Element Name      = 'routingKeyKind'
+        Element Summary   = 'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.'
+        Element Constant  = 'primary'
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'organization'
+        Element Summary   = 'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'repository'
+        Element Summary   = 'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Entry Schema      = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#'
 
 
 http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#
@@ -3302,6 +3329,51 @@ Title                  = 'GitHub Push Message'
 Type                   = 'object'
 TypeName               = 'GitHubPushMessage'
 SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#'
+
+
+http://schemas.taskcluster.net/github/v1/github-release-message.json#
+=====================================================================
+Additional Properties  = 'false'
+Description            = 'Message reporting that a GitHub release has occurred
+'
+ID                     = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#'
+Properties
+  Property 'details' =
+    Description            = 'Metadata describing the release.
+    '
+    Type                   = 'object'
+    TypeName               = 'Details'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/details'
+  Property 'organization' =
+    Description            = 'The GitHub `organization` which had an event.
+    '
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_%]*)$'
+    Type                   = 'string'
+    TypeName               = 'Organization'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/organization'
+  Property 'repository' =
+    Description            = 'The GitHub `repository` which had an event.
+    '
+    MaxLength              = '100'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_%]*)$'
+    Type                   = 'string'
+    TypeName               = 'Repository'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/repository'
+  Property 'version' =
+    Description            = 'Message version'
+    Enum                   = '[1]'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'Version'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/version'
+Required               = '[version organization repository]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'GitHub Release Message'
+Type                   = 'object'
+TypeName               = 'GitHubReleaseMessage'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#'
 
 
 http://references.taskcluster.net/hooks/v1/api.json

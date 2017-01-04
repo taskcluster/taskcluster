@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 30 Dec 2016 at 09:23:00 UTC. The code was generated
+// Wed, 4 Jan 2017 at 19:57:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -77,8 +77,8 @@ func New(credentials *tcclient.Credentials) *Github {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Capture a GitHub event and publish it via pulse, if it's a push
-// or pull request.
+// Capture a GitHub event and publish it via pulse, if it's a push,
+// release or pull request.
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#githubWebHookConsumer
 func (myGithub *Github) GithubWebHookConsumer() error {
