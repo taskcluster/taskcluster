@@ -39,14 +39,16 @@ Example
 ```js
 let docs              = require('taskcluster-lib-docs');
 let v1                = require('./v1')  # the API declaration
+let config            = require('typed-env-config')
+let validator         = require('taskcluster-lib-validate')
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => config({profile}),
   },
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => base.validator({
+    setup: ({cfg}) => validator({
       prefix: 'service/v1/',
       aws: cfg.aws,
     }),
