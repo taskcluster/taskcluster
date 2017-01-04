@@ -53,7 +53,7 @@ helper.jsonHttpRequest = function(jsonFile, options) {
 
 let webServer = null;
 
-// Setup before tests
+// Setup before any tests run (note that even with TDD style, `mocha.setup` does nothing)
 mocha.before(async () => {
   testing.fakeauth.start(testClients);
 
@@ -96,9 +96,11 @@ mocha.before(async () => {
   });
 });
 
-// Cleanup after tests
+// Cleanup after all tests have completed
 mocha.after(async () => {
   // Kill webServer
-  await webServer.terminate();
+  if (webServer) {
+    await webServer.terminate();
+  }
   testing.fakeauth.stop();
 });
