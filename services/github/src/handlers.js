@@ -3,6 +3,7 @@ let taskcluster = require('taskcluster-client');
 let slugid = require('slugid');
 let yaml = require('js-yaml');
 let assert = require('assert');
+let EventEmitter = require('events');
 let _ = require('lodash');
 
 let INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';
@@ -38,48 +39,77 @@ class Handlers {
     this.statusQueueName = statusQueueName;  // Optional
     this.jobQueueName = jobQueueName;  // Optional
     this.context = context;
+
+    this.handlerComplete = null;
   }
 
-  async setup() {
+  /**
+   * Set up the handlers.  If {noConnect: true}, the handlers are not actually
+   * connected to a pulse connection (used for tests).
+   */
+  async setup(options) {
+    options = options || {};
     assert(this.connection === null, 'Cannot setup twice!');
-    this.connection = new taskcluster.PulseConnection(this.credentials);
-    this.statusListener = new taskcluster.PulseListener({
-      queueName: this.statusQueueName,
-      connection: this.connection,
-    });
-    this.jobListener = new taskcluster.PulseListener({
-      queueName: this.jobQueueName,
-      connection: this.connection,
-    });
+    if (!options.noConnect) {
+      this.connection = new taskcluster.PulseConnection(this.credentials);
+      this.statusListener = new taskcluster.PulseListener({
+        queueName: this.statusQueueName,
+        connection: this.connection,
+      });
+      this.jobListener = new taskcluster.PulseListener({
+        queueName: this.jobQueueName,
+        connection: this.connection,
+      });
 
-    // Listen for new jobs created via the api webhook endpoint
-    let GithubEvents = taskcluster.createClient(this.reference);
-    let githubEvents = new GithubEvents();
-    await this.jobListener.bind(githubEvents.pullRequest());
-    await this.jobListener.bind(githubEvents.push());
-    await this.jobListener.bind(githubEvents.release());
+      // Listen for new jobs created via the api webhook endpoint
+      let GithubEvents = taskcluster.createClient(this.reference);
+      let githubEvents = new GithubEvents();
+      await this.jobListener.bind(githubEvents.pullRequest());
+      await this.jobListener.bind(githubEvents.push());
+      await this.jobListener.bind(githubEvents.release());
 
-    // Listen for state changes to the taskcluster tasks and taskgroups
-    // We only need to listen for failure and exception events on
-    // tasks. We wait for the entire group to be resolved before checking
-    // for success.
-    let queueEvents = new taskcluster.QueueEvents();
-    await this.statusListener.bind(queueEvents.taskFailed({schedulerId: 'taskcluster-github'}));
-    await this.statusListener.bind(queueEvents.taskException({schedulerId: 'taskcluster-github'}));
-    await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId: 'taskcluster-github'}));
+      // Listen for state changes to the taskcluster tasks and taskgroups
+      // We only need to listen for failure and exception events on
+      // tasks. We wait for the entire group to be resolved before checking
+      // for success.
+      let queueEvents = new taskcluster.QueueEvents();
+      await this.statusListener.bind(queueEvents.taskFailed({schedulerId: 'taskcluster-github'}));
+      await this.statusListener.bind(queueEvents.taskException({schedulerId: 'taskcluster-github'}));
+      await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId: 'taskcluster-github'}));
+    } else {
+      this.statusListener = new EventEmitter();
+      this.jobListener = new EventEmitter();
+    }
 
-    this.jobListener.on('message', this.monitor.timedHandler('joblistener', jobHandler.bind(this)));
-    this.statusListener.on('message', this.monitor.timedHandler('statuslistener', statusHandler.bind(this)));
+    const callHandler = (name, handler) => message => {
+      handler.call(this, message).catch(err => {
+        debug(`error (reported to sentry) while calling ${name} handler: ${err}`);
+        this.monitor.reportError(err);
+      }).then(() => {
+        if (this.handlerComplete) {
+          this.handlerComplete();
+        }
+      });
+    };
+    this.jobListener.on('message',
+      this.monitor.timedHandler('joblistener', callHandler('job', jobHandler)));
+    this.statusListener.on('message',
+      this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler)));
 
-    await this.jobListener.connect();
-    await this.statusListener.connect();
+    if (!options.noConnect) {
+      await this.jobListener.connect();
+      await this.statusListener.connect();
 
-    // If this is awaited, it should return [undefined, undefined]
-    return Promise.all([this.jobListener.resume(), this.statusListener.resume()]);
+      // If this is awaited, it should return [undefined, undefined]
+      await Promise.all([this.jobListener.resume(), this.statusListener.resume()]);
+    }
   }
 
   async terminate() {
-    await this.connection.close();
+    if (this.connection) {
+      await this.connection.close();
+      this.connection = undefined;
+    }
   }
 }
 module.exports = Handlers;
