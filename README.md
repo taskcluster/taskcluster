@@ -21,17 +21,17 @@ Go will download the source and set up the repository in your `$GOPATH`.
 go get -d github.com/taskcluster/taskcluster-cli
 ```
 
-To actually build the application, simply run `make` which will generate the
-executable in the root of the source. The name will default to `taskcluster`.
+To actually build the application, simply run `make` in
+`$GOPATH/github.com/taskcluster/taskcluster-cli` which will generate the
+executable `taskcluster` in the root of the source.
 
 Development
 ===========
-A command is just an implementation of the `CommandProvider` interface, which
-is registered in `func init() {...}` using
-`extpoints.Register(name, implememtation)`. Thus, commands are registered as
-an import side-effect.
 
-Using the `go-import-subtree` command all sub-packages will be imported in the
-top-level `main` package. Hence, commands can be organized in sub-packages as
-appropriate, just run `go generate` to ensure they are imported in the
-`main` package.
+A command is just an implementation of the `CommandProvider` interface, which
+is registered in `func init() {...}` using `extpoints.Register(name,
+implememtation)`. Thus, commands are registered as an import side-effect.
+Commands are implemented in sub-packages.
+
+To add a new command, create a new sub-package and add an import for that
+sub-package to `subtree_import.go`, keeping the imports in order.

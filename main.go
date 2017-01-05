@@ -1,5 +1,3 @@
-//go:generate go-import-subtree .
-
 package main
 
 import (
