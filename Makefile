@@ -8,10 +8,7 @@ LDFLAGS ?= ""
 SOURCEDIR = .
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
-all: generate build
-
-generate:
-	go generate .
+all: build
 
 build: $(BINARY)
 
@@ -21,4 +18,4 @@ $(BINARY): $(SOURCES)
 clean:
 	rm -f ${BINARY}
 
-.PHONY: all generate build clean
+.PHONY: all regenerate build clean

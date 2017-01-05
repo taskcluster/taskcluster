@@ -116,6 +116,7 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	for _, e := range p.Entries {
 		if argv[e.Name] == true {
 			entry = &e
+			break
 		}
 	}
 	// Print help information about the end-point
@@ -151,15 +152,19 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	// Setup output
 	var output io.Writer
 	if out, ok := argv["--output"].(string); ok {
-		f, err := os.Create(out)
-		if err != nil {
-			fmt.Printf("Failed to open output file, error: %s\n", err)
-			return false
+		if out == "-" {
+			output = os.Stdout
+		} else {
+			f, err := os.Create(out)
+			if err != nil {
+				fmt.Printf("Failed to open output file, error: %s\n", err)
+				return false
+			}
+			defer f.Close()
+			output = f
 		}
-		defer f.Close()
-		output = f
 	} else {
-		output = os.Stdout
+		panic("cannot determine --output")
 	}
 
 	// Construct arguments
@@ -271,7 +276,9 @@ func (p apiProvider) execute(
 		q = "?" + q
 	}
 
-	// Construct body
+	// Construct parameters
+	var method = strings.ToUpper(entry.Method)
+	var url = baseURL + route + q
 	var body io.Reader
 	if len(input) > 0 {
 		body = bytes.NewReader(input)
@@ -281,8 +288,9 @@ func (p apiProvider) execute(
 	var err error
 	var res *http.Response
 	for i := 0; i < 5; i++ {
+
 		// New request
-		req, err2 := http.NewRequest(entry.Method, baseURL+route+q, body)
+		req, err2 := http.NewRequest(method, url, body)
 		if err2 != nil {
 			panic(fmt.Sprintf("Internal error constructing request, error: %s", err))
 		}
