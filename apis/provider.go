@@ -150,21 +150,15 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	}
 
 	// Setup output
-	var output io.Writer
-	if out, ok := argv["--output"].(string); ok {
-		if out == "-" {
-			output = os.Stdout
-		} else {
-			f, err := os.Create(out)
-			if err != nil {
-				fmt.Printf("Failed to open output file, error: %s\n", err)
-				return false
-			}
-			defer f.Close()
-			output = f
+	var output io.Writer = os.Stdout
+	if out := argv["--output"].(string); out != "-" {
+		f, err := os.Create(out)
+		if err != nil {
+			fmt.Printf("Failed to open output file, error: %s\n", err)
+			return false
 		}
-	} else {
-		panic("cannot determine --output")
+		defer f.Close()
+		output = f
 	}
 
 	// Construct arguments
