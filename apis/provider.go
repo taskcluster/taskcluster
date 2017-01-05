@@ -116,6 +116,7 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	for _, e := range p.Entries {
 		if argv[e.Name] == true {
 			entry = &e
+			break
 		}
 	}
 	// Print help information about the end-point
