@@ -1,0 +1,6 @@
+language: go
+go: 1.7.3
+install: go get -t ./...
+script:
+    - make
+    - go test ./...
