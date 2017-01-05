@@ -28,6 +28,20 @@ executable `taskcluster` in the root of the source.
 Development
 ===========
 
+APIs
+----
+
+The API-related commands (`apis/`) are generated from the TaskCluster reference
+data.  When that data changes, the commands can be updated automatically:
+
+```
+go get github.com/taskcluster/go-got  # only needed the first time
+go generate ./apis
+```
+
+Commands
+--------
+
 A command is just an implementation of the `CommandProvider` interface, which
 is registered in `func init() {...}` using `extpoints.Register(name,
 implememtation)`. Thus, commands are registered as an import side-effect.
