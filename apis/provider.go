@@ -275,7 +275,9 @@ func (p apiProvider) execute(
 		q = "?" + q
 	}
 
-	// Construct body
+	// Construct parameters
+	var method = strings.ToUpper(entry.Method)
+	var url = baseURL + route + q
 	var body io.Reader
 	if len(input) > 0 {
 		body = bytes.NewReader(input)
@@ -285,8 +287,9 @@ func (p apiProvider) execute(
 	var err error
 	var res *http.Response
 	for i := 0; i < 5; i++ {
+
 		// New request
-		req, err2 := http.NewRequest(entry.Method, baseURL+route+q, body)
+		req, err2 := http.NewRequest(method, url, body)
 		if err2 != nil {
 			panic(fmt.Sprintf("Internal error constructing request, error: %s", err))
 		}
