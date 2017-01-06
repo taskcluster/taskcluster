@@ -35,7 +35,7 @@ function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
   // to get a branch name
-  let branch = ref.split('/')[2];
+  let branch = ref.split('/').slice(2).join('/');
   return {
     'event.type': 'push',
     'event.base.repo.branch': branch,
