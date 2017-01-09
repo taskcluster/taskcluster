@@ -291,7 +291,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 7.2.5
+$ ./release.sh 7.2.6
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
