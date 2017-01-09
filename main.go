@@ -438,7 +438,7 @@ func runWorker() {
 	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
 	signedURLsRequestChan, signedURLsResponseChan = SignedURLsManager()
 
-	// loop forever claiming and running tasks!
+	// loop, claiming and running tasks!
 	lastActive := time.Now()
 	lastQueriedProvisioner := time.Now()
 	lastReportedNoTasks := time.Now()
@@ -956,7 +956,7 @@ func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
 	return ResourceUnavailable(task.StatusManager.ReportException((*e)[0].Reason))
 }
 
-func (task *TaskRun) setMaxRunTimer() {
+func (task *TaskRun) setMaxRunTimer() *time.Timer {
 	// Terminating the Worker Early
 	// ----------------------------
 	// If the worker finds itself having to terminate early, for example a spot
@@ -965,11 +965,13 @@ func (task *TaskRun) setMaxRunTimer() {
 	// with the reason `worker-shutdown`. Upon such report the queue will
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
-	go func() {
-		time.Sleep(task.maxRunTimeDeadline.Sub(time.Now()))
-		// ignore any error - in the wrong go routine to properly handle it
-		task.StatusManager.Abort()
-	}()
+	return time.AfterFunc(
+		task.maxRunTimeDeadline.Sub(time.Now()),
+		func() {
+			// ignore any error - in the wrong go routine to properly handle it
+			task.StatusManager.Abort()
+		},
+	)
 }
 
 func (task *TaskRun) kill() {
@@ -1024,6 +1026,20 @@ func (task *TaskRun) run() (err *executionErrors) {
 	}()
 
 	task.setReclaimTimer()
+	defer func() {
+
+		// Bug 1329617
+		// ********* DON'T drain channel **********
+		// because AboutFunc() drains it!
+		// see https://play.golang.org/p/6pqRerGVcg
+		// ****************************************
+		//
+		// if !task.reclaimTimer.Stop() {
+		// <-task.reclaimTimer.C
+		// }
+		task.reclaimTimer.Stop()
+	}()
+
 	task.fetchTaskDefinition()
 
 	logHandle := task.createLogFile()
@@ -1102,12 +1118,19 @@ func (task *TaskRun) run() (err *executionErrors) {
 
 	task.logHeader()
 
-	task.setMaxRunTimer()
+	t := task.setMaxRunTimer()
 	defer func() {
-		// stop reclaim timer, if possible
-		if !task.reclaimTimer.Stop() {
-			<-task.reclaimTimer.C
-		}
+
+		// Bug 1329617
+		// ********* DON'T drain channel **********
+		// because AboutFunc() drains it!
+		// see https://play.golang.org/p/6pqRerGVcg
+		// ****************************************
+		//
+		// if !t.Stop() {
+		// <-t.C
+		// }
+		t.Stop()
 	}()
 
 	started := time.Now()
