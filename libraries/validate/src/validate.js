@@ -1,6 +1,7 @@
 let debug = require('debug')('taskcluster-lib-validate');
 let _ = require('lodash');
 let fs = require('fs');
+let rimraf = require('rimraf');
 let path = require('path');
 let walk = require('walk');
 let yaml = require('js-yaml');
@@ -23,6 +24,8 @@ async function validator(options) {
     publish: process.env.NODE_ENV == 'production',
     baseUrl: 'http://schemas.taskcluster.net/',
     bucket: 'schemas.taskcluster.net',
+    preview: process.env.PREVIEW_JSON_SCHEMA_FILES,
+    writeFile: process.env.WRITE_JSON_SCHEMA_FILES,
   });
 
   if (_.isString(cfg.constants)) {
@@ -87,10 +90,33 @@ async function validator(options) {
       s3Provider = new aws.S3(cfg.aws);
     }
     await Promise.all(_.map(schemas, (content, name) => {
-      return publish(
+      return publish.s3(
         s3Provider,
         cfg.bucket,
         cfg.prefix,
+        name,
+        content
+      );
+    }));
+  }
+
+  if (cfg.writeFile) {
+    debug('Writing schema to local file');
+    let dir = 'rendered_schemas';
+    rimraf.sync(dir);
+    fs.mkdirSync(dir);
+    await Promise.all(_.map(schemas, (content, name) => {
+      return publish.writeFile(
+        name,
+        content
+      );
+    }));
+  }
+
+  if (cfg.preview) {
+    debug('Writing schema to console');
+    await Promise.all(_.map(schemas, (content, name) => {
+      return publish.preview(
         name,
         content
       );

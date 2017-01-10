@@ -108,6 +108,12 @@ that directory called `constants.yaml`. You may override these if desired.
     // Whether or not to push your generated schemas out to the world at large.
     publish: process.env.NODE_ENV == 'production'
 
+    // Whether or not to write your generated schemas to local files.
+    writeFile: false
+
+    // Whether or not to write your generated schemas to the console.
+    preview: false
+
     // What the root of all of your schemas is. This will make up the first part of
     // the key of your schemas. The default should be correct.
     baseUrl: 'http://schema.taskcluster.net/'
