@@ -1030,7 +1030,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 
 		// Bug 1329617
 		// ********* DON'T drain channel **********
-		// because AboutFunc() drains it!
+		// because AfterFunc() drains it!
 		// see https://play.golang.org/p/6pqRerGVcg
 		// ****************************************
 		//
@@ -1123,7 +1123,7 @@ func (task *TaskRun) run() (err *executionErrors) {
 
 		// Bug 1329617
 		// ********* DON'T drain channel **********
-		// because AboutFunc() drains it!
+		// because AfterFunc() drains it!
 		// see https://play.golang.org/p/6pqRerGVcg
 		// ****************************************
 		//
