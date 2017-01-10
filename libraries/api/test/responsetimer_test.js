@@ -3,12 +3,9 @@ suite("api/responsetimer", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var testing         = require('taskcluster-lib-testing');
   var subject         = require('../');
   var monitoring      = require('taskcluster-lib-monitor');
-  var validator       = require('taskcluster-lib-validate');
-  var express         = require('express');
-  var path            = require('path');
+  var helper          = require('./helper');
 
   // Create test api
   var api = new subject({
@@ -51,56 +48,17 @@ suite("api/responsetimer", function() {
 
   var monitor = null;
 
-  setup(function(){
-    testing.fakeauth.start();
-    assert(_apiServer === null,       "_apiServer must be null");
-
-    // Create server for api
-    return validator({
-      folder:         path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/'
-    }).then(async function(validator) {
-      monitor = await monitoring({
-        project: 'tc-lib-api-test',
-        credentials: {clientId: 'fake', accessToken: 'fake'},
-        mock: true,
-      });
-
-      // Create router
-      var router = api.router({
-        validator: validator,
-        authBaseUrl: 'http://localhost:23243',
-        monitor: monitor.prefix('api'),
-      });
-
-      // Create application
-      var app = express();
-
-      // Use router
-      app.use(router);
-
-      return new Promise(function(accept, reject) {
-        var server = app.listen(23525);
-        server.once('listening', function() {
-          accept(server)
-        });
-        server.once('error', reject);
-        _apiServer = server;
-      });
+  // Create a mock authentication server
+  setup(async () => {
+    monitor = await monitoring({
+      project: 'tc-lib-api-test',
+      credentials: {clientId: 'fake', accessToken: 'fake'},
+      mock: true,
     });
-  });
 
-  // Close server
-  teardown(function() {
-    assert(_apiServer,      "_apiServer doesn't exist");
-    return new Promise(function(accept) {
-      _apiServer.once('close', function() {
-        _apiServer = null;
-        accept();
-      });
-      _apiServer.close();
-    });
+    await helper.setupServer({api, monitor: monitor.prefix('api')});
   });
+  teardown(helper.teardownServer);
 
   test("single parameter", function() {
     return Promise.all([
