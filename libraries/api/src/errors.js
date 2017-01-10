@@ -27,10 +27,14 @@ exports.ERROR_CODES = ERROR_CODES;
  * allowed error codes to HTTP status codes, and `monitor` is an instance of
  * `raven.Client` from the `raven` npm module or an instance of taskcluster-lib-monitor.
  */
-let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
+let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
   return (req, res, next) => {
     res.reportError = (code, message, details = {}) => {
       let status = errorCodes[code];
+      let payload = req.body;
+      if (cleanPayload) {
+        payload = cleanPayload(payload);
+      }
       if (status === undefined || typeof(message) !== 'string') {
         message = 'Internal error, unknown error code: ' + code + '\n' +
                   (message || 'Missing message!');
@@ -47,7 +51,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
       let requestInfo = {
         method,
         params:  req.params,
-        payload: req.body,
+        payload,
         time:    (new Date()).toJSON(),
       };
       message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
@@ -63,7 +67,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor = null) => {
         'requestInfo:',
         '  method:   ' + requestInfo.method,
         '  params:   ' + JSON.stringify(requestInfo.params),
-        '  payload:  ' + JSON.stringify(requestInfo.payload, null, 2),
+        '  payload:  ' + JSON.stringify(payload, null, 2),
         '  time:     ' + requestInfo.time,
         'details:',
         JSON.stringify(details, null, 2),

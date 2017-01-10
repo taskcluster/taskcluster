@@ -6,8 +6,7 @@ suite("api/schemaPrefix", function() {
   var testing         = require('taskcluster-lib-testing');
   var validator       = require('taskcluster-lib-validate');
   var subject         = require('../');
-  var express         = require('express');
-  var path            = require('path');
+  var helper          = require('./helper');
 
   // Create test api
   var api = new subject({
@@ -40,60 +39,13 @@ suite("api/schemaPrefix", function() {
     res.reply({value: 4});
   });
 
-  // Reference for test api server
-  var _apiServer = null;
-
   // Create a mock authentication server
-  setup(function(){
-    testing.fakeauth.start();
-    assert(_apiServer === null,       "_apiServer must be null");
-    // Create validator
-    var validatorCreated = validator({
-      folder:         path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/'
-    });
-
-    // Create server for api
-    return validatorCreated.then(function(validator) {
-      // Create router
-      var router = api.router({
-        validator:      validator,
-        authBaseUrl:    'http://localhost:61243'
-      });
-
-      // Create application
-      var app = express();
-
-      // Use router
-      app.use(router);
-
-      return new Promise(function(accept, reject) {
-        var server = app.listen(61515);
-        server.once('listening', function() {
-          accept(server)
-        });
-        server.once('error', reject);
-        _apiServer = server;
-      });
-    });
-  });
-
-  // Close server
-  teardown(function() {
-    testing.fakeauth.stop();
-    assert(_apiServer,      "_apiServer doesn't exist");
-    return new Promise(function(accept) {
-      _apiServer.once('close', function() {
-        _apiServer = null;
-        accept();
-      });
-      _apiServer.close();
-    });
-  });
+  setup(() => helper.setupServer({api}));
+  teardown(helper.teardownServer);
 
   // Test valid input
   test("input (valid)", function() {
-    var url = 'http://localhost:61515/test-input';
+    var url = 'http://localhost:23525/test-input';
     return request
       .get(url)
       .send({value: 5})
@@ -106,7 +58,7 @@ suite("api/schemaPrefix", function() {
 
   // Test invalid input
   test("input (invalid)", function() {
-    var url = 'http://localhost:61515/test-input';
+    var url = 'http://localhost:23525/test-input';
     return request
       .get(url)
       .send({value: 11})
@@ -118,7 +70,7 @@ suite("api/schemaPrefix", function() {
 
   // Test valid output
   test("output (valid)", function() {
-    var url = 'http://localhost:61515/test-output';
+    var url = 'http://localhost:23525/test-output';
     return request
       .get(url)
       .end()
