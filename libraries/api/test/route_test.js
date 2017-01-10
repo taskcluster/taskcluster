@@ -3,12 +3,9 @@ suite("api/route", function() {
   var request         = require('superagent-promise');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var testing         = require('taskcluster-lib-testing');
-  var validator       = require('taskcluster-lib-validate');
   var subject         = require('../');
-  var express         = require('express');
   var slugid          = require('slugid');
-  var path            = require('path');
+  var helper          = require('./helper');
 
   // Create test api
   var api = new subject({
@@ -79,55 +76,9 @@ suite("api/route", function() {
     res.status(200).send(req.params.param2);
   });
 
-  // Reference for test api server
-  var _apiServer = null;
-
   // Create a mock authentication server
-  setup(function(){
-    testing.fakeauth.start();
-    assert(_apiServer === null,       "_apiServer must be null");
-    // Create server for api
-    return validator({
-      folder: path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/',
-    }).then(function(validator) {
-
-      // Create router
-      var router = api.router({
-        validator:      validator,
-        authBaseUrl:    'http://localhost:23243'
-      });
-
-
-      // Create application
-      var app = express();
-
-      // Use router
-      app.use(router);
-
-      return new Promise(function(accept, reject) {
-        var server = app.listen(23525);
-        server.once('listening', function() {
-          accept(server)
-        });
-        server.once('error', reject);
-        _apiServer = server;
-      });
-    });
-  });
-
-  // Close server
-  teardown(function() {
-    testing.fakeauth.stop();
-    assert(_apiServer,      "_apiServer doesn't exist");
-    return new Promise(function(accept) {
-      _apiServer.once('close', function() {
-        _apiServer = null;
-        accept();
-      });
-      _apiServer.close();
-    });
-  });
+  setup(() => helper.setupServer({api}));
+  teardown(helper.teardownServer);
 
   test("single parameter", function() {
     var url = 'http://localhost:23525/single-param/Hello';

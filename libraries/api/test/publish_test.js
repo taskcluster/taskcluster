@@ -5,25 +5,25 @@ suite("api/publish", function() {
   var assert          = require('assert');
   var Promise         = require('promise');
 
+  var cfg = config({
+    envs: [
+      'aws_accessKeyId',
+      'aws_secretAccessKey',
+      'aws_region',
+      'aws_apiVersion',
+      'referenceTestBucket'
+    ],
+    filename:               'taskcluster-base-test'
+  });
+
+  if (!cfg.get('aws') || !cfg.get('referenceTestBucket')) {
+    console.log("Skipping 'publish', missing config file: " +
+                "taskcluster-base-test.conf.json");
+    this.pending = true;
+  }
+
   // Test simple method
   test("publish minimal reference", function() {
-    var cfg = config({
-      envs: [
-        'aws_accessKeyId',
-        'aws_secretAccessKey',
-        'aws_region',
-        'aws_apiVersion',
-        'referenceTestBucket'
-      ],
-      filename:               'taskcluster-base-test'
-    });
-
-    if (!cfg.get('aws') || !cfg.get('referenceTestBucket')) {
-      throw new Error("Skipping 'publish', missing config file: " +
-                      "taskcluster-base-test.conf.json");
-      return;
-    }
-
     // Create test api
     var api = new subject({
       title:        "Test Api",
