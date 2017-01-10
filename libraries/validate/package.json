@@ -20,11 +20,12 @@
   "dependencies": {
     "ajv": "^4.0.4",
     "app-root-dir": "^1.0.2",
-    "aws-sdk": "^2.2.38",
+    "aws-sdk": "^2.5.3",
     "babel-runtime": "^6.0.0",
     "debug": "^2.2.0",
     "js-yaml": "^3.5.3",
     "lodash": "^4.5.1",
+    "rimraf": "^2.5.2",
     "promise": "^7.0.4",
     "url-join": "^1.1.0",
     "walk": "^2.3.9"
@@ -38,7 +39,6 @@
     "mocha": "2.5.3",
     "mocha-eslint": "^2.0.1",
     "mock-aws-s3": "^2.1.0",
-    "rimraf": "^2.5.2",
     "source-map-support": "^0.4.0"
   },
   "main": "./lib/validate.js"
