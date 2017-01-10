@@ -54,7 +54,7 @@ defaults:
 
   # Image used to  create the taskcluster proxy container.
   taskclusterProxyImage: 'taskcluster/taskcluster-proxy:latest'
-  taskclusterLogImage: 'taskcluster/livelog:v3'
+  taskclusterLogImage: 'taskcluster/livelog:v4'
   testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.7'
   balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.3'
   dindImage: 'taskcluster/dind-service:v4.0'
