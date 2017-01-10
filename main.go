@@ -96,7 +96,6 @@ func getLog(
 	// intentions...
 	writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	writer.Header().Set("Access-Control-Allow-Origin", "*")
-	writer.Header().Set("Transfer-Encoding", "chunked")
 	writer.Header().Set("Access-Control-Expose-Headers", "Transfer-Encoding")
 
 	log.Printf("%v", req.Header)
