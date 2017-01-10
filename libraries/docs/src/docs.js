@@ -160,4 +160,8 @@ async function downloader(options) {
   return readStream.pipe(zlib.Unzip());
 }
 
-module.exports = {documenter, downloader};
+// Export documenter as top-level function, it's the only thing used by most
+// people importing this library.
+documenter.downloader = downloader;
+documenter.documenter = documenter; // For backwards compatibility
+module.exports = documenter;
