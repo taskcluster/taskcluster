@@ -1,5 +1,11 @@
 #! /bin/bash -vex
 
+# Pull images used for sidecar containers
+docker pull taskcluster/taskcluster-proxy:latest
+docker pull taskcluster/livelog:v4
+docker pull taskcluster/dind-service:v4.0
+docker pull taskcluster/relengapi-proxy:2.0.1
+
 ## Get recent CA bundle for papertrail
 sudo curl -o /etc/papertrail-bundle.pem https://papertrailapp.com/tools/papertrail-bundle.pem
 md5=md5sum /etc/papertrail-bundle.pem | awk '{ print $1 }'
