@@ -22,7 +22,7 @@
     "debug": "^2.2.0",
     "lodash": "^4.5.1",
     "promise": "^7.0.4",
-    "raven": "^0.11.0",
+    "raven": "^1.1.1",
     "statsum": "^0.5.1",
     "taskcluster-client": "^1.0.1",
     "usage": "^0.7.1"
