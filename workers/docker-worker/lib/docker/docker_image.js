@@ -105,12 +105,12 @@ export default class DockerImage {
 
     while (attempts++ < config.maxAttempts) {
       debug('pull image. Image: %s Attempts: %s', image, attempts);
-      let downloadProgress =
-        dockerUtils.pullImageIfMissing(docker, image, options);
-
-      downloadProgress.pipe(stream, {end: false});
 
       try {
+        let downloadProgress =
+          dockerUtils.pullImageIfMissing(docker, image, options);
+
+        downloadProgress.pipe(stream, {end: false});
         await new Promise((accept, reject) => {
           downloadProgress.once('error', reject);
           downloadProgress.once('end', accept);
