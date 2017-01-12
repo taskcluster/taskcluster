@@ -254,16 +254,18 @@ suite('API', function() {
         }]);
     });
 
-    test("with invalid scopes", async () => {
+    test("fails when creating the task fails", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      helper.scopes('hooks:trigger-hook:wrong/scope');
-      await helper.hooks.triggerHook('foo', 'bar', {a: "payload"}).then(
-        (resp) => {
-          assume(resp.statusCode).exists();
-          assume(resp.statusCode).equals(400);
-          assume(resp.error).exists();
-        },
-        (err) => { debug("Got expected authentication error: %s", err); });
+      helper.creator.shouldFail = true; // firing the hook should fail..
+      helper.scopes('hooks:trigger-hook:foo/bar');
+      try {
+        await helper.hooks.triggerHook('foo', 'bar', {a: "payload"});
+      } catch (err) {
+        assume(err.statusCode).equals(400);
+        assume(err.body.error).exists();
+        return;
+      }
+      throw new Error('should have thrown an exception');
     });
 
     test("fails if no hook exists", async () => {
