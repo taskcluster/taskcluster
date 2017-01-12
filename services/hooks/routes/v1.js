@@ -382,6 +382,7 @@ api.declare({
   var resp;
   var payload = req.body;
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
+  var error = null;
 
   if (!hook) {
     return res.status(404).json({
@@ -397,6 +398,7 @@ api.declare({
       time: new Date(),
     };
   } catch(err) {
+    error = err;
     lastFire = {
       result: 'error',
       error: err,
@@ -413,7 +415,7 @@ api.declare({
     return res.reply(resp);
   } else {
     return res.status(400).json({
-      error: "could not create task: " + err.toString()
+      error: "could not create task: " + (error || "unknown").toString()
     });
   }
 });
