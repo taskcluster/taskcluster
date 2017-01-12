@@ -27,3 +27,9 @@ Speak to the Taskcluster team on IRC via `irc.mozilla.org#taskcluster` channel
 to obtain credentials if you need them.
 
 Tests can then be executed with `npm test`.
+
+Post-Deploy Verification
+------------------------
+This service will auto-deploy upon merging to master. Once it is deployed, you
+can verify that it is functioning as expected by going to the [tools site](https://tools.taskcluster.net/hooks/)
+and creating a new 'garbage' hook.
