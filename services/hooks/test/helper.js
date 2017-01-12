@@ -73,6 +73,8 @@ helper.setup = function() {
     // reset the list of fired tasks
     helper.creator.fireCalls = [];
 
+    helper.creator.shouldFail = false;
+
     // Setup client with all scopes
     helper.scopes();
   });
