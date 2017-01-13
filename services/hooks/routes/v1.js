@@ -1,12 +1,12 @@
-var base        = require('taskcluster-base');
 var parser      = require('cron-parser');
 var debug       = require('debug')('hooks:routes:v1');
 var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
+var API         = require('taskcluster-lib-api');
 var nextDate    = require('../hooks/nextdate');
 var _           = require('lodash');
 
-var api = new base.API({
+var api = new API({
   title:         "Hooks API Documentation",
   description:   [
     "Hooks are a mechanism for creating tasks in response to events.",
