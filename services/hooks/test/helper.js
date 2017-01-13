@@ -1,4 +1,3 @@
-var base        = require('taskcluster-base');
 var data        = require('../hooks/data');
 var taskcluster = require('taskcluster-client');
 var taskcreator = require('../hooks/taskcreator');

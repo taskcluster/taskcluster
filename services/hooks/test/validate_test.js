@@ -1,12 +1,10 @@
-var base = require('taskcluster-base');
+var testing = require('taskcluster-lib-testing');
 var path = require('path');
 
 suite('validate', function() {
-  base.testing.schemas({
+  testing.schemas({
     validator: {
-      folder: path.join(__dirname, '..', 'schemas'),
-      constants: require('../schemas/constants'),
-      schemaPrefix: 'hooks/v1/',
+      prefix: 'hooks/v1/',
     },
     basePath: path.join(__dirname, 'validate_test'),
     schemaPrefix: 'http://schemas.taskcluster.net/',
