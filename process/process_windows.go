@@ -100,12 +100,19 @@ func (r *Result) CrashCause() error {
 }
 
 func (r *Result) String() string {
-	return fmt.Sprintf(`  Exit Code: %v
+	if r.SystemError != nil {
+		return fmt.Sprintf(`WORKER CRASH!!
+%v`, r.SystemError)
+	}
+	if r.SubprocessResult != nil {
+		return fmt.Sprintf(`  Exit Code: %v
   User Time: %v
 Kernel Time: %v
   Wall Time: %v
 Peak Memory: %v
      Result: %v`, r.ExitCode, r.UserTime, r.KernelTime, r.WallTime, r.PeakMemory, GetVerdict(r))
+	}
+	return fmt.Sprintf("Worker in unknown state: %#v", r)
 }
 
 func (c *Command) String() string {
