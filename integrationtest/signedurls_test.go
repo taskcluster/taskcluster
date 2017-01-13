@@ -12,7 +12,7 @@ import (
 // TestSignedURLPermCredsAuthScopes tests that a signed URL can be created from
 // permanent credentials for downloading artifact `private/build/sources.xml`
 // from task run
-// https://tools.taskcluster.net/task-inspector/#DD1kmgFiRMWTjyiNoEJIMA/0 with
+// https://tools.taskcluster.net/task-inspector/#X_WYg5S6QvKqMmmAgGo8ng/0 with
 // authorized scopes restricted to just the permission required for downloading
 // it, and successfully queried to return the protected content.
 func TestSignedURLPermCredsAuthScopes(t *testing.T) {
@@ -24,7 +24,7 @@ func TestSignedURLPermCredsAuthScopes(t *testing.T) {
 
 // TestSignedURLPermCreds tests that a signed URL can be created from permanent
 // credentials for downloading artifact `private/build/sources.xml` from task
-// run https://tools.taskcluster.net/task-inspector/#DD1kmgFiRMWTjyiNoEJIMA/0
+// run https://tools.taskcluster.net/task-inspector/#X_WYg5S6QvKqMmmAgGo8ng/0
 // and that the signed URL returns the protected content when queried.
 func TestSignedURLPermCreds(t *testing.T) {
 	permaCreds := permaCreds(t)
@@ -40,7 +40,7 @@ func TestBadAuthScopesSignedURL(t *testing.T) {
 	permaCreds := permaCreds(t)
 	permaCreds.AuthorizedScopes = []string{"queue:task-priority:high"}
 	myQueue := queue.New(permaCreds)
-	signedURL, err := myQueue.GetArtifact_SignedURL("DD1kmgFiRMWTjyiNoEJIMA", "0", "private/build/sources.xml", time.Second*30)
+	signedURL, err := myQueue.GetArtifact_SignedURL("X_WYg5S6QvKqMmmAgGo8ng", "0", "private/build/sources.xml", time.Second*30)
 	if err != nil {
 		t.Fatalf("Exception thrown signing URL\n%s", err)
 	}
@@ -60,7 +60,7 @@ func TestBadAuthScopesSignedURL(t *testing.T) {
 
 // TestSignedURLTempCreds tests that a signed URL can be created from temporary
 // credentials for downloading artifact `private/build/sources.xml` from task
-// run https://tools.taskcluster.net/task-inspector/#DD1kmgFiRMWTjyiNoEJIMA/0
+// run https://tools.taskcluster.net/task-inspector/#X_WYg5S6QvKqMmmAgGo8ng/0
 // with temporary credentials' scopes restricted to just the permission
 // required for downloading it, and that the signed URL returns the protected
 // content when queried.
@@ -76,11 +76,11 @@ func TestSignedURLTempCreds(t *testing.T) {
 
 // Utility function to validate that a signed URL can be created from the
 // supplied queue credentials for artifact `private/build/sources.xml` from run
-// https://tools.taskcluster.net/task-inspector/#DD1kmgFiRMWTjyiNoEJIMA/0, and
+// https://tools.taskcluster.net/task-inspector/#X_WYg5S6QvKqMmmAgGo8ng/0, and
 // that when queried, the signed URL returns content whose length matches the
-// expected 18170 bytes.
+// expected 12 bytes.
 func createAndTestExampleSignedURL(myQueue *queue.Queue, t *testing.T) {
-	signedURL, err := myQueue.GetArtifact_SignedURL("DD1kmgFiRMWTjyiNoEJIMA", "0", "private/build/sources.xml", time.Second*30)
+	signedURL, err := myQueue.GetArtifact_SignedURL("X_WYg5S6QvKqMmmAgGo8ng", "0", "private/build/sources.xml", time.Second*30)
 	if err != nil {
 		t.Fatalf("Exception thrown signing URL\n%s", err)
 	}
@@ -92,7 +92,7 @@ func createAndTestExampleSignedURL(myQueue *queue.Queue, t *testing.T) {
 	if err != nil {
 		t.Fatalf("Exception thrown reading from signed URL %s\n%s", signedURL, err)
 	}
-	if len(respBody) != 18170 {
-		t.Fatalf("Expected response body from signed URL %s to be 18170 bytes, but was %v bytes", signedURL, len(respBody))
+	if len(respBody) != 12 {
+		t.Fatalf("Expected response body from signed URL %s to be 12 bytes, but was %v bytes", signedURL, len(respBody))
 	}
 }
