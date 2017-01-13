@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 6 Jan 2017 at 15:23:00 UTC. The code was generated
+// Fri, 13 Jan 2017 at 14:41:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -200,10 +200,10 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 //   * hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
-func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerPayload) (*TaskStatusResponse, error) {
+func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerPayload) (*TaskStatusStructure, error) {
 	cd := tcclient.ConnectionData(*myHooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusResponse), nil)
-	return responseObject.(*TaskStatusResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusStructure), nil)
+	return responseObject.(*TaskStatusStructure), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -252,8 +252,18 @@ func (myHooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTok
 // This endpoint triggers a defined hook with a valid token.
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
-func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerPayload) (*TaskStatusResponse, error) {
+func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerPayload) (*TaskStatusStructure, error) {
 	cd := tcclient.ConnectionData(*myHooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusResponse), nil)
-	return responseObject.(*TaskStatusResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
+	return responseObject.(*TaskStatusStructure), err
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/hooks/api-docs#ping
+func (myHooks *Hooks) Ping() error {
+	cd := tcclient.ConnectionData(*myHooks)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }

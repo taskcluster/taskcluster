@@ -38,18 +38,14 @@ type (
 	// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
 	HookCreationRequest struct {
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
-		//
-		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "1 day"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
-		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
-		//
-		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
 		//
@@ -106,18 +102,14 @@ type (
 	// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
 	HookDefinition struct {
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
-		//
-		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "1 day"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
-		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
-		//
-		// Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
 		//
@@ -280,210 +272,204 @@ type (
 		Time tcclient.Time `json:"time"`
 	}
 
-	// Response to a task status request
-	//
-	// See http://schemas.taskcluster.net/hooks/v1/task-status.json#
-	TaskStatusResponse struct {
-
-		// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status
-		Status TaskStatusStructure `json:"status"`
-	}
-
 	// A representation of **task status** as known by the queue
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+	// See http://schemas.taskcluster.net/hooks/v1/task-status.json#
 	TaskStatusStructure struct {
 
-		// Deadline of the task, `pending` and `running` runs are
-		// resolved as **exception** if not resolved by other means
-		// before the deadline. Note, deadline cannot be more than
-		// 5 days into the future
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
-		Deadline tcclient.Time `json:"deadline"`
+		// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status
+		Status struct {
 
-		// Task expiration, time at which task definition and
-		// status is deleted. Notice that all artifacts for the task
-		// must have an expiration that is no later than this.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
-		Expires tcclient.Time `json:"expires"`
-
-		// Unique identifier for the provisioner that this task must be scheduled on
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/provisionerId
-		ProvisionerID string `json:"provisionerId"`
-
-		// Number of retries left for the task in case of infrastructure issues
-		//
-		// Mininum:    0
-		// Maximum:    999
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
-		RetriesLeft int `json:"retriesLeft"`
-
-		// List of runs, ordered so that index `i` has `runId == i`
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs
-		Runs []struct {
-
-			// Reason for the creation of this run,
-			// **more reasons may be added in the future**.
+			// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 			//
-			// Possible values:
-			//   * "scheduled"
-			//   * "retry"
-			//   * "task-retry"
-			//   * "rerun"
-			//   * "exception"
+			// Default:    "1 day"
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
-			ReasonCreated string `json:"reasonCreated"`
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/deadline
+			Deadline string `json:"deadline"`
 
-			// Reason that run was resolved, this is mainly
-			// useful for runs resolved as `exception`.
-			// Note, **more reasons may be added in the future**, also this
-			// property is only available after the run is resolved.
+			// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 			//
-			// Possible values:
-			//   * "completed"
-			//   * "failed"
-			//   * "deadline-exceeded"
-			//   * "canceled"
-			//   * "superseded"
-			//   * "claim-expired"
-			//   * "worker-shutdown"
-			//   * "malformed-payload"
-			//   * "resource-unavailable"
-			//   * "internal-error"
-			//   * "intermittent-task"
+			// Default:    "3 months"
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
-			ReasonResolved string `json:"reasonResolved,omitempty"`
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/expires
+			Expires string `json:"expires"`
 
-			// Date-time at which this run was resolved, ie. when the run changed
-			// state from `running` to either `completed`, `failed` or `exception`.
-			// This property is only present after the run as been resolved.
+			// Unique identifier for the provisioner that this task must be scheduled on
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
-			Resolved tcclient.Time `json:"resolved,omitempty"`
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/provisionerId
+			ProvisionerID string `json:"provisionerId"`
 
-			// Id of this task run, `run-id`s always starts from `0`
+			// Number of retries left for the task in case of infrastructure issues
 			//
 			// Mininum:    0
-			// Maximum:    1000
+			// Maximum:    999
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
-			RunID int `json:"runId"`
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/retriesLeft
+			RetriesLeft int `json:"retriesLeft"`
 
-			// Date-time at which this run was scheduled, ie. when the run was
-			// created in state `pending`.
+			// List of runs, ordered so that index `i` has `runId == i`
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
-			Scheduled tcclient.Time `json:"scheduled"`
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs
+			Runs []struct {
 
-			// Date-time at which this run was claimed, ie. when the run changed
-			// state from `pending` to `running`. This property is only present
-			// after the run has been claimed.
+				// Reason for the creation of this run,
+				// **more reasons may be added in the future**.
+				//
+				// Possible values:
+				//   * "scheduled"
+				//   * "retry"
+				//   * "task-retry"
+				//   * "rerun"
+				//   * "exception"
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/reasonCreated
+				ReasonCreated string `json:"reasonCreated"`
+
+				// Reason that run was resolved, this is mainly
+				// useful for runs resolved as `exception`.
+				// Note, **more reasons may be added in the future**, also this
+				// property is only available after the run is resolved.
+				//
+				// Possible values:
+				//   * "completed"
+				//   * "failed"
+				//   * "deadline-exceeded"
+				//   * "canceled"
+				//   * "superseded"
+				//   * "claim-expired"
+				//   * "worker-shutdown"
+				//   * "malformed-payload"
+				//   * "resource-unavailable"
+				//   * "internal-error"
+				//   * "intermittent-task"
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/reasonResolved
+				ReasonResolved string `json:"reasonResolved,omitempty"`
+
+				// Date-time at which this run was resolved, ie. when the run changed
+				// state from `running` to either `completed`, `failed` or `exception`.
+				// This property is only present after the run as been resolved.
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/resolved
+				Resolved tcclient.Time `json:"resolved,omitempty"`
+
+				// Id of this task run, `run-id`s always starts from `0`
+				//
+				// Mininum:    0
+				// Maximum:    1000
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/runId
+				RunID int `json:"runId"`
+
+				// Date-time at which this run was scheduled, ie. when the run was
+				// created in state `pending`.
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/scheduled
+				Scheduled tcclient.Time `json:"scheduled"`
+
+				// Date-time at which this run was claimed, ie. when the run changed
+				// state from `pending` to `running`. This property is only present
+				// after the run has been claimed.
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/started
+				Started tcclient.Time `json:"started,omitempty"`
+
+				// State of this run
+				//
+				// Possible values:
+				//   * "pending"
+				//   * "running"
+				//   * "completed"
+				//   * "failed"
+				//   * "exception"
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/state
+				State string `json:"state"`
+
+				// Time at which the run expires and is resolved as `failed`, if the
+				// run isn't reclaimed. Note, only present after the run has been
+				// claimed.
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/takenUntil
+				TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+
+				// Identifier for group that worker who executes this run is a part of,
+				// this identifier is mainly used for efficient routing.
+				// Note, this property is only present after the run is claimed.
+				//
+				// Syntax:     ^([a-zA-Z0-9-_]*)$
+				// Min length: 1
+				// Max length: 22
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerGroup
+				WorkerGroup string `json:"workerGroup,omitempty"`
+
+				// Identifier for worker evaluating this run within given
+				// `workerGroup`. Note, this property is only available after the run
+				// has been claimed.
+				//
+				// Syntax:     ^([a-zA-Z0-9-_]*)$
+				// Min length: 1
+				// Max length: 22
+				//
+				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerId
+				WorkerID string `json:"workerId,omitempty"`
+			} `json:"runs"`
+
+			// Identifier for the scheduler that _defined_ this task.
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
-			Started tcclient.Time `json:"started,omitempty"`
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/schedulerId
+			SchedulerID string `json:"schedulerId"`
 
-			// State of this run
+			// State of this task. This is just an auxiliary property derived from state
+			// of latests run, or `unscheduled` if none.
 			//
 			// Possible values:
+			//   * "unscheduled"
 			//   * "pending"
 			//   * "running"
 			//   * "completed"
 			//   * "failed"
 			//   * "exception"
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/state
 			State string `json:"state"`
 
-			// Time at which the run expires and is resolved as `failed`, if the
-			// run isn't reclaimed. Note, only present after the run has been
-			// claimed.
+			// Identifier for a group of tasks scheduled together with this task, by
+			// scheduler identified by `schedulerId`. For tasks scheduled by the
+			// task-graph scheduler, this is the `taskGraphId`.
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
-			TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			//
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/taskGroupId
+			TaskGroupID string `json:"taskGroupId"`
 
-			// Identifier for group that worker who executes this run is a part of,
-			// this identifier is mainly used for efficient routing.
-			// Note, this property is only present after the run is claimed.
+			// Unique task identifier, this is UUID encoded as
+			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+			// stripped of `=` padding.
 			//
-			// Syntax:     ^([a-zA-Z0-9-_]*)$
-			// Min length: 1
-			// Max length: 22
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
-			WorkerGroup string `json:"workerGroup,omitempty"`
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/taskId
+			TaskID string `json:"taskId"`
 
-			// Identifier for worker evaluating this run within given
-			// `workerGroup`. Note, this property is only available after the run
-			// has been claimed.
+			// Identifier for worker type within the specified provisioner
 			//
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
 			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
-			WorkerID string `json:"workerId,omitempty"`
-		} `json:"runs"`
-
-		// Identifier for the scheduler that _defined_ this task.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/schedulerId
-		SchedulerID string `json:"schedulerId"`
-
-		// State of this task. This is just an auxiliary property derived from state
-		// of latests run, or `unscheduled` if none.
-		//
-		// Possible values:
-		//   * "unscheduled"
-		//   * "pending"
-		//   * "running"
-		//   * "completed"
-		//   * "failed"
-		//   * "exception"
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/state
-		State string `json:"state"`
-
-		// Identifier for a group of tasks scheduled together with this task, by
-		// scheduler identified by `schedulerId`. For tasks scheduled by the
-		// task-graph scheduler, this is the `taskGraphId`.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskGroupId
-		TaskGroupID string `json:"taskGroupId"`
-
-		// Unique task identifier, this is UUID encoded as
-		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-		// stripped of `=` padding.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId
-		TaskID string `json:"taskId"`
-
-		// Identifier for worker type within the specified provisioner
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType
-		WorkerType string `json:"workerType"`
+			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/workerType
+			WorkerType string `json:"workerType"`
+		} `json:"status"`
 	}
 
 	// Definition of a task embedded in a hook

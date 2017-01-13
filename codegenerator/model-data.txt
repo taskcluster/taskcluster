@@ -1,4 +1,4 @@
-Generated: 1483716198
+Generated: 1484318480
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3563,6 +3563,20 @@ Entry 11    =
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook with a token'
     Entry Description = 'This endpoint triggers a defined hook with a valid token.'
+Entry 12    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Respond without doing anything.
+This endpoint is used to check that the service is up.'
 
 
 http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
@@ -3574,18 +3588,16 @@ ID                     = 'http://schemas.taskcluster.net/hooks/v1/create-hook-re
 Properties
   Property 'deadline' =
     Default                = '1 day'
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
-    
-    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+    '
     Title                  = 'Deadline'
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline'
   Property 'expires' =
     Default                = '3 months'
-    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
-    
-    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+    '
     Title                  = 'Expiration'
     Type                   = 'string'
     TypeName               = 'Expiration'
@@ -3665,18 +3677,16 @@ ID                     = 'http://schemas.taskcluster.net/hooks/v1/hook-definitio
 Properties
   Property 'deadline' =
     Default                = '1 day'
-    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than5 days into the future.
-    
-    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+    '
     Title                  = 'Deadline'
     Type                   = 'string'
     TypeName               = 'Deadline'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline'
   Property 'expires' =
     Default                = '3 months'
-    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this.
-    
-    Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)'
+    Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+    '
     Title                  = 'Expiration'
     Type                   = 'string'
     TypeName               = 'Expiration'
@@ -4033,19 +4043,223 @@ SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/schedule.json#
 http://schemas.taskcluster.net/hooks/v1/task-status.json#
 =========================================================
 Additional Properties  = 'false'
-Description            = 'Response to a task status request
+Description            = 'A representation of **task status** as known by the queue
 '
 ID                     = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#'
 Properties
   Property 'status' =
-    Ref                    = 'http://schemas.taskcluster.net/queue/v1/task-status.json'
+    Additional Properties  = 'false'
+    Properties
+      Property 'deadline' =
+        Default                = '1 day'
+        Description            = 'Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+        '
+        Title                  = 'Deadline'
+        Type                   = 'string'
+        TypeName               = 'Deadline'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/deadline'
+      Property 'expires' =
+        Default                = '3 months'
+        Description            = 'Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+        '
+        Title                  = 'Expiration'
+        Type                   = 'string'
+        TypeName               = 'Expiration'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/expires'
+      Property 'provisionerId' =
+        Description            = 'Unique identifier for the provisioner that this task must be scheduled on
+        '
+        MaxLength              = '22'
+        MinLength              = '1'
+        Pattern                = '^([a-zA-Z0-9-_]*)$'
+        Title                  = 'Provisioner Id'
+        Type                   = 'string'
+        TypeName               = 'ProvisionerID'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/provisionerId'
+      Property 'retriesLeft' =
+        Description            = 'Number of retries left for the task in case of infrastructure issues
+        '
+        Maximum                = '999'
+        Minimum                = '0'
+        Title                  = 'Retries Left'
+        Type                   = 'integer'
+        TypeName               = 'RetriesLeft'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/retriesLeft'
+      Property 'runs' =
+        Description            = 'List of runs, ordered so that index `i` has `runId == i`
+        '
+        Items
+          Additional Properties  = 'false'
+          Description            = 'JSON object with information about a run
+          '
+          Properties
+            Property 'reasonCreated' =
+              Description            = 'Reason for the creation of this run,
+              **more reasons may be added in the future**.
+              '
+              Enum                   = '[scheduled retry task-retry rerun exception]'
+              Title                  = 'Reason Created'
+              Type                   = 'string'
+              TypeName               = 'ReasonCreated'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/reasonCreated'
+            Property 'reasonResolved' =
+              Description            = 'Reason that run was resolved, this is mainly
+              useful for runs resolved as `exception`.
+              Note, **more reasons may be added in the future**, also this
+              property is only available after the run is resolved.
+              '
+              Enum                   = '[completed failed deadline-exceeded canceled superseded claim-expired worker-shutdown malformed-payload resource-unavailable internal-error intermittent-task]'
+              Title                  = 'Reason Resolved'
+              Type                   = 'string'
+              TypeName               = 'ReasonResolved'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/reasonResolved'
+            Property 'resolved' =
+              Description            = 'Date-time at which this run was resolved, ie. when the run changed
+              state from `running` to either `completed`, `failed` or `exception`.
+              This property is only present after the run as been resolved.
+              '
+              Format                 = 'date-time'
+              Title                  = 'Resolved'
+              Type                   = 'string'
+              TypeName               = 'Resolved'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/resolved'
+            Property 'runId' =
+              Description            = 'Id of this task run, `run-id`s always starts from `0`
+              '
+              Maximum                = '1000'
+              Minimum                = '0'
+              Title                  = 'Run Identifier'
+              Type                   = 'integer'
+              TypeName               = 'RunIdentifier'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/runId'
+            Property 'scheduled' =
+              Description            = 'Date-time at which this run was scheduled, ie. when the run was
+              created in state `pending`.
+              '
+              Format                 = 'date-time'
+              Title                  = 'Scheduled'
+              Type                   = 'string'
+              TypeName               = 'Scheduled'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/scheduled'
+            Property 'started' =
+              Description            = 'Date-time at which this run was claimed, ie. when the run changed
+              state from `pending` to `running`. This property is only present
+              after the run has been claimed.
+              '
+              Format                 = 'date-time'
+              Title                  = 'Started'
+              Type                   = 'string'
+              TypeName               = 'Started'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/started'
+            Property 'state' =
+              Description            = 'State of this run
+              '
+              Enum                   = '[pending running completed failed exception]'
+              Title                  = 'Run State'
+              Type                   = 'string'
+              TypeName               = 'RunState'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/state'
+            Property 'takenUntil' =
+              Description            = 'Time at which the run expires and is resolved as `failed`, if the
+              run isn't reclaimed. Note, only present after the run has been
+              claimed.
+              '
+              Format                 = 'date-time'
+              Title                  = 'Taken Until'
+              Type                   = 'string'
+              TypeName               = 'TakenUntil'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/takenUntil'
+            Property 'workerGroup' =
+              Description            = 'Identifier for group that worker who executes this run is a part of,
+              this identifier is mainly used for efficient routing.
+              Note, this property is only present after the run is claimed.
+              '
+              MaxLength              = '22'
+              MinLength              = '1'
+              Pattern                = '^([a-zA-Z0-9-_]*)$'
+              Title                  = 'Worker Group'
+              Type                   = 'string'
+              TypeName               = 'WorkerGroup'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerGroup'
+            Property 'workerId' =
+              Description            = 'Identifier for worker evaluating this run within given
+              `workerGroup`. Note, this property is only available after the run
+              has been claimed.
+              '
+              MaxLength              = '22'
+              MinLength              = '1'
+              Pattern                = '^([a-zA-Z0-9-_]*)$'
+              Title                  = 'Worker Identifier'
+              Type                   = 'string'
+              TypeName               = 'WorkerIdentifier'
+              SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerId'
+          Required               = '[runId state reasonCreated scheduled]'
+          Title                  = 'Run Information'
+          Type                   = 'object'
+          TypeName               = 'RunInformation'
+          SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items'
+        Title                  = 'List of Runs'
+        Type                   = 'array'
+        TypeName               = 'ListOfRuns'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs'
+      Property 'schedulerId' =
+        Description            = 'Identifier for the scheduler that _defined_ this task.
+        '
+        MaxLength              = '22'
+        MinLength              = '1'
+        Pattern                = '^([a-zA-Z0-9-_]*)$'
+        Title                  = 'Scheduler Identifier'
+        Type                   = 'string'
+        TypeName               = 'SchedulerIdentifier'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/schedulerId'
+      Property 'state' =
+        Description            = 'State of this task. This is just an auxiliary property derived from state
+        of latests run, or `unscheduled` if none.
+        '
+        Enum                   = '[unscheduled pending running completed failed exception]'
+        Title                  = 'State'
+        Type                   = 'string'
+        TypeName               = 'State'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/state'
+      Property 'taskGroupId' =
+        Description            = 'Identifier for a group of tasks scheduled together with this task, by
+        scheduler identified by `schedulerId`. For tasks scheduled by the
+        task-graph scheduler, this is the `taskGraphId`.
+        '
+        Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+        Title                  = 'Task-Group Identifier'
+        Type                   = 'string'
+        TypeName               = 'TaskGroupIdentifier'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/taskGroupId'
+      Property 'taskId' =
+        Description            = 'Unique task identifier, this is UUID encoded as
+        [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+        stripped of `=` padding.
+        '
+        Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+        Title                  = 'Task Identifier'
+        Type                   = 'string'
+        TypeName               = 'TaskIdentifier'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/taskId'
+      Property 'workerType' =
+        Description            = 'Identifier for worker type within the specified provisioner
+        '
+        MaxLength              = '22'
+        MinLength              = '1'
+        Pattern                = '^([a-zA-Z0-9-_]*)$'
+        Title                  = 'Worker Type'
+        Type                   = 'string'
+        TypeName               = 'WorkerType'
+        SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/workerType'
+    Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline expires retriesLeft state runs]'
+    Type                   = 'object'
     TypeName               = 'Status'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status'
 Required               = '[status]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Status Response'
+Title                  = 'Task Status Structure'
 Type                   = 'object'
-TypeName               = 'TaskStatusResponse'
+TypeName               = 'TaskStatusStructure'
 SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-status.json#'
 
 
@@ -4304,227 +4518,6 @@ Title                  = 'trigger token response'
 Type                   = 'object'
 TypeName               = 'TriggerTokenResponse'
 SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json#'
-
-
-http://schemas.taskcluster.net/queue/v1/task-status.json#
-=========================================================
-Additional Properties  = 'false'
-Description            = 'A representation of **task status** as known by the queue
-'
-ID                     = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
-Properties
-  Property 'deadline' =
-    Description            = 'Deadline of the task, `pending` and `running` runs are
-    resolved as **exception** if not resolved by other means
-    before the deadline. Note, deadline cannot be more than
-    5 days into the future
-    '
-    Format                 = 'date-time'
-    Title                  = 'Deadline'
-    Type                   = 'string'
-    TypeName               = 'Deadline'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline'
-  Property 'expires' =
-    Description            = 'Task expiration, time at which task definition and
-    status is deleted. Notice that all artifacts for the task
-    must have an expiration that is no later than this.
-    '
-    Format                 = 'date-time'
-    Title                  = 'Expiration'
-    Type                   = 'string'
-    TypeName               = 'Expiration'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires'
-  Property 'provisionerId' =
-    Description            = 'Unique identifier for the provisioner that this task must be scheduled on
-    '
-    MaxLength              = '22'
-    MinLength              = '1'
-    Pattern                = '^([a-zA-Z0-9-_]*)$'
-    Title                  = 'Provisioner Id'
-    Type                   = 'string'
-    TypeName               = 'ProvisionerID'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/provisionerId'
-  Property 'retriesLeft' =
-    Description            = 'Number of retries left for the task in case of infrastructure issues
-    '
-    Maximum                = '999'
-    Minimum                = '0'
-    Title                  = 'Retries Left'
-    Type                   = 'integer'
-    TypeName               = 'RetriesLeft'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft'
-  Property 'runs' =
-    Description            = 'List of runs, ordered so that index `i` has `runId == i`
-    '
-    Items
-      Additional Properties  = 'false'
-      Description            = 'JSON object with information about a run
-      '
-      Properties
-        Property 'reasonCreated' =
-          Description            = 'Reason for the creation of this run,
-          **more reasons may be added in the future**.
-          '
-          Enum                   = '[scheduled retry task-retry rerun exception]'
-          Title                  = 'Reason Created'
-          Type                   = 'string'
-          TypeName               = 'ReasonCreated'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated'
-        Property 'reasonResolved' =
-          Description            = 'Reason that run was resolved, this is mainly
-          useful for runs resolved as `exception`.
-          Note, **more reasons may be added in the future**, also this
-          property is only available after the run is resolved.
-          '
-          Enum                   = '[completed failed deadline-exceeded canceled superseded claim-expired worker-shutdown malformed-payload resource-unavailable internal-error intermittent-task]'
-          Title                  = 'Reason Resolved'
-          Type                   = 'string'
-          TypeName               = 'ReasonResolved'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved'
-        Property 'resolved' =
-          Description            = 'Date-time at which this run was resolved, ie. when the run changed
-          state from `running` to either `completed`, `failed` or `exception`.
-          This property is only present after the run as been resolved.
-          '
-          Format                 = 'date-time'
-          Title                  = 'Resolved'
-          Type                   = 'string'
-          TypeName               = 'Resolved'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved'
-        Property 'runId' =
-          Description            = 'Id of this task run, `run-id`s always starts from `0`
-          '
-          Maximum                = '1000'
-          Minimum                = '0'
-          Title                  = 'Run Identifier'
-          Type                   = 'integer'
-          TypeName               = 'RunIdentifier'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId'
-        Property 'scheduled' =
-          Description            = 'Date-time at which this run was scheduled, ie. when the run was
-          created in state `pending`.
-          '
-          Format                 = 'date-time'
-          Title                  = 'Scheduled'
-          Type                   = 'string'
-          TypeName               = 'Scheduled'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled'
-        Property 'started' =
-          Description            = 'Date-time at which this run was claimed, ie. when the run changed
-          state from `pending` to `running`. This property is only present
-          after the run has been claimed.
-          '
-          Format                 = 'date-time'
-          Title                  = 'Started'
-          Type                   = 'string'
-          TypeName               = 'Started'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started'
-        Property 'state' =
-          Description            = 'State of this run
-          '
-          Enum                   = '[pending running completed failed exception]'
-          Title                  = 'Run State'
-          Type                   = 'string'
-          TypeName               = 'RunState'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state'
-        Property 'takenUntil' =
-          Description            = 'Time at which the run expires and is resolved as `failed`, if the
-          run isn't reclaimed. Note, only present after the run has been
-          claimed.
-          '
-          Format                 = 'date-time'
-          Title                  = 'Taken Until'
-          Type                   = 'string'
-          TypeName               = 'TakenUntil'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil'
-        Property 'workerGroup' =
-          Description            = 'Identifier for group that worker who executes this run is a part of,
-          this identifier is mainly used for efficient routing.
-          Note, this property is only present after the run is claimed.
-          '
-          MaxLength              = '22'
-          MinLength              = '1'
-          Pattern                = '^([a-zA-Z0-9-_]*)$'
-          Title                  = 'Worker Group'
-          Type                   = 'string'
-          TypeName               = 'WorkerGroup'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup'
-        Property 'workerId' =
-          Description            = 'Identifier for worker evaluating this run within given
-          `workerGroup`. Note, this property is only available after the run
-          has been claimed.
-          '
-          MaxLength              = '22'
-          MinLength              = '1'
-          Pattern                = '^([a-zA-Z0-9-_]*)$'
-          Title                  = 'Worker Identifier'
-          Type                   = 'string'
-          TypeName               = 'WorkerIdentifier'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId'
-      Required               = '[runId state reasonCreated scheduled]'
-      Title                  = 'Run Information'
-      Type                   = 'object'
-      TypeName               = 'RunInformation'
-      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items'
-    Title                  = 'List of Runs'
-    Type                   = 'array'
-    TypeName               = 'ListOfRuns'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs'
-  Property 'schedulerId' =
-    Description            = 'Identifier for the scheduler that _defined_ this task.
-    '
-    MaxLength              = '22'
-    MinLength              = '1'
-    Pattern                = '^([a-zA-Z0-9-_]*)$'
-    Title                  = 'Scheduler Identifier'
-    Type                   = 'string'
-    TypeName               = 'SchedulerIdentifier'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/schedulerId'
-  Property 'state' =
-    Description            = 'State of this task. This is just an auxiliary property derived from state
-    of latests run, or `unscheduled` if none.
-    '
-    Enum                   = '[unscheduled pending running completed failed exception]'
-    Title                  = 'State'
-    Type                   = 'string'
-    TypeName               = 'State'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/state'
-  Property 'taskGroupId' =
-    Description            = 'Identifier for a group of tasks scheduled together with this task, by
-    scheduler identified by `schedulerId`. For tasks scheduled by the
-    task-graph scheduler, this is the `taskGraphId`.
-    '
-    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
-    Title                  = 'Task-Group Identifier'
-    Type                   = 'string'
-    TypeName               = 'TaskGroupIdentifier'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskGroupId'
-  Property 'taskId' =
-    Description            = 'Unique task identifier, this is UUID encoded as
-    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-    stripped of `=` padding.
-    '
-    Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
-    Title                  = 'Task Identifier'
-    Type                   = 'string'
-    TypeName               = 'TaskIdentifier'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId'
-  Property 'workerType' =
-    Description            = 'Identifier for worker type within the specified provisioner
-    '
-    MaxLength              = '22'
-    MinLength              = '1'
-    Pattern                = '^([a-zA-Z0-9-_]*)$'
-    Title                  = 'Worker Type'
-    Type                   = 'string'
-    TypeName               = 'WorkerType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType'
-Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline expires retriesLeft state runs]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Task Status Structure'
-Type                   = 'object'
-TypeName               = 'TaskStatusStructure'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#'
 
 
 http://references.taskcluster.net/index/v1/api.json
