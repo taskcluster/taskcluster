@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-var base        = require('taskcluster-base');
 var data        = require('../hooks/data');
 var debug       = require('debug')('hooks:bin:server');
 var path        = require('path');
 var Promise     = require('promise');
 var taskcreator = require('../hooks/taskcreator');
 var raven       = require('raven');
+var validator   = require('taskcluster-lib-validate');
+var stats       = require('taskcluster-lib-stats');
 var v1          = require('../routes/v1');
 var _           = require('lodash');
 var Scheduler   = require('../hooks/scheduler');
 var AWS         = require('aws-sdk-promise');
-// These will exist in taskcluster-base, when we move to the next version.
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
 var app         = require('taskcluster-lib-app');
@@ -26,10 +26,10 @@ var load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => {
       if (cfg.influx && cfg.influx.connectionString) {
-        return new base.stats.Influx(cfg.influx)
+        return new stats.Influx(cfg.influx)
       } else {
         debug("Not loading Influx -- no connection string");
-        return new base.stats.NullDrain();
+        return new stats.NullDrain();
       }
     },
   },
@@ -59,15 +59,9 @@ var load = loader({
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      return base.validator({
-        folder:        path.join(__dirname, '..', 'schemas'),
-        constants:     require('../schemas/constants'),
-        publish:       cfg.app.publishMetaData,
-        schemaPrefix:  'hooks/v1/',
-        aws:           cfg.aws.validator,
-        preload: [
-          'http://schemas.taskcluster.net/queue/v1/task-status.json'
-        ]
+      return validator({
+        prefix:  'hooks/v1/',
+        aws:     cfg.aws.validator,
       });
     }
   },
