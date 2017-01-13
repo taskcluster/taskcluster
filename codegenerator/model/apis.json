@@ -30,6 +30,9 @@
         "url": "http://references.taskcluster.net/notify/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/notify/api-docs"
     }, {
+       "url": "http://references.taskcluster.net/pulse/v1/api.json",
+       "docroot": "https://docs.do.not.exist.yet.service.not.in.production"
+    }, {
         "url": "http://references.taskcluster.net/purge-cache/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/api-docs"
     }, {
@@ -53,8 +56,5 @@
     }, {
         "url": "http://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/core/treeherder/exchanges"
-    }, {
-       "url": "http://references.taskcluster.net/pulse/v1/api.json",
-       "docroot": "https://docs.do.not.exist.yet.service.not.in.production"
     }
 ]
