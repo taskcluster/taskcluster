@@ -20,7 +20,7 @@
 //
 // First create a Login object:
 //
-//  myLogin := login.New(&tcclient.Credentials{ClientId: "myClientId", AccessToken: "myAccessToken"})
+//  myLogin := login.New(&tcclient.Credentials{ClientID: "myClientID", AccessToken: "myAccessToken"})
 //
 // and then call one or more of myLogin's methods, e.g.:
 //
@@ -34,7 +34,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 4 Jan 2017 at 19:57:00 UTC. The code was generated
+// Fri, 6 Jan 2017 at 15:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 
@@ -50,7 +50,7 @@ type Login tcclient.ConnectionData
 //
 // For example:
 //  creds := &tcclient.Credentials{
-//  	ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+//  	ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 //  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 //  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 //  }
