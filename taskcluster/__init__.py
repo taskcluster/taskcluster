@@ -3,11 +3,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import os
-import taskcluster.client
 import taskcluster.utils
+import taskcluster.exceptions
+import taskcluster._client_importer
 from six.moves import reload_module as reload
-reload(taskcluster.client)
+reload(taskcluster._client_importer)
 reload(taskcluster.utils)
+reload(taskcluster.exceptions)
 
 log = logging.getLogger(__name__)
 
@@ -17,5 +19,6 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
         log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
 
-from taskcluster.client import *  # NOQA
 from taskcluster.utils import *  # NOQA
+from taskcluster.exceptions import *  # NOQA
+from taskcluster._client_importer import *  # NOQA

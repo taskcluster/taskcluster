@@ -15,9 +15,6 @@ import time
 import six
 from six.moves import urllib
 
-# For finding apis.json
-from pkg_resources import resource_string
-
 import mohawk
 import mohawk.bewit
 
@@ -26,7 +23,6 @@ import taskcluster.utils as utils
 
 log = logging.getLogger(__name__)
 
-API_CONFIG = json.loads(resource_string(__name__, 'apis.json').decode('utf-8'))
 
 # Default configuration
 _defaultConfig = config = {
@@ -156,10 +152,7 @@ class BaseClient(object):
         return data
 
     def buildUrl(self, methodName, *args, **kwargs):
-        entry = None
-        for x in self._api['entries']:
-            if x['name'] == methodName:
-                entry = x
+        entry = self.funcinfo.get(methodName)
         if not entry:
             raise exceptions.TaskclusterFailure(
                 'Requested method "%s" not found in API Reference' % methodName)
@@ -463,9 +456,9 @@ class BaseClient(object):
 def createApiClient(name, api):
     attributes = dict(
         name=name,
-        _api=api['reference'],
         __doc__=api.get('description'),
         classOptions={},
+        funcinfo={},
     )
 
     copiedOptions = ('baseUrl', 'exchangePrefix')
@@ -475,14 +468,12 @@ def createApiClient(name, api):
 
     for entry in api['reference']['entries']:
         if entry['type'] == 'function':
-
             def addApiCall(e):
                 def apiCall(self, *args, **kwargs):
                     return self._makeApiCall(e, *args, **kwargs)
-                # apiCall.__name__ = e['name']
                 return apiCall
-
             f = addApiCall(entry)
+
             docStr = "Call the %s api's %s method.  " % (name, entry['name'])
 
             if entry['args'] and len(entry['args']) > 0:
@@ -502,6 +493,7 @@ def createApiClient(name, api):
                 entry['method'].upper(), entry['route'])
 
             f.__doc__ = docStr
+            attributes['funcinfo'][entry['name']] = entry
 
         elif entry['type'] == 'topic-exchange':
             def addTopicExchange(e):
@@ -522,10 +514,8 @@ def createApiClient(name, api):
 
             f.__doc__ = docStr
 
-        # Give the function the right name
-        f.__name__ = str(entry['name'])
-
         # Add whichever function we created
+        f.__name__ = str(entry['name'])
         attributes[entry['name']] = f
 
     return type(utils.toStr(name), (BaseClient,), attributes)
@@ -602,8 +592,9 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, nam
     }
 
 
-__all__ = ['createTemporaryCredentials', 'config']
-# This has to be done after the Client class is declared
-for key, value in API_CONFIG.items():
-    globals()[key] = createApiClient(key, value)
-    __all__.append(key)
+__all__ = [
+    'createTemporaryCredentials',
+    'config',
+    'BaseClient',
+    'createApiClient',
+]

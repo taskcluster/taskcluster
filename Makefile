@@ -6,14 +6,18 @@ VENV := .tox/$(TOX_ENV)
 # pip3 install --user tox==2.5.0 flake8==3.2.1 sphinx==1.5.1 --user
 
 .PHONY: test
-test: devel
+test: generate-classes devel
 	@echo "linting"
-	$(VENV)/bin/flake8 --max-line-length=100 taskcluster test
+	FLAKE8=$(VENV)/bin/flake8 ./lint.sh
 	@echo "linted, running unit tests"
 	tox
 	@echo "tested"
 
-APIS_JSON=$(PWD)/taskcluster/apis.json
+APIS_JSON=$(PWD)/apis.json
+
+.PHONY: generate-classes
+generate-classes: devel
+	$(VENV)/bin/python genCode.py
 
 .PHONY: update
 update: update-api update-readme docs

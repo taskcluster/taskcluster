@@ -13,7 +13,7 @@ import httmock
 import requests
 
 import base
-import taskcluster.client as subject
+import taskcluster.auth as subject
 import taskcluster.exceptions as exc
 import taskcluster.utils as utils
 
@@ -303,7 +303,7 @@ class TestOptions(ClientTest):
             'clientId': u"\U0001F4A9",
         }
         with self.assertRaises(exc.TaskclusterAuthFailure):
-            subject.Index({'credentials': badCredentials})
+            subject.Auth({'credentials': badCredentials})
 
 
 class TestMakeApiCall(ClientTest):
