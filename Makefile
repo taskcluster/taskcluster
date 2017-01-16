@@ -4,12 +4,13 @@ VENV := .tox/$(TOX_ENV)
 
 .PHONY: test
 test: $(VENV)/bin/python
-	FLAKE8=$(VENV)/bin/flake8 PYTHON=$(VENV)/bin/python \
-	TOX=$(VENV)/bin/tox COVERAGE=$(VENV)/bin/coverage ./test.sh
+	@echo "linting"
+	$(VENV)/bin/flake8 --max-line-length=100 taskcluster test
+	@echo "linted, running unit tests"
+	$(VENV)/bin/tox
+	@echo "tested"
 
-JS_CLIENT_BRANCH=master
 APIS_JSON=$(PWD)/taskcluster/apis.json
-APIS_JS_HREF=https://raw.githubusercontent.com/taskcluster/taskcluster-client/$(JS_CLIENT_BRANCH)/lib/apis.js
 
 .PHONY: update
 update: update-api update-readme docs
@@ -27,7 +28,6 @@ $(VENV)/bin/python:
 	tox --notest
 	$(VENV)/bin/pip install --upgrade setuptools
 	$(VENV)/bin/python devDep.py
-	$(VENV)/bin/python setup.py develop
 
 .PHONY: dev-env
 dev-env: $(VENV)/bin/python

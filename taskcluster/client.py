@@ -479,6 +479,7 @@ def createApiClient(name, api):
             def addApiCall(e):
                 def apiCall(self, *args, **kwargs):
                     return self._makeApiCall(e, *args, **kwargs)
+                # apiCall.__name__ = e['name']
                 return apiCall
 
             f = addApiCall(entry)
