@@ -157,6 +157,14 @@ auth = taskcluster.Auth(options)
  * `auth.azureTableSAS(account, table) -> result`
  * `auth.azureTableSAS(account='value', table='value') -> result`
 
+#### Get DSN for Sentry Project
+ * `auth.sentryDSN(project) -> result`
+ * `auth.sentryDSN(project='value') -> result`
+
+#### Get Token for Statsum Project
+ * `auth.statsumToken(project) -> result`
+ * `auth.statsumToken(project='value') -> result`
+
 #### Authenticate Hawk Request
  * `auth.authenticateHawk(payload) -> result`
 
@@ -172,12 +180,48 @@ auth = taskcluster.Auth(options)
 
 
 
+### Exchanges in `taskcluster.AuthEvents`
+```python
+// Create AuthEvents client instance
+import taskcluster
+authEvents = taskcluster.AuthEvents(options)
+```
+#### Client Created Messages
+ * `authEvents.clientCreated(routingKeyPattern) -> routingKey`
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Client Updated Messages
+ * `authEvents.clientUpdated(routingKeyPattern) -> routingKey`
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Client Deleted Messages
+ * `authEvents.clientDeleted(routingKeyPattern) -> routingKey`
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Role Created Messages
+ * `authEvents.roleCreated(routingKeyPattern) -> routingKey`
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Role Updated Messages
+ * `authEvents.roleUpdated(routingKeyPattern) -> routingKey`
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+#### Role Deleted Messages
+ * `authEvents.roleDeleted(routingKeyPattern) -> routingKey`
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
+
+
+
 ### Methods in `taskcluster.AwsProvisioner`
 ```python
 // Create AwsProvisioner client instance
 import taskcluster
 awsProvisioner = taskcluster.AwsProvisioner(options)
 ```
+#### List worker types with details
+ * `awsProvisioner.listWorkerTypeSummaries() -> result`
+
 #### Create new Worker Type
  * `awsProvisioner.createWorkerType(workerType, payload) -> result`
  * `awsProvisioner.createWorkerType(payload, workerType='value') -> result`
@@ -185,6 +229,10 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
 #### Update Worker Type
  * `awsProvisioner.updateWorkerType(workerType, payload) -> result`
  * `awsProvisioner.updateWorkerType(payload, workerType='value') -> result`
+
+#### Get Worker Type Last Modified Time
+ * `awsProvisioner.workerTypeLastModified(workerType) -> result`
+ * `awsProvisioner.workerTypeLastModified(workerType='value') -> result`
 
 #### Get Worker Type
  * `awsProvisioner.workerType(workerType) -> result`
@@ -196,6 +244,25 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
 
 #### List Worker Types
  * `awsProvisioner.listWorkerTypes() -> result`
+
+#### Create new AMI Set
+ * `awsProvisioner.createAmiSet(id, payload) -> None`
+ * `awsProvisioner.createAmiSet(payload, id='value') -> None`
+
+#### Get AMI Set
+ * `awsProvisioner.amiSet(id) -> result`
+ * `awsProvisioner.amiSet(id='value') -> result`
+
+#### Update AMI Set
+ * `awsProvisioner.updateAmiSet(id, payload) -> result`
+ * `awsProvisioner.updateAmiSet(payload, id='value') -> result`
+
+#### List AMI sets
+ * `awsProvisioner.listAmiSets() -> result`
+
+#### Delete AMI Set
+ * `awsProvisioner.removeAmiSet(id) -> None`
+ * `awsProvisioner.removeAmiSet(id='value') -> None`
 
 #### Create new Secret
  * `awsProvisioner.createSecret(token, payload) -> None`
@@ -217,9 +284,6 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
  * `awsProvisioner.getLaunchSpecs(workerType) -> result`
  * `awsProvisioner.getLaunchSpecs(workerType='value') -> result`
 
-#### Get AWS State for all worker types
- * `awsProvisioner.awsState() -> None`
-
 #### Get AWS State for a worker type
  * `awsProvisioner.state(workerType) -> None`
  * `awsProvisioner.state(workerType='value') -> None`
@@ -228,10 +292,14 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
  * `awsProvisioner.ping() -> None`
 
 #### Backend Status
- * `awsProvisioner.backendStatus() -> None`
+ * `awsProvisioner.backendStatus() -> result`
 
-#### api reference
- * `awsProvisioner.apiReference() -> None`
+#### Shutdown Every Ec2 Instance of this Worker Type
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) -> None`
+ * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') -> None`
+
+#### Shutdown Every Single Ec2 Instance Managed By This Provisioner
+ * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() -> None`
 
 
 
@@ -272,6 +340,9 @@ github = taskcluster.Github(options)
 #### Consume GitHub WebHook
  * `github.githubWebHookConsumer() -> None`
 
+#### List of Builds
+ * `github.builds() -> result`
+
 #### Ping Server
  * `github.ping() -> None`
 
@@ -286,14 +357,20 @@ githubEvents = taskcluster.GithubEvents(options)
 ```
 #### GitHub Pull Request Event
  * `githubEvents.pullRequest(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
    * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
    * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
    * action is required  Description: The GitHub `action` which triggered an event. See for possible values see the payload actions property.
 
 #### GitHub push Event
  * `githubEvents.push(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
+   * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+
+#### GitHub release Event
+ * `githubEvents.release(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
    * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
    * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
 
@@ -337,6 +414,25 @@ hooks = taskcluster.Hooks(options)
  * `hooks.removeHook(hookGroupId, hookId) -> None`
  * `hooks.removeHook(hookGroupId='value', hookId='value') -> None`
 
+#### Trigger a hook
+ * `hooks.triggerHook(hookGroupId, hookId, payload) -> result`
+ * `hooks.triggerHook(payload, hookGroupId='value', hookId='value') -> result`
+
+#### Get a trigger token
+ * `hooks.getTriggerToken(hookGroupId, hookId) -> result`
+ * `hooks.getTriggerToken(hookGroupId='value', hookId='value') -> result`
+
+#### Reset a trigger token
+ * `hooks.resetTriggerToken(hookGroupId, hookId) -> result`
+ * `hooks.resetTriggerToken(hookGroupId='value', hookId='value') -> result`
+
+#### Trigger a hook with a token
+ * `hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) -> result`
+ * `hooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') -> result`
+
+#### Ping Server
+ * `hooks.ping() -> None`
+
 
 
 
@@ -372,6 +468,68 @@ index = taskcluster.Index(options)
 
 
 
+### Methods in `taskcluster.Login`
+```python
+// Create Login client instance
+import taskcluster
+login = taskcluster.Login(options)
+```
+#### Get TaskCluster credentials given a Persona assertion
+ * `login.credentialsFromPersonaAssertion(payload) -> result`
+
+#### Ping Server
+ * `login.ping() -> None`
+
+
+
+
+### Methods in `taskcluster.Notify`
+```python
+// Create Notify client instance
+import taskcluster
+notify = taskcluster.Notify(options)
+```
+#### Send an Email
+ * `notify.email(payload) -> None`
+
+#### Publish a Pulse Message
+ * `notify.pulse(payload) -> None`
+
+#### Post IRC Message
+ * `notify.irc(payload) -> None`
+
+#### Ping Server
+ * `notify.ping() -> None`
+
+
+
+
+### Methods in `taskcluster.Pulse`
+```python
+// Create Pulse client instance
+import taskcluster
+pulse = taskcluster.Pulse(options)
+```
+#### Rabbit Overview
+ * `pulse.overview() -> result`
+
+#### Rabbit Exchanges
+ * `pulse.exchanges() -> result`
+
+#### Create a namespace
+ * `pulse.createNamespace(namespace, payload) -> result`
+ * `pulse.createNamespace(payload, namespace='value') -> result`
+
+#### Get namespace information
+ * `pulse.namespace(namespace) -> None`
+ * `pulse.namespace(namespace='value') -> None`
+
+#### Ping Server
+ * `pulse.ping() -> None`
+
+
+
+
 ### Methods in `taskcluster.PurgeCache`
 ```python
 // Create PurgeCache client instance
@@ -381,6 +539,13 @@ purgeCache = taskcluster.PurgeCache(options)
 #### Purge Worker Cache
  * `purgeCache.purgeCache(provisionerId, workerType, payload) -> None`
  * `purgeCache.purgeCache(payload, provisionerId='value', workerType='value') -> None`
+
+#### All Open Purge Requests
+ * `purgeCache.allPurgeRequests() -> result`
+
+#### Open Purge Requests for a provisionerId/workerType pair
+ * `purgeCache.purgeRequests(provisionerId, workerType) -> result`
+ * `purgeCache.purgeRequests(provisionerId='value', workerType='value') -> result`
 
 #### Ping Server
  * `purgeCache.ping() -> None`
@@ -421,6 +586,10 @@ queue = taskcluster.Queue(options)
  * `queue.listTaskGroup(taskGroupId) -> result`
  * `queue.listTaskGroup(taskGroupId='value') -> result`
 
+#### List Dependent Tasks
+ * `queue.listDependentTasks(taskId) -> result`
+ * `queue.listDependentTasks(taskId='value') -> result`
+
 #### Create New Task
  * `queue.createTask(taskId, payload) -> result`
  * `queue.createTask(payload, taskId='value') -> result`
@@ -445,7 +614,11 @@ queue = taskcluster.Queue(options)
  * `queue.pollTaskUrls(provisionerId, workerType) -> result`
  * `queue.pollTaskUrls(provisionerId='value', workerType='value') -> result`
 
-#### Claim task
+#### Claim Work
+ * `queue.claimWork(provisionerId, workerType, payload) -> result`
+ * `queue.claimWork(payload, provisionerId='value', workerType='value') -> result`
+
+#### Claim Task
  * `queue.claimTask(taskId, runId, payload) -> result`
  * `queue.claimTask(payload, taskId='value', runId='value') -> result`
 
@@ -592,6 +765,13 @@ queueEvents = taskcluster.QueueEvents(options)
    * taskGroupId is required  Description: `taskGroupId` this task was created in.
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
+#### Task Group Resolved Messages
+ * `queueEvents.taskGroupResolved(routingKeyPattern) -> routingKey`
+   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * taskGroupId is required  Description: `taskGroupId` for the task-group this message concerns
+   * schedulerId is required  Description: `schedulerId` for the task-group this message concerns
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+
 
 
 
@@ -698,7 +878,7 @@ schedulerEvents = taskcluster.SchedulerEvents(options)
 import taskcluster
 secrets = taskcluster.Secrets(options)
 ```
-#### Create Secret
+#### Set Secret
  * `secrets.set(name, payload) -> None`
  * `secrets.set(payload, name='value') -> None`
 
@@ -715,6 +895,21 @@ secrets = taskcluster.Secrets(options)
 
 #### Ping Server
  * `secrets.ping() -> None`
+
+
+
+
+### Exchanges in `taskcluster.TreeherderEvents`
+```python
+// Create TreeherderEvents client instance
+import taskcluster
+treeherderEvents = taskcluster.TreeherderEvents(options)
+```
+#### Job Messages
+ * `treeherderEvents.jobs(routingKeyPattern) -> routingKey`
+   * destination is required  Description: destination
+   * project is required  Description: project
+   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 

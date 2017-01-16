@@ -2,12 +2,15 @@ PYTHON := python
 TOX_ENV ?= py35
 VENV := .tox/$(TOX_ENV)
 
+#   - sphinx version 1.5.1 (py3)
+# pip3 install --user tox==2.5.0 flake8==3.2.1 sphinx==1.5.1 --user
+
 .PHONY: test
-test: $(VENV)/bin/python
+test: devel
 	@echo "linting"
 	$(VENV)/bin/flake8 --max-line-length=100 taskcluster test
 	@echo "linted, running unit tests"
-	$(VENV)/bin/tox
+	tox
 	@echo "tested"
 
 APIS_JSON=$(PWD)/taskcluster/apis.json
@@ -16,21 +19,13 @@ APIS_JSON=$(PWD)/taskcluster/apis.json
 update: update-api update-readme docs
 
 .PHONY: update-api
-update-api: $(VENV)/bin/python
+update-api: devel
 	API_REF_OUT="$(APIS_JSON)" $(VENV)/bin/python fetchApi.py
 	@python -mjson.tool $(APIS_JSON) > /dev/null || echo "apis.json cannot be parsed by python's JSON"
 
 .PHONY: update-readme
-update-readme: $(VENV)/bin/python
+update-readme: devel
 	README_FILE=README.md APIS_JSON=$(APIS_JSON) $(VENV)/bin/python genDocs.py
-
-$(VENV)/bin/python:
-	tox --notest
-	$(VENV)/bin/pip install --upgrade setuptools
-	$(VENV)/bin/python devDep.py
-
-.PHONY: dev-env
-dev-env: $(VENV)/bin/python
 
 .PHONY: clean
 clean:
@@ -41,11 +36,16 @@ clean:
 	rm -rf env-*
 
 .PHONY: docs
-docs:
+docs: devel
 	rm -rf docs/_build
-	$(VENV)/bin/python -mpip install sphinx
+	$(VENV)/bin/python -m pip install sphinx==1.5.1 
 	$(VENV)/bin/python makeRst.py > docs/client.rst
 	LC_CTYPE= make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
 
-run_python: $(VENV)/bin/python
-	$(VENV)/bin/python testscript.py
+.PHONY: devel
+devel:
+	tox --develop --notest
+	@set -e ; for env in $$(tox -l) ; do \
+		echo installing dev deps for $${env} ; \
+		.tox/$${env}/bin/python devDep.py ; \
+	done

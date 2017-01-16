@@ -75,7 +75,7 @@ fi
 set -x
 
 # Make sure dev-env target has been run, and run clean just to be safe too
-make clean dev-env
+make clean
 
 # Test that we can generate Python docs
 make docs

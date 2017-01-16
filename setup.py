@@ -7,7 +7,7 @@ import sys
 # The VERSION variable is automagically changed
 # by release.sh.  Make sure you understand how
 # that script works if you want to change this
-VERSION = '0.2.0'
+VERSION = '1.0.0'
 
 
 tests_require = [
@@ -16,11 +16,10 @@ tests_require = [
     'rednose==0.4.1',
     'mock==1.0.1',
     'setuptools-lint==0.3',
-    'flake8==2.2.5',
+    'flake8==2.5.0',
     'psutil==2.1.3',
     'hypothesis',
     'pgpy',
-    'tox==2.3.1',
     'coverage==4.0.3',
 ]
 
