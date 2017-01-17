@@ -1,0 +1,77 @@
+# The version is always required
+version: 0
+# Top level metadata is always required
+metadata:
+  name: "TaskCluster Generic Worker Tests"
+  description: "These tests should ensure that any new commits against generic worker codebase are tested across all supported worker types in gekco."
+  owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+  source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+tasks:
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: "{{ taskcluster.docker.workerType }}"
+    metadata:
+      name: "Build linux64 generic-worker"
+      description: "This builds the 64 bit linux version of generic-worker"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # This must be set in order access GitHub info from inside your environment
+        env: true
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    payload:
+      maxRunTime: 3600
+      image: golang
+      command:
+        - /bin/bash
+        - -vxec
+        - |
+            HEAD_PACKAGE="$(echo '{{ event.head.repo.url }}' | sed -n 's/^https:\/\/\(.*\)\.git/\1/p')"
+            BASE_PACKAGE="$(echo '{{ event.base.repo.url }}' | sed -n 's/^https:\/\/\(.*\)\.git/\1/p')"
+            go get -d "${BASE_PACKAGE}"
+            cd "${GOPATH}/src/${BASE_PACKAGE}"
+            git remote add user '{{ event.head.repo.url }}'
+            git fetch --tags user
+            git checkout '{{ event.head.sha }}'
+            go get -t ./...
+      artifacts:
+        # public/build/generic-worker-darwin-amd64:
+        public/build/generic-worker-linux-amd64:
+          path: "/go/bin/generic-worker"
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+        # public/build/generic-worker-windows-386.exe:
+        # public/build/ generic-worker-windows-amd64.exe:
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: win2012r2
+    metadata:
+      name: "Build Windows 32 bit generic-worker"
+      description: "This builds the 32 bit Windows version of generic-worker"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # This must be set in order access GitHub info from inside your environment
+        env: true
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    payload:
+      maxRunTime: 3600
+      command:
+        - set GOPATH=%CD%\gopath
+        - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
+        - git -C "%GOPATH%\src\github.com\{{ event.base.user.login }}\generic-worker" remote add user {{ event.head.repo.url }}
+        - git -C "%GOPATH%\src\github.com\{{ event.base.user.login }}\generic-worker" fetch --tags user
+        - git -C "%GOPATH%\src\github.com\{{ event.base.user.login }}\generic-worker" checkout {{ event.head.sha }}
+        - go get -t github.com/{{ event.base.user.login }}/generic-worker/...
+        - 'mkdir "public\build"'
+        - 'copy "%GOPATH%\bin\generic-worker.exe" "public\build\generic-worker-windows-amd64.exe"'
+      artifacts:
+        - path: public/build/generic-worker-windows-amd64.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
