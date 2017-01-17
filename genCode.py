@@ -1,7 +1,16 @@
-import json
+import sys
 import os
+import json
 import six
 import pprint
+import py_compile
+
+# The python2 interpreter's repr function will use u'string' formats for its
+# pprint module, which works with the python3 interpreter, but causes a problem
+# when the py_compile.compile method is called in this file as a test.
+if six.PY2:
+    sys.stderr.write('Code generation requires python3 interpreter\n')
+    exit(1)
 
 apiConfig = None
 with open('apis.json') as f:
@@ -179,12 +188,16 @@ for name, api in apiConfig.items():
             f.write(clientString.encode('utf-8'))
         else:
             f.write(clientString)
+        py_compile.compile(filename, doraise=True)
         filesCreated.append(filename)
 
-with open(os.path.join('taskcluster', '_client_importer.py'), 'w') as f:
+importerFilename = os.path.join('taskcluster', '_client_importer.py')
+with open(importerFilename, 'w') as f:
     importerLines.append('')
-    filesCreated.append(os.path.join('taskcluster', '_client_importer.py'))
+    filesCreated.append(importerFilename)
     f.write('\n'.join(importerLines))
+    py_compile.compile(importerFilename, doraise=True)
+
 
 with open('filescreated.dat', 'w') as f:
     f.write('\n'.join(filesCreated))
