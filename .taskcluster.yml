@@ -7,10 +7,16 @@ metadata:
   owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
   source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
 tasks:
+
+
+  ##########################################################
+  ##################### linux 64 build ##################### 
+  ##########################################################
+  
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
     metadata:
-      name: "Build linux64 generic-worker"
+      name: "Build Linux 64 bit generic-worker"
       description: "This builds the 64 bit linux version of generic-worker"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
@@ -29,14 +35,20 @@ tasks:
         - /bin/bash
         - -vxec
         - |
-            HEAD_PACKAGE="$(echo '{{ event.head.repo.url }}' | sed -n 's/^https:\/\/\(.*\)\.git/\1/p')"
-            BASE_PACKAGE="$(echo '{{ event.base.repo.url }}' | sed -n 's/^https:\/\/\(.*\)\.git/\1/p')"
-            go get -d "${BASE_PACKAGE}"
-            cd "${GOPATH}/src/${BASE_PACKAGE}"
+            go get -d "github.com/{{ event.base.user.login }}/generic-worker"
+            cd "${GOPATH}/src/github.com/{{ event.base.user.login }}/generic-worker"
             git remote add user '{{ event.head.repo.url }}'
             git fetch --tags user
             git checkout '{{ event.head.sha }}'
-            go get -t ./...
+            go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get -v
+            cd ..
+            go generate
+            go get -v -t ./...
+            test "$(git status --porcelain | wc -l)" == 0
+            GORACE=history_size=7 go test -v ./...
+            "${GOPATH}/bin/ineffassign" .
       artifacts:
         # public/build/generic-worker-darwin-amd64:
         public/build/generic-worker-linux-amd64:
@@ -45,8 +57,67 @@ tasks:
           type: file
         # public/build/generic-worker-windows-386.exe:
         # public/build/ generic-worker-windows-amd64.exe:
+
+
+  ##########################################################
+  ###################### win 64 build ###################### 
+  ##########################################################
+  
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: win2012r2
+    metadata:
+      name: "Build Windows 64 bit generic-worker"
+      description: "This builds the 64 bit Windows version of generic-worker"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # This must be set in order access GitHub info from inside your environment
+        env: true
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    payload:
+      maxRunTime: 3600
+      command:
+        - 'mkdir "public\build"'
+        - set GOPATH=%CD%\gopath
+        - set PATH=%GOPATH%\bin;%PATH%
+        - 'go get -d "github.com/{{ event.base.user.login }}/generic-worker"'
+        - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
+        - git remote add user {{ event.head.repo.url }}
+        - git fetch --tags user
+        - git checkout {{ event.head.sha }}
+        - go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v
+        - cd ..
+        - go generate
+        - go get -v -t ./...
+        - 'copy "..\..\..\..\bin\generic-worker.exe" "..\..\..\..\..\public\build\generic-worker-windows-amd64.exe"'
+        - ':: this counts the number of lines returned by git status
+          git status --porcelain | find /c /v “” > tmp1.txt
+          set /P lines=<tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 (
+              exit /b 64
+          )'
+        - set GORACE=history_size=7
+        - go test -v ./...
+        - ineffassign .
+      artifacts:
+        - path: public/build/generic-worker-windows-amd64.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+
+
+  ##########################################################
+  ###################### win 32 build ###################### 
+  ##########################################################
+  
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: gecko-t-win7-32
     metadata:
       name: "Build Windows 32 bit generic-worker"
       description: "This builds the 32 bit Windows version of generic-worker"
@@ -63,15 +134,42 @@ tasks:
     payload:
       maxRunTime: 3600
       command:
-        - set GOPATH=%CD%\gopath
-        - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
-        - git -C "%GOPATH%\src\github.com\{{ event.base.user.login }}\generic-worker" remote add user {{ event.head.repo.url }}
-        - git -C "%GOPATH%\src\github.com\{{ event.base.user.login }}\generic-worker" fetch --tags user
-        - git -C "%GOPATH%\src\github.com\{{ event.base.user.login }}\generic-worker" checkout {{ event.head.sha }}
-        - go get -t github.com/{{ event.base.user.login }}/generic-worker/...
         - 'mkdir "public\build"'
-        - 'copy "%GOPATH%\bin\generic-worker.exe" "public\build\generic-worker-windows-amd64.exe"'
+        - set GOPATH=%CD%\gopath
+        - set GOROOT=%CD%\go
+        - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
+        - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
+        - git remote add user {{ event.head.repo.url }}
+        - git fetch --tags user
+        - git checkout {{ event.head.sha }}
+        - go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v
+        - cd ..
+        - go generate
+        - go get -v -t ./...
+        - 'copy "%GOPATH%\bin\generic-worker.exe" "..\..\..\..\..\public\build\generic-worker-windows-amd64.exe"'
+        - ':: this counts the number of lines returned by git status
+          git status --porcelain | find /c /v “” > tmp1.txt
+          set /P lines=<tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 (
+              exit /b 64
+          )'
+        - set GORACE=history_size=7
+        - go test -v ./...
+        - ineffassign .
       artifacts:
         - path: public/build/generic-worker-windows-amd64.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
+      mounts:
+        - content:
+            url: https://storage.googleapis.com/golang/go1.7.4.windows-386.zip
+          directory: .
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
+          directory: git
+          format: tar.bz2

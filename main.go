@@ -200,6 +200,10 @@ and reports back results to the queue.
                                             [default: livelog]
           livelogKey                        SSL key to be used by livelog for hosting logs
                                             over https. If not set, http will be used.
+          livelogPUTPort                    Port number for livelog HTTP PUT requests.
+                                            [default: 60022]
+          livelogGETPort                    Port number for livelog HTTP GET requests.
+                                            [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           provisioner_id                    The taskcluster provisioner which is taking care
@@ -328,6 +332,8 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		DownloadsDir:                   "C:\\generic-worker\\downloads",
 		IdleShutdownTimeoutSecs:        0,
 		LiveLogExecutable:              "livelog",
+		LiveLogPUTPort:                 60022,
+		LiveLogGETPort:                 60023,
 		NumberOfTasksToRun:             0,
 		ProvisionerID:                  "aws-provisioner-v1",
 		RefreshUrlsPrematurelySecs:     310,
@@ -371,19 +377,23 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		name       string
 		disallowed interface{}
 	}{
-		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
-		{value: c.RefreshUrlsPrematurelySecs, name: "refreshURLsPrematurelySecs", disallowed: 0},
 		{value: c.AccessToken, name: "accessToken", disallowed: ""},
+		{value: c.CachesDir, name: "cachesDir", disallowed: ""},
 		{value: c.ClientID, name: "clientId", disallowed: ""},
+		{value: c.DownloadsDir, name: "downloadsDir", disallowed: ""},
+		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
+		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
+		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
+		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
+		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
+		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
+		{value: c.RefreshUrlsPrematurelySecs, name: "refreshURLsPrematurelySecs", disallowed: 0},
+		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
+		{value: c.Subdomain, name: "subdomain", disallowed: ""},
+		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
 		{value: c.WorkerID, name: "workerId", disallowed: ""},
 		{value: c.WorkerType, name: "workerType", disallowed: ""},
-		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
-		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
-		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
-		{value: c.Subdomain, name: "subdomain", disallowed: ""},
-		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
-		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
 	}
 
 	for _, f := range fields {

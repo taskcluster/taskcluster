@@ -43,6 +43,8 @@ func setup(t *testing.T) {
 		WorkerType:                 slugid.Nice(),
 		LiveLogExecutable:          "livelog",
 		LiveLogSecret:              "xyz",
+		LiveLogGETPort:             30582,
+		LiveLogPUTPort:             43264,
 		PublicIP:                   net.ParseIP("12.34.56.78"),
 		PrivateIP:                  net.ParseIP("87.65.43.21"),
 		InstanceID:                 "test-instance-id",

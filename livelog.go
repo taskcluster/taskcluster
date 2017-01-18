@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/taskcluster/generic-worker/livelog"
@@ -50,7 +51,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey)
+	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey, config.LiveLogPUTPort, config.LiveLogGETPort)
 	if err != nil {
 		log.Printf("WARN: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service
@@ -110,7 +111,7 @@ func (l *LiveLogTask) uploadLiveLog() error {
 		return err
 	}
 	getURL.Scheme = "https"
-	getURL.Host = statelessHostname + ":60023"
+	getURL.Host = statelessHostname + ":" + strconv.Itoa(int(l.liveLog.GETPort))
 	uploadErr := l.task.uploadArtifact(
 		RedirectArtifact{
 			BaseArtifact: BaseArtifact{

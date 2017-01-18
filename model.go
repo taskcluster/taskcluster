@@ -27,7 +27,9 @@ type (
 		InstanceType                   string                 `json:"instanceType"`
 		LiveLogCertificate             string                 `json:"livelogCertificate"`
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
+		LiveLogGETPort                 uint16                 `json:"livelogGETPort"`
 		LiveLogKey                     string                 `json:"livelogKey"`
+		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
 		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`

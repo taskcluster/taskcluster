@@ -17,7 +17,7 @@ func TestLiveLog(t *testing.T) {
 	default:
 		executable = "livelog"
 	}
-	ll, err := New(executable, "", "")
+	ll, err := New(executable, "", "", 34567, 34568)
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	//
@@ -43,7 +43,7 @@ func TestLiveLog(t *testing.T) {
 	// writes data to it, which probably should be fixed in the livelog
 	// codebase. Ideally it would serve both ports on initialisation, not
 	// requiring data to be PUT first.
-	waitForPortToBeActive(60023)
+	waitForPortToBeActive(ll.GETPort)
 	resp, err := http.Get(ll.GetURL)
 	if err != nil {
 		t.Fatalf("Could not GET livelog from URL %s:\n%s", ll.GetURL, err)
