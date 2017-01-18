@@ -6,11 +6,14 @@ import base64
 import logging
 import os
 import requests
+import requests.exceptions
 import slugid
 import time
 import six
 import sys
 import random
+
+from . import exceptions
 
 MAX_RETRIES = 5
 

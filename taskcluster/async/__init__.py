@@ -2,13 +2,13 @@
 
 import logging
 import os
-import importlib
 import taskcluster.utils
 import taskcluster.exceptions
-from . import _client_importer
-importlib.reload(taskcluster._client_importer)
-importlib.reload(taskcluster.utils)
-importlib.reload(taskcluster.exceptions)
+from six.moves import reload_module as reload
+from . import _client_importer  # NOQA
+reload(taskcluster._client_importer)
+reload(taskcluster.utils)
+reload(taskcluster.exceptions)
 
 log = logging.getLogger(__name__)
 

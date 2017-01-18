@@ -61,7 +61,7 @@ if sys.version_info.major == 2:
     ])
 elif sys.version_info[:2] < (3, 5):
     raise Exception('this library does not support python >2 and <3.5')
-elif sys.version_info[:2] > (3, 5):
+elif sys.version_info[:2] >= (3, 5):
     install_requires.extend([
         'aiohttp',
         'async_timeout',

@@ -33,6 +33,7 @@ update-readme: devel
 
 .PHONY: clean
 clean:
+	if [ -f filescreated.dat ] ; then cat filescreated.dat | xargs rm && rm filescreated.dat ; fi
 	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
 	rm -rf *.egg *.egg-info dist/
 	find . -name "*.py?" -exec rm {} +

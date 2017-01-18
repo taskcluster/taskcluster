@@ -8,9 +8,9 @@ import py_compile
 # The python2 interpreter's repr function will use u'string' formats for its
 # pprint module, which works with the python3 interpreter, but causes a problem
 # when the py_compile.compile method is called in this file as a test.
-if six.PY2:
-    sys.stderr.write('Code generation requires python3 interpreter\n')
-    exit(1)
+#if six.PY2:
+#    sys.stderr.write('Code generation requires python3 interpreter\n')
+#    exit(1)
 
 apiConfig = None
 with open('apis.json') as f:
@@ -172,6 +172,7 @@ def createStaticClient(name, api, genAsync=False):
             'config',
             '_defaultConfig',
             'createApiClient',
+            'createSession',
             name
         ]),
         '',
@@ -210,13 +211,19 @@ for name, api in apiConfig.items():
     asyncImporterLines.append('from .%s import %s  # NOQA' % (name.lower(), name))
 
     with open(syncfilename, 'w') as f:
-        f.write(syncClientString)
-        py_compile.compile(syncfilename, doraise=True)
+        if not six.PY2:
+            f.write(syncClientString)
+            py_compile.compile(syncfilename, doraise=True)
+        else:
+            f.write(syncClientString.encode('utf-8'))
         filesCreated.append(syncfilename)
 
     with open(asyncfilename, 'w') as f:
-        f.write(asyncClientString)
-        py_compile.compile(asyncfilename, doraise=True)
+        if not six.PY2:
+            f.write(asyncClientString)
+            py_compile.compile(asyncfilename, doraise=True)
+        else:
+            f.write(asyncClientString.encode('utf-8'))
         filesCreated.append(asyncfilename)
 
 syncImporterFilename = os.path.join('taskcluster', '_client_importer.py')

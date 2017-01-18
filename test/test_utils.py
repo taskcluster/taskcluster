@@ -173,8 +173,10 @@ class TestPutfile(base.TCTest):
         with mock.patch.object(subject, 'makeSingleHttpRequest') as p:
             class FakeResp:
                 status_code = 200
+
                 def raise_for_status(self):
                     pass
+
             p.return_value = FakeResp()
             subject.putFile('setup.py', 'http://www.example.com', 'text/plain')
             p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY, mock.ANY)
