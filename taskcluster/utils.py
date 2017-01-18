@@ -10,8 +10,14 @@ import slugid
 import time
 import six
 import sys
+import random
 
 MAX_RETRIES = 5
+
+DELAY_FACTOR = 0.1
+RANDOMIZATION_FACTOR = 0.25
+MAX_DELAY = 30
+
 
 log = logging.getLogger(__name__)
 
@@ -28,21 +34,19 @@ r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
                '(\s*(\d+)\s*m(in(utes?)?)?)?\s*$')
 
 
-def calculateSleepTime(attempts):
+def calculateSleepTime(attempt):
     """ From the go client
     https://github.com/taskcluster/go-got/blob/031f55c/backoff.go#L24-L29
     """
-    if attempts <= 0:
+    if attempt <= 0:
         return 0
 
     # We subtract one to get exponents: 1, 2, 3, 4, 5, ..
-    delay = math.pow(float(2), float(attempts - 1)) * float(DELAY_FACTOR)
+    delay = float(2 ** (attempt - 1)) * float(DELAY_FACTOR)
     # Apply randomization factor
     delay = delay * (RANDOMIZATION_FACTOR * (random.random() * 2 - 1) + 1)
     # Always limit with a maximum delay
     return min(delay, MAX_DELAY)
-
-
 
 
 def toStr(obj, encoding='utf-8'):

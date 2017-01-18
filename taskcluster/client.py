@@ -361,9 +361,7 @@ class BaseClient(object):
             retry += 1
             # if this isn't the first retry then we sleep
             if retry > 0:
-                snooze = float(retry * retry) / 10.0
-                log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-                time.sleep(snooze)
+                time.sleep(utils.calculateSleepTime(retry))
             # Construct header
             if self._hasCredentials():
                 sender = mohawk.Sender(
