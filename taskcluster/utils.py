@@ -28,6 +28,23 @@ r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
                '(\s*(\d+)\s*m(in(utes?)?)?)?\s*$')
 
 
+def calculateSleepTime(attempts):
+    """ From the go client
+    https://github.com/taskcluster/go-got/blob/031f55c/backoff.go#L24-L29
+    """
+    if attempts <= 0:
+        return 0
+
+    # We subtract one to get exponents: 1, 2, 3, 4, 5, ..
+    delay = math.pow(float(2), float(attempts - 1)) * float(DELAY_FACTOR)
+    # Apply randomization factor
+    delay = delay * (RANDOMIZATION_FACTOR * (random.random() * 2 - 1) + 1)
+    # Always limit with a maximum delay
+    return min(delay, MAX_DELAY)
+
+
+
+
 def toStr(obj, encoding='utf-8'):
     if six.PY3 and isinstance(obj, six.binary_type):
         obj = obj.decode(encoding)
