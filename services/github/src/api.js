@@ -14,23 +14,30 @@ function sanitizeGitHubField(field) {
 
 // Reduce a pull request WebHook's data to only fields needed to checkout a
 // revision
+//
+// See https://developer.github.com/v3/activity/events/types/#pullrequestevent
 function getPullRequestDetails(eventData) {
   return {
     'event.type': 'pull_request.' + eventData.action,
-    'event.base.repo.branch': eventData.pull_request.base.label.split(':')[1],
     'event.pullNumber': eventData.number,
+
     'event.base.user.login': eventData.pull_request.base.user.login,
+    'event.base.repo.name': eventData.pull_request.base.repo.name,
     'event.base.repo.url': eventData.pull_request.base.repo.clone_url,
     'event.base.sha': eventData.pull_request.base.sha,
     'event.base.ref': eventData.pull_request.base.ref,
+    'event.base.repo.branch': eventData.pull_request.base.ref,
+
     'event.head.user.login': eventData.pull_request.head.user.login,
+    'event.head.repo.name': eventData.pull_request.head.repo.name,
     'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
-    'event.head.repo.branch': eventData.pull_request.head.label.split(':')[1],
     'event.head.sha': eventData.pull_request.head.sha,
     'event.head.ref': eventData.pull_request.head.ref,
+    'event.head.repo.branch': eventData.pull_request.head.ref,
   };
 };
 
+// See https://developer.github.com/v3/activity/events/types/#pushevent
 function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
@@ -38,9 +45,13 @@ function getPushDetails(eventData) {
   let branch = ref.split('/').slice(2).join('/');
   return {
     'event.type': 'push',
+
+    // don't think this is needed (and is perhaps misleading)
     'event.base.repo.branch': branch,
+
     'event.head.repo.branch': branch,
     'event.head.user.login': eventData.sender.login,
+    'event.head.repo.name': eventData.repository.name,
     'event.head.repo.url': eventData.repository.clone_url,
     'event.head.sha': eventData.after,
     'event.head.ref': ref,
@@ -48,6 +59,7 @@ function getPushDetails(eventData) {
   };
 };
 
+// See https://developer.github.com/v3/activity/events/types/#releaseevent
 function getReleaseDetails(eventData) {
   return {
     'event.type': 'release',
@@ -55,6 +67,7 @@ function getReleaseDetails(eventData) {
     'event.head.user.login': eventData.release.author.login,
     'event.version': eventData.release.tag_name,
     'event.name': eventData.release.name,
+    'event.head.repo.name': eventData.repository.name,
     'event.head.repo.url': eventData.repository.clone_url,
     'event.release.url': eventData.release.url,
     'event.prerelease': eventData.release.prerelease,
