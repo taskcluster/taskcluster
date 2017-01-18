@@ -11,7 +11,7 @@ env:
 
 before_install:
 # workaround for travis-ci/gimme#42
-  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz
+  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.7.4.linux-amd64.tar.gz
   - tar -C $HOME -xf go.tar.gz
   - rm go.tar.gz
   - export GOROOT="${HOME}/go"

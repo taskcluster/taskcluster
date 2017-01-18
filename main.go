@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"strconv"
 	"sync"
 
 	stream "github.com/taskcluster/livelog/writer"
@@ -13,6 +14,11 @@ import (
 )
 
 var debug = Debug("livelog")
+
+const (
+	DEFAULT_PUT_PORT = 60022
+	DEFAULT_GET_PORT = 60023
+)
 
 func abort(writer http.ResponseWriter) error {
 	// We need to hijack and abort the request...
@@ -28,7 +34,7 @@ func abort(writer http.ResponseWriter) error {
 	return nil
 }
 
-func startLogServe(stream *stream.Stream) {
+func startLogServe(stream *stream.Stream, getAddr string) {
 	// Get access token from environment variable
 	accessToken := os.Getenv("ACCESS_TOKEN")
 
@@ -51,7 +57,7 @@ func startLogServe(stream *stream.Stream) {
 	})
 
 	server := http.Server{
-		Addr:    ":60023",
+		Addr:    getAddr,
 		Handler: routes,
 	}
 
@@ -139,9 +145,33 @@ func main() {
 		attachProfiler(routes)
 	}
 
+	// portAddressOrExit is a helper function to translate a port number in an
+	// envronment variable into a valid address string which can be used when
+	// starting web service. This helper function will cause the go program to
+	// exit if an invalid value is specified in the environment variable.
+	portAddressOrExit := func(envVar string, defaultValue uint16, notANumberExitCode, outOfRangeExitCode int) (addr string) {
+		addr = fmt.Sprintf(":%v", defaultValue)
+		if port := os.Getenv(envVar); port != "" {
+			p, err := strconv.Atoi(port)
+			if err != nil {
+				debug("env var %v is not a number (%v)", envVar, port)
+				os.Exit(notANumberExitCode)
+			}
+			if p < 0 || p > 65535 {
+				debug("env var %v is not between [0, 65535] (%v)", envVar, p)
+				os.Exit(outOfRangeExitCode)
+			}
+			addr = ":" + port
+		}
+		return
+	}
+
+	putAddr := portAddressOrExit("LIVELOG_PUT_PORT", DEFAULT_PUT_PORT, 64, 65)
+	getAddr := portAddressOrExit("LIVELOG_GET_PORT", DEFAULT_GET_PORT, 66, 67)
+
 	server := http.Server{
 		// Main put server listens on the public root for the worker.
-		Addr:    ":60022",
+		Addr:    putAddr,
 		Handler: routes,
 	}
 
@@ -187,7 +217,7 @@ func main() {
 
 		// Initialize the sub server in another go routine...
 		debug("Begin consuming...")
-		go startLogServe(stream)
+		go startLogServe(stream, getAddr)
 		consumeErr := stream.Consume()
 		if consumeErr != nil {
 			log.Println("Error finalizing consume of stream", consumeErr)

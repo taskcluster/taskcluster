@@ -17,8 +17,8 @@ Livelog is a service that enables both secure and insecure streaming of binary
 content (typically log files) over HTTP(S).
 
 It achieves this by exposing an interface for receiving log data via an HTTP
-PUT request on tcp port 60022, and exposing a separate interface for reading
-the log via HTTP GET on port 60023.
+PUT request (typically on tcp port 60022), and exposing a separate interface
+for reading the log via HTTP GET typically on port 60023.
 
 It is written in go, which compiles to a native binary for most conceivable
 platforms, and can therefore be deployed almost anywhere.
@@ -31,8 +31,19 @@ interface has been initiated.
 
 ## URLs
 
+When used with default ports:
+
 * PUT: http(s)://localhost:60022/log
 * GET: http(s)://localhost:60023/log/`${ACCESS_TOKEN}`
+
+To alter the port numbers, set environment variables `LIVELOG_PUT_PORT` and/or
+`LIVELOG_GET_PORT` to the preferred values when starting the livelog server.
+For example, in bash:
+
+```
+export LIVELOG_PUT_PORT=32815
+export LIVELOG_GET_PORT=32844
+```
 
 `ACCESS_TOKEN` is an arbitrary url-safe string that you provide via the
 `ACCESS_TOKEN` environment variable to the livelog process when it starts up.
@@ -101,3 +112,5 @@ The following environment variables can be used to configure the server.
  * `SERVER_CRT_FILE` path to SSL certificate file (optional)
  * `SERVER_KEY_FILE` path to SSL private key file (optional)
  * `DEBUG` set to '*' to see debug logs (optional)
+ * `LIVELOG_PUT_PORT` PUT port number (optional - default is 60022)
+ * `LIVELOG_GET_PORT` GET port number (optional - default is 60023)

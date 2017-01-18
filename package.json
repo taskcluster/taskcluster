@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "go build && mocha $(find test -name '*.js')"
+    "test": "go build && LIVELOG_PUT_PORT= LIVELOG_GET_PORT= mocha $(find test -name '*.js')"
   },
   "repository": {
     "type": "git",
