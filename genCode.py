@@ -28,13 +28,14 @@ def cleanDocstring(old, indent=0):
     return '\n'.join(new)
 
 
-def createStaticClient(name, api):
+def createStaticClient(name, api, genAsync=False):
     api = api['reference']
 
     docstring = api.get('description')
 
     # Generate the first part of the class, basically just import the BaseClient
     # class
+    baseClass = 'AsyncBaseClient' if genAsync else 'BaseClient'
     lines = [
         '# coding=utf-8',
         '#####################################################',
@@ -42,13 +43,17 @@ def createStaticClient(name, api):
         '#####################################################',
         '# noqa: E128,E201'
         '',
-        'from .client import BaseClient, createTemporaryCredentials, config, createApiClient',
+        'from .client import %s' % baseClass,
+        'from .client import createApiClient',
+        'from .client import config',
+        'from .client import createTemporaryCredentials',
+        'from .client import createSession',
         '_defaultConfig = config',
         '',
         '',
     ]
 
-    lines.append('class %s(BaseClient):' % name)
+    lines.append('class %s(%s):' % (name, baseClass))
 
     # If the API has a description, we'll make that be the docstring.  We want
     # to process the docstring so that it's a """ string in Python with the
@@ -103,11 +108,18 @@ def createStaticClient(name, api):
 
                 lines.append(cleanDocstring(ds, indent=4))
 
-            lines.extend([
-                '    def %s(self, *args, **kwargs):' % entry['name'],
-                '        return self._makeApiCall(self.funcinfo["%s"], *args, **kwargs)' % entry['name'],
-                ''
-            ])
+            if genAsync:
+                lines.extend([
+                    '    async def %s(self, *args, **kwargs):' % entry['name'],
+                    '        return await self._makeApiCall(self.funcinfo["%s"], *args, **kwargs)' % entry['name'],
+                    ''
+                ])
+            else:
+                lines.extend([
+                    '    def %s(self, *args, **kwargs):' % entry['name'],
+                    '        return self._makeApiCall(self.funcinfo["%s"], *args, **kwargs)' % entry['name'],
+                    ''
+                ])
         elif entry['type'] == 'topic-exchange':
             # We don't want to burn in the full api reference for each thing as
             # the dictionary parameter, since we'll be using some of these for
@@ -177,27 +189,49 @@ def createStaticClient(name, api):
     return '\n'.join(lines)
     
 
+# List of files which we've created for the build and release system's
+# consumption
 filesCreated = []
-importerLines = []
+
+# The lines of the _client_importer.py file for sync clients
+syncImporterLines = []
+
+# The lines of the _client_importer.py file for async clients
+asyncImporterLines = []
+
 for name, api in apiConfig.items():
-    filename = os.path.join('taskcluster', name.lower() + '.py')
-    clientString = createStaticClient(name, api)
-    importerLines.append('from .%s import %s  # NOQA' % (name.lower(), name))
-    with open(filename, 'w') as f:
-        if six.PY2:
-            f.write(clientString.encode('utf-8'))
-        else:
-            f.write(clientString)
-        py_compile.compile(filename, doraise=True)
-        filesCreated.append(filename)
+    syncfilename = os.path.join('taskcluster', name.lower() + '.py')
+    asyncfilename = os.path.join('taskcluster', 'async', name.lower() + '.py')
 
-importerFilename = os.path.join('taskcluster', '_client_importer.py')
-with open(importerFilename, 'w') as f:
-    importerLines.append('')
-    filesCreated.append(importerFilename)
-    f.write('\n'.join(importerLines))
-    py_compile.compile(importerFilename, doraise=True)
+    syncClientString = createStaticClient(name, api)
+    asyncClientString = createStaticClient(name, api, genAsync=True)
 
+    syncImporterLines.append('from .%s import %s  # NOQA' % (name.lower(), name))
+    asyncImporterLines.append('from .%s import %s  # NOQA' % (name.lower(), name))
+
+    with open(syncfilename, 'w') as f:
+        f.write(syncClientString)
+        py_compile.compile(syncfilename, doraise=True)
+        filesCreated.append(syncfilename)
+
+    with open(asyncfilename, 'w') as f:
+        f.write(asyncClientString)
+        py_compile.compile(asyncfilename, doraise=True)
+        filesCreated.append(asyncfilename)
+
+syncImporterFilename = os.path.join('taskcluster', '_client_importer.py')
+with open(syncImporterFilename, 'w') as f:
+    syncImporterLines.append('')
+    filesCreated.append(syncImporterFilename)
+    f.write('\n'.join(syncImporterLines))
+    py_compile.compile(syncImporterFilename, doraise=True)
+
+asyncImporterFilename = os.path.join('taskcluster', 'async', '_client_importer.py')
+with open(asyncImporterFilename, 'w') as f:
+    asyncImporterLines.append('')
+    filesCreated.append(asyncImporterFilename)
+    f.write('\n'.join(asyncImporterLines))
+    py_compile.compile(asyncImporterFilename, doraise=True)
 
 with open('filescreated.dat', 'w') as f:
     f.write('\n'.join(filesCreated))

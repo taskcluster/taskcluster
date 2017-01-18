@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 import aiohttp
 import aiohttp.hdrs
 import asyncio
+import async_timeout
 import logging
 import os
 import six
@@ -16,15 +17,18 @@ def createSession(*args, **kwargs):
     return aiohttp.ClientSession(*args, **kwargs)
 
 
-async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRIES,
-                          session=None, args=(), kwargs=None):
+# Useful information: https://www.blog.pythonlibrary.org/2016/07/26/python-3-an-intro-to-asyncio/
+async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRIES, session=None):
     """ Make an HTTP request and retry it until success, return request """
     retry = -1
     response = None
     while True:
         retry += 1
         # if this isn't the first retry then we sleep
-        asyncio.sleep(utils.calculateSleepTime(retry))
+        if retry > 0:
+            snooze = float(retry * retry) / 10.0
+            log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+            asyncio.sleep(snooze)
 
         # Seek payload to start, if it is a file
         if hasattr(payload, 'seek'):
@@ -32,8 +36,8 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
 
         log.debug('Making attempt %d', retry)
         try:
-            response = await makeSingleHttpRequest(method, url, payload, headers,
-                                                   session, args=args, kwargs=kwargs)
+            with async_timeout.timeout(60):
+                response = await makeSingleHttpRequest(method, url, payload, headers, session)
         except aiohttp.ClientError as rerr:
             if retry < retries:
                 log.warn('Retrying because of: %s' % rerr)
@@ -49,24 +53,25 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
         # Handle non 2xx status code and retry if possible
         status = response.status
         if 500 <= status and status < 600 and retry < retries:
-            log.warn('Retrying because of: %d status' % status)
-            continue
-        if status >= 200 and status < 300:
-            return response
-        raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
+            if retry < retries:
+                log.warn('Retrying because of: %d status' % status)
+                continue
+            else:
+                raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
+        return response
+    # This code-path should be unreachable
+    assert False, "Error from last retry should have been raised!"
 
 
-async def makeSingleHttpRequest(method, url, payload, headers, session=None,
-                                args=(), kwargs=None):
+async def makeSingleHttpRequest(method, url, payload, headers, session=None):
     method = method.upper()
-    kwargs = kwargs or {}
     log.debug('Making a %s request to %s', method, url)
     log.debug('HTTP Headers: %s' % str(headers))
     log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
-    obj = session or createSession(*args, **kwargs)
+    sessionObj = session or createSession()
     skip_auto_headers = [aiohttp.hdrs.CONTENT_TYPE]
 
-    async with obj.request(
+    async with sessionObj.request(
         method, url, data=payload, headers=headers,
         skip_auto_headers=skip_auto_headers, compress=False
     ) as resp:

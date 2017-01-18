@@ -55,9 +55,16 @@ class Tox(TestCommand):
         errno = tox.cmdline(args=args)
         sys.exit(errno)
 
-if sys.version_info[:2] == (2, 7):
+if sys.version_info.major == 2:
     tests_require.extend([
         'subprocess32==3.2.6',
+    ])
+elif sys.version_info[:2] < (3, 5):
+    raise Exception('this library does not support python >2 and <3.5')
+elif sys.version_info[:2] > (3, 5):
+    install_requires.extend([
+        'aiohttp',
+        'async_timeout',
     ])
 
 if __name__ == '__main__':

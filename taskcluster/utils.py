@@ -185,13 +185,14 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
         try:
             response.raise_for_status()
         except requests.exceptions.RequestException as rerr:
-            status = response.status_code
-            if 500 <= status and status < 600 and retry < retries:
-                log.warn('Retrying because of: %s' % rerr)
+            pass
+        status = response.status_code
+        if 500 <= status and status < 600 and retry < retries:
+            if retry < retries:
+                log.warn('Retrying because of: %d status' % status)
                 continue
-            raise rerr
-
-        # Otherwise return the result
+            else:
+                raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
         return response
 
     # This code-path should be unreachable
