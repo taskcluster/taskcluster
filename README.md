@@ -89,93 +89,612 @@ figuring out how to configure the python logging module but do want debug messag
 
 ### Methods in `taskcluster.Auth`
 ```python
+import asynio # Only for async 
 // Create Auth client instance
 import taskcluster
+import taskcluster.async
+
 auth = taskcluster.Auth(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncAuth = taskcluster.async.Auth(options, session=session)
 ```
+Authentication related API end-points for TaskCluster and related
+services. These API end-points are of interest if you wish to:
+  * Authenticate request signed with TaskCluster credentials,
+  * Manage clients and roles,
+  * Inspect or audit clients and roles,
+  * Gain access to various services guarded by this API.
+
+### Clients
+The authentication service manages _clients_, at a high-level each client
+consists of a `clientId`, an `accessToken`, scopes, and some metadata.
+The `clientId` and `accessToken` can be used for authentication when
+calling TaskCluster APIs.
+
+The client's scopes control the client's access to TaskCluster resources.
+The scopes are *expanded* by substituting roles, as defined below.
+
+### Roles
+A _role_ consists of a `roleId`, a set of scopes and a description.
+Each role constitutes a simple _expansion rule_ that says if you have
+the scope: `assume:<roleId>` you get the set of scopes the role has.
+Think of the `assume:<roleId>` as a scope that allows a client to assume
+a role.
+
+As in scopes the `*` kleene star also have special meaning if it is
+located at the end of a `roleId`. If you have a role with the following
+`roleId`: `my-prefix*`, then any client which has a scope staring with
+`assume:my-prefix` will be allowed to assume the role.
+
+### Guarded Services
+The authentication service also has API end-points for delegating access
+to some guarded service such as AWS S3, or Azure Table Storage.
+Generally, we add API end-points to this server when we wish to use
+TaskCluster credentials to grant access to a third-party service used
+by many TaskCluster components.
 #### List Clients
- * `auth.listClients() -> result`
+Get a list of all clients.  With `prefix`, only clients for which
+it is a prefix of the clientId are returned.
+
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/list-clients-response.json#)
+
+```python
+# Sync calls
+auth.listClients() # -> result`
+# Async call
+await asyncAuth.listClients() # -> result
+```
 
 #### Get Client
- * `auth.client(clientId) -> result`
- * `auth.client(clientId='value') -> result`
+Get information about a single client.
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+
+```python
+# Sync calls
+auth.client(clientId) # -> result`
+auth.client(clientId='value') # -> result
+# Async call
+await asyncAuth.client(clientId) # -> result
+await asyncAuth.client(clientId='value') # -> result
+```
 
 #### Create Client
- * `auth.createClient(clientId, payload) -> result`
- * `auth.createClient(payload, clientId='value') -> result`
+Create a new client and get the `accessToken` for this client.
+You should store the `accessToken` from this API call as there is no
+other way to retrieve it.
+
+If you loose the `accessToken` you can call `resetAccessToken` to reset
+it, and a new `accessToken` will be returned, but you cannot retrieve the
+current `accessToken`.
+
+If a client with the same `clientId` already exists this operation will
+fail. Use `updateClient` if you wish to update an existing client.
+
+The caller's scopes must satisfy `scopes`.
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/create-client-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/create-client-response.json#)
+
+```python
+# Sync calls
+auth.createClient(clientId, payload) # -> result`
+auth.createClient(payload, clientId='value') # -> result
+# Async call
+await asyncAuth.createClient(clientId, payload) # -> result
+await asyncAuth.createClient(payload, clientId='value') # -> result
+```
 
 #### Reset `accessToken`
- * `auth.resetAccessToken(clientId) -> result`
- * `auth.resetAccessToken(clientId='value') -> result`
+Reset a clients `accessToken`, this will revoke the existing
+`accessToken`, generate a new `accessToken` and return it from this
+call.
+
+There is no way to retrieve an existing `accessToken`, so if you loose it
+you must reset the accessToken to acquire it again.
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/create-client-response.json#)
+
+```python
+# Sync calls
+auth.resetAccessToken(clientId) # -> result`
+auth.resetAccessToken(clientId='value') # -> result
+# Async call
+await asyncAuth.resetAccessToken(clientId) # -> result
+await asyncAuth.resetAccessToken(clientId='value') # -> result
+```
 
 #### Update Client
- * `auth.updateClient(clientId, payload) -> result`
- * `auth.updateClient(payload, clientId='value') -> result`
+Update an exisiting client. The `clientId` and `accessToken` cannot be
+updated, but `scopes` can be modified.  The caller's scopes must
+satisfy all scopes being added to the client in the update operation.
+If no scopes are given in the request, the client's scopes remain
+unchanged
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/create-client-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+
+```python
+# Sync calls
+auth.updateClient(clientId, payload) # -> result`
+auth.updateClient(payload, clientId='value') # -> result
+# Async call
+await asyncAuth.updateClient(clientId, payload) # -> result
+await asyncAuth.updateClient(payload, clientId='value') # -> result
+```
 
 #### Enable Client
- * `auth.enableClient(clientId) -> result`
- * `auth.enableClient(clientId='value') -> result`
+Enable a client that was disabled with `disableClient`.  If the client
+is already enabled, this does nothing.
+
+This is typically used by identity providers to re-enable clients that
+had been disabled when the corresponding identity's scopes changed.
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+
+```python
+# Sync calls
+auth.enableClient(clientId) # -> result`
+auth.enableClient(clientId='value') # -> result
+# Async call
+await asyncAuth.enableClient(clientId) # -> result
+await asyncAuth.enableClient(clientId='value') # -> result
+```
 
 #### Disable Client
- * `auth.disableClient(clientId) -> result`
- * `auth.disableClient(clientId='value') -> result`
+Disable a client.  If the client is already disabled, this does nothing.
+
+This is typically used by identity providers to disable clients when the
+corresponding identity's scopes no longer satisfy the client's scopes.
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+
+```python
+# Sync calls
+auth.disableClient(clientId) # -> result`
+auth.disableClient(clientId='value') # -> result
+# Async call
+await asyncAuth.disableClient(clientId) # -> result
+await asyncAuth.disableClient(clientId='value') # -> result
+```
 
 #### Delete Client
- * `auth.deleteClient(clientId) -> None`
- * `auth.deleteClient(clientId='value') -> None`
+Delete a client, please note that any roles related to this client must
+be deleted independently.
+
+
+
+Takes the following arguments:
+
+  * `clientId`
+
+```python
+# Sync calls
+auth.deleteClient(clientId) # -> None`
+auth.deleteClient(clientId='value') # -> None
+# Async call
+await asyncAuth.deleteClient(clientId) # -> None
+await asyncAuth.deleteClient(clientId='value') # -> None
+```
 
 #### List Roles
- * `auth.listRoles() -> result`
+Get a list of all roles, each role object also includes the list of
+scopes it expands to.
+
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/list-roles-response.json#)
+
+```python
+# Sync calls
+auth.listRoles() # -> result`
+# Async call
+await asyncAuth.listRoles() # -> result
+```
 
 #### Get Role
- * `auth.role(roleId) -> result`
- * `auth.role(roleId='value') -> result`
+Get information about a single role, including the set of scopes that the
+role expands to.
+
+
+
+Takes the following arguments:
+
+  * `roleId`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-role-response.json#)
+
+```python
+# Sync calls
+auth.role(roleId) # -> result`
+auth.role(roleId='value') # -> result
+# Async call
+await asyncAuth.role(roleId) # -> result
+await asyncAuth.role(roleId='value') # -> result
+```
 
 #### Create Role
- * `auth.createRole(roleId, payload) -> result`
- * `auth.createRole(payload, roleId='value') -> result`
+Create a new role.
+
+The caller's scopes must satisfy the new role's scopes.
+
+If there already exists a role with the same `roleId` this operation
+will fail. Use `updateRole` to modify an existing role.
+
+
+
+Takes the following arguments:
+
+  * `roleId`
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/create-role-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-role-response.json#)
+
+```python
+# Sync calls
+auth.createRole(roleId, payload) # -> result`
+auth.createRole(payload, roleId='value') # -> result
+# Async call
+await asyncAuth.createRole(roleId, payload) # -> result
+await asyncAuth.createRole(payload, roleId='value') # -> result
+```
 
 #### Update Role
- * `auth.updateRole(roleId, payload) -> result`
- * `auth.updateRole(payload, roleId='value') -> result`
+Update an existing role.
+
+The caller's scopes must satisfy all of the new scopes being added, but
+need not satisfy all of the client's existing scopes.
+
+
+
+Takes the following arguments:
+
+  * `roleId`
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/create-role-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/get-role-response.json#)
+
+```python
+# Sync calls
+auth.updateRole(roleId, payload) # -> result`
+auth.updateRole(payload, roleId='value') # -> result
+# Async call
+await asyncAuth.updateRole(roleId, payload) # -> result
+await asyncAuth.updateRole(payload, roleId='value') # -> result
+```
 
 #### Delete Role
- * `auth.deleteRole(roleId) -> None`
- * `auth.deleteRole(roleId='value') -> None`
+Delete a role. This operation will succeed regardless of whether or not
+the role exists.
+
+
+
+Takes the following arguments:
+
+  * `roleId`
+
+```python
+# Sync calls
+auth.deleteRole(roleId) # -> None`
+auth.deleteRole(roleId='value') # -> None
+# Async call
+await asyncAuth.deleteRole(roleId) # -> None
+await asyncAuth.deleteRole(roleId='value') # -> None
+```
 
 #### Expand Scopes
- * `auth.expandScopes(payload) -> result`
+Return an expanded copy of the given scopeset, with scopes implied by any
+roles included.
+
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+
+```python
+# Sync calls
+auth.expandScopes(payload) # -> result`
+# Async call
+await asyncAuth.expandScopes(payload) # -> result
+```
 
 #### Get Current Scopes
- * `auth.currentScopes() -> result`
+Return the expanded scopes available in the request, taking into account all sources
+of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
+and roles).
+
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+
+```python
+# Sync calls
+auth.currentScopes() # -> result`
+# Async call
+await asyncAuth.currentScopes() # -> result
+```
 
 #### Get Temporary Read/Write Credentials S3
- * `auth.awsS3Credentials(level, bucket, prefix) -> result`
- * `auth.awsS3Credentials(level='value', bucket='value', prefix='value') -> result`
+Get temporary AWS credentials for `read-write` or `read-only` access to
+a given `bucket` and `prefix` within that bucket.
+The `level` parameter can be `read-write` or `read-only` and determines
+which type of credentials are returned. Please note that the `level`
+parameter is required in the scope guarding access.  The bucket name must
+not contain `.`, as recommended by Amazon.
+
+This method can only allow access to a whitelisted set of buckets.  To add
+a bucket to that whitelist, contact the TaskCluster team, who will add it to
+the appropriate IAM policy.  If the bucket is in a different AWS account, you
+will also need to add a bucket policy allowing access from the TaskCluster
+account.  That policy should look like this:
+
+```js
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "allow-taskcluster-auth-to-delegate-access",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::692406183521:root"
+      },
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::<bucket>",
+        "arn:aws:s3:::<bucket>/*"
+      ]
+    }
+  ]
+}
+```
+
+The credentials are set to expire after an hour, but this behavior is
+subject to change. Hence, you should always read the `expires` property
+from the response, if you intend to maintain active credentials in your
+application.
+
+Please note that your `prefix` may not start with slash `/`. Such a prefix
+is allowed on S3, but we forbid it here to discourage bad behavior.
+
+Also note that if your `prefix` doesn't end in a slash `/`, the STS
+credentials may allow access to unexpected keys, as S3 does not treat
+slashes specially.  For example, a prefix of `my-folder` will allow
+access to `my-folder/file.txt` as expected, but also to `my-folder.txt`,
+which may not be intended.
+
+Finally, note that the `PutObjectAcl` call is not allowed.  Passing a canned
+ACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and
+will result in an access-denied error from AWS.  This limitation is due to a
+security flaw in Amazon S3 which might otherwise allow indefinite access to
+uploaded objects.
+
+**EC2 metadata compatibility**, if the querystring parameter
+`?format=iam-role-compat` is given, the response will be compatible
+with the JSON exposed by the EC2 metadata service. This aims to ease
+compatibility for libraries and tools built to auto-refresh credentials.
+For details on the format returned by EC2 metadata service see:
+[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
+
+
+
+Takes the following arguments:
+
+  * `level`
+  * `bucket`
+  * `prefix`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#)
+
+```python
+# Sync calls
+auth.awsS3Credentials(level, bucket, prefix) # -> result`
+auth.awsS3Credentials(level='value', bucket='value', prefix='value') # -> result
+# Async call
+await asyncAuth.awsS3Credentials(level, bucket, prefix) # -> result
+await asyncAuth.awsS3Credentials(level='value', bucket='value', prefix='value') # -> result
+```
 
 #### Get Shared-Access-Signature for Azure Table
- * `auth.azureTableSAS(account, table) -> result`
- * `auth.azureTableSAS(account='value', table='value') -> result`
+Get a shared access signature (SAS) string for use with a specific Azure
+Table Storage table.  Note, this will create the table, if it doesn't
+already exist.
+
+
+
+Takes the following arguments:
+
+  * `account`
+  * `table`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#)
+
+```python
+# Sync calls
+auth.azureTableSAS(account, table) # -> result`
+auth.azureTableSAS(account='value', table='value') # -> result
+# Async call
+await asyncAuth.azureTableSAS(account, table) # -> result
+await asyncAuth.azureTableSAS(account='value', table='value') # -> result
+```
 
 #### Get DSN for Sentry Project
- * `auth.sentryDSN(project) -> result`
- * `auth.sentryDSN(project='value') -> result`
+Get temporary DSN (access credentials) for a sentry project.
+The credentials returned can be used with any Sentry client for up to
+24 hours, after which the credentials will be automatically disabled.
+
+If the project doesn't exist it will be created, and assigned to the
+initial team configured for this component. Contact a Sentry admin
+to have the project transferred to a team you have access to if needed
+
+
+
+Takes the following arguments:
+
+  * `project`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#)
+
+```python
+# Sync calls
+auth.sentryDSN(project) # -> result`
+auth.sentryDSN(project='value') # -> result
+# Async call
+await asyncAuth.sentryDSN(project) # -> result
+await asyncAuth.sentryDSN(project='value') # -> result
+```
 
 #### Get Token for Statsum Project
- * `auth.statsumToken(project) -> result`
- * `auth.statsumToken(project='value') -> result`
+Get temporary `token` and `baseUrl` for sending metrics to statsum.
+
+The token is valid for 24 hours, clients should refresh after expiration.
+
+
+
+Takes the following arguments:
+
+  * `project`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#)
+
+```python
+# Sync calls
+auth.statsumToken(project) # -> result`
+auth.statsumToken(project='value') # -> result
+# Async call
+await asyncAuth.statsumToken(project) # -> result
+await asyncAuth.statsumToken(project='value') # -> result
+```
 
 #### Authenticate Hawk Request
- * `auth.authenticateHawk(payload) -> result`
+Validate the request signature given on input and return list of scopes
+that the authenticating client has.
+
+This method is used by other services that wish rely on TaskCluster
+credentials for authentication. This way we can use Hawk without having
+the secret credentials leave this service.
+
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#)
+
+```python
+# Sync calls
+auth.authenticateHawk(payload) # -> result`
+# Async call
+await asyncAuth.authenticateHawk(payload) # -> result
+```
 
 #### Test Authentication
- * `auth.testAuthenticate(payload) -> result`
+Utility method to test client implementations of TaskCluster
+authentication.
+
+Rather than using real credentials, this endpoint accepts requests with
+clientId `tester` and accessToken `no-secret`. That client's scopes are
+based on `clientScopes` in the request body.
+
+The request is validated, with any certificate, authorizedScopes, etc.
+applied, and the resulting scopes are checked against `requiredScopes`
+from the request body. On success, the response contains the clientId
+and scopes as seen by the API method.
+
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#)
+
+```python
+# Sync calls
+auth.testAuthenticate(payload) # -> result`
+# Async call
+await asyncAuth.testAuthenticate(payload) # -> result
+```
 
 #### Test Authentication (GET)
- * `auth.testAuthenticateGet() -> result`
+Utility method similar to `testAuthenticate`, but with the GET method,
+so it can be used with signed URLs (bewits).
+
+Rather than using real credentials, this endpoint accepts requests with
+clientId `tester` and accessToken `no-secret`. That client's scopes are
+`['test:*', 'auth:create-client:test:*']`.  The call fails if the 
+`test:authenticate-get` scope is not available.
+
+The request is validated, with any certificate, authorizedScopes, etc.
+applied, and the resulting scopes are checked, just like any API call.
+On success, the response contains the clientId and scopes as seen by
+the API method.
+
+This method may later be extended to allow specification of client and
+required scopes via query arguments.
+
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#)
+
+```python
+# Sync calls
+auth.testAuthenticateGet() # -> result`
+# Async call
+await asyncAuth.testAuthenticateGet() # -> result
+```
 
 #### Ping Server
- * `auth.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+auth.ping() # -> None`
+# Async call
+await asyncAuth.ping() # -> None
+```
 
 
 
@@ -186,6 +705,14 @@ auth = taskcluster.Auth(options)
 import taskcluster
 authEvents = taskcluster.AuthEvents(options)
 ```
+The auth service, typically available at `auth.taskcluster.net`
+is responsible for storing credentials, managing assignment of scopes,
+and validation of request signatures from other services.
+
+These exchanges provides notifications when credentials or roles are
+updated. This is mostly so that multiple instances of the auth service
+can purge their caches and synchronize state. But you are of course
+welcome to use these for other purposes, monitoring changes for example.
 #### Client Created Messages
  * `authEvents.clientCreated(routingKeyPattern) -> routingKey`
    * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
@@ -215,91 +742,545 @@ authEvents = taskcluster.AuthEvents(options)
 
 ### Methods in `taskcluster.AwsProvisioner`
 ```python
+import asynio # Only for async 
 // Create AwsProvisioner client instance
 import taskcluster
+import taskcluster.async
+
 awsProvisioner = taskcluster.AwsProvisioner(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncAwsProvisioner = taskcluster.async.AwsProvisioner(options, session=session)
 ```
+The AWS Provisioner is responsible for provisioning instances on EC2 for use in
+TaskCluster.  The provisioner maintains a set of worker configurations which
+can be managed with an API that is typically available at
+aws-provisioner.taskcluster.net/v1.  This API can also perform basic instance
+management tasks in addition to maintaining the internal state of worker type
+configuration information.
+
+The Provisioner runs at a configurable interval.  Each iteration of the
+provisioner fetches a current copy the state that the AWS EC2 api reports.  In
+each iteration, we ask the Queue how many tasks are pending for that worker
+type.  Based on the number of tasks pending and the scaling ratio, we may
+submit requests for new instances.  We use pricing information, capacity and
+utility factor information to decide which instance type in which region would
+be the optimal configuration.
+
+Each EC2 instance type will declare a capacity and utility factor.  Capacity is
+the number of tasks that a given machine is capable of running concurrently.
+Utility factor is a relative measure of performance between two instance types.
+We multiply the utility factor by the spot price to compare instance types and
+regions when making the bidding choices.
+
+When a new EC2 instance is instantiated, its user data contains a token in
+`securityToken` that can be used with the `getSecret` method to retrieve
+the worker's credentials and any needed passwords or other restricted
+information.  The worker is responsible for deleting the secret after
+retrieving it, to prevent dissemination of the secret to other proceses
+which can read the instance user data.
+
 #### List worker types with details
- * `awsProvisioner.listWorkerTypeSummaries() -> result`
+Return a list of worker types, including some summary information about
+current capacity for each.  While this list includes all defined worker types,
+there may be running EC2 instances for deleted worker types that are not
+included here.  The list is unordered.
+
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.listWorkerTypeSummaries() # -> result`
+# Async call
+await asyncAwsProvisioner.listWorkerTypeSummaries() # -> result
+```
 
 #### Create new Worker Type
- * `awsProvisioner.createWorkerType(workerType, payload) -> result`
- * `awsProvisioner.createWorkerType(payload, workerType='value') -> result`
+Create a worker type.  A worker type contains all the configuration
+needed for the provisioner to manage the instances.  Each worker type
+knows which regions and which instance types are allowed for that
+worker type.  Remember that Capacity is the number of concurrent tasks
+that can be run on a given EC2 resource and that Utility is the relative
+performance rate between different instance types.  There is no way to
+configure different regions to have different sets of instance types
+so ensure that all instance types are available in all regions.
+This function is idempotent.
+
+Once a worker type is in the provisioner, a back ground process will
+begin creating instances for it based on its capacity bounds and its
+pending task count from the Queue.  It is the worker's responsibility
+to shut itself down.  The provisioner has a limit (currently 96hours)
+for all instances to prevent zombie instances from running indefinitely.
+
+The provisioner will ensure that all instances created are tagged with
+aws resource tags containing the provisioner id and the worker type.
+
+If provided, the secrets in the global, region and instance type sections
+are available using the secrets api.  If specified, the scopes provided
+will be used to generate a set of temporary credentials available with
+the other secrets.
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.createWorkerType(workerType, payload) # -> result`
+awsProvisioner.createWorkerType(payload, workerType='value') # -> result
+# Async call
+await asyncAwsProvisioner.createWorkerType(workerType, payload) # -> result
+await asyncAwsProvisioner.createWorkerType(payload, workerType='value') # -> result
+```
 
 #### Update Worker Type
- * `awsProvisioner.updateWorkerType(workerType, payload) -> result`
- * `awsProvisioner.updateWorkerType(payload, workerType='value') -> result`
+Provide a new copy of a worker type to replace the existing one.
+This will overwrite the existing worker type definition if there
+is already a worker type of that name.  This method will return a
+200 response along with a copy of the worker type definition created
+Note that if you are using the result of a GET on the worker-type
+end point that you will need to delete the lastModified and workerType
+keys from the object returned, since those fields are not allowed
+the request body for this method
+
+Otherwise, all input requirements and actions are the same as the
+create method.
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.updateWorkerType(workerType, payload) # -> result`
+awsProvisioner.updateWorkerType(payload, workerType='value') # -> result
+# Async call
+await asyncAwsProvisioner.updateWorkerType(workerType, payload) # -> result
+await asyncAwsProvisioner.updateWorkerType(payload, workerType='value') # -> result
+```
 
 #### Get Worker Type Last Modified Time
- * `awsProvisioner.workerTypeLastModified(workerType) -> result`
- * `awsProvisioner.workerTypeLastModified(workerType='value') -> result`
+This method is provided to allow workers to see when they were
+last modified.  The value provided through UserData can be
+compared against this value to see if changes have been made
+If the worker type definition has not been changed, the date
+should be identical as it is the same stored value.
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#)
+
+```python
+# Sync calls
+awsProvisioner.workerTypeLastModified(workerType) # -> result`
+awsProvisioner.workerTypeLastModified(workerType='value') # -> result
+# Async call
+await asyncAwsProvisioner.workerTypeLastModified(workerType) # -> result
+await asyncAwsProvisioner.workerTypeLastModified(workerType='value') # -> result
+```
 
 #### Get Worker Type
- * `awsProvisioner.workerType(workerType) -> result`
- * `awsProvisioner.workerType(workerType='value') -> result`
+Retreive a copy of the requested worker type definition.
+This copy contains a lastModified field as well as the worker
+type name.  As such, it will require manipulation to be able to
+use the results of this method to submit date to the update
+method.
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.workerType(workerType) # -> result`
+awsProvisioner.workerType(workerType='value') # -> result
+# Async call
+await asyncAwsProvisioner.workerType(workerType) # -> result
+await asyncAwsProvisioner.workerType(workerType='value') # -> result
+```
 
 #### Delete Worker Type
- * `awsProvisioner.removeWorkerType(workerType) -> None`
- * `awsProvisioner.removeWorkerType(workerType='value') -> None`
+Delete a worker type definition.  This method will only delete
+the worker type definition from the storage table.  The actual
+deletion will be handled by a background worker.  As soon as this
+method is called for a worker type, the background worker will
+immediately submit requests to cancel all spot requests for this
+worker type as well as killing all instances regardless of their
+state.  If you want to gracefully remove a worker type, you must
+either ensure that no tasks are created with that worker type name
+or you could theoretically set maxCapacity to 0, though, this is
+not a supported or tested action
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+```python
+# Sync calls
+awsProvisioner.removeWorkerType(workerType) # -> None`
+awsProvisioner.removeWorkerType(workerType='value') # -> None
+# Async call
+await asyncAwsProvisioner.removeWorkerType(workerType) # -> None
+await asyncAwsProvisioner.removeWorkerType(workerType='value') # -> None
+```
 
 #### List Worker Types
- * `awsProvisioner.listWorkerTypes() -> result`
+Return a list of string worker type names.  These are the names
+of all managed worker types known to the provisioner.  This does
+not include worker types which are left overs from a deleted worker
+type definition but are still running in AWS.
+
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.listWorkerTypes() # -> result`
+# Async call
+await asyncAwsProvisioner.listWorkerTypes() # -> result
+```
 
 #### Create new AMI Set
- * `awsProvisioner.createAmiSet(id, payload) -> None`
- * `awsProvisioner.createAmiSet(payload, id='value') -> None`
+Create an AMI Set. An AMI Set is a collection of AMIs with a single name.
+
+
+
+Takes the following arguments:
+
+  * `id`
+
+Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#)
+
+```python
+# Sync calls
+awsProvisioner.createAmiSet(id, payload) # -> None`
+awsProvisioner.createAmiSet(payload, id='value') # -> None
+# Async call
+await asyncAwsProvisioner.createAmiSet(id, payload) # -> None
+await asyncAwsProvisioner.createAmiSet(payload, id='value') # -> None
+```
 
 #### Get AMI Set
- * `awsProvisioner.amiSet(id) -> result`
- * `awsProvisioner.amiSet(id='value') -> result`
+Retreive a copy of the requested AMI set.
+
+
+
+Takes the following arguments:
+
+  * `id`
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.amiSet(id) # -> result`
+awsProvisioner.amiSet(id='value') # -> result
+# Async call
+await asyncAwsProvisioner.amiSet(id) # -> result
+await asyncAwsProvisioner.amiSet(id='value') # -> result
+```
 
 #### Update AMI Set
- * `awsProvisioner.updateAmiSet(id, payload) -> result`
- * `awsProvisioner.updateAmiSet(payload, id='value') -> result`
+Provide a new copy of an AMI Set to replace the existing one.
+This will overwrite the existing AMI Set if there
+is already an AMI Set of that name. This method will return a
+200 response along with a copy of the AMI Set created.
+Note that if you are using the result of a GET on the ami-set
+end point that you will need to delete the lastModified and amiSet
+keys from the object returned, since those fields are not allowed
+the request body for this method.
+
+Otherwise, all input requirements and actions are the same as the
+create method.
+
+
+
+Takes the following arguments:
+
+  * `id`
+
+Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.updateAmiSet(id, payload) # -> result`
+awsProvisioner.updateAmiSet(payload, id='value') # -> result
+# Async call
+await asyncAwsProvisioner.updateAmiSet(id, payload) # -> result
+await asyncAwsProvisioner.updateAmiSet(payload, id='value') # -> result
+```
 
 #### List AMI sets
- * `awsProvisioner.listAmiSets() -> result`
+Return a list of AMI sets names.
+
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.listAmiSets() # -> result`
+# Async call
+await asyncAwsProvisioner.listAmiSets() # -> result
+```
 
 #### Delete AMI Set
- * `awsProvisioner.removeAmiSet(id) -> None`
- * `awsProvisioner.removeAmiSet(id='value') -> None`
+Delete an AMI Set.
+
+
+
+Takes the following arguments:
+
+  * `id`
+
+```python
+# Sync calls
+awsProvisioner.removeAmiSet(id) # -> None`
+awsProvisioner.removeAmiSet(id='value') # -> None
+# Async call
+await asyncAwsProvisioner.removeAmiSet(id) # -> None
+await asyncAwsProvisioner.removeAmiSet(id='value') # -> None
+```
 
 #### Create new Secret
- * `awsProvisioner.createSecret(token, payload) -> None`
- * `awsProvisioner.createSecret(payload, token='value') -> None`
+Insert a secret into the secret storage.  The supplied secrets will
+be provided verbatime via `getSecret`, while the supplied scopes will
+be converted into credentials by `getSecret`.
+
+This method is not ordinarily used in production; instead, the provisioner
+creates a new secret directly for each spot bid.
+
+
+
+Takes the following arguments:
+
+  * `token`
+
+Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#)
+
+```python
+# Sync calls
+awsProvisioner.createSecret(token, payload) # -> None`
+awsProvisioner.createSecret(payload, token='value') # -> None
+# Async call
+await asyncAwsProvisioner.createSecret(token, payload) # -> None
+await asyncAwsProvisioner.createSecret(payload, token='value') # -> None
+```
 
 #### Get a Secret
- * `awsProvisioner.getSecret(token) -> result`
- * `awsProvisioner.getSecret(token='value') -> result`
+Retrieve a secret from storage.  The result contains any passwords or
+other restricted information verbatim as well as a temporary credential
+based on the scopes specified when the secret was created.
+
+It is important that this secret is deleted by the consumer (`removeSecret`),
+or else the secrets will be visible to any process which can access the
+user data associated with the instance.
+
+
+
+Takes the following arguments:
+
+  * `token`
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.getSecret(token) # -> result`
+awsProvisioner.getSecret(token='value') # -> result
+# Async call
+await asyncAwsProvisioner.getSecret(token) # -> result
+await asyncAwsProvisioner.getSecret(token='value') # -> result
+```
 
 #### Report an instance starting
- * `awsProvisioner.instanceStarted(instanceId, token) -> None`
- * `awsProvisioner.instanceStarted(instanceId='value', token='value') -> None`
+An instance will report in by giving its instance id as well
+as its security token.  The token is given and checked to ensure
+that it matches a real token that exists to ensure that random
+machines do not check in.  We could generate a different token
+but that seems like overkill
+
+
+
+Takes the following arguments:
+
+  * `instanceId`
+  * `token`
+
+```python
+# Sync calls
+awsProvisioner.instanceStarted(instanceId, token) # -> None`
+awsProvisioner.instanceStarted(instanceId='value', token='value') # -> None
+# Async call
+await asyncAwsProvisioner.instanceStarted(instanceId, token) # -> None
+await asyncAwsProvisioner.instanceStarted(instanceId='value', token='value') # -> None
+```
 
 #### Remove a Secret
- * `awsProvisioner.removeSecret(token) -> None`
- * `awsProvisioner.removeSecret(token='value') -> None`
+Remove a secret.  After this call, a call to `getSecret` with the given
+token will return no information.
+
+It is very important that the consumer of a 
+secret delete the secret from storage before handing over control
+to untrusted processes to prevent credential and/or secret leakage.
+
+
+
+Takes the following arguments:
+
+  * `token`
+
+```python
+# Sync calls
+awsProvisioner.removeSecret(token) # -> None`
+awsProvisioner.removeSecret(token='value') # -> None
+# Async call
+await asyncAwsProvisioner.removeSecret(token) # -> None
+await asyncAwsProvisioner.removeSecret(token='value') # -> None
+```
 
 #### Get All Launch Specifications for WorkerType
- * `awsProvisioner.getLaunchSpecs(workerType) -> result`
- * `awsProvisioner.getLaunchSpecs(workerType='value') -> result`
+This method returns a preview of all possible launch specifications
+that this worker type definition could submit to EC2.  It is used to
+test worker types, nothing more
+
+**This API end-point is experimental and may be subject to change without warning.**
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.getLaunchSpecs(workerType) # -> result`
+awsProvisioner.getLaunchSpecs(workerType='value') # -> result
+# Async call
+await asyncAwsProvisioner.getLaunchSpecs(workerType) # -> result
+await asyncAwsProvisioner.getLaunchSpecs(workerType='value') # -> result
+```
 
 #### Get AWS State for a worker type
- * `awsProvisioner.state(workerType) -> None`
- * `awsProvisioner.state(workerType='value') -> None`
+Return the state of a given workertype as stored by the provisioner. 
+This state is stored as three lists: 1 for running instances, 1 for
+pending requests.  The `summary` property contains an updated summary
+similar to that returned from `listWorkerTypeSummaries`.
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+```python
+# Sync calls
+awsProvisioner.state(workerType) # -> None`
+awsProvisioner.state(workerType='value') # -> None
+# Async call
+await asyncAwsProvisioner.state(workerType) # -> None
+await asyncAwsProvisioner.state(workerType='value') # -> None
+```
 
 #### Ping Server
- * `awsProvisioner.ping() -> None`
+Documented later...
+
+**Warning** this api end-point is **not stable**.
+
+
+```python
+# Sync calls
+awsProvisioner.ping() # -> None`
+# Async call
+await asyncAwsProvisioner.ping() # -> None
+```
 
 #### Backend Status
- * `awsProvisioner.backendStatus() -> result`
+This endpoint is used to show when the last time the provisioner
+has checked in.  A check in is done through the deadman's snitch
+api.  It is done at the conclusion of a provisioning iteration
+and used to tell if the background provisioning process is still
+running.
+
+**Warning** this api end-point is **not stable**.
+
+
+Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#)
+
+```python
+# Sync calls
+awsProvisioner.backendStatus() # -> result`
+# Async call
+await asyncAwsProvisioner.backendStatus() # -> result
+```
 
 #### Shutdown Every Ec2 Instance of this Worker Type
- * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) -> None`
- * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') -> None`
+WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
+Shut down every single EC2 instance associated with this workerType. 
+This means every single last one.  You probably don't want to use 
+this method, which is why it has an obnoxious name.  Don't even try 
+to claim you didn't know what this method does!
+
+**This API end-point is experimental and may be subject to change without warning.**
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+```python
+# Sync calls
+awsProvisioner.terminateAllInstancesOfWorkerType(workerType) # -> None`
+awsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') # -> None
+# Async call
+await asyncAwsProvisioner.terminateAllInstancesOfWorkerType(workerType) # -> None
+await asyncAwsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') # -> None
+```
 
 #### Shutdown Every Single Ec2 Instance Managed By This Provisioner
- * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() -> None`
+WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
+Shut down every single EC2 instance managed by this provisioner. 
+This means every single last one.  You probably don't want to use 
+this method, which is why it has an obnoxious name.  Don't even try 
+to claim you didn't know what this method does!
+
+**This API end-point is experimental and may be subject to change without warning.**
+
+
+```python
+# Sync calls
+awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() # -> None`
+# Async call
+await asyncAwsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() # -> None
+```
 
 
 
@@ -310,6 +1291,7 @@ awsProvisioner = taskcluster.AwsProvisioner(options)
 import taskcluster
 awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
 ```
+Exchanges from the provisioner... more docs later
 #### WorkerType Created Message
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
@@ -333,18 +1315,61 @@ awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
 
 ### Methods in `taskcluster.Github`
 ```python
+import asynio # Only for async 
 // Create Github client instance
 import taskcluster
+import taskcluster.async
+
 github = taskcluster.Github(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncGithub = taskcluster.async.Github(options, session=session)
 ```
+The github service, typically available at
+`github.taskcluster.net`, is responsible for publishing pulse
+messages in response to GitHub events.
+
+This document describes the API end-point for consuming GitHub
+web hooks
 #### Consume GitHub WebHook
- * `github.githubWebHookConsumer() -> None`
+Capture a GitHub event and publish it via pulse, if it's a push,
+release or pull request.
+
+
+```python
+# Sync calls
+github.githubWebHookConsumer() # -> None`
+# Async call
+await asyncGithub.githubWebHookConsumer() # -> None
+```
 
 #### List of Builds
- * `github.builds() -> result`
+A paginated list of builds that have been run in
+Taskcluster. Can be filtered on various git-specific
+fields.
+
+
+Required [output schema](http://schemas.taskcluster.net/github/v1/build-list.json#)
+
+```python
+# Sync calls
+github.builds() # -> result`
+# Async call
+await asyncGithub.builds() # -> result
+```
 
 #### Ping Server
- * `github.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+github.ping() # -> None`
+# Async call
+await asyncGithub.ping() # -> None
+```
 
 
 
@@ -355,6 +1380,12 @@ github = taskcluster.Github(options)
 import taskcluster
 githubEvents = taskcluster.GithubEvents(options)
 ```
+The github service, typically available at
+`github.taskcluster.net`, is responsible for publishing a pulse
+message for supported github events.
+
+This document describes the exchange offered by the taskcluster
+github service
 #### GitHub Pull Request Event
  * `githubEvents.pullRequest(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
@@ -379,176 +1410,875 @@ githubEvents = taskcluster.GithubEvents(options)
 
 ### Methods in `taskcluster.Hooks`
 ```python
+import asynio # Only for async 
 // Create Hooks client instance
 import taskcluster
+import taskcluster.async
+
 hooks = taskcluster.Hooks(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncHooks = taskcluster.async.Hooks(options, session=session)
 ```
+Hooks are a mechanism for creating tasks in response to events.
+
+Hooks are identified with a `hookGroupId` and a `hookId`.
+
+When an event occurs, the resulting task is automatically created.  The
+task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
+which must have scopes to make the createTask call, including satisfying all
+scopes in `task.scopes`.
+
+Hooks can have a 'schedule' indicating specific times that new tasks should
+be created.  Each schedule is in a simple cron format, per 
+https://www.npmjs.com/package/cron-parser.  For example:
+ * `["0 0 1 * * *"]` -- daily at 1:00 UTC
+ * `["0 0 9,21 * * 1-5", "0 0 12 * * 0,6"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 #### List hook groups
- * `hooks.listHookGroups() -> result`
+This endpoint will return a list of all hook groups with at least one hook.
+
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json)
+
+```python
+# Sync calls
+hooks.listHookGroups() # -> result`
+# Async call
+await asyncHooks.listHookGroups() # -> result
+```
 
 #### List hooks in a given group
- * `hooks.listHooks(hookGroupId) -> result`
- * `hooks.listHooks(hookGroupId='value') -> result`
+This endpoint will return a list of all the hook definitions within a
+given hook group.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json)
+
+```python
+# Sync calls
+hooks.listHooks(hookGroupId) # -> result`
+hooks.listHooks(hookGroupId='value') # -> result
+# Async call
+await asyncHooks.listHooks(hookGroupId) # -> result
+await asyncHooks.listHooks(hookGroupId='value') # -> result
+```
 
 #### Get hook definition
- * `hooks.hook(hookGroupId, hookId) -> result`
- * `hooks.hook(hookGroupId='value', hookId='value') -> result`
+This endpoint will return the hook defintion for the given `hookGroupId`
+and hookId.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-definition.json)
+
+```python
+# Sync calls
+hooks.hook(hookGroupId, hookId) # -> result`
+hooks.hook(hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.hook(hookGroupId, hookId) # -> result
+await asyncHooks.hook(hookGroupId='value', hookId='value') # -> result
+```
 
 #### Get hook status
- * `hooks.getHookStatus(hookGroupId, hookId) -> result`
- * `hooks.getHookStatus(hookGroupId='value', hookId='value') -> result`
+This endpoint will return the current status of the hook.  This represents a
+snapshot in time and may vary from one call to the next.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-status.json)
+
+```python
+# Sync calls
+hooks.getHookStatus(hookGroupId, hookId) # -> result`
+hooks.getHookStatus(hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.getHookStatus(hookGroupId, hookId) # -> result
+await asyncHooks.getHookStatus(hookGroupId='value', hookId='value') # -> result
+```
 
 #### Get hook schedule
- * `hooks.getHookSchedule(hookGroupId, hookId) -> result`
- * `hooks.getHookSchedule(hookGroupId='value', hookId='value') -> result`
+This endpoint will return the schedule and next scheduled creation time
+for the given hook.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-schedule.json)
+
+```python
+# Sync calls
+hooks.getHookSchedule(hookGroupId, hookId) # -> result`
+hooks.getHookSchedule(hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.getHookSchedule(hookGroupId, hookId) # -> result
+await asyncHooks.getHookSchedule(hookGroupId='value', hookId='value') # -> result
+```
 
 #### Create a hook
- * `hooks.createHook(hookGroupId, hookId, payload) -> result`
- * `hooks.createHook(payload, hookGroupId='value', hookId='value') -> result`
+This endpoint will create a new hook.
+
+The caller's credentials must include the role that will be used to
+create the task.  That role must satisfy task.scopes as well as the
+necessary scopes to add the task to the queue.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/create-hook-request.json)
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-definition.json)
+
+```python
+# Sync calls
+hooks.createHook(hookGroupId, hookId, payload) # -> result`
+hooks.createHook(payload, hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.createHook(hookGroupId, hookId, payload) # -> result
+await asyncHooks.createHook(payload, hookGroupId='value', hookId='value') # -> result
+```
 
 #### Update a hook
- * `hooks.updateHook(hookGroupId, hookId, payload) -> result`
- * `hooks.updateHook(payload, hookGroupId='value', hookId='value') -> result`
+This endpoint will update an existing hook.  All fields except
+`hookGroupId` and `hookId` can be modified.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/create-hook-request.json)
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-definition.json)
+
+```python
+# Sync calls
+hooks.updateHook(hookGroupId, hookId, payload) # -> result`
+hooks.updateHook(payload, hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.updateHook(hookGroupId, hookId, payload) # -> result
+await asyncHooks.updateHook(payload, hookGroupId='value', hookId='value') # -> result
+```
 
 #### Delete a hook
- * `hooks.removeHook(hookGroupId, hookId) -> None`
- * `hooks.removeHook(hookGroupId='value', hookId='value') -> None`
+This endpoint will remove a hook definition.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+```python
+# Sync calls
+hooks.removeHook(hookGroupId, hookId) # -> None`
+hooks.removeHook(hookGroupId='value', hookId='value') # -> None
+# Async call
+await asyncHooks.removeHook(hookGroupId, hookId) # -> None
+await asyncHooks.removeHook(hookGroupId='value', hookId='value') # -> None
+```
 
 #### Trigger a hook
- * `hooks.triggerHook(hookGroupId, hookId, payload) -> result`
- * `hooks.triggerHook(payload, hookGroupId='value', hookId='value') -> result`
+This endpoint will trigger the creation of a task from a hook definition.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-payload.json)
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
+
+```python
+# Sync calls
+hooks.triggerHook(hookGroupId, hookId, payload) # -> result`
+hooks.triggerHook(payload, hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.triggerHook(hookGroupId, hookId, payload) # -> result
+await asyncHooks.triggerHook(payload, hookGroupId='value', hookId='value') # -> result
+```
 
 #### Get a trigger token
- * `hooks.getTriggerToken(hookGroupId, hookId) -> result`
- * `hooks.getTriggerToken(hookGroupId='value', hookId='value') -> result`
+Retrieve a unique secret token for triggering the specified hook. This
+token can be deactivated with `resetTriggerToken`.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json)
+
+```python
+# Sync calls
+hooks.getTriggerToken(hookGroupId, hookId) # -> result`
+hooks.getTriggerToken(hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.getTriggerToken(hookGroupId, hookId) # -> result
+await asyncHooks.getTriggerToken(hookGroupId='value', hookId='value') # -> result
+```
 
 #### Reset a trigger token
- * `hooks.resetTriggerToken(hookGroupId, hookId) -> result`
- * `hooks.resetTriggerToken(hookGroupId='value', hookId='value') -> result`
+Reset the token for triggering a given hook. This invalidates token that
+may have been issued via getTriggerToken with a new token.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json)
+
+```python
+# Sync calls
+hooks.resetTriggerToken(hookGroupId, hookId) # -> result`
+hooks.resetTriggerToken(hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.resetTriggerToken(hookGroupId, hookId) # -> result
+await asyncHooks.resetTriggerToken(hookGroupId='value', hookId='value') # -> result
+```
 
 #### Trigger a hook with a token
- * `hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) -> result`
- * `hooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') -> result`
+This endpoint triggers a defined hook with a valid token.
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+  * `token`
+
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-payload.json)
+
+Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
+
+```python
+# Sync calls
+hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result`
+hooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') # -> result
+# Async call
+await asyncHooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result
+await asyncHooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') # -> result
+```
 
 #### Ping Server
- * `hooks.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+hooks.ping() # -> None`
+# Async call
+await asyncHooks.ping() # -> None
+```
 
 
 
 
 ### Methods in `taskcluster.Index`
 ```python
+import asynio # Only for async 
 // Create Index client instance
 import taskcluster
+import taskcluster.async
+
 index = taskcluster.Index(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncIndex = taskcluster.async.Index(options, session=session)
 ```
+The task index, typically available at `index.taskcluster.net`, is
+responsible for indexing tasks. In order to ensure that tasks can be
+located by recency and/or arbitrary strings. Common use-cases includes
+
+ * Locate tasks by git or mercurial `<revision>`, or
+ * Locate latest task from given `<branch>`, such as a release.
+
+**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy
+called a namespace. For example a task could be indexed in
+`<revision>.linux-64.release-build`. In this case the following
+namespaces is created.
+
+ 1. `<revision>`, and,
+ 2. `<revision>.linux-64`
+
+The inside the namespace `<revision>` you can find the namespace
+`<revision>.linux-64` inside which you can find the indexed task
+`<revision>.linux-64.release-build`. In this example you'll be able to
+find build for a given revision.
+
+**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults
+to `0`). If another task is already indexed in the same namespace with
+the same lower or equal `rank`, the task will be overwritten. For example
+consider a task indexed as `mozilla-central.linux-64.release-build`, in
+this case on might choose to use a unix timestamp or mercurial revision
+number as `rank`. This way the latest completed linux 64 bit release
+build is always available at `mozilla-central.linux-64.release-build`.
+
+**Indexed Data**, when a task is located in the index you will get the
+`taskId` and an additional user-defined JSON blob that was indexed with
+task. You can use this to store additional information you would like to
+get additional from the index.
+
+**Entry Expiration**, all indexed entries must have an expiration date.
+Typically this defaults to one year, if not specified. If you are
+indexing tasks to make it easy to find artifacts, consider using the
+expiration date that the artifacts is assigned.
+
+**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be
+in the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and
+that if you strictly want to put another character you can URL encode it.
+
+**Indexing Routes**, tasks can be indexed using the API below, but the
+most common way to index tasks is adding a custom route on the following
+form `index.<namespace>`. In-order to add this route to a task you'll
+need the following scope `queue:route:index.<namespace>`. When a task has
+this route, it'll be indexed when the task is **completed successfully**.
+The task will be indexed with `rank`, `data` and `expires` as specified
+in `task.extra.index`, see example below:
+
+```js
+{
+  payload:  { /* ... */ },
+  routes: [
+    // index.<namespace> prefixed routes, tasks CC'ed such a route will
+    // be indexed under the given <namespace>
+    "index.mozilla-central.linux-64.release-build",
+    "index.<revision>.linux-64.release-build"
+  ],
+  extra: {
+    // Optional details for indexing service
+    index: {
+      // Ordering, this taskId will overwrite any thing that has
+      // rank <= 4000 (defaults to zero)
+      rank:       4000,
+
+      // Specify when the entries expires (Defaults to 1 year)
+      expires:          new Date().toJSON(),
+
+      // A little informal data to store along with taskId
+      // (less 16 kb when encoded as JSON)
+      data: {
+        hgRevision:   "...",
+        commitMessae: "...",
+        whatever...
+      }
+    },
+    // Extra properties for other services...
+  }
+  // Other task properties...
+}
+```
+
+**Remark**, when indexing tasks using custom routes, it's also possible
+to listen for messages about these tasks. Which is quite convenient, for
+example one could bind to `route.index.mozilla-central.*.release-build`,
+and pick up all messages about release builds. Hence, it is a
+good idea to document task index hierarchies, as these make up extension
+points in their own.
 #### Find Indexed Task
- * `index.findTask(namespace) -> result`
- * `index.findTask(namespace='value') -> result`
+Find task by namespace, if no task existing for the given namespace, this
+API end-point respond `404`.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [output schema](http://schemas.taskcluster.net/index/v1/indexed-task-response.json#)
+
+```python
+# Sync calls
+index.findTask(namespace) # -> result`
+index.findTask(namespace='value') # -> result
+# Async call
+await asyncIndex.findTask(namespace) # -> result
+await asyncIndex.findTask(namespace='value') # -> result
+```
 
 #### List Namespaces
- * `index.listNamespaces(namespace, payload) -> result`
- * `index.listNamespaces(payload, namespace='value') -> result`
+List the namespaces immediately under a given namespace. This end-point
+list up to 1000 namespaces. If more namespaces are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+**Remark**, this end-point is designed for humans browsing for tasks, not
+services, as that makes little sense.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [input schema](http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#)
+
+```python
+# Sync calls
+index.listNamespaces(namespace, payload) # -> result`
+index.listNamespaces(payload, namespace='value') # -> result
+# Async call
+await asyncIndex.listNamespaces(namespace, payload) # -> result
+await asyncIndex.listNamespaces(payload, namespace='value') # -> result
+```
 
 #### List Tasks
- * `index.listTasks(namespace, payload) -> result`
- * `index.listTasks(payload, namespace='value') -> result`
+List the tasks immediately under a given namespace. This end-point
+list up to 1000 tasks. If more tasks are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+**Remark**, this end-point is designed for humans browsing for tasks, not
+services, as that makes little sense.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [input schema](http://schemas.taskcluster.net/index/v1/list-tasks-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/index/v1/list-tasks-response.json#)
+
+```python
+# Sync calls
+index.listTasks(namespace, payload) # -> result`
+index.listTasks(payload, namespace='value') # -> result
+# Async call
+await asyncIndex.listTasks(namespace, payload) # -> result
+await asyncIndex.listTasks(payload, namespace='value') # -> result
+```
 
 #### Insert Task into Index
- * `index.insertTask(namespace, payload) -> result`
- * `index.insertTask(payload, namespace='value') -> result`
+Insert a task into the index. Please see the introduction above, for how
+to index successfully completed tasks automatically, using custom routes.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [input schema](http://schemas.taskcluster.net/index/v1/insert-task-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/index/v1/indexed-task-response.json#)
+
+```python
+# Sync calls
+index.insertTask(namespace, payload) # -> result`
+index.insertTask(payload, namespace='value') # -> result
+# Async call
+await asyncIndex.insertTask(namespace, payload) # -> result
+await asyncIndex.insertTask(payload, namespace='value') # -> result
+```
 
 #### Get Artifact From Indexed Task
- * `index.findArtifactFromTask(namespace, name) -> None`
- * `index.findArtifactFromTask(namespace='value', name='value') -> None`
+Find task by namespace and redirect to artifact with given `name`,
+if no task existing for the given namespace, this API end-point respond
+`404`.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+  * `name`
+
+```python
+# Sync calls
+index.findArtifactFromTask(namespace, name) # -> None`
+index.findArtifactFromTask(namespace='value', name='value') # -> None
+# Async call
+await asyncIndex.findArtifactFromTask(namespace, name) # -> None
+await asyncIndex.findArtifactFromTask(namespace='value', name='value') # -> None
+```
 
 #### Ping Server
- * `index.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+index.ping() # -> None`
+# Async call
+await asyncIndex.ping() # -> None
+```
 
 
 
 
 ### Methods in `taskcluster.Login`
 ```python
+import asynio # Only for async 
 // Create Login client instance
 import taskcluster
+import taskcluster.async
+
 login = taskcluster.Login(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncLogin = taskcluster.async.Login(options, session=session)
 ```
+The Login service serves as the interface between external authentication
+systems and TaskCluster credentials.  It acts as the server side of
+https://tools.taskcluster.net.  If you are working on federating logins
+with TaskCluster, this is probably *not* the service you are looking for.
+Instead, use the federated login support in the tools site.
 #### Get TaskCluster credentials given a Persona assertion
- * `login.credentialsFromPersonaAssertion(payload) -> result`
+Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.
+
+The supplied audience must be on a whitelist of TaskCluster-related
+sites configured in the login service.  This is not a general-purpose
+assertion-verification service!
+
+
+Required [input schema](http://schemas.taskcluster.net/login/v1/persona-request.json)
+
+Required [output schema](http://schemas.taskcluster.net/login/v1/credentials-response.json)
+
+```python
+# Sync calls
+login.credentialsFromPersonaAssertion(payload) # -> result`
+# Async call
+await asyncLogin.credentialsFromPersonaAssertion(payload) # -> result
+```
 
 #### Ping Server
- * `login.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+login.ping() # -> None`
+# Async call
+await asyncLogin.ping() # -> None
+```
 
 
 
 
 ### Methods in `taskcluster.Notify`
 ```python
+import asynio # Only for async 
 // Create Notify client instance
 import taskcluster
+import taskcluster.async
+
 notify = taskcluster.Notify(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncNotify = taskcluster.async.Notify(options, session=session)
 ```
+The notification service, typically available at `notify.taskcluster.net`
+listens for tasks with associated notifications and handles requests to
+send emails and post pulse messages.
 #### Send an Email
- * `notify.email(payload) -> None`
+Send an email to `address`. The content is markdown and will be rendered
+to HTML, but both the HTML and raw markdown text will be sent in the
+email. If a link is included, it will be rendered to a nice button in the
+HTML version of the email
+
+
+Required [input schema](http://schemas.taskcluster.net/notify/v1/email-request.json)
+
+```python
+# Sync calls
+notify.email(payload) # -> None`
+# Async call
+await asyncNotify.email(payload) # -> None
+```
 
 #### Publish a Pulse Message
- * `notify.pulse(payload) -> None`
+Publish a message on pulse with the given `routingKey`.
+
+
+Required [input schema](http://schemas.taskcluster.net/notify/v1/pulse-request.json)
+
+```python
+# Sync calls
+notify.pulse(payload) # -> None`
+# Async call
+await asyncNotify.pulse(payload) # -> None
+```
 
 #### Post IRC Message
- * `notify.irc(payload) -> None`
+Post a message on IRC to a specific channel or user, or a specific user
+on a specific channel.
+
+Success of this API method does not imply the message was successfully
+posted. This API method merely inserts the IRC message into a queue
+that will be processed by a background process.
+This allows us to re-send the message in face of connection issues.
+
+However, if the user isn't online the message will be dropped without
+error. We maybe improve this behavior in the future. For now just keep
+in mind that IRC is a best-effort service.
+
+
+Required [input schema](http://schemas.taskcluster.net/notify/v1/irc-request.json)
+
+```python
+# Sync calls
+notify.irc(payload) # -> None`
+# Async call
+await asyncNotify.irc(payload) # -> None
+```
 
 #### Ping Server
- * `notify.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+notify.ping() # -> None`
+# Async call
+await asyncNotify.ping() # -> None
+```
 
 
 
 
 ### Methods in `taskcluster.Pulse`
 ```python
+import asynio # Only for async 
 // Create Pulse client instance
 import taskcluster
+import taskcluster.async
+
 pulse = taskcluster.Pulse(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncPulse = taskcluster.async.Pulse(options, session=session)
 ```
+The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
+manages pulse credentials for taskcluster users.
+
+A service to manage Pulse credentials for anything using
+Taskcluster credentials. This allows us self-service and
+greater control within the Taskcluster project.
 #### Rabbit Overview
- * `pulse.overview() -> result`
+An overview of the Rabbit cluster
+
+
+Required [output schema](http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json)
+
+```python
+# Sync calls
+pulse.overview() # -> result`
+# Async call
+await asyncPulse.overview() # -> result
+```
 
 #### Rabbit Exchanges
- * `pulse.exchanges() -> result`
+A list of exchanges in the rabbit cluster
+
+
+Required [output schema](http://schemas.taskcluster.net/pulse/v1/exchanges-response.json)
+
+```python
+# Sync calls
+pulse.exchanges() # -> result`
+# Async call
+await asyncPulse.exchanges() # -> result
+```
 
 #### Create a namespace
- * `pulse.createNamespace(namespace, payload) -> result`
- * `pulse.createNamespace(payload, namespace='value') -> result`
+Creates a namespace, given the taskcluster credentials with scopes.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [input schema](http://schemas.taskcluster.net/pulse/v1/namespace-request.json)
+
+Required [output schema](http://schemas.taskcluster.net/pulse/v1/namespace-response.json)
+
+```python
+# Sync calls
+pulse.createNamespace(namespace, payload) # -> result`
+pulse.createNamespace(payload, namespace='value') # -> result
+# Async call
+await asyncPulse.createNamespace(namespace, payload) # -> result
+await asyncPulse.createNamespace(payload, namespace='value') # -> result
+```
 
 #### Get namespace information
- * `pulse.namespace(namespace) -> None`
- * `pulse.namespace(namespace='value') -> None`
+Gets a namespace, given the taskcluster credentials with scopes.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+```python
+# Sync calls
+pulse.namespace(namespace) # -> None`
+pulse.namespace(namespace='value') # -> None
+# Async call
+await asyncPulse.namespace(namespace) # -> None
+await asyncPulse.namespace(namespace='value') # -> None
+```
 
 #### Ping Server
- * `pulse.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+pulse.ping() # -> None`
+# Async call
+await asyncPulse.ping() # -> None
+```
 
 
 
 
 ### Methods in `taskcluster.PurgeCache`
 ```python
+import asynio # Only for async 
 // Create PurgeCache client instance
 import taskcluster
+import taskcluster.async
+
 purgeCache = taskcluster.PurgeCache(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncPurgeCache = taskcluster.async.PurgeCache(options, session=session)
 ```
+The purge-cache service, typically available at
+`purge-cache.taskcluster.net`, is responsible for publishing a pulse
+message for workers, so they can purge cache upon request.
+
+This document describes the API end-point for publishing the pulse
+message. This is mainly intended to be used by tools.
 #### Purge Worker Cache
- * `purgeCache.purgeCache(provisionerId, workerType, payload) -> None`
- * `purgeCache.purgeCache(payload, provisionerId='value', workerType='value') -> None`
+Publish a purge-cache message to purge caches named `cacheName` with
+`provisionerId` and `workerType` in the routing-key. Workers should
+be listening for this message and purge caches when they see it.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [input schema](http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#)
+
+```python
+# Sync calls
+purgeCache.purgeCache(provisionerId, workerType, payload) # -> None`
+purgeCache.purgeCache(payload, provisionerId='value', workerType='value') # -> None
+# Async call
+await asyncPurgeCache.purgeCache(provisionerId, workerType, payload) # -> None
+await asyncPurgeCache.purgeCache(payload, provisionerId='value', workerType='value') # -> None
+```
 
 #### All Open Purge Requests
- * `purgeCache.allPurgeRequests() -> result`
+This is useful mostly for administors to view
+the set of open purge requests. It should not
+be used by workers. They should use the purgeRequests
+endpoint that is specific to their workerType and
+provisionerId.
+
+
+Required [output schema](http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#)
+
+```python
+# Sync calls
+purgeCache.allPurgeRequests() # -> result`
+# Async call
+await asyncPurgeCache.allPurgeRequests() # -> result
+```
 
 #### Open Purge Requests for a provisionerId/workerType pair
- * `purgeCache.purgeRequests(provisionerId, workerType) -> result`
- * `purgeCache.purgeRequests(provisionerId='value', workerType='value') -> result`
+List of caches that need to be purged if they are from before
+a certain time. This is safe to be used in automation from
+workers.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#)
+
+```python
+# Sync calls
+purgeCache.purgeRequests(provisionerId, workerType) # -> result`
+purgeCache.purgeRequests(provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncPurgeCache.purgeRequests(provisionerId, workerType) # -> result
+await asyncPurgeCache.purgeRequests(provisionerId='value', workerType='value') # -> result
+```
 
 #### Ping Server
- * `purgeCache.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+purgeCache.ping() # -> None`
+# Async call
+await asyncPurgeCache.ping() # -> None
+```
 
 
 
@@ -559,6 +2289,12 @@ purgeCache = taskcluster.PurgeCache(options)
 import taskcluster
 purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
 ```
+The purge-cache service, typically available at
+`purge-cache.taskcluster.net`, is responsible for publishing a pulse
+message for workers, so they can purge cache upon request.
+
+This document describes the exchange offered for workers by the
+cache-purge service.
 #### Purge Cache Messages
  * `purgeCacheEvents.purgeCache(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
@@ -570,100 +2306,736 @@ purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
 
 ### Methods in `taskcluster.Queue`
 ```python
+import asynio # Only for async 
 // Create Queue client instance
 import taskcluster
+import taskcluster.async
+
 queue = taskcluster.Queue(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncQueue = taskcluster.async.Queue(options, session=session)
 ```
+The queue, typically available at `queue.taskcluster.net`, is responsible
+for accepting tasks and track their state as they are executed by
+workers. In order ensure they are eventually resolved.
+
+This document describes the API end-points offered by the queue. These 
+end-points targets the following audience:
+ * Schedulers, who create tasks to be executed,
+ * Workers, who execute tasks, and
+ * Tools, that wants to inspect the state of a task.
 #### Get Task Definition
- * `queue.task(taskId) -> result`
- * `queue.task(taskId='value') -> result`
+This end-point will return the task-definition. Notice that the task
+definition may have been modified by queue, if an optional property is
+not specified the queue may provide a default value.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task.json#)
+
+```python
+# Sync calls
+queue.task(taskId) # -> result`
+queue.task(taskId='value') # -> result
+# Async call
+await asyncQueue.task(taskId) # -> result
+await asyncQueue.task(taskId='value') # -> result
+```
 
 #### Get task status
- * `queue.status(taskId) -> result`
- * `queue.status(taskId='value') -> result`
+Get task status structure from `taskId`
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.status(taskId) # -> result`
+queue.status(taskId='value') # -> result
+# Async call
+await asyncQueue.status(taskId) # -> result
+await asyncQueue.status(taskId='value') # -> result
+```
 
 #### List Task Group
- * `queue.listTaskGroup(taskGroupId) -> result`
- * `queue.listTaskGroup(taskGroupId='value') -> result`
+List tasks sharing the same `taskGroupId`.
+
+As a task-group may contain an unbounded number of tasks, this end-point
+may return a `continuationToken`. To continue listing tasks you must call
+the `listTaskGroup` again with the `continuationToken` as the
+query-string option `continuationToken`.
+
+By default this end-point will try to return up to 1000 members in one
+request. But it **may return less**, even if more tasks are available.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `listTaskGroup` with the last `continuationToken` until you
+get a result without a `continuationToken`.
+
+If you are not interested in listing all the members at once, you may
+use the query-string option `limit` to return fewer.
+
+
+
+Takes the following arguments:
+
+  * `taskGroupId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#)
+
+```python
+# Sync calls
+queue.listTaskGroup(taskGroupId) # -> result`
+queue.listTaskGroup(taskGroupId='value') # -> result
+# Async call
+await asyncQueue.listTaskGroup(taskGroupId) # -> result
+await asyncQueue.listTaskGroup(taskGroupId='value') # -> result
+```
 
 #### List Dependent Tasks
- * `queue.listDependentTasks(taskId) -> result`
- * `queue.listDependentTasks(taskId='value') -> result`
+List tasks that depend on the given `taskId`.
+
+As many tasks from different task-groups may dependent on a single tasks,
+this end-point may return a `continuationToken`. To continue listing
+tasks you must call `listDependentTasks` again with the
+`continuationToken` as the query-string option `continuationToken`.
+
+By default this end-point will try to return up to 1000 tasks in one
+request. But it **may return less**, even if more tasks are available.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `listDependentTasks` with the last `continuationToken` until
+you get a result without a `continuationToken`.
+
+If you are not interested in listing all the tasks at once, you may
+use the query-string option `limit` to return fewer.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#)
+
+```python
+# Sync calls
+queue.listDependentTasks(taskId) # -> result`
+queue.listDependentTasks(taskId='value') # -> result
+# Async call
+await asyncQueue.listDependentTasks(taskId) # -> result
+await asyncQueue.listDependentTasks(taskId='value') # -> result
+```
 
 #### Create New Task
- * `queue.createTask(taskId, payload) -> result`
- * `queue.createTask(payload, taskId='value') -> result`
+Create a new task, this is an **idempotent** operation, so repeat it if
+you get an internal server error or network connection is dropped.
+
+**Task `deadline´**, the deadline property can be no more than 5 days
+into the future. This is to limit the amount of pending tasks not being
+taken care of. Ideally, you should use a much shorter deadline.
+
+**Task expiration**, the `expires` property must be greater than the
+task `deadline`. If not provided it will default to `deadline` + one
+year. Notice, that artifacts created by task must expire before the task.
+
+**Task specific routing-keys**, using the `task.routes` property you may
+define task specific routing-keys. If a task has a task specific 
+routing-key: `<route>`, then when the AMQP message about the task is
+published, the message will be CC'ed with the routing-key: 
+`route.<route>`. This is useful if you want another component to listen
+for completed tasks you have posted.  The caller must have scope
+`queue:route:<route>` for each route.
+
+**Dependencies**, any tasks referenced in `task.dependencies` must have
+already been created at the time of this call.
+
+**Important** Any scopes the task requires are also required for creating
+the task. Please see the Request Payload (Task Definition) for details.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/create-task-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.createTask(taskId, payload) # -> result`
+queue.createTask(payload, taskId='value') # -> result
+# Async call
+await asyncQueue.createTask(taskId, payload) # -> result
+await asyncQueue.createTask(payload, taskId='value') # -> result
+```
 
 #### Define Task
- * `queue.defineTask(taskId, payload) -> result`
- * `queue.defineTask(payload, taskId='value') -> result`
+Define a task without scheduling it. This API end-point allows you to
+upload a task definition without having scheduled. The task won't be
+reported as pending until it is scheduled, see the scheduleTask API 
+end-point.
+
+The purpose of this API end-point is allow schedulers to upload task
+definitions without the tasks becoming _pending_ immediately. This useful
+if you have a set of dependent tasks. Then you can upload all the tasks
+and when the dependencies of a tasks have been resolved, you can schedule
+the task by calling `/task/:taskId/schedule`. This eliminates the need to
+store tasks somewhere else while waiting for dependencies to resolve.
+
+**Important** Any scopes the task requires are also required for defining
+the task. Please see the Request Payload (Task Definition) for details.
+
+**Note** this operation is **idempotent**, as long as you upload the same
+task definition as previously defined this operation is safe to retry.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/create-task-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.defineTask(taskId, payload) # -> result`
+queue.defineTask(payload, taskId='value') # -> result
+# Async call
+await asyncQueue.defineTask(taskId, payload) # -> result
+await asyncQueue.defineTask(payload, taskId='value') # -> result
+```
 
 #### Schedule Defined Task
- * `queue.scheduleTask(taskId) -> result`
- * `queue.scheduleTask(taskId='value') -> result`
+scheduleTask will schedule a task to be executed, even if it has
+unresolved dependencies. A task would otherwise only be scheduled if
+its dependencies were resolved.
+
+This is useful if you have defined a task that depends on itself or on
+some other task that has not been resolved, but you wish the task to be
+scheduled immediately.
+
+This will announce the task as pending and workers will be allowed to
+claim it and resolve the task.
+
+**Note** this operation is **idempotent** and will not fail or complain
+if called with a `taskId` that is already scheduled, or even resolved.
+To reschedule a task previously resolved, use `rerunTask`.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.scheduleTask(taskId) # -> result`
+queue.scheduleTask(taskId='value') # -> result
+# Async call
+await asyncQueue.scheduleTask(taskId) # -> result
+await asyncQueue.scheduleTask(taskId='value') # -> result
+```
 
 #### Rerun a Resolved Task
- * `queue.rerunTask(taskId) -> result`
- * `queue.rerunTask(taskId='value') -> result`
+This method _reruns_ a previously resolved task, even if it was
+_completed_. This is useful if your task completes unsuccessfully, and
+you just want to run it from scratch again. This will also reset the
+number of `retries` allowed.
+
+Remember that `retries` in the task status counts the number of runs that
+the queue have started because the worker stopped responding, for example
+because a spot node died.
+
+**Remark** this operation is idempotent, if you try to rerun a task that
+is not either `failed` or `completed`, this operation will just return
+the current task status.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.rerunTask(taskId) # -> result`
+queue.rerunTask(taskId='value') # -> result
+# Async call
+await asyncQueue.rerunTask(taskId) # -> result
+await asyncQueue.rerunTask(taskId='value') # -> result
+```
 
 #### Cancel Task
- * `queue.cancelTask(taskId) -> result`
- * `queue.cancelTask(taskId='value') -> result`
+This method will cancel a task that is either `unscheduled`, `pending` or
+`running`. It will resolve the current run as `exception` with
+`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.
+it doesn't have any runs, an initial run will be added and resolved as
+described above. Hence, after canceling a task, it cannot be scheduled
+with `queue.scheduleTask`, but a new run can be created with
+`queue.rerun`. These semantics is equivalent to calling
+`queue.scheduleTask` immediately followed by `queue.cancelTask`.
+
+**Remark** this operation is idempotent, if you try to cancel a task that
+isn't `unscheduled`, `pending` or `running`, this operation will just
+return the current task status.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.cancelTask(taskId) # -> result`
+queue.cancelTask(taskId='value') # -> result
+# Async call
+await asyncQueue.cancelTask(taskId) # -> result
+await asyncQueue.cancelTask(taskId='value') # -> result
+```
 
 #### Get Urls to Poll Pending Tasks
- * `queue.pollTaskUrls(provisionerId, workerType) -> result`
- * `queue.pollTaskUrls(provisionerId='value', workerType='value') -> result`
+Get a signed URLs to get and delete messages from azure queue.
+Once messages are polled from here, you can claim the referenced task
+with `claimTask`, and afterwards you should always delete the message.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#)
+
+```python
+# Sync calls
+queue.pollTaskUrls(provisionerId, workerType) # -> result`
+queue.pollTaskUrls(provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncQueue.pollTaskUrls(provisionerId, workerType) # -> result
+await asyncQueue.pollTaskUrls(provisionerId='value', workerType='value') # -> result
+```
 
 #### Claim Work
- * `queue.claimWork(provisionerId, workerType, payload) -> result`
- * `queue.claimWork(payload, provisionerId='value', workerType='value') -> result`
+Claim any task, more to be added later... long polling up to 20s.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/claim-work-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/claim-work-response.json#)
+
+```python
+# Sync calls
+queue.claimWork(provisionerId, workerType, payload) # -> result`
+queue.claimWork(payload, provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncQueue.claimWork(provisionerId, workerType, payload) # -> result
+await asyncQueue.claimWork(payload, provisionerId='value', workerType='value') # -> result
+```
 
 #### Claim Task
- * `queue.claimTask(taskId, runId, payload) -> result`
- * `queue.claimTask(payload, taskId='value', runId='value') -> result`
+claim a task, more to be added later...
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/task-claim-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-claim-response.json#)
+
+```python
+# Sync calls
+queue.claimTask(taskId, runId, payload) # -> result`
+queue.claimTask(payload, taskId='value', runId='value') # -> result
+# Async call
+await asyncQueue.claimTask(taskId, runId, payload) # -> result
+await asyncQueue.claimTask(payload, taskId='value', runId='value') # -> result
+```
 
 #### Reclaim task
- * `queue.reclaimTask(taskId, runId) -> result`
- * `queue.reclaimTask(taskId='value', runId='value') -> result`
+reclaim a task more to be added later...
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#)
+
+```python
+# Sync calls
+queue.reclaimTask(taskId, runId) # -> result`
+queue.reclaimTask(taskId='value', runId='value') # -> result
+# Async call
+await asyncQueue.reclaimTask(taskId, runId) # -> result
+await asyncQueue.reclaimTask(taskId='value', runId='value') # -> result
+```
 
 #### Report Run Completed
- * `queue.reportCompleted(taskId, runId) -> result`
- * `queue.reportCompleted(taskId='value', runId='value') -> result`
+Report a task completed, resolving the run as `completed`.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.reportCompleted(taskId, runId) # -> result`
+queue.reportCompleted(taskId='value', runId='value') # -> result
+# Async call
+await asyncQueue.reportCompleted(taskId, runId) # -> result
+await asyncQueue.reportCompleted(taskId='value', runId='value') # -> result
+```
 
 #### Report Run Failed
- * `queue.reportFailed(taskId, runId) -> result`
- * `queue.reportFailed(taskId='value', runId='value') -> result`
+Report a run failed, resolving the run as `failed`. Use this to resolve
+a run that failed because the task specific code behaved unexpectedly.
+For example the task exited non-zero, or didn't produce expected output.
+
+Do not use this if the task couldn't be run because if malformed
+payload, or other unexpected condition. In these cases we have a task
+exception, which should be reported with `reportException`.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.reportFailed(taskId, runId) # -> result`
+queue.reportFailed(taskId='value', runId='value') # -> result
+# Async call
+await asyncQueue.reportFailed(taskId, runId) # -> result
+await asyncQueue.reportFailed(taskId='value', runId='value') # -> result
+```
 
 #### Report Task Exception
- * `queue.reportException(taskId, runId, payload) -> result`
- * `queue.reportException(payload, taskId='value', runId='value') -> result`
+Resolve a run as _exception_. Generally, you will want to report tasks as
+failed instead of exception. You should `reportException` if,
+
+  * The `task.payload` is invalid,
+  * Non-existent resources are referenced,
+  * Declared actions cannot be executed due to unavailable resources,
+  * The worker had to shutdown prematurely,
+  * The worker experienced an unknown error, or,
+  * The task explicitely requested a retry.
+
+Do not use this to signal that some user-specified code crashed for any
+reason specific to this code. If user-specific code hits a resource that
+is temporarily unavailable worker should report task _failed_.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/task-exception-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+
+```python
+# Sync calls
+queue.reportException(taskId, runId, payload) # -> result`
+queue.reportException(payload, taskId='value', runId='value') # -> result
+# Async call
+await asyncQueue.reportException(taskId, runId, payload) # -> result
+await asyncQueue.reportException(payload, taskId='value', runId='value') # -> result
+```
 
 #### Create Artifact
- * `queue.createArtifact(taskId, runId, name, payload) -> result`
- * `queue.createArtifact(payload, taskId='value', runId='value', name='value') -> result`
+This API end-point creates an artifact for a specific run of a task. This
+should **only** be used by a worker currently operating on this task, or
+from a process running within the task (ie. on the worker).
+
+All artifacts must specify when they `expires`, the queue will
+automatically take care of deleting artifacts past their
+expiration point. This features makes it feasible to upload large
+intermediate artifacts from data processing applications, as the
+artifacts can be set to expire a few days later.
+
+We currently support 4 different `storageType`s, each storage type have
+slightly different features and in some cases difference semantics.
+
+**S3 artifacts**, is useful for static files which will be stored on S3.
+When creating an S3 artifact the queue will return a pre-signed URL
+to which you can do a `PUT` request to upload your artifact. Note
+that `PUT` request **must** specify the `content-length` header and
+**must** give the `content-type` header the same value as in the request
+to `createArtifact`.
+
+**Azure artifacts**, are stored in _Azure Blob Storage_ service, which
+given the consistency guarantees and API interface offered by Azure is
+more suitable for artifacts that will be modified during the execution
+of the task. For example docker-worker has a feature that persists the
+task log to Azure Blob Storage every few seconds creating a somewhat
+live log. A request to create an Azure artifact will return a URL
+featuring a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),
+refer to MSDN for further information on how to use these.
+**Warning: azure artifact is currently an experimental feature subject
+to changes and data-drops.**
+
+**Reference artifacts**, only consists of meta-data which the queue will
+store for you. These artifacts really only have a `url` property and
+when the artifact is requested the client will be redirect the URL
+provided with a `303` (See Other) redirect. Please note that we cannot
+delete artifacts you upload to other service, we can only delete the
+reference to the artifact, when it expires.
+
+**Error artifacts**, only consists of meta-data which the queue will
+store for you. These artifacts are only meant to indicate that you the
+worker or the task failed to generate a specific artifact, that you
+would otherwise have uploaded. For example docker-worker will upload an
+error artifact, if the file it was supposed to upload doesn't exists or
+turns out to be a directory. Clients requesting an error artifact will
+get a `403` (Forbidden) response. This is mainly designed to ensure that
+dependent tasks can distinguish between artifacts that were suppose to
+be generated and artifacts for which the name is misspelled.
+
+**Artifact immutability**, generally speaking you cannot overwrite an
+artifact when created. But if you repeat the request with the same
+properties the request will succeed as the operation is idempotent.
+This is useful if you need to refresh a signed URL while uploading.
+Do not abuse this to overwrite artifacts created by another entity!
+Such as worker-host overwriting artifact created by worker-code.
+
+As a special case the `url` property on _reference artifacts_ can be
+updated. You should only use this to update the `url` property for
+reference artifacts your process has created.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+  * `name`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#)
+
+```python
+# Sync calls
+queue.createArtifact(taskId, runId, name, payload) # -> result`
+queue.createArtifact(payload, taskId='value', runId='value', name='value') # -> result
+# Async call
+await asyncQueue.createArtifact(taskId, runId, name, payload) # -> result
+await asyncQueue.createArtifact(payload, taskId='value', runId='value', name='value') # -> result
+```
 
 #### Get Artifact from Run
- * `queue.getArtifact(taskId, runId, name) -> None`
- * `queue.getArtifact(taskId='value', runId='value', name='value') -> None`
+Get artifact by `<name>` from a specific run.
+
+**Public Artifacts**, in-order to get an artifact you need the scope
+`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
+But if the artifact `name` starts with `public/`, authentication and
+authorization is not necessary to fetch the artifact.
+
+**API Clients**, this method will redirect you to the artifact, if it is
+stored externally. Either way, the response may not be JSON. So API
+client users might want to generate a signed URL for this end-point and
+use that URL with a normal HTTP client.
+
+**Caching**, artifacts may be cached in data centers closer to the
+workers in-order to reduce bandwidth costs. This can lead to longer
+response times. Caching can be skipped by setting the header
+`x-taskcluster-skip-cache: true`, this should only be used for resources
+where request volume is known to be low, and caching not useful.
+(This feature may be disabled in the future, use is sparingly!)
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+  * `name`
+
+```python
+# Sync calls
+queue.getArtifact(taskId, runId, name) # -> None`
+queue.getArtifact(taskId='value', runId='value', name='value') # -> None
+# Async call
+await asyncQueue.getArtifact(taskId, runId, name) # -> None
+await asyncQueue.getArtifact(taskId='value', runId='value', name='value') # -> None
+```
 
 #### Get Artifact from Latest Run
- * `queue.getLatestArtifact(taskId, name) -> None`
- * `queue.getLatestArtifact(taskId='value', name='value') -> None`
+Get artifact by `<name>` from the last run of a task.
+
+**Public Artifacts**, in-order to get an artifact you need the scope
+`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
+But if the artifact `name` starts with `public/`, authentication and
+authorization is not necessary to fetch the artifact.
+
+**API Clients**, this method will redirect you to the artifact, if it is
+stored externally. Either way, the response may not be JSON. So API
+client users might want to generate a signed URL for this end-point and
+use that URL with a normal HTTP client.
+
+**Remark**, this end-point is slightly slower than
+`queue.getArtifact`, so consider that if you already know the `runId` of
+the latest run. Otherwise, just us the most convenient API end-point.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `name`
+
+```python
+# Sync calls
+queue.getLatestArtifact(taskId, name) # -> None`
+queue.getLatestArtifact(taskId='value', name='value') # -> None
+# Async call
+await asyncQueue.getLatestArtifact(taskId, name) # -> None
+await asyncQueue.getLatestArtifact(taskId='value', name='value') # -> None
+```
 
 #### Get Artifacts from Run
- * `queue.listArtifacts(taskId, runId) -> result`
- * `queue.listArtifacts(taskId='value', runId='value') -> result`
+Returns a list of artifacts and associated meta-data for a given run.
+
+As a task may have many artifacts paging may be necessary. If this
+end-point returns a `continuationToken`, you should call the end-point
+again with the `continuationToken` as the query-string option:
+`continuationToken`.
+
+By default this end-point will list up-to 1000 artifacts in a single page
+you may limit this with the query-string parameter `limit`.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#)
+
+```python
+# Sync calls
+queue.listArtifacts(taskId, runId) # -> result`
+queue.listArtifacts(taskId='value', runId='value') # -> result
+# Async call
+await asyncQueue.listArtifacts(taskId, runId) # -> result
+await asyncQueue.listArtifacts(taskId='value', runId='value') # -> result
+```
 
 #### Get Artifacts from Latest Run
- * `queue.listLatestArtifacts(taskId) -> result`
- * `queue.listLatestArtifacts(taskId='value') -> result`
+Returns a list of artifacts and associated meta-data for the latest run
+from the given task.
+
+As a task may have many artifacts paging may be necessary. If this
+end-point returns a `continuationToken`, you should call the end-point
+again with the `continuationToken` as the query-string option:
+`continuationToken`.
+
+By default this end-point will list up-to 1000 artifacts in a single page
+you may limit this with the query-string parameter `limit`.
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#)
+
+```python
+# Sync calls
+queue.listLatestArtifacts(taskId) # -> result`
+queue.listLatestArtifacts(taskId='value') # -> result
+# Async call
+await asyncQueue.listLatestArtifacts(taskId) # -> result
+await asyncQueue.listLatestArtifacts(taskId='value') # -> result
+```
 
 #### Get Number of Pending Tasks
- * `queue.pendingTasks(provisionerId, workerType) -> result`
- * `queue.pendingTasks(provisionerId='value', workerType='value') -> result`
+Get an approximate number of pending tasks for the given `provisionerId`
+and `workerType`.
+
+The underlying Azure Storage Queues only promises to give us an estimate.
+Furthermore, we cache the result in memory for 20 seconds. So consumers
+should be no means expect this to be an accurate number.
+It is, however, a solid estimate of the number of pending tasks.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#)
+
+```python
+# Sync calls
+queue.pendingTasks(provisionerId, workerType) # -> result`
+queue.pendingTasks(provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncQueue.pendingTasks(provisionerId, workerType) # -> result
+await asyncQueue.pendingTasks(provisionerId='value', workerType='value') # -> result
+```
 
 #### Ping Server
- * `queue.ping() -> None`
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+queue.ping() # -> None`
+# Async call
+await asyncQueue.ping() # -> None
+```
 
 
 
@@ -674,6 +3046,53 @@ queue = taskcluster.Queue(options)
 import taskcluster
 queueEvents = taskcluster.QueueEvents(options)
 ```
+The queue, typically available at `queue.taskcluster.net`, is responsible
+for accepting tasks and track their state as they are executed by
+workers. In order ensure they are eventually resolved.
+
+This document describes AMQP exchanges offered by the queue, which allows
+third-party listeners to monitor tasks as they progress to resolution.
+These exchanges targets the following audience:
+ * Schedulers, who takes action after tasks are completed,
+ * Workers, who wants to listen for new or canceled tasks (optional),
+ * Tools, that wants to update their view as task progress.
+
+You'll notice that all the exchanges in the document shares the same
+routing key pattern. This makes it very easy to bind to all messages
+about a certain kind tasks.
+
+**Task specific routes**, a task can define a task specific route using
+the `task.routes` property. See task creation documentation for details
+on permissions required to provide task specific routes. If a task has
+the entry `'notify.by-email'` in as task specific route defined in
+`task.routes` all messages about this task will be CC'ed with the
+routing-key `'route.notify.by-email'`.
+
+These routes will always be prefixed `route.`, so that cannot interfere
+with the _primary_ routing key as documented here. Notice that the
+_primary_ routing key is always prefixed `primary.`. This is ensured
+in the routing key reference, so API clients will do this automatically.
+
+Please, note that the way RabbitMQ works, the message will only arrive
+in your queue once, even though you may have bound to the exchange with
+multiple routing key patterns that matches more of the CC'ed routing
+routing keys.
+
+**Delivery guarantees**, most operations on the queue are idempotent,
+which means that if repeated with the same arguments then the requests
+will ensure completion of the operation and return the same response.
+This is useful if the server crashes or the TCP connection breaks, but
+when re-executing an idempotent operation, the queue will also resend
+any related AMQP messages. Hence, messages may be repeated.
+
+This shouldn't be much of a problem, as the best you can achieve using
+confirm messages with AMQP is at-least-once delivery semantics. Hence,
+this only prevents you from obtaining at-most-once delivery semantics.
+
+**Remark**, some message generated by timeouts maybe dropped if the
+server crashes at wrong time. Ideally, we'll address this in the
+future. For now we suggest you ignore this corner case, and notify us
+if this corner case is of concern to you.
 #### Task Defined Messages
  * `queueEvents.taskDefined(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
@@ -777,36 +3196,269 @@ queueEvents = taskcluster.QueueEvents(options)
 
 ### Methods in `taskcluster.Scheduler`
 ```python
+import asynio # Only for async 
 // Create Scheduler client instance
 import taskcluster
+import taskcluster.async
+
 scheduler = taskcluster.Scheduler(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncScheduler = taskcluster.async.Scheduler(options, session=session)
 ```
+The task-graph scheduler, typically available at
+`scheduler.taskcluster.net`, is responsible for accepting task-graphs and
+scheduling tasks for evaluation by the queue as their dependencies are
+satisfied.
+
+This document describes API end-points offered by the task-graph
+scheduler. These end-points targets the following audience:
+ * Post-commit hooks, that wants to submit task-graphs for testing,
+ * End-users, who wants to execute a set of dependent tasks, and
+ * Tools, that wants to inspect the state of a task-graph.
 #### Create new task-graph
- * `scheduler.createTaskGraph(taskGraphId, payload) -> result`
- * `scheduler.createTaskGraph(payload, taskGraphId='value') -> result`
+Create a new task-graph, the `status` of the resulting JSON is a
+task-graph status structure, you can find the `taskGraphId` in this
+structure.
+
+**Referencing required tasks**, it is possible to reference other tasks
+in the task-graph that must be completed successfully before a task is
+scheduled. You just specify the `taskId` in the list of `required` tasks.
+See the example below, where the second task requires the first task.
+```js
+{
+  ...
+  tasks: [
+    {
+      taskId:     "XgvL0qtSR92cIWpcwdGKCA",
+      requires:   [],
+      ...
+    },
+    {
+      taskId:     "73GsfK62QNKAk2Hg1EEZTQ",
+      requires:   ["XgvL0qtSR92cIWpcwdGKCA"],
+      task: {
+        payload: {
+          env: {
+            DEPENDS_ON:  "XgvL0qtSR92cIWpcwdGKCA"
+          }
+          ...
+        }
+        ...
+      },
+      ...
+    }
+  ]
+}
+```
+
+**The `schedulerId` property**, defaults to the `schedulerId` of this
+scheduler in production that is `"task-graph-scheduler"`. This
+property must be either undefined or set to `"task-graph-scheduler"`,
+otherwise the task-graph will be rejected.
+
+**The `taskGroupId` property**, defaults to the `taskGraphId` of the
+task-graph submitted, and if provided much be the `taskGraphId` of
+the task-graph. Otherwise the task-graph will be rejected.
+
+**Task-graph scopes**, a task-graph is assigned a set of scopes, just
+like tasks. Tasks within a task-graph cannot have scopes beyond those
+the task-graph has. The task-graph scheduler will execute all requests
+on behalf of a task-graph using the set of scopes assigned to the
+task-graph. Thus, if you are submitting tasks to `my-worker-type` under
+`my-provisioner` it's important that your task-graph has the scope
+required to define tasks for this `provisionerId` and `workerType`.
+(`queue:define-task:..` or `queue:create-task:..`; see the queue for
+details on scopes required). Note, the task-graph does not require
+permissions to schedule the tasks (`queue:schedule-task:..`), as this is
+done with scopes provided by the task-graph scheduler.
+
+**Task-graph specific routing-keys**, using the `taskGraph.routes`
+property you may define task-graph specific routing-keys. If a task-graph
+has a task-graph specific routing-key: `<route>`, then the poster will
+be required to posses the scope `scheduler:route:<route>`. And when the
+an AMQP message about the task-graph is published the message will be
+CC'ed with the routing-key: `route.<route>`. This is useful if you want
+another component to listen for completed tasks you have posted.
+
+
+
+Takes the following arguments:
+
+  * `taskGraphId`
+
+Required [input schema](http://schemas.taskcluster.net/scheduler/v1/task-graph.json#)
+
+Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#)
+
+```python
+# Sync calls
+scheduler.createTaskGraph(taskGraphId, payload) # -> result`
+scheduler.createTaskGraph(payload, taskGraphId='value') # -> result
+# Async call
+await asyncScheduler.createTaskGraph(taskGraphId, payload) # -> result
+await asyncScheduler.createTaskGraph(payload, taskGraphId='value') # -> result
+```
 
 #### Extend existing task-graph
- * `scheduler.extendTaskGraph(taskGraphId, payload) -> result`
- * `scheduler.extendTaskGraph(payload, taskGraphId='value') -> result`
+Add a set of tasks to an existing task-graph. The request format is very
+similar to the request format for creating task-graphs. But `routes`
+key, `scopes`, `metadata` and `tags` cannot be modified.
+
+**Referencing required tasks**, just as when task-graphs are created,
+each task has a list of required tasks. It is possible to reference
+all `taskId`s within the task-graph.
+
+**Safety,** it is only _safe_ to call this API end-point while the
+task-graph being modified is still running. If the task-graph is
+_finished_ or _blocked_, this method will leave the task-graph in this
+state. Hence, it is only truly _safe_ to call this API end-point from
+within a task in the task-graph being modified.
+
+
+
+Takes the following arguments:
+
+  * `taskGraphId`
+
+Required [input schema](http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#)
+
+```python
+# Sync calls
+scheduler.extendTaskGraph(taskGraphId, payload) # -> result`
+scheduler.extendTaskGraph(payload, taskGraphId='value') # -> result
+# Async call
+await asyncScheduler.extendTaskGraph(taskGraphId, payload) # -> result
+await asyncScheduler.extendTaskGraph(payload, taskGraphId='value') # -> result
+```
 
 #### Task Graph Status
- * `scheduler.status(taskGraphId) -> result`
- * `scheduler.status(taskGraphId='value') -> result`
+Get task-graph status, this will return the _task-graph status
+structure_. which can be used to check if a task-graph is `running`,
+`blocked` or `finished`.
+
+**Note**, that `finished` implies successfully completion.
+
+
+
+Takes the following arguments:
+
+  * `taskGraphId`
+
+Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json)
+
+```python
+# Sync calls
+scheduler.status(taskGraphId) # -> result`
+scheduler.status(taskGraphId='value') # -> result
+# Async call
+await asyncScheduler.status(taskGraphId) # -> result
+await asyncScheduler.status(taskGraphId='value') # -> result
+```
 
 #### Task Graph Information
- * `scheduler.info(taskGraphId) -> result`
- * `scheduler.info(taskGraphId='value') -> result`
+Get task-graph information, this includes the _task-graph status
+structure_, along with `metadata` and `tags`, but not information
+about all tasks.
+
+If you want more detailed information use the `inspectTaskGraph`
+end-point instead.
+
+
+
+Takes the following arguments:
+
+  * `taskGraphId`
+
+Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json)
+
+```python
+# Sync calls
+scheduler.info(taskGraphId) # -> result`
+scheduler.info(taskGraphId='value') # -> result
+# Async call
+await asyncScheduler.info(taskGraphId) # -> result
+await asyncScheduler.info(taskGraphId='value') # -> result
+```
 
 #### Inspect Task Graph
- * `scheduler.inspect(taskGraphId) -> result`
- * `scheduler.inspect(taskGraphId='value') -> result`
+Inspect a task-graph, this returns all the information the task-graph
+scheduler knows about the task-graph and the state of its tasks.
+
+**Warning**, some of these fields are borderline internal to the
+task-graph scheduler and we may choose to change or make them internal
+later. Also note that note all of the information is formalized yet.
+The JSON schema will be updated to reflect formalized values, we think
+it's safe to consider the values stable.
+
+Take these considerations into account when using the API end-point,
+as we do not promise it will remain fully backward compatible in
+the future.
+
+
+
+Takes the following arguments:
+
+  * `taskGraphId`
+
+Required [output schema](http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json)
+
+```python
+# Sync calls
+scheduler.inspect(taskGraphId) # -> result`
+scheduler.inspect(taskGraphId='value') # -> result
+# Async call
+await asyncScheduler.inspect(taskGraphId) # -> result
+await asyncScheduler.inspect(taskGraphId='value') # -> result
+```
 
 #### Inspect Task from a Task-Graph
- * `scheduler.inspectTask(taskGraphId, taskId) -> result`
- * `scheduler.inspectTask(taskGraphId='value', taskId='value') -> result`
+Inspect a task from a task-graph, this returns all the information the
+task-graph scheduler knows about the specific task.
+
+**Warning**, some of these fields are borderline internal to the
+task-graph scheduler and we may choose to change or make them internal
+later. Also note that note all of the information is formalized yet.
+The JSON schema will be updated to reflect formalized values, we think
+it's safe to consider the values stable.
+
+Take these considerations into account when using the API end-point,
+as we do not promise it will remain fully backward compatible in
+the future.
+
+
+
+Takes the following arguments:
+
+  * `taskGraphId`
+  * `taskId`
+
+Required [output schema](http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json)
+
+```python
+# Sync calls
+scheduler.inspectTask(taskGraphId, taskId) # -> result`
+scheduler.inspectTask(taskGraphId='value', taskId='value') # -> result
+# Async call
+await asyncScheduler.inspectTask(taskGraphId, taskId) # -> result
+await asyncScheduler.inspectTask(taskGraphId='value', taskId='value') # -> result
+```
 
 #### Ping Server
- * `scheduler.ping() -> None`
+Documented later...
+
+**Warning** this api end-point is **not stable**.
+
+
+```python
+# Sync calls
+scheduler.ping() # -> None`
+# Async call
+await asyncScheduler.ping() # -> None
+```
 
 
 
@@ -817,6 +3469,31 @@ scheduler = taskcluster.Scheduler(options)
 import taskcluster
 schedulerEvents = taskcluster.SchedulerEvents(options)
 ```
+The scheduler, typically available at `scheduler.taskcluster.net` is
+responsible for accepting task-graphs and schedule tasks on the queue as
+their dependencies are completed successfully.
+
+This document describes the AMQP exchanges offered by the scheduler,
+which allows third-party listeners to monitor task-graph submission and
+resolution. These exchanges targets the following audience:
+ * Reporters, who displays the state of task-graphs or emails people on
+   failures, and
+ * End-users, who wants notification of completed task-graphs
+
+**Remark**, the task-graph scheduler will require that the `schedulerId`
+for tasks is set to the `schedulerId` for the task-graph scheduler. In
+production the `schedulerId` is typically `"task-graph-scheduler"`.
+Furthermore, the task-graph scheduler will also require that
+`taskGroupId` is equal to the `taskGraphId`.
+
+Combined these requirements ensures that `schedulerId` and `taskGroupId`
+have the same position in the routing keys for the queue exchanges.
+See queue documentation for details on queue exchanges. Hence, making
+it easy to listen for all tasks in a given task-graph.
+
+Note that routing key entries 2 through 7 used for exchanges on the
+task-graph scheduler is hardcoded to `_`. This is done to preserve
+positional equivalence with exchanges offered by the queue.
 #### Task-Graph Running Message
  * `schedulerEvents.taskGraphRunning(routingKeyPattern) -> routingKey`
    * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
@@ -874,27 +3551,112 @@ schedulerEvents = taskcluster.SchedulerEvents(options)
 
 ### Methods in `taskcluster.Secrets`
 ```python
+import asynio # Only for async 
 // Create Secrets client instance
 import taskcluster
+import taskcluster.async
+
 secrets = taskcluster.Secrets(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession()
+asyncSecrets = taskcluster.async.Secrets(options, session=session)
 ```
+The secrets service provides a simple key/value store for small bits of secret
+data.  Access is limited by scopes, so values can be considered secret from
+those who do not have the relevant scopes.
+
+Secrets also have an expiration date, and once a secret has expired it can no
+longer be read.  This is useful for short-term secrets such as a temporary
+service credential or a one-time signing key.
 #### Set Secret
- * `secrets.set(name, payload) -> None`
- * `secrets.set(payload, name='value') -> None`
+Set the secret associated with some key.  If the secret already exists, it is
+updated instead.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Required [input schema](http://schemas.taskcluster.net/secrets/v1/secret.json#)
+
+```python
+# Sync calls
+secrets.set(name, payload) # -> None`
+secrets.set(payload, name='value') # -> None
+# Async call
+await asyncSecrets.set(name, payload) # -> None
+await asyncSecrets.set(payload, name='value') # -> None
+```
 
 #### Delete Secret
- * `secrets.remove(name) -> None`
- * `secrets.remove(name='value') -> None`
+Delete the secret associated with some key.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+```python
+# Sync calls
+secrets.remove(name) # -> None`
+secrets.remove(name='value') # -> None
+# Async call
+await asyncSecrets.remove(name) # -> None
+await asyncSecrets.remove(name='value') # -> None
+```
 
 #### Read Secret
- * `secrets.get(name) -> result`
- * `secrets.get(name='value') -> result`
+Read the secret associated with some key.  If the secret has recently
+expired, the response code 410 is returned.  If the caller lacks the
+scope necessary to get the secret, the call will fail with a 403 code
+regardless of whether the secret exists.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Required [output schema](http://schemas.taskcluster.net/secrets/v1/secret.json#)
+
+```python
+# Sync calls
+secrets.get(name) # -> result`
+secrets.get(name='value') # -> result
+# Async call
+await asyncSecrets.get(name) # -> result
+await asyncSecrets.get(name='value') # -> result
+```
 
 #### List Secrets
- * `secrets.list() -> result`
+List the names of all secrets that you would have access to read. In
+other words, secret name `<X>` will only be returned if a) a secret
+with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
+
+
+Required [output schema](http://schemas.taskcluster.net/secrets/v1/secret-list.json#)
+
+```python
+# Sync calls
+secrets.list() # -> result`
+# Async call
+await asyncSecrets.list() # -> result
+```
 
 #### Ping Server
- * `secrets.ping() -> None`
+Respond without doing anything.  This endpoint is used to check that
+the service is up.
+
+
+```python
+# Sync calls
+secrets.ping() # -> None`
+# Async call
+await asyncSecrets.ping() # -> None
+```
 
 
 
@@ -905,6 +3667,13 @@ secrets = taskcluster.Secrets(options)
 import taskcluster
 treeherderEvents = taskcluster.TreeherderEvents(options)
 ```
+The taskcluster-treeherder service is responsible for processing
+task events published by TaskCluster Queue and producing job messages
+that are consumable by Treeherder.
+
+This exchange provides that job messages to be consumed by any queue that
+attached to the exchange.  This could be a production Treeheder instance,
+a local development environment, or a custom dashboard.
 #### Job Messages
  * `treeherderEvents.jobs(routingKeyPattern) -> routingKey`
    * destination is required  Description: destination

@@ -4,6 +4,10 @@ import json
 import six
 import pprint
 import py_compile
+try:
+    import pypandoc
+except:
+    pypandoc = None
 
 # The python2 interpreter's repr function will use u'string' formats for its
 # pprint module, which works with the python3 interpreter, but causes a problem
@@ -18,11 +22,19 @@ with open('apis.json') as f:
 
 
 def cleanDocstring(old, indent=0):
+    new = old
     new = old.replace('"""', '\"\"\"')
     new = new.replace('\'\'\'', '\\\'\\\'\\\'')
+    # What we really ought to do here is create a list of fixup regexes for
+    # common problems in the markup.  Examples of bad text include:
+    #   -  '  * list'
+    #   -  ``` then a newline
+    new = new.replace('```js', '```')
+    new = new.replace('```javascript', '```')
     new = new.split('\n')
     new.insert(0, '"""')
     new.append('"""')
+    new.append('')
     # Basically this comprehension is so we don't get empty lines...
     new = [' ' * indent + x if x.strip() != '' else '' for x in new]
     return '\n'.join(new)
@@ -93,8 +105,8 @@ def createStaticClient(name, api, genAsync=False):
                     funcRef[key] = entry[key]
 
             functionInfo[entry['name']] = funcRef
-
             # Let's genereate a docstring, but only if it's got some meat
+            docstring = 'This method has no documentation, womp womp'
             if entry.get('description'):
                 ds = entry.get('description', '')
                 if entry.get('title'):
@@ -106,17 +118,19 @@ def createStaticClient(name, api, genAsync=False):
                 if entry.get('stability'):
                     ds = '%s\n\nThis method is ``%s``' % (ds, entry['stability'])
 
-                lines.append(cleanDocstring(ds, indent=4))
+                docstring = cleanDocstring(ds, indent=8)
 
             if genAsync:
                 lines.extend([
                     '    async def %s(self, *args, **kwargs):' % entry['name'],
+                    docstring,
                     '        return await self._makeApiCall(self.funcinfo["%s"], *args, **kwargs)' % entry['name'],
                     ''
                 ])
             else:
                 lines.extend([
                     '    def %s(self, *args, **kwargs):' % entry['name'],
+                    docstring,
                     '        return self._makeApiCall(self.funcinfo["%s"], *args, **kwargs)' % entry['name'],
                     ''
                 ])

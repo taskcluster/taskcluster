@@ -11,6 +11,7 @@ endDocs = '<!-- END OF GENERATED DOCS -->'
 
 def docApi(name, ref):
     instName = ''.join((name[0].lower(), name[1:]))
+    asyncName = 'async' + name
     entries = ref['entries']
     functions = [x for x in entries if x['type'] == 'function']
     exchanges = [x for x in entries if x['type'] == 'topic-exchange']
@@ -21,11 +22,20 @@ def docApi(name, ref):
             '',
             '### Methods in `taskcluster.%s`' % name,
             '```python',
+            'import asynio # Only for async ',
             '// Create %s client instance' % name,
             'import taskcluster',
+            'import taskcluster.async',
+            '',
             '%s = taskcluster.%s(options)' % (instName, name),
+            '# Below only for async instances, assume already in coroutine',
+            'loop = asyncio.get_event_loop()',
+            'session = taskcluster.async.createSession()',
+            '%s = taskcluster.async.%s(options, session=session)' % (asyncName, name),
             '```',
         ])
+        if ref.get('description'):
+            lines.extend(ref['description'].split('\n'))
 
     for function in functions:
         methodName = function['name']
@@ -45,10 +55,38 @@ def docApi(name, ref):
         outStr = 'result' if hasOutput else 'None'
 
         lines.append('#### %s' % function['title'])
-        lines.append(' * `%s.%s(%s) -> %s`' % (instName, methodName, inArgs, outStr))
 
+        if function.get('description'):
+            lines.extend(function['description'].split('\n'))
+            lines.append('')
+            lines.append('')
+
+        if len(args) >0:
+            lines.extend([
+                '',
+                'Takes the following arguments:',
+                '',
+            ])
+            lines.extend(['  * `' + x + '`' for x in args])
+            lines.append('')
+
+        if hasInput:
+            lines.append('Required [input schema](%s)' % function.get('input'))
+            lines.append('')
+        if hasOutput:
+            lines.append('Required [output schema](%s)' % function.get('output'))
+            lines.append('')
+
+        lines.append('```python')
+        lines.append('# Sync calls')
+        lines.append('%s.%s(%s) # -> %s`' % (instName, methodName, inArgs, outStr))
         if len(args) > 0:
-            lines.append(' * `%s.%s(%s) -> %s`' % (instName, methodName, inKwargs, outStr))
+            lines.append('%s.%s(%s) # -> %s' % (instName, methodName, inKwargs, outStr))
+        lines.append('# Async call')
+        lines.append('await %s.%s(%s) # -> %s' % (asyncName, methodName, inArgs, outStr))
+        if len(args) > 0:
+            lines.append('await %s.%s(%s) # -> %s' % (asyncName, methodName, inKwargs, outStr))
+        lines.append('```')
 
         lines.append('')
 
@@ -62,6 +100,8 @@ def docApi(name, ref):
             '%s = taskcluster.%s(options)' % (instName, name),
             '```',
         ])
+        if ref.get('description'):
+            lines.extend(ref['description'].split('\n'))
 
     for exchange in exchanges:
         lines.append('#### %s' % exchange['title'])

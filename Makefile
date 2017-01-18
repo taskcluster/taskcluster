@@ -42,8 +42,9 @@ clean:
 
 .PHONY: docs
 docs: devel
+	pandoc --version
 	rm -rf docs/_build
-	$(VENV)/bin/python -m pip install sphinx==1.5.1 
+	$(VENV)/bin/python -m pip install sphinx==1.5.1 pypandoc==1.3.3 recommonmark
 	$(VENV)/bin/python makeRst.py > docs/client.rst
 	LC_CTYPE= make -C docs html SPHINXBUILD=$(abspath $(VENV)/bin/sphinx-build)
 
