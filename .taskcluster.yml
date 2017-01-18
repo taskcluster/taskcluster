@@ -27,7 +27,6 @@ tasks:
         # Events that will trigger this task
         events:
           - pull_request.*
-          - push
     payload:
       maxRunTime: 3600
       image: golang
@@ -77,7 +76,6 @@ tasks:
         # Events that will trigger this task
         events:
           - pull_request.*
-          - push
     payload:
       maxRunTime: 3600
       command:
@@ -130,7 +128,6 @@ tasks:
         # Events that will trigger this task
         events:
           - pull_request.*
-          - push
     payload:
       maxRunTime: 3600
       command:
