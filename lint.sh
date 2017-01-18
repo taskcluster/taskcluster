@@ -8,14 +8,20 @@ set -e
 flake8=${FLAKE8:-flake8}
 
 all_py=$(find taskcluster test -name "*.py")
-gen_py=$(cat filescreated.dat)
+
+norm_to_lint=""
+gen_to_lint=""
 
 for file in $all_py ; do
-	grep file $gen_py &> /dev/null
-	echo Linting $file
+	grep $file filescreated.dat &> /dev/null && /bin/true
 	if [ $? -eq 0 ] ; then
-		flake8 --ignore=E201,E128 --max-line-length=100000 $file
+    gen_to_lint="$gen_to_lint $file"
 	else
-		flake8 $file
+    norm_to_lint="$norm_to_lint $file"
 	fi
 done
+
+echo Linting generated python files
+flake8 --ignore=E201,E128 --max-line-length=100000 $gen_to_lint
+echo Linting non-generated files
+flake8 $norm_to_lint
