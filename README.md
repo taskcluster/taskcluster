@@ -12,10 +12,34 @@ The library builds the REST API methods from the same [API Reference
 format](http://docs.taskcluster.net/tools/references/index.html) as the
 Javascript client library.
 
-## Notes on using Temporary Credentials
-Generating temporary credentials didn't work for a long time but does now
+## Generating Temporary Credentials
+If you have non-temporary taskcluster credentials you can generate a set of
+temporary credentials as follows. Notice that the credentials cannot last more
+than 31 days, and you can only revoke them by revoking the credentials that was
+used to issue them (this takes up to one hour).
 
-## API Documentation
+```python
+import datetime
+
+credentials = taskcluster.createTemporaryCredentials(
+    # issuing clientId
+    clientId,
+    # issuing accessToken
+    accessToken,
+    # Validity of temporary credentials starts here, in timestamp
+    start,
+    # Expiration of temporary credentials, in timestamp
+    expiry,
+    # Scopes to grant the temporary credentials
+    scopes: ['ScopeA', 'ScopeB', ...],
+    # credential name (optional)
+    name='...'
+)
+```
+
+You cannot use temporary credentials to issue new temporary credentials.  You
+must have `auth:create-client:<name>` to create a named temporary credential,
+but unnamed temporary credentials can be created regardless of your scopes.## API Documentation
 
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
