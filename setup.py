@@ -10,17 +10,17 @@ import sys
 VERSION = '1.0.0'
 
 tests_require = [
-    'nose==1.3.4',
+    'nose==1.3.7',
     'nose-exclude==0.5.0',
-    'httmock==1.2.2',
-    'rednose==0.4.1',
+    'httmock==1.2.6',
+    'rednose==1.2.1',
     'mock==1.0.1',
     'setuptools-lint==0.3',
     'flake8==2.5.0',
     'psutil==2.1.3',
-    'hypothesis',
-    'pgpy>=0.4.0',
-    'tox==2.3.1',
+    'hypothesis==3.6.1',
+    'pgpy>=0.4.0,<0.5',
+    'tox==2.3.2',
     'coverage==4.1b2',
 ]
 
@@ -28,9 +28,9 @@ tests_require = [
 # http://docs.python-requests.org/en/latest/community/release-process/
 install_requires = [
     'requests>=2.4.3,<3',
-    'mohawk>=0.3.1',
-    'slugid',
-    'six',
+    'mohawk>=0.3.4,<0.4',
+    'slugid>=1.0.7,<2',
+    'six>=1.10.0,<2',
 ]
 
 # from http://testrun.org/tox/latest/example/basic.html
