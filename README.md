@@ -83,6 +83,33 @@ for its logger to `logging.DEBUG` and if there are no existing handlers, add a
 `logging.StreamHandler()` instance.  This is meant to assist those who do not wish to bother
 figuring out how to configure the python logging module but do want debug messages
 
+
+## Scopes
+
+The `scopeMatch(assumedScopes, requiredScopeSets)` function determines
+whether one or more of a set of required scopes are satisfied by the assumed
+scopes, taking *-expansion into account.  This is useful for making local
+decisions on scope satisfaction, but note that `assumed_scopes` must be the
+*expanded* scopes, as this function cannot perform expansion.
+
+It takes a list of a assumed scopes, and a list of required scope sets on
+disjunctive normal form, and checks if any of the required scope sets are
+satisfied.
+
+Example:
+
+```
+    requiredScopeSets = [
+        ["scopeA", "scopeB"],
+        ["scopeC:*"]
+    ]
+    assert scopesMatch(['scopeA', 'scopeB'], requiredScopeSets)
+    assert scopesMatch(['scopeC:xyz'], requiredScopeSets)
+    assert not scopesMatch(['scopeA'], requiredScopeSets)
+    assert not scopesMatch(['scopeC'], requiredScopeSets)
+```
+
+
 ## Methods contained in the client library
 
 <!-- START OF GENERATED DOCS -->
