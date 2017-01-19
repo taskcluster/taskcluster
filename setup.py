@@ -9,6 +9,7 @@ import sys
 # that script works if you want to change this
 VERSION = '1.0.0'
 
+packages = ['taskcluster']
 
 tests_require = [
     'nose==1.3.4',
@@ -63,6 +64,7 @@ if sys.version_info.major == 2:
 elif sys.version_info[:2] < (3, 5):
     raise Exception('this library does not support python >2 and <3.5')
 elif sys.version_info[:2] >= (3, 5):
+    packages.append('taskcluster.async')
     install_requires.extend([
         'aiohttp',
         'async_timeout',
@@ -76,10 +78,7 @@ if __name__ == '__main__':
         author='John Ford',
         author_email='jhford@mozilla.com',
         url='https://github.com/taskcluster/taskcluster-client.py',
-        packages=['taskcluster'],
-        package_data={
-            'taskcluster': ['**.json']
-        },
+        packages=packages,
         install_requires=install_requires,
         test_suite="nose.collector",
         tests_require=tests_require,
