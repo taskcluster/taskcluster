@@ -22,8 +22,6 @@ tasks:
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
       github:
-        # This must be set in order access GitHub info from inside your environment
-        env: true
         # Events that will trigger this task
         events:
           - pull_request.*
@@ -34,20 +32,20 @@ tasks:
         - /bin/bash
         - -vxec
         - |
-            go get -d "github.com/{{ event.base.user.login }}/generic-worker"
-            cd "${GOPATH}/src/github.com/{{ event.base.user.login }}/generic-worker"
-            git remote add user '{{ event.head.repo.url }}'
-            git fetch --tags user
-            git checkout '{{ event.head.sha }}'
-            go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
-            cd gw-codegen
-            go get -v
-            cd ..
-            go generate
-            go get -v -t ./...
-            test "$(git status --porcelain | wc -l)" == 0
-            GORACE=history_size=7 go test -v ./...
-            "${GOPATH}/bin/ineffassign" .
+          go get -d "github.com/{{ event.base.user.login }}/generic-worker"
+          cd "${GOPATH}/src/github.com/{{ event.base.user.login }}/generic-worker"
+          git remote add user '{{ event.head.repo.url }}'
+          git fetch --tags user
+          git checkout '{{ event.head.sha }}'
+          go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+          cd gw-codegen
+          go get -v
+          cd ..
+          go generate
+          go get -v -t ./...
+          test "$(git status --porcelain | wc -l)" == 0
+          GORACE=history_size=7 go test -v ./...
+          "${GOPATH}/bin/ineffassign" .
       artifacts:
         # public/build/generic-worker-darwin-amd64:
         public/build/generic-worker-linux-amd64:
@@ -71,8 +69,6 @@ tasks:
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
       github:
-        # This must be set in order access GitHub info from inside your environment
-        env: true
         # Events that will trigger this task
         events:
           - pull_request.*
@@ -82,6 +78,7 @@ tasks:
         - 'mkdir "public\build"'
         - set GOPATH=%CD%\gopath
         - set PATH=%GOPATH%\bin;%PATH%
+        - git config --global core.autocrlf false
         - 'go get -d "github.com/{{ event.base.user.login }}/generic-worker"'
         - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
         - git remote add user {{ event.head.repo.url }}
@@ -94,13 +91,15 @@ tasks:
         - go generate
         - go get -v -t ./...
         - 'copy "..\..\..\..\bin\generic-worker.exe" "..\..\..\..\..\public\build\generic-worker-windows-amd64.exe"'
-        - ':: this counts the number of lines returned by git status
-          git status --porcelain | find /c /v “” > tmp1.txt
-          set /P lines=<tmp1.txt
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+          set /P lines=<..\tmp1.txt
           :: this checks that if more than 0 lines are returned, we fail
-          if %lines% gtr 0 (
-              exit /b 64
-          )'
+          if %lines% gtr 0 exit /b 64
+          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
         - set GORACE=history_size=7
         - go test -v ./...
         - ineffassign .
@@ -123,8 +122,6 @@ tasks:
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
       github:
-        # This must be set in order access GitHub info from inside your environment
-        env: true
         # Events that will trigger this task
         events:
           - pull_request.*
@@ -135,6 +132,7 @@ tasks:
         - set GOPATH=%CD%\gopath
         - set GOROOT=%CD%\go
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
         - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
         - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
         - git remote add user {{ event.head.repo.url }}
@@ -147,13 +145,15 @@ tasks:
         - go generate
         - go get -v -t ./...
         - 'copy "%GOPATH%\bin\generic-worker.exe" "..\..\..\..\..\public\build\generic-worker-windows-amd64.exe"'
-        - ':: this counts the number of lines returned by git status
-          git status --porcelain | find /c /v “” > tmp1.txt
-          set /P lines=<tmp1.txt
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+          set /P lines=<..\tmp1.txt
           :: this checks that if more than 0 lines are returned, we fail
-          if %lines% gtr 0 (
-              exit /b 64
-          )'
+          if %lines% gtr 0 exit /b 64
+          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
         - set GORACE=history_size=7
         - go test -v ./...
         - ineffassign .
