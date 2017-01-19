@@ -568,10 +568,10 @@ type (
 		Scopes []string `json:"scopes,omitempty"`
 	}
 
-	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
 	Var json.RawMessage
 
-	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
 	Var1 json.RawMessage
 )
 

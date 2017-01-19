@@ -1,4 +1,4 @@
-Generated: 1484318480
+Generated: 1484860978
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -505,20 +505,20 @@ Properties
     TypeName               = 'Authorization'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/authorization'
   Property 'host' =
+    Any Of                 = 'Item '0' =
+      Format                 = 'hostname'
+      Type HAS NOT BEEN SET!!!
+      TypeName               = 'Var'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]'
+    Item '1' =
+      Format                 = 'ipv4'
+      Type HAS NOT BEEN SET!!!
+      TypeName               = 'Var1'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]'
+    '
     Description            = 'Host for which the request came in, this is typically the `Host` header
     excluding the port if any.
     '
-    OneOf
-      Item '0' =
-        Format                 = 'hostname'
-        Type HAS NOT BEEN SET!!!
-        TypeName               = 'Var'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]'
-      Item '1' =
-        Format                 = 'ipv4'
-        Type HAS NOT BEEN SET!!!
-        TypeName               = 'Var1'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]'
     Type                   = 'string'
     TypeName               = 'Host'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host'
@@ -555,20 +555,20 @@ TypeName               = 'HawkSignatureAuthenticationRequest'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#'
 
 
-http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]
+http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
 ===============================================================================================
 Format                 = 'hostname'
 Type HAS NOT BEEN SET!!!
 TypeName               = 'Var'
-SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[0]'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]'
 
 
-http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]
+http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
 ===============================================================================================
 Format                 = 'ipv4'
 Type HAS NOT BEEN SET!!!
 TypeName               = 'Var1'
-SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/oneOf[1]'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]'
 
 
 http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
