@@ -121,6 +121,15 @@ PulseConnection.prototype.connect = function() {
         debug("Connection error in Connection: %s", err, err.stack);
         that.emit('error', err);
       });
+      conn.on('close', function() {
+        if (!that._conn) {
+          return; // Forget this, if close() was called
+        }
+        debug("Connection closed unexpectedly");
+        that.emit('error', new Error(
+          "Connection closed unexpectedly, likely server initiated shutdown"
+        ));
+      });
 
       // We're no longer connecting, emit event notifying anybody waiting
       that._connecting = false;
@@ -259,6 +268,15 @@ PulseListener.prototype.connect = function() {
       that._channel = null;
       debug("Channel error in PulseListener: ", err.stack);
       that.emit('error', err);
+    });
+    channel.on('close', function() {
+      if (!that._channel) {
+        return; // Ignore if close() was called
+      }
+      debug("Channel was closed unexpectedly");
+      that.emit('error', new Error(
+        "Channel closed unexpectedly, likely server initiated shutdown"
+      ));
     });
     return channel.prefetch(that._options.prefetch);
   });
