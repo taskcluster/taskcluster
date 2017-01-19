@@ -287,6 +287,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	//      contents += "call " + script + " > " + absLogFile + " 2>&1" + "\r\n"
 	// ******************************
 	contents += "call " + script + " 2>&1" + "\r\n"
+	contents += "@echo off" + "\r\n"
 
 	// store exit code
 	contents += "set tcexitcode=%errorlevel%\r\n"
@@ -315,7 +316,6 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	fileContents := []byte(strings.Join([]string{
 		"@echo on",
 		task.Payload.Command[index],
-		"@echo off",
 	}, "\r\n"))
 
 	err = ioutil.WriteFile(
