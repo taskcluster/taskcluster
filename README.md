@@ -190,7 +190,7 @@ taskcluster.fromNow("1 year", dateObj=dateObject1);
 
 ### Methods in `taskcluster.Auth`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Auth client instance
 import taskcluster
 import taskcluster.async
@@ -198,7 +198,7 @@ import taskcluster.async
 auth = taskcluster.Auth(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncAuth = taskcluster.async.Auth(options, session=session)
 ```
 Authentication related API end-points for TaskCluster and related
@@ -816,34 +816,34 @@ can purge their caches and synchronize state. But you are of course
 welcome to use these for other purposes, monitoring changes for example.
 #### Client Created Messages
  * `authEvents.clientCreated(routingKeyPattern) -> routingKey`
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Client Updated Messages
  * `authEvents.clientUpdated(routingKeyPattern) -> routingKey`
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Client Deleted Messages
  * `authEvents.clientDeleted(routingKeyPattern) -> routingKey`
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Role Created Messages
  * `authEvents.roleCreated(routingKeyPattern) -> routingKey`
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Role Updated Messages
  * `authEvents.roleUpdated(routingKeyPattern) -> routingKey`
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Role Deleted Messages
  * `authEvents.roleDeleted(routingKeyPattern) -> routingKey`
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
 
 ### Methods in `taskcluster.AwsProvisioner`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create AwsProvisioner client instance
 import taskcluster
 import taskcluster.async
@@ -851,7 +851,7 @@ import taskcluster.async
 awsProvisioner = taskcluster.AwsProvisioner(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncAwsProvisioner = taskcluster.async.AwsProvisioner(options, session=session)
 ```
 The AWS Provisioner is responsible for provisioning instances on EC2 for use in
@@ -1395,28 +1395,28 @@ awsProvisionerEvents = taskcluster.AwsProvisionerEvents(options)
 Exchanges from the provisioner... more docs later
 #### WorkerType Created Message
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * workerType is required  Description: WorkerType that this message concerns.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `workerType` is required  Description: WorkerType that this message concerns.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### WorkerType Updated Message
  * `awsProvisionerEvents.workerTypeUpdated(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * workerType is required  Description: WorkerType that this message concerns.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `workerType` is required  Description: WorkerType that this message concerns.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### WorkerType Removed Message
  * `awsProvisionerEvents.workerTypeRemoved(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * workerType is required  Description: WorkerType that this message concerns.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `workerType` is required  Description: WorkerType that this message concerns.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
 
 ### Methods in `taskcluster.Github`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Github client instance
 import taskcluster
 import taskcluster.async
@@ -1424,7 +1424,7 @@ import taskcluster.async
 github = taskcluster.Github(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncGithub = taskcluster.async.Github(options, session=session)
 ```
 The github service, typically available at
@@ -1489,29 +1489,29 @@ This document describes the exchange offered by the taskcluster
 github service
 #### GitHub Pull Request Event
  * `githubEvents.pullRequest(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
-   * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
-   * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
-   * action is required  Description: The GitHub `action` which triggered an event. See for possible values see the payload actions property.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
+   * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `action` is required  Description: The GitHub `action` which triggered an event. See for possible values see the payload actions property.
 
 #### GitHub push Event
  * `githubEvents.push(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
-   * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
-   * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
+   * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
 
 #### GitHub release Event
  * `githubEvents.release(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
-   * organization is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
-   * repository is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
+   * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
 
 
 
 
 ### Methods in `taskcluster.Hooks`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Hooks client instance
 import taskcluster
 import taskcluster.async
@@ -1519,7 +1519,7 @@ import taskcluster.async
 hooks = taskcluster.Hooks(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncHooks = taskcluster.async.Hooks(options, session=session)
 ```
 Hooks are a mechanism for creating tasks in response to events.
@@ -1814,7 +1814,7 @@ await asyncHooks.ping() # -> None
 
 ### Methods in `taskcluster.Index`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Index client instance
 import taskcluster
 import taskcluster.async
@@ -1822,7 +1822,7 @@ import taskcluster.async
 index = taskcluster.Index(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncIndex = taskcluster.async.Index(options, session=session)
 ```
 The task index, typically available at `index.taskcluster.net`, is
@@ -2054,7 +2054,7 @@ await asyncIndex.ping() # -> None
 
 ### Methods in `taskcluster.Login`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Login client instance
 import taskcluster
 import taskcluster.async
@@ -2062,7 +2062,7 @@ import taskcluster.async
 login = taskcluster.Login(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncLogin = taskcluster.async.Login(options, session=session)
 ```
 The Login service serves as the interface between external authentication
@@ -2106,7 +2106,7 @@ await asyncLogin.ping() # -> None
 
 ### Methods in `taskcluster.Notify`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Notify client instance
 import taskcluster
 import taskcluster.async
@@ -2114,7 +2114,7 @@ import taskcluster.async
 notify = taskcluster.Notify(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncNotify = taskcluster.async.Notify(options, session=session)
 ```
 The notification service, typically available at `notify.taskcluster.net`
@@ -2189,7 +2189,7 @@ await asyncNotify.ping() # -> None
 
 ### Methods in `taskcluster.Pulse`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Pulse client instance
 import taskcluster
 import taskcluster.async
@@ -2197,7 +2197,7 @@ import taskcluster.async
 pulse = taskcluster.Pulse(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncPulse = taskcluster.async.Pulse(options, session=session)
 ```
 The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
@@ -2289,7 +2289,7 @@ await asyncPulse.ping() # -> None
 
 ### Methods in `taskcluster.PurgeCache`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create PurgeCache client instance
 import taskcluster
 import taskcluster.async
@@ -2297,7 +2297,7 @@ import taskcluster.async
 purgeCache = taskcluster.PurgeCache(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncPurgeCache = taskcluster.async.PurgeCache(options, session=session)
 ```
 The purge-cache service, typically available at
@@ -2398,16 +2398,16 @@ This document describes the exchange offered for workers by the
 cache-purge service.
 #### Purge Cache Messages
  * `purgeCacheEvents.purgeCache(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * provisionerId is required  Description: `provisionerId` under which to purge cache.
-   * workerType is required  Description: `workerType` for which to purge cache.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `provisionerId` is required  Description: `provisionerId` under which to purge cache.
+   * `workerType` is required  Description: `workerType` for which to purge cache.
 
 
 
 
 ### Methods in `taskcluster.Queue`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Queue client instance
 import taskcluster
 import taskcluster.async
@@ -2415,7 +2415,7 @@ import taskcluster.async
 queue = taskcluster.Queue(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncQueue = taskcluster.async.Queue(options, session=session)
 ```
 The queue, typically available at `queue.taskcluster.net`, is responsible
@@ -3196,108 +3196,108 @@ future. For now we suggest you ignore this corner case, and notify us
 if this corner case is of concern to you.
 #### Task Defined Messages
  * `queueEvents.taskDefined(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task Pending Messages
  * `queueEvents.taskPending(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task Running Messages
  * `queueEvents.taskRunning(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Artifact Creation Messages
  * `queueEvents.artifactCreated(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task Completed Messages
  * `queueEvents.taskCompleted(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` is required  Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` is required  Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` is required  Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task Failed Messages
  * `queueEvents.taskFailed(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task Exception Messages
  * `queueEvents.taskException(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId is required  Description: `taskId` for the task this message concerns
-   * runId Description: `runId` of latest run for the task, `_` if no run is exists for the task.
-   * workerGroup Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-   * workerId Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
-   * provisionerId is required  Description: `provisionerId` this task is targeted at.
-   * workerType is required  Description: `workerType` this task must run on.
-   * schedulerId is required  Description: `schedulerId` this task was created by.
-   * taskGroupId is required  Description: `taskGroupId` this task was created in.
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` is required  Description: `taskId` for the task this message concerns
+   * `runId` Description: `runId` of latest run for the task, `_` if no run is exists for the task.
+   * `workerGroup` Description: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+   * `workerId` Description: `workerId` of latest run for the task, `_` if no run is exists for the task.
+   * `provisionerId` is required  Description: `provisionerId` this task is targeted at.
+   * `workerType` is required  Description: `workerType` this task must run on.
+   * `schedulerId` is required  Description: `schedulerId` this task was created by.
+   * `taskGroupId` is required  Description: `taskGroupId` this task was created in.
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task Group Resolved Messages
  * `queueEvents.taskGroupResolved(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskGroupId is required  Description: `taskGroupId` for the task-group this message concerns
-   * schedulerId is required  Description: `schedulerId` for the task-group this message concerns
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskGroupId` is required  Description: `taskGroupId` for the task-group this message concerns
+   * `schedulerId` is required  Description: `schedulerId` for the task-group this message concerns
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
 
 ### Methods in `taskcluster.Scheduler`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Scheduler client instance
 import taskcluster
 import taskcluster.async
@@ -3305,7 +3305,7 @@ import taskcluster.async
 scheduler = taskcluster.Scheduler(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncScheduler = taskcluster.async.Scheduler(options, session=session)
 ```
 The task-graph scheduler, typically available at
@@ -3597,62 +3597,62 @@ task-graph scheduler is hardcoded to `_`. This is done to preserve
 positional equivalence with exchanges offered by the queue.
 #### Task-Graph Running Message
  * `schedulerEvents.taskGraphRunning(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId Description: Always takes the value `_`
-   * runId Description: Always takes the value `_`
-   * workerGroup Description: Always takes the value `_`
-   * workerId Description: Always takes the value `_`
-   * provisionerId Description: Always takes the value `_`
-   * workerType Description: Always takes the value `_`
-   * schedulerId is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * taskGraphId is required  Description: Identifier for the task-graph this message concerns
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` Description: Always takes the value `_`
+   * `runId` Description: Always takes the value `_`
+   * `workerGroup` Description: Always takes the value `_`
+   * `workerId` Description: Always takes the value `_`
+   * `provisionerId` Description: Always takes the value `_`
+   * `workerType` Description: Always takes the value `_`
+   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
+   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task-Graph Extended Message
  * `schedulerEvents.taskGraphExtended(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId Description: Always takes the value `_`
-   * runId Description: Always takes the value `_`
-   * workerGroup Description: Always takes the value `_`
-   * workerId Description: Always takes the value `_`
-   * provisionerId Description: Always takes the value `_`
-   * workerType Description: Always takes the value `_`
-   * schedulerId is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * taskGraphId is required  Description: Identifier for the task-graph this message concerns
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` Description: Always takes the value `_`
+   * `runId` Description: Always takes the value `_`
+   * `workerGroup` Description: Always takes the value `_`
+   * `workerId` Description: Always takes the value `_`
+   * `provisionerId` Description: Always takes the value `_`
+   * `workerType` Description: Always takes the value `_`
+   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
+   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task-Graph Blocked Message
  * `schedulerEvents.taskGraphBlocked(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId Description: Always takes the value `_`
-   * runId Description: Always takes the value `_`
-   * workerGroup Description: Always takes the value `_`
-   * workerId Description: Always takes the value `_`
-   * provisionerId Description: Always takes the value `_`
-   * workerType Description: Always takes the value `_`
-   * schedulerId is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * taskGraphId is required  Description: Identifier for the task-graph this message concerns
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` Description: Always takes the value `_`
+   * `runId` Description: Always takes the value `_`
+   * `workerGroup` Description: Always takes the value `_`
+   * `workerId` Description: Always takes the value `_`
+   * `provisionerId` Description: Always takes the value `_`
+   * `workerType` Description: Always takes the value `_`
+   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
+   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 #### Task-Graph Finished Message
  * `schedulerEvents.taskGraphFinished(routingKeyPattern) -> routingKey`
-   * routingKeyKind is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * taskId Description: Always takes the value `_`
-   * runId Description: Always takes the value `_`
-   * workerGroup Description: Always takes the value `_`
-   * workerId Description: Always takes the value `_`
-   * provisionerId Description: Always takes the value `_`
-   * workerType Description: Always takes the value `_`
-   * schedulerId is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * taskGraphId is required  Description: Identifier for the task-graph this message concerns
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
+   * `taskId` Description: Always takes the value `_`
+   * `runId` Description: Always takes the value `_`
+   * `workerGroup` Description: Always takes the value `_`
+   * `workerId` Description: Always takes the value `_`
+   * `provisionerId` Description: Always takes the value `_`
+   * `workerType` Description: Always takes the value `_`
+   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
+   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
 
 ### Methods in `taskcluster.Secrets`
 ```python
-import asynio # Only for async 
+import asyncio # Only for async 
 // Create Secrets client instance
 import taskcluster
 import taskcluster.async
@@ -3660,7 +3660,7 @@ import taskcluster.async
 secrets = taskcluster.Secrets(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession()
+session = taskcluster.async.createSession(loop=loop)
 asyncSecrets = taskcluster.async.Secrets(options, session=session)
 ```
 The secrets service provides a simple key/value store for small bits of secret
@@ -3777,9 +3777,9 @@ attached to the exchange.  This could be a production Treeheder instance,
 a local development environment, or a custom dashboard.
 #### Job Messages
  * `treeherderEvents.jobs(routingKeyPattern) -> routingKey`
-   * destination is required  Description: destination
-   * project is required  Description: project
-   * reserved Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+   * `destination` is required  Description: destination
+   * `project` is required  Description: project
+   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
 
 
 
