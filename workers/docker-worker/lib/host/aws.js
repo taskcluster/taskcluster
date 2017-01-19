@@ -126,7 +126,7 @@ export async function configure(baseUrl=BASE_URL) {
     // worker first starts up because of an issue communicating with the provisioner
     // or if the worker respawned (because of an uncaught exception).  Either way,
     // alert and set capacity to 0.
-    log('[alert-operator] error retrieving secrets');
+    log('[alert-operator] error retrieving secrets', e.stack);
     return _.defaultsDeep(
       userdata.data,
       {
