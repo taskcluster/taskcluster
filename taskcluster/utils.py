@@ -32,9 +32,16 @@ except ImportError:
     log.debug("Encryption disabled. Install pgpy to enable.")
 
 # Regular expression matching: X days Y hours Z minutes
-r = re.compile('^(\s*(\d+)\s*d(ays?)?)?' +
-               '(\s*(\d+)\s*h(ours?)?)?' +
-               '(\s*(\d+)\s*m(in(utes?)?)?)?\s*$')
+# todo: support hr, wk, yr
+r = re.compile(''.join([
+   '^(\s*(?P<years>\d+)\s*y(ears?)?)?',
+   '(\s*(?P<months>\d+)\s*mo(nths?)?)?',
+   '(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
+   '(\s*(?P<days>\d+)\s*d(ays?)?)?',
+   '(\s*(?P<hours>\d+)\s*h(ours?)?)?',
+   '(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
+   '(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$',
+]))
 
 
 def calculateSleepTime(attempt):
@@ -60,20 +67,70 @@ def toStr(obj, encoding='utf-8'):
     return obj
 
 
-def fromNow(offset):
+def fromNow(offset, dateObj=None):
+    """
+    Generate a `datetime.datetime` instance which is offset using a string.
+    See the README.md for a full example, but offset could be '1 day' for
+    a datetime object one day in the future
+    """
+
+    # We want to handle past dates as well as future
+    future = True
+    offset = offset.lstrip()
+    if offset.startswith('-'):
+        future = False
+        offset = offset[1:].lstrip()
+    if offset.startswith('+'):
+        offset = offset[1:].lstrip()
+
     # Parse offset
     m = r.match(offset)
     if m is None:
         raise ValueError("offset string: '%s' does not parse" % offset)
 
+    # In order to calculate years and months we need to calculate how many days
+    # to offset the offset by, since timedelta only goes as high as weeks
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = 0
+    if m.group('years'):
+        # The average year is 365.25 days
+        years = int(m.group('years'))
+        days += 365 * years
+        minutes += 15 * years
+    if m.group('months'):
+        # The average month is 30.42 days
+        months = int(m.group('months'))
+        days += 30 * months
+        hours += 10 * months
+        minutes += 4 * months
+        seconds += 48 * months
+    days += int(m.group('days') or 0)
+    hours += int(m.group('hours') or 0)
+    minutes += int(m.group('minutes') or 0)
+    seconds += int(m.group('seconds') or 0)
+
     # Offset datetime from utc
-    date = datetime.datetime.utcnow() + datetime.timedelta(
-        days=int(m.group(2) or 0),
-        hours=int(m.group(5) or 0),
-        minutes=int(m.group(8) or 0)
+    delta = datetime.timedelta(
+        weeks=int(m.group('weeks') or 0),
+        days=days,
+        hours=hours,
+        minutes=minutes,
+        seconds=seconds,
     )
 
-    return stringDate(date)
+    if not dateObj:
+        dateObj = datetime.datetime.utcnow()
+
+    return dateObj + delta if future else dateObj - delta
+
+
+def fromNowJSON(offset):
+    """
+    Like fromNow() but returns in a taskcluster-json compatible way
+    """
+    return stringDate(fromNow(offset))
 
 
 def dumpJson(obj, **kwargs):

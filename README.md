@@ -133,6 +133,56 @@ Example:
     assert not scopesMatch(['scopeC'], requiredScopeSets)
 ```
 
+## Relative Date-time Utilities
+A lot of taskcluster APIs requires ISO 8601 time stamps offset into the future
+as way of providing expiration, deadlines, etc. These can be easily created
+using `datetime.datetime.isoformat()`, however, it can be rather error prone
+and tedious to offset `datetime.datetime` objects into the future. Therefore
+this library comes with two utility functions for this purposes.
+
+```python
+dateObject = taskcluster.fromNow("2 days 3 hours 1 minute")
+# datetime.datetime(2017, 1, 21, 17, 8, 1, 607929)
+dateString = taskcluster.fromNowJSON("2 days 3 hours 1 minute")
+# '2017-01-21T17:09:23.240178Z'
+```
+
+By default it will offset the date time into the future, if the offset strings
+are prefixed minus (`-`) the date object will be offset into the past. This is
+useful in some corner cases.
+
+```python
+dateObject = taskcluster.fromNow("- 1 year 2 months 3 weeks 5 seconds");
+# datetime.datetime(2015, 10, 30, 18, 16, 50, 931161)
+```
+
+The offset string is ignorant of whitespace and case insensitive. It may also
+optionally be prefixed plus `+` (if not prefixed minus), any `+` prefix will be
+ignored. However, entries in the offset string must be given in order from
+high to low, ie. `2 years 1 day`. Additionally, various shorthands may be
+employed, as illustrated below.
+
+```
+  years,    year,   yr,   y
+  months,   month,  mo
+  weeks,    week,         w
+  days,     day,          d
+  hours,    hour,         h
+  minutes,  minute, min
+  seconds,  second, sec,  s
+```
+
+The `fromNow` method may also be given a date to be relative to as a second
+argument. This is useful if offset the task expiration relative to the the task
+deadline or doing something similar.  This argument can also be passed as the
+kwarg `dateObj`
+
+```python
+dateObject1 = taskcluster.fromNow("2 days 3 hours");
+dateObject2 = taskcluster.fromNow("1 year", dateObject1);
+taskcluster.fromNow("1 year", dateObj=dateObject1);
+# datetime.datetime(2018, 1, 21, 17, 59, 0, 328934)
+```
 
 ## Methods contained in the client library
 
