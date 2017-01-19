@@ -1,14 +1,15 @@
 language: python
 python:
+  - 2.7
   - 3.5
 
 # command to install dependencies
 install:
   - pip install virtualenv tox
-  - make dev-env
 
 # command to run tests
 script:
+  - make update
   - make test
 
 # encrpyt channel name to get around issue
