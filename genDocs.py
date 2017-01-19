@@ -22,7 +22,7 @@ def docApi(name, ref):
             '',
             '### Methods in `taskcluster.%s`' % name,
             '```python',
-            'import asynio # Only for async ',
+            'import asyncio # Only for async ',
             '// Create %s client instance' % name,
             'import taskcluster',
             'import taskcluster.async',
@@ -30,7 +30,7 @@ def docApi(name, ref):
             '%s = taskcluster.%s(options)' % (instName, name),
             '# Below only for async instances, assume already in coroutine',
             'loop = asyncio.get_event_loop()',
-            'session = taskcluster.async.createSession()',
+            'session = taskcluster.async.createSession(loop=loop)',
             '%s = taskcluster.async.%s(options, session=session)' % (asyncName, name),
             '```',
         ])
@@ -107,7 +107,7 @@ def docApi(name, ref):
         lines.append('#### %s' % exchange['title'])
         lines.append(' * `%s.%s(routingKeyPattern) -> routingKey`' % (instName, exchange['name']))
         for key in exchange['routingKey']:
-            lines.append('   * %s%s%s Description: %s' % (
+            lines.append('   * `%s`%s%s Description: %s' % (
                 key['name'],
                 ' is constant of `%s` ' % key['constant'] if 'constant' in key else '',
                 ' is required ' if key.get('required') else '',
