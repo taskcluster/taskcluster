@@ -18,7 +18,7 @@
     "superagent": "~1.7.0",
     "superagent-promise": "^0.2.0",
     "superagent-hawk": "^0.0.6",
-    "amqplib": "^0.4.1",
+    "amqplib": "^0.5.1",
     "slugid": "^1.1.0",
     "promise": "^6.1.0",
     "hawk": "^2.3.1",
