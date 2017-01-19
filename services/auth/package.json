@@ -30,7 +30,7 @@
     "hoek": "^2.16.3",
     "lodash": "^3.9.3",
     "promise": "^7.0.4",
-    "pulse-publisher": "^1.1.0",
+    "pulse-publisher": "^1.1.4",
     "raven": "^0.10.0",
     "sentry-api": "^0.1.1",
     "slugid": "^1.1.0",
