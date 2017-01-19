@@ -43,9 +43,9 @@ properties:
       **Note,** order of querystring elements is important.
   host:
     type:                 string
-    oneOf:
-      - format:               hostname
-      - format:               ipv4
+    anyOf:
+      - format:           hostname
+      - format:           ipv4
     description: |
       Host for which the request came in, this is typically the `Host` header
       excluding the port if any.
