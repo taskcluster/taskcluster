@@ -27,6 +27,7 @@ export default class ChainOfTrust {
     this.key = openpgp.key.readArmored(armoredKey).keys;
 
     this.file = new temporary.File();
+    debug(`created temporary file: ${this.file.path}`);
 
     // Pipe the task stream to a temp file on disk.
     this.stream = fs.createWriteStream(this.file.path);
@@ -48,12 +49,9 @@ export default class ChainOfTrust {
 
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
+    debug(`ensuring file ${this.file.path} exists and opening read stream`);
     let stat = await fs.stat(this.file.path);
     let logStream = fs.createReadStream(this.file.path);
-
-    // Unlink the temp file (log stream will maintain an open file descriptor
-    // until update has finished)
-    await fs.unlink(this.file.path);
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
@@ -62,8 +60,10 @@ export default class ChainOfTrust {
         'content-length': stat.size,
         'content-encoding': 'gzip'
       });
+      await fs.unlink(this.file.path);
     } catch (err) {
       debug(err);
+      await fs.unlink(this.file.path);
       throw err;
     }
 

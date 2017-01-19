@@ -1,3 +1,4 @@
+import Debug from 'debug';
 import crypto from 'crypto';
 import https from 'https';
 import url from 'url';
@@ -9,6 +10,7 @@ import _ from 'lodash';
 import waitForEvent from './wait_for_event';
 
 var log = createLogger({source: "uploadToS3"});
+let debug = Debug('taskcluster-docker-worker:uploadToS3');
 
 // Upload an S3 artifact to the queue for the given taskId/runId.  Source can be
 // a string or a stream.
@@ -24,6 +26,8 @@ export default async function uploadToS3 (
   httpOptions)
 {
   let tmp = new temporary.File();
+  debug(`created temporary file $${tmp.path} for ${artifactName}`);
+
   let logDetails = {taskId, runId, artifactName};
   let digest;
 
@@ -40,6 +44,7 @@ export default async function uploadToS3 (
         source.pipe(stream);
       });
     }
+    debug(`wrote source file to ${tmp.path} for ${artifactName}`);
 
     // Can this be done at the same time as piping to the write stream?
     let hash = crypto.createHash('sha256');
