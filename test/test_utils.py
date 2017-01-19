@@ -260,9 +260,9 @@ class TestDecryptMessage(TestCase):
 
 
 class TestScopeMatch(TestCase):
-    def assertScopeMatch(self, assumed, required_scope_sets, expected):
+    def assertScopeMatch(self, assumed, requiredScopeSets, expected):
         try:
-            result = subject.scope_match(assumed, required_scope_sets)
+            result = subject.scopeMatch(assumed, requiredScopeSets)
             self.assertEqual(result, expected)
         except:
             if expected != 'exception':
