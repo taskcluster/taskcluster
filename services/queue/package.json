@@ -31,7 +31,7 @@
     "lodash": "^4.6.1",
     "netmask": "^1.0.5",
     "promise": "^7.0.4",
-    "pulse-publisher": "^1.0.1",
+    "pulse-publisher": "^1.1.4",
     "request-ip": "^1.1.4",
     "slugid": "^1.1.0",
     "source-map-support": "^0.4.0",
