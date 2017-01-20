@@ -18,22 +18,22 @@ function sanitizeGitHubField(field) {
 // See https://developer.github.com/v3/activity/events/types/#pullrequestevent
 function getPullRequestDetails(eventData) {
   return {
-    'event.type': 'pull_request.' + eventData.action,
-    'event.pullNumber': eventData.number,
-
-    'event.base.user.login': eventData.pull_request.base.user.login,
+    'event.base.ref': 'refs/heads/' + eventData.pull_request.base.ref,
+    'event.base.repo.branch': eventData.pull_request.base.ref,
     'event.base.repo.name': eventData.pull_request.base.repo.name,
     'event.base.repo.url': eventData.pull_request.base.repo.clone_url,
     'event.base.sha': eventData.pull_request.base.sha,
-    'event.base.ref': eventData.pull_request.base.ref,
-    'event.base.repo.branch': eventData.pull_request.base.ref,
+    'event.base.user.login': eventData.pull_request.base.user.login,
 
-    'event.head.user.login': eventData.pull_request.head.user.login,
+    'event.head.ref': 'refs/heads/' + eventData.pull_request.head.ref,
+    'event.head.repo.branch': eventData.pull_request.head.ref,
     'event.head.repo.name': eventData.pull_request.head.repo.name,
     'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
     'event.head.sha': eventData.pull_request.head.sha,
-    'event.head.ref': eventData.pull_request.head.ref,
-    'event.head.repo.branch': eventData.pull_request.head.ref,
+    'event.head.user.login': eventData.pull_request.head.user.login,
+
+    'event.pullNumber': eventData.number,
+    'event.type': 'pull_request.' + eventData.action,
   };
 };
 
@@ -44,18 +44,21 @@ function getPushDetails(eventData) {
   // to get a branch name
   let branch = ref.split('/').slice(2).join('/');
   return {
-    'event.type': 'push',
-
-    // don't think this is needed (and is perhaps misleading)
+    'event.base.ref': ref,
     'event.base.repo.branch': branch,
+    'event.base.repo.name': eventData.repository.name,
+    'event.base.repo.url': eventData.repository.clone_url,
+    'event.base.sha': eventData.before,
+    'event.base.user.login': eventData.sender.login,
 
+    'event.head.ref': ref,
     'event.head.repo.branch': branch,
-    'event.head.user.login': eventData.sender.login,
     'event.head.repo.name': eventData.repository.name,
     'event.head.repo.url': eventData.repository.clone_url,
     'event.head.sha': eventData.after,
-    'event.head.ref': ref,
-    'event.base.sha': eventData.before,
+    'event.head.user.login': eventData.sender.login,
+
+    'event.type': 'push',
   };
 };
 
