@@ -18,4 +18,4 @@ $(BINARY): $(SOURCES)
 clean:
 	rm -f ${BINARY}
 
-.PHONY: all regenerate build clean
+.PHONY: all build clean
