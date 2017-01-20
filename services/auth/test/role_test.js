@@ -15,8 +15,8 @@ suite('api (roles)', function() {
 
   // Setup a clientId we can play with
   let clientId, accessToken;
+  clientId = slugid.v4();
   test('createClient', async() => {
-    clientId = slugid.v4();
     let client = await helper.auth.createClient(clientId, {
       expires: taskcluster.fromNowJSON('1 day'),
       description: "test client...",
@@ -132,52 +132,6 @@ suite('api (roles)', function() {
     await helper.events.waitFor('e1');
   });
 
-  test('updateRole (add scope, requires scope)', async() => {
-    let auth = new helper.Auth({
-      credentials: {clientId: 'root', accessToken: helper.rootAccessToken},
-      authorizedScopes: ['auth:update-role:*']
-    });
-
-    // Can update without adding new scopes
-    await auth.updateRole('thing-id:' + clientId, {
-      description: 'test role',
-      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3']
-    });
-
-    // Can't add scope without scope
-    await auth.updateRole('thing-id:' + clientId, {
-      description: 'test role',
-      scopes: [
-        'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3',
-        'dummy-scope-4'
-      ]
-    }).then(() => assert(false, "Expected an error"), err => {
-      assert(err.statusCode === 403);
-    });
-  });
-
-
-  test('updateRole (remove scope)', async() => {
-    let auth = new helper.Auth({
-      credentials: {clientId: 'root', accessToken: helper.rootAccessToken},
-      authorizedScopes: ['auth:update-role:*']
-    });
-
-    // Can remove scope without scope
-    await auth.updateRole('thing-id:' + clientId, {
-      description: 'test role',
-      scopes: ['dummy-scope-1', 'auth:create-role:*']
-    });
-
-    let role = await auth.role('thing-id:' + clientId);
-    assume(role.expandedScopes.sort()).deep.equals([
-      'assume:thing-id:' + clientId,
-      'dummy-scope-1',
-      'auth:create-role:*',
-      'dummy-scope-2'
-    ].sort());
-  });
-
   test('deleteRole', async() => {
     await helper.events.listenFor('e1', helper.authEvents.roleDeleted());
 
@@ -192,5 +146,102 @@ suite('api (roles)', function() {
 
     // At least one of them should trigger this message
     await helper.events.waitFor('e1');
+  });
+
+  suite('updateRole', function() {
+    let roleId = `thing-id:${clientId}`;
+    let roleId2 = `sub-thing:${clientId}`;
+    let auth;
+
+    setup(async function() {
+      auth = new helper.Auth({
+        credentials: {clientId: 'root', accessToken: helper.rootAccessToken},
+        authorizedScopes: [
+          'auth:update-role:*',
+          'scope:role-has:a',
+          'scope:caller-has:a',
+          'scope:caller-has:b*',
+        ]
+      });
+      await helper.Role.remove({roleId}, true);
+      await helper.Role.create({
+        roleId,
+        description: 'a role',
+        scopes: ['scope:role-has:*', `assume:${roleId2}`],
+        details: {
+          created: new Date().toJSON(),
+          lastModified: new Date().toJSON(),
+        },
+      });
+      await helper.resolver.reloadRole(roleId);
+
+      await helper.Role.remove({roleId: `${roleId2}`}, true);
+      await helper.Role.create({
+        roleId: roleId2,
+        description: 'another role',
+        scopes: ['scope:sub-role-has:*'],
+        details: {
+          created: new Date().toJSON(),
+          lastModified: new Date().toJSON(),
+        },
+      });
+      await helper.resolver.reloadRole(roleId2);
+    });
+
+    teardown(async function() {
+      await helper.Role.remove({roleId}, true);
+    });
+
+    test('caller has new scope verbatim', async() => {
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['scope:role-has:*', 'scope:caller-has:a'],
+      });
+    });
+
+    test('caller has a prefix of the new scope', async() => {
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['scope:caller-has:bxx'],
+      });
+    });
+
+    test('role already has new scope verbatim', async() => {
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['scope:role-has:*'],
+      });
+    });
+
+    test('role already has new scope by role expansion', async() => {
+      // NOTE: this represents no immediate change, but if roleId2 later
+      // had this scope removed, it wouldn't disappear from roleId..
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['scope:sub-role-has:xyz', `assume:${roleId2}`],
+      });
+    });
+
+    test('role already has a prefix of the new scope', async() => {
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['scope:role-has:x', 'scope:role-has:y'],
+      });
+    });
+
+    test('caller does not have new scope', async() => {
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: ['nobody-has-this'],
+      }).then(() => assert(false, "Expected an error"),
+              err => assert(err.statusCode === 403));
+    });
+
+    test('remove a scope the caller does not posess', async() => {
+      await auth.updateRole(roleId, {
+        description: 'test role',
+        scopes: [],
+      });
+    });
   });
 });
