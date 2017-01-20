@@ -2,45 +2,37 @@ TaskCluster Scopes Utilities
 ============================
 
 Simple utilities to validate scopes, scope-sets, and scope-set satisfiability.
-In short a scope is a string of printable ASCII characters including space,
-match by `/^[\x20-\x7e]*$/`.
 
-A scope `a` is set to satisfy `b`, if
- * `a = b`, or,
- * `a` is on the form `c'*'`, where `b = cd` for some string `d`.
+For information on scopes, see [the TaskCluster documentation](https://docs.taskcluster.net/manual/integrations/apis/scopes).
 
-A set of scopes _scope-set_ `A` is set to satisfy a set of scopes `B`
-if for each scope `b` in `B` there is a scope `a` from `A` such that
-`a` satisfies `b`.
-
-A set of scope-sets `C` is said to be satisfied by a scope-set `A` if there is
-a set of scopes `B` in `C` such that `A` satisfies `B`.
-
-**Example**
-The scope-sets `[['a', 'b'], ['c']]` is satisfied, if
- 1. `'a'` and `'b'` is satisfied, or
- 2. `'c'` is satisfied.
-
-Essentially, scopes-sets forms a set of requirements on negation-free
-disjunctive normal form.
-
-
-**Usage**
-
-Validation:
+## Usage
 
 ```js
 let scopeUtils = require('taskcluster-lib-scopes');
+```
 
+### Valid Scopes
+
+The `validScope` function will determine if its input is a valid scope (string
+containing ascii characters):
+
+```js
 // Check if input is a valid scope.
 assert(scopeUtils.validScope("..."));
+```
 
-// Checks if the scopes in the sets are valid, and if form of the scope-sets is
-// double nested arrays.
+### Checking Scope Sets
+
+The `validateScopeSets` function checks whether the scopes in the sets are
+valid, and if form of the scope-sets is double nested arrays.  This is the
+"disjunctive normal form" expected by
+[taskcluster-lib-api](https://github.com/taskcluster/taskcluster-lib-api).
+
+```js
 assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']]));
 ```
 
-Satisfaction:
+### Checking Scope Satisfaction
 
 The first argument to `scopeMatch` is the set of scopes being tested.  The
 second is an array of arrays of scopes, in disjunctive normal form, meaning
@@ -58,6 +50,7 @@ assert(scopeUtils.scopeMatch(myScopes, [
     ['some-other-scope'],
 ])
 ```
+
 **NOTE:** this function is entirely local and does no expansion of `assume:` scopes.
 Call the authentication service's `expandScopes` endpoint to perform such expansion first, if necessary.
 
@@ -77,4 +70,3 @@ assert(scopeUtils.scopeMatch(['a*', 'b'], [['a', 'b'], ['c']]));
 
 // Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
 assert(!scopeUtils.scopeMatch(['b'], [['a', 'b'], ['c']]));
-```
