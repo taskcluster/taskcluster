@@ -41,25 +41,29 @@ mocha.before(async () => {
   helper.overwrites = overwrites;
   helper.load = serverLoad;
 
+  overwrites.resolver = helper.resolver =
+    await serverLoad('resolver', overwrites);
+  //
   // if we don't have an azure account/key, use the inmemory version
   if (!cfg.azure || !cfg.azure.accountName) {
-    let resolver = await serverLoad('resolver', overwrites);
     let signingKey = cfg.app.tableSigningKey;
     let cryptoKey = cfg.app.tableCryptoKey;
-    overwrites['resolver'] = resolver;
-    overwrites['Client'] = data.Client.setup({
+    helper.Client = overwrites['Client'] = data.Client.setup({
       table: 'Client',
       account: 'inMemory',
       cryptoKey,
       signingKey,
-      context: {resolver},
+      context: {resolver: overwrites.resolver},
     });
-    overwrites['Role'] = data.Role.setup({
+    helper.Role = overwrites['Role'] = data.Role.setup({
       table: 'Role',
       account: 'inMemory',
       signingKey,
-      context: {resolver},
+      context: {resolver: overwrites.resolver},
     });
+  } else {
+    helper.Client = overwrites['Client'] = await serverLoad('Client', overwrites);
+    helper.Role = overwrites['Role'] = await serverLoad('Role', overwrites);
   }
 
   webServer = await serverLoad('server', overwrites);

@@ -1,6 +1,7 @@
 var debug       = require('debug')('auth:api');
 var assert      = require('assert');
 var API         = require('taskcluster-lib-api');
+var scopeUtils  = require('taskcluster-lib-scopes');
 var slugid      = require('slugid');
 var Promise     = require('promise');
 var _           = require('lodash');
@@ -333,6 +334,8 @@ api.declare({
     return res.status(404).json({message: "Client not found!"});
   }
 
+  // the new scopes must be satisfied by the combination of the existing
+  // scopes and the caller's scopes
   let added = _.without.apply(_, [input.scopes].concat(client.scopes));
   if (!req.satisfies([added])) {
     return;
@@ -643,10 +646,24 @@ api.declare({
     return res.status(404).json({message: "role not found!"});
   }
 
-  // Check that requester has all the scopes added
-  let added = _.without(input.scopes, ...role.scopes);
-  if (!req.satisfies([added])) {
-    return;
+  // Check that requester has all the scopes added.  The combined
+  // scopes of the caller and the existing role must satisfy the
+  // new scopes
+  let callerScopes = await req.scopes();
+  let unionScopes = this.resolver.resolve(callerScopes.concat(role.scopes));
+  if (!scopeUtils.scopeMatch(unionScopes, [input.scopes])) {
+    return res.reportError('InsufficientScopes', [
+      "You do not have sufficient scopes.  This request requires you",
+      "to have any new scopes you wish to add to the role.  More",
+      "precisely, the union of your scopes and the existing role scopes",
+      "must satisfy the scopes in the request.",
+      "",
+      "The combined scopes are:",
+      "{{unionScopes}}",
+      "",
+    ].join('\n'), {
+      unionScopes,
+    });
   }
 
   // Update role
