@@ -13,7 +13,6 @@
   "dependencies": {
     "assume": "^1.2.5",
     "aws-sdk": "^2.2.0",
-    "aws-sdk-promise": "^0.0.2",
     "azure-entities": "^0.9.0",
     "babel": "^5.8.21",
     "cron-parser": "^1.0.1",
