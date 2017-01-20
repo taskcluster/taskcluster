@@ -25,6 +25,9 @@ class TaskCreator {
     task.created = created.toJSON();
     task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
     task.expires = taskcluster.fromNowJSON(hook.expires, created);
+    // set the taskGroupId to the taskId, thereby creating a new task group
+    // and following the convention for decision tasks.
+    task.taskGroupId = options.taskId;
     return task;
   }
 
@@ -57,7 +60,7 @@ class TaskCreator {
     debug('firing hook %s/%s to create taskId: %s',
         hook.hookGroupId, hook.hookId, options.taskId);
     return await queue.createTask(options.taskId,
-      this.taskForHook(hook, options.created));
+      this.taskForHook(hook, options));
   };
 }
 
