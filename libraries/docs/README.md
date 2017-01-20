@@ -13,15 +13,27 @@ View the changelog on the [releases page](https://github.com/taskcluster/taskclu
 Requirements
 ------------
 
-This is tested on and should run on any of node `{0.12, 4, 5, 6}`.
+This is tested on and should run on any of node `{4, 5, 6, 7}`.
+
+Operation
+---------
+
+The library works by creating a tarball full of documentation when the
+production service starts up.  The tarball contains a mixture of documentation
+from the project's README, auto-generated documentation for pulse exchanges and
+APIs, and hand-written documentation.
+
+The [taskcluster-docs](https://github.com/taskcluster/taskcluster-docs) project
+then downloads those tarballs and incorporates the results into the
+documentation page.
 
 Documentation Tarball Format
 ----------------------------
 
 The format for the tarball that is uploaded to s3 is [documented here](https://github.com/taskcluster/taskcluster-lib-docs/blob/master/docs/format.md).
 
-Usage
------
+Usage in Services
+-----------------
 
 **Do not forget to add the scopes before pushing your service to production! `[auth:aws-s3:read-write:taskcluster-raw-docs/<project>/]`**
 
@@ -95,11 +107,13 @@ The following are the options that can be passed to the publisher function in th
     // but can be overridden if needed.
     project: '<name of project in package.json>',
 
-    // This must be set to either one of 'platform' or 'core'. It specifies the section
-    // of the docs site this will appear in.
+    // This must be set to the project's tier, corresponding to the section of the docs reference
+    // chapter that this will appear in. Options include 'platform', 'core', 'integrations', 'operations',
+    // 'libraries', and 'workers'.
     tier: null,
 
     // This should be set to the value of the schemas field from an instance of taskcluster-lib-validate.
+    // It provides the schemas necessary to generate the api and events references.
     schemas: {},
 
     // Optionally help taskcluster-docs pick the order this documetation should appear in on the list.
@@ -115,11 +129,12 @@ The following are the options that can be passed to the publisher function in th
     // ],
     references: [],
 
-    // Whether or not the generated documentation should be uploaded to s3.
+    // Whether or not the generated documentation should be uploaded to s3.  Generally services will only
+    // upload in production.
     publish: process.env.NODE_ENV == 'production',
 
     // A set of aws credentials that allows you to use this library directly. Must contain both 'accessKeyId'
-    // and 'secretAccessKey'.
+    // and 'secretAccessKey'.  This is only required if credentials is unavailable.
     aws: null,
 ```
 
