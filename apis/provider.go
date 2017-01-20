@@ -133,7 +133,7 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 			}
 		}
 		if entry == nil {
-			fmt.Printf("Unknown method: '%s'\n", method)
+			fmt.Fprintf(os.Stderr, "Unknown method: '%s'\n", method)
 		}
 		p.help(entry)
 		return true
@@ -154,7 +154,7 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	if out := argv["--output"].(string); out != "-" {
 		f, err := os.Create(out)
 		if err != nil {
-			fmt.Printf("Failed to open output file, error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to open output file, error: %s\n", err)
 			return false
 		}
 		defer f.Close()
@@ -218,7 +218,7 @@ func (p apiProvider) dryrun(
 	// Read all input
 	data, err := ioutil.ReadAll(payload)
 	if err != nil {
-		fmt.Printf("Failed to read input, error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to read input, error: %s\n", err)
 	}
 	input := gojsonschema.NewStringLoader(string(data))
 
@@ -227,13 +227,13 @@ func (p apiProvider) dryrun(
 		gojsonschema.NewStringLoader(schema), input,
 	)
 	if err != nil {
-		fmt.Printf("Validation failed, error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Validation failed, error: %s\n", err)
 		return false
 	}
 
 	// Print all validation errors
 	for _, e := range result.Errors() {
-		fmt.Printf(" - %s\n", e.Description())
+		fmt.Fprintf(os.Stderr, " - %s\n", e.Description())
 	}
 
 	return result.Valid()
@@ -248,7 +248,7 @@ func (p apiProvider) execute(
 	if entry.Input != "" {
 		data, err := ioutil.ReadAll(payload)
 		if err != nil {
-			fmt.Printf("Failed to read input, error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to read input, error: %s\n", err)
 		}
 		input = data
 	}
@@ -304,7 +304,7 @@ func (p apiProvider) execute(
 			}
 			err2 := context.Credentials.SignRequest(req, h)
 			if err2 != nil {
-				fmt.Println("Failed to sign request, error: ", err2)
+				fmt.Fprintf(os.Stderr, "Failed to sign request, error: %s\n", err2)
 				return false
 			}
 		}
@@ -319,7 +319,7 @@ func (p apiProvider) execute(
 	}
 	// Handle request errors
 	if err != nil {
-		fmt.Println("Request failed")
+		fmt.Fprintf(os.Stderr, "Request failed\n")
 		return false
 	}
 
