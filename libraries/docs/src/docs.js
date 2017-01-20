@@ -27,7 +27,13 @@ async function documenter(options) {
 
   assert(options.schemas, 'options.schemas must be given');
   assert(options.tier, 'options.tier must be given');
-  assert(['core', 'platform'].indexOf(options.tier) !== -1, 'options.tier is either core or platform');
+  assert([
+    'core',
+    'platform',
+    'integrations',
+    'operations',
+  ].indexOf(options.tier) !== -1,
+    'options.tier is one of core, platform, integration, or operations');
 
   if (!options.project) {
     let pack = require(path.join(rootdir.get(), 'package.json'));
