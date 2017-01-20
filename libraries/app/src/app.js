@@ -62,7 +62,6 @@ var createServer = function() {
  * }
  *
  * Returns an express application with extra methods:
- *   - `setup`          (Configures middleware for HTML UI and persona login)
  *   - `createServer`   (Creates an server)
  */
 var app = function(options) {
