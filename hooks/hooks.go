@@ -15,7 +15,8 @@
 // When an event occurs, the resulting task is automatically created.  The
 // task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
 // which must have scopes to make the createTask call, including satisfying all
-// scopes in `task.scopes`.
+// scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
+// `taskId`, as is the convention for decision tasks.
 //
 // Hooks can have a 'schedule' indicating specific times that new tasks should
 // be created.  Each schedule is in a simple cron format, per
@@ -43,7 +44,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 19 Jan 2017 at 21:22:00 UTC. The code was generated
+// Fri, 20 Jan 2017 at 20:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 

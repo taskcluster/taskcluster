@@ -1,4 +1,4 @@
-Generated: 1484860978
+Generated: 1484943865
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3388,7 +3388,8 @@ Hooks are identified with a `hookGroupId` and a `hookId`.
 When an event occurs, the resulting task is automatically created.  The
 task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
 which must have scopes to make the createTask call, including satisfying all
-scopes in `task.scopes`.
+scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
+`taskId`, as is the convention for decision tasks.
 
 Hooks can have a 'schedule' indicating specific times that new tasks should
 be created.  Each schedule is in a simple cron format, per 
