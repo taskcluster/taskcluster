@@ -660,7 +660,7 @@ var STABILITY_LEVELS = _.values(stability);
  * nothing happens.
  */
 API.prototype.declare = function(options, handler) {
-  ['method', 'route', 'title', 'description'].forEach(function(key) {
+  ['name', 'method', 'route', 'title', 'description'].forEach(function(key) {
     assert(options[key], "Option '" + key + "' must be provided");
   });
   // Default to experimental API end-points
@@ -701,7 +701,6 @@ API.prototype.declare = function(options, handler) {
  *   validator:           new base.validator()      // JSON schema validator
  *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
  *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
- *   raven:               null,   // optional raven.Client for error reporting
  *   monitor:             await require('taskcluster-lib-monitor')({...}),
  * }
  *
@@ -951,7 +950,8 @@ API.prototype.publish = function(options) {
 };
 
 /**
- * Setup API, by publishing reference and returning an `express.Router`.
+ * Setup API, by publishing reference and returning an `express.Router`.  Also
+ * documented in the README
  *
  * options:
  * {
