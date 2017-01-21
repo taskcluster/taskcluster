@@ -166,9 +166,20 @@ func (g *generator) PrintComposite(data interface{}, sorted bool) {
 			break
 		}
 		g.Print("{\n")
-		for i := 0; i < v.Len(); i++ {
-			g.PrintComposite(v.Index(i).Interface(), sorted)
-			g.Print(",\n")
+		if sorted && t.Elem().Kind() == reflect.String {
+			sortedK := make([]string, 0, v.Len())
+			for i := 0; i < v.Len(); i++ {
+				sortedK = append(sortedK, v.Index(i).String())
+			}
+			sort.Strings(sortedK)
+			for _, s := range sortedK {
+				g.Printf("%#v,\n", s)
+			}
+		} else {
+			for i := 0; i < v.Len(); i++ {
+				g.PrintComposite(v.Index(i).Interface(), sorted)
+				g.Print(",\n")
+			}
 		}
 		g.Print("}")
 	case reflect.Struct:
