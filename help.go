@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
@@ -33,7 +34,7 @@ func (help) Execute(context extpoints.Context) bool {
 	command := context.Arguments["<command>"].(string)
 	provider := extpoints.CommandProviders()[command]
 	if provider == nil {
-		fmt.Println("Unknown command: ", command)
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		return false
 	}
 	fmt.Print(provider.Usage())

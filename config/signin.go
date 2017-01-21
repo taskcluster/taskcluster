@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -55,7 +56,7 @@ func (signin) Execute(context extpoints.Context) bool {
 	// Load configuration
 	config, err := Load()
 	if err != nil {
-		fmt.Println("Failed to load configuration file, error: ", err)
+		fmt.Fprintf(os.Stderr, "Failed to load configuration file, error: %s\n", err)
 		return false
 	}
 
@@ -84,7 +85,7 @@ func (signin) Execute(context extpoints.Context) bool {
 
 		serr = Save(config)
 		if serr != nil {
-			fmt.Println("Failed to save configuration, error: ", serr)
+			fmt.Fprintf(os.Stderr, "Failed to save configuration, error: %s\n", serr)
 		} else {
 			fmt.Println("Credentials saved in configuration file.")
 		}
@@ -122,7 +123,7 @@ func (signin) Execute(context extpoints.Context) bool {
 		Port: port,
 	})
 	if err != nil {
-		fmt.Println("Failed to listen on localhost, error: ", err)
+		fmt.Fprintf(os.Stderr, "Failed to listen on localhost, error: %s\n", err)
 		return false
 	}
 

@@ -17,13 +17,13 @@ func main() {
 	// Fetch API manifest
 	res, err := g.Get("http://references.taskcluster.net/manifest.json").Send()
 	if err != nil {
-		fmt.Println("Failed to fetch api manifest, error: ", err)
+		fmt.Fprintf(os.Stderr, "Failed to fetch api manifest, error: %s\n", err)
 		os.Exit(1)
 	}
 	// Parse API manifest
 	var manifest map[string]string
 	if err = json.Unmarshal(res.Body, &manifest); err != nil {
-		fmt.Println("Failed to parse api manifest, error: ", err)
+		fmt.Fprintf(os.Stderr, "Failed to parse api manifest, error: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -33,13 +33,13 @@ func main() {
 		// Fetch reference
 		res, err2 := g.Get(referenceURL).Send()
 		if err2 != nil {
-			fmt.Println("Failed to fetch API: ", name, " error: ", err2)
+			fmt.Fprintf(os.Stderr, "Failed to fetch API: %s error: %s\n", name, err2)
 			os.Exit(1)
 		}
 		// Parse reference
 		var s definitions.Service
 		if err2 := json.Unmarshal(res.Body, &s); err2 != nil {
-			fmt.Println("Failed parse API: ", name, " error: ", err2)
+			fmt.Fprintf(os.Stderr, "Failed to parse API: %s error: %s\n", name, err2)
 			os.Exit(1)
 		}
 		services[name] = s
@@ -55,13 +55,13 @@ func main() {
 		fmt.Println(" - ", url)
 		res, err2 := g.Get(url).Send()
 		if err2 != nil {
-			fmt.Println("Failed to fetch: ", url, " error: ", err)
+			fmt.Fprintf(os.Stderr, "Failed to fetch: %s error %s\n", url, err)
 			os.Exit(1)
 		}
 		// Test that we can parse the JSON schema (otherwise it's invalid)
 		var i interface{}
 		if json.Unmarshal(res.Body, &i) != nil {
-			fmt.Println("Failed to parse: ", url, " error: ", err)
+			fmt.Fprintf(os.Stderr, "Failed to parse: %s error: %s\n", url, err)
 			os.Exit(1)
 		}
 		schemas[url] = string(res.Body)
@@ -88,12 +88,12 @@ func main() {
 
 	source, err := format.Source([]byte(code))
 	if err != nil {
-		fmt.Println("go fmt, code generation failed, error: ", err)
+		fmt.Fprintf(os.Stderr, "go fmt, code generation failed, error: %s\n", err)
 		os.Exit(1)
 	}
 
 	if err := ioutil.WriteFile("services.go", source, 0664); err != nil {
-		fmt.Println("Failed to save services.go, error: ", err)
+		fmt.Fprintf(os.Stderr, "Failed to save services.go, error: %s\n", err)
 		os.Exit(1)
 	}
 }
