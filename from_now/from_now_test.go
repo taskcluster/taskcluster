@@ -36,7 +36,7 @@ func TestparseTime(t *testing.T) {
 
 	// Test if it's a valid time expression.
 	offset, err = parseTime("this should produce an error.")
-	if !err {
+	if err != nil {
 		t.Error("Expected an error, got ", offset)
 	}
 }

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"os"
+	"errors"
 )
 
 type from_now struct{}
@@ -20,22 +22,23 @@ func (from_now) ConfigOptions() map[string]extpoints.ConfigOption {
 }
 
 func (from_now) Summary() string {
-	return "Returns a timestamp which is DURATION ahead in the future."
+	return "Returns a timestamp which is <duration> ahead in the future."
 }
 
 func (from_now) Usage() string {
-	usage := "Usage: taskcluster from-now DURATION"
+	usage := "Usage: taskcluster from-now <duration>"
 	usage += "\n"
 	return usage
 }
 
 func (from_now) Execute(context extpoints.Context) bool {
-	duration := context.Arguments["DURATION"].(string)
+	duration := context.Arguments["<duration>"].(string)
 
 	offset, err := parseTime(duration)
 	
-	if err {
-		panic("String: '" + duration + "' isn't a time expression")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "String: '" + duration + "' isn't a time expression\n")
+		return false
 	}
 
 	timeToAdd := time.Hour*time.Duration(offset.weeks*7*24) +
@@ -69,7 +72,7 @@ type parse_time struct {
  *
  * Returns a parse_time object with all of the fields filled in with the correct values.
  */
-func parseTime(str string) (parse_time, bool) {
+func parseTime(str string) (parse_time, error) {
 
 	// Regexp taken from github.com/taskcluster/taskcluster-client/blob/master/lib/parsetime.js
 	reg := []string{
@@ -87,7 +90,7 @@ func parseTime(str string) (parse_time, bool) {
 	re := regexp.MustCompile(strings.Join(reg, ""))
 
 	if !re.MatchString(str) {
-		return parse_time{}, true
+		return parse_time{}, errors.New("invalid input")
 	}
 
 	groupMatches := re.FindAllStringSubmatch(str, -1)
@@ -108,5 +111,5 @@ func parseTime(str string) (parse_time, bool) {
 	offset.minutes, _ = strconv.Atoi(groupMatches[0][22]) 
 	offset.seconds, _ = strconv.Atoi(groupMatches[0][25]) 
 
-	return offset, false
+	return offset, nil
 }
