@@ -72,7 +72,7 @@ func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, erro
 	// Add ext, if needed
 	var e ext
 	if c.Certificate != "" {
-		err = json.Unmarshal([]byte(c.Certificate), e.Certificate)
+		err = json.Unmarshal([]byte(c.Certificate), &e.Certificate)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse certificate, error: %s", err)
 		}
