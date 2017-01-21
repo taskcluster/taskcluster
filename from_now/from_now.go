@@ -1,14 +1,15 @@
 package from_now
 
 import (
+	"errors"
 	"fmt"
-	"github.com/taskcluster/taskcluster-cli/extpoints"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"os"
-	"errors"
+
+	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
 
 type from_now struct{}
@@ -26,8 +27,7 @@ func (from_now) Summary() string {
 }
 
 func (from_now) Usage() string {
-	usage := "Usage: taskcluster from-now <duration>"
-	usage += "\n"
+	usage := "Usage: taskcluster from-now <duration>\n"
 	return usage
 }
 
@@ -35,9 +35,9 @@ func (from_now) Execute(context extpoints.Context) bool {
 	duration := context.Arguments["<duration>"].(string)
 
 	offset, err := parseTime(duration)
-	
+
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "String: '" + duration + "' isn't a time expression\n")
+		fmt.Fprintf(os.Stderr, "String: '"+duration+"' isn't a time expression\n")
 		return false
 	}
 
@@ -65,15 +65,15 @@ type parse_time struct {
 	seconds int
 }
 
-/* parseTime takes an argument `str` which is a string on the form `1 day 2 hours 3 minutes`
- * where specification of day, hours and minutes is optional. You can also the
+/*
+ * parseTime takes an argument `str` which is a string of the form `1 day 2 hours 3 minutes`
+ * where specification of day, hours and minutes is optional. You can also use the
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  *
  * Returns a parse_time object with all of the fields filled in with the correct values.
  */
 func parseTime(str string) (parse_time, error) {
-
 	// Regexp taken from github.com/taskcluster/taskcluster-client/blob/master/lib/parsetime.js
 	reg := []string{
 		"^(\\s*(-|\\+))?",
@@ -103,13 +103,27 @@ func parseTime(str string) (parse_time, error) {
 	// 	neg = -1
 	// }
 
-	offset.years, _ = strconv.Atoi(groupMatches[0][4]) 
-	offset.months, _ = strconv.Atoi(groupMatches[0][8]) 
-	offset.weeks, _ = strconv.Atoi(groupMatches[0][11]) 
-	offset.days, _ = strconv.Atoi(groupMatches[0][15]) 
-	offset.hours, _ = strconv.Atoi(groupMatches[0][18]) 
-	offset.minutes, _ = strconv.Atoi(groupMatches[0][22]) 
-	offset.seconds, _ = strconv.Atoi(groupMatches[0][25]) 
+	offset.years = atoiHelper(groupMatches[0][4])
+	offset.months = atoiHelper(groupMatches[0][8])
+	offset.weeks = atoiHelper(groupMatches[0][11])
+	offset.days = atoiHelper(groupMatches[0][15])
+	offset.hours = atoiHelper(groupMatches[0][18])
+	offset.minutes = atoiHelper(groupMatches[0][22])
+	offset.seconds = atoiHelper(groupMatches[0][25])
 
 	return offset, nil
+}
+
+func atoiHelper(s string) int {
+	if s == "" {
+		return 0
+	}
+
+	i, err := strconv.Atoi(s)
+
+	if err != nil {
+		panic(s + " is not a valid number.")
+	}
+
+	return i
 }

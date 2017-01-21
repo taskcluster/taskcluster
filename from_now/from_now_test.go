@@ -1,42 +1,23 @@
 package from_now
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestparseTime(t *testing.T) {
+	offset, err := parseTime("1 year 2 months 3 weeks 4 days 5 hours 6 minutes 7 seconds")
 
-  	offset, err := parseTime("1 year 2 months 3 weeks 4 days 5 hours 6 minutes 7 seconds")
-	
-	if offset.years != 1 {
-		t.Error("Expected 1 year, got ", offset.years)
-	}
-	
-	if offset.months != 2 {
-		t.Error("Expected 2 months, got ", offset.months)
-	}
-
-	if offset.weeks != 3 {
-		t.Error("Expected 3 weeks, got ", offset.weeks)
-	}
-
-	if offset.days != 4 {
-		t.Error("Expected 4 days, got ", offset.days)
-	}
-
-	if offset.hours != 5 {
-		t.Error("Expected 5 hours, got ", offset.hours)
-	}
-
-	if offset.minutes != 6 {
-		t.Error("Expected 6 minutes, got ", offset.minutes)
-	}
-
-	if offset.seconds != 7 {
-		t.Error("Expected 7 seconds, got ", offset.seconds)
-	}
+	assert.Equal(t, offset.years, 1, "they should be equal")
+	assert.Equal(t, offset.months, 2, "they should be equal")
+	assert.Equal(t, offset.weeks, 3, "they should be equal")
+	assert.Equal(t, offset.days, 4, "they should be equal")
+	assert.Equal(t, offset.hours, 5, "they should be equal")
+	assert.Equal(t, offset.minutes, 6, "they should be equal")
+	assert.Equal(t, offset.seconds, 7, "they should be equal")
 
 	// Test if it's a valid time expression.
 	offset, err = parseTime("this should produce an error.")
-	if err != nil {
-		t.Error("Expected an error, got ", offset)
-	}
+	assert.NotNil(t, err, "error should not be nil")
 }
