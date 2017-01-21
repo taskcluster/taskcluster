@@ -82,7 +82,11 @@ func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, erro
 	}
 	if e.Certificate != nil || e.AuthorizedScopes != nil {
 		s, _ := json.Marshal(e)
-		a.Ext = string(s)
+		if string(s) != "{}" {
+			a.Ext = base64.StdEncoding.EncodeToString(s)
+		} else {
+			a.Ext = string(s)
+		}
 	}
 
 	// Set payload hash
