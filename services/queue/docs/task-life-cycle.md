@@ -2,9 +2,6 @@
 title: Task Life-Cycle
 description: Phases of a task life-cycle.
 ---
-
-# Task Life-Cycle
-
 The diagram below outlines the task life-cycle. Transitions drawn by solid
 black lines are initiated by workers. While dashes transitions are initiated
 at the initiative of the queue, or its consumers.
