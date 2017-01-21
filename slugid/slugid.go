@@ -5,9 +5,9 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/taskcluster/taskcluster-cli/extpoints"
-	sluglib "github.com/taskcluster/slugid-go/slugid"
 	uuidlib "github.com/pborman/uuid"
+	sluglib "github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
 
 func init() {
@@ -80,12 +80,11 @@ func decode(context extpoints.Context) (string, error) {
 	// validation
 	match, err := regexp.MatchString("^[A-Za-z0-9-_]{22}$", slug)
 	if err != nil || match == false {
-
 		var errmsg string
-		errmsg+= fmt.Sprintf("Invalid slug format: %s", slug)
+		errmsg += fmt.Sprintf("Invalid slug format: %s", slug)
 
 		if err != nil {
-			errmsg+= fmt.Sprintf("\nError message: %s", err)
+			errmsg += fmt.Sprintf("\nError message: %s", err)
 		}
 
 		return "", fmt.Errorf(errmsg)
@@ -102,12 +101,11 @@ func encode(context extpoints.Context) (string, error) {
 	// validation
 	match, err := regexp.MatchString("^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$", uuid)
 	if err != nil || match == false {
-
 		var errmsg string
-		errmsg+= fmt.Sprintf("Invalid uuid format: %s", uuid)
+		errmsg += fmt.Sprintf("Invalid uuid format: %s", uuid)
 
 		if err != nil {
-			errmsg+= fmt.Sprintf("\nError message: %s", err)
+			errmsg += fmt.Sprintf("\nError message: %s", err)
 		}
 
 		return "", fmt.Errorf(errmsg)
