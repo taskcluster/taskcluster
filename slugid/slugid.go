@@ -37,67 +37,82 @@ Usage:
 func (slugid) Execute(context extpoints.Context) bool {
 	args := context.Arguments
 
+	var out string
+	var err error
+
 	// what function was called?
 	if args["v4"] == true {
-		v4()
+		out, err = v4()
 	} else if args["nice"] == true {
-		nice()
+		out, err = nice()
 	} else if args["decode"] == true { // decode slug
-		return decode(context)
+		out, err = decode(context)
 	} else if args["encode"] == true { // encode slug
-		return encode(context)
+		out, err = encode(context)
 	}
 	// ...and docopt will react to unrecognized commands
 
+	// print the error if there's one
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return false
+	}
+
+	// or print the output
+	fmt.Println(out)
 	return true
 }
 
 // normal v4 uuid generation
-func v4() {
-	fmt.Println(sluglib.V4())
+func v4() (string, error) {
+	return sluglib.V4(), nil
 }
 
 // generates uuid with "nice" properties
-func nice() {
-	fmt.Println(sluglib.Nice())
+func nice() (string, error) {
+	return sluglib.Nice(), nil
 }
 
 // decodes slug into a uuid
-func decode(context extpoints.Context) bool {
+func decode(context extpoints.Context) (string, error) {
 	slug := context.Arguments["<slug>"].(string)
 
 	// validation
 	match, err := regexp.MatchString("^[A-Za-z0-9-_]{22}$", slug)
 	if err != nil || match == false {
-		fmt.Fprintf(os.Stderr, "Invalid slug format: %s\n", slug)
+
+		var errmsg string
+		errmsg+= fmt.Sprintf("Invalid slug format: %s", slug)
+
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error message: %s\n", err)
+			errmsg+= fmt.Sprintf("\nError message: %s", err)
 		}
-		return false
+
+		return "", fmt.Errorf(errmsg)
 	}
 
 	// and decode
-	fmt.Println(sluglib.Decode(slug))
-
-	return true
+	return fmt.Sprintf("%s", sluglib.Decode(slug)), nil
 }
 
 // encodes uuid into a slug
-func encode(context extpoints.Context) bool {
+func encode(context extpoints.Context) (string, error) {
 	uuid := context.Arguments["<uuid>"].(string)
 
 	// validation
 	match, err := regexp.MatchString("^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$", uuid)
 	if err != nil || match == false {
-		fmt.Fprintf(os.Stderr, "Invalid uuid format: %s\n", uuid)
+
+		var errmsg string
+		errmsg+= fmt.Sprintf("Invalid uuid format: %s", uuid)
+
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error message: %s\n", err)
+			errmsg+= fmt.Sprintf("\nError message: %s", err)
 		}
-		return false
+
+		return "", fmt.Errorf(errmsg)
 	}
 
 	// the uuid string needs to be parsed into uuidlib.UUID before encoding
-	fmt.Println(sluglib.Encode(uuidlib.Parse(uuid)))
-
-	return true
+	return sluglib.Encode(uuidlib.Parse(uuid)), nil
 }
