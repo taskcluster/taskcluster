@@ -32,7 +32,11 @@ func (from_now) Usage() string {
 func (from_now) Execute(context extpoints.Context) bool {
 	duration := context.Arguments["DURATION"].(string)
 
-	offset := ParseTime(duration)
+	offset, err := parseTime(duration)
+	
+	if err {
+		panic("String: '" + duration + "' isn't a time expression")
+	}
 
 	timeToAdd := time.Hour*time.Duration(offset.weeks*7*24) +
 		time.Hour*time.Duration(offset.days*24) +
@@ -65,9 +69,9 @@ type parse_time struct {
  *
  * Returns a parse_time object with all of the fields filled in with the correct values.
  */
-func parseTime(str string) parse_time {
+func parseTime(str string) (parse_time, bool) {
 
-	// Regexp taken from github
+	// Regexp taken from github.com/taskcluster/taskcluster-client/blob/master/lib/parsetime.js
 	reg := []string{
 		"^(\\s*(-|\\+))?",
 		"(\\s*(\\d+)\\s*y((ears?)|r)?)?",
@@ -82,10 +86,8 @@ func parseTime(str string) parse_time {
 
 	re := regexp.MustCompile(strings.Join(reg, ""))
 
-	fmt.Println(re.MatchString(str))
-
 	if !re.MatchString(str) {
-		panic("String: '" + str + "' isn't a time expression")
+		return parse_time{}, true
 	}
 
 	groupMatches := re.FindAllStringSubmatch(str, -1)
@@ -93,33 +95,18 @@ func parseTime(str string) parse_time {
 	offset := parse_time{}
 
 	// Add negative support after we figure out what we are doing with docopt because it complains about the '-'
-	neg := 1
+	// neg := 1
 	// if groupMatches[0][2] == "-" {
 	// 	neg = -1
 	// }
 
-	offset.years = mustAtoi(groupMatches[0][4]) * neg
-	offset.months = mustAtoi(groupMatches[0][8]) * neg
-	offset.weeks = mustAtoi(groupMatches[0][11]) * neg
-	offset.days = mustAtoi(groupMatches[0][15]) * neg
-	offset.hours = mustAtoi(groupMatches[0][18]) * neg
-	offset.minutes = mustAtoi(groupMatches[0][22]) * neg
-	offset.seconds = mustAtoi(groupMatches[0][25]) * neg
+	offset.years, _ = strconv.Atoi(groupMatches[0][4]) 
+	offset.months, _ = strconv.Atoi(groupMatches[0][8]) 
+	offset.weeks, _ = strconv.Atoi(groupMatches[0][11]) 
+	offset.days, _ = strconv.Atoi(groupMatches[0][15]) 
+	offset.hours, _ = strconv.Atoi(groupMatches[0][18]) 
+	offset.minutes, _ = strconv.Atoi(groupMatches[0][22]) 
+	offset.seconds, _ = strconv.Atoi(groupMatches[0][25]) 
 
-	return offset
-}
-
-/* mustAtoi is a version of strconv.Atoi that throws away the error and returns the integer assuming there
-*  were no errors.
-*/ 
-func mustAtoi(s string) int {
-	if s == "" {
-		return 0
-	}
-
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		panic("string was not a valid integer")
-	}
-	return i
+	return offset, false
 }
