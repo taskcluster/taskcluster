@@ -2,9 +2,6 @@
 title: Queue-Worker Interaction
 description: How workers interacts with the queue to process tasks.
 ---
-
-# Queue-Worker Interaction
-
 _This document outlines how workers interact with the queue in-order to process
 tasks. This is intended as required reading for any worker-implementor._
 
