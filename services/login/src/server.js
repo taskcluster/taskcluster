@@ -110,7 +110,7 @@ let load = loader({
     setup: ({cfg, validator}) => docs.documenter({
       credentials: cfg.app.credentials,
       project: 'login',
-      tier: 'core',
+      tier: 'integrations',
       schemas: validator.schemas,
       references: [
         {
