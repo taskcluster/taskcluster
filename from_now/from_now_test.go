@@ -3,7 +3,7 @@ package from_now
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	assert "github.com/stretchr/testify/require"
 )
 
 func TestparseTime(t *testing.T) {
