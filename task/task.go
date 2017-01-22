@@ -25,12 +25,13 @@ func (task) Usage() string {
 	return `Task related actions.
 
 Usage:
-  taskcluster task status [--all-runs] [--] <taskId>
+  taskcluster task status [--all-runs | --run ID] [--] <taskId>
   taskcluster task name [--] <taskId>
   taskcluster task group [--] <taskId>
 
 Options:
   --all-runs  Use all runs instead of only the latest
+  --run ID    Use a specific run ID. By default, the latest run is selected
 `
 }
 
