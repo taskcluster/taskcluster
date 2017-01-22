@@ -29,3 +29,17 @@ func (task) runStatus(credentials *tcclient.Credentials, args arguments) bool {
 	}
 	return true
 }
+
+func (task) runName(credentials *tcclient.Credentials, args arguments) bool {
+	q := queue.New(credentials)
+	taskID := args["<taskId>"].(string)
+
+	t, err := q.Task(taskID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not get the task %s: %v", taskID, err)
+		return false
+	}
+
+	fmt.Println(t.Metadata.Name)
+	return true
+}
