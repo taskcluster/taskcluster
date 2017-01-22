@@ -29,6 +29,7 @@ Usage:
   taskcluster task name [--] <taskId>
   taskcluster task group [--] <taskId>
   taskcluster task cancel [--] <taskId>
+  taskcluster task complete [--] <taskId>
 
 Options:
   --all-runs  Use all runs instead of only the latest
@@ -50,6 +51,9 @@ func (t task) Execute(context extpoints.Context) bool {
 	}
 	if args["cancel"].(bool) {
 		return executeSubCommand(context, t.runCancel)
+	}
+	if args["complete"].(bool) {
+		return executeSubCommand(context, t.runComplete)
 	}
 
 	return false

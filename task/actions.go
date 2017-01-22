@@ -112,6 +112,39 @@ func (task) runCancel(credentials *tcclient.Credentials, args arguments) bool {
 
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 	fmt.Println(getRunStatusString(run.State, run.ReasonResolved))
+	return true
+}
 
+func (task) runComplete(credentials *tcclient.Credentials, args arguments) bool {
+	q := queue.New(credentials)
+	taskID := args["<taskId>"].(string)
+
+	s, err := q.Status(taskID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not get the status of the task %s: %v\n", taskID, err)
+		return false
+	}
+
+	c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
+		WorkerGroup: s.Status.WorkerType,
+		WorkerID:    "taskcluster-cli",
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not claim the task %s: %v\n", taskID, err)
+		return false
+	}
+
+	wq := queue.New(&tcclient.Credentials{
+		ClientID:    c.Credentials.ClientID,
+		AccessToken: c.Credentials.AccessToken,
+		Certificate: c.Credentials.Certificate,
+	})
+	r, err := wq.ReportCompleted(taskID, fmt.Sprint(c.RunID))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not complete the task %s: %v\n", taskID, err)
+		return false
+	}
+
+	fmt.Println(getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
 	return true
 }
