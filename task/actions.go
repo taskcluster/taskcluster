@@ -37,6 +37,14 @@ func extractRunID(max int, param interface{}) (runID int, err error) {
 	return
 }
 
+func getRunStatusString(state, resolved string) string {
+	if resolved != "" {
+		return fmt.Sprintf("%s '%s'", state, resolved)
+	}
+
+	return state
+}
+
 func (task) runStatus(credentials *tcclient.Credentials, args arguments) bool {
 	q := queue.New(credentials)
 	taskID := args["<taskId>"].(string)
@@ -49,18 +57,18 @@ func (task) runStatus(credentials *tcclient.Credentials, args arguments) bool {
 
 	if args["--all-runs"].(bool) {
 		for _, r := range s.Status.Runs {
-			fmt.Printf("Run #%d: %s\n", r.RunID, r.State)
+			fmt.Printf("Run #%d: %s\n", r.RunID, getRunStatusString(r.State, r.ReasonResolved))
 		}
 		return true
 	}
 
-	run, err := extractRunID(len(s.Status.Runs)-1, args["--run"])
+	runID, err := extractRunID(len(s.Status.Runs)-1, args["--run"])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: invalid runID: %v\n", err)
 		return false
 	}
 
-	fmt.Println(s.Status.Runs[run].State)
+	fmt.Println(getRunStatusString(s.Status.Runs[runID].State, s.Status.Runs[runID].ReasonResolved))
 	return true
 }
 
@@ -89,5 +97,21 @@ func (task) runGroup(credentials *tcclient.Credentials, args arguments) bool {
 	}
 
 	fmt.Println(t.TaskGroupID)
+	return true
+}
+
+func (task) runCancel(credentials *tcclient.Credentials, args arguments) bool {
+	q := queue.New(credentials)
+	taskID := args["<taskId>"].(string)
+
+	c, err := q.CancelTask(taskID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not cancel the task %s: %v\n", taskID, err)
+		return false
+	}
+
+	run := c.Status.Runs[len(c.Status.Runs)-1]
+	fmt.Println(getRunStatusString(run.State, run.ReasonResolved))
+
 	return true
 }
