@@ -27,6 +27,7 @@ func (task) Usage() string {
 Usage:
   taskcluster task status [--all-runs] [--] <taskId>
   taskcluster task name [--] <taskId>
+  taskcluster task group [--] <taskId>
 
 Options:
   --all-runs  Use all runs instead of only the latest
@@ -46,6 +47,9 @@ func (t task) Execute(context extpoints.Context) bool {
 	}
 	if args["name"].(bool) {
 		return t.runName(c, args)
+	}
+	if args["group"].(bool) {
+		return t.runGroup(c, args)
 	}
 
 	return false
