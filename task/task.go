@@ -36,22 +36,27 @@ Options:
 }
 
 func (t task) Execute(context extpoints.Context) bool {
+	args := context.Arguments
+
+	if args["status"].(bool) {
+		return executeSubCommand(context, t.runStatus)
+	}
+	if args["name"].(bool) {
+		return executeSubCommand(context, t.runName)
+	}
+	if args["group"].(bool) {
+		return executeSubCommand(context, t.runGroup)
+	}
+
+	return false
+}
+
+// executeSubCommand executes the given SubCommand.
+func executeSubCommand(context extpoints.Context, subCommand SubCommand) bool {
 	var c *tcclient.Credentials
 	if context.Credentials != nil {
 		c = context.Credentials.ToClientCredentials()
 	}
 
-	args := context.Arguments
-
-	if args["status"].(bool) {
-		return t.runStatus(c, args)
-	}
-	if args["name"].(bool) {
-		return t.runName(c, args)
-	}
-	if args["group"].(bool) {
-		return t.runGroup(c, args)
-	}
-
-	return false
+	return subCommand(c, context.Arguments)
 }

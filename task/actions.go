@@ -11,6 +11,9 @@ import (
 
 type arguments map[string]interface{}
 
+// SubCommand represents the function interface of the task subcommand.
+type SubCommand func(credentials *tcclient.Credentials, args arguments) bool
+
 func extractRunID(max int, param interface{}) (runID int, err error) {
 	runID = max
 
