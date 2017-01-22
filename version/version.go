@@ -24,7 +24,7 @@ func (version) Summary() string {
 
 func usage() string {
 	return `Usage:
-  taskcluster VERSION
+  taskcluster version
 `
 }
 
@@ -33,12 +33,6 @@ func (version) Usage() string {
 }
 
 func (version) Execute(context extpoints.Context) bool {
-	command := context.Arguments["VERSION"].(string)
-	provider := extpoints.CommandProviders()[command]
-	if provider == nil {
-		panic(fmt.Sprintf("Unknown command: %s", command))
-		return false
-	}
 	fmt.Println(VersionNumber)
 	return true
 }
