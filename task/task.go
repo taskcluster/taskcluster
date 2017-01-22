@@ -1,9 +1,9 @@
 package task
 
 import (
-	"fmt"
-
 	"github.com/taskcluster/taskcluster-cli/extpoints"
+
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 func init() {
@@ -18,17 +18,31 @@ func (task) ConfigOptions() map[string]extpoints.ConfigOption {
 }
 
 func (task) Summary() string {
-	return "Prints the TaskCluster version."
+	return "Task related actions."
 }
 
 func (task) Usage() string {
-	return `Usage:
-  taskcluster task COMMAND
+	return `Task related actions.
+
+Usage:
+  taskcluster task status [--all-runs] [--] <taskId>
+
+Options:
+  --all-runs  Use all runs instead of only the latest
 `
 }
 
-func (task) Execute(context extpoints.Context) bool {
-	//command := context.Arguments["COMMAND"].(string)
-	fmt.Println("it werks")
-	return true
+func (t task) Execute(context extpoints.Context) bool {
+	var c *tcclient.Credentials
+	if context.Credentials != nil {
+		c = context.Credentials.ToClientCredentials()
+	}
+
+	args := context.Arguments
+
+	if args["status"].(bool) {
+		return t.runStatus(c, args)
+	}
+
+	return false
 }

@@ -3,21 +3,22 @@ package client
 import (
 	"crypto/sha1"
 	"hash"
-	"net/http"
+	http "net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+
+	assert "github.com/stretchr/testify/require"
 )
 
-func TestCredentials(t *testing.T) {
+var credentials = &Credentials{
+	ClientID:    "tester",
+	AccessToken: "no-secret",
+}
 
+func TestCredentialsAuth(t *testing.T) {
 	assert := assert.New(t)
-
-	credentials := &Credentials{
-		ClientID:    "tester",
-		AccessToken: "no-secret",
-	}
 
 	type CredentialsTests struct {
 		method string
@@ -48,14 +49,29 @@ func TestCredentials(t *testing.T) {
 		ext:    "hello",
 	}
 
-	request, _ := http.NewRequest(testCredentials.method, testCredentials.url, nil)
+	request := http.NewRequest(testCredentials.method, testCredentials.url, nil)
 	credentials.SignRequest(request, testCredentials.hash)
-	auth, errors := credentials.newAuth(testCredentials.method, testCredentials.url, testCredentials.hash)
+
+	auth, err := credentials.newAuth(testCredentials.method, testCredentials.url, testCredentials.hash)
+	assert.NoError(err, "err should be nothing")
+
 	auth.Timestamp = time.Unix(testCredentials.now, 0)
 	auth.MAC = []byte(testCredentials.key)
 	auth.Ext = testCredentials.ext
 	auth.Nonce = testCredentials.nonce
-	assert.Equal(nil, errors)
-	assert.Equal(auth.RequestHeader(), testCredentials.hdr)
 
+	assert.Equal(auth.RequestHeader(), testCredentials.hdr)
+}
+
+func TestCredentialsToTCC(t *testing.T) {
+	assert := assert.New(t)
+
+	testTCCCredentials := &tcclient.Credentials{
+		ClientID:    credentials.ClientID,
+		AccessToken: credentials.AccessToken,
+	}
+	creds := credentials.ToClientCredentials()
+
+	assert.IsType(&tcclient.Credentials{}, creds, "credentials should be of correct type")
+	assert.Equal(testTCCCredentials, creds, "credentials should match")
 }
