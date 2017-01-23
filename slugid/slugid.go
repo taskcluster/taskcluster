@@ -79,15 +79,11 @@ func decode(context extpoints.Context) (string, error) {
 
 	// validation
 	match, err := regexp.MatchString("^[A-Za-z0-9-_]{22}$", slug)
-	if err != nil || match == false {
-		var errmsg string
-		errmsg += fmt.Sprintf("Invalid slug format: %s", slug)
-
-		if err != nil {
-			errmsg += fmt.Sprintf("\nError message: %s", err)
-		}
-
-		return "", fmt.Errorf(errmsg)
+	if err != nil {
+		return "", fmt.Errorf("Error validating slug: %s", err)
+	}
+	if match == false {
+		return "", fmt.Errorf("Invalid slug format: %s", slug)
 	}
 
 	// and decode
@@ -100,15 +96,11 @@ func encode(context extpoints.Context) (string, error) {
 
 	// validation
 	match, err := regexp.MatchString("^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$", uuid)
-	if err != nil || match == false {
-		var errmsg string
-		errmsg += fmt.Sprintf("Invalid uuid format: %s", uuid)
-
-		if err != nil {
-			errmsg += fmt.Sprintf("\nError message: %s", err)
-		}
-
-		return "", fmt.Errorf(errmsg)
+	if err != nil {
+		return "", fmt.Errorf("Error validating uuid: %s", err)
+	}
+	if match == false {
+		return "", fmt.Errorf("Invalid uuid format: %s", uuid)
 	}
 
 	// the uuid string needs to be parsed into uuidlib.UUID before encoding
