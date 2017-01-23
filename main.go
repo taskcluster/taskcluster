@@ -368,6 +368,12 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		c.updateConfigWithAmazonSettings()
 	}
 
+	// Add any useful worker config to worker metadata
+	c.WorkerTypeMetadata["config"] = map[string]string{
+		"runTaskAsCurrentUser": c.RunTasksAsCurrentUser,
+		"deploymentId":         c.DeploymentID,
+	}
+
 	// now check all required values are set
 	// TODO: could probably do this with reflection to avoid explicitly listing
 	// all members
