@@ -44,7 +44,7 @@ let load = loader({
     requires: ['cfg', 'validator', 'reference'],
     setup: ({cfg, validator, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
-      tier: 'core',
+      tier: 'integrations',
       schemas: validator.schemas,
       project: 'github',
       references: [
