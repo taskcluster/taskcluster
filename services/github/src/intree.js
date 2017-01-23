@@ -1,4 +1,4 @@
-let debug = require('debug')('taskcluster-github');
+let debug = require('debug')('taskcluster-github:intree');
 let yaml = require('js-yaml');
 let slugid = require('slugid');
 let tc = require('taskcluster-client');
@@ -94,34 +94,53 @@ module.exports.setup = function(cfg) {
       'taskcluster.docker.workerType': cfg.intree.workerType,
     }));
 
+    // TO DO: remove this loop
+    config.tasks.forEach(task => {
+      if (task.extra.github.events.some(event => event == 'release')) {
+        debug(`Found a release event in task ${task.metadata.name}`);
+      } else {
+        debug(`No release events in task ${task.metadata.name}`);
+      }
+    });
+
     // Compile individual tasks, filtering any that are not intended
     // for the current github event type. Append taskGroupId while
     // we're at it.
-    config.tasks = config.tasks.map((task) => {
-      return {
-        taskId: slugid.nice(),
-        task,
-      };
-    }).filter((task) => {
-      // Filter out tasks that aren't associated with the current event
-      // being handled
-      let events = task.task.extra.github.events;
-      let branches = task.task.extra.github.branches;
-      return _.some(events, ev => payload.details['event.type'].startsWith(_.trimEnd(ev, '*'))) &&
-        (!branches || branches && _.includes(branches, payload.details['event.base.repo.branch']));
-    });
-
-    // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
-    // task in taskcluster.
-    if (config.tasks.length > 0) {
-      let taskGroupId = config.tasks[0].taskId;
+    try {
       config.tasks = config.tasks.map((task) => {
         return {
-          taskId: task.taskId,
-          task: _.extend(task.task, {taskGroupId, schedulerId: 'taskcluster-github'}),
+          taskId: slugid.nice(),
+          task,
         };
+      }).filter((task) => {
+        // Filter out tasks that aren't associated with the current event
+        // being handled
+        let events = task.task.extra.github.events;
+        let branches = task.task.extra.github.branches;
+        return _.some(events, ev => payload.details['event.type'].startsWith(_.trimEnd(ev, '*'))) &&
+          (!branches || branches && _.includes(branches, payload.details['event.base.repo.branch']));
       });
+
+      // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
+      // task in taskcluster.
+      if (config.tasks.length > 0) {
+        let taskGroupId = config.tasks[0].taskId;
+        config.tasks = config.tasks.map((task) => {
+          // Temporary for debugging purposes
+          if (task.task.extra.github.events.some(event => event == 'release')) {
+            debug(`After filtering, found task for release. Task group id: ${taskGroupId}`);
+          }
+
+          return {
+            taskId: task.taskId,
+            task: _.extend(task.task, {taskGroupId, schedulerId: 'taskcluster-github'}),
+          };
+        });
+      }
+      return completeInTreeConfig(config, payload);
+    } catch (e) {
+      debug('Error processing tasks!');
+      throw e;
     }
-    return completeInTreeConfig(config, payload);
   };
 };
