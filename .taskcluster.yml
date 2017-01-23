@@ -101,7 +101,7 @@ tasks:
           :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
           exit /b 0
         - set GORACE=history_size=7
-        - C:\\generic-worker\\generic-worker-test-creds.cmd
+        - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
         - ineffassign .
       artifacts:
@@ -157,7 +157,7 @@ tasks:
           :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
           exit /b 0
         - set GORACE=history_size=7
-        - C:\\generic-worker\\generic-worker-test-creds.cmd
+        - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
         - ineffassign .
       artifacts:
@@ -222,7 +222,7 @@ tasks:
           :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
           exit /b 0
         - set GORACE=history_size=7
-        - C:\\generic-worker\\generic-worker-test-creds.cmd
+        - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
         - ineffassign .
       artifacts:
