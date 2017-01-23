@@ -2,7 +2,7 @@
 
 import logging
 import os
-from .client import createSession  # NOQA
+from .asyncclient import createSession  # NOQA
 from taskcluster.utils import *  # NOQA
 from taskcluster.exceptions import *  # NOQA
 from ._client_importer import *  # NOQA

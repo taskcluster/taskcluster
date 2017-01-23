@@ -47,6 +47,7 @@ def createStaticClient(name, api, genAsync=False):
 
     # Generate the first part of the class, basically just import the BaseClient
     # class
+    baseModule = '.asyncclient' if genAsync else '.client'
     baseClass = 'AsyncBaseClient' if genAsync else 'BaseClient'
     lines = [
         '# coding=utf-8',
@@ -55,11 +56,11 @@ def createStaticClient(name, api, genAsync=False):
         '#####################################################',
         '# noqa: E128,E201'
         '',
-        'from .client import %s' % baseClass,
-        'from .client import createApiClient',
-        'from .client import config',
-        'from .client import createTemporaryCredentials',
-        'from .client import createSession',
+        'from %s import %s' % (baseModule, baseClass),
+        'from %s import createApiClient' % baseModule,
+        'from %s import config' % baseModule,
+        'from %s import createTemporaryCredentials' % baseModule,
+        'from %s import createSession' % baseModule,
         '_defaultConfig = config',
         '',
         '',
