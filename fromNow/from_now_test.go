@@ -3,11 +3,11 @@ package fromNow
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	assert "github.com/stretchr/testify/require"
 )
 
 func TestParseTimeComplete(t *testing.T) {
-	assert := require.New(t)
+	assert := assert.New(t)
 	offset, err := parseTime("1 year 2 months 3 weeks 4 days 5 hours 6 minutes 7 seconds")
 
 	assert.NoError(err, "err should be nil")
@@ -21,7 +21,7 @@ func TestParseTimeComplete(t *testing.T) {
 }
 
 func TestParseTimeIncomplete(t *testing.T) {
-	assert := require.New(t)
+	assert := assert.New(t)
 
 	// Test if we omit some fields
 	offset, err := parseTime("2 years 5 days 6 minutes")
@@ -37,7 +37,7 @@ func TestParseTimeIncomplete(t *testing.T) {
 }
 
 func TestParseTimeInvalid(t *testing.T) {
-	assert := require.New(t)
+	assert := assert.New(t)
 
 	// Test if it's a valid time expression.
 	_, err := parseTime("this should produce an error.")
@@ -45,7 +45,7 @@ func TestParseTimeInvalid(t *testing.T) {
 }
 
 func TestAtoiHelper(t *testing.T) {
-	assert := require.New(t)
+	assert := assert.New(t)
 
 	assert.NotPanics(func() {
 		atoiHelper("1")
