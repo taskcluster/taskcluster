@@ -1,4 +1,4 @@
-package from_now
+package fromNow
 
 import (
 	"errors"
@@ -12,26 +12,26 @@ import (
 	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
 
-type from_now struct{}
+type fromNow struct{}
 
 func init() {
-	extpoints.Register("from-now", from_now{})
+	extpoints.Register("from-now", fromNow{})
 }
 
-func (from_now) ConfigOptions() map[string]extpoints.ConfigOption {
+func (fromNow) ConfigOptions() map[string]extpoints.ConfigOption {
 	return nil
 }
 
-func (from_now) Summary() string {
+func (fromNow) Summary() string {
 	return "Returns a timestamp which is <duration> ahead in the future."
 }
 
-func (from_now) Usage() string {
+func (fromNow) Usage() string {
 	usage := "Usage: taskcluster from-now <duration>\n"
 	return usage
 }
 
-func (from_now) Execute(context extpoints.Context) bool {
+func (fromNow) Execute(context extpoints.Context) bool {
 	duration := context.Arguments["<duration>"].(string)
 
 	offset, err := parseTime(duration)
@@ -55,7 +55,7 @@ func (from_now) Execute(context extpoints.Context) bool {
 	return true
 }
 
-type parse_time struct {
+type timeOffset struct {
 	years   int
 	months  int
 	weeks   int
@@ -73,7 +73,9 @@ type parse_time struct {
  *
  * Returns a parse_time object with all of the fields filled in with the correct values.
  */
-func parseTime(str string) (parse_time, error) {
+func parseTime(str string) (timeOffset, error) {
+	offset := timeOffset{}
+
 	// Regexp taken from github.com/taskcluster/taskcluster-client/blob/master/lib/parsetime.js
 	reg := []string{
 		"^(\\s*(-|\\+))?",
@@ -90,12 +92,10 @@ func parseTime(str string) (parse_time, error) {
 	re := regexp.MustCompile(strings.Join(reg, ""))
 
 	if !re.MatchString(str) {
-		return parse_time{}, errors.New("invalid input")
+		return offset, errors.New("invalid input")
 	}
 
 	groupMatches := re.FindAllStringSubmatch(str, -1)
-
-	offset := parse_time{}
 
 	// Add negative support after we figure out what we are doing with docopt because it complains about the '-'
 	// neg := 1
@@ -121,6 +121,7 @@ func atoiHelper(s string) int {
 
 	i, err := strconv.Atoi(s)
 
+	// This should never occur because the regex only matches digits.
 	if err != nil {
 		panic(s + " is not a valid number.")
 	}
