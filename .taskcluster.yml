@@ -25,6 +25,7 @@ tasks:
         # Events that will trigger this task
         events:
           - pull_request.*
+          - push
     payload:
       maxRunTime: 3600
       image: golang
