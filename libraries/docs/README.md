@@ -89,6 +89,15 @@ let load = loader({
       ],
     }),
   },
+
+  // the server component should depend on `docs` so that it is loaded, but
+  // doesn't actually do anything withe value
+  server: {
+    requires: ['docs'],
+    setup: ({docs}) => {
+      // ...
+    },
+  },
 }, ['profile', 'process']);
 ```
 
