@@ -1,4 +1,4 @@
-let debug = require('debug')('taskcluster-github');
+let debug = require('debug')('taskcluster-github:handlers');
 let taskcluster = require('taskcluster-client');
 let slugid = require('slugid');
 let yaml = require('js-yaml');
