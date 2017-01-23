@@ -29,6 +29,7 @@ Usage:
   taskcluster task name [--] <taskId>
   taskcluster task group [--] <taskId>
   taskcluster task cancel [--] <taskId>
+  taskcluster task rerun [--] <taskId>
   taskcluster task complete [--] <taskId>
 
 Options:
@@ -51,6 +52,9 @@ func (t task) Execute(context extpoints.Context) bool {
 	}
 	if args["cancel"].(bool) {
 		return executeSubCommand(context, t.runCancel)
+	}
+	if args["rerun"].(bool) {
+		return executeSubCommand(context, t.runRerun)
 	}
 	if args["complete"].(bool) {
 		return executeSubCommand(context, t.runComplete)

@@ -115,6 +115,21 @@ func (task) runCancel(credentials *tcclient.Credentials, args arguments) bool {
 	return true
 }
 
+func (task) runRerun(credentials *tcclient.Credentials, args arguments) bool {
+	q := queue.New(credentials)
+	taskID := args["<taskId>"].(string)
+
+	c, err := q.RerunTask(taskID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not rerun the task %s: %v\n", taskID, err)
+		return false
+	}
+
+	run := c.Status.Runs[len(c.Status.Runs)-1]
+	fmt.Println(getRunStatusString(run.State, run.ReasonResolved))
+	return true
+}
+
 func (task) runComplete(credentials *tcclient.Credentials, args arguments) bool {
 	q := queue.New(credentials)
 	taskID := args["<taskId>"].(string)
