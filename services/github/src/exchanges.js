@@ -1,6 +1,7 @@
 let Exchanges = require('pulse-publisher');
 let assert = require('assert');
 let _ = require('lodash');
+let debug = require('debug')('taskcluster-github:exchanges');
 
 // Common schema prefix
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
@@ -47,6 +48,13 @@ let commonRoutingKey = function(options) {
 };
 
 let commonMessageBuilder = function(msg) {
+  msg.version = 1;
+  return msg;
+};
+
+// Temporary function for debugging purposes. TO DO: remove
+let releaseMessageBuilder = function(msg) {
+  debug('Received webhook for release. Building message...');
   msg.version = 1;
   return msg;
 };
@@ -110,7 +118,7 @@ exchanges.declare({
   ].join('\n'),
   routingKey:         commonRoutingKey(),
   schema:             SCHEMA_PREFIX_CONST + 'github-release-message.json#',
-  messageBuilder:     commonMessageBuilder,
+  messageBuilder:     releaseMessageBuilder, // TO DO: replace with commonMessageBuilder
   routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
   CCBuilder:          () => [],
 });

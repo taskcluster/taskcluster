@@ -1,4 +1,4 @@
-let debug = require('debug')('taskcluster-github');
+let debug = require('debug')('taskcluster-github:api');
 let crypto = require('crypto');
 let API = require('taskcluster-lib-api');
 let _ = require('lodash');
@@ -187,6 +187,7 @@ api.declare({
     } else if (eventType == 'ping') {
       return resolve(res, 200, 'Received ping event!');
     } else if (eventType == 'release') {
+      debug('Received release event webhook payload. Processing...'); // TO DO: remove this
       msg.organization = sanitizeGitHubField(body.repository.owner.login),
       msg.details = getReleaseDetails(body);
       publisherKey = 'release';
@@ -194,6 +195,7 @@ api.declare({
       return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
+    debug('Error processing webhook payload!');
     e.webhookPayload = body;
     throw e;
   }
