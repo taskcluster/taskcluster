@@ -369,7 +369,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	}
 
 	// Add any useful worker config to worker metadata
-	c.WorkerTypeMetadata["config"] = map[string]string{
+	c.WorkerTypeMetadata["config"] = map[string]interface{}{
 		"runTaskAsCurrentUser": c.RunTasksAsCurrentUser,
 		"deploymentId":         c.DeploymentID,
 	}
