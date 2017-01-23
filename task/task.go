@@ -28,6 +28,7 @@ Usage:
   taskcluster task status [--all-runs | --run ID] [--] <taskId>
   taskcluster task name [--] <taskId>
   taskcluster task group [--] <taskId>
+  taskcluster task artifacts [--run ID] [--] <taskId>
   taskcluster task cancel [--] <taskId>
   taskcluster task rerun [--] <taskId>
   taskcluster task complete [--] <taskId>
@@ -49,6 +50,9 @@ func (t task) Execute(context extpoints.Context) bool {
 	}
 	if args["group"].(bool) {
 		return executeSubCommand(context, t.runGroup)
+	}
+	if args["artifacts"].(bool) {
+		return executeSubCommand(context, t.runArtifacts)
 	}
 	if args["cancel"].(bool) {
 		return executeSubCommand(context, t.runCancel)

@@ -1,6 +1,7 @@
 package task
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strconv"
@@ -97,6 +98,45 @@ func (task) runGroup(credentials *tcclient.Credentials, args arguments) bool {
 	}
 
 	fmt.Println(t.TaskGroupID)
+	return true
+}
+
+func (task) runArtifacts(credentials *tcclient.Credentials, args arguments) bool {
+	q := queue.New(credentials)
+	taskID := args["<taskId>"].(string)
+
+	s, err := q.Status(taskID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: could not get the task %s: %v\n", taskID, err)
+		return false
+	}
+
+	runID, err := extractRunID(len(s.Status.Runs)-1, args["--run"])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: invalid runID: %v\n", err)
+		return false
+	}
+
+	buf := bytes.NewBufferString("")
+	continuation := ""
+	for {
+		a, err := q.ListArtifacts(taskID, fmt.Sprint(runID), continuation, "")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: could not fetch artifacts for task %s run %v: %v", taskID, runID, err)
+			return false
+		}
+
+		for _, ar := range a.Artifacts {
+			fmt.Fprintf(buf, "%s\n", ar.Name)
+		}
+
+		continuation = a.ContinuationToken
+		if continuation == "" {
+			break
+		}
+	}
+
+	buf.WriteTo(os.Stdout)
 	return true
 }
 
