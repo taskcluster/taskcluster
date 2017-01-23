@@ -10,9 +10,9 @@ tasks:
 
 
   ##########################################################
-  ##################### linux 64 build ##################### 
+  ##################### linux 64 build #####################
   ##########################################################
-  
+
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
     metadata:
@@ -53,19 +53,17 @@ tasks:
           path: "/go/bin/generic-worker"
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
-        # public/build/generic-worker-windows-386.exe:
-        # public/build/ generic-worker-windows-amd64.exe:
 
 
   ##########################################################
-  ###################### win 64 build ###################### 
+  ######################## win2012r2 #######################
   ##########################################################
-  
+
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: win2012r2
     metadata:
-      name: "Build Windows 64 bit generic-worker"
-      description: "This builds the 64 bit Windows version of generic-worker"
+      name: "Build/test 64 bit generic-worker on Windows Server 2012 R2"
+      description: "This builds and tests the 64 bit Windows version of generic-worker on Windows Server 2012 R2"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -103,6 +101,7 @@ tasks:
           :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
           exit /b 0
         - set GORACE=history_size=7
+        - C:\\generic-worker\\generic-worker-test-creds.cmd
         - go test -v ./...
         - ineffassign .
       artifacts:
@@ -112,14 +111,79 @@ tasks:
 
 
   ##########################################################
-  ###################### win 32 build ###################### 
+  ########################## win7 ##########################
   ##########################################################
-  
+
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: gecko-t-win7-32
     metadata:
-      name: "Build Windows 32 bit generic-worker"
-      description: "This builds the 32 bit Windows version of generic-worker"
+      name: "Build/test 32 bit generic-worker on Windows 7"
+      description: "This builds and tests the 32 bit Windows version of generic-worker on Windows 7"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    payload:
+      maxRunTime: 3600
+      command:
+        - 'mkdir "public\build"'
+        - set GOPATH=%CD%\gopath
+        - set GOROOT=%CD%\go
+        - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
+        - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
+        - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
+        - git remote add user {{ event.head.repo.url }}
+        - git fetch --tags user
+        - git checkout {{ event.head.sha }}
+        - go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v
+        - cd ..
+        - go generate
+        - go get -v -t ./...
+        - 'copy "%GOPATH%\bin\generic-worker.exe" "..\..\..\..\..\public\build\generic-worker-windows-386.exe"'
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+          set /P lines=<..\tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 exit /b 64
+          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
+        - set GORACE=history_size=7
+        - C:\\generic-worker\\generic-worker-test-creds.cmd
+        - go test -v ./...
+        - ineffassign .
+      artifacts:
+        - path: public/build/generic-worker-windows-386.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - content:
+            url: https://storage.googleapis.com/golang/go1.7.4.windows-386.zip
+          directory: .
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
+          directory: git
+          format: tar.bz2
+
+
+  ##########################################################
+  ########################## win10 #########################
+  ##########################################################
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: gecko-t-win10-64
+    metadata:
+      name: "Build/test 64 bit generic-worker on Windows 10"
+      description: "This builds and tests the 32 bit Windows version of generic-worker on Windows 10"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
     extra:
@@ -158,6 +222,7 @@ tasks:
           :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
           exit /b 0
         - set GORACE=history_size=7
+        - C:\\generic-worker\\generic-worker-test-creds.cmd
         - go test -v ./...
         - ineffassign .
       artifacts:
@@ -166,10 +231,10 @@ tasks:
           type: file
       mounts:
         - content:
-            url: https://storage.googleapis.com/golang/go1.7.4.windows-386.zip
+            url: https://storage.googleapis.com/golang/go1.7.4.windows-amd64.zip
           directory: .
           format: zip
         - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-64-bit.tar.bz2
           directory: git
           format: tar.bz2
