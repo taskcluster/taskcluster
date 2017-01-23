@@ -70,6 +70,7 @@ func (task) runStatus(credentials *tcclient.Credentials, args arguments) bool {
 	}
 
 	fmt.Println(getRunStatusString(s.Status.Runs[runID].State, s.Status.Runs[runID].ReasonResolved))
+
 	return true
 }
 
@@ -84,6 +85,7 @@ func (task) runName(credentials *tcclient.Credentials, args arguments) bool {
 	}
 
 	fmt.Println(t.Metadata.Name)
+
 	return true
 }
 
@@ -98,6 +100,7 @@ func (task) runGroup(credentials *tcclient.Credentials, args arguments) bool {
 	}
 
 	fmt.Println(t.TaskGroupID)
+
 	return true
 }
 
@@ -137,6 +140,7 @@ func (task) runArtifacts(credentials *tcclient.Credentials, args arguments) bool
 	}
 
 	buf.WriteTo(os.Stdout)
+
 	return true
 }
 
@@ -152,6 +156,7 @@ func (task) runCancel(credentials *tcclient.Credentials, args arguments) bool {
 
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 	fmt.Println(getRunStatusString(run.State, run.ReasonResolved))
+
 	return true
 }
 
@@ -167,6 +172,7 @@ func (task) runRerun(credentials *tcclient.Credentials, args arguments) bool {
 
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 	fmt.Println(getRunStatusString(run.State, run.ReasonResolved))
+
 	return true
 }
 
@@ -201,5 +207,6 @@ func (task) runComplete(credentials *tcclient.Credentials, args arguments) bool 
 	}
 
 	fmt.Println(getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
+
 	return true
 }
