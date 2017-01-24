@@ -24,7 +24,6 @@ suite('TaskCreator', function() {
    */
 
   var creator = null;
-  var hookDef = require('./test_definition');
 
   setup(async () => {
     creator = await helper.load('taskcreator', helper.loadOptions);
@@ -90,14 +89,19 @@ suite('MockTaskCreator', function() {
   var taskcreator       = require('../hooks/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
+  var hookDef           = require('./test_definition');
+  var _                 = require('lodash');
 
   var creator = null;
   setup(async () => {
     creator = new taskcreator.MockTaskCreator();
   });
 
-  test("the fire method records calls", async function() {
-    creator.fire({hookGroupId: 'g', hookId: 'h'}, {p: 1}, {o: 1});
+  test('the fire method records calls', async function() {
+    let hook = _.cloneDeep(hookDef);
+    hook.hookGroupId = 'g';
+    hook.hookId = 'h';
+    await creator.fire(hook, {p: 1}, {o: 1});
     assume(creator.fireCalls).deep.equals([
       {hookGroupId: 'g', hookId: 'h', payload: {p: 1}, options: {o: 1}}
     ]);
