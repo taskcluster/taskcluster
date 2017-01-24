@@ -36,11 +36,8 @@ suite('Shutdown on idle', function() {
             maxRunTime: 60 * 60
           }
         });
-        let lines = res.log.trim().split('\r\n');
-        // Do not rely on a static line number since image pulls and other things
-        // can log before this.
-        let procInfoLine = lines[lines.indexOf('Processors: 1')];
-        assert.equal(procInfoLine, 'Processors: 1', 'container is only using one core');
+
+        assert.ok(res.log.includes('Processors: 1'), 'container is only using one core');
       }
     });
   });

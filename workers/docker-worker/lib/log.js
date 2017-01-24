@@ -19,12 +19,12 @@ export function createLogger(details) {
 export function fmtLog() {
   let args = Array.prototype.slice.call(arguments);
   let ts = new Date().toISOString().replace('T', ' ');
-  return '[taskcluster ' + ts + '] ' + util.format.apply(this, args) + '\r\n';
+  return '[taskcluster ' + ts + '] ' + util.format.apply(this, args) + '\n';
 }
 
 export function fmtErrorLog() {
   let args = Array.prototype.slice.call(arguments);
   // always include a newline before this string, so that it is at the beginning of the line
   // where treeherder expects it, even if the last output was not newline-terminated
-  return '\r\n[taskcluster:error] ' + util.format.apply(this, args) + '\r\n';
+  return '\n[taskcluster:error] ' + util.format.apply(this, args) + '\n';
 }
