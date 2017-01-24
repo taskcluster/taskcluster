@@ -462,6 +462,7 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 	if _, inCache := fileCaches[cacheKey]; !inCache {
 		file, err := fsContent.Download()
 		if err != nil {
+			log.Printf("Could not download %v due to %v", fsContent.UniqueKey(), err)
 			return "", err
 		}
 		fileCaches[cacheKey] = &Cache{
@@ -482,6 +483,7 @@ func extract(fsContent FSContent, format string, dir string) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("Extracting %v file '%v' to '%v'", format, cacheFile, dir)
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
 		return err
