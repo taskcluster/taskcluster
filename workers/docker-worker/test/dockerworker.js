@@ -86,16 +86,7 @@ export default class DockerWorker {
       AttachStdin: false,
       AttachStdout: true,
       AttachStderr: true,
-      Tty: true
-    };
-
-    // Copy enviornment variables over.
-    COPIED_ENV.forEach(function(key) {
-      if (!(key in process.env)) return;
-      createConfig.Env.push(util.format('%s=%s', key, process.env[key]));
-    });
-
-    var startConfig = {
+      Tty: true,
       Privileged: true,
       // Allow talking to other docker containers directly...
       NetworkMode: 'host',
@@ -111,15 +102,21 @@ export default class DockerWorker {
     // mount...
     var opts = dockerOpts();
     if (opts.socketPath) {
-      startConfig.Binds.push(util.format(
+      createConfig.Binds.push(util.format(
         '%s:%s',
         opts.socketPath, '/var/run/docker.sock'
       ));
     }
 
+    // Copy enviornment variables over.
+    COPIED_ENV.forEach(function(key) {
+      if (!(key in process.env)) return;
+      createConfig.Env.push(util.format('%s=%s', key, process.env[key]));
+    });
+
     var proc = this.process = new DockerProc(docker, {
       create: createConfig,
-      start: startConfig
+      start: {}
     });
 
     proc.run();

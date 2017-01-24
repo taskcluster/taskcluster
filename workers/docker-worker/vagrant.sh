@@ -5,7 +5,7 @@ set -e -v -x
 sudo ln -s /vagrant /worker
 
 NODE_VERSION=v0.12.4
-DOCKER_VERSION=1.10.1-0~trusty
+DOCKER_VERSION=1.12.6-0~ubuntu-trusty
 # Kernels < 3.13.0.77 and > 3.13.0.71 have an AUFS bug which can cause docker
 # containers to not exit properly because of zombie processes that can't be reaped.
 KERNEL_VER=3.13.0-79-generic

@@ -42,7 +42,7 @@ export default class Artifacts {
     let contentStream;
     try {
       contentStream = await (new Promise((accept, reject) => {
-        return container.copy({Resource: path}, (err, data) => {
+        return container.getArchive({path}, (err, data) => {
           if (err) reject(err);
           accept(data);
         });

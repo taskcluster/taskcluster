@@ -36,7 +36,7 @@ export default class ExtendTaskGraph {
     // Raw tar stream for the content.
     var contentStream;
     try {
-      contentStream = await container.copy({ Resource: graphPath });
+      contentStream = await container.getArchive({path: graphPath });
     } catch (e) {
       // Let the consumer know the graph file cannot be found.
       taskHandler.stream.write(log.fmtErrorLog(

@@ -222,7 +222,7 @@ suite('artifact extration tests', () => {
       }
     });
 
-    let errorMessage = '[taskcluster] Artifact "public/my-missing.txt" not found at "/this-file-is-missing.txt"';
+    let errorMessage = 'Artifact "public/my-missing.txt" not found at "/this-file-is-missing.txt"';
     assert.ok(
       result.log.includes(errorMessage),
       'Missing file was not noted in the logs'

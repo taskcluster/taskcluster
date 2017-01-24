@@ -143,7 +143,10 @@ suite('volume cache test', function () {
       AttachStdin:false,
       AttachStdout:true,
       AttachStderr:true,
-      Tty: true
+      Tty: true,
+      HostConfig: {
+        Binds: [cacheInstance.path + ':/docker_cache/tmp-obj-dir/']
+      }
     };
 
     var create = yield docker.createContainer(createConfig);
@@ -152,13 +155,7 @@ suite('volume cache test', function () {
     var stream = yield container.attach({stream: true, stdout: true, stderr: true});
     stream.pipe(process.stdout);
 
-    var binds = cacheInstance.path + ':/docker_cache/tmp-obj-dir/';
-
-    var startConfig = {
-      Binds: [binds],
-    };
-
-    yield container.start(startConfig);
+    yield container.start({});
     gc.removeContainer(create.id);
     gc.sweep();
     var removedContainerId = yield waitForEvent(gc, 'gc:container:removed');

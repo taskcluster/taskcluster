@@ -73,7 +73,12 @@ export default class TaskclusterLogs {
       ExposedPorts: {
         '60023/tcp': {}
       },
-      HostConfig: {}
+      HostConfig: {
+        // bind the reading side to the host so we can expose it to the world...
+        PortBindings: {
+          '60023/tcp': [{HostPort: '0'}]
+        }
+      }
     };
 
     if (task.runtime.logging.secureLiveLogging) {
@@ -92,12 +97,7 @@ export default class TaskclusterLogs {
 
     // TODO: In theory the output of the proxy might be useful consider logging
     // this somehow.
-    await this.container.start({
-      // bind the reading side to the host so we can expose it to the world...
-      PortBindings: {
-        "60023/tcp": [{ HostPort: "0" }]
-      }
-    });
+    await this.container.start({});
     let inspect = await this.container.inspect();
 
     try {

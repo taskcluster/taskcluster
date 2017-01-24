@@ -2,9 +2,9 @@ FROM ubuntu:14.04
 
 ENV NODE_VERSION 0.12.4
 ENV NPM_VERSION 2.10.1
-ENV DOCKER_VERSION 1.10.1-0~trusty
+ENV DOCKER_VERSION 1.12.6-0~ubuntu-trusty
 
-RUN apt-get install -y apt-transport-https
+RUN apt-get update && apt-get install -y apt-transport-https
 
 # Add key for docker apt repository
 RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D && \
