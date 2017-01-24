@@ -33,8 +33,8 @@ tasks:
         - /bin/bash
         - -vxec
         - |
-          go get -d "github.com/{{ event.base.user.login }}/generic-worker"
-          cd "${GOPATH}/src/github.com/{{ event.base.user.login }}/generic-worker"
+          go get -d "github.com/taskcluster/generic-worker"
+          cd "${GOPATH}/src/github.com/taskcluster/generic-worker"
           git remote add user '{{ event.head.repo.url }}'
           git fetch --tags user
           git checkout '{{ event.head.sha }}'
@@ -79,8 +79,8 @@ tasks:
         - set GOPATH=%CD%\gopath
         - set PATH=%GOPATH%\bin;%PATH%
         - git config --global core.autocrlf false
-        - 'go get -d "github.com/{{ event.base.user.login }}/generic-worker"'
-        - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
+        - 'go get -d "github.com/taskcluster/generic-worker"'
+        - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
         - git remote add user {{ event.head.repo.url }}
         - git fetch --tags user
         - git checkout {{ event.head.sha }}
@@ -135,8 +135,8 @@ tasks:
         - set GOROOT=%CD%\go
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
-        - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
-        - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
+        - go get -d "github.com/taskcluster/generic-worker"
+        - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
         - git remote add user {{ event.head.repo.url }}
         - git fetch --tags user
         - git checkout {{ event.head.sha }}
@@ -200,8 +200,8 @@ tasks:
         - set GOROOT=%CD%\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
-        - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
-        - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
+        - go get -d "github.com/taskcluster/generic-worker"
+        - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
         - git remote add user {{ event.head.repo.url }}
         - git fetch --tags user
         - git checkout {{ event.head.sha }}
