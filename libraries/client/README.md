@@ -244,6 +244,10 @@ var hooks = new taskcluster.Hooks(options);
  * `hooks.updateHook(hookGroupId, hookId, payload) : result`
  * `hooks.removeHook(hookGroupId, hookId) : void`
  * `hooks.triggerHook(hookGroupId, hookId, payload) : result`
+ * `hooks.getTriggerToken(hookGroupId, hookId) : result`
+ * `hooks.resetTriggerToken(hookGroupId, hookId) : result`
+ * `hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) : result`
+ * `hooks.ping() : void`
 
 ### Methods in `taskcluster.Index`
 ```js
@@ -286,7 +290,8 @@ var pulse = new taskcluster.Pulse(options);
 ```
  * `pulse.overview() : result`
  * `pulse.exchanges() : result`
- * `pulse.namespace(namespace, payload) : result`
+ * `pulse.createNamespace(namespace, payload) : result`
+ * `pulse.namespace(namespace) : void`
  * `pulse.ping() : void`
 
 ### Methods in `taskcluster.PurgeCache`
@@ -387,6 +392,7 @@ var githubEvents = new taskcluster.GithubEvents(options);
 ```
  * `githubEvents.pullRequest(routingKeyPattern) : binding-info`
  * `githubEvents.push(routingKeyPattern) : binding-info`
+ * `githubEvents.release(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.PurgeCacheEvents`
 ```js
