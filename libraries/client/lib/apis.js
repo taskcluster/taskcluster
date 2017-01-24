@@ -1039,7 +1039,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Capture a GitHub event and publish it via pulse, if it's a push\nor pull request.",
+          "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease or pull request.",
           "method": "post",
           "name": "githubWebHookConsumer",
           "query": [
@@ -1155,6 +1155,35 @@ module.exports = {
           "schema": "http://schemas.taskcluster.net/github/v1/github-push-message.json#",
           "title": "GitHub push Event",
           "type": "topic-exchange"
+        },
+        {
+          "description": "When a GitHub release event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+          "exchange": "release",
+          "name": "release",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "http://schemas.taskcluster.net/github/v1/github-release-message.json#",
+          "title": "GitHub release Event",
+          "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-github/v1/",
@@ -1167,7 +1196,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://hooks.taskcluster.net/v1",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.\n\nHooks can have a 'schedule' indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC\n * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a 'schedule' indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC\n * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
       "entries": [
         {
           "args": [
@@ -1333,6 +1362,79 @@ module.exports = {
           "stability": "experimental",
           "title": "Trigger a hook",
           "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "Retrieve a unique secret token for triggering the specified hook. This\ntoken can be deactivated with `resetTriggerToken`.",
+          "method": "get",
+          "name": "getTriggerToken",
+          "output": "http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json",
+          "query": [
+          ],
+          "route": "/hooks/<hookGroupId>/<hookId>/token",
+          "scopes": [
+            [
+              "hooks:get-trigger-token:<hookGroupId>/<hookId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Get a trigger token",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "Reset the token for triggering a given hook. This invalidates token that\nmay have been issued via getTriggerToken with a new token.",
+          "method": "post",
+          "name": "resetTriggerToken",
+          "output": "http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json",
+          "query": [
+          ],
+          "route": "/hooks/<hookGroupId>/<hookId>/token",
+          "scopes": [
+            [
+              "hooks:reset-trigger-token:<hookGroupId>/<hookId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Reset a trigger token",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId",
+            "token"
+          ],
+          "description": "This endpoint triggers a defined hook with a valid token.",
+          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-payload.json",
+          "method": "post",
+          "name": "triggerHookWithToken",
+          "output": "http://schemas.taskcluster.net/hooks/v1/task-status.json",
+          "query": [
+          ],
+          "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
+          "stability": "experimental",
+          "title": "Trigger a hook with a token",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
         }
       ],
       "title": "Hooks API Documentation",
@@ -1457,7 +1559,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://login.taskcluster.net/v1",
-      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.\n\nThe API methods described here issue temporary credentials based on\nan assertion.  The assertion identifies the user, usually with an\nemail-like string.  This string is then passed through a series of\nauthorizers, each of which may supply scopes to be included in the\ncredentials. Finally, the service generates temporary credentials based\non those scopes.\n\nThe generated credentials include scopes to create new, permanent clients\nwith names based on the user's identifier.  These credentials are\nperiodically scanned for scopes that the user does not posess, and disabled\nif such scopes are discovered.  Thus users can create long-lived credentials\nthat are only usable until the user's access level is reduced.",
+      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.",
       "entries": [
         {
           "args": [
@@ -1477,13 +1579,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
@@ -1585,7 +1687,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "An overview of the Rabbit cluster\n\n**Warning** this api end-point is **not stable**.",
+          "description": "An overview of the Rabbit cluster",
           "method": "get",
           "name": "overview",
           "output": "http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json",
@@ -1599,7 +1701,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "A list of exchanges in the rabbit cluster\n\n**Warning** this api end-point is **not stable**.",
+          "description": "A list of exchanges in the rabbit cluster",
           "method": "get",
           "name": "exchanges",
           "output": "http://schemas.taskcluster.net/pulse/v1/exchanges-response.json",
@@ -1614,10 +1716,10 @@ module.exports = {
           "args": [
             "namespace"
           ],
-          "description": "Creates a namespace, given the taskcluster credentials with scopes.\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Creates a namespace, given the taskcluster credentials with scopes.",
           "input": "http://schemas.taskcluster.net/pulse/v1/namespace-request.json",
           "method": "post",
-          "name": "namespace",
+          "name": "createNamespace",
           "output": "http://schemas.taskcluster.net/pulse/v1/namespace-response.json",
           "query": [
           ],
@@ -1629,6 +1731,25 @@ module.exports = {
           ],
           "stability": "experimental",
           "title": "Create a namespace",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Gets a namespace, given the taskcluster credentials with scopes.",
+          "method": "get",
+          "name": "namespace",
+          "query": [
+          ],
+          "route": "/namespace/<namespace>",
+          "scopes": [
+            [
+              "pulse:namespace:<namespace>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Get namespace information",
           "type": "function"
         },
         {
