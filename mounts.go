@@ -481,11 +481,13 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 func extract(fsContent FSContent, format string, dir string) error {
 	cacheFile, err := ensureCached(fsContent)
 	if err != nil {
+		log.Printf("Could not cache content: %v", err)
 		return err
 	}
 	log.Printf("Extracting %v file '%v' to '%v'", format, cacheFile, dir)
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
+		log.Printf("Could not MkdirAll %v: %v", dir, err)
 		return err
 	}
 	switch format {
@@ -499,7 +501,7 @@ func extract(fsContent FSContent, format string, dir string) error {
 		return archiver.TarBz2.Open(cacheFile, dir)
 	}
 	log.Fatalf("Unsupported format %v", format)
-	return nil
+	return fmt.Errorf("Unsupported archive format %v", format)
 }
 
 // Returns either a *ArtifactContent or *URLContent based on the content
@@ -564,20 +566,25 @@ func downloadURLToFile(url, file string) error {
 	log.Printf("Downloading url %v to %v", url, file)
 	err := os.MkdirAll(filepath.Dir(file), 0777)
 	if err != nil {
+		log.Printf("Could not make MkdirAll %v: %v", filepath.Dir(file), err)
+		log.Printf("Could not write http response from url %v to file %v: %v", url, file, err)
 		return err
 	}
 	resp, _, err := httpbackoff.Get(url)
 	if err != nil {
+		log.Printf("Could not fetch url %v: %v", url, err)
 		return err
 	}
 	defer resp.Body.Close()
 	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
+		log.Printf("Could not open file %v: %v", file, err)
 		return err
 	}
 	defer f.Close()
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
+		log.Printf("Could not write http response from url %v to file %v: %v", url, file, err)
 		return err
 	}
 	return nil
