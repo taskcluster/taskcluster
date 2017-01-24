@@ -16,7 +16,7 @@ tasks:
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
     metadata:
-      name: "Build Linux 64 bit generic-worker"
+      name: "Build/test 64 bit generic-worker on linux"
       description: "This builds the 64 bit linux version of generic-worker"
       owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
       source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here

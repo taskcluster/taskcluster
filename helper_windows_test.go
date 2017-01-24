@@ -18,6 +18,7 @@ func rawHelloGoodbye() string {
 
 func checkSHASums() []string {
 	return []string{
+		"powershell set-executionpolicy unrestricted -scope currentuser",
 		"powershell -file preloaded\\check-shasums.ps1",
 	}
 }
