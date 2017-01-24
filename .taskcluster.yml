@@ -198,7 +198,7 @@ tasks:
         - 'mkdir "public\build"'
         - set GOPATH=%CD%\gopath
         - set GOROOT=%CD%\go
-        - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go get -d "github.com/{{ event.base.user.login }}/generic-worker"
         - 'cd "gopath\src\github.com\{{ event.base.user.login }}\generic-worker"'
@@ -235,6 +235,6 @@ tasks:
           directory: .
           format: zip
         - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-64-bit.tar.bz2
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/MinGit-2.11.0.3-64-bit.zip
           directory: git
-          format: tar.bz2
+          format: zip
