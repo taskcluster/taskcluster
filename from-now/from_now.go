@@ -37,7 +37,7 @@ func (fromNow) Execute(context extpoints.Context) bool {
 	offset, err := parseTime(duration)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "String: '"+duration+"' isn't a time expression\n")
+		fmt.Fprintf(os.Stderr, "error: string '%s' is not a valid time expression\n", duration)
 		return false
 	}
 
@@ -123,7 +123,7 @@ func atoiHelper(s string) int {
 
 	// This should never occur because the regex only matches digits.
 	if err != nil {
-		panic(s + " is not a valid number.")
+		panic("error: given string '" + s + "' is not a valid number.")
 	}
 
 	return i
