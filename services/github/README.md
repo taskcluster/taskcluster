@@ -23,6 +23,10 @@ Listen for WebHook triggered pulse messages and attempts to schedule TaskCluster
 First add pulse credentials to ``user-config.yml``. An example is available at ``user-config-example.yml``.
 Then from the project's base run ``npm test``.
 
+To test the components separately, run:
+- server: `npm run compile && <set the environment variables> node lib/main.js server`
+- handlers: `npm run compile && <set the environment variables> node lib/main.js worker`
+
 In both travis and taskcluster, the env variables needed to run integration tests are added when pushing.
 
 ### Deploying
