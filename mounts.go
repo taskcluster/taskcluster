@@ -567,7 +567,6 @@ func downloadURLToFile(url, file string) error {
 	err := os.MkdirAll(filepath.Dir(file), 0777)
 	if err != nil {
 		log.Printf("Could not make MkdirAll %v: %v", filepath.Dir(file), err)
-		log.Printf("Could not write http response from url %v to file %v: %v", url, file, err)
 		return err
 	}
 	resp, _, err := httpbackoff.Get(url)
