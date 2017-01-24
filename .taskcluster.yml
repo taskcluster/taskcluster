@@ -103,6 +103,8 @@ tasks:
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
+        - set GW_TESTS_GENERATE_USERS=true
+        - go test -v ./...
         - ineffassign .
       artifacts:
         - path: public/build/generic-worker-windows-amd64.exe
@@ -158,6 +160,8 @@ tasks:
           exit /b 0
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
+        - go test -v ./...
+        - set GW_TESTS_GENERATE_USERS=true
         - go test -v ./...
         - ineffassign .
       artifacts:
@@ -223,6 +227,8 @@ tasks:
           exit /b 0
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
+        - go test -v ./...
+        - set GW_TESTS_GENERATE_USERS=true
         - go test -v ./...
         - ineffassign .
       artifacts:
