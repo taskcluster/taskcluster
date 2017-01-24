@@ -124,6 +124,14 @@ func (c *Command) Execute() (r *Result) {
 		c.HardTimeLimit = c.Deadline.Sub(time.Now())
 		if c.HardTimeLimit < 0 {
 			log.Printf("WARNING: Deadline %v exceeded before command %v has been executed!", c.Deadline, c)
+			// this is a hack to simulate a failure
+			return &Result{
+				SubprocessResult: &subprocess.SubprocessResult{
+					SuccessCode: 0,
+					ExitCode:    1,
+				},
+				SystemError: nil,
+			}
 		}
 	}
 	result, err := c.Subprocess.Execute()
