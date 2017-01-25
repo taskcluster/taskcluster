@@ -1,9 +1,12 @@
 YAML Configuration Loader
 =========================
 
-This modules makes it easy to load configuration from YAML files, and allows
+This module makes it easy to load configuration from YAML files, and allows
 these YAML files to specify environment variables to substitute into the
 configuration.
+
+Configuration Format
+--------------------
 
 The **configuration format** looks as follows.
 ```yaml
@@ -17,14 +20,18 @@ test: # profile 'test'
   hostname:   localhost
   port:       1234
 ```
-The syntax extensions `!env <name>` is replaced with the value of the
+
+The top-level properties are "profiles", with `default` being a special case
+that supplies defaults for all profiles.
+
+The syntax extensions `!env <name>` are replaced with the value of the
 environment variable `<name>`. This is further extended to support loading
 types other than strings from environment variables. In the example above
 `!env:number PORT` will be replaced by the value of the environment variable
 `PORT` parsed as a number. If parsing the environment variable fails, it'll
 instead be replaced with `undefined`.
 
-This library support for the following syntax extensions:
+This library has support for the following syntax extensions:
 
  * `!env <NAME>`, load string from env variable `<NAME>`,
  * `!env:string <NAME>`, load string from env variable `<NAME>`.
@@ -36,10 +43,22 @@ This library support for the following syntax extensions:
  * `!env:list <NAME>`, load list of space separated strings from env
     variable `<NAME>`.
 
+Loading Configuration
+---------------------
+
 When **loading configuration** you may specify which files, profile and
-environment variables to load from. But default the following is options is
-given. So if you name your files `config.yml` and `user-config.yml` you can
-load configuration with `config({profile: 'my-profile'})`.
+environment variables to load from.  The resulting configuration is a
+combination of all supplied files.  Files are parsed in order, with defaults
+applied as each file is read.  Values appearing later in the process overwrite
+those from earlier.
+
+The default setting is to read from `config.yml` and `user-config.yml`, and
+this is the normal means of configuring a TaskCluster service.  `config.yml` is
+checked in, and `user-config.yml` is in `.gitignore` and used by developers to
+provide credentials. So in most cases, services load load configuration with
+`config({profile})` (where `profile` comes from `$NODE_ENV`).
+
+The default options are shown here:
 ```js
 var config = require('typed-env-config');
 
@@ -51,12 +70,12 @@ var cfg = config({
   profile:  undefined,    // Profile to apply (default to none)
   env:      process.env   // Environment variables (mapping string to strings)
 });
-
-// cfg is now an object...
 ```
 
+Then `cfg` is an object containing the result of the merge.
+
 The configuration loader will not complain about missing or ill formated
-environment variables, instead it'll just evaluate them to `undefined`. Nor will
+environment variables. Instead it will just evaluate them to `undefined`. Nor will
 the configuration loader complain about missing files, but it will complain
 about ill formated files and missing profiles.
 
