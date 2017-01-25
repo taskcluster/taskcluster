@@ -70,11 +70,6 @@ func startup() error {
 }
 
 func deleteTaskDir(path string, user string) error {
-	if !config.CleanUpTaskDirs {
-		log.Print("*NOT* Removing home directory '" + path + "' as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
-		return nil
-	}
-
 	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
 	err := os.RemoveAll(path)
 	if err == nil {
@@ -163,6 +158,10 @@ func deleteExistingOSUsers() {
 }
 
 func deleteTaskDirs() {
+	if !config.CleanUpTaskDirs {
+		log.Print("*NOT* Removing task directories as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
+		return
+	}
 	taskDirsParent, err := os.Open(config.TasksDir)
 	if err != nil {
 		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
@@ -177,16 +176,22 @@ func deleteTaskDirs() {
 		// don't return, since we may have partial listings
 	}
 	for _, file := range fi {
-		if file.IsDir() {
-			if fileName := file.Name(); strings.HasPrefix(fileName, "task_") {
-				path := filepath.Join(config.TasksDir, fileName)
-				// fileName could be <user> or <user>.<hostname>...
-				user := fileName
-				if i := strings.IndexRune(user, '.'); i >= 0 {
-					user = user[:i]
+		fileName := file.Name()
+		path := filepath.Join(config.TasksDir, fileName)
+		if config.RunTasksAsCurrentUser {
+			// ignore any error when deleting a single file, probably not worth killing worker
+			_ = os.RemoveAll(path)
+		} else {
+			if file.IsDir() {
+				if strings.HasPrefix(fileName, "task_") {
+					// fileName could be <user> or <user>.<hostname>...
+					user := fileName
+					if i := strings.IndexRune(user, '.'); i >= 0 {
+						user = user[:i]
+					}
+					// ignore any error occuring here, not a lot we can do about it...
+					deleteTaskDir(path, user)
 				}
-				// ignore any error occuring here, not a lot we can do about it...
-				deleteTaskDir(path, user)
 			}
 		}
 	}
