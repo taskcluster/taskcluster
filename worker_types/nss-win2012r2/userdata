@@ -84,7 +84,7 @@ md C:\generic-worker
 $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v7.2.7/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # download livelog
-$client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v0.0.6/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
+$client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
 
 # install generic-worker
 # Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
