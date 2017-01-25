@@ -6,8 +6,9 @@ var debug         = require('debug')('taskcluster-lib-testing:schemas');
 var fs            = require('fs');
 var validator     = require('taskcluster-lib-validate');
 var path          = require('path');
+
 /**
- * Test schemas with a positive and negative test cases. This will call
+ * Test schemas with positive and negative test cases. This will call
  * `setup` and `test` which are assumed to exist in global scope.
  * Basically, it only makes sense to use from inside `suite` in a mocha test.
  *
