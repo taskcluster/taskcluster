@@ -11,6 +11,7 @@ suite("api/errors", function() {
   var api = new subject({
     title:        "Test Api",
     description:  "Yet another test api",
+    errorCodes: {TooManyFoos: 472},
   });
 
   // Create a mock authentication server
@@ -42,7 +43,53 @@ suite("api/errors", function() {
       params: {},
       payload: {},
     }));
-    assert(_.isEqual(response.details, {dee: 'tails'}));
+  });
+
+  api.declare({
+    method:   'get',
+    route:    '/toomanyfoos',
+    name:     'toomanyfoos',
+    title:    "Test End-Point",
+    description:  "Place we can call to test something",
+  }, function(req, res) {
+    req.body.foos = [4, 5];
+    res.reportError(
+      'TooManyFoos',
+      'You can only have 3 foos.  These foos already exist:\n{{foos}}',
+      {foos: [1, 2, 3]});
+  });
+
+  test("TooManyFoos response", async function() {
+    let url = 'http://localhost:23525/toomanyfoos';
+    let res = await request
+      .get(url)
+      .end();
+    assert(res.statusCode === 472);
+    let response = JSON.parse(res.text);
+    response.message = response.message.replace(response.requestInfo.time, '<nowish>');
+    response.requestInfo.time = '<nowish>';
+    assert(_.isEqual(response, {
+      code: "TooManyFoos",
+      message: [
+        "You can only have 3 foos.  These foos already exist:",
+        "[",
+        "  1,",
+        "  2,",
+        "  3",
+        "]",
+        "----",
+        "method:     toomanyfoos",
+        "errorCode:  TooManyFoos",
+        "statusCode: 472",
+        "time:       <nowish>",
+      ].join('\n'),
+      requestInfo: {
+        method: "toomanyfoos",
+        params: {},
+        payload: {foos: [4, 5]},
+        time: "<nowish>"
+      },
+    }));
   });
 
   api.declare({
@@ -95,18 +142,14 @@ suite("api/errors", function() {
       .end();
     assert(res.statusCode === 400);
     let response = JSON.parse(res.text);
+    assert(!/s3kr!t/.test(res.text)); // secret does not appear in response
     assert(response.code === 'InputValidationError');
-    console.log(response.message);
-    assert(/<HIDDEN>/.test(response.message)); // replaced payload appears in message
-    assert(!/s3kr!t/.test(response.message)); // secret does not appear in message
+    assert(response.requestInfo.payload.secret == '<HIDDEN>'); // replaced payload appears in response
     delete response.requestInfo['time'];
     assert(_.isEqual(response.requestInfo, {
       method: 'InputValidationError',
       params: {},
       payload: {'invalid': 'yep', 'secret': '<HIDDEN>'},
-    }));
-    assert(_.isEqual(response.details, {
-      schema: 'http://localhost:4321/test-schema.json',
     }));
   });
 });
