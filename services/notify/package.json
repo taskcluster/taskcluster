@@ -33,7 +33,7 @@
     "node-sass": "^3.8.0",
     "promise": "^7.1.1",
     "pug": "^2.0.0-beta5",
-    "pulse-publisher": "^1.1.1",
+    "pulse-publisher": "^1.1.4",
     "slugid": "^1.1.0",
     "source-map-support": "^0.4.0",
     "taskcluster-lib-api": "^3.0.0",
