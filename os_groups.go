@@ -42,7 +42,9 @@ func (osGroups *OSGroups) RequiredScopes() scopes.Required {
 func (osGroups *OSGroups) Start() *CommandExecutionError {
 	groups := osGroups.Task.Payload.OSGroups
 	if config.RunTasksAsCurrentUser {
-		osGroups.Task.Logf("Not adding user to groups %v since we are running as current user.", groups)
+		if len(groups) > 0 {
+			osGroups.Task.Logf("Not adding user to groups %v since we are running as current user.", groups)
+		}
 		return nil
 	}
 	return MalformedPayloadError(osGroups.Task.addGroupsToUser(groups))
