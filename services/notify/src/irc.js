@@ -60,7 +60,7 @@ class IRCBot {
 
     let queueUrl = await this.sqs.createQueue({
       QueueName:  this.queueName,
-    }).promise().then(req => req.data.QueueUrl);
+    }).promise().then(req => req.QueueUrl);
 
     this.done = (async () => {
       debug('Connecting to: ' + queueUrl);
@@ -73,13 +73,13 @@ class IRCBot {
           VisibilityTimeout:    30,
           WaitTimeSeconds:      20,
         }).promise();
-        if (!req.data.Messages) {
+        if (!req.Messages) {
           debug('Did not receive any messages from sqs in timeout.');
           continue;
         }
-        debug(`Received ${req.data.Messages.length} messages from sqs.`);
+        debug(`Received ${req.Messages.length} messages from sqs.`);
         let success = 0;
-        for (let message of req.data.Messages) {
+        for (let message of req.Messages) {
           try {
             await this.notify(JSON.parse(message.Body));
           } catch (err) {

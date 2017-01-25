@@ -36,7 +36,7 @@ helper.checkSqsMessage = (queueUrl, done, check) => {
     VisibilityTimeout:    30,
     WaitTimeSeconds:      20,
   }).promise().then(async (resp) => {
-    let m = resp.data.Messages;
+    let m = resp.Messages;
     assert.equal(m.length, 1);
     await helper.sqs.deleteMessage({
       QueueUrl:       queueUrl,
@@ -81,11 +81,11 @@ mocha.before(async () => {
   helper.sqs = new aws.SQS(cfg.aws);
   helper.sqsQueueUrl = await helper.sqs.createQueue({
     QueueName:  cfg.app.sqsQueueName,
-  }).promise().then(req => req.data.QueueUrl);
+  }).promise().then(req => req.QueueUrl);
   let approxLen = await helper.sqs.getQueueAttributes({
     QueueUrl: helper.sqsQueueUrl,
     AttributeNames: ['ApproximateNumberOfMessages'],
-  }).promise().then(req => req.data.Attributes.ApproximateNumberOfMessages);
+  }).promise().then(req => req.Attributes.ApproximateNumberOfMessages);
   if (approxLen !== '0') {
     console.log(`Detected ${approxLen} messages in irc queue. Purging.`);
     await helper.sqs.purgeQueue({
@@ -96,11 +96,11 @@ mocha.before(async () => {
   // Create client for listening for email successes
   helper.emailSqsQueueUrl = await helper.sqs.createQueue({
     QueueName:  'taskcluster-notify-test-emails',
-  }).promise().then(req => req.data.QueueUrl);
+  }).promise().then(req => req.QueueUrl);
   let emailAttr = await helper.sqs.getQueueAttributes({
     QueueUrl: helper.emailSqsQueueUrl,
     AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
-  }).promise().then(req => req.data.Attributes);
+  }).promise().then(req => req.Attributes);
   if (emailAttr.ApproximateNumberOfMessages !== '0') {
     console.log(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
     await helper.sqs.purgeQueue({
@@ -112,11 +112,11 @@ mocha.before(async () => {
   let sns = new aws.SNS(cfg.aws);
   let snsArn = await sns.createTopic({
     Name: 'taskcluster-notify-test',
-  }).promise().then(res => res.data.TopicArn);
+  }).promise().then(res => res.TopicArn);
   let subscribed = await sns.listSubscriptionsByTopic({
     TopicArn: snsArn,
   }).promise().then(req => {
-    for (let subscription of req.data.Subscriptions) {
+    for (let subscription of req.Subscriptions) {
       if (subscription.Endpoint === emailAttr.QueueArn) {
         return true;
       }
