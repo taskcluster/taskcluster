@@ -273,9 +273,37 @@ into `details`, with the result being JSON-encoded.  For example:
 ```js
 res.reportError(
   'TooManyFoos',
-  'You can only have 7 foos.  You provided:\n{{foos}}',
-  {foos: req.body.foos})
+  'You can only have 3 foos.  These foos already exist:\n{{foos}}',
+  {foos: foomanager.foos(request.fooId)});
 ```
+
+The resulting HTTP response will have a JSON body containing (whitespace adjusted)
+```js
+{
+  "code": "TooManyFoos",
+  "message": "You can only have 3 foos.
+    These foos already exist:
+    [
+      1,
+      2,
+      3
+    ]
+    ----
+    method:     toomanyfoos
+    errorCode:  TooManyFoos
+    statusCode: 472
+    time:       2017-01-22T21:20:16.650Z",
+  "requestInfo":{
+    "method": "toomanyfoos",
+    "params": {},
+    "payload": {"foos":[4, 5]},
+    "time": "2017-01-22T21:20:16.650Z",
+  },
+}
+```
+
+The request payload is provided in `requestInfo`, so there is no need to
+reproduce its contents within the error message.
 
 *Note:* use of `res.status(4..).json(..)` to return error statuses is an
 anti-pattern.  While you may see older code that still follows this pattern, do
