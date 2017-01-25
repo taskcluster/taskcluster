@@ -1,6 +1,7 @@
 {
   "name": "taskcluster-treeherder",
   "version": "0.2.0",
+  "private": true,
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
     "test": "mocha $(find .test -name '*_test.js')",
@@ -16,20 +17,20 @@
     "babel-eslint": "^6.0.3",
     "babel-preset-taskcluster": "^2.0.1",
     "babel-plugin-array-includes": "^2.0.3",
-    "babel-runtime": "^6.6.1",
-    "eslint-config-taskcluster": "^1.0.2",
+    "babel-runtime": "^6.22.0",
+    "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
-    "debug": "^2.2.0",
+    "debug": "^2.6.0",
     "lodash": "^4.12.0",
     "promise": "^7.1.1",
     "slugid": "^1.1.0",
     "source-map-support": "^0.4.0",
-    "superagent": "^1.1.0",
-    "superagent-promise": "^0.2.0",
-    "taskcluster-base": "^6.2.0",
-    "taskcluster-client": "^0.23.17",
-    "tc-rules": "^5.0.0",
-    "url-join": "0.0.1"
+    "taskcluster-client": "^1.6.3",
+    "typed-env-config": "^1.0.0",
+    "taskcluster-lib-validate": "^2.0.0",
+    "taskcluster-lib-loader": "^1.0.0",
+    "taskcluster-lib-monitor": "^4.0.0",
+    "pulse-publisher": "^1.1.4"
   },
   "devDependencies": {
     "mocha": "^2.2.1"
