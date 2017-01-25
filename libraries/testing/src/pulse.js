@@ -13,39 +13,6 @@ var taskcluster   = require('taskcluster-client');
  *   username:     '...',  // Pulse username
  *   password:     '...'   // Pulse password
  * }
- *
- * **Example:**
- * ```js
- * suite("MyTests", function() {
- *   var receiver = new base.testing.PulseTestReceiver({...});
- *
- *
- *   test("create task message arrives", function() {
- *     var taskId = slugid.v4();
- *
- *     // Start listening for a message with the above taskId
- *     return receiver.listenFor(
- *       'my-create-task-message',
- *       queueEvents.taskCreated({taskId: taskId})
- *     ).then(function() {
- *       // We are now listen for a message with the taskId
- *       // So let's create a task with it
- *       return queue.createTask(taskId, {...});
- *     }).then(function() {
- *       // Now we wait for the message to arrive
- *       return receiver.waitFor('my-create-task-message');
- *     }).then(function(message) {
- *       // Now we have the message
- *     });
- *   });
- *
- * });
- * ```
- *
- * The `receiver` object will setup an PulseConnection before all tests and
- * close the PulseConnection after all tests. This should make tests run faster.
- * All internal state, ie. the names given to `listenFor` and `waitFor`
- * will be reset between all tests.
  */
 var PulseTestReceiver = function(credentials, mocha) {
   var that = this;
