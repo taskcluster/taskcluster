@@ -298,7 +298,7 @@ suite('API', function() {
 
     test("successfully triggers task with the given payload", async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
-      var res = helper.hooks.getTriggerToken('foo', 'bar');
+      var res = await helper.hooks.getTriggerToken('foo', 'bar');
       await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {a: "payload"});
       assume(helper.creator.fireCalls).deep.equals([{
           hookGroupId: 'foo',
