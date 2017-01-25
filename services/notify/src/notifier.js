@@ -28,7 +28,7 @@ class Notifier {
     this.sqs = new aws.SQS(options.aws);
     this.queueUrl = this.sqs.createQueue({
       QueueName:  this.options.queueName,
-    }).promise().then(req => req.data.QueueUrl);
+    }).promise().then(req => req.QueueUrl);
   }
 
   key(idents) {
