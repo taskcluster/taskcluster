@@ -100,13 +100,9 @@ api.declare({
   var past = new Date();
   past.setMinutes(past.getMinutes() - 15);
   if (expires.getTime() < past.getTime()) {
-    return res.status(400).json({
-      message:  'Expires must be in the future',
-      error: {
-        now:      new Date().toJSON(),
-        expires:  expires.toJSON(),
-      },
-    });
+    return res.reportError('InputError',
+      'Expires must be in the future',
+      {});
   }
 
   // Load Task entity
@@ -114,17 +110,17 @@ api.declare({
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.status(404).json({
-      message: 'Task not found',
-    });
+    return res.reportError('InputError',
+      'Task not found',
+      {});
   }
 
   // Check presence of the run
   var run = task.runs[runId];
   if (!run) {
-    return res.status(404).json({
-      message: 'Run not found',
-    });
+    return res.reportError('InputError',
+      'Run not found',
+      {});
   }
 
   // Get workerGroup and workerId
@@ -144,15 +140,13 @@ api.declare({
 
   // Validate expires <= task.expires
   if (expires.getTime() > task.expires.getTime()) {
-    return res.status(400).json({
-      messages: 'Artifact expires after the task expiration ' +
-                '(task.expires < expires) - this is now allowed, ' +
-                'artifacts must expire before the task they belong to',
-      error: {
+    return res.reportError('InputError',
+      'Artifact expires ({{expires}}) after the task expiration ' +
+      '{{taskExpires}} (task.expires < expires) - this is now allowed, ' +
+      'artifacts must expire before the task they belong to', {
         taskExpires:      task.expires.toJSON(),
         expires:          expires.toJSON(),
-      },
-    });
+      });
   }
 
   // Ensure that the run is running
@@ -166,18 +160,15 @@ api.declare({
       allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000;
     }
     if (!allow) {
-      return res.status(409).json({
-        message:    'Artifacts cannot be created for a task after it is ' +
-                    'resolved, unless it is resolved \'exception\', and even ' +
-                    'in this case only up to 25 min past resolution.' +
-                    'This to ensure that artifacts have been uploaded before ' +
-                    'a task is \'completed\' and output is consumed by a ' +
-                    'dependent task',
-        error: {
+      return res.reportError('RequestConflict',
+        'Artifacts cannot be created for a task after it is ' +
+        'resolved, unless it is resolved \'exception\', and even ' +
+        'in this case only up to 25 min past resolution.' +
+        'This to ensure that artifacts have been uploaded before ' +
+        'a task is \'completed\' and output is consumed by a ' +
+        'dependent task\n\nTask status: {{status}}', {
           status:   task.status(),
-          runId:    runId,
-        },
-      });
+        });
     }
   }
 
@@ -237,32 +228,30 @@ api.declare({
     if (artifact.storageType !== storageType ||
         artifact.contentType !== contentType ||
         artifact.expires.getTime() > expires.getTime()) {
-      return res.status(409).json({
-        message:  'Artifact already exists, with different type or ' +
-                  ' later expiration',
-        error: {
+      return res.reportError('RequestConflict',
+        'Artifact already exists, with different type or later expiration\n\n' +
+        'Existing artifact information: {{originalArtifact}}', {
           originalArtifact: {
             storageType:  artifact.storageType,
             contentType:  artifact.contentType,
             expires:      artifact.expires,
           },
-          newArtifact: {
-            storageType,
-            contentType,
-            expires,
-          },
-        },
-      });
+        });
     }
 
     // Check that details match, unless this has storageType 'reference', we'll
     // workers to overwrite redirect artifacts
     if (storageType !== 'reference' &&
         !_.isEqual(artifact.details, details)) {
-      return res.status(409).json({
-        message:  'Artifact already exists with different contentType or ' +
-                  'error message',
-      });
+      return res.reportError('RequestConflict',
+        'Artifact already exists, with different contentType or error message\n\n' +
+        'Existing artifact information: {{originalArtifact}}', {
+          originalArtifact: {
+            storageType:  artifact.storageType,
+            contentType:  artifact.contentType,
+            expires:      artifact.expires,
+          },
+        });
     }
 
     // Update expiration and detail, which may have been modified
@@ -337,9 +326,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
 
   // Give a 404, if the artifact couldn't be loaded
   if (!artifact) {
-    return res.status(404).json({
-      message:  'Artifact not found',
-    });
+    return res.reportError('ResourceNotFound', 'Artifact not found', {});
   }
 
   // Handle S3 artifacts
@@ -415,6 +402,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
 
   // Handle error artifacts
   if (artifact.storageType === 'error') {
+    // The caller is not expecting an API response, so send a JSON response
     return res.status(403).json({
       reason:     artifact.details.reason,
       message:    artifact.details.message,
@@ -515,16 +503,12 @@ api.declare({
 
   // Give a 404 if not found
   if (!task) {
-    return res.status(404).json({
-      message:  'Task not found',
-    });
+    return res.reportError('ResourceNotFound', 'Task not found', {});
   }
 
   // Check that we have runs
   if (task.runs.length === 0) {
-    return res.status(404).json({
-      message:  'Task doesn\'t have any runs',
-    });
+    return res.reportError('ResourceNotFound', 'Task doesn\'t have any runs', {});
   }
 
   // Find highest runId

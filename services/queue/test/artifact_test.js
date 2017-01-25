@@ -739,7 +739,7 @@ suite('Artifacts', function() {
     }, async (err) => {
       debug('Got error: %s, as JSON %j', err, err);
       assume(err.message).includes('Artifact already exists');
-      assume(err.body.error).contains('originalArtifact', 'newArtifact');
+      assume(err.message).contains('originalArtifact');
     });
 
     debug('### reportCompleted');
