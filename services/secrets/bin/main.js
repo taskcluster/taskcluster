@@ -3,77 +3,59 @@ import Debug from 'debug';
 import api from '../lib/api';
 import data from '../lib/data';
 import assert from 'assert';
-import base from 'taskcluster-base';
 import path from 'path';
-import common from '../lib/common';
 import Promise from 'promise';
 import _ from 'lodash';
-import raven from 'raven';
 import loader from 'taskcluster-lib-loader';
+import validator from 'taskcluster-lib-validate';
+import monitor from 'taskcluster-lib-monitor';
 import app from 'taskcluster-lib-app';
 import taskcluster from 'taskcluster-client';
 import stats from 'taskcluster-lib-stats';
+import config from 'typed-env-config';
 
 let debug = Debug('secrets:server');
 
 var load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile})
+    setup: ({profile}) => config({profile})
   },
 
-  drain: {
-    requires: ['cfg', 'process'],
-    setup: ({cfg, process}) => {
-      if (cfg.influx.connectionString) {
-        var drain = common.buildInfluxStatsDrain(
-          cfg.influx.connectionString,
-          cfg.influx.maxDelay,
-          cfg.influx.maxPendingPoints);
-        // Start monitoring the process
-        stats.startProcessUsageReporting({
-          component:  cfg.taskclusterSecrets.statsComponent,
-          drain, process,
-        });
-      } else {
-        debug("Not loading Influx -- no connection string");
-        return new stats.NullDrain();
-      }
-    },
-  },
-
-  raven: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.raven.sentryDSN) {
-        return new raven.Client(cfg.raven.sentryDSN);
-      }
-      return null;
-    }
+  monitor: {
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => monitor({
+      project: 'taskcluster-secrets',
+      credentials: cfg.taskcluster.credentials,
+      mock: profile === 'test',
+      process,
+    }),
   },
 
   validator: {
     requires: ['cfg'],
-    setup: ({cfg}) => common.buildValidator(cfg)
+    setup: ({cfg}) => validator({
+      prefix: 'secrets/v1/',
+      aws: cfg.aws,
+    }),
   },
 
   entity: {
-    requires: ['cfg', 'drain', 'process'],
-    setup: ({cfg, drain, process}) => data.SecretEntity.setup({
+    requires: ['cfg', 'monitor', 'process'],
+    setup: ({cfg, monitor, process}) => data.SecretEntity.setup({
       account:          cfg.azure.accountName,
       credentials:      cfg.taskcluster.credentials,
       table:            cfg.azure.tableName,
       cryptoKey:        cfg.azure.cryptoKey,
       signingKey:       cfg.azure.signingKey,
       component:        cfg.taskclusterSecrets.statsComponent,
-      drain,
-      process,
+      monitor:          monitor.prefix(cfg.azure.tableName.toLowerCase()),
     })
   },
 
   router: {
-    requires: ['cfg', 'entity', 'validator', 'drain', 'raven'],
-    setup: ({cfg, entity, validator, drain, raven}) => api.setup({
+    requires: ['cfg', 'entity', 'validator', 'monitor'],
+    setup: ({cfg, entity, validator, monitor}) => api.setup({
       context:          {cfg, entity},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.taskclusterSecrets.publishMetaData === 'true',
@@ -81,9 +63,8 @@ var load = loader({
       referencePrefix:  'secrets/v1/api.json',
       aws:              cfg.aws,
       component:        cfg.taskclusterSecrets.statsComponent,
-      drain,
+      monitor:          monitor.prefix('api'),
       validator,
-      raven,
     })
   },
 
