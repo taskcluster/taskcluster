@@ -1,17 +1,13 @@
-import base from 'taskcluster-base';
-import common from './common';
+import API from 'taskcluster-lib-api';
 import slugid from 'slugid';
 import _ from 'lodash';
 
+let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/secrets/v1/';
 
 /** API end-point for version v1/
  *
- * In this API implementation we shall assume the following context:
- * {
- *   publisher:      // publisher from base.Exchanges
- * }
  */
-var api = new base.API({
+let api = new API({
   title:        "TaskCluster Secrets API Documentation",
   description: [
     "The secrets service provides a simple key/value store for small bits of secret",
@@ -32,7 +28,7 @@ api.declare({
   route:       '/secret/:name(*)',
   deferAuth:   true,
   name:        'set',
-  input:       common.SCHEMA_PREFIX_CONST + "secret.json#",
+  input:       SCHEMA_PREFIX_CONST + "secret.json#",
   scopes:      [['secrets:set:<name>']],
   title:       'Set Secret',
   stability:    'stable',
@@ -101,7 +97,7 @@ api.declare({
   route:       '/secret/:name(*)',
   deferAuth:   true,
   name:        'get',
-  output:      common.SCHEMA_PREFIX_CONST + "secret.json#",
+  output:      SCHEMA_PREFIX_CONST + "secret.json#",
   scopes:      [['secrets:get:<name>']],
   title:       'Read Secret',
   stability:    'stable',
@@ -143,7 +139,7 @@ api.declare({
   route:       '/secrets',
   deferAuth:   true,
   name:        'list',
-  output:      common.SCHEMA_PREFIX_CONST + "secret-list.json#",
+  output:      SCHEMA_PREFIX_CONST + "secret-list.json#",
   title:       'List Secrets',
   stability:    'stable',
   description: [

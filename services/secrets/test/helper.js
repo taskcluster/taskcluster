@@ -1,17 +1,16 @@
 import assert from 'assert';
-import base from 'taskcluster-base';
 import api from '../lib/api';
 import taskcluster from 'taskcluster-client';
 import mocha from 'mocha';
-import common from '../lib/common';
 import testing from 'taskcluster-lib-testing';
 import load from '../bin/main';
+import config from 'typed-env-config';
 
 // Create and export helper object
 var helper = module.exports = {};
 
 // Load configuration
-var cfg = base.config({profile: 'test'});
+var cfg = config({profile: 'test'});
 const baseUrl = cfg.server.publicUrl + '/v1';
 
 // Some clients for the tests, with differents scopes.  These are turned
