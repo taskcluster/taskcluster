@@ -1,6 +1,6 @@
-import base from 'taskcluster-base';
+import Exchanges from 'pulse-publisher';
 
-let exchanges = new base.Exchanges({
+let exchanges = new Exchanges({
   title: "Taskcluster-treeherder Pulse Exchange",
   description: [
     "The taskcluster-treeherder service is responsible for processing",

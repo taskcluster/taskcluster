@@ -1,23 +1,26 @@
 import Debug from 'debug';
 import path from 'path';
-import base from 'taskcluster-base';
 import taskcluster from 'taskcluster-client';
 import { Handler } from './handler';
 import exchanges from './exchanges';
+import loader from 'taskcluster-lib-loader';
+import config from 'typed-env-config';
+import monitor from 'taskcluster-lib-monitor';
+import validator from 'taskcluster-lib-validate';
 
 let debug = Debug('taskcluster-treeherder:main');
 
-let load = base.loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => base.config({profile}),
+    setup: ({profile}) => config({profile}),
   },
 
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => {
       debug('Configuring validator');
-      return base.validator({
+      return validator({
         prefix:       'taskcluster-treeherder/v1/',
         aws:           cfg.aws
       });
@@ -26,7 +29,7 @@ let load = base.loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => base.monitor({
+    setup: ({process, profile, cfg}) => monitor({
       project: cfg.monitor.component,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',

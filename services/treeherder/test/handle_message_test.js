@@ -1,13 +1,14 @@
 import assert from 'assert';
 import path from 'path';
 import { Handler } from '../lib/handler';
-import base from 'taskcluster-base';
+import Monitor from 'taskcluster-lib-monitor';
+import validator from 'taskcluster-lib-validate';
 
 let monitor;
 
 suite('handle message', () => {
   suiteSetup(async () => {
-    monitor = await base.monitor({
+    monitor = await Monitor({
       project: 'tc-treeherder-test',
       credentials: {},
       mock: true
@@ -152,7 +153,7 @@ suite('handle message', () => {
         }
       },
     });
-    handler.validator = await base.validator({
+    handler.validator = await validator({
         folder: path.join(__dirname, '..', 'schemas'),
         prefix: 'taskcluster-treeherder/v1/',
         aws:    {}
