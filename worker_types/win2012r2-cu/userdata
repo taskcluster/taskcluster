@@ -93,19 +93,19 @@ Expand-ZIPFile -File "C:\nssm-2.24.zip" -Destination "C:\" -Url "http://www.nssm
 #     New-ItemProperty -Path $registryPath -Name $name -Value $value `
 #     -PropertyType ExpandString -Force | Out-Null
 # }
-# 
+#
 # # mount default user profile registry hive
 # reg load "HKLM\DefaultUser" "C:\Documents and Settings\Default User\ntuser.dat"
-# 
+#
 # # set TMP env var in profile
 # SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
-# 
+#
 # # set TEMP env var in profile
 # SetKey -registryPath "HKLM:\DefaultUser\Environment" -name "TEMP" -value "C:\Users\%USERNAME%\Task\Temp\Dir"
-# 
+#
 # # clean up handles so we can unmount registry hive
 # [gc]::collect()
-# 
+#
 # # unmount registry hive
 # reg unload HKLM\DefaultUser
 
