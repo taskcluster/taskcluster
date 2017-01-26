@@ -110,7 +110,11 @@ func (l *LiveLogTask) uploadLiveLog() error {
 	if err != nil {
 		return err
 	}
-	getURL.Scheme = "https"
+	if l.liveLog.SSLCert != "" && l.liveLog.SSLKey != "" {
+		getURL.Scheme = "https"
+	} else {
+		getURL.Scheme = "http"
+	}
 	getURL.Host = statelessHostname + ":" + strconv.Itoa(int(l.liveLog.GETPort))
 	uploadErr := l.task.uploadArtifact(
 		RedirectArtifact{

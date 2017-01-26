@@ -19,8 +19,8 @@ import (
 // LiveLog provides access to a livelog process running on the OS. Use
 // New(liveLogExecutable string) to start a new livelog instance.
 type LiveLog struct {
-	sslCert string
-	sslKey  string
+	SSLCert string
+	SSLKey  string
 	secret  string
 	command *exec.Cmd
 	PUTPort uint16
@@ -53,19 +53,16 @@ func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*L
 	l := &LiveLog{
 		secret:  slugid.Nice(),
 		command: exec.Command(liveLogExecutable),
-		sslCert: sslCert,
-		sslKey:  sslKey,
+		SSLCert: sslCert,
+		SSLKey:  sslKey,
 		PUTPort: putPort,
 		GETPort: getPort,
 	}
-	l.command.Env = append(
-		os.Environ(),
-		"ACCESS_TOKEN="+l.secret,
-		"LIVELOG_GET_PORT="+strconv.Itoa(int(l.GETPort)),
-		"LIVELOG_PUT_PORT="+strconv.Itoa(int(l.PUTPort)),
-		"SERVER_CRT_FILE="+l.sslCert,
-		"SERVER_KEY_FILE="+l.sslKey,
-	)
+	os.Setenv("ACCESS_TOKEN", l.secret)
+	os.Setenv("LIVELOG_GET_PORT", strconv.Itoa(int(l.GETPort)))
+	os.Setenv("LIVELOG_PUT_PORT", strconv.Itoa(int(l.PUTPort)))
+	os.Setenv("SERVER_CRT_FILE", l.SSLCert)
+	os.Setenv("SERVER_KEY_FILE", l.SSLKey)
 	err := l.command.Start()
 	// TODO: we need to make sure that this livelog process we just started
 	// doesn't just exit, which can happen if the port is already in use!!!
@@ -94,12 +91,12 @@ func (l *LiveLog) Terminate() error {
 }
 
 func (l *LiveLog) setRequestURLs() {
-	scheme := "http"
-	if os.Getenv("SERVER_CRT_FILE") != "" && os.Getenv("SERVER_KEY_FILE") != "" {
-		scheme = "https"
+	getScheme := "http"
+	if l.SSLCert != "" && l.SSLKey != "" {
+		getScheme = "https"
 	}
-	l.putURL = fmt.Sprintf("%v://localhost:%v/log", scheme, l.PUTPort)
-	l.GetURL = fmt.Sprintf("%v://localhost:%v/log/%v", scheme, l.GETPort, l.secret)
+	l.putURL = fmt.Sprintf("http://localhost:%v/log", l.PUTPort)
+	l.GetURL = fmt.Sprintf("%v://localhost:%v/log/%v", getScheme, l.GETPort, l.secret)
 }
 
 func (l *LiveLog) connectInputStream() error {
