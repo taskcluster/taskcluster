@@ -163,7 +163,7 @@ measured and recoded just like successful functions or promises.
 ### Timing Handlers
 
 A common pattern in Taskcluster projects is to have handler functions in a worker that take a message as an argument and perform some action. These
-can be timed by wrapping them with `taskcluster-lib-monitor`:
+can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
 
 ```js
 let monitor = await monitoring({
