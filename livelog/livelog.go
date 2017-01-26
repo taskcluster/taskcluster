@@ -58,12 +58,14 @@ func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*L
 		PUTPort: putPort,
 		GETPort: getPort,
 	}
-	// os.Setenv("ACCESS_TOKEN", l.secret)
-	os.Setenv("LIVELOG_GET_PORT", strconv.Itoa(int(l.GETPort)))
-	os.Setenv("LIVELOG_PUT_PORT", strconv.Itoa(int(l.PUTPort)))
-	// os.Setenv("SERVER_CRT_FILE", l.sslCert)
-	// os.Setenv("SERVER_KEY_FILE", l.sslKey)
-	l.command.Env = os.Environ()
+	l.command.Env = append(
+		os.Environ(),
+		"ACCESS_TOKEN="+l.secret,
+		"LIVELOG_GET_PORT="+strconv.Itoa(int(l.GETPort)),
+		"LIVELOG_PUT_PORT="+strconv.Itoa(int(l.PUTPort)),
+		"SERVER_CRT_FILE="+l.sslCert,
+		"SERVER_KEY_FILE="+l.sslKey,
+	)
 	err := l.command.Start()
 	// TODO: we need to make sure that this livelog process we just started
 	// doesn't just exit, which can happen if the port is already in use!!!
