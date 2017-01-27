@@ -11,7 +11,7 @@ import (
 func TestSlugidV4(t *testing.T) {
 	assert := assert.New(t)
 
-	// Let's test 100 generated slugs, to increase confidence
+	// Let's test 1000 generated slugs, to increase confidence
 	for i := 0; i < 1000; i++ {
 		slug, _ := v4()
 		match := V4_SLUG_REGEXP.MatchString(slug)
@@ -22,7 +22,7 @@ func TestSlugidV4(t *testing.T) {
 func TestSlugidNice(t *testing.T) {
 	assert := assert.New(t)
 
-	// Let's test 100 generated slugs, to increase confidence
+	// Let's test 1000 generated slugs, to increase confidence
 	for i := 0; i < 1000; i++ {
 		slug, _ := nice()
 		match := NICE_SLUG_REGEXP.MatchString(slug)
