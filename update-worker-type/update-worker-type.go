@@ -39,7 +39,7 @@ func main() {
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
 
-	cd := &tcclient.ConnectionData{
+	cd := &tcclient.Client{
 		Credentials:  tcCreds,
 		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
 		Authenticate: true,
