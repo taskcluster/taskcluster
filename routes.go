@@ -16,7 +16,7 @@ import (
 )
 
 type Routes struct {
-	tcclient.ConnectionData
+	tcclient.Client
 	lock sync.RWMutex
 }
 
@@ -71,7 +71,7 @@ func (self *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 
 	urlString := strings.TrimSpace(string(body))
 
-	cd := tcclient.ConnectionData(self.ConnectionData)
+	cd := tcclient.Client(self.Client)
 	bewitUrl, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
 
 	if err != nil {
@@ -131,7 +131,6 @@ func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	res.Header().Set("X-Taskcluster-Endpoint", targetPath.String())
-
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
 
 	// In theory, req.Body should never be nil when running as a server, but
@@ -157,7 +156,7 @@ func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	cd := tcclient.ConnectionData(self.ConnectionData)
+	cd := tcclient.Client(self.Client)
 	cs, err := (&cd).Request(body, req.Method, targetPath.String(), nil)
 	// If we fail to create a request notify the client.
 	if err != nil {
@@ -172,7 +171,7 @@ func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Map the headers from the proxy back into our proxyResponse
-	for key, _ := range cs.HTTPResponse.Header {
+	for key := range cs.HTTPResponse.Header {
 		res.Header().Set(key, cs.HTTPResponse.Header.Get(key))
 	}
 

@@ -150,7 +150,7 @@ func TestBewit(t *testing.T) {
 
 		// Test setup
 		routes := Routes{
-			ConnectionData: tcclient.ConnectionData{
+			Client: tcclient.Client{
 				Credentials: creds,
 			},
 		}
@@ -196,7 +196,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
 			routes := Routes{
-				ConnectionData: tcclient.ConnectionData{
+				Client: tcclient.Client{
 					Authenticate: true,
 					Credentials: &tcclient.Credentials{
 						ClientID:         creds.ClientID,
@@ -241,7 +241,7 @@ func TestAPICallWithPayload(t *testing.T) {
 
 		// Test setup
 		routes := Routes{
-			ConnectionData: tcclient.ConnectionData{
+			Client: tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -316,7 +316,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 
 		// Test setup
 		routes := Routes{
-			ConnectionData: tcclient.ConnectionData{
+			Client: tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -351,7 +351,7 @@ func TestOversteppedScopes(t *testing.T) {
 
 		// Test setup
 		routes := Routes{
-			ConnectionData: tcclient.ConnectionData{
+			Client: tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
@@ -391,7 +391,7 @@ func TestOversteppedScopes(t *testing.T) {
 
 func TestBadCredsReturns500(t *testing.T) {
 	routes := Routes{
-		ConnectionData: tcclient.ConnectionData{
+		Client: tcclient.Client{
 			Authenticate: true,
 			Credentials: &tcclient.Credentials{
 				ClientID:    "abc",
@@ -421,7 +421,7 @@ func TestInvalidEndpoint(t *testing.T) {
 
 		// Test setup
 		routes := Routes{
-			ConnectionData: tcclient.ConnectionData{
+			Client: tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},

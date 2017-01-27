@@ -99,7 +99,7 @@ func main() {
 	log.Println("Proxy with scopes: ", creds.AuthorizedScopes)
 
 	routes := Routes{
-		ConnectionData: tcclient.ConnectionData{
+		Client: tcclient.Client{
 			Authenticate: true,
 			Credentials:  creds,
 		},

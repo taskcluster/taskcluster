@@ -98,7 +98,7 @@ func (self *RoutesTest) request(method string, content []byte) (res *httptest.Re
 func NewRoutesTest(t *testing.T) *RoutesTest {
 	return &RoutesTest{
 		Routes: Routes{
-			ConnectionData: tcclient.ConnectionData{
+			Client: tcclient.Client{
 				Authenticate: true,
 				Credentials: &tcclient.Credentials{
 					ClientID:    "clientId",
