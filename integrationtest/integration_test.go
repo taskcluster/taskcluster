@@ -112,7 +112,7 @@ func TestDefineTask(t *testing.T) {
 		WorkerType:  "win2008-worker",
 	}
 
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.Client(*myQueue)
 	resp, cs, err := (&cd).APICall(td, "POST", "/task/"+url.QueryEscape(taskID)+"/define", new(queue.TaskStatusResponse), nil)
 	tsr := resp.(*queue.TaskStatusResponse)
 

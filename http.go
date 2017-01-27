@@ -42,11 +42,18 @@ type CallSummary struct {
 	Attempts int
 }
 
+type APICall struct {
+	Client      *Client
+	Route       string
+	QueryString url.Values
+	Payload     io.Reader
+}
+
 // utility function to create a URL object based on given data
-func setURL(connectionData *ConnectionData, route string, query url.Values) (u *url.URL, err error) {
-	u, err = url.Parse(connectionData.BaseURL + route)
+func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
+	u, err = url.Parse(client.BaseURL + route)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", connectionData.BaseURL+route, connectionData.BaseURL, err)
+		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", client.BaseURL+route, client.BaseURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -58,7 +65,7 @@ func setURL(connectionData *ConnectionData, route string, query url.Values) (u *
 // performing any json marshaling/unmarshaling of requests/responses. It is
 // useful if you wish to handle raw payloads and/or raw http response bodies,
 // rather than calling APICall which translates []byte to/from go types.
-func (connectionData *ConnectionData) Request(rawPayload []byte, method, route string, query url.Values) (*CallSummary, error) {
+func (client *Client) Request(rawPayload []byte, method, route string, query url.Values) (*CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HTTPRequestBody = string(rawPayload)
 
@@ -68,19 +75,19 @@ func (connectionData *ConnectionData) Request(rawPayload []byte, method, route s
 	httpCall := func() (*http.Response, error, error) {
 		var ioReader io.Reader
 		ioReader = bytes.NewReader(rawPayload)
-		u, err := setURL(connectionData, route, query)
+		u, err := setURL(client, route, query)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), connectionData.BaseURL, err)
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), client.BaseURL, err)
 		}
 		callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if connectionData.Authenticate {
-			err = connectionData.Credentials.SignRequest(callSummary.HTTPRequest)
+		if client.Authenticate {
+			err = client.Credentials.SignRequest(callSummary.HTTPRequest)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -132,7 +139,7 @@ func (c *Credentials) SignRequest(req *http.Request) (err error) {
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (connectionData *ConnectionData) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+func (client *Client) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
 	rawPayload := []byte{}
 	var err error
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
@@ -141,7 +148,7 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 			return result, &CallSummary{HTTPRequestObject: payload}, err
 		}
 	}
-	callSummary, err := connectionData.Request(rawPayload, method, route, query)
+	callSummary, err := client.Request(rawPayload, method, route, query)
 	callSummary.HTTPRequestObject = payload
 	if err != nil {
 		return result, callSummary, err
@@ -155,25 +162,25 @@ func (connectionData *ConnectionData) APICall(payload interface{}, method, route
 	return result, callSummary, err
 }
 
-// SignedURL creates a signed URL using the given ConnectionData, where route
-// is the url path relative to the BaseURL stored in the ConnectionData, query
-// is the set of query string parameters, if any, and duration is the amount of
-// time that the signed URL should remain valid for.
-func (connectionData *ConnectionData) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
-	u, err = setURL(connectionData, route, query)
+// SignedURL creates a signed URL using the given Client, where route is the
+// url path relative to the BaseURL stored in the Client, query is the set of
+// query string parameters, if any, and duration is the amount of time that the
+// signed URL should remain valid for.
+func (client *Client) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
+	u, err = setURL(client, route, query)
 	if err != nil {
 		return
 	}
 	credentials := &hawk.Credentials{
-		ID:   connectionData.Credentials.ClientID,
-		Key:  connectionData.Credentials.AccessToken,
+		ID:   client.Credentials.ClientID,
+		Key:  client.Credentials.AccessToken,
 		Hash: sha256.New,
 	}
 	reqAuth, err := hawk.NewURLAuth(u.String(), credentials, duration)
 	if err != nil {
 		return
 	}
-	reqAuth.Ext, err = getExtHeader(connectionData.Credentials)
+	reqAuth.Ext, err = getExtHeader(client.Credentials)
 	if err != nil {
 		return
 	}

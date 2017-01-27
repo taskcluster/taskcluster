@@ -42,10 +42,10 @@ func (creds *Credentials) String() string {
 	)
 }
 
-// ConnectionData is the entry point into all the functionality in this
-// package. It contains authentication credentials, and a service endpoint,
-// which are required for all HTTP operations.
-type ConnectionData struct {
+// Client is the entry point into all the functionality in this package. It
+// contains authentication credentials, and a service endpoint, which are
+// required for all HTTP operations.
+type Client struct {
 	Credentials *Credentials
 	// The URL of the API endpoint to hit.
 	// Use "https://auth.taskcluster.net/v1" for production.
@@ -80,7 +80,7 @@ type Certificate struct {
 // See https://docs.taskcluster.net/manual/apis/temporary-credentials
 func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
-		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")
+		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.Client).CreateTemporaryCredentials(...) method")
 	}
 
 	now := time.Now()
