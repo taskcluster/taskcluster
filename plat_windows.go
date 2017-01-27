@@ -69,7 +69,7 @@ func startup() error {
 	return taskCleanup()
 }
 
-func deleteTaskDir(path string, user string) error {
+func deleteTaskDir(path string) error {
 	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
 	err := os.RemoveAll(path)
 	if err == nil {
@@ -91,15 +91,16 @@ func deleteTaskDir(path string, user string) error {
 }
 
 func prepareTaskEnvironment() error {
+	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
+	taskContext = &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, taskDirName),
+	}
 	if !config.RunTasksAsCurrentUser {
 		// username can only be 20 chars, uuids are too long, therefore use
 		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
 		// as current user, we don't want a task_* subdirectory, we want to run
 		// from same directory every time. Also important for tests.
-		userName := "task_" + strconv.Itoa(int(time.Now().Unix()))
-		taskContext = &TaskContext{
-			TaskDir: filepath.Join(config.TasksDir, userName),
-		}
+		userName := taskDirName
 		// create user
 		user := &runtime.OSUser{
 			Name:     userName,
@@ -126,10 +127,6 @@ func prepareTaskEnvironment() error {
 		if err != nil {
 			return err
 		}
-	} else {
-		taskContext = &TaskContext{
-			TaskDir: config.TasksDir,
-		}
 	}
 	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
 }
@@ -148,7 +145,6 @@ func generatePassword() string {
 }
 
 func deleteExistingOSUsers() {
-	deleteTaskDirs()
 	log.Print("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
@@ -178,20 +174,10 @@ func deleteTaskDirs() {
 	for _, file := range fi {
 		fileName := file.Name()
 		path := filepath.Join(config.TasksDir, fileName)
-		if config.RunTasksAsCurrentUser {
-			// ignore any error when deleting a single file, probably not worth killing worker
-			_ = os.RemoveAll(path)
-		} else {
-			if file.IsDir() {
-				if strings.HasPrefix(fileName, "task_") {
-					// fileName could be <user> or <user>.<hostname>...
-					user := fileName
-					if i := strings.IndexRune(user, '.'); i >= 0 {
-						user = user[:i]
-					}
-					// ignore any error occuring here, not a lot we can do about it...
-					deleteTaskDir(path, user)
-				}
+		if file.IsDir() {
+			if strings.HasPrefix(fileName, "task_") {
+				// ignore any error occuring here, not a lot we can do about it...
+				deleteTaskDir(path)
 			}
 		}
 	}
@@ -349,6 +335,7 @@ func taskCleanup() error {
 	} else {
 		log.Print("No previous task user desktop, so no need to close any open desktops")
 	}
+	deleteTaskDirs()
 	// note if this fails, we carry on without throwing an error
 	if !config.RunTasksAsCurrentUser {
 		deleteExistingOSUsers()
