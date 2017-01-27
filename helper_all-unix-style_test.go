@@ -2,7 +2,10 @@
 
 package main
 
-import "strconv"
+import (
+	"path/filepath"
+	"strconv"
+)
 
 func helloGoodbye() [][]string {
 	return [][]string{
@@ -81,6 +84,22 @@ func goRun(goFile string) [][]string {
 			"go",
 			"run",
 			goFile,
+		},
+	}
+}
+
+func copyArtifact(path string) [][]string {
+	sourcePath := filepath.Join(config.TasksDir, path)
+	return [][]string{
+		{
+			"mkdir",
+			"-p",
+			filepath.Dir(path),
+		},
+		{
+			"cp",
+			sourcePath,
+			path,
 		},
 	}
 }

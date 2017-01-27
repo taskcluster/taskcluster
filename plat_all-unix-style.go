@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -51,11 +50,6 @@ func init() {
 	}
 }
 
-func startup() error {
-	log.Printf("Detected %s platform", runtime.GOOS)
-	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0700)
-}
-
 func (task *TaskRun) prepareCommand(index int) error {
 	return nil
 }
@@ -71,6 +65,7 @@ func (task *TaskRun) generateCommand(index int) error {
 }
 
 func taskCleanup() error {
+	deleteTaskDirs()
 	return nil
 }
 
@@ -130,4 +125,18 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 
 func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
+}
+
+func prepareTaskUser(username string) {
+}
+
+func deleteTaskDir(path string) error {
+	log.Print("Removing home directory '" + path + "'...")
+	err := os.RemoveAll(path)
+	if err != nil {
+		log.Print("WARNING: could not delete directory '" + path + "'")
+		log.Printf("%v", err)
+		return err
+	}
+	return nil
 }

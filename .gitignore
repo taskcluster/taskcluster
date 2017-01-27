@@ -35,12 +35,7 @@ coverage.report
 # Created by generic worker tests
 /downloads/
 /caches/
-/testdata/command_*
-/testdata/dir.txt
-/testdata/env.txt
-/testdata/my-task-caches/
-/testdata/preloaded/
-/testdata/public/logs/
+/testdata/task_*
 
 # For any releases made locally
 /target/

@@ -30,7 +30,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 	}
 
 	// check log mentions both missing scopes
-	bytes, err := ioutil.ReadFile(filepath.Join("testdata/public/logs/live_backing.log"))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestOSGroupsRespected(t *testing.T) {
 	}
 
 	// check log mentions both missing scopes
-	bytes, err := ioutil.ReadFile(filepath.Join("testdata/public/logs/live_backing.log"))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}

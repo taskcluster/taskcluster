@@ -226,7 +226,7 @@ func TestUpload(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	payload := GenericWorkerPayload{
-		Command:    helloGoodbye(),
+		Command:    append(helloGoodbye(), copyArtifact("SampleArtifacts/_/X.txt")...),
 		MaxRunTime: 7200,
 		Artifacts: []struct {
 			Expires tcclient.Time `json:"expires"`

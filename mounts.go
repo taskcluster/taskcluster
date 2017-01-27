@@ -359,7 +359,12 @@ func (w *WritableDirectoryCache) Mount() error {
 		// move it into place...
 		src := directoryCaches[w.CacheName].Location
 		target := filepath.Join(taskContext.TaskDir, w.Directory)
-		err := RenameCrossDevice(src, target)
+		parentDir := filepath.Dir(target)
+		err := os.MkdirAll(parentDir, 0777)
+		if err != nil {
+			return fmt.Errorf("Not able to create directory %v with permissions 0777: %v", parentDir, err)
+		}
+		err = RenameCrossDevice(src, target)
 		if err != nil {
 			return fmt.Errorf("Not able to rename dir %v as %v: %v", src, target, err)
 		}

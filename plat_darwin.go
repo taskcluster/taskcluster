@@ -12,17 +12,6 @@ import (
 	"github.com/dchest/uniuri"
 )
 
-func deleteTaskDir(path string, user string) error {
-	log.Print("Removing home directory '" + path + "'...")
-	err := os.RemoveAll(path)
-	if err != nil {
-		log.Print("WARNING: could not delete directory '" + path + "'")
-		log.Printf("%v", err)
-		return err
-	}
-	return nil
-}
-
 func createNewTaskContext() error {
 	// username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars)

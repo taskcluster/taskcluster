@@ -412,8 +412,8 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 }
 
 func runWorker() {
-	// Any custom startup per platform...
-	err := startup()
+	log.Printf("Detected %s platform", runtime.GOOS)
+	err := taskCleanup()
 	// any errors are fatal
 	if err != nil {
 		log.Printf("OH NO!!!\n\n%#v", err)
@@ -460,6 +460,8 @@ func runWorker() {
 	lastReportedNoTasks := time.Now()
 	tasksResolved := uint(0)
 	for {
+		prepareTaskEnvironment()
+
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
 		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
@@ -483,9 +485,13 @@ func runWorker() {
 				}
 			}
 		} else {
-			err := taskCleanup()
-			if err != nil {
-				log.Printf("Error cleaning up after task!\n%v", err)
+			if config.CleanUpTaskDirs {
+				err := taskCleanup()
+				if err != nil {
+					log.Printf("Error cleaning up after task!\n%v", err)
+				}
+			} else {
+				log.Print("*NOT* Removing task directories as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
 			}
 			tasksResolved++
 			if tasksResolved == config.NumberOfTasksToRun {
@@ -1204,4 +1210,50 @@ func convertNilToEmptyString(val interface{}) string {
 		return ""
 	}
 	return val.(string)
+}
+
+func prepareTaskEnvironment() {
+	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
+	taskContext = &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, taskDirName),
+	}
+	if !config.RunTasksAsCurrentUser {
+		// username can only be 20 chars, uuids are too long, therefore use
+		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
+		// as current user, we don't want a task_* subdirectory, we want to run
+		// from same directory every time. Also important for tests.
+		userName := taskDirName
+		prepareTaskUser(userName)
+	}
+	err := os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func deleteTaskDirs() {
+	taskDirsParent, err := os.Open(config.TasksDir)
+	if err != nil {
+		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
+		log.Printf("%v", err)
+		return
+	}
+	defer taskDirsParent.Close()
+	fi, err := taskDirsParent.Readdir(-1)
+	if err != nil {
+		log.Print("WARNING: Could not read complete directory listing to find old home directories to delete")
+		log.Printf("%v", err)
+		// don't return, since we may have partial listings
+	}
+	for _, file := range fi {
+		fileName := file.Name()
+		path := filepath.Join(config.TasksDir, fileName)
+		if file.IsDir() {
+			if strings.HasPrefix(fileName, "task_") {
+				// ignore any error occuring here, not a lot we can do about it...
+				deleteTaskDir(path)
+			}
+		}
+	}
+
 }

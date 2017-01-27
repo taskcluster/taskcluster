@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
@@ -64,11 +63,6 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 	return nil
 }
 
-func startup() error {
-	log.Print("Detected Windows platform...")
-	return taskCleanup()
-}
-
 func deleteTaskDir(path string) error {
 	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
 	err := os.RemoveAll(path)
@@ -90,45 +84,33 @@ func deleteTaskDir(path string) error {
 	return err
 }
 
-func prepareTaskEnvironment() error {
-	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
-	taskContext = &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, taskDirName),
+func prepareTaskUser(userName string) {
+	// create user
+	user := &runtime.OSUser{
+		Name:     userName,
+		Password: generatePassword(),
 	}
-	if !config.RunTasksAsCurrentUser {
-		// username can only be 20 chars, uuids are too long, therefore use
-		// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
-		// as current user, we don't want a task_* subdirectory, we want to run
-		// from same directory every time. Also important for tests.
-		userName := taskDirName
-		// create user
-		user := &runtime.OSUser{
-			Name:     userName,
-			Password: generatePassword(),
-		}
-		err := user.CreateNew()
-		if err != nil {
-			return err
-		}
-		// create desktop and login
-		loginInfo, desktop, err := process.NewDesktopSession(user.Name, user.Password)
-		if err != nil {
-			return err
-		}
-		taskContext.DesktopSession = &process.DesktopSession{
-			User:      user,
-			LoginInfo: loginInfo,
-			Desktop:   desktop,
-		}
-		// note we only do this if not running as current user, since when running as
-		// current user, this would have no effect on env vars - they are inherited
-		// from parent process
-		err = RedirectAppData(loginInfo.HUser, filepath.Join(config.TasksDir, "AppData"))
-		if err != nil {
-			return err
-		}
+	err := user.CreateNew()
+	if err != nil {
+		panic(err)
 	}
-	return os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
+	// create desktop and login
+	loginInfo, desktop, err := process.NewDesktopSession(user.Name, user.Password)
+	if err != nil {
+		panic(err)
+	}
+	taskContext.DesktopSession = &process.DesktopSession{
+		User:      user,
+		LoginInfo: loginInfo,
+		Desktop:   desktop,
+	}
+	// note we only do this if not running as current user, since when running as
+	// current user, this would have no effect on env vars - they are inherited
+	// from parent process
+	err = RedirectAppData(loginInfo.HUser, filepath.Join(config.TasksDir, "AppData"))
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -151,37 +133,6 @@ func deleteExistingOSUsers() {
 		log.Print("WARNING: could not list existing Windows user accounts")
 		log.Printf("%v", err)
 	}
-}
-
-func deleteTaskDirs() {
-	if !config.CleanUpTaskDirs {
-		log.Print("*NOT* Removing task directories as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
-		return
-	}
-	taskDirsParent, err := os.Open(config.TasksDir)
-	if err != nil {
-		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
-		log.Printf("%v", err)
-		return
-	}
-	defer taskDirsParent.Close()
-	fi, err := taskDirsParent.Readdir(-1)
-	if err != nil {
-		log.Print("WARNING: Could not read complete directory listing to find old home directories to delete")
-		log.Printf("%v", err)
-		// don't return, since we may have partial listings
-	}
-	for _, file := range fi {
-		fileName := file.Name()
-		path := filepath.Join(config.TasksDir, fileName)
-		if file.IsDir() {
-			if strings.HasPrefix(fileName, "task_") {
-				// ignore any error occuring here, not a lot we can do about it...
-				deleteTaskDir(path)
-			}
-		}
-	}
-
 }
 
 func deleteOSUserAccount(line string) {
@@ -341,7 +292,7 @@ func taskCleanup() error {
 		deleteExistingOSUsers()
 	}
 	// this needs to succeed, so return an error if it doesn't
-	return prepareTaskEnvironment()
+	return nil
 }
 
 func install(arguments map[string]interface{}) (err error) {

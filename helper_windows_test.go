@@ -1,6 +1,10 @@
 package main
 
-import "strconv"
+import (
+	"path/filepath"
+	"strconv"
+	"strings"
+)
 
 func helloGoodbye() []string {
 	return []string{
@@ -55,5 +59,14 @@ func sleep(seconds uint) []string {
 func goRun(goFile string) []string {
 	return []string{
 		"go run \"" + goFile + "\"",
+	}
+}
+
+func copyArtifact(path string) []string {
+	targetFile := strings.Replace(path, "/", "\\", -1)
+	sourceFile := filepath.Join(config.TasksDir, targetFile)
+	return []string{
+		"mkdir \"" + filepath.Dir(targetFile) + "\"",
+		"copy \"" + sourceFile + "\" \"" + targetFile + "\"",
 	}
 }
