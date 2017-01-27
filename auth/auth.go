@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -74,7 +74,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-type Auth tcclient.ConnectionData
+type Auth tcclient.Client
 
 // Returns a pointer to Auth, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -96,7 +96,7 @@ type Auth tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Auth {
-	myAuth := Auth(tcclient.ConnectionData{
+	myAuth := Auth(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://auth.taskcluster.net/v1",
 		Authenticate: true,
@@ -113,7 +113,7 @@ func (myAuth *Auth) ListClients(prefix string) (*ListClientResponse, error) {
 	if prefix != "" {
 		v.Add("prefix", prefix)
 	}
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/", new(ListClientResponse), v)
 	return responseObject.(*ListClientResponse), err
 }
@@ -122,7 +122,7 @@ func (myAuth *Auth) ListClients(prefix string) (*ListClientResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#client
 func (myAuth *Auth) Client(clientId string) (*GetClientResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
@@ -145,7 +145,7 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#createClient
 func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), err
 }
@@ -162,7 +162,7 @@ func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) 
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#resetAccessToken
 func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), err
 }
@@ -178,7 +178,7 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, er
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateClient
 func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
@@ -194,7 +194,7 @@ func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) 
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#enableClient
 func (myAuth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/enable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
@@ -209,7 +209,7 @@ func (myAuth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#disableClient
 func (myAuth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/disable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
@@ -222,7 +222,7 @@ func (myAuth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#deleteClient
 func (myAuth *Auth) DeleteClient(clientId string) error {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil, nil)
 	return err
 }
@@ -232,7 +232,7 @@ func (myAuth *Auth) DeleteClient(clientId string) error {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#listRoles
 func (myAuth *Auth) ListRoles() (*ListRolesResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/", new(ListRolesResponse), nil)
 	return responseObject.(*ListRolesResponse), err
 }
@@ -242,7 +242,7 @@ func (myAuth *Auth) ListRoles() (*ListRolesResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#role
 func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
@@ -259,7 +259,7 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#createRole
 func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
@@ -274,7 +274,7 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateRole
 func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
@@ -287,7 +287,7 @@ func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetR
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#deleteRole
 func (myAuth *Auth) DeleteRole(roleId string) error {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
 	return err
 }
@@ -297,7 +297,7 @@ func (myAuth *Auth) DeleteRole(roleId string) error {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#expandScopes
 func (myAuth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "GET", "/scopes/expand", new(SetOfScopes), nil)
 	return responseObject.(*SetOfScopes), err
 }
@@ -308,7 +308,7 @@ func (myAuth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#currentScopes
 func (myAuth *Auth) CurrentScopes() (*SetOfScopes, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/scopes/current", new(SetOfScopes), nil)
 	return responseObject.(*SetOfScopes), err
 }
@@ -388,7 +388,7 @@ func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWS
 	if format != "" {
 		v.Add("format", format)
 	}
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), v)
 	return responseObject.(*AWSS3CredentialsResponse), err
 }
@@ -404,7 +404,7 @@ func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format str
 	if format != "" {
 		v.Add("format", format)
 	}
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), v, duration)
 }
 
@@ -417,7 +417,7 @@ func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format str
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
 func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSignatureResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse), nil)
 	return responseObject.(*AzureSharedAccessSignatureResponse), err
 }
@@ -429,7 +429,7 @@ func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSign
 //
 // See AzureTableSAS for more details.
 func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil, duration)
 }
 
@@ -446,7 +446,7 @@ func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#sentryDSN
 func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/sentry/"+url.QueryEscape(project)+"/dsn", new(SentryDSNResponse), nil)
 	return responseObject.(*SentryDSNResponse), err
 }
@@ -458,7 +458,7 @@ func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 //
 // See SentryDSN for more details.
 func (myAuth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
 }
 
@@ -471,7 +471,7 @@ func (myAuth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) 
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#statsumToken
 func (myAuth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/statsum/"+url.QueryEscape(project)+"/token", new(StatsumTokenResponse), nil)
 	return responseObject.(*StatsumTokenResponse), err
 }
@@ -483,7 +483,7 @@ func (myAuth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) 
 //
 // See StatsumToken for more details.
 func (myAuth *Auth) StatsumToken_SignedURL(project string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
 }
 
@@ -496,7 +496,7 @@ func (myAuth *Auth) StatsumToken_SignedURL(project string, duration time.Duratio
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#authenticateHawk
 func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse), nil)
 	return responseObject.(*HawkSignatureAuthenticationResponse), err
 }
@@ -515,7 +515,7 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#testAuthenticate
 func (myAuth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAuthenticateResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/test-authenticate", new(TestAuthenticateResponse), nil)
 	return responseObject.(*TestAuthenticateResponse), err
 }
@@ -538,7 +538,7 @@ func (myAuth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAut
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#testAuthenticateGet
 func (myAuth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/test-authenticate-get/", new(TestAuthenticateResponse), nil)
 	return responseObject.(*TestAuthenticateResponse), err
 }
@@ -548,7 +548,7 @@ func (myAuth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#ping
 func (myAuth *Auth) Ping() error {
-	cd := tcclient.ConnectionData(*myAuth)
+	cd := tcclient.Client(*myAuth)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

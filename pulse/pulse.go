@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -46,7 +46,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-type Pulse tcclient.ConnectionData
+type Pulse tcclient.Client
 
 // Returns a pointer to Pulse, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -68,7 +68,7 @@ type Pulse tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Pulse {
-	myPulse := Pulse(tcclient.ConnectionData{
+	myPulse := Pulse(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://pulse.taskcluster.net/v1",
 		Authenticate: true,
@@ -82,7 +82,7 @@ func New(credentials *tcclient.Credentials) *Pulse {
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#overview
 func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
-	cd := tcclient.ConnectionData(*myPulse)
+	cd := tcclient.Client(*myPulse)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/overview", new(RabbitOverviewResponse), nil)
 	return responseObject.(*RabbitOverviewResponse), err
 }
@@ -93,7 +93,7 @@ func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#exchanges
 func (myPulse *Pulse) Exchanges() (*RabbitMQExchanges, error) {
-	cd := tcclient.ConnectionData(*myPulse)
+	cd := tcclient.Client(*myPulse)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/exchanges", new(RabbitMQExchanges), nil)
 	return responseObject.(*RabbitMQExchanges), err
 }
@@ -107,7 +107,7 @@ func (myPulse *Pulse) Exchanges() (*RabbitMQExchanges, error) {
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#createNamespace
 func (myPulse *Pulse) CreateNamespace(namespace string, payload *NamespaceCreationRequest) (*NamespaceCreationResponse, error) {
-	cd := tcclient.ConnectionData(*myPulse)
+	cd := tcclient.Client(*myPulse)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespace/"+url.QueryEscape(namespace), new(NamespaceCreationResponse), nil)
 	return responseObject.(*NamespaceCreationResponse), err
 }
@@ -121,7 +121,7 @@ func (myPulse *Pulse) CreateNamespace(namespace string, payload *NamespaceCreati
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#namespace
 func (myPulse *Pulse) Namespace(namespace string) error {
-	cd := tcclient.ConnectionData(*myPulse)
+	cd := tcclient.Client(*myPulse)
 	_, _, err := (&cd).APICall(nil, "GET", "/namespace/"+url.QueryEscape(namespace), nil, nil)
 	return err
 }
@@ -133,7 +133,7 @@ func (myPulse *Pulse) Namespace(namespace string) error {
 //
 // See Namespace for more details.
 func (myPulse *Pulse) Namespace_SignedURL(namespace string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myPulse)
+	cd := tcclient.Client(*myPulse)
 	return (&cd).SignedURL("/namespace/"+url.QueryEscape(namespace), nil, duration)
 }
 
@@ -142,7 +142,7 @@ func (myPulse *Pulse) Namespace_SignedURL(namespace string, duration time.Durati
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#ping
 func (myPulse *Pulse) Ping() error {
-	cd := tcclient.ConnectionData(*myPulse)
+	cd := tcclient.Client(*myPulse)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

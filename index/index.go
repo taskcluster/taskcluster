@@ -118,7 +118,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -129,7 +129,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-type Index tcclient.ConnectionData
+type Index tcclient.Client
 
 // Returns a pointer to Index, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -151,7 +151,7 @@ type Index tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Index {
-	myIndex := Index(tcclient.ConnectionData{
+	myIndex := Index(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://index.taskcluster.net/v1",
 		Authenticate: true,
@@ -164,7 +164,7 @@ func New(credentials *tcclient.Credentials) *Index {
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#findTask
 func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, error) {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), err
 }
@@ -180,7 +180,7 @@ func (myIndex *Index) FindTask(namespace string) (*IndexedTaskResponse, error) {
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#listNamespaces
 func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, error) {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
 	return responseObject.(*ListNamespacesResponse), err
 }
@@ -196,7 +196,7 @@ func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRe
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#listTasks
 func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, error) {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
 	return responseObject.(*ListTasksResponse), err
 }
@@ -209,7 +209,7 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#insertTask
 func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), err
 }
@@ -223,7 +223,7 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#findArtifactFromTask
 func (myIndex *Index) FindArtifactFromTask(namespace, name string) error {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return err
 }
@@ -235,7 +235,7 @@ func (myIndex *Index) FindArtifactFromTask(namespace, name string) error {
 //
 // See FindArtifactFromTask for more details.
 func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(namespace)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
@@ -244,7 +244,7 @@ func (myIndex *Index) FindArtifactFromTask_SignedURL(namespace, name string, dur
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#ping
 func (myIndex *Index) Ping() error {
-	cd := tcclient.ConnectionData(*myIndex)
+	cd := tcclient.Client(*myIndex)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

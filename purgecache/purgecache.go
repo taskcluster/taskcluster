@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -45,7 +45,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-type PurgeCache tcclient.ConnectionData
+type PurgeCache tcclient.Client
 
 // Returns a pointer to PurgeCache, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -67,7 +67,7 @@ type PurgeCache tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *PurgeCache {
-	purgeCache := PurgeCache(tcclient.ConnectionData{
+	purgeCache := PurgeCache(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
 		Authenticate: true,
@@ -86,7 +86,7 @@ func New(credentials *tcclient.Credentials) *PurgeCache {
 //
 // See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) error {
-	cd := tcclient.ConnectionData(*purgeCache)
+	cd := tcclient.Client(*purgeCache)
 	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return err
 }
@@ -108,7 +108,7 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 	if limit != "" {
 		v.Add("limit", limit)
 	}
-	cd := tcclient.ConnectionData(*purgeCache)
+	cd := tcclient.Client(*purgeCache)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/list", new(OpenAllPurgeRequestsList), v)
 	return responseObject.(*OpenAllPurgeRequestsList), err
 }
@@ -125,7 +125,7 @@ func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since str
 	if since != "" {
 		v.Add("since", since)
 	}
-	cd := tcclient.ConnectionData(*purgeCache)
+	cd := tcclient.Client(*purgeCache)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
 }
@@ -135,7 +135,7 @@ func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since str
 //
 // See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#ping
 func (purgeCache *PurgeCache) Ping() error {
-	cd := tcclient.ConnectionData(*purgeCache)
+	cd := tcclient.Client(*purgeCache)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

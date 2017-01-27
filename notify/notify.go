@@ -32,13 +32,13 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/notify/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package notify
 
 import tcclient "github.com/taskcluster/taskcluster-client-go"
 
-type Notify tcclient.ConnectionData
+type Notify tcclient.Client
 
 // Returns a pointer to Notify, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -60,7 +60,7 @@ type Notify tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Notify {
-	myNotify := Notify(tcclient.ConnectionData{
+	myNotify := Notify(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://notify.taskcluster.net/v1",
 		Authenticate: true,
@@ -80,7 +80,7 @@ func New(credentials *tcclient.Credentials) *Notify {
 //
 // See https://docs.taskcluster.net/reference/core/notify/api-docs#email
 func (myNotify *Notify) Email(payload *SendEmailRequest) error {
-	cd := tcclient.ConnectionData(*myNotify)
+	cd := tcclient.Client(*myNotify)
 	_, _, err := (&cd).APICall(payload, "POST", "/email", nil, nil)
 	return err
 }
@@ -94,7 +94,7 @@ func (myNotify *Notify) Email(payload *SendEmailRequest) error {
 //
 // See https://docs.taskcluster.net/reference/core/notify/api-docs#pulse
 func (myNotify *Notify) Pulse(payload *PostPulseMessageRequest) error {
-	cd := tcclient.ConnectionData(*myNotify)
+	cd := tcclient.Client(*myNotify)
 	_, _, err := (&cd).APICall(payload, "POST", "/pulse", nil, nil)
 	return err
 }
@@ -119,7 +119,7 @@ func (myNotify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 //
 // See https://docs.taskcluster.net/reference/core/notify/api-docs#irc
 func (myNotify *Notify) Irc(payload *PostIRCMessageRequest) error {
-	cd := tcclient.ConnectionData(*myNotify)
+	cd := tcclient.Client(*myNotify)
 	_, _, err := (&cd).APICall(payload, "POST", "/irc", nil, nil)
 	return err
 }
@@ -129,7 +129,7 @@ func (myNotify *Notify) Irc(payload *PostIRCMessageRequest) error {
 //
 // See https://docs.taskcluster.net/reference/core/notify/api-docs#ping
 func (myNotify *Notify) Ping() error {
-	cd := tcclient.ConnectionData(*myNotify)
+	cd := tcclient.Client(*myNotify)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

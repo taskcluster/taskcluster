@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -45,7 +45,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-type Github tcclient.ConnectionData
+type Github tcclient.Client
 
 // Returns a pointer to Github, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -67,7 +67,7 @@ type Github tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Github {
-	myGithub := Github(tcclient.ConnectionData{
+	myGithub := Github(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://github.taskcluster.net/v1",
 		Authenticate: true,
@@ -82,7 +82,7 @@ func New(credentials *tcclient.Credentials) *Github {
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#githubWebHookConsumer
 func (myGithub *Github) GithubWebHookConsumer() error {
-	cd := tcclient.ConnectionData(*myGithub)
+	cd := tcclient.Client(*myGithub)
 	_, _, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
 	return err
 }
@@ -111,7 +111,7 @@ func (myGithub *Github) Builds(continuationToken, limit, organization, repositor
 	if sha != "" {
 		v.Add("sha", sha)
 	}
-	cd := tcclient.ConnectionData(*myGithub)
+	cd := tcclient.Client(*myGithub)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(Builds1), v)
 	return responseObject.(*Builds1), err
 }
@@ -121,7 +121,7 @@ func (myGithub *Github) Builds(continuationToken, limit, organization, repositor
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#ping
 func (myGithub *Github) Ping() error {
-	cd := tcclient.ConnectionData(*myGithub)
+	cd := tcclient.Client(*myGithub)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

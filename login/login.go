@@ -34,13 +34,13 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 25 Jan 2017 at 16:24:00 UTC. The code was generated
+// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 
 import tcclient "github.com/taskcluster/taskcluster-client-go"
 
-type Login tcclient.ConnectionData
+type Login tcclient.Client
 
 // Returns a pointer to Login, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -62,7 +62,7 @@ type Login tcclient.ConnectionData
 //  	// handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Login {
-	myLogin := Login(tcclient.ConnectionData{
+	myLogin := Login(tcclient.Client{
 		Credentials:  credentials,
 		BaseURL:      "https://login.taskcluster.net/v1",
 		Authenticate: true,
@@ -80,7 +80,7 @@ func New(credentials *tcclient.Credentials) *Login {
 //
 // See https://docs.taskcluster.net/reference/core/login/api-docs#credentialsFromPersonaAssertion
 func (myLogin *Login) CredentialsFromPersonaAssertion(payload *PersonaAssertionRequest) (*CredentialsResponse, error) {
-	cd := tcclient.ConnectionData(*myLogin)
+	cd := tcclient.Client(*myLogin)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/persona", new(CredentialsResponse), nil)
 	return responseObject.(*CredentialsResponse), err
 }
@@ -90,7 +90,7 @@ func (myLogin *Login) CredentialsFromPersonaAssertion(payload *PersonaAssertionR
 //
 // See https://docs.taskcluster.net/reference/core/login/api-docs#ping
 func (myLogin *Login) Ping() error {
-	cd := tcclient.ConnectionData(*myLogin)
+	cd := tcclient.Client(*myLogin)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }
