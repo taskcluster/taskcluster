@@ -19,11 +19,6 @@ defaults:
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
-  raven:
-    # This can be grabbed from the settings of the sentry project
-    # and is a string that looks like:
-    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
-    sentryDSN:                 !env SENTRY_DSN
   server:
     port:             !env:number PORT
     publicUrl:        !env PUBLIC_URL
@@ -48,6 +43,7 @@ defaults:
       secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
       region:           us-west-2
       apiVersion:       2014-01-01
+
 production:
   app:
     hookTable:        Hooks
@@ -58,6 +54,7 @@ production:
     env:              production
     forceSSL:         true
     trustProxy:       true
+
 test:
   # See user-config-example.yml for secrets credentials required for tests
   app:

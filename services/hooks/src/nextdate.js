@@ -12,12 +12,12 @@ var nextDate = function(schedule, reference) {
   let next;
   schedule.forEach((pattern) => {
     let interval = parser.parseExpression(pattern, {
-        currentDate: reference,
-        utc: true
-      });
+      currentDate: reference,
+      utc: true,
+    });
     let n = interval.next();
     if (typeof next === 'undefined' || n < next) {
-        next = n;
+      next = n;
     }
   });
 

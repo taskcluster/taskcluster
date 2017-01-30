@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "test": "./test/runtests.sh"
+    "compile": "babel-compile -p taskcluster src:lib test:.test",
+    "test": "mocha .test/lint.js .test/*_test.js",
+    "pretest": "npm run compile",
+    "install": "npm run compile"
   },
   "repository": {
     "type": "git",
@@ -15,17 +18,20 @@
     "assume": "^1.2.5",
     "aws-sdk": "^2.2.0",
     "azure-entities": "^0.9.0",
-    "babel": "^5.8.21",
+    "babel-compile": "^2.0.0",
+    "babel-preset-taskcluster": "^3.0.0",
     "cron-parser": "^1.0.1",
     "debug": "^2.2.0",
+    "eslint-config-taskcluster": "^2.0.0",
+    "eslint-plugin-taskcluster": "^1.0.2",
     "lodash": "^3.10.1",
+    "mocha-eslint": "^3.0.1",
     "promise": "^7.0.4",
-    "raven": "^0.10.0",
     "taskcluster-client": "^1.6.3",
     "taskcluster-lib-api": "^3.0.1",
     "taskcluster-lib-app": "^0.8.10",
     "taskcluster-lib-loader": "0.0.8",
-    "taskcluster-lib-stats": "^0.8.8",
+    "taskcluster-lib-monitor": "^4.3.4",
     "taskcluster-lib-validate": "^2.1.0",
     "typed-env-config": "^0.10.0"
   },

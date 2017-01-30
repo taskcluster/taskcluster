@@ -26,13 +26,13 @@ class Scheduler extends events.EventEmitter {
    * */
   constructor(options) {
     super();
-    assert(options, "options must be given");
+    assert(options, 'options must be given');
     assert(options.Hook.prototype instanceof data.Hook,
-        "Expected data.Hook instance");
+        'Expected data.Hook instance');
     assert(options.taskcreator instanceof taskcreator.TaskCreator,
-        "An instance of taskcreator.TaskCreator is required");
-    assert(typeof(options.pollingDelay) == 'number',
-        "Expected pollingDelay to be a number");
+        'An instance of taskcreator.TaskCreator is required');
+    assert(typeof options.pollingDelay === 'number',
+        'Expected pollingDelay to be a number');
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
     this.taskcreator  = options.taskcreator;
@@ -55,7 +55,7 @@ class Scheduler extends events.EventEmitter {
 
     // Create a promise that we're done looping
     this.done = this.loopUntilStopped().catch((err) => {
-      debug("Error: %s, as JSON: %j", err, err, err.stack);
+      debug('Error: %s, as JSON: %j', err, err, err.stack);
       this.emit('error', err);
     }).then(() => {
       this.done = null;
@@ -71,7 +71,7 @@ class Scheduler extends events.EventEmitter {
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
     var hooks = await this.Hook.scan({
-      nextScheduledDate:  Entity.op.lessThan(new Date())
+      nextScheduledDate:  Entity.op.lessThan(new Date()),
     }, {
       limit: 100,
       handler: (hook) => this.handleHook(hook),
@@ -80,7 +80,7 @@ class Scheduler extends events.EventEmitter {
 
   /** Polls for hooks that need to be scheduled and handles them in a loop */
   async loopUntilStopped() {
-    while(!this.stopping) {
+    while (!this.stopping) {
       await this.poll();
       await this.sleep(this.pollingDelay);
     }
@@ -94,7 +94,7 @@ class Scheduler extends events.EventEmitter {
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
     var lastFire;
-    console.log("firing hook %s/%s with taskId %s", hook.hookGroupId, hook.hookId, hook.nextTaskId);
+    console.log('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
     try {
       await this.taskcreator.fire(hook, {}, {
         taskId: hook.nextTaskId,
@@ -103,7 +103,7 @@ class Scheduler extends events.EventEmitter {
         // don't retry, as a 5xx error will cause a retry on the next scheduler
         // polling interval, and we do not want to get behind waiting for each
         // createTask operation to time out
-        retry: false
+        retry: false,
       });
 
       lastFire = {
@@ -111,12 +111,12 @@ class Scheduler extends events.EventEmitter {
         taskId: hook.nextTaskId,
         time: new Date(),
       };
-    } catch(err) {
-      console.log("Failed to handle hook: %s/%s" +
-                  ", with err: %s", hook.hookGroupId, hook.hookId, err);
+    } catch (err) {
+      console.log('Failed to handle hook: %s/%s' +
+                  ', with err: %s', hook.hookGroupId, hook.hookId, err);
 
       // for 500's, pretend nothing happend and we'll try again on the next go-round.
-      if (err.statusCode >= 500 ) {
+      if (err.statusCode >= 500) {
         return;
       }
 
@@ -135,16 +135,16 @@ class Scheduler extends events.EventEmitter {
       await hook.modify((hook) => {
         // only modify if another scheduler isn't racing with us
         if (hook.nextTaskId === oldTaskId) {
-            hook.nextTaskId        = taskcluster.slugid();
-            hook.nextScheduledDate = nextDate(hook.schedule);
-            if (lastFire) {
-                hook.lastFire = lastFire;
-            }
+          hook.nextTaskId = taskcluster.slugid();
+          hook.nextScheduledDate = nextDate(hook.schedule);
+          if (lastFire) {
+            hook.lastFire = lastFire;
+          }
         }
       });
-    } catch(err) {
-      console.log("Failed to update hook (will re-fire): %s/%s" +
-                  ", with err: %s", hook.hookGroupId, hook.hookId, err);
+    } catch (err) {
+      console.log('Failed to update hook (will re-fire): %s/%s' +
+                  ', with err: %s', hook.hookGroupId, hook.hookId, err);
       return;
     }
   }
@@ -159,23 +159,23 @@ class Scheduler extends events.EventEmitter {
     try {
       errJson = JSON.stringify(err, null, 2);
     } catch (e) {
-      errJson = `(error formatting JSON: ${e})`
+      errJson = `(error formatting JSON: ${e})`;
     }
 
     var utf8 = s => unescape(encodeURIComponent(s));
 
     await this.ses.sendEmail({
-        Destination: {
-          ToAddresses: [email],
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Subject: {
+          Data: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
+          Charset: 'UTF-8',
         },
-        Message: {
-          Subject: {
-            Data: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
-            Charset: "UTF-8"
-          },
-          Body: {
-            Text: {
-              Data: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
+        Body: {
+          Text: {
+            Data: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
 for which you are listed as owner.
 
 The error was:
@@ -191,13 +191,13 @@ Thanks,
 TaskCluster Automation
 
 P.S. If you believe you have received this email in error, please hit reply to let us know.`),
-            Charset: "UTF-8"
-            }
-          }
-        }
+            Charset: 'UTF-8',
+          },
+        },
+      },
     }).promise();
   }
 }
 
 // Export Scheduler
-module.exports = Scheduler
+module.exports = Scheduler;
