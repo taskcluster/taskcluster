@@ -100,7 +100,7 @@ $client.DownloadFile("http://artfiles.org/vim.org/pc/gvim80-069.exe", "C:\gvim80
 
 # install go
 md "C:\gopath"
-Expand-ZIPFile -File "C:\go1.7.3.windows-386.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.3.windows-386.zip"
+Expand-ZIPFile -File "C:\go1.7.4.windows-386.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.4.windows-386.zip"
 
 # install PSTools
 # md "C:\PSTools"

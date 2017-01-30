@@ -141,7 +141,7 @@ New-NetFirewallRule -DisplayName "Allow livelog GET requests" -Direction Inbound
 
 # install go (not required, but useful)
 md "C:\gopath"
-Expand-ZIPFile -File "C:\go1.7.3.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.3.windows-amd64.zip"
+Expand-ZIPFile -File "C:\go1.7.4.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.4.windows-amd64.zip"
 
 # install PSTools
 # md "C:\PSTools"
@@ -150,6 +150,10 @@ Expand-ZIPFile -File "C:\go1.7.3.windows-amd64.zip" -Destination "C:\" -Url "htt
 # install git
 $client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
 Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassThru
+
+# install AZCopy (azure table storage backup utility - for bstack)
+$client.DownloadFile("http://aka.ms/downloadazcopy", "C:\AZCopy.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\AZCopy.msi /quiet" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\AZCopy-install.log" -RedirectStandardError "C:\AZCopy-install.err"
 
 # install node
 $client.DownloadFile("https://nodejs.org/dist/v6.6.0/node-v6.6.0-x64.msi", "C:\NodeSetup.msi")
