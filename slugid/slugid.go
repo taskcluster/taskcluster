@@ -97,6 +97,8 @@ func nice() (string, error) {
 func decode(context extpoints.Context) (string, error) {
 	slug := context.Arguments["<slug>"].(string)
 
+	// nice slugs are just a subset of all slugs, which must match V4 pattern
+	// this slug may be nice or not; we don't know, so use general pattern
 	match := V4_SLUG_REGEXP.MatchString(slug)
 	if match == false {
 		return "", fmt.Errorf("Invalid slug format: %s", slug)
@@ -110,7 +112,8 @@ func decode(context extpoints.Context) (string, error) {
 func encode(context extpoints.Context) (string, error) {
 	uuid := context.Arguments["<uuid>"].(string)
 
-	// validation
+	// nice slugs are just a subset of all slugs, which must match V4 pattern
+	// this slug may be nice or not; we don't know, so use general pattern
 	match := V4_UUID_REGEXP.MatchString(uuid)
 	if match == false {
 		return "", fmt.Errorf("Invalid uuid format: %s", uuid)
