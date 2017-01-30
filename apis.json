@@ -1134,7 +1134,7 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://hooks.taskcluster.net/v1",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.\n\nHooks can have a 'schedule' indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC\n * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
       "entries": [
         {
           "args": [],
@@ -1212,7 +1212,7 @@
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
+          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.\n",
           "input": "http://schemas.taskcluster.net/hooks/v1/create-hook-request.json",
           "method": "put",
           "name": "createHook",
@@ -3303,12 +3303,12 @@
         },
         {
           "args": [],
-          "description": "Respond without doing anything.  This endpoint is used to check that\nthe service is up.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }

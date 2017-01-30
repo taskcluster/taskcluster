@@ -92,7 +92,7 @@ cat "${tmpFile}" | sed "s,^VERSION.*=.*$,VERSION = '$VERSION',g" > setup.py
 rm "${tmpFile}"
 
 # Add files which we've created
-git add setup.py README.md
+git add setup.py README.md apis.json
 
 if [ -f filescreated.dat ] ; then
   for file in $(cat filescreated.dat) ; do
@@ -103,7 +103,7 @@ fi
 # Now, let's commit this change.  We only care to commit
 # setup.py because we've already verified that it's the
 # only file which is changing
-echo git commit -m "Version $VERSION"
-echo git tag "$VERSION"
-echo git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
-echo python setup.py sdist upload
+git commit -m "Version $VERSION"
+git tag "$VERSION"
+git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
+./.tox/py35/bin/python setup.py sdist upload

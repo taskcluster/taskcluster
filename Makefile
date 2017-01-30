@@ -33,7 +33,16 @@ update-readme: devel
 
 .PHONY: clean
 clean:
-	if [ -f filescreated.dat ] ; then cat filescreated.dat | xargs rm && rm filescreated.dat ; fi
+	if [ -f filescreated.dat ] ; then \
+		for file in $$(cat filescreated.dat) ; do \
+			git ls-files $$file --error-unmatch ; \
+			if [ $$? -eq 0 ] ; then \
+			  git reset -- $$file && git checkout -- $$file ; \
+			else \
+			  rm $$file ; \
+			fi \
+		done \
+	fi
 	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
 	rm -rf *.egg *.egg-info .eggs/ dist/
 	find . -name "*.py?" -exec rm {} +
