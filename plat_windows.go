@@ -286,7 +286,9 @@ func taskCleanup() error {
 	} else {
 		log.Print("No previous task user desktop, so no need to close any open desktops")
 	}
-	deleteTaskDirs()
+	if config.CleanUpTaskDirs {
+		deleteTaskDirs()
+	}
 	// note if this fails, we carry on without throwing an error
 	if !config.RunTasksAsCurrentUser {
 		deleteExistingOSUsers()

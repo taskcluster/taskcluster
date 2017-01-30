@@ -485,13 +485,9 @@ func runWorker() {
 				}
 			}
 		} else {
-			if config.CleanUpTaskDirs {
-				err := taskCleanup()
-				if err != nil {
-					log.Printf("Error cleaning up after task!\n%v", err)
-				}
-			} else {
-				log.Print("*NOT* Removing task directories as 'cleanUpTaskDirs' is set to 'false' in generic worker config...")
+			err := taskCleanup()
+			if err != nil {
+				log.Printf("Error cleaning up after task!\n%v", err)
 			}
 			tasksResolved++
 			if tasksResolved == config.NumberOfTasksToRun {
