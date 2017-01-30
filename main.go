@@ -427,11 +427,13 @@ func runWorker() {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Shutting down immediately - panic occurred!")
 			log.Print(string(debug.Stack()))
 			cause := fmt.Sprintf("%v", r)
 			log.Print("Cause: " + cause)
-			immediateShutdown(cause)
+			if config.ShutdownMachineOnInternalError {
+				log.Printf("Shutting down immediately - panic occurred!")
+				immediateShutdown(cause)
+			}
 		}
 	}()
 	// Queue is the object we will use for accessing queue api

@@ -29,12 +29,10 @@ type TaskContext struct {
 }
 
 func immediateShutdown(cause string) {
-	if config.ShutdownMachineOnInternalError {
-		cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
-		err := cmd.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
 	}
 	os.Exit(64)
 }
