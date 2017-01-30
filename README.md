@@ -1529,13 +1529,14 @@ Hooks are identified with a `hookGroupId` and a `hookId`.
 When an event occurs, the resulting task is automatically created.  The
 task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,
 which must have scopes to make the createTask call, including satisfying all
-scopes in `task.scopes`.
+scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
+`taskId`, as is the convention for decision tasks.
 
-Hooks can have a 'schedule' indicating specific times that new tasks should
+Hooks can have a "schedule" indicating specific times that new tasks should
 be created.  Each schedule is in a simple cron format, per 
 https://www.npmjs.com/package/cron-parser.  For example:
- * `["0 0 1 * * *"]` -- daily at 1:00 UTC
- * `["0 0 9,21 * * 1-5", "0 0 12 * * 0,6"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
+ * `['0 0 1 * * *']` -- daily at 1:00 UTC
+ * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 #### List hook groups
 This endpoint will return a list of all hook groups with at least one hook.
 
@@ -1642,6 +1643,7 @@ This endpoint will create a new hook.
 The caller's credentials must include the role that will be used to
 create the task.  That role must satisfy task.scopes as well as the
 necessary scopes to add the task to the queue.
+
 
 
 
@@ -3748,8 +3750,8 @@ await asyncSecrets.list() # -> result
 ```
 
 #### Ping Server
-Respond without doing anything.  This endpoint is used to check that
-the service is up.
+Respond without doing anything.
+This endpoint is used to check that the service is up.
 
 
 ```python
