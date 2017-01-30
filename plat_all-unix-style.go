@@ -65,7 +65,9 @@ func (task *TaskRun) generateCommand(index int) error {
 }
 
 func taskCleanup() error {
-	deleteTaskDirs()
+	if config.CleanUpTaskDirs {
+		deleteTaskDirs()
+	}
 	return nil
 }
 
@@ -131,7 +133,7 @@ func prepareTaskUser(username string) {
 }
 
 func deleteTaskDir(path string) error {
-	log.Print("Removing home directory '" + path + "'...")
+	log.Print("Removing task directory '" + path + "'...")
 	err := os.RemoveAll(path)
 	if err != nil {
 		log.Print("WARNING: could not delete directory '" + path + "'")
