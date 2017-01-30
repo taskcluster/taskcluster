@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
+// Mon, 30 Jan 2017 at 16:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 

@@ -1,4 +1,4 @@
-Generated: 1485516507
+Generated: 1485793398
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3391,11 +3391,11 @@ which must have scopes to make the createTask call, including satisfying all
 scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
 `taskId`, as is the convention for decision tasks.
 
-Hooks can have a 'schedule' indicating specific times that new tasks should
+Hooks can have a "schedule" indicating specific times that new tasks should
 be created.  Each schedule is in a simple cron format, per 
 https://www.npmjs.com/package/cron-parser.  For example:
- * `["0 0 1 * * *"]` -- daily at 1:00 UTC
- * `["0 0 9,21 * * 1-5", "0 0 12 * * 0,6"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon'
+ * `['0 0 1 * * *']` -- daily at 1:00 UTC
+ * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon'
 Base URL    = 'https://hooks.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -3482,7 +3482,8 @@ Entry 5     =
 
 The caller's credentials must include the role that will be used to
 create the task.  That role must satisfy task.scopes as well as the
-necessary scopes to add the task to the queue.'
+necessary scopes to add the task to the queue.
+'
 Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'post'

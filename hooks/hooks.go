@@ -18,11 +18,11 @@
 // scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its
 // `taskId`, as is the convention for decision tasks.
 //
-// Hooks can have a 'schedule' indicating specific times that new tasks should
+// Hooks can have a "schedule" indicating specific times that new tasks should
 // be created.  Each schedule is in a simple cron format, per
 // https://www.npmjs.com/package/cron-parser.  For example:
-//  * `["0 0 1 * * *"]` -- daily at 1:00 UTC
-//  * `["0 0 9,21 * * 1-5", "0 0 12 * * 0,6"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
+//  * `['0 0 1 * * *']` -- daily at 1:00 UTC
+//  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 //
 // See: https://docs.taskcluster.net/reference/core/hooks/api-docs
 //
@@ -44,7 +44,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 27 Jan 2017 at 11:28:00 UTC. The code was generated
+// Mon, 30 Jan 2017 at 16:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
