@@ -12,6 +12,7 @@ var AWS         = require('aws-sdk');
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
 var app         = require('taskcluster-lib-app');
+var docs        = require('taskcluster-lib-docs');
 var monitor     = require('taskcluster-lib-monitor');
 
 // Create component loader
@@ -79,9 +80,24 @@ var load = loader({
     },
   },
 
+  docs: {
+    requires: ['cfg', 'validator'],
+    setup: ({cfg, validator}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        },
+      ],
+    }),
+  },
+
   server: {
-    requires: ['cfg', 'router'],
-    setup: ({cfg, router}) => {
+    requires: ['cfg', 'router', 'docs'],
+    setup: ({cfg, router, docs}) => {
       let hooksApp = app(cfg.server);
       hooksApp.use('/v1', router);
       return hooksApp.createServer();
