@@ -98,6 +98,11 @@ class PurgeCache(AsyncBaseClient):
             'query': ['since'],
             'route': '/purge-cache/<provisionerId>/<workerType>',
             'stability': 'experimental'},
+        "ping": {           'args': [],
+            'method': 'get',
+            'name': 'ping',
+            'route': '/ping',
+            'stability': 'stable'},
         "allPurgeRequests": {           'args': [],
             'method': 'get',
             'name': 'allPurgeRequests',
@@ -105,11 +110,6 @@ class PurgeCache(AsyncBaseClient):
             'query': ['continuationToken', 'limit'],
             'route': '/purge-cache/list',
             'stability': 'experimental'},
-        "ping": {           'args': [],
-            'method': 'get',
-            'name': 'ping',
-            'route': '/ping',
-            'stability': 'stable'},
     }
 
 

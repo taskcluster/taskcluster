@@ -65,6 +65,11 @@ class Github(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
+        "githubWebHookConsumer": {           'args': [],
+            'method': 'post',
+            'name': 'githubWebHookConsumer',
+            'route': '/github',
+            'stability': 'experimental'},
         "builds": {           'args': [],
             'method': 'get',
             'name': 'builds',
@@ -75,11 +80,6 @@ class Github(AsyncBaseClient):
                                  'repository',
                                  'sha'],
             'route': '/builds',
-            'stability': 'experimental'},
-        "githubWebHookConsumer": {           'args': [],
-            'method': 'post',
-            'name': 'githubWebHookConsumer',
-            'route': '/github',
             'stability': 'experimental'},
         "ping": {           'args': [],
             'method': 'get',

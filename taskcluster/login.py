@@ -56,6 +56,11 @@ class Login(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
+        "ping": {           'args': [],
+            'method': 'get',
+            'name': 'ping',
+            'route': '/ping',
+            'stability': 'stable'},
         "credentialsFromPersonaAssertion": {           'args': [],
             'input': 'http://schemas.taskcluster.net/login/v1/persona-request.json',
             'method': 'post',
@@ -63,11 +68,6 @@ class Login(BaseClient):
             'output': 'http://schemas.taskcluster.net/login/v1/credentials-response.json',
             'route': '/persona',
             'stability': 'experimental'},
-        "ping": {           'args': [],
-            'method': 'get',
-            'name': 'ping',
-            'route': '/ping',
-            'stability': 'stable'},
     }
 
 
