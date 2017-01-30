@@ -12,9 +12,9 @@ class TaskCreator {
    * }
    * */
   constructor(options) {
-    assert(options, "options must be given");
+    assert(options, 'options must be given');
     assert(options.credentials instanceof Object,
-        "Expected credentials");
+        'Expected credentials');
     this.credentials = options.credentials;
   }
 
@@ -43,7 +43,7 @@ class TaskCreator {
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
       created: new Date(),
-      retry: true
+      retry: true,
     });
 
     // create a queue instance with its authorized scopes limited to those
@@ -52,7 +52,7 @@ class TaskCreator {
     let queue = new taskcluster.Queue({
       credentials: this.credentials,
       authorizedScopes: [role],
-      retries: options.retry ? 0 : 5
+      retries: options.retry ? 0 : 5,
     });
 
     // TODO: payload is ignored right now
@@ -75,9 +75,9 @@ class MockTaskCreator extends TaskCreator {
 
   async fire(hook, payload, options) {
     if (this.shouldFail) {
-      let err = new Error("uhoh");
+      let err = new Error('uhoh');
       err.statusCode = 499;
-      err.body = {message: "uhoh"};
+      err.body = {message: 'uhoh'};
       throw err;
     }
     options = options || {};
@@ -88,18 +88,18 @@ class MockTaskCreator extends TaskCreator {
       options});
     var taskId = options.taskId || taskcluster.slugid();
     return {
-      "status": {
-        "taskId": taskId,
-        "provisionerId": hook.task.provisionerId,
-        "workerType": hook.task.workerType,
-        "schedulerId": "-",
-        "taskGroupId": taskcluster.slugid(),
-        "deadline": "2015-10-18T22:32:59.706Z",
-        "expires": "2016-10-18T22:32:59.706Z",
-        "retriesLeft": 5,
-        "state": "completed",
-        "runs": []
-      }
+      status: {
+        taskId: taskId,
+        provisionerId: hook.task.provisionerId,
+        workerType: hook.task.workerType,
+        schedulerId: '-',
+        taskGroupId: taskcluster.slugid(),
+        deadline: '2015-10-18T22:32:59.706Z',
+        expires: '2016-10-18T22:32:59.706Z',
+        retriesLeft: 5,
+        state: 'completed',
+        runs: [],
+      },
     };
   }
 }

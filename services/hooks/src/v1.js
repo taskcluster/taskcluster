@@ -3,29 +3,29 @@ var debug       = require('debug')('hooks:routes:v1');
 var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
 var API         = require('taskcluster-lib-api');
-var nextDate    = require('../hooks/nextdate');
+var nextDate    = require('../src/nextdate');
 var _           = require('lodash');
 
 var api = new API({
-  title:         "Hooks API Documentation",
+  title:         'Hooks API Documentation',
   description:   [
-    "Hooks are a mechanism for creating tasks in response to events.",
-    "",
-    "Hooks are identified with a `hookGroupId` and a `hookId`.",
-    "",
-    "When an event occurs, the resulting task is automatically created.  The",
-    "task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,",
-    "which must have scopes to make the createTask call, including satisfying all",
-    "scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its",
-    "`taskId`, as is the convention for decision tasks.",
-    "",
-    "Hooks can have a 'schedule' indicating specific times that new tasks should",
-    "be created.  Each schedule is in a simple cron format, per ",
-    "https://www.npmjs.com/package/cron-parser.  For example:",
-    " * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC",
-    " * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+    'Hooks are a mechanism for creating tasks in response to events.',
+    '',
+    'Hooks are identified with a `hookGroupId` and a `hookId`.',
+    '',
+    'When an event occurs, the resulting task is automatically created.  The',
+    'task is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,',
+    'which must have scopes to make the createTask call, including satisfying all',
+    'scopes in `task.scopes`.  The new task has a `taskGroupId` equal to its',
+    '`taskId`, as is the convention for decision tasks.',
+    '',
+    'Hooks can have a "schedule" indicating specific times that new tasks should',
+    'be created.  Each schedule is in a simple cron format, per ',
+    'https://www.npmjs.com/package/cron-parser.  For example:',
+    ' * `[\'0 0 1 * * *\']` -- daily at 1:00 UTC',
+    ' * `[\'0 0 9,21 * * 1-5\', \'0 0 12 * * 0,6\']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon',
   ].join('\n'),
-  schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/'
+  schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
 
 // Export api
@@ -41,18 +41,17 @@ api.declare({
   title:        'List hook groups',
   stability:    'experimental',
   description: [
-    "This endpoint will return a list of all hook groups with at least one hook.",
-  ].join('\n')
+    'This endpoint will return a list of all hook groups with at least one hook.',
+  ].join('\n'),
 }, async function(req, res) {
   var groups = new Set();
-  await this.Hook.scan({},{
+  await this.Hook.scan({}, {
     handler: (item) => {
       groups.add(item.hookGroupId);
-    }
+    },
   });
   return res.reply({groups: Array.from(groups)});
 });
-
 
 /** Get hooks in a given group **/
 api.declare({
@@ -64,26 +63,25 @@ api.declare({
   title:        'List hooks in a given group',
   stability:    'experimental',
   description: [
-    "This endpoint will return a list of all the hook definitions within a",
-    "given hook group."
-  ].join('\n')
+    'This endpoint will return a list of all the hook definitions within a',
+    'given hook group.',
+  ].join('\n'),
 }, async function(req, res) {
   var hooks = [];
   await this.Hook.query({
-    hookGroupId: req.params.hookGroupId
+    hookGroupId: req.params.hookGroupId,
   }, {
     handler: async (hook) => {
       hooks.push(await hook.definition());
-    }
+    },
   });
   if (hooks.length == 0) {
     return res.status(404).json({
-      message: "No such group"
+      message: 'No such group',
     });
   }
   return res.reply({hooks: hooks});
 });
-
 
 /** Get hook definition **/
 api.declare({
@@ -95,19 +93,19 @@ api.declare({
   title:        'Get hook definition',
   stability:    'experimental',
   description: [
-    "This endpoint will return the hook defintion for the given `hookGroupId`",
-    "and hookId."
-  ].join('\n')
+    'This endpoint will return the hook defintion for the given `hookGroupId`',
+    'and hookId.',
+  ].join('\n'),
 }, async function(req, res) {
   let hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
+    hookId: req.params.hookId,
   }, true);
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
@@ -125,23 +123,23 @@ api.declare({
   title:        'Get hook status',
   stability:    'experimental',
   description: [
-    "This endpoint will return the current status of the hook.  This represents a",
-    "snapshot in time and may vary from one call to the next."
-  ].join('\n')
+    'This endpoint will return the current status of the hook.  This represents a',
+    'snapshot in time and may vary from one call to the next.',
+  ].join('\n'),
 }, async function(req, res) {
   let hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
+    hookId: req.params.hookId,
   }, true);
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
-  let reply = {lastFire: hook.lastFire}
+  let reply = {lastFire: hook.lastFire};
 
   // Return a schedule only if a schedule is defined
   if (hook.schedule.length > 0) {
@@ -154,7 +152,6 @@ api.declare({
   return res.reply(reply);
 });
 
-
 /** Get next scheduled hook date */
 api.declare({
   method:       'get',
@@ -164,19 +161,19 @@ api.declare({
   title:        'Get hook schedule',
   stability:    'deprecated',
   description: [
-    "This endpoint will return the schedule and next scheduled creation time",
-    "for the given hook."
-  ].join('\n')
+    'This endpoint will return the schedule and next scheduled creation time',
+    'for the given hook.',
+  ].join('\n'),
 }, async function(req, res) {
   let hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
+    hookId: req.params.hookId,
   }, true);
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
@@ -203,21 +200,20 @@ api.declare({
   name:         'createHook',
   deferAuth:    true,
   idempotent:   true,
-  scopes:       [[
-                    "hooks:modify-hook:<hookGroupId>/<hookId>",
-                    "assume:hook-id:<hookGroupId>/<hookId>",
-                ]],
+  scopes:       [
+    ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
+  ],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
   stability:    'experimental',
   description: [
-    "This endpoint will create a new hook.",
-    "",
-    "The caller's credentials must include the role that will be used to",
-    "create the task.  That role must satisfy task.scopes as well as the",
-    "necessary scopes to add the task to the queue.",
-  ].join('\n')
+    'This endpoint will create a new hook.',
+    '',
+    'The caller\'s credentials must include the role that will be used to',
+    'create the task.  That role must satisfy task.scopes as well as the',
+    'necessary scopes to add the task to the queue.',,
+  ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
@@ -230,12 +226,12 @@ api.declare({
   }
 
   // Validate cron-parser expressions
-  _.forEach(hookDef.schedule, function(schedule){
+  _.forEach(hookDef.schedule, function(schedule) {
     try {
       parser.parseExpression(schedule);
     } catch (err) {
       return res.status(400).json({
-        message: err.message + " in " + schedule
+        message: err.message + ' in ' + schedule,
       });
     }
   });
@@ -248,7 +244,7 @@ api.declare({
         triggerToken:       taskcluster.slugid(),
         lastFire:           {result: 'no-fire'},
         nextTaskId:         taskcluster.slugid(),
-        nextScheduledDate:  nextDate(hookDef.schedule)
+        nextScheduledDate:  nextDate(hookDef.schedule),
       }));
   } catch (err) {
     if (!err || err.code !== 'EntityAlreadyExists') {
@@ -258,7 +254,7 @@ api.declare({
 
     if (!_.isEqual(hookDef, await existingHook.definition())) {
       return res.status(409).json({
-        message: "hook `" + hookGroupId + "/" + hookId + "` already exists."
+        message: 'hook `' + hookGroupId + '/' + hookId + '` already exists.',
       });
     }
   }
@@ -267,7 +263,6 @@ api.declare({
   return res.reply(hookDef);
 });
 
-
 /** Update hook definition**/
 api.declare({
   method:       'post',
@@ -275,18 +270,17 @@ api.declare({
   name:         'updateHook',
   deferAuth:    true,
   idempotent:   true,
-  scopes:       [[
-                    "hooks:modify-hook:<hookGroupId>/<hookId>",
-                    "assume:hook-id:<hookGroupId>/<hookId>",
-                ]],
+  scopes:       [
+    ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
+  ],
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Update a hook',
   stability:    'experimental',
   description: [
-    "This endpoint will update an existing hook.  All fields except",
-    "`hookGroupId` and `hookId` can be modified.",
-  ].join('\n')
+    'This endpoint will update an existing hook.  All fields except',
+    '`hookGroupId` and `hookId` can be modified.',
+  ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
@@ -300,19 +294,19 @@ api.declare({
 
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found. " +
-        "Use PUT instead of PATCH to create a resource."
+      message: 'Hook not found. ' +
+        'Use PUT instead of PATCH to create a resource.',
     });
   }
 
   // Attempt to modify properties of the hook
   var schedule = hookDef.schedule ? hookDef.schedule : [];
-  _.forEach(schedule, function(schedule){
+  _.forEach(schedule, function(schedule) {
     try {
       parser.parseExpression(schedule);
     } catch (err) {
       return res.status(400).json({
-        message: err.message + " in " + schedule
+        message: err.message + ' in ' + schedule,
       });
     }
   });
@@ -338,12 +332,12 @@ api.declare({
   name:         'removeHook',
   idempotent:   true,
   deferAuth:    true,
-  scopes:       [["hooks:modify-hook:<hookGroupId>/<hookId>"]],
+  scopes:       [['hooks:modify-hook:<hookGroupId>/<hookId>']],
   title:        'Delete a hook',
   stability:    'experimental',
   description: [
-    "This endpoint will remove a hook definition."
-  ].join('\n')
+    'This endpoint will remove a hook definition.',
+  ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
@@ -364,14 +358,14 @@ api.declare({
   route:        '/hooks/:hookGroupId/:hookId/trigger',
   name:         'triggerHook',
   deferAuth:    true,
-  scopes:       [["hooks:trigger-hook:<hookGroupId>/<hookId>"]],
+  scopes:       [['hooks:trigger-hook:<hookGroupId>/<hookId>']],
   input:        'trigger-payload.json',
   output:       'task-status.json',
   title:        'Trigger a hook',
   stability:    'experimental',
   description: [
-    "This endpoint will trigger the creation of a task from a hook definition."
-  ].join('\n')
+    'This endpoint will trigger the creation of a task from a hook definition.',
+  ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId      = req.params.hookId;
@@ -387,7 +381,7 @@ api.declare({
 
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
@@ -398,7 +392,7 @@ api.declare({
       taskId: resp.status.taskId,
       time: new Date(),
     };
-  } catch(err) {
+  } catch (err) {
     error = err;
     lastFire = {
       result: 'error',
@@ -411,12 +405,11 @@ api.declare({
     hook.lastFire = lastFire;
   });
 
-
   if (resp) {
     return res.reply(resp);
   } else {
     return res.status(400).json({
-      error: "could not create task: " + (error || "unknown").toString()
+      error: 'could not create task: ' + (error || 'unknown').toString(),
     });
   }
 });
@@ -427,15 +420,15 @@ api.declare({
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'getTriggerToken',
   deferAuth:    true,
-  scopes:       [["hooks:get-trigger-token:<hookGroupId>/<hookId>"]],
+  scopes:       [['hooks:get-trigger-token:<hookGroupId>/<hookId>']],
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Get a trigger token',
   stability:    'experimental',
   description: [
-    "Retrieve a unique secret token for triggering the specified hook. This",
-    "token can be deactivated with `resetTriggerToken`."
-  ].join('\n')
+    'Retrieve a unique secret token for triggering the specified hook. This',
+    'token can be deactivated with `resetTriggerToken`.',
+  ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
@@ -447,15 +440,14 @@ api.declare({
 
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
   return res.reply({
-    token: hook.triggerToken
+    token: hook.triggerToken,
   });
 });
-
 
 /** Reset a trigger token **/
 api.declare({
@@ -463,15 +455,15 @@ api.declare({
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'resetTriggerToken',
   deferAuth:    true,
-  scopes:       [["hooks:reset-trigger-token:<hookGroupId>/<hookId>"]],
+  scopes:       [['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Reset a trigger token',
   stability:    'experimental',
   description: [
-    "Reset the token for triggering a given hook. This invalidates token that",
-    "may have been issued via getTriggerToken with a new token."
-  ].join('\n')
+    'Reset the token for triggering a given hook. This invalidates token that',
+    'may have been issued via getTriggerToken with a new token.',
+  ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
@@ -483,7 +475,7 @@ api.declare({
 
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
@@ -492,7 +484,7 @@ api.declare({
   });
 
   return res.reply({
-    token: hook.triggerToken
+    token: hook.triggerToken,
   });
 });
 
@@ -506,27 +498,27 @@ api.declare({
   title:        'Trigger a hook with a token',
   stability:    'experimental',
   description: [
-    "This endpoint triggers a defined hook with a valid token."
-  ].join('\n')
+    'This endpoint triggers a defined hook with a valid token.',
+  ].join('\n'),
 }, async function(req, res) {
   var payload = req.body;
 
   var hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId
+    hookId: req.params.hookId,
   }, true);
 
   // Return a 404 if the hook entity doesn't exist
   if (!hook) {
     return res.status(404).json({
-      message: "Hook not found"
+      message: 'Hook not found',
     });
   }
 
   // Return 401 if the token doesn't exist or doesn't match
   if (req.params.token !== hook.triggerToken) {
     return res.status(401).json({
-      message: "Invalid token"
+      message: 'Invalid token',
     });
   }
 

@@ -12,10 +12,10 @@ module.exports = {
       name:         'Unit testing task',
       description:  'Task created during unit tests',
       owner:        'amiyaguchi@mozilla.com',
-      source:       'http://github.com/'
+      source:       'http://github.com/',
     },
     tags: {
-      purpose:      'taskcluster-testing'
+      purpose:      'taskcluster-testing',
     },
   },
   expires:          '10 days',
@@ -23,6 +23,6 @@ module.exports = {
   metadata: {
     name:           'Unit testing hook',
     description:    'Hook created during unit tests',
-    owner:          'amiyaguchi@mozilla.com'
-  }
+    owner:          'amiyaguchi@mozilla.com',
+  },
 };
