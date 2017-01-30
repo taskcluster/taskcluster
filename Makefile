@@ -35,10 +35,12 @@ update-readme: devel
 clean:
 	if [ -f filescreated.dat ] ; then cat filescreated.dat | xargs rm && rm filescreated.dat ; fi
 	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
-	rm -rf *.egg *.egg-info dist/
+	rm -rf *.egg *.egg-info .eggs/ dist/
 	find . -name "*.py?" -exec rm {} +
-	rm -rf .tox htmlcov .coverage
+	rm -rf .tox htmlcov .coverage nosetests.xml README.html
 	rm -rf env-*
+	find -type d -name __pycache__ -exec rm -rf {} +
+	find -type d -name .hypothesis -exec rm -rf {} +
 
 .PHONY: docs
 docs: devel

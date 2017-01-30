@@ -77,13 +77,11 @@ set -x
 # Make sure dev-env target has been run, and run clean just to be safe too
 make clean
 
-# Test that we can generate Python docs
-make docs
+# Update the readme file
+make update
 
 # Test that the unit tests and linter work
 make
-
-# Phase 2: Modifying and pushing
 
 # Version number
 # Avoid sed -i to be mac compatible
@@ -93,22 +91,19 @@ cp setup.py "${tmpFile}"
 cat "${tmpFile}" | sed "s,^VERSION.*=.*$,VERSION = '$VERSION',g" > setup.py
 rm "${tmpFile}"
 
-# Update the readme file
-make update-readme
+# Add files which we've created
+git add setup.py README.md
 
-# files which we're going to make changes to
-commitFiles="setup.py"
-
-# We want to commit changes to the README.md file
-readmeUpdate=$(git status --porcelain --untracked=no README.md)
-if [ -n "$readmeUpdate" ] ; then
-  commitFiles="$commitFiles README.md"
+if [ -f filescreated.dat ] ; then
+  for file in $(cat filescreated.dat) ; do
+    git add "$file"
+  done
 fi
 
 # Now, let's commit this change.  We only care to commit
 # setup.py because we've already verified that it's the
 # only file which is changing
-git commit -m "Version $VERSION" $commitFiles
+echo git commit -m "Version $VERSION"
 echo git tag "$VERSION"
 echo git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
 echo python setup.py sdist upload
