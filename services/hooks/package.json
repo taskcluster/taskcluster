@@ -30,6 +30,7 @@
     "taskcluster-client": "^1.6.3",
     "taskcluster-lib-api": "^3.0.1",
     "taskcluster-lib-app": "^0.8.10",
+    "taskcluster-lib-docs": "^3.3.0",
     "taskcluster-lib-loader": "0.0.8",
     "taskcluster-lib-monitor": "^4.3.4",
     "taskcluster-lib-validate": "^2.1.0",
@@ -40,6 +41,6 @@
     "taskcluster-lib-testing": "^1.0.3"
   },
   "engines": {
-    "node": "6.4.0"
+    "node": "7.4.0"
   }
 }
