@@ -1,15 +1,22 @@
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
 env:
   global:
-  - DEBUG='* -superagent -express:* -mocha:*'
+  - CXX=g++-4.8
+  - DEBUG='* -superagent -express:* -mocha:* -babel -eslint*'
 language: node_js
 node_js:
-- '0.12'
+- 7.4.0
 services:
 - rabbitmq
 script: npm test
 before_install:
 # unpack the secrets, but only if this is not a pull request; otherwise, the tests will run with no credentials
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_34d7be19243e_key -iv $encrypted_34d7be19243e_iv -in user-config.yml.enc -out user-config.yml -d'
+- 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_34d7be19243e_key -iv $encrypted_34d7be19243e_iv -in user-config.yml.enc -out user-config.yml -d; fi'
 
 cache:
   directories:
