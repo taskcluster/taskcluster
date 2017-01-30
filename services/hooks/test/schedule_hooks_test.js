@@ -1,6 +1,6 @@
 suite('bin/schedule-hooks.js', function() {
   var assert            = require('assert');
-  var Scheduler         = require('../hooks/scheduler');
+  var Scheduler         = require('../lib/scheduler');
   var helper            = require('./helper');
 
   // these tests require Azure credentials (for the Hooks table)

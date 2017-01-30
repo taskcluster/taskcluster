@@ -12,38 +12,38 @@ suite('validate', function() {
       {
         schema: 'hooks/v1/create-hook-request.json',
         path: 'create-hook-request.json',
-        success: true
+        success: true,
       },
       {
         schema: 'hooks/v1/schedule.json',
         path: 'schedule-none.json',
-        success: true
+        success: true,
       },
       {
         schema: 'hooks/v1/schedule.json',
         path: 'schedule-daily.json',
-        success: true
+        success: true,
       },
       {
         schema: 'hooks/v1/schedule.json',
         path: 'schedule-weekly.json',
-        success: true
+        success: true,
       },
       {
         schema: 'hooks/v1/schedule.json',
         path: 'schedule-weekday.json',
-        success: true
+        success: true,
       },
       {
         schema: 'hooks/v1/schedule.json',
         path: 'schedule-monthly.json',
-        success: true
+        success: true,
       },
       {
         schema: 'hooks/v1/schedule.json',
         path: 'schedule-biweekly.json',
-        success: true
-      }
-    ]
+        success: true,
+      },
+    ],
   });
 });

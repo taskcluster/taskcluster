@@ -2,10 +2,10 @@ suite('Scheduler', function() {
   var _                 = require('lodash');
   var assert            = require('assert');
   var assume            = require('assume');
-  var Scheduler         = require('../hooks/scheduler');
+  var Scheduler         = require('../lib/scheduler');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
-  var taskcreator       = require('../hooks/taskcreator');
+  var taskcreator       = require('../lib/taskcreator');
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
@@ -18,7 +18,7 @@ suite('Scheduler', function() {
     scheduler = new Scheduler({
       Hook: helper.Hook,
       taskcreator: creator,
-      pollingDelay: 1
+      pollingDelay: 1,
     });
   });
 
@@ -51,9 +51,9 @@ suite('Scheduler', function() {
     assume(callCount).equals(newCallCount);
   });
 
-  suite("poll method", function() {
+  suite('poll method', function() {
     setup(async () => {
-      await scheduler.Hook.scan({},{handler: hook => {return hook.remove();}});
+      await scheduler.Hook.scan({}, {handler: hook => {return hook.remove();}});
       var hookParams = {
         hookGroupId:        'tests',
         metadata:           {},
@@ -61,7 +61,7 @@ suite('Scheduler', function() {
         bindings:           [],
         deadline:           '1 day',
         expires:            '1 day',
-        schedule:           ["0 0 0 * * *"],
+        schedule:           ['0 0 0 * * *'],
         lastFire:           {result: 'no-fire'},
         triggerToken:       taskcluster.slugid(),
       };
@@ -88,17 +88,17 @@ suite('Scheduler', function() {
 
     test('calls handleHook only for past-due hooks', async () => {
       var handled = [];
-      scheduler.handleHook = async (hook) => { handled.push(hook.hookId) };
+      scheduler.handleHook = async (hook) => handled.push(hook.hookId);
       await scheduler.poll();
       assume(handled).eql(['pastHook']);
     });
   });
 
-  suite("handleHook method", function() {
+  suite('handleHook method', function() {
     var hook;
 
     setup(async () => {
-      await scheduler.Hook.scan({},{handler: hook => {return hook.remove();}});
+      await scheduler.Hook.scan({}, {handler: hook => {return hook.remove();}});
 
       hook = await scheduler.Hook.create({
         hookGroupId:        'tests',
@@ -118,7 +118,7 @@ suite('Scheduler', function() {
         bindings:           [],
         deadline:           '1 day',
         expires:            '1 day',
-        schedule:           ["0 0 0 * * *"],
+        schedule:           ['0 0 0 * * *'],
         triggerToken:       taskcluster.slugid(),
         lastFire:           {result: 'no-fire'},
         nextTaskId:         taskcluster.slugid(),
@@ -133,20 +133,20 @@ suite('Scheduler', function() {
       await scheduler.handleHook(hook);
 
       let updatedHook = await scheduler.Hook.load({
-          hookGroupId: 'tests',
-          hookId:      'test'
+        hookGroupId: 'tests',
+        hookId:      'test',
       }, true);
 
       assume(creator.fireCalls).deep.equals([{
-          hookGroupId: 'tests',
-          hookId: 'test',
-          payload: {},
-          options: {
-            taskId: oldTaskId,
-            created: new Date(3000, 0, 0, 0, 0, 0, 0),
-            retry: false
-          }
-        }]);
+        hookGroupId: 'tests',
+        hookId: 'test',
+        payload: {},
+        options: {
+          taskId: oldTaskId,
+          created: new Date(3000, 0, 0, 0, 0, 0, 0),
+          retry: false,
+        },
+      }]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.lastFire.result).is.equal('success');
       assume(updatedHook.lastFire.taskId).is.equal(oldTaskId);
@@ -161,15 +161,15 @@ suite('Scheduler', function() {
       creator.shouldFail = true;
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; }
+      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; };
 
       await scheduler.handleHook(hook);
 
       assume(emailSent).is.equal(true);
 
       let updatedHook = await scheduler.Hook.load({
-          hookGroupId: 'tests',
-          hookId:      'test'
+        hookGroupId: 'tests',
+        hookId:      'test',
       }, true);
 
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);

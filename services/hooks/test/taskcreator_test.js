@@ -1,9 +1,9 @@
 suite('TaskCreator', function() {
   var assume            = require('assume');
-  var taskcreator       = require('../hooks/taskcreator');
+  var taskcreator       = require('../lib/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
-  var data              = require('../hooks/data');
+  var data              = require('../lib/data');
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
@@ -31,8 +31,8 @@ suite('TaskCreator', function() {
 
   var createHook = async function(scopes) {
     return await helper.Hook.create({
-      hookGroupId:        "tc-hooks-tests",
-      hookId:             "tc-test-hook",
+      hookGroupId:        'tc-hooks-tests',
+      hookId:             'tc-test-hook',
       metadata:           {},
       task:               {
         provisionerId:    'no-provisioner',
@@ -45,16 +45,16 @@ suite('TaskCreator', function() {
           name:           'Unit testing task',
           description:    'Task created during unit tests',
           owner:          'amiyaguchi@mozilla.com',
-          source:         'http://github.com/'
+          source:         'http://github.com/',
         },
         tags: {
-          purpose:        'taskcluster-testing'
+          purpose:        'taskcluster-testing',
         },
       },
       bindings:           [],
       deadline:           '1 day',
       expires:            '1 day',
-      schedule:           {format: {type: "none"}},
+      schedule:           {format: {type: 'none'}},
       triggerToken:       taskcluster.slugid(),
       lastFire:           {},
       nextTaskId:         taskcluster.slugid(),
@@ -62,7 +62,7 @@ suite('TaskCreator', function() {
     });
   };
 
-  test("firing a real task succeeds", async function() {
+  test('firing a real task succeeds', async function() {
     let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {payload: true}, {taskId});
@@ -70,23 +70,23 @@ suite('TaskCreator', function() {
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
 
-  test("adds a taskId if one is not specified", async function() {
+  test('adds a taskId if one is not specified', async function() {
     let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);
-    let resp = await creator.fire(hook, {payload: true})
+    let resp = await creator.fire(hook, {payload: true});
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
 
-  test("fails if task.scopes includes scopes not granted to the role", async function() {
+  test('fails if task.scopes includes scopes not granted to the role', async function() {
     let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
     await creator.fire(hook, {payload: true}).then(
-        () => { throw new Error("Expected an error"); },
-        (err) => { debug("Got expected error: %s", err); });
+        () => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
   });
 });
 
 suite('MockTaskCreator', function() {
   var assume            = require('assume');
-  var taskcreator       = require('../hooks/taskcreator');
+  var taskcreator       = require('../lib/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
   var hookDef           = require('./test_definition');
@@ -103,7 +103,7 @@ suite('MockTaskCreator', function() {
     hook.hookId = 'h';
     await creator.fire(hook, {p: 1}, {o: 1});
     assume(creator.fireCalls).deep.equals([
-      {hookGroupId: 'g', hookId: 'h', payload: {p: 1}, options: {o: 1}}
+      {hookGroupId: 'g', hookId: 'h', payload: {p: 1}, options: {o: 1}},
     ]);
   });
 });

@@ -1,19 +1,18 @@
 #!/usr/bin/env node
-var data        = require('../hooks/data');
+var data        = require('./data');
 var debug       = require('debug')('hooks:bin:server');
 var path        = require('path');
 var Promise     = require('promise');
-var taskcreator = require('../hooks/taskcreator');
-var raven       = require('raven');
+var taskcreator = require('./taskcreator');
 var validator   = require('taskcluster-lib-validate');
-var stats       = require('taskcluster-lib-stats');
-var v1          = require('../routes/v1');
+var v1          = require('./v1');
 var _           = require('lodash');
-var Scheduler   = require('../hooks/scheduler');
+var Scheduler   = require('./scheduler');
 var AWS         = require('aws-sdk');
 var config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
 var app         = require('taskcluster-lib-app');
+var monitor     = require('taskcluster-lib-monitor');
 
 // Create component loader
 var load = loader({
@@ -22,34 +21,22 @@ var load = loader({
     setup: ({profile}) => config({profile}),
   },
 
-  influx: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.influx && cfg.influx.connectionString) {
-        return new stats.Influx(cfg.influx)
-      } else {
-        debug("Not loading Influx -- no connection string");
-        return new stats.NullDrain();
-      }
-    },
-  },
-
-  raven: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.raven.sentryDSN) {
-        return new raven.Client(cfg.raven.sentryDSN);
-      }
-      return null;
-    }
+  monitor: {
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => monitor({
+      project: 'taskcluster-hooks',
+      credentials: cfg.taskcluster.credentials,
+      mock: profile !== 'production',
+      process,
+    }),
   },
 
   Hook: {
-    requires: ['cfg', 'process', 'influx'],
-    setup: ({cfg, process, influx}) => {
+    requires: ['cfg', 'process', 'monitor'],
+    setup: ({cfg, process, monitor}) => {
       return data.Hook.setup(_.defaults({
         table:        cfg.app.hookTable,
-        drain:        influx,
+        monitor:      monitor.prefix(cfg.app.hookTable.toLowerCase()),
         component:    cfg.app.component,
         process,
       }, cfg.azureTable, cfg.taskcluster));
@@ -63,7 +50,7 @@ var load = loader({
         prefix:  'hooks/v1/',
         aws:     cfg.aws.validator,
       });
-    }
+    },
   },
 
   taskcreator: {
@@ -77,8 +64,8 @@ var load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'raven'],
-    setup: ({cfg, validator, Hook, taskcreator, raven}) => {
+    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'monitor'],
+    setup: ({cfg, validator, Hook, taskcreator, monitor}) => {
       return v1.setup({
         context: {Hook, taskcreator},
         validator,
@@ -87,7 +74,7 @@ var load = loader({
         baseUrl:          cfg.server.publicUrl + '/v1',
         referencePrefix:  'hooks/v1/api.json',
         aws:              cfg.aws.validator,
-        raven:            raven,
+        monitor,
       });
     },
   },
@@ -108,7 +95,7 @@ var load = loader({
         Hook,
         taskcreator,
         ses,
-        pollingDelay: cfg.app.scheduler.pollingDelay
+        pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },
   },

@@ -1,4 +1,5 @@
 node_modules/
-.eslintrc
 exports.sh
 user-config.yml
+lib
+.test

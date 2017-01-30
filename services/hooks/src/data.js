@@ -31,7 +31,7 @@ var Hook = Entity.configure({
     nextTaskId:         Entity.types.EncryptedText,
     // next date at which this task is scheduled to run
     nextScheduledDate:  Entity.types.Date,
-  }
+  },
 }).configure({
   version:              2,
   signEntities:         true,
@@ -63,7 +63,7 @@ var Hook = Entity.configure({
     delete item.task.expires;
     delete item.task.deadline;
     return item;
-  }
+  },
 }).configure({
   version:              3,
   signEntities:         true,
@@ -94,7 +94,7 @@ var Hook = Entity.configure({
   migrate: function(item) {
     item.lastFire = {result: 'no-fire'};
     return item;
-  }
+  },
 });
 
 /** Return promise for hook definition */
@@ -106,7 +106,7 @@ Hook.prototype.definition = function() {
     task:         _.cloneDeep(this.task),
     schedule:     _.cloneDeep(this.schedule),
     deadline:     this.deadline,
-    expires:      this.expires
+    expires:      this.expires,
   });
 };
 
