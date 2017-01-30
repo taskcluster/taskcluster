@@ -33,7 +33,7 @@ interface has been initiated.
 
 When used with default ports:
 
-* PUT: http(s)://localhost:60022/log
+* PUT: http://localhost:60022/log
 * GET: http(s)://localhost:60023/log/`${ACCESS_TOKEN}`
 
 To alter the port numbers, set environment variables `LIVELOG_PUT_PORT` and/or
@@ -50,22 +50,26 @@ export LIVELOG_GET_PORT=32844
 The provides some level or security via obscurity when managed as a secret
 between client and server, especially when used in combination with https.
 
-By default http is used, unless environment variables `SERVER_CRT_FILE` and
-`SERVER_KEY_FILE` environment variables are set, in which case these should
+By default http is used for serving GET requests, unless environment variables
+`SERVER_CRT_FILE` and `SERVER_KEY_FILE` are set, in which case these should
 specify the file location of suitable SSL certificate and key to be used for
-https transport.
+https transport. This will cause the GET interface to be served over https.
+
+**Note**, the PUT interface is always http, i.e. not secured. Therefore this
+port should only be opened on the loopback interface (localhost) in order that
+log content cannot be published from a malicious host over the network!
 
 ## Binary packages
 See the [github releases](https://github.com/taskcluster/livelog/releases) page.
 
 ## Example Usage
 
+### Example 1 - insecure over http
+
 Terminal 1: Start service
 
 ```
-export ACCESS_TOKEN='secretpuppy'
-export DEBUG='*'
-livelog
+ACCESS_TOKEN='secretpuppy' DEBUG='*' livelog
 ```
 
 Terminal 2: Pump data into the PUT interface
@@ -78,6 +82,45 @@ Terminal 3: Read from GET interface
 
 ```
 curl http://localhost:60023/log/secretpuppy
+```
+
+### Example 2 - secure over https, using non-default ports
+
+For this example, **you'll need a valid SSL key and certificate** for some
+domain.
+
+Let's say, your SSL key/certificate are for domain `taskcluster-worker.net`,
+and you have them on your filesystem at locations `~/myssl.crt` and
+`~/myssl.key` in PEM format (`-----BEGIN` ...).
+
+First make sure a name under *your domain* (in this example, we'll use
+`pete.taskcluster-worker.net`) resolves to your local machine:
+
+```
+echo '127.0.0.1 pete.taskcluster-worker.net' | sudo tee -a /etc/hosts >/dev/null
+```
+
+Note, if you wish to, you can also run this example over two machines
+(client/server). In that case, you would run this on the client machine, and
+replace `127.0.0.1`, with the IP address of the server (or just have real DNS
+records). The SSL certificate and key are obviously only needed on the server.
+
+Terminal 1: Start service (server)
+
+```
+ACCESS_TOKEN='secretpuppy' DEBUG='*' LIVELOG_PUT_PORT='34253' LIVELOG_GET_PORT='23536' SERVER_CRT_FILE=~/myssl.crt SERVER_KEY_FILE=~/myssl.key livelog
+```
+
+Terminal 2: Pump data into the PUT interface (server)
+
+```
+(for ((i=1; i<=500; i++)); do echo "Log line $i"; sleep 1; done) | curl -v -T - http://localhost:34253/log
+```
+
+Terminal 3: Read from GET interface (client)
+
+```
+curl https://pete.taskcluster-worker.net:23536/log/secretpuppy
 ```
 
 ## Performance
