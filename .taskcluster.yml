@@ -170,7 +170,7 @@ tasks:
           type: file
       mounts:
         - content:
-            url: https://storage.googleapis.com/golang/go1.7.4.windows-386.zip
+            url: https://storage.googleapis.com/golang/go1.7.5.windows-386.zip
           directory: .
           format: zip
         - content:
@@ -237,7 +237,7 @@ tasks:
           type: file
       mounts:
         - content:
-            url: https://storage.googleapis.com/golang/go1.7.4.windows-amd64.zip
+            url: https://storage.googleapis.com/golang/go1.7.5.windows-amd64.zip
           directory: .
           format: zip
         - content:
