@@ -1,14 +1,13 @@
-var data        = require('../hooks/data');
+var data        = require('../lib/data');
 var taskcluster = require('taskcluster-client');
-var taskcreator = require('../hooks/taskcreator');
+var taskcreator = require('../lib/taskcreator');
 var testing     = require('taskcluster-lib-testing');
-var v1          = require('../routes/v1');
-var load        = require('../bin/main');
+var v1          = require('../lib/v1');
+var load        = require('../lib/main');
 var config      = require('typed-env-config');
 var _           = require('lodash');
 
 var cfg = config({profile: 'test'});
-
 
 var helper = module.exports = {};
 
@@ -37,7 +36,7 @@ helper.setup = function() {
     await helper.Hook.ensureTable();
     await helper.Hook.scan({}, {handler: hook => hook.remove()});
 
-    helper.creator = new taskcreator.MockTaskCreator()
+    helper.creator = new taskcreator.MockTaskCreator();
     webServer = await load('server', _.defaults({
       Hook: helper.Hook,
       taskcreator: helper.creator,
@@ -56,10 +55,10 @@ helper.setup = function() {
         baseUrl:          helper.baseUrl,
         credentials: {
           clientId:       'test-client',
-          accessToken:    'none'
+          accessToken:    'none',
         },
         //authBaseUrl: cfg.get('taskcluster:authBaseUrl'),
-        authorizedScopes: (scopes.length > 0 ? scopes : undefined)
+        authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
     };
   });
