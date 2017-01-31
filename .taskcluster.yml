@@ -27,6 +27,8 @@ tasks:
           - pull_request.*
           - push
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       image: golang
       command:
