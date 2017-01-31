@@ -547,7 +547,7 @@ func FindAndRunTask() bool {
 		// loop through, since by the time we complete the first task, maybe
 		// higher priority jobs are waiting, so we need to poll afresh.
 		log.Print("Task found")
-		execErr := task.run()
+		execErr := task.Run()
 		if execErr.Occurred() {
 			task.reportPossibleError(execErr)
 		}
@@ -1020,7 +1020,7 @@ func (task *TaskRun) logHeader() {
 	task.Log("=== Task Starting ===")
 }
 
-func (task *TaskRun) run() (err *executionErrors) {
+func (task *TaskRun) Run() (err *executionErrors) {
 
 	// err is essentially a list of all errors that occur. We'll base the task
 	// resolution on the first error that occurs. The err.add(<error-or-nil>)
