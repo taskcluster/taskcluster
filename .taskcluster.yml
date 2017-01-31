@@ -26,6 +26,8 @@ tasks:
         events:
           - pull_request.*
           - push
+    scopes:
+      - secrets:get:repo:github.com/taskcluster/generic-worker
     payload:
       features:
         taskclusterProxy: true
