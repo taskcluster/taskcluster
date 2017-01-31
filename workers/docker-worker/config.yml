@@ -123,12 +123,6 @@ defaults:
     # Ideally we want to keep the period less than double the average task but more than the runtime of
     # most (say, ~75%) of tasks.
     slowdownDivisor: 3
-    # If signed url for queue expires within now()+expiration, refresh queues
-    expiration: 300000
-    # Number of times to retry requests to the task queue
-    maxRetries: 5
-    # Amount of time to wait between retries
-    requestRetryInterval: 2000
 
   #Registries which we can authenticate against for pulls:
   #  registries: {
