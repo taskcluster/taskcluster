@@ -208,13 +208,6 @@ class Index(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "listNamespaces": {           'args': ['namespace'],
-            'input': 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#',
-            'method': 'post',
-            'name': 'listNamespaces',
-            'output': 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#',
-            'route': '/namespaces/<namespace>',
-            'stability': 'stable'},
         "findArtifactFromTask": {           'args': ['namespace', 'name'],
             'method': 'get',
             'name': 'findArtifactFromTask',
@@ -233,10 +226,12 @@ class Index(AsyncBaseClient):
             'output': 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#',
             'route': '/task/<namespace>',
             'stability': 'stable'},
-        "ping": {           'args': [],
-            'method': 'get',
-            'name': 'ping',
-            'route': '/ping',
+        "listNamespaces": {           'args': ['namespace'],
+            'input': 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#',
+            'method': 'post',
+            'name': 'listNamespaces',
+            'output': 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#',
+            'route': '/namespaces/<namespace>',
             'stability': 'stable'},
         "listTasks": {           'args': ['namespace'],
             'input': 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#',
@@ -244,6 +239,11 @@ class Index(AsyncBaseClient):
             'name': 'listTasks',
             'output': 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#',
             'route': '/tasks/<namespace>',
+            'stability': 'stable'},
+        "ping": {           'args': [],
+            'method': 'get',
+            'name': 'ping',
+            'route': '/ping',
             'stability': 'stable'},
     }
 

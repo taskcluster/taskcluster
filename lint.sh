@@ -13,7 +13,7 @@ norm_to_lint=""
 gen_to_lint=""
 
 for file in $all_py ; do
-	grep $file filescreated.dat &> /dev/null && /bin/true
+  grep $file filescreated.dat &> /dev/null && $(which true)
 	if [ $? -eq 0 ] ; then
     gen_to_lint="$gen_to_lint $file"
 	else

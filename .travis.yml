@@ -1,15 +1,10 @@
+sudo: false
 language: python
 python:
-  - 3.5
-
-# command to install dependencies
-install:
-  - pip install virtualenv tox
-
-# command to run tests
-script:
-  - make update
-  - make test
+  - "2.7"
+  - "3.5"
+install: pip install tox-travis
+script: tox
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094

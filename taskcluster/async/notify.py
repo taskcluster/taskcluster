@@ -93,12 +93,6 @@ class Notify(AsyncBaseClient):
             'name': 'email',
             'route': '/email',
             'stability': 'experimental'},
-        "pulse": {           'args': [],
-            'input': 'http://schemas.taskcluster.net/notify/v1/pulse-request.json',
-            'method': 'post',
-            'name': 'pulse',
-            'route': '/pulse',
-            'stability': 'experimental'},
         "irc": {           'args': [],
             'input': 'http://schemas.taskcluster.net/notify/v1/irc-request.json',
             'method': 'post',
@@ -110,6 +104,12 @@ class Notify(AsyncBaseClient):
             'name': 'ping',
             'route': '/ping',
             'stability': 'stable'},
+        "pulse": {           'args': [],
+            'input': 'http://schemas.taskcluster.net/notify/v1/pulse-request.json',
+            'method': 'post',
+            'name': 'pulse',
+            'route': '/pulse',
+            'stability': 'experimental'},
     }
 
 

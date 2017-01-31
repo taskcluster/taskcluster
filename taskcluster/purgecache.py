@@ -85,6 +85,18 @@ class PurgeCache(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
+        "allPurgeRequests": {           'args': [],
+            'method': 'get',
+            'name': 'allPurgeRequests',
+            'output': 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/purge-cache/list',
+            'stability': 'experimental'},
+        "ping": {           'args': [],
+            'method': 'get',
+            'name': 'ping',
+            'route': '/ping',
+            'stability': 'stable'},
         "purgeCache": {           'args': ['provisionerId', 'workerType'],
             'input': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#',
             'method': 'post',
@@ -97,18 +109,6 @@ class PurgeCache(BaseClient):
             'output': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#',
             'query': ['since'],
             'route': '/purge-cache/<provisionerId>/<workerType>',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
-            'method': 'get',
-            'name': 'ping',
-            'route': '/ping',
-            'stability': 'stable'},
-        "allPurgeRequests": {           'args': [],
-            'method': 'get',
-            'name': 'allPurgeRequests',
-            'output': 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#',
-            'query': ['continuationToken', 'limit'],
-            'route': '/purge-cache/list',
             'stability': 'experimental'},
     }
 

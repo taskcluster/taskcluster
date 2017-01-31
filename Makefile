@@ -35,21 +35,19 @@ update-readme: devel
 clean:
 	if [ -f filescreated.dat ] ; then \
 		for file in $$(cat filescreated.dat) ; do \
-			git ls-files $$file --error-unmatch ; \
+			git ls-files $$file --error-unmatch &> /dev/null ; \
 			if [ $$? -eq 0 ] ; then \
-			  git reset -- $$file && git checkout -- $$file ; \
+			  git reset -- $$file &> /dev/null && git checkout -- $$file &> /dev/null ; \
 			else \
 			  rm $$file ; \
 			fi \
 		done \
 	fi
-	rm -rf node-$(NODE_VER)-$(NODE_PLAT) node_modules
+	rm -rf filescreated.dat .tox htmlcov .coverage nosetests.xml README.html
 	rm -rf *.egg *.egg-info .eggs/ dist/
 	find . -name "*.py?" -exec rm {} +
-	rm -rf .tox htmlcov .coverage nosetests.xml README.html
-	rm -rf env-*
-	find -type d -name __pycache__ -exec rm -rf {} +
-	find -type d -name .hypothesis -exec rm -rf {} +
+	find . -type d -name __pycache__ -exec rm -rf {} +
+	find . -type d -name .hypothesis -exec rm -rf {} +
 
 .PHONY: docs
 docs: devel

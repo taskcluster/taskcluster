@@ -175,7 +175,8 @@ def createStaticClient(name, api, genAsync=False):
 
 
     lines.append('    funcinfo = {')
-    for funcname, ref in functionInfo.items():
+    items = functionInfo.iteritems() if six.PY2 else functionInfo.items()
+    for funcname, ref in sorted(items):
         lines.append('        "%s": %s,' % (funcname, pprint.pformat(ref, indent=12)))
     lines.append('    }')
 
@@ -225,24 +226,21 @@ for name, api in apiConfig.items():
     syncImporterLines.append('from .%s import %s  # NOQA' % (name.lower(), name))
     asyncImporterLines.append('from .%s import %s  # NOQA' % (name.lower(), name))
 
-    with open(syncfilename, 'w') as f:
+    with open(syncfilename, 'wb') as f:
         if not six.PY2:
-            f.write(syncClientString)
             py_compile.compile(syncfilename, doraise=True)
-        else:
-            f.write(syncClientString.encode('utf-8'))
+        f.write(syncClientString.encode('utf-8'))
         filesCreated.append(syncfilename)
 
-    with open(asyncfilename, 'w') as f:
+    with open(asyncfilename, 'wb') as f:
         if not six.PY2:
-            f.write(asyncClientString)
             py_compile.compile(asyncfilename, doraise=True)
-        else:
-            f.write(asyncClientString.encode('utf-8'))
+        f.write(asyncClientString.encode('utf-8'))
         filesCreated.append(asyncfilename)
 
 syncImporterFilename = os.path.join('taskcluster', '_client_importer.py')
 with open(syncImporterFilename, 'w') as f:
+    syncImporterLines.sort()
     syncImporterLines.append('')
     filesCreated.append(syncImporterFilename)
     f.write('\n'.join(syncImporterLines))
@@ -250,6 +248,7 @@ with open(syncImporterFilename, 'w') as f:
 
 asyncImporterFilename = os.path.join('taskcluster', 'async', '_client_importer.py')
 with open(asyncImporterFilename, 'w') as f:
+    asyncImporterLines.sort()
     asyncImporterLines.append('')
     filesCreated.append(asyncImporterFilename)
     f.write('\n'.join(asyncImporterLines))
