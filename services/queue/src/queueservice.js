@@ -671,7 +671,7 @@ class QueueService {
         // Get messages
         let messages = await this._getMessages(queue, {
           visibility: 5 * 60,
-          count,
+          count: Math.min(count, 32),
         });
         return messages.map(m => {
           return {
