@@ -33,6 +33,8 @@ tasks:
         - /bin/bash
         - -vxec
         - |
+          curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/generic-worker | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+          source ~/env_private.sh
           go get -d "github.com/taskcluster/generic-worker"
           cd "${GOPATH}/src/github.com/taskcluster/generic-worker"
           git remote add user '{{ event.head.repo.url }}'
