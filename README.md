@@ -36,6 +36,22 @@ To actually build the application, simply run `make` in
 `$GOPATH/github.com/taskcluster/taskcluster-cli` which will generate the
 executable `taskcluster` in the root of the source.
 
+Dependency vendoring
+--------------------
+
+The dependencies are managed through the
+[govendor](https://github.com/kardianos/govendor) tool, but it's use should be
+transparent when building the project. After cloning the project, running
+`govendor sync` while download the various dependencies and ensure that they
+are at the version specified in the _vendor/vendor.json_ file, so that
+everyone uses the same dependencies at the same version. The `make` process
+automatically runs that command before building.
+
+To add a new dependency to the project, simply run
+`govendor fetch <go-import-url>` to add it to the list of dependencies. To
+update all dependencies to their latest version, run `govendor fetch`. More
+commands are described on the govendor project page.
+
 APIs
 ----
 
