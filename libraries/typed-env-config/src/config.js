@@ -44,7 +44,7 @@ let assert = require('assert');
  * If the environment variable in question isn't defined, the value will be
  * `undefined`, so it can fall-back to defaults from previous config file.
  */
-let config = (options) => {
+let config = (options = {}) => {
   assert(options instanceof Object, "Options must be an object!");
   options = _.defaults({}, options, {
     files: [
