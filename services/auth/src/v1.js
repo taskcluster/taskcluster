@@ -202,7 +202,8 @@ api.declare({
       created:      new Date().toJSON(),
       lastModified: new Date().toJSON(),
       lastDateUsed: new Date().toJSON(),
-      lastRotated:  new Date().toJSON()
+      lastRotated:  new Date().toJSON(),
+      deleteOnExpiration: !!input.deleteOnExpiration,
     }
   }).catch(async (err) => {
     // Only handle
@@ -346,6 +347,7 @@ api.declare({
     client.description = input.description;
     client.expires = new Date(input.expires);
     client.details.lastModified = new Date().toJSON();
+    client.details.deleteOnExpiration = !!input.deleteOnExpiration;
     if (input.scopes) {
       client.scopes = input.scopes;
     }

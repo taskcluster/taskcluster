@@ -222,8 +222,20 @@ let load = Loader({
         process.exit(1);
       }
       await sentryManager.purgeExpiredKeys(now);
-    }
-  }
+    },
+  },
+
+  'purge-expired-clients': {
+    requires: ['cfg', 'Client'],
+    setup: async ({cfg, Client}) => {
+      now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
+      if (isNaN(now)) {
+        console.log("FATAL: clientExpirationDelay is not valid!");
+        process.exit(1);
+      }
+      await Client.purgeExpired(now);
+    },
+  },
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument
