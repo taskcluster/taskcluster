@@ -294,13 +294,12 @@ async function jobHandler(message) {
       repo: repository,
       sha,
       body: [
-        '<summary>Submitting the task to TaskCluster failed.',
-          '<details>\n',
-            '```js',
-            errorBody,
-            '```',
-          '\n</details>',
-        '</summary>'
+        '<details>\n',
+        '<summary>Submitting the task to TaskCluster failed.  Details</summary>\n\n',
+        '```js\n',
+        errorBody,
+        '```\n',
+        '</details>',
       ].join('\n'),
     });
     throw e;
