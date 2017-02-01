@@ -246,6 +246,7 @@ async function jobHandler(message) {
       // We used to comment on every commit, but setting the status
       // is a nicer thing to do instead. It contains all of the same
       // information.
+      debug(`creating status: ${organization}/${repository}@${sha}`);
       await context.github.repos.createStatus({
         owner: organization,
         repo: repository,
@@ -255,6 +256,7 @@ async function jobHandler(message) {
         description: 'TaskGroup: Running',
         context: context.cfg.app.statusContext,
       });
+      debug(`created status: ${organization}/${repository}@${sha}`);
 
       let now = new Date();
       await context.Builds.create({
