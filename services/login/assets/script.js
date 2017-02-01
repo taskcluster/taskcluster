@@ -32,7 +32,11 @@ jQuery.extend({
 var TRUSTED_TARGETS = [
   'https://tools.taskcluster.net/login/',
   'https://treeherder.allizom.org:443/#/login',
-  'https://treeherder.mozilla.org:443/#/login'
+  'https://treeherder.mozilla.org:443/#/login',
+  'https://mozilla-releng.net:443/login',
+  'https://staging.mozilla-releng.net:443/login',
+  'https://shipit.mozilla-releng.net:443/login',
+  'https://shipit.staging.mozilla-releng.net:443/login'
 ];
 
 // Okay, this isn't pretty... But we have to store the stuff we got from the
