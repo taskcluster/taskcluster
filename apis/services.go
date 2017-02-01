@@ -293,8 +293,8 @@ var services = map[string]definitions.Service{
 				Method:    "get",
 				Route:     "/aws/s3/<level>/<bucket>/<prefix>",
 				Args: []string{
-					"bucket",
 					"level",
+					"bucket",
 					"prefix",
 				},
 				Query: []string{
@@ -1074,7 +1074,7 @@ var services = map[string]definitions.Service{
 	"Hooks": definitions.Service{
 		BaseURL:     "https://hooks.taskcluster.net/v1",
 		Title:       "Hooks API Documentation",
-		Description: "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a 'schedule' indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC\n * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+		Description: "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Type:        "function",
@@ -1161,11 +1161,11 @@ var services = map[string]definitions.Service{
 				Type:        "function",
 				Name:        "createHook",
 				Title:       "Create a hook",
-				Description: "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
+				Description: "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.\n",
 				Scopes: [][]string{
 					[]string{
-						"assume:hook-id:<hookGroupId>/<hookId>",
 						"hooks:modify-hook:<hookGroupId>/<hookId>",
+						"assume:hook-id:<hookGroupId>/<hookId>",
 					},
 				},
 				Stability: "experimental",
@@ -1186,8 +1186,8 @@ var services = map[string]definitions.Service{
 				Description: "This endpoint will update an existing hook.  All fields except\n`hookGroupId` and `hookId` can be modified.",
 				Scopes: [][]string{
 					[]string{
-						"assume:hook-id:<hookGroupId>/<hookId>",
 						"hooks:modify-hook:<hookGroupId>/<hookId>",
+						"assume:hook-id:<hookGroupId>/<hookId>",
 					},
 				},
 				Stability: "experimental",
@@ -1406,8 +1406,8 @@ var services = map[string]definitions.Service{
 				Method:    "get",
 				Route:     "/task/<namespace>/artifacts/<name>",
 				Args: []string{
-					"name",
 					"namespace",
+					"name",
 				},
 				Query:  []string{},
 				Input:  "",
@@ -1814,8 +1814,8 @@ var services = map[string]definitions.Service{
 					},
 					[]string{
 						"queue:define-task:<provisionerId>/<workerType>",
-						"queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",
 						"queue:task-group-id:<schedulerId>/<taskGroupId>",
+						"queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",
 					},
 				},
 				Stability: "stable",
@@ -1862,8 +1862,8 @@ var services = map[string]definitions.Service{
 				Description: "scheduleTask will schedule a task to be executed, even if it has\nunresolved dependencies. A task would otherwise only be scheduled if\nits dependencies were resolved.\n\nThis is useful if you have defined a task that depends on itself or on\nsome other task that has not been resolved, but you wish the task to be\nscheduled immediately.\n\nThis will announce the task as pending and workers will be allowed to\nclaim it and resolve the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with a `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.",
 				Scopes: [][]string{
 					[]string{
-						"assume:scheduler-id:<schedulerId>/<taskGroupId>",
 						"queue:schedule-task",
+						"assume:scheduler-id:<schedulerId>/<taskGroupId>",
 					},
 					[]string{
 						"queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>",
@@ -1886,8 +1886,8 @@ var services = map[string]definitions.Service{
 				Description: "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
 				Scopes: [][]string{
 					[]string{
-						"assume:scheduler-id:<schedulerId>/<taskGroupId>",
 						"queue:rerun-task",
+						"assume:scheduler-id:<schedulerId>/<taskGroupId>",
 					},
 					[]string{
 						"queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>",
@@ -1910,8 +1910,8 @@ var services = map[string]definitions.Service{
 				Description: "This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.\nit doesn't have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn't `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.",
 				Scopes: [][]string{
 					[]string{
-						"assume:scheduler-id:<schedulerId>/<taskGroupId>",
 						"queue:cancel-task",
+						"assume:scheduler-id:<schedulerId>/<taskGroupId>",
 					},
 					[]string{
 						"queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>",
@@ -1934,8 +1934,8 @@ var services = map[string]definitions.Service{
 				Description: "Get a signed URLs to get and delete messages from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, and afterwards you should always delete the message.",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-type:<provisionerId>/<workerType>",
 						"queue:poll-task-urls",
+						"assume:worker-type:<provisionerId>/<workerType>",
 					},
 					[]string{
 						"queue:poll-task-urls:<provisionerId>/<workerType>",
@@ -1981,9 +1981,9 @@ var services = map[string]definitions.Service{
 				Description: "claim a task, more to be added later...",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-id:<workerGroup>/<workerId>",
-						"assume:worker-type:<provisionerId>/<workerType>",
 						"queue:claim-task",
+						"assume:worker-type:<provisionerId>/<workerType>",
+						"assume:worker-id:<workerGroup>/<workerId>",
 					},
 					[]string{
 						"queue:claim-task:<provisionerId>/<workerType>",
@@ -1994,8 +1994,8 @@ var services = map[string]definitions.Service{
 				Method:    "post",
 				Route:     "/task/<taskId>/runs/<runId>/claim",
 				Args: []string{
-					"runId",
 					"taskId",
+					"runId",
 				},
 				Query:  []string{},
 				Input:  "http://schemas.taskcluster.net/queue/v1/task-claim-request.json#",
@@ -2008,8 +2008,8 @@ var services = map[string]definitions.Service{
 				Description: "reclaim a task more to be added later...",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-id:<workerGroup>/<workerId>",
 						"queue:claim-task",
+						"assume:worker-id:<workerGroup>/<workerId>",
 					},
 					[]string{
 						"queue:reclaim-task:<taskId>/<runId>",
@@ -2019,8 +2019,8 @@ var services = map[string]definitions.Service{
 				Method:    "post",
 				Route:     "/task/<taskId>/runs/<runId>/reclaim",
 				Args: []string{
-					"runId",
 					"taskId",
+					"runId",
 				},
 				Query:  []string{},
 				Input:  "",
@@ -2033,8 +2033,8 @@ var services = map[string]definitions.Service{
 				Description: "Report a task completed, resolving the run as `completed`.",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-id:<workerGroup>/<workerId>",
 						"queue:resolve-task",
+						"assume:worker-id:<workerGroup>/<workerId>",
 					},
 					[]string{
 						"queue:resolve-task:<taskId>/<runId>",
@@ -2044,8 +2044,8 @@ var services = map[string]definitions.Service{
 				Method:    "post",
 				Route:     "/task/<taskId>/runs/<runId>/completed",
 				Args: []string{
-					"runId",
 					"taskId",
+					"runId",
 				},
 				Query:  []string{},
 				Input:  "",
@@ -2058,8 +2058,8 @@ var services = map[string]definitions.Service{
 				Description: "Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn't produce expected output.\n\nDo not use this if the task couldn't be run because if malformed\npayload, or other unexpected condition. In these cases we have a task\nexception, which should be reported with `reportException`.",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-id:<workerGroup>/<workerId>",
 						"queue:resolve-task",
+						"assume:worker-id:<workerGroup>/<workerId>",
 					},
 					[]string{
 						"queue:resolve-task:<taskId>/<runId>",
@@ -2069,8 +2069,8 @@ var services = map[string]definitions.Service{
 				Method:    "post",
 				Route:     "/task/<taskId>/runs/<runId>/failed",
 				Args: []string{
-					"runId",
 					"taskId",
+					"runId",
 				},
 				Query:  []string{},
 				Input:  "",
@@ -2083,8 +2083,8 @@ var services = map[string]definitions.Service{
 				Description: "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely,\n  * The worker experienced an unknown error, or,\n  * The task explicitely requested a retry.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-id:<workerGroup>/<workerId>",
 						"queue:resolve-task",
+						"assume:worker-id:<workerGroup>/<workerId>",
 					},
 					[]string{
 						"queue:resolve-task:<taskId>/<runId>",
@@ -2094,8 +2094,8 @@ var services = map[string]definitions.Service{
 				Method:    "post",
 				Route:     "/task/<taskId>/runs/<runId>/exception",
 				Args: []string{
-					"runId",
 					"taskId",
+					"runId",
 				},
 				Query:  []string{},
 				Input:  "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
@@ -2108,8 +2108,8 @@ var services = map[string]definitions.Service{
 				Description: "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
 				Scopes: [][]string{
 					[]string{
-						"assume:worker-id:<workerGroup>/<workerId>",
 						"queue:create-artifact:<name>",
+						"assume:worker-id:<workerGroup>/<workerId>",
 					},
 					[]string{
 						"queue:create-artifact:<taskId>/<runId>",
@@ -2119,9 +2119,9 @@ var services = map[string]definitions.Service{
 				Method:    "post",
 				Route:     "/task/<taskId>/runs/<runId>/artifacts/<name>",
 				Args: []string{
-					"name",
-					"runId",
 					"taskId",
+					"runId",
+					"name",
 				},
 				Query:  []string{},
 				Input:  "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#",
@@ -2141,9 +2141,9 @@ var services = map[string]definitions.Service{
 				Method:    "get",
 				Route:     "/task/<taskId>/runs/<runId>/artifacts/<name>",
 				Args: []string{
-					"name",
-					"runId",
 					"taskId",
+					"runId",
+					"name",
 				},
 				Query:  []string{},
 				Input:  "",
@@ -2163,8 +2163,8 @@ var services = map[string]definitions.Service{
 				Method:    "get",
 				Route:     "/task/<taskId>/artifacts/<name>",
 				Args: []string{
-					"name",
 					"taskId",
+					"name",
 				},
 				Query:  []string{},
 				Input:  "",
@@ -2180,8 +2180,8 @@ var services = map[string]definitions.Service{
 				Method:      "get",
 				Route:       "/task/<taskId>/runs/<runId>/artifacts",
 				Args: []string{
-					"runId",
 					"taskId",
+					"runId",
 				},
 				Query: []string{
 					"continuationToken",

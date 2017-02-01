@@ -20,6 +20,8 @@ func main() {
 	mutex := &sync.Mutex{}
 	wg := &sync.WaitGroup{}
 
+	// go-got is thread-safe by virtue of only reading from the shared object
+	// and initializing anything within the scope of a function.
 	g := got.New()
 
 	gen := &generator{}
@@ -41,7 +43,7 @@ func main() {
 		log.Fatalln("error: failed to parse api manifest: ", err)
 	}
 
-	fmt.Println("Fetching Services:")
+	log.Println("Fetching Services:")
 	services := make(map[string]definitions.Service)
 	for name, referenceURL := range manifest {
 		wg.Add(1)
@@ -57,19 +59,22 @@ func main() {
 	wg.Wait()
 
 	gen.Print("var services = ")
-	gen.PrintComposite(services, true)
+	gen.PrettyPrint(services)
 	gen.Print("\n")
 
 	// Fetch all schemas
-	fmt.Println("Fetching Schemas:")
+	log.Println("Fetching Schemas:")
 	schemas := make(map[string]string, 0)
 	urls := make(map[string]bool, 0)
 
+	// addSchema is the function that determines if a schema url needs to be
+	// fetched and starts the goroutine to fetch it if needed.
 	addSchema := func(url string) {
 		if url == "" || urls[url] {
 			return
 		}
 
+		// map access/modification is not thread-safe.
 		urls[url] = true
 		wg.Add(1)
 		go func() {
@@ -90,13 +95,12 @@ func main() {
 	wg.Wait()
 
 	gen.Print("var schemas = ")
-	gen.PrintComposite(schemas, true)
+	gen.PrettyPrint(schemas)
 	gen.Print("\n")
 
 	// Format the output.
 	source, err := gen.Format()
 	if err != nil {
-		log.Println(gen.String())
 		log.Fatalln("error: go fmt, code generation failed: ", err)
 	}
 
@@ -105,8 +109,10 @@ func main() {
 	}
 }
 
+// fetchService uses go-got to fetch the definition of a service and parses it
+// into a usable go object.
 func fetchService(g *got.Got, name string, url string) definitions.Service {
-	fmt.Println(" - Fetching", name)
+	log.Println(" - fetching", name)
 	// Fetch reference
 	res, err := g.Get(url).Send()
 	if err != nil {
@@ -120,8 +126,10 @@ func fetchService(g *got.Got, name string, url string) definitions.Service {
 	return s
 }
 
+// fetchSchema uses go-got to fetch the schema of an input or output and ensures
+// that it parses as valid JSON.
 func fetchSchema(g *got.Got, url string) string {
-	fmt.Println(" - ", url)
+	log.Println(" -", url)
 	res, err := g.Get(url).Send()
 	if err != nil {
 		log.Fatalln("error: failed to fetch ", url, ": ", err)
@@ -139,6 +147,8 @@ type generator struct {
 	buf bytes.Buffer
 }
 
+// Write writes arbitrary bytes to the buffer. This meets the requirements for
+// the io.Writer interface.
 func (g *generator) Write(p []byte) (n int, err error) {
 	return g.buf.Write(p)
 }
@@ -153,53 +163,47 @@ func (g *generator) Print(a ...interface{}) {
 	fmt.Fprint(&g.buf, a...)
 }
 
-func (g *generator) PrintComposite(data interface{}, sorted bool) {
+// PrettyPrint pretty-prints arbitrary data.
+//
+// There are special rules for some composite types to ensure we have verbose
+// output, but simple types such as strings and numbers are printed using the
+// built-in `%#v` format filter.
+func (g *generator) PrettyPrint(data interface{}) {
 	v := reflect.ValueOf(data)
 	t := v.Type()
 
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-		// do stuff
 		g.Printf("%s", t.String())
 		if v.Kind() == reflect.Slice && v.IsNil() {
 			g.Printf("(nil)")
 			break
 		}
 		g.Print("{\n")
-		if sorted && t.Elem().Kind() == reflect.String {
-			sortedK := make([]string, 0, v.Len())
-			for i := 0; i < v.Len(); i++ {
-				sortedK = append(sortedK, v.Index(i).String())
-			}
-			sort.Strings(sortedK)
-			for _, s := range sortedK {
-				g.Printf("%#v,\n", s)
-			}
-		} else {
-			for i := 0; i < v.Len(); i++ {
-				g.PrintComposite(v.Index(i).Interface(), sorted)
-				g.Print(",\n")
-			}
+		for i := 0; i < v.Len(); i++ {
+			g.PrettyPrint(v.Index(i).Interface())
+			g.Print(",\n")
 		}
 		g.Print("}")
 	case reflect.Struct:
-		// then struct
 		g.Printf("%s{\n", t.String())
 		for i := 0; i < v.NumField(); i++ {
 			g.Printf("%s: ", t.Field(i).Name)
-			g.PrintComposite(v.Field(i).Interface(), sorted)
+			g.PrettyPrint(v.Field(i).Interface())
 			g.Print(",\n")
 		}
 		g.Print("}")
 	case reflect.Map:
-		// finally map
 		g.Printf("%s{\n", t.String())
 		keys := v.MapKeys()
 		if len(keys) == 0 {
 			g.Print("}")
 			break
 		}
-		if sorted && t.Key().Kind() == reflect.String {
+		// Because go's maps don't do stable ordering, we manually sort the maps
+		// where keys are strings (our only usecase so far) to ensure we get
+		// consistent outputs and reduce potential diffs.
+		if t.Key().Kind() == reflect.String {
 			sortedK := make([]string, 0, len(keys))
 			for _, k := range keys {
 				sortedK = append(sortedK, k.String())
@@ -208,14 +212,15 @@ func (g *generator) PrintComposite(data interface{}, sorted bool) {
 			for i := range sortedK {
 				k := reflect.ValueOf(sortedK[i])
 				g.Printf("%#v: ", sortedK[i])
-				g.PrintComposite(v.MapIndex(k).Interface(), sorted)
+				g.PrettyPrint(v.MapIndex(k).Interface())
 				g.Print(",\n")
 			}
 		} else {
+			// If the keys are not strings, we don't sort them for now.
 			for i := 0; i < v.Len(); i++ {
 				k := keys[i]
 				g.Printf("%#v: ", k)
-				g.PrintComposite(v.MapIndex(k).Interface(), sorted)
+				g.PrettyPrint(v.MapIndex(k).Interface())
 				g.Print(",\n")
 			}
 		}
@@ -225,11 +230,12 @@ func (g *generator) PrintComposite(data interface{}, sorted bool) {
 	}
 }
 
-// format returns the formated contents of the generator's buffer.
+// Format returns the formated contents of the generator's buffer.
 func (g *generator) Format() ([]byte, error) {
 	return format.Source(g.buf.Bytes())
 }
 
+// String returns a string representation of the generator's buffer.
 func (g *generator) String() string {
 	return g.buf.String()
 }
