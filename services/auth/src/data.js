@@ -41,6 +41,45 @@ var Client = Entity.configure({
     item.disabled = 0;
     return item;
   }
+}).configure({
+  version:          3,
+  signEntities:     true,
+  properties: {
+    clientId:       Entity.types.String,
+    description:    Entity.types.Text,
+    accessToken:    Entity.types.EncryptedText,
+    expires:        Entity.types.Date,
+    /**
+     * Details object with properties:
+     * - created            // Time when client was created
+     * - lastModified       // Last time client was modified
+     * - lastDateUsed       // Only updated if more than 6 hours out of date
+     * - lastRotated        // Last time accessToken was reset
+     * - deleteOnExpiration // if true, can be deleted after expiration
+     *                      // (new in v3)
+     * (more properties may be added in the future)
+     */
+    details:        Entity.types.Schema({
+      type: 'object',
+      properties: {
+        created:            {type: 'string', format: 'date-time'},
+        lastModified:       {type: 'string', format: 'date-time'},
+        lastDateUsed:       {type: 'string', format: 'date-time'},
+        lastRotated:        {type: 'string', format: 'date-time'},
+        deleteOnExpiration: {type: 'boolean'},
+      },
+      required: [
+        'created', 'lastModified', 'lastDateUsed', 'lastRotated',
+        'deleteOnExpiration',
+      ],
+    }),
+    scopes:         Entity.types.JSON,
+    disabled:       Entity.types.Number
+  },
+  migrate(item) {
+    item.details = _.defaults({}, item.details, {deleteOnExpiration: false});
+    return item;
+  }
 });
 
 /** Get scopes granted to this client */
@@ -51,16 +90,17 @@ Client.prototype.expandedScopes = function(resolver) {
 /** Get JSON representation of client */
 Client.prototype.json = function(resolver) {
   return {
-    clientId:       this.clientId,
-    description:    this.description,
-    expires:        this.expires.toJSON(),
-    created:        this.details.created,
-    lastModified:   this.details.lastModified,
-    lastDateUsed:   this.details.lastDateUsed,
-    lastRotated:    this.details.lastRotated,
-    scopes:         this.scopes,
-    expandedScopes: this.expandedScopes(resolver),
-    disabled:       !!this.disabled
+    clientId:           this.clientId,
+    description:        this.description,
+    expires:            this.expires.toJSON(),
+    created:            this.details.created,
+    lastModified:       this.details.lastModified,
+    lastDateUsed:       this.details.lastDateUsed,
+    lastRotated:        this.details.lastRotated,
+    deleteOnExpiration: this.details.deleteOnExpiration,
+    scopes:             this.scopes,
+    expandedScopes:     this.expandedScopes(resolver),
+    disabled:           !!this.disabled
   };
 };
 
@@ -86,11 +126,34 @@ Client.ensureRootClient = function(accessToken) {
       created:        new Date().toJSON(),
       lastModified:   new Date().toJSON(),
       lastDateUsed:   new Date().toJSON(),
-      lastRotated:    new Date().toJSON()
+      lastRotated:    new Date().toJSON(),
+      deleteOnExpiration: false,
     },
     scopes:           ['*'],
     disabled:         0,
   }, true);
+};
+
+/**
+ * Delete all clients that expired before `now`, unless
+ * details.deleteOnExpiration is false.
+ */
+
+Client.purgeExpired = async function(now = new Date()) {
+  var count = 0;
+  var expired = await this.scan({
+    expires: Entity.op.lessThan(now),
+  }, {
+    limit: 100,
+    handler: async client => {
+      if (client.details.deleteOnExpiration) {
+        count++;
+        await client.remove(true);
+      }
+    },
+  });
+
+  return count;
 };
 
 // Export Client
