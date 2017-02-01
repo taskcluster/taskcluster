@@ -139,6 +139,15 @@ type (
 	// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#
 	CreateClientRequest struct {
 
+		// If `true`, the service may delete this client after it has expired.  If
+		// `false` (the default), the client will remain after expiration, although
+		// it cannot be used for authentication in that state.
+		//
+		// Default:    false
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/deleteOnExpiration
+		DeleteOnExpiration bool `json:"deleteOnExpiration,omitempty"`
+
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
 		//
@@ -183,6 +192,13 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/created
 		Created tcclient.Time `json:"created"`
+
+		// If `true`, the service may delete this client after it has expired.  If
+		// `false`, the client will remain after expiration, although it cannot be
+		// used for authentication in that state.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/deleteOnExpiration
+		DeleteOnExpiration bool `json:"deleteOnExpiration"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -271,6 +287,13 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/created
 		Created tcclient.Time `json:"created"`
+
+		// If `true`, the service may delete this client after it has expired.  If
+		// `false`, the client will remain after expiration, although it cannot be
+		// used for authentication in that state.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/deleteOnExpiration
+		DeleteOnExpiration bool `json:"deleteOnExpiration"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.

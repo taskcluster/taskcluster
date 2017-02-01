@@ -1,4 +1,4 @@
-Generated: 1485793398
+Generated: 1485980723
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -856,6 +856,15 @@ Description            = 'Properties to create a client.
 '
 ID                     = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
 Properties
+  Property 'deleteOnExpiration' =
+    Default                = 'false'
+    Description            = 'If `true`, the service may delete this client after it has expired.  If
+    `false` (the default), the client will remain after expiration, although
+    it cannot be used for authentication in that state.
+    '
+    Type                   = 'boolean'
+    TypeName               = 'DeleteOnExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/deleteOnExpiration'
   Property 'description' =
     Description            = 'Description of what these credentials are used for in markdown.
     Should include who is the owner, point of contact.
@@ -921,6 +930,14 @@ Properties
     Type                   = 'string'
     TypeName               = 'Created'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/created'
+  Property 'deleteOnExpiration' =
+    Description            = 'If `true`, the service may delete this client after it has expired.  If
+    `false`, the client will remain after expiration, although it cannot be
+    used for authentication in that state.
+    '
+    Type                   = 'boolean'
+    TypeName               = 'DeleteOnExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/deleteOnExpiration'
   Property 'description' =
     Description            = 'Description of what these credentials are used for in markdown.
     Should include who is the owner, point of contact.
@@ -994,7 +1011,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/scopes'
-Required               = '[clientId accessToken expires description created lastModified lastDateUsed lastRotated scopes expandedScopes disabled]'
+Required               = '[clientId accessToken expires description created lastModified lastDateUsed lastRotated scopes expandedScopes disabled deleteOnExpiration]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Create Client Response'
 Type                   = 'object'
@@ -1060,6 +1077,14 @@ Properties
     Type                   = 'string'
     TypeName               = 'Created'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/created'
+  Property 'deleteOnExpiration' =
+    Description            = 'If `true`, the service may delete this client after it has expired.  If
+    `false`, the client will remain after expiration, although it cannot be
+    used for authentication in that state.
+    '
+    Type                   = 'boolean'
+    TypeName               = 'DeleteOnExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/deleteOnExpiration'
   Property 'description' =
     Description            = 'Description of what these credentials are used for in markdown.
     Should include who is the owner, point of contact.
@@ -1133,7 +1158,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes'
-Required               = '[clientId expires description created lastModified lastDateUsed lastRotated scopes expandedScopes disabled]'
+Required               = '[clientId expires description created lastModified lastDateUsed lastRotated scopes expandedScopes disabled deleteOnExpiration]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Get Client Response'
 Type                   = 'object'
