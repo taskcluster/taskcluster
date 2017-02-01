@@ -462,7 +462,7 @@ func runWorker() {
 	lastReportedNoTasks := time.Now()
 	tasksResolved := uint(0)
 	for {
-		prepareTaskEnvironment()
+		PrepareTaskEnvironment()
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
@@ -1210,7 +1210,7 @@ func convertNilToEmptyString(val interface{}) string {
 	return val.(string)
 }
 
-func prepareTaskEnvironment() {
+func PrepareTaskEnvironment() {
 	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
 	taskContext = &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
