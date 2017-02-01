@@ -9,6 +9,13 @@ properties:
       Date and time where the clients access is set to expire
     type:                   string
     format:                 date-time
+  deleteOnExpiration:
+    description: |
+      If `true`, the service may delete this client after it has expired.  If
+      `false` (the default), the client will remain after expiration, although
+      it cannot be used for authentication in that state.
+    type:                   boolean
+    default:                false
   description:
     description: |
       Description of what these credentials are used for in markdown.

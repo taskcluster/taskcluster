@@ -43,6 +43,9 @@ defaults:
     # Delay before expiring sentry keys, this should be negative!
     sentryExpirationDelay:      '- 15 minutes'
 
+    # Similarly, delay before deleting expired clients
+    clientExpirationDelay:      '-1 hour'
+
     statsum:
       secret:                   !env STATSUM_API_SECRET
       baseUrl:                  !env STATSUM_BASE_URL
