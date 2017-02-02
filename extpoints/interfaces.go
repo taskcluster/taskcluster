@@ -4,6 +4,8 @@ import "github.com/taskcluster/taskcluster-cli/client"
 
 // A ConfigOption is something with a default value and a validator.
 // Only requirement is that values are JSON structures.
+// NOTE: this struct is temporary and will soon be replaced with its equivalent
+//		 (same name, same everything) in package `config`
 type ConfigOption struct {
 	Description string      // Description of the config option
 	Default     interface{} // Default value

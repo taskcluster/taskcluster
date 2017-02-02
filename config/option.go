@@ -1,9 +1,11 @@
 package config
 
 import (
-    "github.com/taskcluster/taskcluster-cli/extpoints"
+	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
 
+// A ConfigOption is something with a default value and a validator.
+// Only requirement is that values are JSON structures.
 type ConfigOption struct {
 	Description string      // Description of the config option
 	Default     interface{} // Default value
@@ -13,31 +15,31 @@ type ConfigOption struct {
 }
 
 // Register takes in the name of the command and a ConfigOption object
-func Register(command string, options map[string]ConfigOption) {
-    if _, exists := ConfigOptions[command]; !exists {
-        ConfigOptions[command] = make(map[string]ConfigOption)
-    }
+func RegisterConfigOption(command string, options map[string]ConfigOption) {
+	if _, exists := ConfigOptions[command]; !exists {
+		ConfigOptions[command] = make(map[string]ConfigOption)
+	}
 
-    // we could just copy 'options' but sometimes there might already be other options
-    for key, option := range options {
-        ConfigOptions[command][key] = option
-    }
+	// we could just copy 'options' but sometimes there might already be other options
+	for key, option := range options {
+		ConfigOptions[command][key] = option
+	}
 }
 
 // To register the ConfigOptions from a CommandProvider
 // this is a function used for the "transition"
 func RegisterFromProvider(command string, options map[string]extpoints.ConfigOption) {
-    if _, exists := ConfigOptions[command]; !exists {
-        ConfigOptions[command] = make(map[string]ConfigOption)
-    }
+	if _, exists := ConfigOptions[command]; !exists {
+		ConfigOptions[command] = make(map[string]ConfigOption)
+	}
 
-    for key, option := range options {
-        ConfigOptions[command][key] = ConfigOption{
-            Description: option.Description,
-            Default:     option.Default,
-            Env:         option.Env,
-            Parse:       option.Parse,
-            Validate:    option.Validate,
-        }
-    }
+	for key, option := range options {
+		ConfigOptions[command][key] = ConfigOption{
+			Description: option.Description,
+			Default:     option.Default,
+			Env:         option.Env,
+			Parse:       option.Parse,
+			Validate:    option.Validate,
+		}
+	}
 }

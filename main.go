@@ -80,7 +80,7 @@ func main() {
 		provider.Usage(), append([]string{cmd}, args...),
 		true, version.VersionNumber, false,
 	)
-	
+
 	// set up the whole config thing
 	config.Setup()
 
