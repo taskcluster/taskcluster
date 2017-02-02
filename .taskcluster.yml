@@ -1,0 +1,30 @@
+version: 0
+metadata:
+  name: "TaskCluster GitHub Tests"
+  description: "All non-integration tests for taskcluster github"
+  owner: "{{ event.head.user.email }}"
+  source: "{{ event.head.repo.url }}"
+tasks:
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: "{{ taskcluster.docker.workerType }}"
+    extra:
+      github:
+        env: true
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+    payload:
+      maxRunTime: 3600
+      image: 'golang:1.8'
+      command:
+        - /bin/bash
+        - '-c'
+        - >-
+          go get -t github.com/taskcluster/taskcluster-cli/... 
+          && cd  /go/src/github.com/taskcluster/taskcluster-cli make && go test ./...
+    metadata:
+      name: "TaskCluster .taskcluster.yml file"
+      description: "All non-integration tests"
+      owner: "{{ event.head.user.email }}"
+      source: "{{ event.head.repo.url }}"
