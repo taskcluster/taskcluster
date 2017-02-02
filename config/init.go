@@ -9,11 +9,11 @@ import (
 
 var (
 	Configuration map[string]map[string]interface{}
-	ConfigOptions = make(map[string]map[string]ConfigOption)
+	OptionsDefinitions = make(map[string]map[string]OptionDefinition)
 	Credentials   *client.Credentials
 )
 
-// Setup: call it from main
+// Setup is to be called from main
 // this was originally the init() function
 // but we want to make sure all other packages have been initialized
 // before calling them, which Load() does

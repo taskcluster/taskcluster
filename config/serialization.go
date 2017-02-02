@@ -42,7 +42,7 @@ func Load() (map[string]map[string]interface{}, error) {
 	}
 
 	// Load all the default values
-	for name, options := range ConfigOptions {
+	for name, options := range OptionsDefinitions {
 		config[name] = make(map[string]interface{})
 		for key, option := range options {
 			config[name][key] = option.Default
@@ -60,7 +60,7 @@ func Load() (map[string]map[string]interface{}, error) {
 	}
 
 	// Load values from environment variables when applicable
-	for name, options := range ConfigOptions {
+	for name, options := range OptionsDefinitions {
 		for key, option := range options {
 			// Get from env var if possible and available
 			if option.Env == "" {
@@ -97,7 +97,7 @@ func Load() (map[string]map[string]interface{}, error) {
 	}
 
 	// Validate all values that have a validator and isn't the default value
-	for name, options := range ConfigOptions {
+	for name, options := range OptionsDefinitions {
 		for key, option := range options {
 			value := config[name][key]
 			if reflect.DeepEqual(value, option.Default) || option.Validate == nil {
@@ -128,7 +128,7 @@ func Save(config map[string]map[string]interface{}) error {
 	}
 
 	// go over new object
-	for name, options := range ConfigOptions {
+	for name, options := range OptionsDefinitions {
 		for key, option := range options {
 			value := config[name][key]
 			// Skip default values, no need to save those
