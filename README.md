@@ -40,9 +40,9 @@ Dependency vendoring
 --------------------
 
 The dependencies are managed through the
-[govendor](https://github.com/kardianos/govendor) tool, but it's use should be
+[govendor](https://github.com/kardianos/govendor) tool, but its use should be
 transparent when building the project. After cloning the project, running
-`govendor sync` while download the various dependencies and ensure that they
+`govendor sync` will download the various dependencies and ensure that they
 are at the version specified in the _vendor/vendor.json_ file, so that
 everyone uses the same dependencies at the same version. The `make` process
 automatically runs that command before building.
