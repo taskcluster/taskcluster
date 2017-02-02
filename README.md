@@ -7,7 +7,7 @@
 TaskCluster CLI is a command-line client offering control and access to
 taskcluster from the comfort of your command-line. It provides utilities
 ranging from direct calls to the specific API endpoints to more complex and
-_useful_ tasks like listing cancelling scheduled runs.
+_practical_ tasks like listing and cancelling scheduled runs.
 
 ## Usage
 
