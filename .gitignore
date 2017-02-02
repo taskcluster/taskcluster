@@ -1,1 +1,12 @@
-taskcluster
+# Folders
+_obj
+_test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Vendoring directory
+/vendor/*/
+
+# Binaries
+/taskcluster

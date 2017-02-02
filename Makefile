@@ -8,7 +8,11 @@ LDFLAGS ?= ""
 SOURCEDIR = .
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
-all: build
+all: prep build
+
+prep:
+	go get github.com/kardianos/govendor
+	govendor sync
 
 build: $(BINARY)
 
@@ -18,4 +22,4 @@ $(BINARY): $(SOURCES)
 clean:
 	rm -f ${BINARY}
 
-.PHONY: all build clean
+.PHONY: all prep build clean
