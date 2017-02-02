@@ -34,10 +34,17 @@ func configFile() string {
 func Load() (map[string]map[string]interface{}, error) {
 	config := make(map[string]map[string]interface{})
 
-	// Load all the default values
+	// transfer everything from the providers
+	// into the new ConfigOptions object
+	// temporary for "transition"
 	for name, provider := range extpoints.CommandProviders() {
+		RegisterFromProvider(name, provider.ConfigOptions())
+	}
+
+	// Load all the default values
+	for name, options := range OptionsDefinitions {
 		config[name] = make(map[string]interface{})
-		for key, option := range provider.ConfigOptions() {
+		for key, option := range options {
 			config[name][key] = option.Default
 		}
 	}
@@ -53,8 +60,8 @@ func Load() (map[string]map[string]interface{}, error) {
 	}
 
 	// Load values from environment variables when applicable
-	for name, provider := range extpoints.CommandProviders() {
-		for key, option := range provider.ConfigOptions() {
+	for name, options := range OptionsDefinitions {
+		for key, option := range options {
 			// Get from env var if possible and available
 			if option.Env == "" {
 				continue
@@ -90,8 +97,8 @@ func Load() (map[string]map[string]interface{}, error) {
 	}
 
 	// Validate all values that have a validator and isn't the default value
-	for name, provider := range extpoints.CommandProviders() {
-		for key, option := range provider.ConfigOptions() {
+	for name, options := range OptionsDefinitions {
+		for key, option := range options {
 			value := config[name][key]
 			if reflect.DeepEqual(value, option.Default) || option.Validate == nil {
 				continue
@@ -113,8 +120,16 @@ func Load() (map[string]map[string]interface{}, error) {
 func Save(config map[string]map[string]interface{}) error {
 	result := make(map[string]map[string]interface{})
 
+	// transfer everything from the providers
+	// into the new ConfigOptions object
+	// temporary for "transition"
 	for name, provider := range extpoints.CommandProviders() {
-		for key, option := range provider.ConfigOptions() {
+		RegisterFromProvider(name, provider.ConfigOptions())
+	}
+
+	// go over new object
+	for name, options := range OptionsDefinitions {
+		for key, option := range options {
 			value := config[name][key]
 			// Skip default values, no need to save those
 			if reflect.DeepEqual(value, option.Default) {

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster-cli/client"
 	"github.com/taskcluster/taskcluster-cli/config"
 	"github.com/taskcluster/taskcluster-cli/extpoints"
 	"github.com/taskcluster/taskcluster-cli/version"
@@ -44,13 +43,6 @@ func availableCommands() string {
 }
 
 func main() {
-	// Load config file
-	config, err := config.Load()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to load configuration file, error: %s\n", err)
-		os.Exit(1)
-	}
-
 	// Construct usage string
 	usage := "Usage: taskcluster [options] <command> [<args>...]\n"
 	usage += "\n"
@@ -89,27 +81,16 @@ func main() {
 		true, version.VersionNumber, false,
 	)
 
-	// Create credentials, if available in configuration
-	var credentials *client.Credentials
-	clientID, ok1 := config["config"]["clientId"].(string)
-	accessToken, ok2 := config["config"]["accessToken"].(string)
-	if ok1 && ok2 {
-		certificate, _ := config["config"]["certificate"].(string)
-		authorizedScopes, _ := config["config"]["authorizedScopes"].([]string)
-		credentials = &client.Credentials{
-			ClientID:         clientID,
-			AccessToken:      accessToken,
-			Certificate:      certificate,
-			AuthorizedScopes: authorizedScopes,
-		}
-	}
+	// set up the whole config thing
+	config.Setup()
 
 	// Execute provider with parsed args
 	success := provider.Execute(extpoints.Context{
 		Arguments:   subArguments,
-		Config:      config[cmd],
-		Credentials: credentials,
+		Config:      config.Configuration[cmd],
+		Credentials: config.Credentials,
 	})
+
 	if success {
 		os.Exit(0)
 	} else {
