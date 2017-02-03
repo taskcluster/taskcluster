@@ -110,7 +110,7 @@ tasks:
         - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
         - set GW_TESTS_GENERATE_USERS=true
-        - go test -v ./...
+        - go test -v -run TestRunAfterUserCreation
         - ineffassign .
       artifacts:
         - path: public/build/generic-worker-windows-amd64.exe
@@ -168,7 +168,7 @@ tasks:
         - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
         - set GW_TESTS_GENERATE_USERS=true
-        - go test -v ./...
+        - go test -v -run TestRunAfterUserCreation
         - ineffassign .
       artifacts:
         - path: public/build/generic-worker-windows-386.exe
@@ -235,7 +235,7 @@ tasks:
         - C:\generic-worker\generic-worker-test-creds.cmd
         - go test -v ./...
         - set GW_TESTS_GENERATE_USERS=true
-        - go test -v ./...
+        - go test -v -run TestRunAfterUserCreation
         - ineffassign .
       artifacts:
         - path: public/build/generic-worker-windows-amd64.exe

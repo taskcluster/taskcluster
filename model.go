@@ -38,6 +38,7 @@ type (
 		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
+		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
 		SigningKeyLocation             string                 `json:"signingKeyLocation"`

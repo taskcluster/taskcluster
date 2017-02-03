@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
@@ -102,12 +103,32 @@ func prepareTaskUser(userName string) {
 		LoginInfo: loginInfo,
 		Desktop:   desktop,
 	}
+	err = os.MkdirAll(taskContext.TaskDir, 0777)
+	if err != nil {
+		panic(err)
+	}
 	// note we only do this if not running as current user, since when running as
 	// current user, this would have no effect on env vars - they are inherited
 	// from parent process
 	err = RedirectAppData(loginInfo.HUser, filepath.Join(config.TasksDir, "AppData"))
 	if err != nil {
 		panic(err)
+	}
+	if script := config.RunAfterUserCreation; script != "" {
+		var noDeadline time.Time
+		command, err := process.NewCommand(script, &taskContext.TaskDir, nil, noDeadline, taskContext.DesktopSession)
+		if err != nil {
+			panic(err)
+		}
+		command.DirectOutput(os.Stdout)
+		result := command.Execute()
+		log.Printf("%v", result)
+		switch {
+		case result.Failed():
+			panic(result.FailureCause())
+		case result.Crashed():
+			panic(result.CrashCause())
+		}
 	}
 }
 

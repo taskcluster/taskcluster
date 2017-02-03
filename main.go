@@ -242,6 +242,12 @@ and reports back results to the queue.
                                             will have more information about how it was set up
                                             (for example what has been installed on the
                                             machine).
+          runAfterUserCreation              A string, that if non-empty, will be treated as a
+                                            command to be executed as the newly generated task
+                                            user, each time a task user is created. This is a
+                                            way to provide generic user initialisation logic
+                                            that should apply to all generated users (and thus
+                                            all tasks).
 
     Here is an syntactically valid example configuration file:
 
@@ -338,6 +344,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		ProvisionerID:                  "aws-provisioner-v1",
 		RefreshUrlsPrematurelySecs:     310,
 		RequiredDiskSpaceMegabytes:     10240,
+		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          false,
 		ShutdownMachineOnInternalError: false,
 		Subdomain:                      "taskcluster-worker.net",
