@@ -94,14 +94,15 @@ func prepareTaskUser(userName string) {
 		panic(err)
 	}
 	// create desktop and login
-	loginInfo, desktop, err := process.NewDesktopSession(user.Name, user.Password)
+	loginInfo, desktop, origDesktop, err := process.NewDesktopSession(user.Name, user.Password)
 	if err != nil {
 		panic(err)
 	}
 	taskContext.DesktopSession = &process.DesktopSession{
-		User:      user,
-		LoginInfo: loginInfo,
-		Desktop:   desktop,
+		User:        user,
+		LoginInfo:   loginInfo,
+		Desktop:     desktop,
+		OrigDesktop: origDesktop,
 	}
 	err = os.MkdirAll(taskContext.TaskDir, 0777)
 	if err != nil {
@@ -298,7 +299,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 func taskCleanup() error {
 	// clean desktop resources before killing user...
 	if taskContext.DesktopSession != nil {
-		err := taskContext.DesktopSession.Desktop.Close()
+		err := taskContext.DesktopSession.OrigDesktop.Display()
+		if err != nil {
+			return fmt.Errorf("Could not display original desktop: %v", err)
+		}
+		err = taskContext.DesktopSession.Desktop.Close()
 		if err != nil {
 			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
 		}

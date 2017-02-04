@@ -74,9 +74,10 @@ type Result struct {
 }
 
 type DesktopSession struct {
-	User      *runtime.OSUser
-	LoginInfo *subprocess.LoginInfo
-	Desktop   *platform.ContesterDesktop
+	User        *runtime.OSUser
+	LoginInfo   *subprocess.LoginInfo
+	Desktop     *platform.Desktop
+	OrigDesktop *platform.Desktop
 }
 
 func (r *Result) Succeeded() bool {
@@ -141,25 +142,24 @@ func (c *Command) Execute() (r *Result) {
 	}
 }
 
-func NewDesktopSession(username, password string) (*subprocess.LoginInfo, *platform.ContesterDesktop, error) {
+func NewDesktopSession(username, password string) (loginInfo *subprocess.LoginInfo, origDesktop, newDesktop *platform.Desktop, err error) {
 	// if running as current user, no login nor desktop required
 	if username == "" {
-		return nil, nil, nil
+		return
 	}
-	desktop, err := platform.CreateContesterDesktopStruct()
+	origDesktop, newDesktop, err = platform.CreateDesktop()
 	if err != nil {
-		return nil, nil, err
+		return
 	}
-	loginInfo, err := subprocess.NewLoginInfo(username, password)
+	loginInfo, err = subprocess.NewLoginInfo(username, password)
 	if err != nil {
-		return nil, desktop, err
+		return
 	}
-	err = desktop.Display()
+	err = newDesktop.Display()
 	if err != nil {
 		log.Printf("Could not display the newly created desktop, despite successfully logging in:\n%v", err)
-		return loginInfo, desktop, err
 	}
-	return loginInfo, desktop, nil
+	return
 }
 
 func NewCommand(commandLine string, workingDirectory *string, env *[]string, deadline time.Time, desktopSession *DesktopSession) (*Command, error) {
