@@ -94,14 +94,14 @@ func prepareTaskUser(userName string) {
 		panic(err)
 	}
 	// create desktop and login
-	loginInfo, desktop, origDesktop, err := process.NewDesktopSession(user.Name, user.Password)
+	loginInfo, origDesktop, newDesktop, err := process.NewDesktopSession(user.Name, user.Password)
 	if err != nil {
 		panic(err)
 	}
 	taskContext.DesktopSession = &process.DesktopSession{
 		User:        user,
 		LoginInfo:   loginInfo,
-		Desktop:     desktop,
+		Desktop:     newDesktop,
 		OrigDesktop: origDesktop,
 	}
 	err = os.MkdirAll(taskContext.TaskDir, 0777)
