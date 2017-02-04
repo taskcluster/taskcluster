@@ -68,10 +68,10 @@ func TestOSGroupsRespected(t *testing.T) {
 			t.Fatalf("Error when trying to read log file: %v", err)
 		}
 		logtext := string(bytes)
-		substring := fmt.Sprintf("Could not add os group(s) to task user: %v", payload.OSGroups)
+		substring := fmt.Sprintf("Not adding user to groups %v since we are running as current user.", payload.OSGroups)
 		if !strings.Contains(logtext, substring) {
 			t.Log(logtext)
-			t.Fatalf("Was expecting log to contain string %v. Log content is actually:\n%v", substring, logtext)
+			t.Fatalf("Was expecting log to contain string %v.", substring)
 		}
 	} else {
 		// check task had malformed payload, due to non existent groups
@@ -89,10 +89,10 @@ func TestOSGroupsRespected(t *testing.T) {
 			t.Fatalf("Error when trying to read log file: %v", err)
 		}
 		logtext := string(bytes)
-		substring := fmt.Sprintf("Not adding user to groups %v since we are running as current user.", payload.OSGroups)
+		substring := fmt.Sprintf("Could not add os group(s) to task user: %v", payload.OSGroups)
 		if !strings.Contains(logtext, substring) {
 			t.Log(logtext)
-			t.Fatalf("Was expecting log to contain string %v. Log content is actually:\n%v", substring, logtext)
+			t.Fatalf("Was expecting log to contain string %v.", substring)
 		}
 	}
 }
