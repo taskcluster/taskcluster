@@ -39,7 +39,7 @@ func (osGroups *OSGroups) RequiredScopes() scopes.Required {
 	return scopes.Required{requiredScopes}
 }
 
-func (osGroups *OSGroups) Start() *CommandExecutionError {
+func (osGroups *OSGroups) Start() (err *CommandExecutionError) {
 	groups := osGroups.Task.Payload.OSGroups
 	if config.RunTasksAsCurrentUser {
 		if len(groups) > 0 {
@@ -47,7 +47,11 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 		}
 		return nil
 	}
-	return MalformedPayloadError(osGroups.Task.addGroupsToUser(groups))
+	err = MalformedPayloadError(osGroups.Task.addGroupsToUser(groups))
+	if err != nil {
+		osGroups.Task.Logf("Could not add os group(s) to task user: %v\n%v", groups, err)
+	}
+	return
 }
 
 func (osGroups *OSGroups) Stop() *CommandExecutionError {

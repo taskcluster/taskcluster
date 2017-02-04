@@ -55,8 +55,8 @@ var (
 	config                 *Config
 	configFile             string
 	Features               []Feature = []Feature{
-		&OSGroupsFeature{},
 		&LiveLogFeature{},
+		&OSGroupsFeature{},
 		&ChainOfTrustFeature{},
 		&MountsFeature{},
 	}
