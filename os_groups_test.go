@@ -53,27 +53,6 @@ func TestOSGroupsRespected(t *testing.T) {
 	runWorker()
 
 	if config.RunTasksAsCurrentUser {
-		// check task had malformed payload, due to non existent groups
-		tsr, err := myQueue.Status(taskID)
-		if err != nil {
-			t.Fatalf("Problem querying status of task %v: %v", taskID, err)
-		}
-		if tsr.Status.State != "exception" || tsr.Status.Runs[0].ReasonResolved != "malformed-payload" {
-			t.Fatalf("Task %v resolved as %v/%v but should have resolved as exception/malformed-payload", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
-		}
-
-		// check log mentions both missing scopes
-		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
-		if err != nil {
-			t.Fatalf("Error when trying to read log file: %v", err)
-		}
-		logtext := string(bytes)
-		substring := fmt.Sprintf("Not adding user to groups %v since we are running as current user.", payload.OSGroups)
-		if !strings.Contains(logtext, substring) {
-			t.Log(logtext)
-			t.Fatalf("Was expecting log to contain string %v. Log content is actually:\n%v", substring, logtext)
-		}
-	} else {
 		// check task resolved successfully
 		tsr, err := myQueue.Status(taskID)
 		if err != nil {
@@ -90,6 +69,27 @@ func TestOSGroupsRespected(t *testing.T) {
 		}
 		logtext := string(bytes)
 		substring := fmt.Sprintf("Could not add os group(s) to task user: %v", payload.OSGroups)
+		if !strings.Contains(logtext, substring) {
+			t.Log(logtext)
+			t.Fatalf("Was expecting log to contain string %v. Log content is actually:\n%v", substring, logtext)
+		}
+	} else {
+		// check task had malformed payload, due to non existent groups
+		tsr, err := myQueue.Status(taskID)
+		if err != nil {
+			t.Fatalf("Problem querying status of task %v: %v", taskID, err)
+		}
+		if tsr.Status.State != "exception" || tsr.Status.Runs[0].ReasonResolved != "malformed-payload" {
+			t.Fatalf("Task %v resolved as %v/%v but should have resolved as exception/malformed-payload", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
+		}
+
+		// check log mentions both missing scopes
+		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
+		if err != nil {
+			t.Fatalf("Error when trying to read log file: %v", err)
+		}
+		logtext := string(bytes)
+		substring := fmt.Sprintf("Not adding user to groups %v since we are running as current user.", payload.OSGroups)
 		if !strings.Contains(logtext, substring) {
 			t.Log(logtext)
 			t.Fatalf("Was expecting log to contain string %v. Log content is actually:\n%v", substring, logtext)
