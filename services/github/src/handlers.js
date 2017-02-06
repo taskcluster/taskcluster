@@ -164,7 +164,7 @@ async function statusHandler(message) {
       state,
       target_url: INSPECTOR_URL + taskGroupId,
       description: 'TaskGroup: ' + state,
-      context: this.context.cfg.app.statusContext,
+      context: `${this.context.cfg.app.statusContext} (${build.eventType || 'Unknown Event'})`,
     });
   } catch (e) {
     debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
@@ -277,7 +277,7 @@ async function jobHandler(message) {
         state: 'pending',
         target_url: INSPECTOR_URL + taskGroupId,
         description: 'TaskGroup: Running',
-        context: context.cfg.app.statusContext,
+        context: `${this.context.cfg.app.statusContext} (${message.payload.details['event.type']})`,
       });
 
       let now = new Date();
@@ -290,6 +290,7 @@ async function jobHandler(message) {
         created: now,
         updated: now,
         installationId: message.payload.installationId,
+        eventType: message.payload.details['event.type'],
       }).catch(async (err) => {
         if (err.code !== 'EntityAlreadyExists') {
           throw err;
@@ -302,6 +303,7 @@ async function jobHandler(message) {
         assert.equal(build.organization, organization);
         assert.equal(build.repository, repository);
         assert.equal(build.sha, sha);
+        assert.equal(build.eventType, message.payload.details['event.type']);
       });
     } else {
       debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
