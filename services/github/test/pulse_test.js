@@ -27,6 +27,7 @@ suite('pulse', () => {
       let m = await helper.events.waitFor(params.listenFor);
       assert.equal(m.payload.organization, params.routingKey.organization);
       assert.equal(m.payload.repository, params.routingKey.repository);
+      assert.equal(m.payload.installationId, params.routingKey.installationId);
       for (let key of Object.keys(params.details)) {
         assert.equal(m.payload.details[key], params.details[key]);
       }
@@ -41,6 +42,7 @@ suite('pulse', () => {
       organization: 'TaskClusterRobot',
       repository:   'hooks-testing',
       action:       'opened',
+      installationId: 5808,
     },
     details:      {},
     jsonFile:     'webhook.pull_request.open.json',
@@ -53,6 +55,7 @@ suite('pulse', () => {
     routingKey:   {
       organization: 'TaskClusterRobot',
       repository:   'hooks-testing',
+      installationId: 5808,
     },
     details:      {
       'event.head.ref': 'refs/heads/master',
@@ -69,6 +72,7 @@ suite('pulse', () => {
     routingKey:   {
       organization: 'TaskClusterRobot',
       repository:   'hooks-testing',
+      installationId: 5808,
     },
     details:      {
       'event.version': 'testing-789',

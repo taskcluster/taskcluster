@@ -1,20 +1,19 @@
-let debug = require('debug')('taskcluster-github');
+let debug = require('debug')('taskcluster-github:loader');
 let api = require('./api');
 let path = require('path');
-let Promise = require('promise');
 let exchanges = require('./exchanges');
 let Handlers = require('./handlers');
 let Intree = require('./intree');
 let data = require('./data');
 let _ = require('lodash');
 let taskcluster = require('taskcluster-client');
-let Github = require('github');
 let config = require('typed-env-config');
 let monitor = require('taskcluster-lib-monitor');
 let validator = require('taskcluster-lib-validate');
 let loader = require('taskcluster-lib-loader');
 let docs = require('taskcluster-lib-docs');
 let App = require('taskcluster-lib-app');
+let githubAuth = require('./github-auth');
 
 let load = loader({
   cfg: {
@@ -74,15 +73,7 @@ let load = loader({
 
   github: {
     requires: ['cfg'],
-    setup: ({cfg}) => {
-      let github = new Github({
-        promise: Promise,
-      });
-      if (cfg.github.credentials.token) {
-        github.authenticate(cfg.github.credentials);
-      }
-      return github;
-    },
+    setup: ({cfg}) => githubAuth({cfg}),
   },
 
   intree: {
@@ -162,7 +153,7 @@ if (!module.parent) {
     process: process.argv[2],
     profile: process.env.NODE_ENV,
   }).catch(err => {
-    console.log(err.stack);
+    console.log(err.stack || err);
     process.exit(1);
   });
 }

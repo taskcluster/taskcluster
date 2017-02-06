@@ -19,8 +19,8 @@ defaults:
 
   github:
     credentials:
-      token: !env GITHUB_OAUTH_TOKEN
-      type: 'oauth'
+      privatePEM: !env GITHUB_PRIVATE_PEM
+      integrationId: !env GITHUB_INTEGRATION_ID
 
   webhook:
     secret: !env:list WEBHOOK_SECRET
@@ -100,3 +100,4 @@ test:
   intree:
     provisionerId: 'dummy-provisioner'
     workerType: 'dummy-worker'
+     
