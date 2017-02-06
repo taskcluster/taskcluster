@@ -39,6 +39,9 @@ properties:
           type: string
           pattern: {$const: slugid-pattern}
           description: Taskcluster task-group associated with the build.
+        eventType:
+          type: string
+          description: Type of Github event that triggered the build (i.e. push, pull_request.opened).
         created:
           type: string
           format: date-time
