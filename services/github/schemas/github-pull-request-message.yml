@@ -19,6 +19,12 @@ properties:
     minLength:    {$const: github-identifier-min-length}
     maxLength:    {$const: github-identifier-max-length}
     pattern:      {$const: github-identifier-pattern}
+  installationId:
+    description: |
+       The installation which had an event.
+    type:          integer
+    minimum:    {$const: github-installation-minimum}
+    maximum:    {$const: github-installation-maximum}
   action:
     description: |
       The GitHub `action` which triggered an event.
@@ -33,3 +39,4 @@ required:
   - organization
   - repository
   - action
+  - installationId
