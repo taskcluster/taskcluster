@@ -259,6 +259,7 @@ api.declare({
         sha: entry.sha,
         state: entry.state,
         taskGroupId: entry.taskGroupId,
+        eventType: entry.eventType,
         created: entry.created.toJSON(),
         updated: entry.updated.toJSON(),
       };
