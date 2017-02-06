@@ -57,9 +57,11 @@ suite('handlers', () => {
               'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
               'event.head.ref': 'refs/heads/tc-gh-tests',
               'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
-              'event.head.user.email': 'bstack@mozilla.com',
+              //'event.head.user.email': 'bstack@mozilla.com',
+              'event.head.user.id': 190790,
             },
             repository: 'hooks-testing',
+            installationId: 5828,
             version: 1,
           },
         };

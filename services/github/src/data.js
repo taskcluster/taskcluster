@@ -20,4 +20,22 @@ module.exports.Build = Entity.configure({
     created: Entity.types.Date,
     updated: Entity.types.Date,
   },
+}).configure({
+  version: 2,
+  properties: {
+    organization: Entity.types.String,
+    repository: Entity.types.String,
+    sha: Entity.types.String,
+    taskGroupId: Entity.types.String,
+    state: Entity.types.String,
+    created: Entity.types.Date,
+    updated: Entity.types.Date,
+    // GitHub installation ID that comes from the webhook
+    // Needed for authentication in statusHandler
+    installationId: Entity.types.Number, 
+  },
+  migrate: function(item) {
+    item.installationId = 0;
+    return item;
+  },
 });

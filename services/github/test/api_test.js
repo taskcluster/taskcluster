@@ -16,6 +16,7 @@ suite('api', () => {
       taskGroupId: 'biizERCQQwi9ZS_WkCSjXQ',
       created: new Date(),
       updated: new Date(),
+      installationId: 1,
     });
     await helper.Builds.create({
       organization: 'ghi789',
@@ -25,6 +26,7 @@ suite('api', () => {
       taskGroupId: 'aiizERCQQwi9ZS_WkCSjXQ',
       created: new Date(),
       updated: new Date(),
+      installationId: 1,
     });
     await helper.Builds.create({
       organization: 'abc123',
@@ -34,6 +36,7 @@ suite('api', () => {
       taskGroupId: 'qiizERCQQwi9ZS_WkCSjXQ',
       created: new Date(),
       updated: new Date(),
+      installationId: 1,
     });
     await helper.Builds.create({
       organization: 'abc123',
@@ -43,6 +46,7 @@ suite('api', () => {
       taskGroupId: 'ziizERCQQwi9ZS_WkCSjXQ',
       created: new Date(),
       updated: new Date(),
+      installationId: 1,
     });
   });
 
