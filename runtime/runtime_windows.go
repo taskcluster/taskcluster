@@ -24,7 +24,7 @@ func (user *OSUser) CreateNew() error {
 }
 
 func (user *OSUser) Create(okIfExists bool) error {
-	log.Print("Creating Windows User " + user.Name + "...")
+	log.Print("Creating Windows user " + user.Name + "...")
 	userExisted, err := AllowError(
 		"The account already exists",
 		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
@@ -35,7 +35,7 @@ func (user *OSUser) Create(okIfExists bool) error {
 	if !okIfExists && userExisted {
 		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
 	}
-	log.Print("Created new task user!")
+	log.Print("Created new OS user!")
 	err = RunCommands(
 		userExisted,
 		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},

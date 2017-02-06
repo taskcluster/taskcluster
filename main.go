@@ -468,8 +468,8 @@ func runWorker() {
 	lastQueriedProvisioner := time.Now()
 	lastReportedNoTasks := time.Now()
 	tasksResolved := uint(0)
+	PrepareTaskEnvironment()
 	for {
-		PrepareTaskEnvironment()
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
@@ -503,6 +503,7 @@ func runWorker() {
 				break
 			}
 			lastActive = time.Now()
+			PrepareTaskEnvironment()
 		}
 		// To avoid hammering queue, make sure there is at least a second
 		// between consecutive requests. Note we do this even if a task ran,
