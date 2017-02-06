@@ -27,6 +27,8 @@ type TaskContext struct {
 }
 
 func immediateShutdown(cause string) {
+	log.Println("Immediate shutdown being issued...")
+	log.Println(cause)
 	cmd := exec.Command("shutdown", "now", cause)
 	err := cmd.Run()
 	if err != nil {

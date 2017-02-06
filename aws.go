@@ -169,6 +169,7 @@ func Unzip(b []byte, dest string) error {
 
 func (c *Config) updateConfigWithAmazonSettings() error {
 	c.ShutdownMachineOnInternalError = true
+	c.ShutdownMachineOnIdle = true
 	userData, err := queryUserData()
 	if err != nil {
 		return err
@@ -239,8 +240,8 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 			return err
 		}
 	}
-	if c.IdleShutdownTimeoutSecs == 0 {
-		c.IdleShutdownTimeoutSecs = 3600
+	if c.IdleTimeoutSecs == 0 {
+		c.IdleTimeoutSecs = 3600
 	}
 	return nil
 }
@@ -267,7 +268,6 @@ func shutdownIfNewDeploymentID() {
 	}
 	if c.DeploymentID != config.DeploymentID {
 		cause := fmt.Sprintf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
-		log.Print(cause)
 		immediateShutdown(cause)
 	}
 	log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, c.DeploymentID)

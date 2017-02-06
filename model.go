@@ -22,7 +22,7 @@ type (
 		ClientID                       string                 `json:"clientId"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
-		IdleShutdownTimeoutSecs        uint                   `json:"idleShutdownTimeoutSecs"`
+		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`
 		InstanceType                   string                 `json:"instanceType"`
 		LiveLogCertificate             string                 `json:"livelogCertificate"`
@@ -41,6 +41,7 @@ type (
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
+		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		SigningKeyLocation             string                 `json:"signingKeyLocation"`
 		Subdomain                      string                 `json:"subdomain"`
 		TasksDir                       string                 `json:"tasksDir"`

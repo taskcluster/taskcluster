@@ -188,11 +188,12 @@ and reports back results to the queue.
           downloadsDir                      The location where resources are downloaded for
                                             populating preloaded caches and readonly mounts.
                                             [default: C:\generic-worker\downloads]
-          idleShutdownTimeoutSecs           How many seconds to wait without getting a new
-                                            task to perform, before shutting down the computer.
-                                            An integer, >= 0. A value of 0 means "do not shut
-                                            the computer down" - i.e. continue running
-                                            indefinitely. [default: 0]
+          idleTimeoutSecs                   How many seconds to wait without getting a new
+                                            task to perform, before the worker process exits.
+                                            An integer, >= 0. A value of 0 means "never reach
+                                            the idle state" - i.e. continue running
+                                            indefinitely. See also shutdownMachineOnIdle.
+                                            [default: 0]
           livelogCertificate                SSL certificate to be used by livelog for hosting
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
@@ -228,6 +229,11 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
+          shutdownMachineOnIdle             If true, when the worker is deemed to have been
+                                            idle for enough time (see idleTimeoutSecs) the
+                                            worker will issue an OS shutdown command. If false,
+                                            the worker process will simply terminate, but the
+                                            machine will not be shut down. [default: false]
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
@@ -336,7 +342,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
 		DownloadsDir:                   "C:\\generic-worker\\downloads",
-		IdleShutdownTimeoutSecs:        0,
+		IdleTimeoutSecs:                0,
 		LiveLogExecutable:              "livelog",
 		LiveLogPUTPort:                 60022,
 		LiveLogGETPort:                 60023,
@@ -347,6 +353,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          false,
 		ShutdownMachineOnInternalError: false,
+		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
 		TasksDir:                       "C:\\Users",
 		WorkerTypeMetadata: map[string]interface{}{
@@ -360,6 +367,12 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		},
 	}
 
+	// now overlay with data from amazon, if applicable
+	if queryUserData {
+		// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
+		c.updateConfigWithAmazonSettings()
+	}
+
 	configFileBytes, err := ioutil.ReadFile(filename)
 	// only overlay values if config file exists and could be read
 	if err == nil {
@@ -367,12 +380,6 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	// now overlay with data from amazon, if applicable
-	if queryUserData {
-		// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
-		c.updateConfigWithAmazonSettings()
 	}
 
 	// Add any useful worker config to worker metadata
@@ -436,11 +443,8 @@ func runWorker() {
 		if r := recover(); r != nil {
 			log.Print(string(debug.Stack()))
 			cause := fmt.Sprintf("%v", r)
-			log.Print("Cause: " + cause)
-			if config.ShutdownMachineOnInternalError {
-				log.Printf("Shutting down immediately - panic occurred!")
-				immediateShutdown(cause)
-			}
+			log.Print(" *********** PANIC occurred! *********** ")
+			exitOrShutdown(config.ShutdownMachineOnInternalError, cause, 64)
 		}
 	}()
 	// Queue is the object we will use for accessing queue api
@@ -487,10 +491,10 @@ func runWorker() {
 				lastReportedNoTasks = time.Now()
 				log.Print("No task claimed...")
 			}
-			if config.IdleShutdownTimeoutSecs > 0 {
+			if config.IdleTimeoutSecs > 0 {
 				idleTime := time.Now().Sub(lastActive)
-				if idleTime.Seconds() > float64(config.IdleShutdownTimeoutSecs) {
-					immediateShutdown(fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime))
+				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
+					exitOrShutdown(config.ShutdownMachineOnIdle, fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime), 0)
 				}
 			}
 		} else {
@@ -1262,4 +1266,14 @@ func deleteTaskDirs() {
 		}
 	}
 
+}
+
+func exitOrShutdown(shutdown bool, cause string, exitCode int) {
+	if shutdown {
+		immediateShutdown(cause)
+	} else {
+		log.Println("Exiting worker (but not shutting down computer)...")
+		log.Println(cause)
+		os.Exit(exitCode)
+	}
 }

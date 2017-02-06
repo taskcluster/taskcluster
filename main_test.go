@@ -67,3 +67,14 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 		t.Fatalf("Was expecting log file to mention task abortion, but it doesn't")
 	}
 }
+
+func TestIdleWithoutCrash(t *testing.T) {
+	setup(t)
+	start := time.Now()
+	config.IdleTimeoutSecs = 7
+	runWorker()
+	end := time.Now()
+	if secsAlive := end.Sub(start).Seconds(); secsAlive < 7 {
+		t.Fatalf("Worker died early - lasted for %v seconds", secsAlive)
+	}
+}

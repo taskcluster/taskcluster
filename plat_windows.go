@@ -30,6 +30,8 @@ type TaskContext struct {
 }
 
 func immediateShutdown(cause string) {
+	log.Println("Immediate shutdown being issued...")
+	log.Println(cause)
 	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
 	err := cmd.Run()
 	if err != nil {
