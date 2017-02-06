@@ -31,6 +31,7 @@ function getPullRequestDetails(eventData) {
     'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
     'event.head.sha': eventData.pull_request.head.sha,
     'event.head.user.login': eventData.pull_request.head.user.login,
+    'event.head.user.id': eventData.pull_request.head.user.id,
 
     'event.pullNumber': eventData.number,
     'event.type': 'pull_request.' + eventData.action,
@@ -57,6 +58,7 @@ function getPushDetails(eventData) {
     'event.head.repo.url': eventData.repository.clone_url,
     'event.head.sha': eventData.after,
     'event.head.user.login': eventData.sender.login,
+    'event.head.user.id': eventData.sender.id,
 
     'event.type': 'push',
   };
@@ -68,6 +70,7 @@ function getReleaseDetails(eventData) {
     'event.type': 'release',
     'event.base.repo.branch': eventData.release.target_commitish,
     'event.head.user.login': eventData.release.author.login,
+    'event.head.user.id': eventData.release.author.id,
     'event.version': eventData.release.tag_name,
     'event.name': eventData.release.name,
     'event.head.repo.name': eventData.repository.name,
@@ -103,7 +106,6 @@ function compareSignatures(sOne, sTwo) {
 };
 
 function resolve(res, status, message) {
-  debug(message);
   return res.status(status).send(message);
 }
 
@@ -179,10 +181,12 @@ api.declare({
       msg.organization = sanitizeGitHubField(body.repository.owner.login),
       msg.action = body.action;
       msg.details = getPullRequestDetails(body);
+      msg.installationId = body.installation.id;
       publisherKey = 'pullRequest';
     } else if (eventType == 'push') {
       msg.organization = sanitizeGitHubField(body.repository.owner.name),
       msg.details = getPushDetails(body);
+      msg.installationId = body.installation.id;
       publisherKey = 'push';
     } else if (eventType == 'ping') {
       return resolve(res, 200, 'Received ping event!');
@@ -190,6 +194,7 @@ api.declare({
       debug('Received release event webhook payload. Processing...'); // TO DO: remove this
       msg.organization = sanitizeGitHubField(body.repository.owner.login),
       msg.details = getReleaseDetails(body);
+      msg.installationId = body.installation.id;
       publisherKey = 'release';
     } else {
       return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
@@ -200,12 +205,20 @@ api.declare({
     throw e;
   }
 
-  // Not all webhook payloads include an e-mail for the user who triggered
-  // an event.
-  let headUser = msg.details['event.head.user.login'];
-  let userDetails = await this.github.users.get(headUser);
+  try {
+    debug(`Trying to authenticate as installation for ${msg.details['event.type']}`);
+    var instGithub = await this.github.getInstallationGithub(msg.installationId);
+  } catch (e) {
+    debug('Error authenticating as installation');
+    throw e;
+  }
 
-  msg.details['event.head.user.email'] = userDetails.email || headUser + '@users.noreply.github.com';
+  // Not all webhook payloads include an e-mail for the user who triggered an event
+  let headUser = msg.details['event.head.user.id'].toString();
+  let userDetails = await instGithub.users.getById({id: headUser});
+  msg.details['event.head.user.email'] = userDetails.email || 
+    msg.details['event.head.user.login'] + '@users.noreply.github.com';
+  
   msg.repository = sanitizeGitHubField(body.repository.name);
 
   await this.publisher[publisherKey](msg);

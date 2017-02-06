@@ -19,6 +19,12 @@ properties:
     minLength:    {$const: github-identifier-min-length}
     maxLength:    {$const: github-identifier-max-length}
     pattern:      {$const: github-identifier-pattern}
+  installationId:
+    description: |
+       The installation which had an event.
+    type:          integer
+    minLength:    {$const: github-installation-minimum}
+    maxLength:    {$const: github-installation-maximum}
   details:
     type:         object
     description: |
@@ -28,3 +34,4 @@ required:
   - version
   - organization
   - repository
+  - installationId

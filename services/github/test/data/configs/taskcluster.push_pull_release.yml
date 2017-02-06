@@ -17,7 +17,7 @@ tasks:
       command:
         - test
     metadata:
-      name: "name"
+      name: "Push Task"
       description: "description"
       owner: "test@test.com"
       source: "http://mrrrgn.com"
@@ -35,7 +35,7 @@ tasks:
       command:
         - test
     metadata:
-      name: "name"
+      name: "PR task"
       description: "description2"
       owner: "test@test.com"
       source: "http://mrrrgn.com"
@@ -51,7 +51,7 @@ tasks:
       command:
         - test
     metadata:
-      name: "name"
+      name: "Release task"
       description: "description3"
       owner: "test@test.com"
       source: "http://mrrrgn.com"

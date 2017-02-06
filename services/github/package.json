@@ -23,6 +23,7 @@
     "github": "^5.2.0",
     "js-yaml": "^3.6.1",
     "json-parameterization": "^0.2.0",
+    "jsonwebtoken": "^5.7.0",
     "lodash": "^4.11.1",
     "mocha": "^2.2.1",
     "mocha-eslint": "^2.0.2",
