@@ -277,7 +277,7 @@ async function jobHandler(message) {
       // is a nicer thing to do instead. It contains all of the same
       // information.
 
-      debug(`Trying to create status for ${organization}/${repository}@${sha}`);
+      debug(`Trying to create status for ${organization}/${repository}@${sha} (pending)`);
       await instGithub.repos.createStatus({
         owner: organization,
         repo: repository,
