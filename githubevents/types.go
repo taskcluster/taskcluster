@@ -24,6 +24,7 @@ type (
 		//   * "closed"
 		//   * "reopened"
 		//   * "synchronize"
+		//   * "review_requested"
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/action
 		Action json.RawMessage `json:"action"`
