@@ -185,6 +185,7 @@ async function statusHandler(message) {
  **/
 async function jobHandler(message) {
   let debug = Debug(debugPrefix + ':' + message.payload.eventId);
+  debug('Received message. Starting processing...');
   let context = this.context;
 
   // Authenticating as installation.
