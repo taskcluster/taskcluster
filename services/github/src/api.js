@@ -33,8 +33,8 @@ function getPullRequestDetails(eventData) {
     'event.head.repo.name': eventData.pull_request.head.repo.name,
     'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
     'event.head.sha': eventData.pull_request.head.sha,
-    'event.head.user.login': eventData.pull_request.head.user.login,
-    'event.head.user.id': eventData.pull_request.head.user.id,
+    'event.head.user.login': eventData.sender.login,
+    'event.head.user.id': eventData.sender.id,
 
     'event.pullNumber': eventData.number,
     'event.type': 'pull_request.' + eventData.action,
@@ -72,8 +72,8 @@ function getReleaseDetails(eventData) {
   return {
     'event.type': 'release',
     'event.base.repo.branch': eventData.release.target_commitish,
-    'event.head.user.login': eventData.release.author.login,
-    'event.head.user.id': eventData.release.author.id,
+    'event.head.user.login': eventData.sender.login,
+    'event.head.user.id': eventData.sender.id,
     'event.version': eventData.release.tag_name,
     'event.name': eventData.release.name,
     'event.head.repo.name': eventData.repository.name,
