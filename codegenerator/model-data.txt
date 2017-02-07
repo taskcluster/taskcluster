@@ -1,4 +1,4 @@
-Generated: 1486495461
+Generated: 1486509766
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6313,23 +6313,8 @@ Entry 5     =
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Define Task'
-    Entry Description = 'Define a task without scheduling it. This API end-point allows you to
-upload a task definition without having scheduled. The task won't be
-reported as pending until it is scheduled, see the scheduleTask API 
-end-point.
-
-The purpose of this API end-point is allow schedulers to upload task
-definitions without the tasks becoming _pending_ immediately. This useful
-if you have a set of dependent tasks. Then you can upload all the tasks
-and when the dependencies of a tasks have been resolved, you can schedule
-the task by calling `/task/:taskId/schedule`. This eliminates the need to
-store tasks somewhere else while waiting for dependencies to resolve.
-
-**Important** Any scopes the task requires are also required for defining
-the task. Please see the Request Payload (Task Definition) for details.
-
-**Note** this operation is **idempotent**, as long as you upload the same
-task definition as previously defined this operation is safe to retry.'
+    Entry Description = '**Deprecated**, this is the same as `createTask` with a **self-dependency**.
+This is only present for legacy.'
 Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'post'

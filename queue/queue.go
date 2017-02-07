@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 7 Feb 2017 at 19:24:00 UTC. The code was generated
+// Tue, 7 Feb 2017 at 23:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -199,23 +199,8 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 
 // Stability: *** DEPRECATED ***
 //
-// Define a task without scheduling it. This API end-point allows you to
-// upload a task definition without having scheduled. The task won't be
-// reported as pending until it is scheduled, see the scheduleTask API
-// end-point.
-//
-// The purpose of this API end-point is allow schedulers to upload task
-// definitions without the tasks becoming _pending_ immediately. This useful
-// if you have a set of dependent tasks. Then you can upload all the tasks
-// and when the dependencies of a tasks have been resolved, you can schedule
-// the task by calling `/task/:taskId/schedule`. This eliminates the need to
-// store tasks somewhere else while waiting for dependencies to resolve.
-//
-// **Important** Any scopes the task requires are also required for defining
-// the task. Please see the Request Payload (Task Definition) for details.
-//
-// **Note** this operation is **idempotent**, as long as you upload the same
-// task definition as previously defined this operation is safe to retry.
+// **Deprecated**, this is the same as `createTask` with a **self-dependency**.
+// This is only present for legacy.
 //
 // Required scopes:
 //   * queue:define-task:<provisionerId>/<workerType>, or
