@@ -22,6 +22,7 @@ suite('api', () => {
       created: new Date(),
       updated: new Date(),
       installationId: 1,
+      eventType: 'push',
     });
     await helper.Builds.create({
       organization: 'ghi789',
@@ -32,6 +33,7 @@ suite('api', () => {
       created: new Date(),
       updated: new Date(),
       installationId: 1,
+      eventType: 'push',
     });
     await helper.Builds.create({
       organization: 'abc123',
@@ -42,6 +44,7 @@ suite('api', () => {
       created: new Date(),
       updated: new Date(),
       installationId: 1,
+      eventType: 'push',
     });
     await helper.Builds.create({
       organization: 'abc123',
@@ -52,6 +55,7 @@ suite('api', () => {
       created: new Date(),
       updated: new Date(),
       installationId: 1,
+      eventType: 'push',
     });
   });
 
