@@ -28,7 +28,7 @@ properties:
   action:
     description: |
       The GitHub `action` which triggered an event.
-    enum: [assigned, unassigned, labeled, unlabeled, opened, edited, closed, reopened, synchronize]
+    enum: [assigned, unassigned, labeled, unlabeled, opened, edited, closed, reopened, synchronize, review_requested]
   details:
     type:         object
     description: |
