@@ -1,4 +1,6 @@
-suite('webhook', () => {
+// XXX skip these tests as they require an established integration with
+// corresponding PEM file in the tests
+suite.skip('webhook', () => {
   let helper = require('./helper');
   let assert = require('assert');
 
