@@ -128,13 +128,13 @@ module.exports = Handlers;
  **/
 async function statusHandler(message) {
   let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
-  debug(`Handling state change for task-group ${taskGroupId}`);
 
   let build = await this.context.Builds.load({
     taskGroupId,
   });
 
   let debug = Debug(debugPrefix + ':' + build.eventId);
+  debug(`Handling state change for task-group ${taskGroupId}`);
 
   let state = 'success';
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
