@@ -229,7 +229,9 @@ api.declare({
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 
+  debug('Beginning publishing event message on pulse.');
   await this.publisher[publisherKey](msg);
+  debug('Finished Publishing event message on pulse.');
 
   res.status(204).send();
 });
