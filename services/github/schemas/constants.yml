@@ -7,6 +7,7 @@
 github-identifier-pattern:     "^([a-zA-Z0-9-_%]*)$"
 github-identifier-min-length:  1
 github-identifier-max-length:  100
+github-guid-pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
 
 identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1

@@ -42,6 +42,11 @@ properties:
         eventType:
           type: string
           description: Type of Github event that triggered the build (i.e. push, pull_request.opened).
+        eventId:
+          type: string
+          description: |
+            The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+          pattern: {$const: github-guid-pattern}
         created:
           type: string
           format: date-time
@@ -59,6 +64,8 @@ properties:
         - sha
         - state
         - taskGroupId
+        - eventType
+        - eventId
         - created
         - updated
 additionalProperties: false
