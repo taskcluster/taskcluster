@@ -25,6 +25,11 @@ properties:
     type:          integer
     minimum:    {$const: github-installation-minimum}
     maximum:    {$const: github-installation-maximum}
+  eventId:
+    type: string
+    description: |
+      The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    pattern: {$const: github-guid-pattern}
   details:
     type:         object
     description: |
@@ -34,3 +39,5 @@ required:
   - version
   - organization
   - repository
+  - installationId
+  - eventId

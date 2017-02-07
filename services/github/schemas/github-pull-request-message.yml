@@ -29,6 +29,11 @@ properties:
     description: |
       The GitHub `action` which triggered an event.
     enum: [assigned, unassigned, labeled, unlabeled, opened, edited, closed, reopened, synchronize, review_requested]
+  eventId:
+    type: string
+    description: |
+      The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    pattern: {$const: github-guid-pattern}
   details:
     type:         object
     description: |
@@ -40,3 +45,4 @@ required:
   - repository
   - action
   - installationId
+  - eventId

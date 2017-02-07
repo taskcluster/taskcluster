@@ -1,7 +1,10 @@
-let debug = require('debug')('taskcluster-github:api');
+let Debug = require('debug');
 let crypto = require('crypto');
 let API = require('taskcluster-lib-api');
 let _ = require('lodash');
+
+let debugPrefix = 'taskcluster-github:api';
+let debug = Debug(debugPrefix);
 
 // Common schema prefix
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
@@ -145,6 +148,9 @@ api.declare({
     'release or pull request.',
   ].join('\n'),
 }, async function(req, res) {
+  let eventId = req.headers['x-github-delivery'];
+  let debug = Debug(debugPrefix + ':' + eventId);
+
   let eventType = req.headers['x-github-event'];
   if (!eventType) {
     return resolve(res, 400, 'Missing X-GitHub-Event');
@@ -176,6 +182,8 @@ api.declare({
   let msg = {};
   let publisherKey = '';
 
+  debug('Received ' + eventType + ' event webhook payload. Processing...');
+
   try {
     if (eventType == 'pull_request') {
       msg.organization = sanitizeGitHubField(body.repository.owner.login),
@@ -191,7 +199,6 @@ api.declare({
     } else if (eventType == 'ping') {
       return resolve(res, 200, 'Received ping event!');
     } else if (eventType == 'release') {
-      debug('Received release event webhook payload. Processing...'); // TO DO: remove this
       msg.organization = sanitizeGitHubField(body.repository.owner.login),
       msg.details = getReleaseDetails(body);
       msg.installationId = body.installation.id;
@@ -202,11 +209,12 @@ api.declare({
   } catch (e) {
     debug('Error processing webhook payload!');
     e.webhookPayload = body;
+    e.eventId = eventId;
     throw e;
   }
 
   try {
-    debug(`Trying to authenticate as installation for ${msg.details['event.type']}`);
+    debug(`Trying to authenticate as installation for ${eventType}`);
     var instGithub = await this.github.getInstallationGithub(msg.installationId);
   } catch (e) {
     debug('Error authenticating as installation');
@@ -216,10 +224,10 @@ api.declare({
   // Not all webhook payloads include an e-mail for the user who triggered an event
   let headUser = msg.details['event.head.user.id'].toString();
   let userDetails = await instGithub.users.getById({id: headUser});
-  msg.details['event.head.user.email'] = userDetails.email || 
+  msg.details['event.head.user.email'] = userDetails.email ||
     msg.details['event.head.user.login'] + '@users.noreply.github.com';
-  
   msg.repository = sanitizeGitHubField(body.repository.name);
+  msg.eventId = eventId;
 
   await this.publisher[publisherKey](msg);
 
@@ -260,6 +268,7 @@ api.declare({
         state: entry.state,
         taskGroupId: entry.taskGroupId,
         eventType: entry.eventType,
+        eventId: entry.eventId,
         created: entry.created.toJSON(),
         updated: entry.updated.toJSON(),
       };

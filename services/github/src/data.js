@@ -55,4 +55,22 @@ module.exports.Build = Entity.configure({
     item.eventType = 'Unknown Event';
     return item;
   },
+}).configure({
+  version: 4,
+  properties: {
+    organization: Entity.types.String,
+    repository: Entity.types.String,
+    sha: Entity.types.String,
+    taskGroupId: Entity.types.String,
+    state: Entity.types.String,
+    created: Entity.types.Date,
+    updated: Entity.types.Date,
+    installationId: Entity.types.Number,
+    eventType: Entity.types.String,
+    eventId: Entity.types.String,
+  },
+  migrate: function(item) {
+    item.Id = 'Unknown';
+    return item;
+  },
 });
