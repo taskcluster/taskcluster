@@ -66,6 +66,9 @@ production:
     # is a proxy, so we have to trust it.
     trustProxy: true
 
+  taskcluster:
+    schedulerId: taskcluster-github
+
 staging:
   app:
     jobQueue: 'jobs'
@@ -86,6 +89,9 @@ staging:
     # is a proxy, so we have to trust it.
     trustProxy: true
 
+  taskcluster:
+    schedulerId: taskcluster-github-staging
+
 test:
   webhook:
     secret: ['abc123', 'def456']
@@ -101,3 +107,6 @@ test:
     provisionerId: 'dummy-provisioner'
     workerType: 'dummy-worker'
      
+  taskcluster:
+    schedulerId: taskcluster-github-devel
+

@@ -76,9 +76,10 @@ class Handlers {
       // tasks. We wait for the entire group to be resolved before checking
       // for success.
       let queueEvents = new taskcluster.QueueEvents();
-      await this.statusListener.bind(queueEvents.taskFailed({schedulerId: 'taskcluster-github'}));
-      await this.statusListener.bind(queueEvents.taskException({schedulerId: 'taskcluster-github'}));
-      await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId: 'taskcluster-github'}));
+      let schedulerId = context.cfg.taskcluster.schedulerId;
+      await this.statusListener.bind(queueEvents.taskFailed({schedulerId}));
+      await this.statusListener.bind(queueEvents.taskException({schedulerId}));
+      await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId}));
     } else {
       this.statusListener = new EventEmitter();
       this.jobListener = new EventEmitter();
