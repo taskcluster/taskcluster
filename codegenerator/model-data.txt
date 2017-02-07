@@ -1,4 +1,4 @@
-Generated: 1486491863
+Generated: 1486495461
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3096,6 +3096,13 @@ Properties
           Type                   = 'string'
           TypeName               = 'Created'
           SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/created'
+        Property 'eventId' =
+          Description            = 'The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+          '
+          Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+          Type                   = 'string'
+          TypeName               = 'EventID'
+          SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId'
         Property 'eventType' =
           Description            = 'Type of Github event that triggered the build (i.e. push, pull_request.opened).'
           Type                   = 'string'
@@ -3143,7 +3150,7 @@ Properties
           Type                   = 'string'
           TypeName               = 'Updated'
           SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/updated'
-      Required               = '[organization repository sha state taskGroupId created updated]'
+      Required               = '[organization repository sha state taskGroupId eventType eventId created updated]'
       Type                   = 'object'
       TypeName               = 'BuildsEntry'
       SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items'
@@ -3284,6 +3291,13 @@ Properties
     Type                   = 'object'
     TypeName               = 'Details'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details'
+  Property 'eventId' =
+    Description            = 'The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    '
+    Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+    Type                   = 'string'
+    TypeName               = 'EventID'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/eventId'
   Property 'installationId' =
     Description            = 'The installation which had an event.
     '
@@ -3316,7 +3330,7 @@ Properties
     Type HAS NOT BEEN SET!!!
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/version'
-Required               = '[version organization repository action installationId]'
+Required               = '[version organization repository action installationId eventId]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'GitHub Pull Request Message'
 Type                   = 'object'
@@ -3337,6 +3351,13 @@ Properties
     Type                   = 'object'
     TypeName               = 'Details'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details'
+  Property 'eventId' =
+    Description            = 'The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    '
+    Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+    Type                   = 'string'
+    TypeName               = 'EventID'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/eventId'
   Property 'installationId' =
     Description            = 'The installation which had an event.
     '
@@ -3369,7 +3390,7 @@ Properties
     Type HAS NOT BEEN SET!!!
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/version'
-Required               = '[version organization repository installationId]'
+Required               = '[version organization repository installationId eventId]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'GitHub Push Message'
 Type                   = 'object'
@@ -3390,6 +3411,13 @@ Properties
     Type                   = 'object'
     TypeName               = 'Details'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/details'
+  Property 'eventId' =
+    Description            = 'The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+    '
+    Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+    Type                   = 'string'
+    TypeName               = 'EventID'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/eventId'
   Property 'installationId' =
     Description            = 'The installation which had an event.
     '
@@ -3422,7 +3450,7 @@ Properties
     Type HAS NOT BEEN SET!!!
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/version'
-Required               = '[version organization repository]'
+Required               = '[version organization repository installationId eventId]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'GitHub Release Message'
 Type                   = 'object'

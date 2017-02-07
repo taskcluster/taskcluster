@@ -34,6 +34,13 @@ type (
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
+		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+		//
+		// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+		//
+		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/eventId
+		EventID string `json:"eventId"`
+
 		// The installation which had an event.
 		//
 		// Mininum:    0
@@ -78,6 +85,13 @@ type (
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
+
+		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+		//
+		// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+		//
+		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/eventId
+		EventID string `json:"eventId"`
 
 		// The installation which had an event.
 		//
@@ -124,13 +138,20 @@ type (
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
+		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+		//
+		// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+		//
+		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/eventId
+		EventID string `json:"eventId"`
+
 		// The installation which had an event.
 		//
 		// Mininum:    0
 		// Maximum:    10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/installationId
-		InstallationID int `json:"installationId,omitempty"`
+		InstallationID int `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//

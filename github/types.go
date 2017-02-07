@@ -22,10 +22,17 @@ type (
 			// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/created
 			Created tcclient.Time `json:"created"`
 
+			// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+			//
+			// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+			//
+			// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId
+			EventID string `json:"eventId"`
+
 			// Type of Github event that triggered the build (i.e. push, pull_request.opened).
 			//
 			// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventType
-			EventType string `json:"eventType,omitempty"`
+			EventType string `json:"eventType"`
 
 			// Github organization associated with the build.
 			//
