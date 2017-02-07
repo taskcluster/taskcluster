@@ -133,7 +133,7 @@ module.exports.setup = function(cfg) {
 
           return {
             taskId: task.taskId,
-            task: _.extend(task.task, {taskGroupId, schedulerId: 'taskcluster-github'}),
+            task: _.extend(task.task, {taskGroupId, schedulerId: cfg.taskcluster.schedulerId}),
           };
         });
       }
