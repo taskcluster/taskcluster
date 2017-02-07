@@ -90,7 +90,7 @@ staging:
     trustProxy: true
 
   taskcluster:
-    schedulerId: taskcluster-github-staging
+    schedulerId: tc-gh-staging
 
 test:
   webhook:
@@ -108,5 +108,5 @@ test:
     workerType: 'dummy-worker'
      
   taskcluster:
-    schedulerId: taskcluster-github-devel
+    schedulerId: tc-gh-devel
 
