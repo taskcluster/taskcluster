@@ -130,20 +130,21 @@ async function statusHandler(message) {
     taskGroupId,
   });
 
-  if (build.state === 'failure') {
-    debug('Task group already marked as failure. Continuing.');
-    return;
-  };
-
   let state = 'success';
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
     state = 'failure';
   }
 
-  await build.modify((b) => {
-    b.state = state;
-    b.updated = new Date();
+  await build.modify(b => {
+    if (b.state !== 'failure') {
+      b.state = state;
+      b.updated = new Date();
+    }
   });
+  if (build.state !== state) {
+    debug('Task group already marked as failure. Continuing.');
+    return;
+  }
 
   // Authenticating as installation.
   try {
