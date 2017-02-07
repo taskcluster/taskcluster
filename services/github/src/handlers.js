@@ -1,4 +1,4 @@
-let debug = require('debug')('taskcluster-github:handlers');
+let Debug = require('debug');
 let taskcluster = require('taskcluster-client');
 let slugid = require('slugid');
 let yaml = require('js-yaml');
@@ -8,6 +8,9 @@ let _ = require('lodash');
 let Promise = require('promise');
 
 let INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';
+
+let debugPrefix = 'taskcluster-github:handlers';
+let debug = Debug(debugPrefix);
 
 /**
  * Create handlers
@@ -131,6 +134,8 @@ async function statusHandler(message) {
     taskGroupId,
   });
 
+  let debug = Debug(debugPrefix + ':' + build.eventId);
+
   let state = 'success';
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
     state = 'failure';
@@ -179,6 +184,7 @@ async function statusHandler(message) {
  * graph config, and submit it to the scheduler.
  **/
 async function jobHandler(message) {
+  let debug = Debug(debugPrefix + ':' + message.payload.eventId);
   let context = this.context;
 
   // Authenticating as installation.
@@ -244,7 +250,7 @@ async function jobHandler(message) {
 
   // Decide if a user has permissions to run tasks.
   let login = message.payload.details['event.head.user.login'];
-  if (! await isCollaborator({login, organization, repository, sha, instGithub})) {
+  if (! await isCollaborator({login, organization, repository, sha, instGithub, debug})) {
     return;
   }
 
@@ -293,6 +299,7 @@ async function jobHandler(message) {
         updated: now,
         installationId: message.payload.installationId,
         eventType: message.payload.details['event.type'],
+        eventId: message.payload.eventId,
       }).catch(async (err) => {
         if (err.code !== 'EntityAlreadyExists') {
           throw err;
@@ -306,6 +313,7 @@ async function jobHandler(message) {
         assert.equal(build.repository, repository);
         assert.equal(build.sha, sha);
         assert.equal(build.eventType, message.payload.details['event.type']);
+        assert.equal(build.eventId, message.payload.eventId);
       });
     } else {
       debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
@@ -336,7 +344,7 @@ async function jobHandler(message) {
   }
 }
 
-async function isCollaborator({login, organization, repository, sha, instGithub}) {
+async function isCollaborator({login, organization, repository, sha, instGithub, debug}) {
   if (login === organization) {
     debug(`Checking collaborator: ${login} === ${organization}: True!`);
     return true;
