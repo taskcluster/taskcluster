@@ -33,6 +33,14 @@ type (
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
+		// The installation which had an event.
+		//
+		// Mininum:    0
+		// Maximum:    10000000000
+		//
+		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/installationId
+		InstallationID int `json:"installationId"`
+
 		// The GitHub `organization` which had an event.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
@@ -70,6 +78,14 @@ type (
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
+		// The installation which had an event.
+		//
+		// Min length: 0
+		// Max length: 10000000000
+		//
+		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/installationId
+		InstallationID int `json:"installationId"`
+
 		// The GitHub `organization` which had an event.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
@@ -106,6 +122,14 @@ type (
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
+
+		// The installation which had an event.
+		//
+		// Mininum:    0
+		// Maximum:    10000000000
+		//
+		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/installationId
+		InstallationID int `json:"installationId,omitempty"`
 
 		// The GitHub `organization` which had an event.
 		//

@@ -22,6 +22,11 @@ type (
 			// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/created
 			Created tcclient.Time `json:"created"`
 
+			// Type of Github event that triggered the build (i.e. push, pull_request.opened).
+			//
+			// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventType
+			EventType string `json:"eventType,omitempty"`
+
 			// Github organization associated with the build.
 			//
 			// Syntax:     ^([a-zA-Z0-9-_%]*)$
