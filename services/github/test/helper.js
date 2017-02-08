@@ -15,6 +15,7 @@ let config = require('typed-env-config');
 let testing = require('taskcluster-lib-testing');
 let validator = require('taskcluster-lib-validate');
 let fakeGithubAuth = require('./github-auth');
+let FakePublisher = require('./publisher');
 
 // Load configuration
 let cfg = config({profile: 'test'});
@@ -72,8 +73,9 @@ mocha.before(async () => {
     return loaded;
   };
 
-  // inject the fake githubAuth
+  // inject some fakes
   overwrites.github = fakeGithubAuth();
+  helper.publisher = overwrites.publisher = new FakePublisher();
 
   helper.Builds = await helper.load('Builds', overwrites);
   helper.intree = overwrites.intree = await helper.load('intree', overwrites);
@@ -83,18 +85,6 @@ mocha.before(async () => {
     baseUrl: cfg.taskcluster.queueBaseUrl,
     credentials: cfg.taskcluster.credentials,
   });
-
-  // Configure pulse receiver
-  helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
-  let exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.app.exchangePrefix,
-    credentials:      cfg.pulse,
-  });
-  helper.TaskclusterGitHubEvents = taskcluster.createClient(exchangeReference);
-  helper.taskclusterGithubEvents = new helper.TaskclusterGitHubEvents();
-
-  // Configure pulse publisher
-  helper.publisher = await helper.load('publisher', overwrites);
 
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
   let reference = api.reference({baseUrl: helper.baseUrl});
@@ -111,6 +101,9 @@ mocha.before(async () => {
 mocha.beforeEach(async () => {
   let github = await helper.load('github');
   github.resetStubs();
+
+  let publisher = await helper.load('publisher');
+  publisher.resetStubs();
 });
 
 // Cleanup after all tests have completed

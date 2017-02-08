@@ -29,8 +29,6 @@ let debug = Debug(debugPrefix);
 class Handlers {
   constructor({credentials, monitor, reference, jobQueueName, statusQueueName, intree, context}) {
     debug('Constructing handlers...');
-    assert(credentials.username, 'credentials.username must be provided');
-    assert(credentials.password, 'credentials.password must be provided');
     assert(monitor, 'monitor is required for statistics');
     assert(monitor, 'reference must be provided');
     assert(intree, 'intree configuration builder must be provided');
@@ -57,6 +55,8 @@ class Handlers {
     options = options || {};
     assert(this.connection === null, 'Cannot setup twice!');
     if (!options.noConnect) {
+      assert(this.credentials.username, 'credentials.username must be provided');
+      assert(this.credentials.password, 'credentials.password must be provided');
       this.connection = new taskcluster.PulseConnection(this.credentials);
       this.statusListener = new taskcluster.PulseListener({
         queueName: this.statusQueueName,
