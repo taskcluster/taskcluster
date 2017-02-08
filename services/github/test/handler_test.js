@@ -182,6 +182,7 @@ suite('handlers', () => {
         updated: new Date(),
         installationId: 9988,
         eventType: 'push',
+        eventId: 'aaa-bbb',
       });
     }
 
