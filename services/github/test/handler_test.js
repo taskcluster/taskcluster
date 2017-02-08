@@ -34,7 +34,7 @@ suite('handlers', () => {
   });
 
   suite('jobHandler', function() {
-    function simulateJobMessage({user, head, base}) {
+    function simulateJobMessage({user, head, base, eventType='push'}) {
       // set up to resolve when the handler has finished (even if it finishes with error)
       return new Promise((resolve, reject) => {
         handlers.handlerComplete = resolve;
@@ -44,7 +44,7 @@ suite('handlers', () => {
           payload: {
             organization: 'TaskClusterRobot',
             details: {
-              'event.type': 'push',
+              'event.type': eventType,
               'event.base.repo.branch': 'tc-gh-tests',
               'event.head.repo.branch': 'tc-gh-tests',
               'event.head.user.login': user,
@@ -82,6 +82,28 @@ suite('handlers', () => {
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
+      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+      debug('Created task group: ' + args.target_url);
+      assert(args.target_url.startsWith(URL_PREFIX));
+    });
+
+    test('valid pull_request (owner is member) creates a taskGroup', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./valid-yaml.json'),
+      });
+      await simulateJobMessage({user: 'TaskClusterRobot', eventType: 'pull_request.opened'});
+
+      assert(github.inst(5828).repos.createStatus.calledOnce, 'Status was never updated!');
+      assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+      let args = github.inst(5828).repos.createStatus.firstCall.args[0];
+      assert.equal(args.owner, 'TaskClusterRobot');
+      assert.equal(args.repo, 'hooks-testing');
+      assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args.state, 'pending');
+      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'pull_request');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
     });
