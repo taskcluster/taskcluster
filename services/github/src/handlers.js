@@ -118,6 +118,18 @@ class Handlers {
       this.connection = undefined;
     }
   }
+
+  // Create a collection of tasks, centralized here to enable testing without creating tasks.
+  async createTasks({scopes, tasks}) {
+    debug('Creating queue...');
+    let queue = new taskcluster.Queue({
+      baseUrl: this.context.cfg.taskcluster.queueBaseUrl,
+      credentials: this.context.cfg.taskcluster.credentials,
+      authorizedScopes: scopes,
+    });
+    debug('Creating tasks...');
+    await Promise.all(tasks.map(t => queue.createTask(t.taskId, t.task)));
+  }
 }
 module.exports = Handlers;
 
@@ -265,14 +277,7 @@ async function jobHandler(message) {
     });
     if (graphConfig.tasks.length) {
       let taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-      debug('Creating queue...');
-      let queue = new taskcluster.Queue({
-        baseUrl: context.cfg.taskcluster.queueBaseUrl,
-        credentials: context.cfg.taskcluster.credentials,
-        authorizedScopes: graphConfig.scopes,
-      });
-      debug('Creating tasks...');
-      await Promise.all(graphConfig.tasks.map(t => queue.createTask(t.taskId, t.task)));
+      await this.createTasks({scopes: graphConfig.scopes, tasks: graphConfig.tasks});
 
       // We used to comment on every commit, but setting the status
       // is a nicer thing to do instead. It contains all of the same
@@ -402,8 +407,7 @@ async function isCollaborator({login, organization, repository, sha, instGithub,
 
   // If all of the collaborator checks fail, we should post to the commit
   // and ignore the request
-  let msg = `@${login} does not have permission to trigger tasks.`;
-  debug(`Sorry, no tasks were created because ${login} is not a collaborator on ${organization}/${repository}.`);
+  let msg = `Sorry, no tasks were created because ${login} is not a collaborator on ${organization}/${repository}.`;
   await instGithub.repos.createCommitComment({
     owner: organization,
     repo: repository,
