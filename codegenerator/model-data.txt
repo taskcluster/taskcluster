@@ -1,4 +1,4 @@
-Generated: 1486509766
+Generated: 1486527727
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3281,7 +3281,7 @@ Properties
   Property 'action' =
     Description            = 'The GitHub `action` which triggered an event.
     '
-    Enum                   = '[assigned unassigned labeled unlabeled opened edited closed reopened synchronize review_requested]'
+    Enum                   = '[assigned unassigned labeled unlabeled opened edited closed reopened synchronize review_requested review_request_removed]'
     Type HAS NOT BEEN SET!!!
     TypeName               = 'Action'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/action'
