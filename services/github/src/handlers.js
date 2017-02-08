@@ -207,7 +207,7 @@ async function statusHandler(message) {
       state,
       target_url: INSPECTOR_URL + taskGroupId,
       description: 'TaskGroup: ' + state,
-      context: `${this.context.cfg.app.statusContext} (${build.eventType || 'Unknown Event'})`,
+      context: `${this.context.cfg.app.statusContext} (${build.eventType.split('.')[0]})`,
     });
   } catch (e) {
     debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
@@ -330,7 +330,7 @@ async function jobHandler(message) {
       state: groupState,
       target_url: INSPECTOR_URL + taskGroupId,
       description: groupState === 'pending' ? 'TaskGroup: Running' : 'TaskGroup: Exception',
-      context: `${this.context.cfg.app.statusContext} (${message.payload.details['event.type']})`,
+      context: `${this.context.cfg.app.statusContext} (${message.payload.details['event.type'].split('.')[0]})`,
     });
 
     let now = new Date();
