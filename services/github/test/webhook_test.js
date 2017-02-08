@@ -1,8 +1,14 @@
-// XXX skip these tests as they require an established integration with
-// corresponding PEM file in the tests
-suite.skip('webhook', () => {
+suite('webhook', () => {
   let helper = require('./helper');
   let assert = require('assert');
+
+  let github = null;
+
+  setup(async () => {
+    github = await helper.load('github');
+    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com'});
+    github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com'});
+  });
 
   // Check the status code returned from a request containing some test data
   function statusTest(testName, jsonFile, statusCode) {

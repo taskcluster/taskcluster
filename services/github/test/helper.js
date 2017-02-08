@@ -14,6 +14,7 @@ let slugid = require('slugid');
 let config = require('typed-env-config');
 let testing = require('taskcluster-lib-testing');
 let validator = require('taskcluster-lib-validate');
+let fakeGithubAuth = require('./github-auth');
 
 // Load configuration
 let cfg = config({profile: 'test'});
@@ -62,10 +63,21 @@ mocha.before(async () => {
     aws: cfg.aws,
   });
 
-  webServer = await load('server', {profile: 'test', process: 'test'});
+  let overwrites = {profile: 'test', process: 'test'};
+  helper.load = async (component) => {
+    if (component in overwrites) {
+      return overwrites[component];
+    }
+    let loaded = overwrites[component] = await load(component, overwrites);
+    return loaded;
+  };
 
-  helper.intree = await load('intree', {profile: 'test', process: 'test'});
-  helper.Builds = await load('Builds', {profile: 'test', process: 'test'});
+  // inject the fake githubAuth
+  overwrites.github = fakeGithubAuth();
+
+  helper.Builds = await helper.load('Builds', overwrites);
+  helper.intree = overwrites.intree = await helper.load('intree', overwrites);
+  webServer = overwrites.server = await helper.load('server', overwrites);
 
   helper.queue = new taskcluster.Queue({
     baseUrl: cfg.taskcluster.queueBaseUrl,
@@ -82,7 +94,7 @@ mocha.before(async () => {
   helper.taskclusterGithubEvents = new helper.TaskclusterGitHubEvents();
 
   // Configure pulse publisher
-  helper.publisher = await load('publisher', {profile: 'test', process: 'test'});
+  helper.publisher = await helper.load('publisher', overwrites);
 
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
   let reference = api.reference({baseUrl: helper.baseUrl});
@@ -94,6 +106,11 @@ mocha.before(async () => {
       accessToken: 'none',
     },
   });
+});
+
+mocha.beforeEach(async () => {
+  let github = await helper.load('github');
+  github.resetStubs();
 });
 
 // Cleanup after all tests have completed
