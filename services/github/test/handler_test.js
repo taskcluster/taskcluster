@@ -1,17 +1,8 @@
 /**
- * This is a big huge integration test that reaches out to
- * all corners of the known universe and touches everything it can.
- *
- * It is super gross.
- *
- * However, the task that taskcluster-github achieves is a super gross
- * one. We're sorta left with the choice of faking all of our interactions
- * with Github or doing this. We've chosen this route for now and can
- * revisit later if it is a pain.
+ * This tests the event handlers, faking out all of the services they
+ * interact with.
  */
-// XXX skip these tests because they assume a top-level `github` object, instead of the
-// githubAuth object.
-suite.skip('handlers', () => {
+suite('handlers', () => {
   let debug = require('debug')('test');
   let helper = require('./helper');
   let assert = require('assert');
@@ -20,23 +11,25 @@ suite.skip('handlers', () => {
   let sinon = require('sinon');
   let slugid = require('slugid');
 
-  let stubs = null;
+  let github = null;
   let handlers = null;
 
   let URL_PREFIX = 'https://tools.taskcluster.net/task-group-inspector/#/';
 
   setup(async () => {
-    // Stub out github operations that write and need higher permissions
-    stubs = {};
-    let github = await load('github', {profile: 'test', process: 'test'});
-    stubs['comment'] = sinon.stub(github.repos, 'createCommitComment');
-    stubs['status'] = sinon.stub(github.repos, 'createStatus');
+    github = await helper.load('github');
 
-    handlers = await load('handlers', {profile: 'test', process: 'test', github});
+    handlers = await helper.load('handlers');
+
+    // stub out `createTasks` so that we don't actually create tasks
+    handlers.oldCreateTasks = handlers.createTasks;
+    handlers.createTasks = sinon.stub();
+
     await handlers.setup({noConnect: true});
   });
 
   teardown(async () => {
+    handlers.createTasks = handlers.oldCreateTasks;
     await handlers.terminate();
   });
 
@@ -72,59 +65,102 @@ suite.skip('handlers', () => {
       });
     }
 
-    test('valid push (owner === owner) creates a taskGroup', async function() {
+    test('valid push (owner is member) creates a taskGroup', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./valid-yaml.json'),
+      });
       await simulateJobMessage({user: 'TaskClusterRobot'});
 
-      assert(stubs.status.calledOnce, 'Status was never updated!');
-      let args = stubs.status.firstCall.args[0];
+      assert(github.inst(5828).repos.createStatus.calledOnce, 'Status was never updated!');
+      assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+      let args = github.inst(5828).repos.createStatus.firstCall.args[0];
       assert.equal(args.owner, 'TaskClusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
-      let taskGroupId = args.target_url.replace(URL_PREFIX, '').trim();
-
-      if (typeof taskGroupId !== 'string') {
-        throw new Error(`${taskGroupId} is not a valid taskGroupId`);
-        return;
-      }
     });
 
-    test('trying to use scopes outside the assigned', async function() {
-      await simulateJobMessage({
-        user: 'TaskClusterRobot',
-        head: '52f8ebc527e8af90e7d647f22aa07dfc5ad9b280',
-        base: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+    test('valid push (collaborator but not member) creates a taskGroup', async function() {
+      github.inst(5828).setRepoCollaborator({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        collabuser: 'TaskClusterCollaborator',
       });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./valid-yaml.json'),
+      });
+      await simulateJobMessage({user: 'TaskClusterCollaborator'});
 
-      assert(stubs.comment.calledOnce);
-      assert.equal(stubs.comment.args[0][0].owner, 'TaskClusterRobot');
-      assert.equal(stubs.comment.args[0][0].repo, 'hooks-testing');
-      assert.equal(stubs.comment.args[0][0].sha, '52f8ebc527e8af90e7d647f22aa07dfc5ad9b280');
-      assert(stubs.comment.args[0][0].body.indexOf('auth:statsum:taskcluster-github') !== -1);
+      assert(github.inst(5828).repos.createStatus.calledOnce, 'Status was never updated!');
+      let args = github.inst(5828).repos.createStatus.firstCall.args[0];
+      assert.equal(args.owner, 'TaskClusterRobot');
+      assert.equal(args.repo, 'hooks-testing');
+      assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args.state, 'pending');
+      debug('Created task group: ' + args.target_url);
+      assert(args.target_url.startsWith(URL_PREFIX));
     });
 
-    test('insufficient permissions to check membership', async function() {
+    test('invalid YAML results in a comment', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./invalid-yaml.json'),
+      });
+      await simulateJobMessage({user: 'TaskClusterRobot'});
+
+      assert(github.inst(5828).repos.createStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(5828).repos.createCommitComment.calledOnce);
+      let args = github.inst(5828).repos.createCommitComment.args;
+      assert.equal(args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert(args[0][0].body.indexOf('data should NOT have additional properties') !== -1);
+    });
+
+    test('error creating task is reported correctly', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./valid-yaml.json'),
+      });
+      handlers.createTasks.returns(Promise.reject({body: {error: 'oh noes'}}));
+      await simulateJobMessage({user: 'TaskClusterRobot'});
+
+      assert(github.inst(5828).repos.createStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(5828).repos.createCommitComment.calledOnce);
+      let args = github.inst(5828).repos.createCommitComment.args;
+      assert.equal(args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert(args[0][0].body.indexOf('oh noes') !== -1);
+    });
+
+    test('not an org member or collaborator is reported correctly', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./valid-yaml.json'),
+      });
       await simulateJobMessage({user: 'imbstack'});
 
-      assert(stubs.comment.calledOnce);
-      assert.equal(stubs.comment.args[0][0].owner, 'TaskClusterRobot');
-      assert.equal(stubs.comment.args[0][0].repo, 'hooks-testing');
-      assert.equal(stubs.comment.args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
-      assert(stubs.comment.args[0][0].body.startsWith(
-        'Taskcluster does not have permission to check for repository collaborators'));
-    });
-
-    test('invalid push', async function() {
-      await simulateJobMessage({user: 'somebodywhodoesntexist'});
-
-      assert(stubs.comment.calledOnce);
-      assert.equal(stubs.comment.args[0][0].owner, 'TaskClusterRobot');
-      assert.equal(stubs.comment.args[0][0].repo, 'hooks-testing');
-      assert.equal(stubs.comment.args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
-      assert(stubs.comment.args[0][0].body.startsWith(
-        'TaskCluster: @somebodywhodoesntexist does not have permission'));
+      assert(github.inst(5828).repos.createCommitComment.calledOnce);
+      let args = github.inst(5828).repos.createCommitComment.args;
+      assert.equal(args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert(args[0][0].body.indexOf('Sorry, no tasks were') !== -1);
     });
   });
 
@@ -144,6 +180,8 @@ suite.skip('handlers', () => {
         state,
         created: new Date(),
         updated: new Date(),
+        installationId: 9988,
+        eventType: 'push',
       });
     }
 
@@ -165,8 +203,8 @@ suite.skip('handlers', () => {
     }
 
     async function assertStatusUpdate(state) {
-      assert(stubs.status.calledOnce, 'Status was not updated');
-      let args = stubs.status.firstCall.args[0];
+      assert(github.inst(9988).repos.createStatus.calledOnce, 'createStatus was not called');
+      let args = github.inst(9988).repos.createStatus.firstCall.args[0];
       assert.equal(args.owner, 'TaskClusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
