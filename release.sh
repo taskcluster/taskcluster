@@ -112,7 +112,7 @@ git tag "v${NEW_VERSION}"
 # only ensure master is updated if it is a non-alpha release
 if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
   git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
-  git fetch "${OFFICIAL_GIT_REPO}"
+  git fetch --all
 fi
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}"
 
