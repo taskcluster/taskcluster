@@ -54,7 +54,6 @@ tasks:
           GORACE=history_size=7 go test -v ./...
           "${GOPATH}/bin/ineffassign" .
       artifacts:
-        # public/build/generic-worker-darwin-amd64:
         public/build/generic-worker-linux-amd64:
           path: "/go/bin/generic-worker"
           expires: "{{ '2 weeks' | $fromNow }}"
@@ -66,7 +65,7 @@ tasks:
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: win2012r2-cu
+    workerType: gecko-1-b-win2012-beta
     metadata:
       name: "Build/test 64 bit generic-worker on Windows Server 2012 R2"
       description: "This builds and tests the 64 bit Windows version of generic-worker on Windows Server 2012 R2"
@@ -83,7 +82,8 @@ tasks:
       command:
         - 'mkdir "public\build"'
         - set GOPATH=%CD%\gopath
-        - set PATH=%GOPATH%\bin;%PATH%
+        - set GOROOT=%CD%\go
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - 'go get -d "github.com/taskcluster/generic-worker"'
         - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
@@ -116,6 +116,15 @@ tasks:
         - path: public/build/generic-worker-windows-amd64.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
+      mounts:
+        - content:
+            url: https://storage.googleapis.com/golang/go1.7.5.windows-amd64.zip
+          directory: .
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/MinGit-2.11.0.3-64-bit.zip
+          directory: git
+          format: zip
 
 
   ##########################################################
@@ -250,4 +259,3 @@ tasks:
             url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/MinGit-2.11.0.3-64-bit.zip
           directory: git
           format: zip
-

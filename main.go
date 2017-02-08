@@ -494,7 +494,9 @@ func runWorker() {
 			if config.IdleTimeoutSecs > 0 {
 				idleTime := time.Now().Sub(lastActive)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
+					taskCleanup()
 					exitOrShutdown(config.ShutdownMachineOnIdle, fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime), 0)
+					break
 				}
 			}
 		} else {
@@ -1270,10 +1272,13 @@ func deleteTaskDirs() {
 
 func exitOrShutdown(shutdown bool, cause string, exitCode int) {
 	if shutdown {
-		immediateShutdown(cause)
-	} else {
-		log.Println("Exiting worker (but not shutting down computer)...")
+		log.Println("Exiting worker and shutting down computer...")
 		log.Println(cause)
-		os.Exit(exitCode)
+		immediateShutdown(cause)
+		return
 	}
+	log.Println("Exiting worker (but not shutting down computer)...")
+	log.Println(cause)
+	// don't os.Exit(0) here because that will prevent subsequent tests from
+	// running and will not cause a test failure
 }
