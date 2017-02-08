@@ -56,6 +56,7 @@ suite('handlers', () => {
               'event.head.user.id': 190790,
             },
             repository: 'hooks-testing',
+            eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
             installationId: 5828,
             version: 1,
           },
@@ -137,7 +138,7 @@ suite('handlers', () => {
       handlers.createTasks.returns(Promise.reject({body: {error: 'oh noes'}}));
       await simulateJobMessage({user: 'TaskClusterRobot'});
 
-      assert(github.inst(5828).repos.createStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(5828).repos.createStatus.callCount === 1, 'Status was not updated!');
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
       let args = github.inst(5828).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskClusterRobot');
