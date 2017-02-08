@@ -121,14 +121,38 @@ class Handlers {
 
   // Create a collection of tasks, centralized here to enable testing without creating tasks.
   async createTasks({scopes, tasks}) {
-    debug('Creating queue...');
     let queue = new taskcluster.Queue({
       baseUrl: this.context.cfg.taskcluster.queueBaseUrl,
       credentials: this.context.cfg.taskcluster.credentials,
       authorizedScopes: scopes,
     });
-    debug('Creating tasks...');
     await Promise.all(tasks.map(t => queue.createTask(t.taskId, t.task)));
+  }
+
+  // Send an exception to Github in the form of a comment.
+  async createExceptionComment({instGithub, organization, repository, sha, error}) {
+    let errorBody = error.body && error.body.error || error.message;
+    // Let's prettify any objects
+    if (typeof errorBody == 'object') {
+      errorBody = JSON.stringify(errorBody, null, 4);
+    }
+
+    // Warn the user know that there was a problem handling their request
+    // by posting a comment; this error is then considered handled and not
+    // reported to the taskcluster team or retried
+    await instGithub.repos.createCommitComment({
+      owner: organization,
+      repo: repository,
+      sha,
+      body: [
+        '<details>\n',
+        '<summary>Submitting the task to TaskCluster failed. Details</summary>\n\n',
+        '```js\n',
+        errorBody,
+        '```\n',
+        '</details>',
+      ].join('\n'),
+    });
   }
 }
 module.exports = Handlers;
@@ -267,85 +291,74 @@ async function jobHandler(message) {
     return;
   }
 
+  let groupState = 'pending';
+  let taskGroupId = 'nonexistent';
+  let graphConfig;
+
   // Now we can try processing the config and kicking off a task.
   try {
-    let graphConfig = this.intree({
+    graphConfig = this.intree({
       config: repoconf,
       payload: message.payload,
       validator: context.validator,
       schema: 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#',
     });
-    if (graphConfig.tasks.length) {
-      let taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-      await this.createTasks({scopes: graphConfig.scopes, tasks: graphConfig.tasks});
-
-      // We used to comment on every commit, but setting the status
-      // is a nicer thing to do instead. It contains all of the same
-      // information.
-
-      debug(`Trying to create status for ${organization}/${repository}@${sha} (pending)`);
-      await instGithub.repos.createStatus({
-        owner: organization,
-        repo: repository,
-        sha,
-        state: 'pending',
-        target_url: INSPECTOR_URL + taskGroupId,
-        description: 'TaskGroup: Running',
-        context: `${this.context.cfg.app.statusContext} (${message.payload.details['event.type']})`,
-      });
-
-      let now = new Date();
-      await context.Builds.create({
-        organization,
-        repository,
-        sha,
-        taskGroupId,
-        state: 'pending',
-        created: now,
-        updated: now,
-        installationId: message.payload.installationId,
-        eventType: message.payload.details['event.type'],
-        eventId: message.payload.eventId,
-      }).catch(async (err) => {
-        if (err.code !== 'EntityAlreadyExists') {
-          throw err;
-        }
-        let build = await this.Builds.load({
-          taskGroupId,
-        });
-        assert.equal(build.state, 'pending', `State for ${organization}/${repository}@${sha}
-          already exists but is set to ${build.state} instead of pending!`);
-        assert.equal(build.organization, organization);
-        assert.equal(build.repository, repository);
-        assert.equal(build.sha, sha);
-        assert.equal(build.eventType, message.payload.details['event.type']);
-        assert.equal(build.eventId, message.payload.eventId);
-      });
-    } else {
+    if (graphConfig.tasks.length === 0) {
       debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
+      return;
     }
   } catch (e) {
-    let errorBody = e.body && e.body.error || e.message;
-    // Let's prettify any objects
-    if (typeof errorBody == 'object') {
-      errorBody = JSON.stringify(errorBody, null, 4);
-    }
+    debug('.taskcluster.yml was not formatted correctly. Leaving comment on Github.');
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
+    return;
+  }
 
-    // Warn the user know that there was a problem handling their request
-    // by posting a comment; this error is then considered handled and not
-    // reported to the taskcluster team or retried
-    await instGithub.repos.createCommitComment({
+  try {
+    taskGroupId = graphConfig.tasks[0].task.taskGroupId;
+    debug(`Creating tasks. (taskGroupId: ${taskGroupId})`);
+    await this.createTasks({scopes: graphConfig.scopes, tasks: graphConfig.tasks});
+  } catch (e) {
+    debug('Creating tasks failed! Leaving comment on Github.');
+    groupState = 'failure';
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
+  } finally {
+    debug(`Trying to create status for ${organization}/${repository}@${sha} (${groupState})`);
+    await instGithub.repos.createStatus({
       owner: organization,
       repo: repository,
       sha,
-      body: [
-        '<details>\n',
-        '<summary>Submitting the task to TaskCluster failed.  Details</summary>\n\n',
-        '```js\n',
-        errorBody,
-        '```\n',
-        '</details>',
-      ].join('\n'),
+      state: groupState,
+      target_url: INSPECTOR_URL + taskGroupId,
+      description: groupState === 'pending' ? 'TaskGroup: Running' : 'TaskGroup: Exception',
+      context: `${this.context.cfg.app.statusContext} (${message.payload.details['event.type']})`,
+    });
+
+    let now = new Date();
+    await context.Builds.create({
+      organization,
+      repository,
+      sha,
+      taskGroupId,
+      state: groupState,
+      created: now,
+      updated: now,
+      installationId: message.payload.installationId,
+      eventType: message.payload.details['event.type'],
+      eventId: message.payload.eventId,
+    }).catch(async (err) => {
+      if (err.code !== 'EntityAlreadyExists') {
+        throw err;
+      }
+      let build = await this.Builds.load({
+        taskGroupId,
+      });
+      assert.equal(build.state, groupState, `State for ${organization}/${repository}@${sha}
+        already exists but is set to ${build.state} instead of ${groupState}!`);
+      assert.equal(build.organization, organization);
+      assert.equal(build.repository, repository);
+      assert.equal(build.sha, sha);
+      assert.equal(build.eventType, message.payload.details['event.type']);
+      assert.equal(build.eventId, message.payload.eventId);
     });
   }
 }
