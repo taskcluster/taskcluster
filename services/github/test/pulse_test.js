@@ -23,22 +23,17 @@ suite('pulse', () => {
    **/
   function pulseTest(params) {
     test(params.testName, async () => {
-      // Start listening for message
-      await helper.events.listenFor(params.listenFor,
-        helper.taskclusterGithubEvents[params.exchangeFunc](params.routingKey)
-      );
-
       // Trigger a pull-request message
       let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
       res.connection.destroy();
 
-      // Wait for message and validate details
-      let m = await helper.events.waitFor(params.listenFor);
-      assert.equal(m.payload.organization, params.routingKey.organization);
-      assert.equal(m.payload.repository, params.routingKey.repository);
-      assert.equal(m.payload.installationId, params.routingKey.installationId);
+      assert(helper.publisher[params.exchangeFunc].calledOnce);
+      let call = helper.publisher[params.exchangeFunc].getCall(0);
+      assert.equal(call.args[0].organization, params.routingKey.organization);
+      assert.equal(call.args[0].repository, params.routingKey.repository);
+      assert.equal(call.args[0].installationId, params.routingKey.installationId);
       for (let key of Object.keys(params.details)) {
-        assert.equal(m.payload.details[key], params.details[key]);
+        assert.equal(call.args[0].details[key], params.details[key]);
       }
     });
   };
