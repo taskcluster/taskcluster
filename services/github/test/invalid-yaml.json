@@ -1,0 +1,13 @@
+{
+  "version": 0,
+  "WHAT WHAT WHAT?": {},
+  "tasks": [
+    {
+      "extra": {
+        "github": {
+          "env": true
+        }
+      }
+    }
+  ]
+}
