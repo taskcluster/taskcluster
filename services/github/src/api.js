@@ -113,11 +113,6 @@ function resolve(res, status, message) {
 }
 
 /** API end-point for version v1/
- *
- * In this API implementation we shall assume the following context:
- * {
- *   publisher:      // publisher from base.Exchanges
- * }
  */
 let api = new API({
   title:        'TaskCluster GitHub API Documentation',
@@ -130,7 +125,7 @@ let api = new API({
     'web hooks',
   ].join('\n'),
   schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
-  context: ['Builds', 'monitor'],
+  context: ['Builds', 'monitor', 'publisher'],
 });
 
 // Export API
