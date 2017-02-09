@@ -16,12 +16,22 @@ The eventual goal of this project is to support all platforms and allow users to
 
 ## Who Can Trigger Jobs?
 
-Taskcluster will check for the following conditions to allow a user to run tasks
-via the Github integration:
+TaskCluster-Github will always build pushes and releases.
 
-0. User who pushed is the owner of the repo
-0. User who pushed is a collaborator on the repo. Github defines collaborators as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
-0. User who is a member of the organization the repo is part of. This may seem at first look to be a rather permissive model, but so long as the organization is selective about who is given write access to particular repositories, it is safe. Keeping important scopes limited to events other than Pull Requests is recommended if you have a large organization.
+For pull requests, two policies are available:
+
+* `public` -- tasks are created for all pull requests.
+* `collaborators` (the default) -- tasks are created if the user who made the pull request is a collaborator on the repository.
+  Github [defines collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
+
+This policy is determined by consulting the `allowPullRequests` property in `.taskcluster.yml` in the latest commit to the repository's *default branch* (not on the pull request head!).
+
+For example:
+```
+version 0
+allowPullRequests: public
+...
+```
 
 ---
 
