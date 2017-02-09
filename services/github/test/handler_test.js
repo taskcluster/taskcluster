@@ -82,6 +82,8 @@ suite('handlers', () => {
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
+      console.log(args.description);
+      assert.equal(args.description, 'TaskGroup: Pending (for push)');
       assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
