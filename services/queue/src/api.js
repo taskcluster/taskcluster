@@ -1,4 +1,3 @@
-let Promise     = require('promise');
 let debug       = require('debug')('app:api');
 let slugid      = require('slugid');
 let assert      = require('assert');
@@ -1271,6 +1270,18 @@ api.declare({
   });
 });
 
+// Hack to get promises that resolve after 20s without creating a setTimeout
+// for each, instead we create a new promise every 2s and reuse that.
+let _lastTime = 0;
+let _sleeping = null;
+let sleep20Seconds = () => {
+  let time = Date.now();
+  if (time - _lastTime > 2000) {
+    _sleeping = new Promise(accept => setTimeout(accept, 20 * 1000));
+  }
+  return _sleeping;
+};
+
 /** Claim any task */
 api.declare({
   method:     'post',
@@ -1308,16 +1319,14 @@ api.declare({
   }
 
   // Allow request to abort their claim request, if the connection closes
-  let timer = null;
-  let aborted = new Promise(accept => {
-    timer = setTimeout(accept, 20 * 1000);
-    res.once('close', accept);
-  });
+  let aborted = Promise.race([
+    sleep20Seconds(),
+    new Promise(accept => res.once('close', accept)),
+  ]);
 
   let result = await this.workClaimer.claim(
     provisionerId, workerType, workerGroup, workerId, count, aborted,
   );
-  clearTimeout(timer); // Just free up a timer no longer needed
 
   return res.reply({
     tasks: result,
