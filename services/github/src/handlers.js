@@ -242,7 +242,7 @@ async function jobHandler(message) {
     let commitInfo = await instGithub.repos.getShaOfCommitRef({
       owner: organization,
       repo: repository,
-      ref: `tags/${message.payload.details['event.version']}`,
+      ref: `refs/tags/${message.payload.details['event.version']}`,
     });
     sha = commitInfo.sha;
   }
