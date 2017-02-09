@@ -734,12 +734,11 @@ suite('Artifacts', function() {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'text/plain',
-    }).then(async () => {
+    }).then(() => {
       assume().fail('Expected request to be unsuccessful');
-    }, async (err) => {
+    }, err => {
       debug('Got error: %s, as JSON %j', err, err);
       assume(err.message).includes('Artifact already exists');
-      assume(err.message).contains('originalArtifact');
     });
 
     debug('### reportCompleted');
