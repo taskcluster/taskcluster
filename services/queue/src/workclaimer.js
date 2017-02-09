@@ -1,6 +1,5 @@
 let assert      = require('assert');
 let _           = require('lodash');
-let Promise     = require('promise');
 let events      = require('events');
 let taskcluster = require('taskcluster-client');
 
@@ -21,9 +20,11 @@ class HintPoller {
     this.workerType = workerType;
     this.requests = [];
     this.started = false;
+    this.destroyed = false;
   }
 
   requestClaim(count, aborted) {
+    assert(!this.destroyed, 'requestClaim() called after destroy()');
     // Make a request for count tasks
     let request = null;
     let result = new Promise((resolve, reject) => {
@@ -48,9 +49,9 @@ class HintPoller {
       this.poll().catch(err => {
         this.started = false;
         // Resolve everything as failed
-        this.destroy();
         let requests = this.requests;
         this.requests = [];
+        this.destroy();
         requests.map(r => r.reject(err));
       }).catch(err => {
         process.nextTick(() => this.parent.emit('error', err));
@@ -104,7 +105,10 @@ class HintPoller {
 
   destroy() {
     // Remove entry from parent
+    this.destroyed = true;
     delete this.parent._hintPollers[this.provisionerId + '/' + this.workerType];
+    assert(_.sumBy(this.requests, 'count') === 0,
+           'destroying while we have pending requests is not allowed');
   }
 }
 
