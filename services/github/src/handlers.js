@@ -44,6 +44,7 @@ class Handlers {
     this.context = context;
 
     this.handlerComplete = null;
+    this.handlerRejected = null;
   }
 
   /**
@@ -89,12 +90,15 @@ class Handlers {
     }
 
     const callHandler = (name, handler) => message => {
-      handler.call(this, message).catch(err => {
+      handler.call(this, message).catch(async err => {
         debug(`Error (reported to sentry) while calling ${name} handler: ${err}`);
-        this.monitor.reportError(err);
-      }).then(() => {
-        if (this.handlerComplete) {
+        await this.monitor.reportError(err);
+        return err;
+      }).then((err=null) => {
+        if (this.handlerComplete && !err) {
           this.handlerComplete();
+        } else if (this.handlerRejected && err) {
+          this.handlerRejected(err);
         }
       });
     };
@@ -324,7 +328,7 @@ async function jobHandler(message) {
   } finally {
     debug(`Trying to create status for ${organization}/${repository}@${sha} (${groupState})`);
     let eventType = message.payload.details['event.type'];
-    let context = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
+    let statusContext = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
     let description = groupState === 'pending' ? `TaskGroup: Pending (for ${eventType})` : 'TaskGroup: Exception';
     await instGithub.repos.createStatus({
       owner: organization,
@@ -333,7 +337,7 @@ async function jobHandler(message) {
       state: groupState,
       target_url: INSPECTOR_URL + taskGroupId,
       description,
-      context,
+      context: statusContext,
     });
 
     let now = new Date();
