@@ -323,14 +323,17 @@ async function jobHandler(message) {
     await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
   } finally {
     debug(`Trying to create status for ${organization}/${repository}@${sha} (${groupState})`);
+    let eventType = message.payload.details['event.type'];
+    let context = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
+    let description = groupState === 'pending' ? `TaskGroup: Pending (for ${eventType})` : 'TaskGroup: Exception';
     await instGithub.repos.createStatus({
       owner: organization,
       repo: repository,
       sha,
       state: groupState,
       target_url: INSPECTOR_URL + taskGroupId,
-      description: groupState === 'pending' ? 'TaskGroup: Running' : 'TaskGroup: Exception',
-      context: `${this.context.cfg.app.statusContext} (${message.payload.details['event.type'].split('.')[0]})`,
+      description,
+      context,
     });
 
     let now = new Date();
