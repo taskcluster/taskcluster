@@ -1,14 +1,3 @@
 ---
-defaults:
-  pulse:
-   username: '...'
-   password: '...'
-  # Github credentials can be helpful if you're hitting
-  # api limits. Use https://github.com/settings/tokens
-  github:
-    credentials:
-      token: '...'
-  taskcluster:
-    credentials:
-      clientId: '...'
-      accessToken: '...'
+# Running the tests does not require any credentials (you need not
+# even create user-config.yml).
