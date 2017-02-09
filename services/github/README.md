@@ -22,14 +22,24 @@ Listen for WebHook triggered pulse messages and attempts to schedule TaskCluster
 ## Contributing
 
 ### Run Tests
-First add pulse credentials to ``user-config.yml``. An example is available at ``user-config-example.yml``.
-Then from the project's base run ``npm test``.
+To run the tests, use `npm test`.  No credentials are necessary.
 
 To test the components separately, run:
 - server: `npm run compile && <set the environment variables> node lib/main.js server`
 - handlers: `npm run compile && <set the environment variables> node lib/main.js worker`
 
-In both travis and taskcluster, the env variables needed to run integration tests are added when pushing.
-
 ### Deploying
-This service will auto-deploy *to staging* in Heroku once merged into master and CI runs are successful. If you need to force a deploy because we've broken CI in some way and this urgently needs to be deployed, you can do it from the [Heroku console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github). Once the new version has been deployed, you can verify it is working by making a throw-away pull request into [our test project](https://github.com/TaskClusterRobot/hooks-testing). Ensure that at least [the staging user](https://github.com/taskclusterrobot-staging) has set the status. If it is tested and has the status updated by this service, it is working. After you confirm it works on stage, deploy to production with [the pipeline](https://dashboard.heroku.com/pipelines/b867da9f-e443-4ddd-b8b1-2209532897b4). To be safe, you can try the verification steps again, but this time [the real user](https://github.com/taskclusterrobot) should have set the status as well.
+
+This service will auto-deploy *to staging* in Heroku once merged into master
+and CI runs are successful. If you need to force a deploy because we've broken
+CI in some way and this urgently needs to be deployed, you can do it from the
+[Heroku
+console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github).
+
+Once the new version has been deployed to staging, you can verify it is working
+with `npm run checkStaging`.  Note that you will need an active SSH key with
+write access to https://github.com/taskcluster/taskcluster-github-testing to
+run this check (but, no other credentials!)
+
+After you confirm it works on stage, deploy to production with [the
+pipeline](https://dashboard.heroku.com/pipelines/b867da9f-e443-4ddd-b8b1-2209532897b4).

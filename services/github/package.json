@@ -6,7 +6,8 @@
     "compile": "babel-compile -p taskcluster src:lib test:.test",
     "test": "mocha .test/lint.js .test/*_test.js",
     "pretest": "npm run compile",
-    "install": "npm run compile"
+    "install": "npm run compile",
+    "checkStaging": "node .test/checkStaging.js"
   },
   "repository": {
     "type": "git",
