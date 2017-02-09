@@ -9,6 +9,7 @@ class FakeGithub {
     this.org_membership = {};
     this.repo_collaborators = {};
     this.github_users = [];
+    this.repo_info = {};
 
     const throwError = code => {
       let err = new Error();
@@ -30,6 +31,14 @@ class FakeGithub {
         const key = `${owner}/${repo}`;
         if (this.repo_collaborators[key] && this.repo_collaborators[key].has(collabuser)) {
           return {};
+        } else {
+          throwError(404);
+        }
+      },
+      'repos.get': async ({owner, repo}) => {
+        const key = `${owner}/${repo}`;
+        if (this.repo_info[key]) {
+          return this.repo_info[key];
         } else {
           throwError(404);
         }
@@ -95,6 +104,11 @@ class FakeGithub {
       this.repo_collaborators[key] = new Set();
     }
     this.repo_collaborators[key].add(collabuser);
+  }
+
+  setRepoInfo({owner, repo, info}) {
+    const key = `${owner}/${repo}`;
+    this.repo_info[key] = info;
   }
 
   setUser({id, email}) {
