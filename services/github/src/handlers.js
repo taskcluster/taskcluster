@@ -6,6 +6,7 @@ let assert = require('assert');
 let EventEmitter = require('events');
 let _ = require('lodash');
 let Promise = require('promise');
+let prAllowed = require('./pr-allowed');
 
 let INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';
 
@@ -287,12 +288,29 @@ async function jobHandler(message) {
     return;
   }
 
-  debug('Checking collaborator...');
+  if (message.payload.details['event.type'].startsWith('pull_request.')) {
+    debug('Checking pull request permission...');
 
-  // Decide if a user has permissions to run tasks.
-  let login = message.payload.details['event.head.user.login'];
-  if (! await isCollaborator({login, organization, repository, sha, instGithub, debug})) {
-    return;
+    // Decide if a user has permissions to run tasks.
+    let login = message.payload.details['event.head.user.login'];
+    if (!await prAllowed({login, organization, repository, sha, instGithub, debug, message})) {
+      let body = [
+        '<details>\n',
+        '<summary>No TaskCluster jobs started for this pull request</summary>\n\n',
+        '```js\n',
+        'The `allowPullRequests` configuration for this repository (in `.takcluster.yml` on the',
+        'default branch) does not allow starting tasks for this pull request.',
+        '```\n',
+        '</details>',
+      ].join('\n');
+      await instGithub.repos.createCommitComment({
+        owner: organization,
+        repo: repository,
+        sha,
+        body,
+      });
+      return;
+    }
   }
 
   let groupState = 'pending';
@@ -370,69 +388,3 @@ async function jobHandler(message) {
   }
 }
 
-async function isCollaborator({login, organization, repository, sha, instGithub, debug}) {
-  if (login === organization) {
-    debug(`Checking collaborator: ${login} === ${organization}: True!`);
-    return true;
-  }
-
-  // If the user is in the org, we consider them
-  // qualified to trigger any job in that org.
-  try {
-    await instGithub.orgs.checkMembership({
-      org: organization,
-      owner: login,
-    });
-    debug(`Checking collaborator: ${login} is a member of ${organization}: True!`);
-    return true;
-  } catch (e) {
-    if (e.code == 404) {
-      // Only a 404 error means the user isn't a member
-      // anything else should just throw like normal
-    } else {
-      throw e;
-    }
-  }
-
-  // GithubAPI's collaborator check returns an error if a user isn't
-  // listed as a collaborator.
-  try {
-    await instGithub.repos.checkCollaborator({
-      owner: organization,
-      repo: repository,
-      collabuser: login,
-    });
-    // No error, the user is a collaborator
-    debug(`Checking collaborator: ${login} is a collaborator on ${organization}/${repository}: True!`);
-    return true;
-  } catch (e) {
-    if (e.code == 404) {
-      // Only a 404 error means the user isn't a collaborator
-      // anything else should just throw like normal
-    } else if (e.code == 403) {
-      let msg = `Taskcluster does not have permission to check for repository collaborators.
-        Ensure that it is a member of a team with __write__ access to this repository!`;
-      debug(`Insufficient permissions to check for collaborators of ${organization}/${repository}. Skipping.`);
-      await instGithub.repos.createCommitComment({
-        owner: organization,
-        repo: repository,
-        sha,
-        body: msg,
-      });
-      return false;
-    } else {
-      throw e;
-    }
-  }
-
-  // If all of the collaborator checks fail, we should post to the commit
-  // and ignore the request
-  let msg = `Sorry, no tasks were created because ${login} is not a collaborator on ${organization}/${repository}.`;
-  await instGithub.repos.createCommitComment({
-    owner: organization,
-    repo: repository,
-    sha,
-    body: 'TaskCluster: ' + msg,
-  });
-  return false;
-}

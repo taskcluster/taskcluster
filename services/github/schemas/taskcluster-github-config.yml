@@ -48,6 +48,15 @@ properties:
       - description
       - owner
       - source
+  allowPullRequests:
+    description: |
+        Policy for creating tasks for pull requests.  The effective policy is found in this property
+        in the `.taskcluster.yml` file in the repository's default branch.  See the documentation for
+        detailed definition of the options.
+    type: string
+    enum:
+      - public
+      - collaborators
   tasks:
     type:           array
     default:        []
