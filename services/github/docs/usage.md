@@ -173,7 +173,7 @@ available as environment variables (notably, the release metadata).
   GITHUB_HEAD_REPO_NAME  | "{{ event.head.repo.name }}"   | somerepo
   GITHUB_HEAD_REPO_URL   | "{{ event.head.repo.url }}"    | https://github.com/maryscott/somerepo
                          |                                |
-                         | "{{ event.version }}"          | v1.0.3 (tag name)
+                         | "{{ event.version }}"          | refs/v1.0.3 (tag name)
                          | "{{ event.name }}"             | null
                          | "{{ event.release.url }}"      | https://api.github.com/repos/taskcluster/generic-worker/releases/5108386
                          | "{{ event.prerelease }}"       | false
