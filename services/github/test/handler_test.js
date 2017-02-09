@@ -38,6 +38,7 @@ suite('handlers', () => {
       // set up to resolve when the handler has finished (even if it finishes with error)
       return new Promise((resolve, reject) => {
         handlers.handlerComplete = resolve;
+        handlers.handlerRejected = reject;
 
         debug(`publishing ${JSON.stringify({user, head, base})}`);
         const message = {
@@ -52,7 +53,6 @@ suite('handlers', () => {
               'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
               'event.head.ref': 'refs/heads/tc-gh-tests',
               'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
-              //'event.head.user.email': 'bstack@mozilla.com',
               'event.head.user.id': 190790,
             },
             repository: 'hooks-testing',
@@ -87,6 +87,12 @@ suite('handlers', () => {
       assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
+      let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+      let build = await helper.Builds.load({taskGroupId});
+      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.repository, 'hooks-testing');
+      assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(build.state, 'pending');
     });
 
     test('valid pull_request (owner is member) creates a taskGroup', async function() {
@@ -108,6 +114,12 @@ suite('handlers', () => {
       assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'pull_request');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
+      let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+      let build = await helper.Builds.load({taskGroupId});
+      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.repository, 'hooks-testing');
+      assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(build.state, 'pending');
     });
 
     test('valid push (collaborator but not member) creates a taskGroup', async function() {
@@ -132,6 +144,12 @@ suite('handlers', () => {
       assert.equal(args.state, 'pending');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
+      let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+      let build = await helper.Builds.load({taskGroupId});
+      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.repository, 'hooks-testing');
+      assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(build.state, 'pending');
     });
 
     test('invalid YAML results in a comment', async function() {
