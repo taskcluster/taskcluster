@@ -28,7 +28,7 @@ This policy is determined by consulting the `allowPullRequests` property in `.ta
 
 For example:
 ```
-version 0
+version: 0
 allowPullRequests: public
 ...
 ```
