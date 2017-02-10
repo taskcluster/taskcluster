@@ -170,7 +170,7 @@ func (cfg) Execute(context extpoints.Context) bool {
 		value = config[name][key]
 	}
 
-	if argv["help"] == true {
+	if argv["help"].(bool) {
 		if option != nil {
 			// Print help for an option
 			printOptionHelp(name, key, *option, value)
@@ -178,7 +178,7 @@ func (cfg) Execute(context extpoints.Context) bool {
 			// Print list of options
 			printHelp()
 		}
-	} else if argv["set"] == true {
+	} else if argv["set"].(bool) {
 		// Read value from stdin if necessary
 		data := argv["<value>"].(string)
 		if data == "-" {
@@ -210,7 +210,7 @@ func (cfg) Execute(context extpoints.Context) bool {
 		}
 
 		// Save option
-		if argv["--dry-run"] == false {
+		if !argv["--dry-run"].(bool) {
 			config[name][key] = value
 			if err := Save(config); err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to save configuration file, error: %s\n", err)
@@ -219,7 +219,7 @@ func (cfg) Execute(context extpoints.Context) bool {
 		}
 
 		fmt.Fprintf(os.Stderr, "Set '%s.%s' = %s\n", key, name, data)
-	} else if argv["reset"] == true {
+	} else if argv["reset"].(bool) {
 		// Reset a specific option
 		if option != nil {
 			config[name][key] = option.Default

@@ -14,9 +14,9 @@ type OptionDefinition struct {
 	Validate    func(value interface{}) error
 }
 
-// Register takes in the name of the command and an OptionDefinition object
+// RegisterConfigOption takes in the name of the command and an OptionDefinition object
 func RegisterConfigOption(command string, options map[string]OptionDefinition) {
-	if _, exists := OptionsDefinitions[command]; !exists {
+	if _, ok := OptionsDefinitions[command]; !ok {
 		OptionsDefinitions[command] = make(map[string]OptionDefinition)
 	}
 
@@ -26,20 +26,16 @@ func RegisterConfigOption(command string, options map[string]OptionDefinition) {
 	}
 }
 
-// To register the OptionsDefinitions from a CommandProvider
-// this is a function used for the "transition"
+// RegisterFromProvider registers the OptionsDefinitions from a CommandProvider.
+// This is a function used for the "transition".
 func RegisterFromProvider(command string, options map[string]extpoints.ConfigOption) {
 	if _, exists := OptionsDefinitions[command]; !exists {
 		OptionsDefinitions[command] = make(map[string]OptionDefinition)
 	}
 
 	for key, option := range options {
-		OptionsDefinitions[command][key] = OptionDefinition{
-			Description: option.Description,
-			Default:     option.Default,
-			Env:         option.Env,
-			Parse:       option.Parse,
-			Validate:    option.Validate,
-		}
+		// As of go1.8 (https://beta.golang.org/doc/go1.8#language), structs
+		// that match can be implicitely converted :)
+		OptionsDefinitions[command][key] = OptionDefinition(option)
 	}
 }
