@@ -13,8 +13,7 @@ USER_DATA="$(cat userdata)"
 AMI="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=platform,Values=windows" "Name=name,Values=Windows_Server-2012-R2_RTM-English-64Bit-Base*" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
 log "Latest Windows 2012 R2 AMI is: ${AMI}"
 
-# intentionally commented out - as workflow is wrong here - need to delete after updating worker types etc
-. ../delete.sh
+. ../find_old_aws_objects.sh
 
 # make sure we have an ssh security group in this region
 # note if we *try* to create a security group that already exists (regardless of whether it is successful or not), there will be a cloudwatch alarm, so avoid this
@@ -78,6 +77,8 @@ touch "${REGION}.${IMAGE_ID}.latest-ami"
     echo "Password:  ${PASSWORD}"
     echo "AMI:       ${IMAGE_ID}"
 } > "${REGION}.secrets"
+
+. ../delete.sh
 
 # log ''
 # log "Starting instance ${INSTANCE_ID} back up..."
