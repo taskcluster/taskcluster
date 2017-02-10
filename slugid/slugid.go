@@ -17,17 +17,17 @@ var (
 	// regexp.MustCompile rather than regexp.Compile since these are constant
 	// strings.
 
-	// V4_SLUG_REGEXP is the regular expression that all V4 Slug IDs should conform to
-	V4_SLUG_REGEXP = regexp.MustCompile("^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$")
+	// RegexpSlugV4 is the regular expression that all V4 Slug IDs should conform to
+	RegexpSlugV4 = regexp.MustCompile("^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$")
 
-	// V4_UUID_REGEXP is the regular expression that all V4 UUIDs should conform to
-	V4_UUID_REGEXP = regexp.MustCompile("^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
+	// RegexpUUIDV4 is the regular expression that all V4 UUIDs should conform to
+	RegexpUUIDV4 = regexp.MustCompile("^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
 
-	// NICE_SLUG_REGEXP is the regular expression that all "nice" Slug IDs should conform to
-	NICE_SLUG_REGEXP = regexp.MustCompile("^[A-Za-f][A-Za-z0-9_-]{7}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$")
+	// RegexpSlugNice is the regular expression that all "nice" Slug IDs should conform to
+	RegexpSlugNice = regexp.MustCompile("^[A-Za-f][A-Za-z0-9_-]{7}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$")
 
-	// NICE_UUID_REGEXP is the regular expression that all "nice" UUIDs should conform to
-	NICE_UUID_REGEXP = regexp.MustCompile("^[0-7][a-f0-9]{7}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
+	// RegexpUUIDNice is the regular expression that all "nice" UUIDs should conform to
+	RegexpUUIDNice = regexp.MustCompile("^[0-7][a-f0-9]{7}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
 )
 
 func init() {
@@ -61,14 +61,14 @@ func (slugid) Execute(context extpoints.Context) bool {
 	var err error
 
 	// what function was called?
-	if args["v4"] == true {
-		out, err = v4()
-	} else if args["nice"] == true {
-		out, err = nice()
-	} else if args["decode"] == true { // decode slug
-		out, err = decode(context)
-	} else if args["encode"] == true { // encode slug
-		out, err = encode(context)
+	if args["v4"].(bool) {
+		out, err = generateV4()
+	} else if args["nice"].(bool) {
+		out, err = generateNice()
+	} else if args["decode"].(bool) { // decode slug
+		out, err = decode(context.Arguments["<slug>"].(string))
+	} else if args["encode"].(bool) { // encode slug
+		out, err = encode(context.Arguments["<uuid>"].(string))
 	}
 	// ...and docopt will react to unrecognized commands
 
@@ -83,24 +83,22 @@ func (slugid) Execute(context extpoints.Context) bool {
 	return true
 }
 
-// normal v4 uuid generation
-func v4() (string, error) {
+// generateV4 generates a normal v4 uuid
+func generateV4() (string, error) {
 	return sluglib.V4(), nil
 }
 
-// generates uuid with "nice" properties
-func nice() (string, error) {
+// generateNice generates a uuid with "nice" properties
+func generateNice() (string, error) {
 	return sluglib.Nice(), nil
 }
 
-// decodes slug into a uuid
-func decode(context extpoints.Context) (string, error) {
-	slug := context.Arguments["<slug>"].(string)
-
+// decode decodes a slug into a uuid
+func decode(slug string) (string, error) {
 	// nice slugs are just a subset of all slugs, which must match V4 pattern
 	// this slug may be nice or not; we don't know, so use general pattern
-	match := V4_SLUG_REGEXP.MatchString(slug)
-	if match == false {
+	match := RegexpSlugV4.MatchString(slug)
+	if !match {
 		return "", fmt.Errorf("Invalid slug format: %s", slug)
 	}
 
@@ -108,14 +106,12 @@ func decode(context extpoints.Context) (string, error) {
 	return fmt.Sprintf("%s", sluglib.Decode(slug)), nil
 }
 
-// encodes uuid into a slug
-func encode(context extpoints.Context) (string, error) {
-	uuid := context.Arguments["<uuid>"].(string)
-
+// encode encodes a uuid into a slug
+func encode(uuid string) (string, error) {
 	// nice slugs are just a subset of all slugs, which must match V4 pattern
 	// this slug may be nice or not; we don't know, so use general pattern
-	match := V4_UUID_REGEXP.MatchString(uuid)
-	if match == false {
+	match := RegexpUUIDV4.MatchString(uuid)
+	if !match {
 		return "", fmt.Errorf("Invalid uuid format: %s", uuid)
 	}
 
