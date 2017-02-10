@@ -15,10 +15,18 @@ type arguments map[string]interface{}
 // SubCommand represents the function interface of the task subcommand.
 type SubCommand func(credentials *tcclient.Credentials, args arguments) bool
 
+// runCancel cancels all tasks of a group.
+//
+// It first fetches the list of all tasks associated with the given group,
+// then filters for only cancellable tasks (unscheduled, pending, running),
+// and finally runs all cancellations concurrently, because they are
+// independent of each other.
 func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 	q := queue.New(credentials)
 	groupID := args["<groupId>"].(string)
 
+	// Because the list of tasks can be arbitrarily long, we have to loop until
+	// we are told not to.
 	tasks := make([]string, 0)
 	continuation := ""
 	for {
@@ -78,7 +86,8 @@ func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 			wg.Done()
 		}(taskID)
 	}
-	// change the semantics o the waitgroup to close a channel instead
+	// change the semantics of waitgroup to close a channel instead of blocking
+	// the main thread.
 	regularExit := make(chan bool, 0)
 	go func() { wg.Wait(); close(regularExit) }()
 
