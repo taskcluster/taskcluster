@@ -65,7 +65,7 @@ tasks:
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: gecko-1-b-win2012-beta
+    workerType: win2012r2-cu
     metadata:
       name: "Build/test 64 bit generic-worker on Windows Server 2012 R2"
       description: "This builds and tests the 64 bit Windows version of generic-worker on Windows Server 2012 R2"
