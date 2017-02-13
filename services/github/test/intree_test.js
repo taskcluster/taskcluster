@@ -41,14 +41,18 @@ suite('intree config', () => {
    *                payload:    {}, WebHook message payload
    *                validator:  {}, A taskcluster.base validator
    *              }
+   * count:       number of tasks to expect
    * expected:    {}, keys=>values expected to exist in the compiled config
    **/
-  let buildConfigTest = function(testName, configPath, params, expected) {
+  let buildConfigTest = function(testName, configPath, params, expected, count=-1) {
     test(testName, async () => {
       params.config = fs.readFileSync(configPath);
       params.schema = 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#';
       params.validator = helper.validator;
       let config = helper.intree(params);
+      if (count > 0) {
+        assert.equal(config.tasks.length, count);
+      }
       for (let key of Object.keys(expected)) {
         assert.deepEqual(_.get(config, key), expected[key]);
       }
@@ -163,4 +167,13 @@ suite('intree config', () => {
       'metadata.owner': 'test@test.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:release'],
     });
+
+  buildConfigTest(
+    'No extra or extra.github generates an empty config',
+    configPath + 'taskcluster.non-github.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'release'}}),
+    },
+    {},
+    0);
 });

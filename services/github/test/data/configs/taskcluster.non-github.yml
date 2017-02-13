@@ -1,0 +1,32 @@
+version: 0
+metadata:
+  name: "name"
+  description: "description"
+  owner: "test@test.com"
+  source: "http://mrrrgn.com"
+tasks:
+  - provisionerId: aprovisioner
+    workerType: worker
+    payload:
+      image: "ubuntu:latest"
+      command:
+        - test
+    metadata:
+      name: "name"
+      description: "description"
+      owner: "test@test.com"
+      source: "http://mrrrgn.com"
+  - provisionerId: aprovisioner
+    workerType: worker
+    extra:
+        mercurial: true
+    payload:
+      image: "ubuntu:latest"
+      command:
+        - test
+    metadata:
+      name: "name"
+      description: "description"
+      owner: "test@test.com"
+      source: "http://mrrrgn.com"
+
