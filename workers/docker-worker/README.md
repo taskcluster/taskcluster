@@ -25,7 +25,7 @@ Since the images are COW running any number of task hosts is plausible
 and we can manage their overall usage.
 
 We manipulate the docker hosts through the use of the [docker remote
-api]([http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/)
+api](http://docs.docker.io/en/latest/api/docker_remote_api_v1.8/)
 
 See the [doc site](http://docs.taskcluster.net/workers/docker-worker/index.html)
 for how to use the worker from an existing `worker-type` the docs here
