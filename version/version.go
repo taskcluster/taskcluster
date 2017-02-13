@@ -6,6 +6,7 @@ import (
 	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
 
+// VersionNumber is a string with the formatted version data.
 var VersionNumber = fmt.Sprintf("taskcluster (TaskCluster CLI) version %d.%d.%d", 1, 0, 0)
 
 func init() {

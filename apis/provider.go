@@ -114,14 +114,14 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	// Find then entry if possible
 	var entry *definitions.Entry
 	for _, e := range p.Entries {
-		if argv[e.Name] == true {
+		if argv[e.Name].(bool) {
 			entry = &e
 			break
 		}
 	}
 	// Print help information about the end-point
 	if entry == nil {
-		if argv["help"] != true {
+		if !argv["help"].(bool) {
 			// Internal error
 			panic("Unknown command, internal error!")
 		}
@@ -174,7 +174,7 @@ func (p apiProvider) Execute(context extpoints.Context) bool {
 	}
 
 	// Do a dry run
-	if argv["--dry-run"] == true {
+	if argv["--dry-run"].(bool) {
 		return p.dryrun(entry, args, query, input, output)
 	}
 

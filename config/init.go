@@ -8,9 +8,14 @@ import (
 )
 
 var (
+	// Configuration contains the current configuration values.s
 	Configuration map[string]map[string]interface{}
+
+	// OptionsDefinitions is a map of all the OptionDefinitions, by command.
 	OptionsDefinitions = make(map[string]map[string]OptionDefinition)
-	Credentials   *client.Credentials
+
+	// Credentials is the client credentials, if present.
+	Credentials *client.Credentials
 )
 
 // Setup is to be called from main
