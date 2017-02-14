@@ -33,7 +33,7 @@ properties:
           - taskId
           - time
       - title: Failed Fire
-        description: "Information about an unsuccesful firing of the hook"
+        description: "Information about an unsuccessful firing of the hook"
         type: object
         properties:
           result:
