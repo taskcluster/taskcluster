@@ -33,7 +33,7 @@ properties:
             [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
             for details.
             When you have a message you can use `claimTask` to claim the task.
-            You will need to parse the XML reponse and base64 decode and
+            You will need to parse the XML response and base64 decode and
             JSON parse the `MessageText`.
             After you have called `claimTask` you **must** us the
             `signedDeleteUrl` to delete the message.
