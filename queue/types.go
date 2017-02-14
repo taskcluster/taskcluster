@@ -468,7 +468,7 @@ type (
 			// [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
 			// for details.
 			// When you have a message you can use `claimTask` to claim the task.
-			// You will need to parse the XML reponse and base64 decode and
+			// You will need to parse the XML response and base64 decode and
 			// JSON parse the `MessageText`.
 			// After you have called `claimTask` you **must** us the
 			// `signedDeleteUrl` to delete the message.
@@ -1165,7 +1165,7 @@ type (
 		// convention in this case to create an artifact entitled
 		// `public/superseded-by` containing the taskId of the task that superseded
 		// this one.
-		// **Report `intermittent-task`** if the task explicitely requested a retry
+		// **Report `intermittent-task`** if the task explicitly requested a retry
 		// because task is intermittent. Workers can choose whether or not to
 		// support this, but workers shouldn't blindly report this for every task
 		// that fails.
