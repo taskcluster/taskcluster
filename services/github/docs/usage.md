@@ -47,7 +47,7 @@ You can modify a task definition so that it will only run for specific GitHub ev
   * `pull_request.edited`
   * `pull_request.closed`
   * `pull_request.reopened`
-  * `pull_request.synchronize` (a new commit is pushed to the branch in the PR)
+  * `pull_request.synchronize` (a new commit is pushed to the branch in the PR. NOTE: There is no 'd' at the end of 'synchronize')
   * `push`                     (a push is made directly to the repo)
   * `release`                  (a new tag or release published in any branch of the repo)
 
