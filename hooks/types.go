@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// Information about an unsuccesful firing of the hook
+	// Information about an unsuccessful firing of the hook
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]
 	FailedFire struct {

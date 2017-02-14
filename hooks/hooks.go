@@ -44,7 +44,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 13 Feb 2017 at 19:23:00 UTC. The code was generated
+// Tue, 14 Feb 2017 at 18:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -110,7 +110,7 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// This endpoint will return the hook defintion for the given `hookGroupId`
+// This endpoint will return the hook definition for the given `hookGroupId`
 // and hookId.
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#hook
