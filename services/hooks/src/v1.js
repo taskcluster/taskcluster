@@ -93,7 +93,7 @@ api.declare({
   title:        'Get hook definition',
   stability:    'experimental',
   description: [
-    'This endpoint will return the hook defintion for the given `hookGroupId`',
+    'This endpoint will return the hook definition for the given `hookGroupId`',
     'and hookId.',
   ].join('\n'),
 }, async function(req, res) {
