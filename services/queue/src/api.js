@@ -1767,7 +1767,7 @@ api.declare({
     '  * Declared actions cannot be executed due to unavailable resources,',
     '  * The worker had to shutdown prematurely,',
     '  * The worker experienced an unknown error, or,',
-    '  * The task explicitely requested a retry.',
+    '  * The task explicitly requested a retry.',
     '',
     'Do not use this to signal that some user-specified code crashed for any',
     'reason specific to this code. If user-specific code hits a resource that',
