@@ -35,7 +35,7 @@ func RegisterFromProvider(command string, options map[string]extpoints.ConfigOpt
 
 	for key, option := range options {
 		// As of go1.8 (https://beta.golang.org/doc/go1.8#language), structs
-		// that match can be implicitely converted :)
+		// that match can be implicitly converted :)
 		OptionsDefinitions[command][key] = OptionDefinition(option)
 	}
 }
