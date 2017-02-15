@@ -91,10 +91,10 @@ class HintPoller {
         }
       }
 
-      // If nothing was claimed, we sleep 200ms before polling again
+      // If nothing was claimed, we sleep 1000ms before polling again
       this.parent._monitor.count('hint-poller-claimed', claimed);
       if (claimed === 0) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         this.parent._monitor.count('hint-poller-sleep', 1);
       }
     }
