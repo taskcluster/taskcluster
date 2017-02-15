@@ -2,6 +2,7 @@ let assert      = require('assert');
 let _           = require('lodash');
 let events      = require('events');
 let taskcluster = require('taskcluster-client');
+let Promise     = require('promise');
 
 /**
  * HintPoller polls for hints for pending tasks.
@@ -25,22 +26,22 @@ class HintPoller {
 
   requestClaim(count, aborted) {
     assert(!this.destroyed, 'requestClaim() called after destroy()');
-    // Make a request for count tasks
-    let request = null;
-    let result = new Promise((resolve, reject) => {
-      request = {resolve, reject, count};
+    return new Promise((resolve, reject) => {
+      // Make a request for count tasks
+      let request = {resolve, reject, count};
+      this.requests.push(request);
+
+      // Remove request if aborted
+      aborted.then(() => {
+        // Remove request from requests, but modifying the requests array
+        _.pull(this.requests, request);
+        // Resolve request empty array
+        request.resolve([]);
+      }).catch(reject);
+
+      // Start polling
+      this.start();
     });
-    this.requests.push(request);
-
-    aborted.then(() => {
-      // Remove request from requests, and resolve request empty array
-      _.remove(this.requests, request);
-      request.resolve([]);
-    });
-
-    this.start();
-
-    return result;
   }
 
   start() {
