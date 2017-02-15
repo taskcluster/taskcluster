@@ -1,4 +1,4 @@
-Generated: 1487121728
+Generated: 1487186606
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -948,7 +948,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/description'
   Property 'disabled' =
     Description            = 'If true, this client is disabled and cannot be used.  This usually occurs when the
-    scopes avaialble to the user owning the client no longer satisfy the client.
+    scopes available to the user owning the client no longer satisfy the client.
     '
     Type                   = 'boolean'
     TypeName               = 'Disabled'
@@ -1095,7 +1095,7 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/description'
   Property 'disabled' =
     Description            = 'If true, this client is disabled and cannot be used.  This usually occurs when the
-    scopes avaialble to the user owning the client no longer satisfy the client.
+    scopes available to the user owning the client no longer satisfy the client.
     '
     Type                   = 'boolean'
     TypeName               = 'Disabled'
