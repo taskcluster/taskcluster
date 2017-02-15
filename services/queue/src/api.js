@@ -5,6 +5,7 @@ let _           = require('lodash');
 let API         = require('taskcluster-lib-api');
 let Entity      = require('azure-entities');
 let taskcluster = require('taskcluster-client');
+let Promise     = require('promise');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -1319,10 +1320,10 @@ api.declare({
   }
 
   // Allow request to abort their claim request, if the connection closes
-  let aborted = Promise.race([
-    sleep20Seconds(),
-    new Promise(accept => res.once('close', accept)),
-  ]);
+  let aborted = new Promise(accept => {
+    sleep20Seconds().then(accept);
+    res.once('close', accept);
+  });
 
   let result = await this.workClaimer.claim(
     provisionerId, workerType, workerGroup, workerId, count, aborted,
