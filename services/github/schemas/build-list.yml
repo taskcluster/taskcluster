@@ -46,7 +46,9 @@ properties:
           type: string
           description: |
             The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
-          pattern: {$const: github-guid-pattern}
+          oneOf:
+            - pattern: {$const: github-guid-pattern}
+            - pattern: 'Unknown'
         created:
           type: string
           format: date-time
