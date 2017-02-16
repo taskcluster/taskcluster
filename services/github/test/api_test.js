@@ -59,7 +59,7 @@ suite('api', () => {
       updated: new Date(),
       installationId: 1,
       eventType: 'push',
-      eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
+      eventId: 'Unknown',
     });
   });
 
