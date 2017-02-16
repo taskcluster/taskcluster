@@ -59,7 +59,7 @@ test:
   # See user-config-example.yml for secrets credentials required for tests
   app:
     component:        hooks-tests
-    hookTable:        HooksTestTable
+    hookTable:        HooksTestTable2
     publishMetaData:  false
     scheduler:
       pollingDelay:   5000
