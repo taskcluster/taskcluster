@@ -15,10 +15,12 @@ suite('Scheduler', function() {
   var creator = null;
   setup(async () => {
     creator = new taskcreator.MockTaskCreator();
+    let notify = require('./fake-notify');
     scheduler = new Scheduler({
       Hook: helper.Hook,
       taskcreator: creator,
       pollingDelay: 1,
+      notify: notify,
     });
   });
 
@@ -103,7 +105,9 @@ suite('Scheduler', function() {
       hook = await scheduler.Hook.create({
         hookGroupId:        'tests',
         hookId:             'test',
-        metadata:           {},
+        metadata:           {
+          owner: 'example@example.com',
+        },
         task:               {
           provisionerId: 'no-provisioner',
           workerType: 'test-worker',
@@ -177,6 +181,31 @@ suite('Scheduler', function() {
       assume(updatedHook.lastFire.error.statusCode).is.equal(499);
       assume(new Date(updatedHook.lastFire.time) - new Date()).is.approximately(0, 2000); // 2s slop
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
+    });
+
+    test('on error, notify is used with correct options', async () => {
+      creator.shouldFail = true;
+      hook.metadata.emailOnError = true;
+      await scheduler.handleHook(hook);
+      
+      assume(scheduler.notify.lastEmail).exists();
+      let lastEmail = scheduler.notify.lastEmail;
+      let email = scheduler.createEmail(hook, 'error explanation', 'error explanation');
+      assume(lastEmail.address).is.equal(email.address);
+      assume(lastEmail.subject).is.equal(email.subject);
+
+      // validating content of email
+      let phrase = `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId}`;
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+
+      phrase = 'The error was:';
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+
+      phrase = 'Details:';
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
+
+      phrase = 'TaskCluster Automation';
+      assume(lastEmail.content.search(phrase)).is.not.equal(-1);
     });
   });
 });
