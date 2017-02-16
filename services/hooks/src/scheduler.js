@@ -163,7 +163,7 @@ class Scheduler extends events.EventEmitter {
     }
 
     let email = this.createEmail(hook, err, errJson);
-    this.notify.email(email);
+    await this.notify.email(email);
   }
 
   createEmail(hook, err, errJson) {
