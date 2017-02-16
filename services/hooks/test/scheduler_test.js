@@ -107,6 +107,7 @@ suite('Scheduler', function() {
         hookId:             'test',
         metadata:           {
           owner: 'example@example.com',
+          emailOnError: true,
         },
         task:               {
           provisionerId: 'no-provisioner',
@@ -185,7 +186,6 @@ suite('Scheduler', function() {
 
     test('on error, notify is used with correct options', async () => {
       creator.shouldFail = true;
-      hook.metadata.emailOnError = true;
       await scheduler.handleHook(hook);
       
       assume(scheduler.notify.lastEmail).exists();
