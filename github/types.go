@@ -3,6 +3,9 @@
 package github
 
 import (
+	"encoding/json"
+	"errors"
+
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
@@ -23,8 +26,6 @@ type (
 			Created tcclient.Time `json:"created"`
 
 			// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
-			//
-			// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 			//
 			// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId
 			EventID string `json:"eventId"`
@@ -89,4 +90,46 @@ type (
 		// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 	}
+
+	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+	//
+	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]
+	Var json.RawMessage
+
+	// Syntax:     Unknown
+	//
+	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]
+	Var1 json.RawMessage
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var is of type json.RawMessage...
+func (this *Var) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var1 is of type json.RawMessage...
+func (this *Var1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var1) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var1: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}

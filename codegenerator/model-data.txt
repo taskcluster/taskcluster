@@ -1,4 +1,4 @@
-Generated: 1487262280
+Generated: 1487283776
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3099,7 +3099,17 @@ Properties
         Property 'eventId' =
           Description            = 'The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
           '
-          Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+          OneOf
+            Item '0' =
+              Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+              Type HAS NOT BEEN SET!!!
+              TypeName               = 'Var'
+              SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]'
+            Item '1' =
+              Pattern                = 'Unknown'
+              Type HAS NOT BEEN SET!!!
+              TypeName               = 'Var1'
+              SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]'
           Type                   = 'string'
           TypeName               = 'EventID'
           SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId'
@@ -3168,6 +3178,22 @@ Title                  = 'Builds'
 Type                   = 'object'
 TypeName               = 'Builds1'
 SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#'
+
+
+http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]
+=============================================================================================================
+Pattern                = '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'Var'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]'
+
+
+http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]
+=============================================================================================================
+Pattern                = 'Unknown'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'Var1'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]'
 
 
 http://references.taskcluster.net/github/v1/exchanges.json
