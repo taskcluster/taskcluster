@@ -14,6 +14,7 @@ var loader      = require('taskcluster-lib-loader');
 var app         = require('taskcluster-lib-app');
 var docs        = require('taskcluster-lib-docs');
 var monitor     = require('taskcluster-lib-monitor');
+var taskcluster = require('taskcluster-client');
 
 // Create component loader
 var load = loader({
@@ -59,9 +60,12 @@ var load = loader({
     setup: ({cfg}) => new taskcreator.TaskCreator(cfg.taskcluster),
   },
 
-  ses: {
+  notify: {
     requires: ['cfg'],
-    setup: ({cfg}) => new AWS.SES(cfg.aws.ses),
+    setup: ({cfg}) => new taskcluster.Notify({
+      credentials: cfg.taskcluster.credentials,
+      authorizedScopes: ['notify:email:*'],
+    }),
   },
 
   router: {
@@ -105,12 +109,12 @@ var load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'Hook', 'taskcreator', 'ses'],
-    setup: ({cfg, Hook, taskcreator, ses}) => {
+    requires: ['cfg', 'Hook', 'taskcreator', 'notify'],
+    setup: ({cfg, Hook, taskcreator, notify}) => {
       return new Scheduler({
         Hook,
         taskcreator,
-        ses,
+        notify,
         pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },

@@ -7,6 +7,7 @@ var Promise     = require('promise');
 var taskcluster = require('taskcluster-client');
 var nextDate    = require('./nextdate');
 var taskcreator = require('./taskcreator');
+var _           = require('lodash');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -36,7 +37,7 @@ class Scheduler extends events.EventEmitter {
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
     this.taskcreator  = options.taskcreator;
-    this.ses          = options.ses;
+    this.notify          = options.notify;
     this.pollingDelay = options.pollingDelay;
 
     // Promise that the polling is done
@@ -153,7 +154,6 @@ class Scheduler extends events.EventEmitter {
     if (!hook.metadata.emailOnError) {
       return;
     }
-    var email = hook.metadata.owner;
 
     var errJson;
     try {
@@ -162,40 +162,32 @@ class Scheduler extends events.EventEmitter {
       errJson = `(error formatting JSON: ${e})`;
     }
 
-    var utf8 = s => unescape(encodeURIComponent(s));
+    let email = this.createEmail(hook, err, errJson);
+    this.notify.email(email);
+  }
 
-    await this.ses.sendEmail({
-      Destination: {
-        ToAddresses: [email],
-      },
-      Message: {
-        Subject: {
-          Data: utf8(`[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`),
-          Charset: 'UTF-8',
-        },
-        Body: {
-          Text: {
-            Data: utf8(`The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
-for which you are listed as owner.
+  createEmail(hook, err, errJson) {
+    return {
+      address: hook.metadata.owner,
+      subject: `[Taskcluster Hooks] Scheduled Hook failure: ${hook.hookGroupId}/${hook.hookId}`,
+      content: `The hooks service was unable to create a task for hook ${hook.hookGroupId}/${hook.hookId},
+  for which you are listed as owner.
 
-The error was:
-  ${err}
+  The error was:
+    ${err}
 
-Details:
+  Details:
 
-${errJson}
+    ${errJson}
 
-The service will try again to create the task on the next iteration.
+  The service will try again to create the task on the next iteration.
 
-Thanks,
-TaskCluster Automation
+  Thanks,
+  TaskCluster Automation
 
-P.S. If you believe you have received this email in error, please hit reply to let us know.`),
-            Charset: 'UTF-8',
-          },
-        },
-      },
-    }).promise();
+  P.S. If you believe you have received this email in error, please hit reply to let us know.`,
+
+    };
   }
 }
 
