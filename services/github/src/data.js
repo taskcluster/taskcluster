@@ -73,4 +73,24 @@ module.exports.Build = Entity.configure({
     item.Id = 'Unknown';
     return item;
   },
+}).configure({
+  version: 5,
+  properties: {
+    organization: Entity.types.String,
+    repository: Entity.types.String,
+    sha: Entity.types.String,
+    taskGroupId: Entity.types.String,
+    state: Entity.types.String,
+    created: Entity.types.Date,
+    updated: Entity.types.Date,
+    installationId: Entity.types.Number,
+    eventType: Entity.types.String,
+    eventId: Entity.types.String,
+  },
+  migrate: function(item) {
+    // Delete Id because it was mistakenly set in the last migration
+    delete item.Id; // Just in case the migrations are chained
+    item.eventId = item.eventId || 'Unknown';
+    return item;
+  },
 });
