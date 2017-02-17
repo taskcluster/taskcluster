@@ -1,0 +1,13 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "isInstalledFor"
+description: |
+  Check if Repository has Integration
+type:         object
+properties:
+  installed:
+    type:         boolean
+    description: |
+      True if integration is installed, False otherwise.
+additionalProperties: false
+required:
+  - installed

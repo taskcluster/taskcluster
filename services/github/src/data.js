@@ -94,3 +94,13 @@ module.exports.Build = Entity.configure({
     return item;
   },
 });
+
+module.exports.OwnersDirectory = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.StringKey('owner'),
+  rowKey: Entity.keys.ConstantKey('someConstant'),
+  properties: {
+    installationId: Entity.types.Number,
+    owner: Entity.types.String,
+  },
+});

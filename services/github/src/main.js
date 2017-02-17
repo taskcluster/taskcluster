@@ -96,10 +96,25 @@ let load = loader({
     },
   },
 
+  OwnersDirectory: {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
+      var ownersDir = await data.OwnersDirectory.setup({
+        account: cfg.azure.account,
+        table: cfg.app.ownersDirectoryTableName,
+        credentials: cfg.taskcluster.credentials,
+        monitor: monitor.prefix(cfg.app.ownersDirectoryTableName.toLowerCase()),
+      });
+
+      await ownersDir.ensureTable();
+      return ownersDir;
+    },
+  },
+
   api: {
-    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher', 'Builds'],
-    setup: ({cfg, monitor, validator, github, publisher, Builds}) => api.setup({
-      context:          {publisher, cfg, github, Builds, monitor: monitor.prefix('api-context')},
+    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher', 'Builds', 'OwnersDirectory'],
+    setup: ({cfg, monitor, validator, github, publisher, Builds, OwnersDirectory}) => api.setup({
+      context:          {publisher, cfg, github, Builds, OwnersDirectory, monitor: monitor.prefix('api-context')},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          process.env.NODE_ENV === 'production',
       baseUrl:          cfg.server.publicUrl + '/v1',
