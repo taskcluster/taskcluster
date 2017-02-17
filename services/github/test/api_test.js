@@ -8,9 +8,15 @@ suite('api', () => {
   let assert = require('assert');
   let _ = require('lodash');
 
+  let github = Object.create(null);
+
   suiteSetup(async () => {
     await helper.Builds.scan({}, {
       handler: build => build.remove(),
+    });
+
+    await helper.OwnersDirectory.scan({}, {
+      handler: owner => owner.remove(),
     });
 
     await helper.Builds.create({
@@ -61,6 +67,21 @@ suite('api', () => {
       eventType: 'push',
       eventId: 'Unknown',
     });
+
+    await helper.OwnersDirectory.create({
+      installationId: 9090,
+      owner: 'abc123',
+    });
+
+    await helper.OwnersDirectory.create({
+      installationId: 9091,
+      owner: 'qwerty',
+    });
+  });
+
+  setup(async () => {
+    github = await helper.load('github');
+    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo');
   });
 
   test('all builds', async function() {
@@ -99,5 +120,14 @@ suite('api', () => {
     assert.equal(builds.builds[0].organization, 'abc123');
     assert.equal(builds.builds[0].repository, 'xyz');
     assert.equal(builds.builds[0].sha, 'y650871208002a13ba35cf232c0e30d2c3d64783');
+  });
+
+  test('integration installation', async function() {
+    let result = await helper.github.isInstalledFor('abc123', 'coolRepo');
+    assert.deepEqual(result, {installed: true});
+    result = await helper.github.isInstalledFor('abc123', 'unknownRepo');
+    assert.deepEqual(result, {installed: false});
+    result = await helper.github.isInstalledFor('unknownOwner', 'unknownRepo');
+    assert.deepEqual(result, {installed: false});
   });
 });
