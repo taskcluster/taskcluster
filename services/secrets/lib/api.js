@@ -32,6 +32,7 @@ api.declare({
   scopes:      [['secrets:set:<name>']],
   title:       'Set Secret',
   stability:    'stable',
+  cleanPayload: payload => ({...payload, secret: "(OMITTED)"}),
   description: [
     "Set the secret associated with some key.  If the secret already exists, it is",
     "updated instead."
