@@ -154,6 +154,10 @@ suite("TaskCluster-Secrets", () => {
           if (options.errMessage) {
             assert.deepEqual(options.errMessage, e.body.message);
           }
+          // if there's a payload, the secret should be obscured
+          if (e.body.requestInfo && e.body.requestInfo.payload.secret) {
+            assert.equal(e.body.requestInfo.payload.secret, "(OMITTED)");
+          }
           options.statusCode = null; // it's handled now
         } else {
           throw e; // if there's no statusCode this isn't an API error
