@@ -78,6 +78,7 @@ mocha.before(async () => {
   helper.publisher = overwrites.publisher = new FakePublisher();
 
   helper.Builds = await helper.load('Builds', overwrites);
+  helper.OwnersDirectory = await helper.load('OwnersDirectory', overwrites);
   helper.intree = overwrites.intree = await helper.load('intree', overwrites);
   webServer = overwrites.server = await helper.load('server', overwrites);
 
