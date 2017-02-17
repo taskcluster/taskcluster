@@ -5,6 +5,7 @@ defaults:
     jobQueue: null
     statusQueue: null
     buildTableName: 'TaskclusterGithubBuilds'
+    ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     name: 'taskcluster-github'
     statusContext: 'Taskcluster'
 

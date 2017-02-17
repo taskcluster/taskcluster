@@ -198,6 +198,12 @@ api.declare({
       msg.details = getReleaseDetails(body);
       msg.installationId = body.installation.id;
       publisherKey = 'release';
+    } else if (eventType == 'integration_installation') {
+      await this.context.OwnersDirectory.create({
+        installationId: body.installation.id,
+        owner: body.installation.account.login,
+      });
+      return resolve(res, 200, 'Created table row!');
     } else {
       return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
@@ -271,4 +277,37 @@ api.declare({
       };
     }),
   });
+});
+
+api.declare({
+  name: 'isInstalledFor',
+  title: 'Check if Repository has Integration',
+  description: [
+    'Checks if the integration has been installed for',
+    'a given repository of a given organization or user.',
+  ].join('\n'),
+  stability: 'experimental',
+  method: 'get',
+  route: '/repository/:owner/:repo',
+  output: 'is-installed-for.json',
+}, async function(req, res) {
+  // Extract owner and repo from request into variables
+  let {owner, repo} = req.params;
+
+  // Look up the installation ID in Azure. If no such owner in the table, no error thrown
+  let ownerInfo = await this.OwnersDirectory.load({owner}, true);
+
+  if (ownerInfo) {
+    let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
+    let reposList = await instGithub.integrations.getInstallationRepositories();
+
+    // GitHub API returns an array of objects, each of wich has an array of repos
+    let installed = reposList.reduce((a, b) => a.repositories.concat(b.repositories), {repositories: []})
+      .map(repo => repo.name)
+      .indexOf(repo);
+
+    res.reply({installed: installed != -1});
+  }
+    
+  res.reply({installed: false});
 });
