@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 16 Feb 2017 at 22:22:00 UTC. The code was generated
+// Tue, 21 Feb 2017 at 21:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -114,6 +114,18 @@ func (myGithub *Github) Builds(continuationToken, limit, organization, repositor
 	cd := tcclient.Client(*myGithub)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(Builds1), v)
 	return responseObject.(*Builds1), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Checks if the integration has been installed for
+// a given repository of a given organization or user.
+//
+// See https://docs.taskcluster.net/reference/core/github/api-docs#isInstalledFor
+func (myGithub *Github) IsInstalledFor(owner, repo string) (*IsInstalledFor1, error) {
+	cd := tcclient.Client(*myGithub)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(IsInstalledFor1), nil)
+	return responseObject.(*IsInstalledFor1), err
 }
 
 // Respond without doing anything.
