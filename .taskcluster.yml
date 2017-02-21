@@ -259,3 +259,59 @@ tasks:
             url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/MinGit-2.11.0.3-64-bit.zip
           directory: git
           format: zip
+
+  ##########################################################
+  #################### OS X 10.11 build ####################
+  ##########################################################
+
+  - provisionerId: pmoore-manual
+    workerType: mac-os-x
+    metadata:
+      name: "Build/test 64 bit generic-worker on Mac OS X 10.11"
+      description: "This builds the 64 bit OS X version of generic-worker"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      artifacts:
+        - expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+          path: public/build/generic-worker-darwin-amd64
+      command:
+        - - /bin/bash
+          - -vxec
+          - |
+            export GOPATH="$(pwd)/go"
+            source "${GW_CREDS_BOOTSTRAP}"
+            mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            cd "go/src/github.com/taskcluster"
+            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+            cd 'generic-worker'
+            git fetch --tags
+            git checkout -f '{{ event.head.sha }}'
+            git clean -fdx
+            go get -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+            cd gw-codegen
+            go get
+            cd ..
+            go generate
+            go get -v -t ./...
+            cp "${GOPATH}/bin/generic-worker" "../../../../../public/build/generic-worker-darwin-amd64"
+            test "$(git status --porcelain | wc -l)" == 0
+            GORACE=history_size=7 go test -v ./...
+            "${GOPATH}/bin/ineffassign" .
+      artifacts:
+        - path: public/build/generic-worker-darwin-amd64
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: go/src
