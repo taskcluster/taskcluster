@@ -75,6 +75,7 @@ staging:
     jobQueue: 'jobs'
     statusQueue: 'statuses'
     buildTableName: 'TaskclusterGithubBuildsStaging'
+    ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
 
