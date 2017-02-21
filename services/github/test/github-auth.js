@@ -10,7 +10,7 @@ class FakeGithub {
     this.repo_collaborators = {};
     this.github_users = [];
     this.repo_info = {};
-    this.repositories = [];
+    this.repositories = {};
 
     const throwError = code => {
       let err = new Error();
@@ -120,9 +120,7 @@ class FakeGithub {
   }
 
   setRepositories(...repoNames) {
-    this.repositories.push({
-      repositories: [...repoNames].map(repo => {return {name: repo};}),
-    });
+    this.repositories.repositories = [...repoNames].map(repo => {return {name: repo};});
   }
 }
 
