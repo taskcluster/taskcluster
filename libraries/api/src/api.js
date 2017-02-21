@@ -1,7 +1,7 @@
 "use strict";
 
 var express       = require('express');
-var debug         = require('debug')('base:api');
+var Debug         = require('debug');
 var Promise       = require('promise');
 var uuid          = require('uuid');
 var hawk          = require('hawk');
@@ -41,6 +41,16 @@ var ping = {
     });
   }
 };
+
+var debug = Debug('api');
+
+/* In production, log authorizations so they are included in papertrail regardless of
+ * DEBUG settings; otherwise, log with debug
+ */
+var authLog = (...args) => console.log(...args);
+if (process.env.NODE_ENV === 'production') {
+  var authLog = Debug('api.authz');
+}
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from
