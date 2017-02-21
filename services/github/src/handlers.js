@@ -280,12 +280,19 @@ async function jobHandler(message) {
 
   // Check if this is meant to be built by tc-github at all.
   // This is a bit of a hack, but is needed for bug 1274077 for now
-  let c = yaml.safeLoad(repoconf);
-  c.tasks = (c.tasks || []).filter((task) => _.has(task, 'extra.github'));
-  if (c.tasks.length === 0) {
-    debug('Skipping tasks because no task with "extra.github" exists!');
-    debug(`Repository: ${organization}/${repository}`);
-    return;
+  try {
+    let c = yaml.safeLoad(repoconf);
+    c.tasks = (c.tasks || []).filter((task) => _.has(task, 'extra.github'));
+    if (c.tasks.length === 0) {
+      debug('Skipping tasks because no task with "extra.github" exists!');
+      debug(`Repository: ${organization}/${repository}`);
+      return;
+    }
+  } catch (e) {
+    if (e.name === 'YAMLException') {
+      return await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
+    }
+    throw e;
   }
 
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
