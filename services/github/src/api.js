@@ -125,7 +125,7 @@ let api = new API({
     'web hooks',
   ].join('\n'),
   schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
-  context: ['Builds', 'monitor', 'publisher'],
+  context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher'],
 });
 
 // Export API
@@ -199,7 +199,7 @@ api.declare({
       msg.installationId = body.installation.id;
       publisherKey = 'release';
     } else if (eventType == 'integration_installation') {
-      await this.context.OwnersDirectory.create({
+      await this.OwnersDirectory.create({
         installationId: body.installation.id,
         owner: body.installation.account.login,
       });
