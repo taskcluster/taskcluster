@@ -296,11 +296,12 @@ api.declare({
 
   // Look up the installation ID in Azure. If no such owner in the table, no error thrown
   let ownerInfo = await this.OwnersDirectory.load({owner}, true);
+  debug(`ownerInfo from the table: ${JSON.stringify(ownerInfo)}`);
 
   if (ownerInfo) {
     let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
     let reposList = await instGithub.integrations.getInstallationRepositories({});
-
+    debug(`reposList: ${JSON.stringify(reposList)}`);
     // GitHub API returns an array of objects, each of wich has an array of repos
     let installed = reposList.reduce((a, b) => a.repositories.concat(b.repositories), {repositories: []})
       .map(repo => repo.name)
