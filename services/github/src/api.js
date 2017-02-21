@@ -299,7 +299,7 @@ api.declare({
 
   if (ownerInfo) {
     let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
-    let reposList = await instGithub.integrations.getInstallationRepositories();
+    let reposList = await instGithub.integrations.getInstallationRepositories({});
 
     // GitHub API returns an array of objects, each of wich has an array of repos
     let installed = reposList.reduce((a, b) => a.repositories.concat(b.repositories), {repositories: []})
