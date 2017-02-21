@@ -303,9 +303,7 @@ api.declare({
     let reposList = await instGithub.integrations.getInstallationRepositories({});
     debug(`reposList: ${JSON.stringify(reposList)}`);
     // GitHub API returns an array of objects, each of wich has an array of repos
-    let installed = reposList.reduce((a, b) => a.repositories.concat(b.repositories), {repositories: []})
-      .map(repo => repo.name)
-      .indexOf(repo);
+    let installed = reposList.repositories.map(repo => repo.name).indexOf(repo);
 
     res.reply({installed: installed != -1});
   }
