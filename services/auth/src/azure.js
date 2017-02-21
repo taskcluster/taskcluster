@@ -9,7 +9,7 @@ api.declare({
   output:     'azure-table-access-response.json#',
   deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:azure-table-access:<account>/<table>'], ['auth:azure-table-access:<account>/<table>/<level>']],
+  scopes:     [['auth:azure-table:<level>:<account>/<table>']],
   title:      "Get Shared-Access-Signature for Azure Table",
   description: [
     "Get a shared access signature (SAS) string for use with a specific Azure",
@@ -20,7 +20,7 @@ api.declare({
 }, async function(req, res) {
   var account   = req.params.account;
   var tableName = req.params.table;
-  var level     = req.params.level || 'read-write';
+  var level     = req.params.level;
 
   if (!['read-write', 'read-only'].includes(level)) {
     return res.status(404).json({

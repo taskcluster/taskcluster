@@ -86,7 +86,7 @@ suite('azure table (sas)', function() {
       baseUrl:          helper.baseUrl,
       credentials:      rootCredentials,
       authorizedScopes: [
-        'auth:azure-table-access:' + helper.testaccount + '/allowedTable'
+        'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable'
       ]
     });
     return auth.azureTableSAS(
@@ -100,13 +100,33 @@ suite('azure table (sas)', function() {
     });
   });
 
+  test('azureTableSAS (too high permission)', function() {
+    // Restrict access a bit
+    var auth = new helper.Auth({
+      baseUrl:          helper.baseUrl,
+      credentials:      rootCredentials,
+      authorizedScopes: [
+        'auth:azure-table:read-only:' + helper.testaccount + '/allowedTable'
+      ]
+    });
+    return auth.azureTableSAS(
+      helper.testaccount,
+      'allowedTable',
+      'read-write'
+    ).then(function(result) {
+      assert(false, "Expected an authentication error!");
+    }, function(err) {
+      assert(err.statusCode == 403, "Expected authorization error!");
+    });
+  });
+
   test('azureTableSAS (unauthorized table)', function() {
     // Restrict access a bit
     var auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
       credentials:      rootCredentials,
       authorizedScopes: [
-        'auth:azure-table-access:' + helper.testaccount + '/allowedTable'
+        'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable'
       ]
     });
     return auth.azureTableSAS(
