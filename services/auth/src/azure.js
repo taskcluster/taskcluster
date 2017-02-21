@@ -3,28 +3,36 @@ var api         = require('./v1');
 
 api.declare({
   method:     'get',
-  route:      '/azure/:account/table/:table/read-write',
+  route:      '/azure/:account/table/:table/:level',
   name:       'azureTableSAS',
   input:      undefined,
   output:     'azure-table-access-response.json#',
   deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:azure-table-access:<account>/<table>']],
+  scopes:     [['auth:azure-table-access:<account>/<table>'], ['auth:azure-table-access:<account>/<table>/<level>']],
   title:      "Get Shared-Access-Signature for Azure Table",
   description: [
     "Get a shared access signature (SAS) string for use with a specific Azure",
-    "Table Storage table.  Note, this will create the table, if it doesn't",
-    "already exist."
+    "Table Storage table. By not specifying a level as in azureTableSASLevel,",
+    "you will get read-write permissions. If you get read-write from this, it will create the",
+    "table if it doesn't already exist.",
   ].join('\n')
 }, async function(req, res) {
-  // Get parameters
   var account   = req.params.account;
   var tableName = req.params.table;
+  var level     = req.params.level || 'read-write';
+
+  if (!['read-write', 'read-only'].includes(level)) {
+    return res.status(404).json({
+      message:    "Level '" + level + "' is not valid. Must be one of ['read-write', 'read-only']."
+    });
+  }
 
   // Check that the client is authorized to access given account and table
   if (!req.satisfies({
     account:    account,
-    table:      tableName
+    table:      tableName,
+    level:      level,
   })) {
     return;
   }
@@ -43,13 +51,17 @@ api.declare({
   });
 
   // Create table ignore error, if it already exists
-  try {
-    await table.createTable(tableName);
-  } catch (err) {
-    if (err.code !== 'TableAlreadyExists') {
-      throw err;
+  if (level === 'read-write') {
+    try {
+      await table.createTable(tableName);
+    } catch (err) {
+      if (err.code !== 'TableAlreadyExists') {
+        throw err;
+      }
     }
   }
+
+  let perm = level === 'read-write';
 
   // Construct SAS
   var expiry = new Date(Date.now() + 25 * 60 * 1000);
@@ -58,9 +70,9 @@ api.declare({
     expiry:   expiry,
     permissions: {
       read:       true,
-      add:        true,
-      update:     true,
-      delete:     true
+      add:        perm,
+      update:     perm,
+      delete:     perm,
     }
   });
 
