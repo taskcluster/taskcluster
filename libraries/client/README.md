@@ -182,7 +182,9 @@ var auth = new taskcluster.Auth(options);
  * `auth.expandScopes(payload) : result`
  * `auth.currentScopes() : result`
  * `auth.awsS3Credentials(level, bucket, prefix, [options]) : result`
- * `auth.azureTableSAS(account, table) : result`
+ * `auth.azureAccounts() : result`
+ * `auth.azureTables(account, [options]) : result`
+ * `auth.azureTableSAS(account, table, level) : result`
  * `auth.sentryDSN(project) : result`
  * `auth.statsumToken(project) : result`
  * `auth.authenticateHawk(payload) : result`
@@ -227,6 +229,7 @@ var github = new taskcluster.Github(options);
 ```
  * `github.githubWebHookConsumer() : void`
  * `github.builds([options]) : result`
+ * `github.isInstalledFor(owner, repo) : result`
  * `github.ping() : void`
 
 ### Methods in `taskcluster.Hooks`
