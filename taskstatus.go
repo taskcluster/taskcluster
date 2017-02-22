@@ -81,7 +81,7 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 				return err
 			}
 			task.TaskClaimResponse.Status = tsr.Status
-			log.Print(task.String())
+			// log.Print(task.String())
 			return nil
 		},
 		claimed,

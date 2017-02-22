@@ -220,7 +220,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		for _, x := range [2][2]string{{env, "set "}, {dir, "cd "}} {
 			file, err := os.Open(x[0])
 			if err != nil {
-				panic(err)
+				panic(fmt.Errorf("Could not read from file %v\n%v", x[0], err))
 			}
 			defer file.Close()
 
@@ -285,9 +285,13 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		0755,
 	)
 
-	log.Printf("Script %q:", script)
-	log.Print("Contents:")
-	log.Print(string(fileContents))
+	// log.Printf("Script %q:", script)
+	// log.Print("Contents:")
+	// log.Print(string(fileContents))
+
+	// log.Printf("Wrapper script %q:", wrapper)
+	// log.Print("Contents:")
+	// log.Print(contents)
 
 	if err != nil {
 		panic(err)
@@ -583,4 +587,9 @@ func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
 		return
 	}
 	return win32.SetAndCreateFolder(hUser, &win32.FOLDERID_LocalAppData, filepath.Join(folder, "Local"))
+}
+
+func defaultTasksDir() string {
+	// all user directories are peers of the current USERPROFILE env var
+	return filepath.Dir(os.Getenv("USERPROFILE"))
 }

@@ -11,7 +11,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}
-	config.RunAfterUserCreation = filepath.Join(cwd, "testdata", "run-after-user.bat")
+	config.RunAfterUserCreation = filepath.Join(testdataDir, "run-after-user.bat")
 	PrepareTaskEnvironment()
 	defer taskCleanup()
 	file := filepath.Join(taskContext.TaskDir, "run-after-user.txt")

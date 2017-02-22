@@ -227,7 +227,7 @@ func TestUpload(t *testing.T) {
 
 	payload := GenericWorkerPayload{
 		Command:    append(helloGoodbye(), copyArtifact("SampleArtifacts/_/X.txt")...),
-		MaxRunTime: 7200,
+		MaxRunTime: 30,
 		Artifacts: []struct {
 			Expires tcclient.Time `json:"expires"`
 			Path    string        `json:"path"`

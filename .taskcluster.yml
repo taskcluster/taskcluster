@@ -281,10 +281,6 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
-      artifacts:
-        - expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-          path: public/build/generic-worker-darwin-amd64
       command:
         - - /bin/bash
           - -vxec
@@ -292,6 +288,7 @@ tasks:
             export GOPATH="$(pwd)/go"
             source "${GW_CREDS_BOOTSTRAP}"
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
+            mkdir -p public/build
             cd "go/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
@@ -305,7 +302,8 @@ tasks:
             go generate
             go get -v -t ./...
             cp "${GOPATH}/bin/generic-worker" "../../../../../public/build/generic-worker-darwin-amd64"
-            test "$(git status --porcelain | wc -l)" == 0
+            # output of wc command can contain spaces on darwin, so no quotes around expression
+            test $(git status --porcelain | wc -l) == 0
             GORACE=history_size=7 go test -v ./...
             "${GOPATH}/bin/ineffassign" .
       artifacts:
@@ -315,4 +313,3 @@ tasks:
       mounts:
         - cacheName: generic-worker-checkout
           directory: go/src
-

@@ -15,6 +15,10 @@ func TestAppDataNotShared(t *testing.T) {
 	// First task:
 	payload1 := GenericWorkerPayload{
 		Command: []string{
+			// make sure vars are set
+			// https://bugzilla.mozilla.org/show_bug.cgi?id=1338602
+			`if not defined APPDATA exit /b 68`,
+			`if not defined LOCALAPPDATA exit /b 69`,
 			"echo hello > %APPDATA%\\hello.txt",
 			"echo hello > %LOCALAPPDATA%\\sir.txt",
 			`if not exist "%APPDATA%\hello.txt" exit /b 64`,
@@ -29,6 +33,10 @@ func TestAppDataNotShared(t *testing.T) {
 	// Second task:
 	payload2 := GenericWorkerPayload{
 		Command: []string{
+			// make sure vars are set
+			// https://bugzilla.mozilla.org/show_bug.cgi?id=1338602
+			`if not defined APPDATA exit /b 70`,
+			`if not defined LOCALAPPDATA exit /b 71`,
 			// make sure files don't already exist, because we should have
 			// fresh folders created
 			`if exist "%APPDATA%\hello.txt" exit /b 66`,

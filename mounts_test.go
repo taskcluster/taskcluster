@@ -251,7 +251,7 @@ func TestCachesCanBeModified(t *testing.T) {
 	counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
 	bytes, err := ioutil.ReadFile(counterFile)
 	if err != nil {
-		t.Fatalf("Error when trying to real cache file: %v", err)
+		t.Fatalf("Error when trying to read cache file: %v", err)
 	}
 	if string(bytes) != "3" {
 		t.Fatalf("Was expecting file %v to have content %q but had %q", counterFile, "3", string(bytes))

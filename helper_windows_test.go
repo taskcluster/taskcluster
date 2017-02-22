@@ -63,7 +63,7 @@ func goRun(goFile string) []string {
 
 func copyArtifact(path string) []string {
 	targetFile := strings.Replace(path, "/", "\\", -1)
-	sourceFile := filepath.Join(config.TasksDir, targetFile)
+	sourceFile := filepath.Join(testdataDir, targetFile)
 	return []string{
 		"mkdir \"" + filepath.Dir(targetFile) + "\"",
 		"copy \"" + sourceFile + "\" \"" + targetFile + "\"",

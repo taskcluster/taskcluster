@@ -29,7 +29,9 @@ function install {
   # GOOS="${1}" GOARCH="${2}" go get -u ./...
   GOOS="${1}" GOARCH="${2}" go get -v ./...
   GOOS="${1}" GOARCH="${2}" go vet ./...
-  GOOS="${1}" GOARCH="${2}" go test -c
+  # note, this just builds tests, it doesn't run them!
+  GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker
+  GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker/livelog
 }
 
 # build windows first

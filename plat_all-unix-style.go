@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -141,4 +142,10 @@ func deleteTaskDir(path string) error {
 		return err
 	}
 	return nil
+}
+
+func defaultTasksDir() string {
+	// assume all user home directories are all in same folder, i.e. the parent
+	// folder of the current user's home folder
+	return filepath.Dir(os.Getenv("HOME"))
 }

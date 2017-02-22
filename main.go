@@ -239,7 +239,7 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: taskcluster-worker.net]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: C:\Users]
+                                            created on the worker. [default: ` + defaultTasksDir() + `]
           workerTypeMetaData                This arbitrary json blob will be uploaded as an
                                             artifact called worker_type_metadata.json with each
                                             task. Providing information here, such as a URL to
@@ -355,7 +355,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		ShutdownMachineOnInternalError: false,
 		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
-		TasksDir:                       "C:\\Users",
+		TasksDir:                       defaultTasksDir(),
 		WorkerTypeMetadata: map[string]interface{}{
 			"generic-worker": map[string]string{
 				"go-arch":    runtime.GOARCH,
@@ -1237,10 +1237,12 @@ func PrepareTaskEnvironment() {
 		userName := taskDirName
 		prepareTaskUser(userName)
 	}
-	err := os.MkdirAll(filepath.Join(taskContext.TaskDir, "public", "logs"), 0777)
+	logDir := filepath.Join(taskContext.TaskDir, "public", "logs")
+	err := os.MkdirAll(logDir, 0777)
 	if err != nil {
 		panic(err)
 	}
+	log.Printf("Created dir: %v", logDir)
 }
 
 func deleteTaskDirs() {
