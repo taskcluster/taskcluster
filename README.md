@@ -642,10 +642,44 @@ await asyncAuth.awsS3Credentials(level, bucket, prefix) # -> result
 await asyncAuth.awsS3Credentials(level='value', bucket='value', prefix='value') # -> result
 ```
 
+#### List Accounts Managed by Auth
+Retrieve a list of all Azure accounts managed by Taskcluster Auth.
+
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#)
+
+```python
+# Sync calls
+auth.azureAccounts() # -> result`
+# Async call
+await asyncAuth.azureAccounts() # -> result
+```
+
+#### List Tables in an Account Managed by Auth
+Retrieve a list of all tables in an account.
+
+
+
+Takes the following arguments:
+
+  * `account`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#)
+
+```python
+# Sync calls
+auth.azureTables(account) # -> result`
+auth.azureTables(account='value') # -> result
+# Async call
+await asyncAuth.azureTables(account) # -> result
+await asyncAuth.azureTables(account='value') # -> result
+```
+
 #### Get Shared-Access-Signature for Azure Table
 Get a shared access signature (SAS) string for use with a specific Azure
-Table Storage table.  Note, this will create the table, if it doesn't
-already exist.
+Table Storage table. By not specifying a level as in azureTableSASLevel,
+you will get read-write permissions. If you get read-write from this, it will create the
+table if it doesn't already exist.
 
 
 
@@ -653,16 +687,17 @@ Takes the following arguments:
 
   * `account`
   * `table`
+  * `level`
 
 Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#)
 
 ```python
 # Sync calls
-auth.azureTableSAS(account, table) # -> result`
-auth.azureTableSAS(account='value', table='value') # -> result
+auth.azureTableSAS(account, table, level) # -> result`
+auth.azureTableSAS(account='value', table='value', level='value') # -> result
 # Async call
-await asyncAuth.azureTableSAS(account, table) # -> result
-await asyncAuth.azureTableSAS(account='value', table='value') # -> result
+await asyncAuth.azureTableSAS(account, table, level) # -> result
+await asyncAuth.azureTableSAS(account='value', table='value', level='value') # -> result
 ```
 
 #### Get DSN for Sentry Project
@@ -1460,6 +1495,28 @@ github.builds() # -> result`
 await asyncGithub.builds() # -> result
 ```
 
+#### Check if Repository has Integration
+Checks if the integration has been installed for
+a given repository of a given organization or user.
+
+
+
+Takes the following arguments:
+
+  * `owner`
+  * `repo`
+
+Required [output schema](http://schemas.taskcluster.net/github/v1/is-installed-for.json)
+
+```python
+# Sync calls
+github.isInstalledFor(owner, repo) # -> result`
+github.isInstalledFor(owner='value', repo='value') # -> result
+# Async call
+await asyncGithub.isInstalledFor(owner, repo) # -> result
+await asyncGithub.isInstalledFor(owner='value', repo='value') # -> result
+```
+
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -1572,7 +1629,7 @@ await asyncHooks.listHooks(hookGroupId='value') # -> result
 ```
 
 #### Get hook definition
-This endpoint will return the hook defintion for the given `hookGroupId`
+This endpoint will return the hook definition for the given `hookGroupId`
 and hookId.
 
 
@@ -2587,23 +2644,8 @@ await asyncQueue.createTask(payload, taskId='value') # -> result
 ```
 
 #### Define Task
-Define a task without scheduling it. This API end-point allows you to
-upload a task definition without having scheduled. The task won't be
-reported as pending until it is scheduled, see the scheduleTask API 
-end-point.
-
-The purpose of this API end-point is allow schedulers to upload task
-definitions without the tasks becoming _pending_ immediately. This useful
-if you have a set of dependent tasks. Then you can upload all the tasks
-and when the dependencies of a tasks have been resolved, you can schedule
-the task by calling `/task/:taskId/schedule`. This eliminates the need to
-store tasks somewhere else while waiting for dependencies to resolve.
-
-**Important** Any scopes the task requires are also required for defining
-the task. Please see the Request Payload (Task Definition) for details.
-
-**Note** this operation is **idempotent**, as long as you upload the same
-task definition as previously defined this operation is safe to retry.
+**Deprecated**, this is the same as `createTask` with a **self-dependency**.
+This is only present for legacy.
 
 
 
@@ -2866,7 +2908,7 @@ failed instead of exception. You should `reportException` if,
   * Declared actions cannot be executed due to unavailable resources,
   * The worker had to shutdown prematurely,
   * The worker experienced an unknown error, or,
-  * The task explicitely requested a retry.
+  * The task explicitly requested a retry.
 
 Do not use this to signal that some user-specified code crashed for any
 reason specific to this code. If user-specific code hits a resource that
