@@ -38,7 +38,7 @@ class AuthEvents(BaseClient):
     """
 
     def clientCreated(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'required': False, 'name': 'reserved', 'multipleWords': True}], 'schema': 'http://schemas.taskcluster.net/auth/v1/client-message.json#', 'name': 'clientCreated', 'exchange': 'client-created'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'client-created', 'schema': 'http://schemas.taskcluster.net/auth/v1/client-message.json#', 'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'required': False, 'name': 'reserved'}], 'name': 'clientCreated'}, *args, **kwargs)
 
     """
     Client Updated Messages
@@ -51,7 +51,7 @@ class AuthEvents(BaseClient):
     """
 
     def clientUpdated(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'required': False, 'name': 'reserved', 'multipleWords': True}], 'schema': 'http://schemas.taskcluster.net/auth/v1/client-message.json#', 'name': 'clientUpdated', 'exchange': 'client-updated'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'client-updated', 'schema': 'http://schemas.taskcluster.net/auth/v1/client-message.json#', 'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'required': False, 'name': 'reserved'}], 'name': 'clientUpdated'}, *args, **kwargs)
 
     """
     Client Deleted Messages
@@ -64,7 +64,7 @@ class AuthEvents(BaseClient):
     """
 
     def clientDeleted(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'required': False, 'name': 'reserved', 'multipleWords': True}], 'schema': 'http://schemas.taskcluster.net/auth/v1/client-message.json#', 'name': 'clientDeleted', 'exchange': 'client-deleted'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'client-deleted', 'schema': 'http://schemas.taskcluster.net/auth/v1/client-message.json#', 'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'required': False, 'name': 'reserved'}], 'name': 'clientDeleted'}, *args, **kwargs)
 
     """
     Role Created Messages
@@ -77,7 +77,7 @@ class AuthEvents(BaseClient):
     """
 
     def roleCreated(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'required': False, 'name': 'reserved', 'multipleWords': True}], 'schema': 'http://schemas.taskcluster.net/auth/v1/role-message.json#', 'name': 'roleCreated', 'exchange': 'role-created'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'role-created', 'schema': 'http://schemas.taskcluster.net/auth/v1/role-message.json#', 'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'required': False, 'name': 'reserved'}], 'name': 'roleCreated'}, *args, **kwargs)
 
     """
     Role Updated Messages
@@ -90,7 +90,7 @@ class AuthEvents(BaseClient):
     """
 
     def roleUpdated(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'required': False, 'name': 'reserved', 'multipleWords': True}], 'schema': 'http://schemas.taskcluster.net/auth/v1/role-message.json#', 'name': 'roleUpdated', 'exchange': 'role-updated'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'role-updated', 'schema': 'http://schemas.taskcluster.net/auth/v1/role-message.json#', 'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'required': False, 'name': 'reserved'}], 'name': 'roleUpdated'}, *args, **kwargs)
 
     """
     Role Deleted Messages
@@ -103,7 +103,7 @@ class AuthEvents(BaseClient):
     """
 
     def roleDeleted(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'required': False, 'name': 'reserved', 'multipleWords': True}], 'schema': 'http://schemas.taskcluster.net/auth/v1/role-message.json#', 'name': 'roleDeleted', 'exchange': 'role-deleted'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'role-deleted', 'schema': 'http://schemas.taskcluster.net/auth/v1/role-message.json#', 'routingKey': [{'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'required': False, 'name': 'reserved'}], 'name': 'roleDeleted'}, *args, **kwargs)
 
     funcinfo = {
     }
