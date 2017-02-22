@@ -653,6 +653,9 @@ var STABILITY_LEVELS = _.values(stability);
  *   skipInputValidation:    true,               // defaults to false
  *   skipOutputValidation:   true,               // defaults to false
  *   title:     "My API Method",
+ *   noPublish: true                             // defaults to false, causes
+ *                                               // endpoint to be left out of api
+ *                                               // references
  *   description: [
  *     "Description of method in markdown, enjoy"
  *   ].join('\n'),
@@ -867,7 +870,7 @@ API.prototype.reference = function(options) {
     title:              this._options.title,
     description:        this._options.description,
     baseUrl:            options.baseUrl,
-    entries: _.concat(this._entries, [ping]).map(function(entry) {
+    entries: _.concat(this._entries, [ping]).filter(entry => !entry.noPublish).map(function(entry) {
       // Find parameters for entry
       var params  = [];
       // Note: express uses the NPM module path-to-regexp for parsing routes
