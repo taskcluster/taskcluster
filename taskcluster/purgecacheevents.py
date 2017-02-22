@@ -42,7 +42,7 @@ class PurgeCacheEvents(BaseClient):
     """
 
     def purgeCache(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'purge-cache', 'schema': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#', 'routingKey': [{'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.", 'multipleWords': False, 'required': True, 'name': 'routingKeyKind', 'constant': 'primary'}, {'summary': '`provisionerId` under which to purge cache.', 'multipleWords': False, 'required': True, 'name': 'provisionerId'}, {'summary': '`workerType` for which to purge cache.', 'multipleWords': False, 'required': True, 'name': 'workerType'}], 'name': 'purgeCache'}, *args, **kwargs)
+        return self._makeTopicExchange({'name': 'purgeCache', 'schema': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#', 'routingKey': [{'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.", 'name': 'routingKeyKind', 'multipleWords': False, 'constant': 'primary', 'required': True}, {'summary': '`provisionerId` under which to purge cache.', 'name': 'provisionerId', 'multipleWords': False, 'required': True}, {'summary': '`workerType` for which to purge cache.', 'name': 'workerType', 'multipleWords': False, 'required': True}], 'exchange': 'purge-cache'}, *args, **kwargs)
 
     funcinfo = {
     }
