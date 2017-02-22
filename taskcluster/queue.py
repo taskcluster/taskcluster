@@ -154,23 +154,8 @@ class Queue(BaseClient):
         """
         Define Task
 
-        Define a task without scheduling it. This API end-point allows you to
-        upload a task definition without having scheduled. The task won't be
-        reported as pending until it is scheduled, see the scheduleTask API
-        end-point.
-
-        The purpose of this API end-point is allow schedulers to upload task
-        definitions without the tasks becoming _pending_ immediately. This useful
-        if you have a set of dependent tasks. Then you can upload all the tasks
-        and when the dependencies of a tasks have been resolved, you can schedule
-        the task by calling `/task/:taskId/schedule`. This eliminates the need to
-        store tasks somewhere else while waiting for dependencies to resolve.
-
-        **Important** Any scopes the task requires are also required for defining
-        the task. Please see the Request Payload (Task Definition) for details.
-
-        **Note** this operation is **idempotent**, as long as you upload the same
-        task definition as previously defined this operation is safe to retry.
+        **Deprecated**, this is the same as `createTask` with a **self-dependency**.
+        This is only present for legacy.
 
         This method takes input: ``http://schemas.taskcluster.net/queue/v1/create-task-request.json#``
 
@@ -357,7 +342,7 @@ class Queue(BaseClient):
           * Declared actions cannot be executed due to unavailable resources,
           * The worker had to shutdown prematurely,
           * The worker experienced an unknown error, or,
-          * The task explicitely requested a retry.
+          * The task explicitly requested a retry.
 
         Do not use this to signal that some user-specified code crashed for any
         reason specific to this code. If user-specific code hits a resource that

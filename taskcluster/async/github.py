@@ -52,6 +52,20 @@ class Github(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["builds"], *args, **kwargs)
 
+    async def isInstalledFor(self, *args, **kwargs):
+        """
+        Check if Repository has Integration
+
+        Checks if the integration has been installed for
+        a given repository of a given organization or user.
+
+        This method takes output: ``http://schemas.taskcluster.net/github/v1/is-installed-for.json``
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["isInstalledFor"], *args, **kwargs)
+
     async def ping(self, *args, **kwargs):
         """
         Ping Server
@@ -80,6 +94,12 @@ class Github(AsyncBaseClient):
             'method': 'post',
             'name': 'githubWebHookConsumer',
             'route': '/github',
+            'stability': 'experimental'},
+        "isInstalledFor": {           'args': ['owner', 'repo'],
+            'method': 'get',
+            'name': 'isInstalledFor',
+            'output': 'http://schemas.taskcluster.net/github/v1/is-installed-for.json',
+            'route': '/repository/<owner>/<repo>',
             'stability': 'experimental'},
         "ping": {           'args': [],
             'method': 'get',

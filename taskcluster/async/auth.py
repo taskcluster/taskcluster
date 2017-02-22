@@ -374,13 +374,40 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["awsS3Credentials"], *args, **kwargs)
 
+    async def azureAccounts(self, *args, **kwargs):
+        """
+        List Accounts Managed by Auth
+
+        Retrieve a list of all Azure accounts managed by Taskcluster Auth.
+
+        This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#``
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["azureAccounts"], *args, **kwargs)
+
+    async def azureTables(self, *args, **kwargs):
+        """
+        List Tables in an Account Managed by Auth
+
+        Retrieve a list of all tables in an account.
+
+        This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#``
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["azureTables"], *args, **kwargs)
+
     async def azureTableSAS(self, *args, **kwargs):
         """
         Get Shared-Access-Signature for Azure Table
 
         Get a shared access signature (SAS) string for use with a specific Azure
-        Table Storage table.  Note, this will create the table, if it doesn't
-        already exist.
+        Table Storage table. By not specifying a level as in azureTableSASLevel,
+        you will get read-write permissions. If you get read-write from this, it will create the
+        table if it doesn't already exist.
 
         This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#``
 
@@ -522,11 +549,24 @@ class Auth(AsyncBaseClient):
             'query': ['format'],
             'route': '/aws/s3/<level>/<bucket>/<prefix>',
             'stability': 'stable'},
-        "azureTableSAS": {           'args': ['account', 'table'],
+        "azureAccounts": {           'args': [],
+            'method': 'get',
+            'name': 'azureAccounts',
+            'output': 'http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#',
+            'route': '/azure/accounts',
+            'stability': 'stable'},
+        "azureTableSAS": {           'args': ['account', 'table', 'level'],
             'method': 'get',
             'name': 'azureTableSAS',
             'output': 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#',
-            'route': '/azure/<account>/table/<table>/read-write',
+            'route': '/azure/<account>/table/<table>/<level>',
+            'stability': 'stable'},
+        "azureTables": {           'args': ['account'],
+            'method': 'get',
+            'name': 'azureTables',
+            'output': 'http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#',
+            'query': ['continuationToken'],
+            'route': '/azure/<account>/tables',
             'stability': 'stable'},
         "client": {           'args': ['clientId'],
             'method': 'get',

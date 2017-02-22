@@ -65,7 +65,7 @@ class Hooks(AsyncBaseClient):
         """
         Get hook definition
 
-        This endpoint will return the hook defintion for the given `hookGroupId`
+        This endpoint will return the hook definition for the given `hookGroupId`
         and hookId.
 
         This method takes output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``

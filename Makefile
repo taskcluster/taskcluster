@@ -20,7 +20,7 @@ generate-classes: devel
 	$(VENV)/bin/python genCode.py
 
 .PHONY: update
-update: update-api update-readme docs
+update: update-api generate-classes update-readme docs
 
 .PHONY: update-api
 update-api: devel
