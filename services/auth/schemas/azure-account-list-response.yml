@@ -1,0 +1,18 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Azure List Account Response"
+description: |
+  A list of Azure accounts managed by taskcluster-auth
+type:                       object
+properties:
+  accounts:
+    title: Azure Accounts
+    description: |
+      A list of accountIds that are managed by auth. These are
+      the accounts that can have SAS credentials fetched for tables
+      within them.
+    type:                 array
+    items:
+      type: string
+additionalProperties:       false
+required:
+  - accounts
