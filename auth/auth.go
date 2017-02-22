@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 21 Feb 2017 at 21:23:00 UTC. The code was generated
+// Wed, 22 Feb 2017 at 00:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -409,28 +409,29 @@ func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format str
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
-// Table Storage table.  Note, this will create the table, if it doesn't
-// already exist.
+// Table Storage table. By not specifying a level as in azureTableSASLevel,
+// you will get read-write permissions. If you get read-write from this, it will create the
+// table if it doesn't already exist.
 //
 // Required scopes:
-//   * auth:azure-table-access:<account>/<table>
+//   * auth:azure-table:<level>:<account>/<table>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
-func (myAuth *Auth) AzureTableSAS(account, table string) (*AzureSharedAccessSignatureResponse, error) {
+func (myAuth *Auth) AzureTableSAS(account, table, level string) (*AzureSharedAccessSignatureResponse, error) {
 	cd := tcclient.Client(*myAuth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", new(AzureSharedAccessSignatureResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(AzureSharedAccessSignatureResponse), nil)
 	return responseObject.(*AzureSharedAccessSignatureResponse), err
 }
 
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:azure-table-access:<account>/<table>
+//   * auth:azure-table:<level>:<account>/<table>
 //
 // See AzureTableSAS for more details.
-func (myAuth *Auth) AzureTableSAS_SignedURL(account, table string, duration time.Duration) (*url.URL, error) {
+func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*myAuth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/read-write", nil, duration)
+	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), nil, duration)
 }
 
 // Get temporary DSN (access credentials) for a sentry project.
