@@ -1,5 +1,56 @@
+var _           = require('lodash');
 var azure       = require('fast-azure-storage');
 var api         = require('./v1');
+
+api.declare({
+  method:     'get',
+  route:      '/azure/accounts',
+  name:       'azureAccounts',
+  input:      undefined,
+  output:     'azure-account-list-response.json#',
+  stability:  'stable',
+  scopes:     [['auth:azure-table:list-accounts']],
+  title:      "List Accounts Managed by Auth",
+  description: [
+    "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
+  ].join('\n')
+}, function(req, res) {
+  return res.reply({accounts: _.keys(this.azureAccounts)});
+});
+
+api.declare({
+  method:     'get',
+  route:      '/azure/:account/tables',
+  name:       'azureTables',
+  query: {
+    continuationToken: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
+  },
+  input:      undefined,
+  output:     'azure-table-list-response.json#',
+  stability:  'stable',
+  scopes:     [['auth:azure-table:list-tables:<account>']],
+  title:      "List Tables in an Account Managed by Auth",
+  description: [
+    "Retrieve a list of all tables in an account.",
+  ].join('\n')
+}, async function(req, res) {
+  let account = req.params.account;
+  let continuationToken  = req.query.continuationToken || null;
+
+  if (!req.satisfies({account})) { return; }
+
+  let table = new azure.Table({
+    accountId:  account,
+    accessKey:  this.azureAccounts[account]
+  });
+
+  let result = await table.queryTables({continuationToken});
+  let data = {tables: result.tables};
+  if (result.nextTableName) {
+      data.continuationToken = result.nextTableName;
+  }
+  return res.reply(data);
+});
 
 api.declare({
   method:     'get',
