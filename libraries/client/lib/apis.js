@@ -300,19 +300,60 @@ module.exports = {
         },
         {
           "args": [
-            "account",
-            "table"
           ],
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.  Note, this will create the table, if it doesn't\nalready exist.",
+          "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
+          "method": "get",
+          "name": "azureAccounts",
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#",
+          "query": [
+          ],
+          "route": "/azure/accounts",
+          "scopes": [
+            [
+              "auth:azure-table:list-accounts"
+            ]
+          ],
+          "stability": "stable",
+          "title": "List Accounts Managed by Auth",
+          "type": "function"
+        },
+        {
+          "args": [
+            "account"
+          ],
+          "description": "Retrieve a list of all tables in an account.",
+          "method": "get",
+          "name": "azureTables",
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#",
+          "query": [
+            "continuationToken"
+          ],
+          "route": "/azure/<account>/tables",
+          "scopes": [
+            [
+              "auth:azure-table:list-tables:<account>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "List Tables in an Account Managed by Auth",
+          "type": "function"
+        },
+        {
+          "args": [
+            "account",
+            "table",
+            "level"
+          ],
+          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table. By not specifying a level as in azureTableSASLevel,\nyou will get read-write permissions. If you get read-write from this, it will create the\ntable if it doesn't already exist.",
           "method": "get",
           "name": "azureTableSAS",
           "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#",
           "query": [
           ],
-          "route": "/azure/<account>/table/<table>/read-write",
+          "route": "/azure/<account>/table/<table>/<level>",
           "scopes": [
             [
-              "auth:azure-table-access:<account>/<table>"
+              "auth:azure-table:<level>:<account>/<table>"
             ]
           ],
           "stability": "stable",
@@ -1070,6 +1111,22 @@ module.exports = {
         },
         {
           "args": [
+            "owner",
+            "repo"
+          ],
+          "description": "Checks if the integration has been installed for\na given repository of a given organization or user.",
+          "method": "get",
+          "name": "isInstalledFor",
+          "output": "http://schemas.taskcluster.net/github/v1/is-installed-for.json",
+          "query": [
+          ],
+          "route": "/repository/<owner>/<repo>",
+          "stability": "experimental",
+          "title": "Check if Repository has Integration",
+          "type": "function"
+        },
+        {
+          "args": [
           ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
@@ -1196,7 +1253,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://hooks.taskcluster.net/v1",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a 'schedule' indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `[\"0 0 1 * * *\"]` -- daily at 1:00 UTC\n * `[\"0 0 9,21 * * 1-5\", \"0 0 12 * * 0,6\"]` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
       "entries": [
         {
           "args": [
@@ -1232,7 +1289,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will return the hook defintion for the given `hookGroupId`\nand hookId.",
+          "description": "This endpoint will return the hook definition for the given `hookGroupId`\nand hookId.",
           "method": "get",
           "name": "hook",
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
@@ -1280,7 +1337,7 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
+          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.\n",
           "input": "http://schemas.taskcluster.net/hooks/v1/create-hook-request.json",
           "method": "put",
           "name": "createHook",
@@ -1991,7 +2048,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Define a task without scheduling it. This API end-point allows you to\nupload a task definition without having scheduled. The task won't be\nreported as pending until it is scheduled, see the scheduleTask API \nend-point.\n\nThe purpose of this API end-point is allow schedulers to upload task\ndefinitions without the tasks becoming _pending_ immediately. This useful\nif you have a set of dependent tasks. Then you can upload all the tasks\nand when the dependencies of a tasks have been resolved, you can schedule\nthe task by calling `/task/:taskId/schedule`. This eliminates the need to\nstore tasks somewhere else while waiting for dependencies to resolve.\n\n**Important** Any scopes the task requires are also required for defining\nthe task. Please see the Request Payload (Task Definition) for details.\n\n**Note** this operation is **idempotent**, as long as you upload the same\ntask definition as previously defined this operation is safe to retry.",
+          "description": "**Deprecated**, this is the same as `createTask` with a **self-dependency**.\nThis is only present for legacy.",
           "input": "http://schemas.taskcluster.net/queue/v1/create-task-request.json#",
           "method": "post",
           "name": "defineTask",
@@ -2243,7 +2300,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely,\n  * The worker experienced an unknown error, or,\n  * The task explicitely requested a retry.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
+          "description": "Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely,\n  * The worker experienced an unknown error, or,\n  * The task explicitly requested a retry.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.",
           "input": "http://schemas.taskcluster.net/queue/v1/task-exception-request.json#",
           "method": "post",
           "name": "reportException",
@@ -3438,13 +3495,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Respond without doing anything.  This endpoint is used to check that\nthe service is up.",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
           "query": [
           ],
           "route": "/ping",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Ping Server",
           "type": "function"
         }
