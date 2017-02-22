@@ -1,0 +1,28 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Azure List Account Response"
+description: |
+  A list of Azure tables in an account
+type:                       object
+properties:
+  tables:
+    title: Azure Tables
+    description: |
+      A list of tables that are in an account. These are
+      the tables that can have SAS credentials fetched for them.
+    type:                 array
+    items:
+      type: string
+  continuationToken:
+    type:             string
+    title:            Continuation Token
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of tables.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `azureAccountTables` with `continuationToken`
+      until you get a result without a `continuationToken`.
+additionalProperties:       false
+required:
+  - tables
