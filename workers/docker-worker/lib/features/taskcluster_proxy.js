@@ -8,10 +8,10 @@ import http from 'http';
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
-// Maximum time in MS to wait for the proxy socket to become available. Set to
-// 30 seconds which is the max timeout on heroku for api calls. Note: very rarely
-// should it take this long.
-const INIT_TIMEOUT = 30000;
+// Maximum time in MS to wait for the proxy socket to become available.
+// Default timeout for heroku is 30 seconds, so we should at least wait enough
+// time for some retries to happen before giving up.
+const INIT_TIMEOUT = 90000;
 
 export default class TaskclusterProxy {
   constructor () {
