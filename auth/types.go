@@ -115,6 +115,42 @@ type (
 		Status string `json:"status"`
 	}
 
+	// A list of Azure accounts managed by taskcluster-auth
+	//
+	// See http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#
+	AzureListAccountResponse struct {
+
+		// A list of accountIds that are managed by auth. These are
+		// the accounts that can have SAS credentials fetched for tables
+		// within them.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#/properties/accounts
+		Accounts []string `json:"accounts"`
+	}
+
+	// A list of Azure tables in an account
+	//
+	// See http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#
+	AzureListAccountResponse1 struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of tables.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `azureAccountTables` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// A list of tables that are in an account. These are
+		// the tables that can have SAS credentials fetched for them.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties/tables
+		Tables []string `json:"tables"`
+	}
+
 	// Response to a request for an Shared-Access-Signature to access and Azure
 	// Table Storage table.
 	//
