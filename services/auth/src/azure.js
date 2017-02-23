@@ -79,12 +79,10 @@ api.declare({
     });
   }
 
-  // Check that the client is authorized to access given account and table
-  if (!req.satisfies({
-    account:    account,
-    table:      tableName,
-    level:      level,
-  })) {
+  // We have a complicated scope situation for read-only since we want
+  // read-write to grant read-only permissions as well
+  if (!(level === 'read-only' && req.satisfies({account, table: tableName, level: 'read-write'}, true)) &&
+    !req.satisfies({account, table: tableName, level})) {
     return;
   }
 
