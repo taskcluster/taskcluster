@@ -33,3 +33,11 @@ notifications:
       - "Change view : %{compare_url}"
       - "Build details : %{build_url}"
       - "Commit message : %{commit_message}"
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  api_key:
+    secure: uNxHl6FaIym+nko0UNwdRLNPiaMzAswJlY4u3ixCaJUWRqAeZY3gpCRQDJDU8Suo34znke0L4HXbodnQsonJfjLpkR0ro5gdUVf7YsvzYZn1BoQFCJAdr6/Bama0XIXHGfV1gre5dBV/i8zHgp3RWZLBgCpqij+N7gzpx/OM33vTPDzy9rQJK43qRRlvoKdGRKwfZnct7m7CvmN5zSjB0iWN7LqQbMmyDopJB+RgZiwkQzK/rt6kCc2Y44FULF6PcmeAl5qss5ZuXYGDTBrK9vWtC0UHZQuhi6ypbT2q97dvzLcHlyNMicf7MDt0IKoFVDa2T0BvIFbteAJGM+IwzhAxy9LGCcGjygAjCFnQod/hSXpiTkPRcy5UgZyT4SXqKd8vgX5f/FBNQqMalS60j4sHk7hJOCo4uGbxC1gPZEpD/Kx8tc0dvJNLLQLF/s0/Ur4Pe48VT2bgU3nB1MDM83MHHfnRLBnH63IB/OivXdlWPMIxk9i9CIE2S+UrsL+x9uSf8twbHwJuPzLJn8C8+x12z7dEGQNLvda7vxuwXD2CoQ+agjbNi9cv78iz7gBlgXmhbuZSH+2SY6ikCbThbhQJSY8KCORlqdAg68947SKIFWoE7RR163KKtGCvYTsKQsymu1Ufk0YkMuV81PcFk/cFhQPoj7NoAPPvQUKVtlQ=
+  on:
+    tags: true
+    repo: taskcluster/taskcluster-lib-testing
