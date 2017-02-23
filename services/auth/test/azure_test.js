@@ -122,6 +122,26 @@ suite('azure table (sas)', function() {
     });
   });
 
+  test('azureTableSAS (allowed table rw -> ro)', function() {
+    // Restrict access a bit
+    var auth = new helper.Auth({
+      baseUrl:          helper.baseUrl,
+      credentials:      rootCredentials,
+      authorizedScopes: [
+        'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable'
+      ]
+    });
+    return auth.azureTableSAS(
+      helper.testaccount,
+      'allowedTable',
+      'read-only'
+    ).then(function(result) {
+      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(new Date(result.expiry).getTime() > new Date().getTime(),
+             "Expected expiry to be in the future");
+    });
+  });
+
   test('azureTableSAS (too high permission)', function() {
     // Restrict access a bit
     var auth = new helper.Auth({
