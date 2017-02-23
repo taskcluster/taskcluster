@@ -300,23 +300,48 @@ async function jobHandler(message) {
 
     // Decide if a user has permissions to run tasks.
     let login = message.payload.details['event.head.user.login'];
-    if (!await prAllowed({login, organization, repository, sha, instGithub, debug, message})) {
-      let body = [
-        '<details>\n',
-        '<summary>No TaskCluster jobs started for this pull request</summary>\n\n',
-        '```js\n',
-        'The `allowPullRequests` configuration for this repository (in `.takcluster.yml` on the',
-        'default branch) does not allow starting tasks for this pull request.',
-        '```\n',
-        '</details>',
-      ].join('\n');
-      await instGithub.repos.createCommitComment({
-        owner: organization,
-        repo: repository,
-        sha,
-        body,
-      });
-      return;
+    try {
+      if (!await prAllowed({login, organization, repository, instGithub, debug, message})) {
+        let body = [
+          '<details>\n',
+          '<summary>No TaskCluster jobs started for this pull request</summary>\n\n',
+          '```js\n',
+          'The `allowPullRequests` configuration for this repository (in `.takcluster.yml` on the',
+          'default branch) does not allow starting tasks for this pull request.',
+          '```\n',
+          '</details>',
+        ].join('\n');
+        await instGithub.repos.createCommitComment({
+          owner: organization,
+          repo: repository,
+          sha,
+          body,
+        });
+        return;
+      }
+    } catch (e) {
+      if (e.name === 'YAMLException') {
+        let docsLink = 'https://docs.taskcluster.net/reference/integrations/github/docs/usage#who-can-trigger-jobs';
+        await instGithub.repos.createCommitComment({
+          owner: organization,
+          repo: repository,
+          sha,
+          body: [
+            '<details>\n',
+            '<summary>Error in `.taskcluster.yml` while checking',
+            'for permissions **on default branch ' + branch + '**.',
+            'Read more about this in',
+            '[the taskcluster docs](' + docsLink + ').',
+            'Details</summary>\n\n',
+            '```js\n',
+            e.message,
+            '```\n',
+            '</details>',
+          ].join('\n'),
+        });
+        return;
+      }
+      throw e;
     }
   }
 
