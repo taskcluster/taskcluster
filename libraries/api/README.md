@@ -281,18 +281,20 @@ The resulting HTTP response will have a JSON body containing (whitespace adjuste
 ```js
 {
   "code": "TooManyFoos",
-  "message": "You can only have 3 foos.
-    These foos already exist:
-    [
-      1,
-      2,
-      3
-    ]
-    ----
-    method:     toomanyfoos
-    errorCode:  TooManyFoos
-    statusCode: 472
-    time:       2017-01-22T21:20:16.650Z",
+  "message": [
+    'You can only have 3 foos.',
+    'These foos already exist:',
+    '[',
+    '  1,',
+    '  2,',
+    '  3',
+    ']',
+    '----',
+    'method:     toomanyfoos',
+    'errorCode:  TooManyFoos',
+    'statusCode: 472',
+    'time:       2017-01-22T21:20:16.650Z',
+  ].join('\n'),
   "requestInfo":{
     "method": "toomanyfoos",
     "params": {},
