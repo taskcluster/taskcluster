@@ -199,10 +199,11 @@ api.declare({
       msg.installationId = body.installation.id;
       publisherKey = 'release';
     } else if (eventType == 'integration_installation') {
+      // Creates a new entity or overwrites an existing one
       await this.OwnersDirectory.create({
         installationId: body.installation.id,
         owner: body.installation.account.login,
-      });
+      }, true);
       return resolve(res, 200, 'Created table row!');
     } else {
       return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
