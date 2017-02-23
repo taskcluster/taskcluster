@@ -299,14 +299,20 @@ api.declare({
   let ownerInfo = await this.OwnersDirectory.load({owner}, true);
 
   if (ownerInfo) {
-    let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
-    let reposList = await instGithub.integrations.getInstallationRepositories({});
+    try {
+      let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
+      let reposList = await instGithub.integrations.getInstallationRepositories({});
 
-    // GitHub API returns an array of objects, each of wich has an array of repos
-    let installed = reposList.repositories.map(repo => repo.name).indexOf(repo);
+      // GitHub API returns an array of objects, each of wich has an array of repos
+      let installed = reposList.repositories.map(repo => repo.name).indexOf(repo);
 
-    res.reply({installed: installed != -1});
+      return res.reply({installed: installed != -1});
+    } catch (e) {
+      if (e.code > 400 && e.code < 500) {
+        return res.reply({installed: false});
+      }
+      throw e;
+    }
   }
-    
-  res.reply({installed: false});
+  return res.reply({installed: false});
 });
