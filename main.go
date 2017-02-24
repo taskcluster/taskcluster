@@ -1147,6 +1147,14 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	defer func() {
 		for _, artifact := range task.PayloadArtifacts() {
 			err.add(task.uploadArtifact(artifact))
+			// Note - the above error only covers not being able to upload an
+			// artifact, but doesn't cover case that an artifact could not be
+			// found, and so an error artifact was uploaded. So we do that
+			// here:
+			switch a := artifact.(type) {
+			case ErrorArtifact:
+				err.add(Failure(fmt.Errorf("%v: %v", a.Reason, a.Message)))
+			}
 		}
 	}()
 
