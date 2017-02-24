@@ -219,6 +219,41 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 		})
 }
 
+func TestMissingArtifactFailsTest(t *testing.T) {
+
+	setup(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	payload := GenericWorkerPayload{
+		Command:    append(helloGoodbye()),
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path:    "Nonexistent/art i fact.txt",
+				Expires: expires,
+				Type:    "file",
+			},
+		},
+	}
+
+	td := testTask()
+
+	taskID, myQueue := submitTask(t, td, payload)
+	runWorker()
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "failed" {
+		t.Fatalf("Expected state 'failed' but got state '%v'", status.Status.State)
+	}
+}
+
 func TestUpload(t *testing.T) {
 
 	setup(t)
