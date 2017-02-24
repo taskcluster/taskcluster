@@ -493,4 +493,11 @@ func TestUpload(t *testing.T) {
 	if cotCert.Environment.Region != "outer-space" {
 		t.Fatalf("Expected region to be \"outer-space\" but was %v", cotCert.Environment.Region)
 	}
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
 }
