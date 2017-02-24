@@ -4,33 +4,22 @@ node_js:
 - '0.12'
 - stable
 script: npm test
-
-# encrpyt channel name to get around issue
-# https://github.com/travis-ci/travis-ci/issues/1094
 notifications:
   irc:
     channels:
-      # encrpyted string was "irc.mozilla.org#taskcluster-bots"
-      - secure: "bzGLT//vfJQEi8GYYM873tbdVUprqms9eGu8YMmqJKHmgxVO2jIf4y7cotYEWWapcAwS9WLoPSjZK0X6h9VEdx3BaYdV/3ax88DfjEQXtv9F/JfbpL4ldkbJl/EAeRAv4BT9pWBVtsIufMGUHbqkW7LMVkRCFG+3W1/bDjH69MlvAQuT7JuEvkr9zDHtCh76SFkQc8zNah8AxauS7i0HOWlU4XVZ3pxWTxyLe0+1SnE5YoLJ179GhLtjzYAKPUU6mfyHN6xsWxBS6a6drclalfBEUFECBp5Xazz5lOQnyHcej28kdjXM3bfRjGxLASFCZ02vmQNEkXqgEy5/wzS22f4xuHFZupBRJSA9BVd7SIWh71U00QKBugd4im406OvqQfdBD1G1Hn3yy1X2dPdFMs9BvJ/W3CEEv0BECd3i1HDsTul/cgyJ18bjGY4bw1g4+/Ck3hQviVXDBY/R7pUYlQjhMTDquPbgU7jLe/IkH60npDxYn5U6h9lSgQIea6LOEoQlWi8mS2Q/qtc7n77uqK5/EnDcIddyNsC576AQcxxopSkvNW9coAjxNMRUT5Efnd7BU9XJ0VXaqgaqTXPjiTJ7GT2sqmeljaPePQ86TZT4gzF7pF1sf2uZGFV0WmgN5+Pc7xQrqotHR7P6O0lpzyZU7XmYtFqcRw4+S0k3iIE="
+    - secure: BrSZQFT4/36SXC/4adRgGSCKrB/Nr/azhbThcHCbgjd+Nw1y0UQjDDpiwztP1VqJObnN+sWcQDSvBIGdLT6T8dsSmHlhly3PxvEpjLeyHyUr/jm/EvOqWLvIEU4xTOY2QwHlZKJNEvFrTMrOyOmrWU/CHNZIcFMMQmZOXQVyLpG7Ss44dL+IJCx131+dzlfyen9daIPClHNbaE+yFqa4PeEWBb2Mfc7S/bkP9Ukuz/rAUBTci8B60PcUPRKqq4qt9HN2PP9icOEVwQU15STCz586F9AjeOE6F9+7bJjT/JwF4kpprfuyj2HSQvbo0Oq6X8XQrRlMx7P7CqQf71408B/YSvIOAlPZ4K0GbacJ4SHwLIFaXDJnBuhMBlUmdWPzFR5H2MbSL6WndjwjQUcy18u35yU6qRrHZi0moRqCcX6Z4D/WM6oiEa2hMhvQJHgAObzu3Xqded0ZQcyH4LAG4cGXTG3gIkO2+NzAmOhpRZgbIrJE0uAcSJ6K1pJbgwnFTzKdLLHkwdfJUmHvMRcXPE6WHdQxkoW/CrIBVmS1TUv87kKctM8BUQVFTmSac4B83/LZQWPha4NSaruFCPpq94dacgxFy3QlJh8MKJAc9q8WQuX1IB6jULz5z+0pVp73T7gEwgIkPOlB6euHCLMpxWEhVWlTJWZH7SjyEDBUtM4=
     on_success: change
     on_failure: always
     template:
-      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
-      - "Change view : %{compare_url}"
-      - "Build details : %{build_url}"
-      - "Commit message : %{commit_message}"
-
-# encrpyt channel name to get around issue
-# https://github.com/travis-ci/travis-ci/issues/1094
-notifications:
-  irc:
-    channels:
-      # encrpyted string was "irc.mozilla.org#taskcluster-bots"
-      - secure: "BrSZQFT4/36SXC/4adRgGSCKrB/Nr/azhbThcHCbgjd+Nw1y0UQjDDpiwztP1VqJObnN+sWcQDSvBIGdLT6T8dsSmHlhly3PxvEpjLeyHyUr/jm/EvOqWLvIEU4xTOY2QwHlZKJNEvFrTMrOyOmrWU/CHNZIcFMMQmZOXQVyLpG7Ss44dL+IJCx131+dzlfyen9daIPClHNbaE+yFqa4PeEWBb2Mfc7S/bkP9Ukuz/rAUBTci8B60PcUPRKqq4qt9HN2PP9icOEVwQU15STCz586F9AjeOE6F9+7bJjT/JwF4kpprfuyj2HSQvbo0Oq6X8XQrRlMx7P7CqQf71408B/YSvIOAlPZ4K0GbacJ4SHwLIFaXDJnBuhMBlUmdWPzFR5H2MbSL6WndjwjQUcy18u35yU6qRrHZi0moRqCcX6Z4D/WM6oiEa2hMhvQJHgAObzu3Xqded0ZQcyH4LAG4cGXTG3gIkO2+NzAmOhpRZgbIrJE0uAcSJ6K1pJbgwnFTzKdLLHkwdfJUmHvMRcXPE6WHdQxkoW/CrIBVmS1TUv87kKctM8BUQVFTmSac4B83/LZQWPha4NSaruFCPpq94dacgxFy3QlJh8MKJAc9q8WQuX1IB6jULz5z+0pVp73T7gEwgIkPOlB6euHCLMpxWEhVWlTJWZH7SjyEDBUtM4="
-    on_success: change
-    on_failure: always
-    template:
-      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
-      - "Change view : %{compare_url}"
-      - "Build details : %{build_url}"
-      - "Commit message : %{commit_message}"
+    - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+    - 'Change view : %{compare_url}'
+    - 'Build details : %{build_url}'
+    - 'Commit message : %{commit_message}'
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  api_key:
+    secure: LGhwEeb/KJ+hR61kBHtN8laff9bc9gkklfPlflHc5HcE/9gOZHEyLT03lhXEehabKE5+UqQvnqIdXQXfNMtHWy7jdGtl4+/5Lp0gRezEPnSl5av/DsisMe1LZx3Derw5HhdKRtTM33Q/np5KEWShBZ3B2vvwKCxlh5QWsJgijqxvtGyBjKXLF/ofJUN34YnpSyqRWOve+r+Qr5zrdPqmX3/oNnrZrVKJ8zgHZJ/VaYAjYPPK+e4H9HORRYNwDrIP5g9iOcQ/6hIiO/0v6nl0I1LWU07vO2S1E72duXO5uhFIm+8+FuiuSDmFJozO3k2vg513glivyRFHl+puKqKvDOSvNzOI2HkV767uNSqeRVdNAzc90FSaHNldeNhYX84Rz1h/1KkzS6Cj3T53up66SRULW8LWM5yHL/pCvazrixgvSP+otlTx8ErBW61QzNj4kwsdia+FPSJm8GoOsXKaFSXYNeqPHvwOLN+PHQ0cSOp0OY6kHTkOce1/cxsfjhgqkjaCin0cC/mX8QRKBUJQrBciah6z4xbBv/iw8uHnDRABWMf1uQEqnxJZ+OyUKSorydYXCH11hWq/2kc0NHB93wG/+n3NIS8cWTClZ2E8krdtKTEEHfknQjNPg+ZuYI0xDjKyj/6Y8b89WqeS7+h8nZ/vYaBva9mtaHLoJqzYPnw=
+  on:
+    tags: true
+    repo: taskcluster/typed-env-config
