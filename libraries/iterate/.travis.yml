@@ -5,6 +5,16 @@ node_js:
 - '5'
 - stable
 script: npm test
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+env:
+  global:
+  - DEBUG='taskcluster-lib-iterate test'
+  - CXX=g++-4.8
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
