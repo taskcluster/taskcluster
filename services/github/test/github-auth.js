@@ -68,6 +68,15 @@ class FakeGithub {
       'integrations.getInstallationRepositories': async() => {
         return this.repositories;
       },
+      'users.getForUser': async ({username}) => {
+        let user = _.find(this.github_users, {username});
+        if (user) {
+          user.id = parseInt(user.id, 10);
+          return user;
+        } else {
+          throwError(404);
+        }
+      },
     };
 
     const debug = Debug('FakeGithub');
@@ -115,8 +124,11 @@ class FakeGithub {
     this.repo_info[key] = info;
   }
 
-  setUser({id, email}) {
-    this.github_users.push({id: id.toString(), email});
+  setUser({id, email, username}) {
+    // Please note that here userId is a string. If you need to set up a github API function
+    // to get and use userId, you need to use parseInt(id, 10)
+    // (as an example, see users.getForUser above)
+    this.github_users.push({id: id.toString(), email, username});
   }
 
   setRepositories(...repoNames) {
