@@ -25,7 +25,7 @@ func (cmd) Usage() string {
 	return `Group related actions.
 
 Usage:
-  groupcluster group cancel [--] <groupId>
+  taskcluster group cancel [--] <groupId>
 `
 }
 
