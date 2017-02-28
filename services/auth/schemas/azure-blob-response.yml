@@ -1,8 +1,8 @@
 $schema:  http://json-schema.org/draft-04/schema#
-title:                      "Azure Table Shared-Access-Signature Response"
+title:    "Azure Blob Shared-Access-Signature Response"
 description: |
-  Response to a request for an Shared-Access-Signature to access and Azure
-  Table Storage table.
+  Response to a request for an Shared-Access-Signature to access an Azure
+  Blob Storage container.
 type:                       object
 properties:
   sas:

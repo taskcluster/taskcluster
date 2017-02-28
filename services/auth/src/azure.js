@@ -73,12 +73,6 @@ api.declare({
   var tableName = req.params.table;
   var level     = req.params.level;
 
-  if (!['read-write', 'read-only'].includes(level)) {
-    return res.status(404).json({
-      message:    "Level '" + level + "' is not valid. Must be one of ['read-write', 'read-only']."
-    });
-  }
-
   // We have a complicated scope situation for read-only since we want
   // read-write to grant read-only permissions as well
   if (!(level === 'read-only' && req.satisfies({account, table: tableName, level: 'read-write'}, true)) &&
@@ -88,9 +82,8 @@ api.declare({
 
   // Check that the account exists
   if (!this.azureAccounts[account]) {
-    return res.status(404).json({
-      message:    "Account '" + account + "' not found, can't delegate access"
-    });
+    return res.reportError('ResourceNotFound',
+      `Account '${account}' not found, can't delegate access`);
   }
 
   // Construct client
@@ -122,6 +115,82 @@ api.declare({
       add:        perm,
       update:     perm,
       delete:     perm,
+    }
+  });
+
+  // Return the generated SAS
+  return res.reply({
+    sas:      sas,
+    expiry:   expiry.toJSON()
+  });
+});
+
+api.declare({
+  method:     'get',
+  route:      '/azure/:account/containers/:container/:level',
+  name:       'azureBlobSAS',
+  input:      undefined,
+  output:     'azure-blob-response.json#',
+  deferAuth:  true,
+  stability:  'stable',
+  scopes:     [['auth:azure-blob:<level>:<account>/<container>']],
+  title:      "Get Shared-Access-Signature for Azure Blob",
+  description: [
+    "Get a shared access signature (SAS) string for use with a specific Azure",
+    "Blob Storage container. If the level is read-write, the container will be created, " +
+    "if it doesn't already exists."
+  ].join('\n')
+}, async function(req, res){
+  // Get parameters
+  let account = req.params.account;
+  let container = req.params.container;
+  let level = req.params.level;
+
+  // Check that the client is authorized to access given account and container
+  if (!(level === 'read-only' &&
+    req.satisfies({account, container, level: 'read-write'}, true)) &&
+    !req.satisfies({account, container, level})) {
+    return;
+  }
+
+  // Check that the account exists
+  if (!this.azureAccounts[account]) {
+    return res.reportError('ResourceNotFound',
+      `Account '${level}' not found, can't delegate access.`);
+  }
+
+  // Construct client
+  let blob = new azure.Blob({
+    accountId:  account,
+    accessKey:  this.azureAccounts[account]
+  });
+
+  // Create container ignore error, if it already exists
+  if (level === 'read-write') {
+    try {
+      await blob.createContainer(container);
+    } catch (err) {
+      if (err.code !== 'ContainerAlreadyExists') {
+        throw err;
+      }
+    }
+  }
+
+  let perm = level === 'read-write';
+
+  // Construct SAS
+  let expiry = new Date(Date.now() + 25 * 60 * 1000);
+  let sas = blob.sas(container, null, {
+    start:         new Date(Date.now() - 15 * 60 * 1000),
+    expiry:        expiry,
+    resourceType: 'container',
+    permissions: {
+      read:       true,
+      add:        perm,
+      create:     perm,
+      write:      perm,
+      delete:     perm,
+      list:       true,
     }
   });
 
