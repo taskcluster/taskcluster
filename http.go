@@ -49,6 +49,11 @@ type APICall struct {
 	Payload     io.Reader
 }
 
+// DefaultHTTPClient is the HTTP Client used to make requests.
+// A single object is created an used because http.Client is thread-safe when
+// making multiple requests in various goroutines.
+var DefaultHTTPClient = &http.Client{}
+
 // utility function to create a URL object based on given data
 func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
 	u, err = url.Parse(client.BaseURL + route)
@@ -92,7 +97,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 				return nil, nil, err
 			}
 		}
-		resp, err := (&http.Client{}).Do(callSummary.HTTPRequest)
+		resp, err := DefaultHTTPClient.Do(callSummary.HTTPRequest)
 		// b, e := httputil.DumpResponse(resp, true)
 		// if e == nil {
 		// 	fmt.Println(string(b))
