@@ -81,6 +81,17 @@ mocha.before(async () => {
     }
   });
 
+  helper.scopes = (scopes) => {
+    return new helper.Auth({
+      baseUrl:          helper.baseUrl,
+      credentials: {
+        clientId:       'root',
+        accessToken:    cfg.app.rootAccessToken,
+      },
+      authorizedScopes: scopes,
+    });
+  }
+
   // Create test server
   let {
     server:     testServer_,
