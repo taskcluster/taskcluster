@@ -73,24 +73,17 @@ mocha.before(async () => {
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
   var reference = v1.reference({baseUrl: helper.baseUrl});
   helper.Auth = taskcluster.createClient(reference);
-  helper.auth = new helper.Auth({
-    baseUrl:          helper.baseUrl,
-    credentials: {
-      clientId:       'root',
-      accessToken:    cfg.app.rootAccessToken,
-    }
-  });
-
-  helper.scopes = (scopes) => {
-    return new helper.Auth({
+  helper.scopes = (...scopes) => {
+    helper.auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
       credentials: {
         clientId:       'root',
         accessToken:    cfg.app.rootAccessToken,
       },
-      authorizedScopes: scopes,
+      authorizedScopes: scopes.length > 0 ? scopes : undefined,
     });
-  }
+  };
+  helper.scopes();
 
   // Create test server
   let {
@@ -116,6 +109,11 @@ mocha.before(async () => {
   });
   helper.AuthEvents = taskcluster.createClient(exchangeReference);
   helper.authEvents = new helper.AuthEvents();
+});
+
+mocha.beforeEach(() => {
+  // Setup client with all scopes
+  helper.scopes();
 });
 
 // Cleanup after tests
