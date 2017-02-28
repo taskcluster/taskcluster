@@ -1,4 +1,4 @@
-suite.only('azure table and blob (sas)', function() {
+suite('azure table and blob (sas)', function() {
   var assert      = require('assert');
   var debug       = require('debug')('auth:test:azure');
   var helper      = require('./helper');
@@ -102,10 +102,10 @@ suite.only('azure table and blob (sas)', function() {
 
   test('azureTableSAS (allowed table)', () => {
     // Restrict access a bit
-    let auth = helper.scopes([
-      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable'
-    ]);
-    return auth.azureTableSAS(
+    helper.scopes(
+      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
+    );
+    return helper.auth.azureTableSAS(
       helper.testaccount,
       'allowedTable',
       'read-write'
@@ -118,10 +118,10 @@ suite.only('azure table and blob (sas)', function() {
 
   test('azureTableSAS (allowed table rw -> ro)', function() {
     // Restrict access a bit
-    let auth = helper.scopes([
-      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable'
-    ]);
-    return auth.azureTableSAS(
+    helper.scopes(
+      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
+    );
+    return helper.auth.azureTableSAS(
       helper.testaccount,
       'allowedTable',
       'read-only'
@@ -134,10 +134,10 @@ suite.only('azure table and blob (sas)', function() {
 
   test('azureTableSAS (too high permission)', function() {
     // Restrict access a bit
-    let auth = helper.scopes([
-      'auth:azure-table:read-only:' + helper.testaccount + '/allowedTable'
-    ]);
-    return auth.azureTableSAS(
+    let auth = helper.scopes(
+      'auth:azure-table:read-only:' + helper.testaccount + '/allowedTable',
+    );
+    return helper.auth.azureTableSAS(
       helper.testaccount,
       'allowedTable',
       'read-write'
@@ -150,10 +150,10 @@ suite.only('azure table and blob (sas)', function() {
 
   test('azureTableSAS (unauthorized table)', function() {
     // Restrict access a bit
-    let auth = helper.scopes([
-      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable'
-    ]);
-    return auth.azureTableSAS(
+    let auth = helper.scopes(
+      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
+    );
+    return helper.auth.azureTableSAS(
       helper.testaccount,
       'unauthorizedTable',
       'read-write'
@@ -234,11 +234,11 @@ suite.only('azure table and blob (sas)', function() {
   });
 
   test('azureBlobSAS (allowed container)', async () => {
-    let auth = helper.scopes([
-      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container'
-    ]);
+    helper.scopes(
+      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
+    );
 
-    let result = await auth.azureBlobSAS(
+    let result = await helper.auth.azureBlobSAS(
       helper.testaccount,
       'allowed-container',
       'read-write'
@@ -250,11 +250,11 @@ suite.only('azure table and blob (sas)', function() {
   });
 
   test('azureBlobSAS (allowed read-write -> read-only)', async () => {
-    let auth = helper.scopes([
-      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container'
-    ]);
+    helper.scopes(
+      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
+    );
 
-    let result = await auth.azureBlobSAS(
+    let result = await helper.auth.azureBlobSAS(
       helper.testaccount,
       'allowed-container',
       'read-only',
@@ -265,11 +265,11 @@ suite.only('azure table and blob (sas)', function() {
   });
 
   test('azureBlobSAS (unauthorized container)', async () => {
-    let auth = helper.scopes([
-      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container'
-    ]);
+    helper.scopes(
+      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
+    );
     try {
-     await auth.azureBlobSAS(
+     await helper.auth.azureBlobSAS(
        helper.testaccount,
        'unauthorized-container',
        'read-write'
