@@ -1,4 +1,4 @@
-Generated: 1488317056
+Generated: 1488392645
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -535,12 +535,12 @@ Properties
     Any Of                 = 'Item '0' =
       Format                 = 'hostname'
       Type HAS NOT BEEN SET!!!
-      TypeName               = 'Var'
+      TypeName               = 'Var1'
       SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]'
     Item '1' =
       Format                 = 'ipv4'
       Type HAS NOT BEEN SET!!!
-      TypeName               = 'Var1'
+      TypeName               = 'Var2'
       SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]'
     '
     Description            = 'Host for which the request came in, this is typically the `Host` header
@@ -586,7 +586,7 @@ http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/propertie
 ===============================================================================================
 Format                 = 'hostname'
 Type HAS NOT BEEN SET!!!
-TypeName               = 'Var'
+TypeName               = 'Var1'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]'
 
 
@@ -594,7 +594,7 @@ http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/propertie
 ===============================================================================================
 Format                 = 'ipv4'
 Type HAS NOT BEEN SET!!!
-TypeName               = 'Var1'
+TypeName               = 'Var2'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]'
 
 
@@ -898,9 +898,9 @@ Properties
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas'
 Required               = '[sas expiry]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Azure Shared-Access-Signature Response'
+Title                  = 'Azure Table Shared-Access-Signature Response'
 Type                   = 'object'
-TypeName               = 'AzureSharedAccessSignatureResponse'
+TypeName               = 'Var'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#'
 
 

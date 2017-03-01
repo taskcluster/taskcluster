@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 28 Feb 2017 at 21:24:00 UTC. The code was generated
+// Wed, 1 Mar 2017 at 18:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -471,10 +471,10 @@ func (myAuth *Auth) AzureTables_SignedURL(account, continuationToken string, dur
 //   * auth:azure-table:<level>:<account>/<table>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
-func (myAuth *Auth) AzureTableSAS(account, table, level string) (*AzureSharedAccessSignatureResponse, error) {
+func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
 	cd := tcclient.Client(*myAuth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(AzureSharedAccessSignatureResponse), nil)
-	return responseObject.(*AzureSharedAccessSignatureResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(Var), nil)
+	return responseObject.(*Var), err
 }
 
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.

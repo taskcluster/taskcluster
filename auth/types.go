@@ -151,25 +151,6 @@ type (
 		Tables []string `json:"tables"`
 	}
 
-	// Response to a request for an Shared-Access-Signature to access and Azure
-	// Table Storage table.
-	//
-	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
-	AzureSharedAccessSignatureResponse struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/expiry
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas
-		Sas string `json:"sas"`
-	}
-
 	// Properties to create a client.
 	//
 	// See http://schemas.taskcluster.net/auth/v1/create-client-request.json#
@@ -627,11 +608,30 @@ type (
 		Scopes []string `json:"scopes,omitempty"`
 	}
 
+	// Response to a request for an Shared-Access-Signature to access and Azure
+	// Table Storage table.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
+	Var struct {
+
+		// Date and time of when the Shared-Access-Signature expires.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/expiry
+		Expiry tcclient.Time `json:"expiry"`
+
+		// Shared-Access-Signature string. This is the querystring parameters to
+		// be appened after `?` or `&` depending on whether or not a querystring is
+		// already present in the URL.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas
+		Sas string `json:"sas"`
+	}
+
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
-	Var json.RawMessage
+	Var1 json.RawMessage
 
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
-	Var1 json.RawMessage
+	Var2 json.RawMessage
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
@@ -651,22 +651,6 @@ func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) erro
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var is of type json.RawMessage...
-func (this *Var) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Var: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
 // Var1 is of type json.RawMessage...
 func (this *Var1) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
@@ -677,6 +661,22 @@ func (this *Var1) MarshalJSON() ([]byte, error) {
 func (this *Var1) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("Var1: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var2 is of type json.RawMessage...
+func (this *Var2) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *Var2) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("Var2: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
