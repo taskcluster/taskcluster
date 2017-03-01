@@ -6,6 +6,7 @@ package main
 import _ "github.com/taskcluster/taskcluster-cli/apis"
 import _ "github.com/taskcluster/taskcluster-cli/config"
 import _ "github.com/taskcluster/taskcluster-cli/from-now"
+import _ "github.com/taskcluster/taskcluster-cli/group"
 import _ "github.com/taskcluster/taskcluster-cli/task"
 import _ "github.com/taskcluster/taskcluster-cli/task-log"
 import _ "github.com/taskcluster/taskcluster-cli/version"
