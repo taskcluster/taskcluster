@@ -63,7 +63,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 1 Mar 2017 at 18:24:00 UTC. The code was generated
+// Wed, 1 Mar 2017 at 19:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -486,6 +486,30 @@ func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
 func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), nil, duration)
+}
+
+// Get a shared access signature (SAS) string for use with a specific Azure
+// Blob Storage container. If the level is read-write, the container will be created, if it doesn't already exists.
+//
+// Required scopes:
+//   * auth:azure-blob:<level>:<account>/<container>
+//
+// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureBlobSAS
+func (myAuth *Auth) AzureBlobSAS(account, container, level string) (*Var1, error) {
+	cd := tcclient.Client(*myAuth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(Var1), nil)
+	return responseObject.(*Var1), err
+}
+
+// Returns a signed URL for AzureBlobSAS, valid for the specified duration.
+//
+// Required scopes:
+//   * auth:azure-blob:<level>:<account>/<container>
+//
+// See AzureBlobSAS for more details.
+func (myAuth *Auth) AzureBlobSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*myAuth)
+	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), nil, duration)
 }
 
 // Get temporary DSN (access credentials) for a sentry project.
