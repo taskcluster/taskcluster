@@ -362,6 +362,28 @@ module.exports = {
         },
         {
           "args": [
+            "account",
+            "container",
+            "level"
+          ],
+          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container. If the level is read-write, the container will be created, if it doesn't already exists.",
+          "method": "get",
+          "name": "azureBlobSAS",
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#",
+          "query": [
+          ],
+          "route": "/azure/<account>/containers/<container>/<level>",
+          "scopes": [
+            [
+              "auth:azure-blob:<level>:<account>/<container>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Get Shared-Access-Signature for Azure Blob",
+          "type": "function"
+        },
+        {
+          "args": [
             "project"
           ],
           "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
