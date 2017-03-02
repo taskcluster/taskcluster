@@ -185,6 +185,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.azureAccounts() : result`
  * `auth.azureTables(account, [options]) : result`
  * `auth.azureTableSAS(account, table, level) : result`
+ * `auth.azureBlobSAS(account, container, level) : result`
  * `auth.sentryDSN(project) : result`
  * `auth.statsumToken(project) : result`
  * `auth.authenticateHawk(payload) : result`
