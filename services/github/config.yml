@@ -8,6 +8,7 @@ defaults:
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     name: 'taskcluster-github'
     statusContext: 'Taskcluster'
+    botName: !env BOT_USERNAME
 
   taskcluster:
     # TaskCluster credentials for this server, these must have scopes:
@@ -54,6 +55,7 @@ production:
   app:
     jobQueue: 'jobs'
     statusQueue: 'statuses'
+    botName: 'taskcluster[bot]'
 
   intree:
     provisionerId: 'aws-provisioner-v1'
@@ -78,6 +80,7 @@ staging:
     ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
+    botName: 'taskcluster-staging[bot]'
 
   intree:
     provisionerId: 'aws-provisioner-v1'
@@ -95,6 +98,9 @@ staging:
     schedulerId: tc-gh-staging
 
 test:
+  app:
+    botName: 'magicalTCspirit'
+
   webhook:
     secret: ['abc123', 'def456']
 
