@@ -306,7 +306,7 @@ async function jobHandler(message) {
           '<details>\n',
           '<summary>No TaskCluster jobs started for this pull request</summary>\n\n',
           '```js\n',
-          'The `allowPullRequests` configuration for this repository (in `.takcluster.yml` on the',
+          'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
           'default branch) does not allow starting tasks for this pull request.',
           '```\n',
           '</details>',
