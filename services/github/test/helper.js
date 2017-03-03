@@ -1,6 +1,6 @@
 let assert = require('assert');
 let http = require('http');
-let Promise = require('promise');
+let Promise = require('bluebird');
 let path = require('path');
 let fs = require('fs');
 let _ = require('lodash');
@@ -74,13 +74,17 @@ mocha.before(async () => {
   };
 
   // inject some fakes
-  overwrites.github = fakeGithubAuth();
+  helper.fakeGithub = overwrites.github = fakeGithubAuth();
   helper.publisher = overwrites.publisher = new FakePublisher();
 
   helper.Builds = await helper.load('Builds', overwrites);
   helper.OwnersDirectory = await helper.load('OwnersDirectory', overwrites);
   helper.intree = overwrites.intree = await helper.load('intree', overwrites);
   webServer = overwrites.server = await helper.load('server', overwrites);
+
+  helper.syncInstallations = async () => {
+    await helper.load('syncInstallations', overwrites);
+  };
 
   helper.queue = new taskcluster.Queue({
     baseUrl: cfg.taskcluster.queueBaseUrl,
