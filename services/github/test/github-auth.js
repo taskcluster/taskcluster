@@ -5,6 +5,7 @@ let assert = require('assert');
 
 class FakeGithub {
   constructor(installation_id) {
+    this.installedOn = null;
     this.taskcluster_yml_files = {};
     this.org_membership = {};
     this.repo_collaborators = {};
@@ -170,6 +171,27 @@ class FakeGithubAuth {
       this.installations[installation_id] = new FakeGithub(installation_id);
     }
     return this.installations[installation_id];
+  }
+
+  // For testing purposes, insert a new install
+  createInstall(installation_id, owner, repos) {
+    let installation = new FakeGithub(installation_id);
+    installation.installedOn = owner;
+    installation.setRepositories(...repos);
+    this.installations[installation_id] = installation;
+  }
+
+  async getIntegrationGithub() {
+    return {
+      integrations: {
+        getInstallations: async () => {
+          return _.map(this.installations, (install, id) => ({
+            id: parseInt(id, 10),
+            account: {login: install.installedOn},
+          }));
+        },
+      },
+    };
   }
 }
 
