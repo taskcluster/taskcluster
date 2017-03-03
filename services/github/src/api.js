@@ -304,7 +304,7 @@ api.declare({
     try {
       let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
 
-      let taskclusterBot = await instGithub.users.getForUser({user: 'taskcluster[bot]'});
+      let taskclusterBot = await instGithub.users.getForUser({user: this.cfg.app.botName});
       // Statuses is an array of status objects, where we find the relevant status
       let statuses = await instGithub.repos.getStatuses({owner, repo, sha: branch});
       let status = statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
