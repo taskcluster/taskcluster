@@ -86,16 +86,16 @@ suite('api', () => {
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'coolRepo',
-      ref: 'master',
+      sha: 'master',
       info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'failure'}],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'awesomeRepo',
-      ref: 'master',
+      sha: 'master',
       info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'success'}],
     });
-    github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', username: 'taskcluster[bot]'});
+    github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', user: 'taskcluster[bot]'});
   });
 
   test('all builds', async function() {

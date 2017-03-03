@@ -70,19 +70,19 @@ class FakeGithub {
       'integrations.getInstallationRepositories': async() => {
         return this.repositories;
       },
-      'repos.getStatuses': async({owner, repo, ref}) => {
-        const key = `${owner}/${repo}@${ref}`;
+      'repos.getStatuses': async({owner, repo, sha}) => {
+        const key = `${owner}/${repo}@${sha}`;
         if (this.statuses[key]) {
           return this.statuses[key];
         } else {
           throwError(404);
         }
       },
-      'users.getForUser': async ({username}) => {
-        let user = _.find(this.github_users, {username});
-        if (user) {
-          user.id = parseInt(user.id, 10);
-          return user;
+      'users.getForUser': async ({user}) => {
+        let requested = _.find(this.github_users, {user});
+        if (requested) {
+          requested.id = parseInt(requested.id, 10);
+          return requested;
         } else {
           throwError(404);
         }
@@ -134,11 +134,11 @@ class FakeGithub {
     this.repo_info[key] = info;
   }
 
-  setUser({id, email, username}) {
+  setUser({id, email, user}) {
     // Please note that here userId is a string. If you need to set up a github API function
     // to get and use userId, you need to use parseInt(id, 10)
     // (as an example, see users.getForUser above)
-    this.github_users.push({id: id.toString(), email, username});
+    this.github_users.push({id: id.toString(), email, user});
   }
 
   setRepositories(...repoNames) {
@@ -146,8 +146,8 @@ class FakeGithub {
     this.repositories.repositories = [...repoNames].map(repo => {return {name: repo};});
   }
 
-  setStatuses({owner, repo, ref, info}) {
-    const key = `${owner}/${repo}@${ref}`;
+  setStatuses({owner, repo, sha, info}) {
+    const key = `${owner}/${repo}@${sha}`;
     this.statuses[key] = info;
   }
 }
