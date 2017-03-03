@@ -11,6 +11,7 @@ class FakeGithub {
     this.github_users = [];
     this.repo_info = {};
     this.repositories = {};
+    this.statuses = {};
 
     const throwError = code => {
       let err = new Error();
@@ -67,6 +68,14 @@ class FakeGithub {
       },
       'integrations.getInstallationRepositories': async() => {
         return this.repositories;
+      },
+      'repos.getStatuses': async({owner, repo, ref}) => {
+        const key = `${owner}/${repo}@${ref}`;
+        if (this.statuses[key]) {
+          return this.statuses[key];
+        } else {
+          throwError(404);
+        }
       },
       'users.getForUser': async ({username}) => {
         let user = _.find(this.github_users, {username});
@@ -132,7 +141,13 @@ class FakeGithub {
   }
 
   setRepositories(...repoNames) {
+    // This function accepts 1 to n strings
     this.repositories.repositories = [...repoNames].map(repo => {return {name: repo};});
+  }
+
+  setStatuses({owner, repo, ref, info}) {
+    const key = `${owner}/${repo}@${ref}`;
+    this.statuses[key] = info;
   }
 }
 
