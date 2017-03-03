@@ -36,9 +36,9 @@ async function monitor(options) {
     crashTimeout: 5 * 1000,
     mock: false,
   });
-  assert(options.credentials || options.statsumToken && options.sentryDSN ||
+  assert(options.authBaseUrl || options.credentials || options.statsumToken && options.sentryDSN ||
          options.mock,
-         'Must provide taskcluster credentials or sentryDSN and statsumToken');
+         'Must provide taskcluster credentials or authBaseUrl or sentryDSN and statsumToken');
   assert(options.project, 'Must provide a project name!');
 
   // Return mock monitor, if mocking
@@ -58,9 +58,10 @@ async function monitor(options) {
     sentryDSN = () => options.sentryDSN;
   }
   // Use taskcluster credentials for statsumToken and sentryDSN, if given
-  if (options.credentials) {
+  if (options.credentials || options.authBaseUrl) {
     let auth = new taskcluster.Auth({
       credentials: options.credentials,
+      baseUrl: options.authBaseUrl,
     });
     if (!statsumToken) {
       statsumToken = project => auth.statsumToken(project);
