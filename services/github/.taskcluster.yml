@@ -1,4 +1,5 @@
 version: 0
+allowPullRequests: public
 metadata:
   name: "TaskCluster GitHub Tests"
   description: "All non-integration tests for taskcluster github"
