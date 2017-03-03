@@ -7,6 +7,7 @@ suite('api', () => {
   let helper = require('./helper');
   let assert = require('assert');
   let _ = require('lodash');
+  let request = require('superagent-promise');
 
   let github = Object.create(null);
 
@@ -82,6 +83,19 @@ suite('api', () => {
   setup(async () => {
     github = await helper.load('github');
     github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo');
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'coolRepo',
+      ref: 'master',
+      info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'failure'}],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'awesomeRepo',
+      ref: 'master',
+      info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'success'}],
+    });
+    github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', username: 'taskcluster[bot]'});
   });
 
   test('all builds', async function() {
@@ -129,5 +143,19 @@ suite('api', () => {
     assert.deepEqual(result, {installed: false});
     result = await helper.github.isInstalledFor('unknownOwner', 'unknownRepo');
     assert.deepEqual(result, {installed: false});
+  });
+
+  test('build badges', async function() {
+    await request.get('http://localhost:60415/v1/badge/abc123/coolRepo/master').end((err, res) => {
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 8612);
+    });
+
+    await request.get('http://localhost:60415/v1/badge/abc123/awesomeRepo/master').end((err, res) => {
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 9301);
+    });
+
+    await request.get('http://localhost:60415/v1/badge/abc123/unknownRepo/master').end((err, res) => {
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 4260);
+    });
   });
 });
