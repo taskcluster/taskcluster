@@ -1,4 +1,4 @@
-Generated: 1488396294
+Generated: 1488569028
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3203,6 +3203,20 @@ fields.'
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/badge/<owner>/<repo>/<branch>'
+    Entry Args        = '[owner repo branch]'
+    Entry Query        = '[]'
+    Entry Name        = 'badge'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Latest Build Status Badge'
+    Entry Description = 'Checks the status of the latest build of a given branch 
+and returns corresponding badge image.'
+Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/repository/<owner>/<repo>'
     Entry Args        = '[owner repo]'
     Entry Query        = '[]'
@@ -3214,7 +3228,7 @@ Entry 2     =
     Entry Title       = 'Check if Repository has Integration'
     Entry Description = 'Checks if the integration has been installed for
 a given repository of a given organization or user.'
-Entry 3     =
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'

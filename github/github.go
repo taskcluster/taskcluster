@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 1 Mar 2017 at 19:24:00 UTC. The code was generated
+// Fri, 3 Mar 2017 at 19:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -114,6 +114,18 @@ func (myGithub *Github) Builds(continuationToken, limit, organization, repositor
 	cd := tcclient.Client(*myGithub)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(Builds1), v)
 	return responseObject.(*Builds1), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Checks the status of the latest build of a given branch
+// and returns corresponding badge image.
+//
+// See https://docs.taskcluster.net/reference/core/github/api-docs#badge
+func (myGithub *Github) Badge(owner, repo, branch string) error {
+	cd := tcclient.Client(*myGithub)
+	_, _, err := (&cd).APICall(nil, "GET", "/badge/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch), nil, nil)
+	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
