@@ -3,44 +3,37 @@ package fromNow
 import (
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster-cli/extpoints"
+	"github.com/taskcluster/taskcluster-cli/root"
+
+	"github.com/spf13/cobra"
 )
 
-type fromNow struct{}
-
 func init() {
-	extpoints.Register("from-now", fromNow{})
+	root.Command.AddCommand(&cobra.Command{
+		Use:   "from-now <duration>",
+		Short: "Returns a timestamp which is <duration> ahead in the future.",
+		RunE:  fromNow,
+	})
 }
 
-func (fromNow) ConfigOptions() map[string]extpoints.ConfigOption {
-	return nil
-}
-
-func (fromNow) Summary() string {
-	return "Returns a timestamp which is <duration> ahead in the future."
-}
-
-func (fromNow) Usage() string {
-	usage := "Usage: taskcluster from-now <duration>\n"
-	return usage
-}
-
-func (fromNow) Execute(context extpoints.Context) bool {
-	duration := context.Arguments["<duration>"].(string)
+func fromNow(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("from-now requires argument <duration>")
+	}
+	duration := strings.Join(args, " ")
 
 	offset, err := parseTime(duration)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: string '%s' is not a valid time expression\n", duration)
-		return false
+		return fmt.Errorf("string '%s' is not a valid time expression", duration)
 	}
 
+	// logic taken from github.com/taskcluster/taskcluster-client/blob/master/lib/utils.js
 	timeToAdd := time.Hour*time.Duration(offset.weeks*7*24) +
 		time.Hour*time.Duration(offset.days*24) +
 		time.Hour*time.Duration(offset.hours) +
@@ -50,9 +43,9 @@ func (fromNow) Execute(context extpoints.Context) bool {
 	timein := time.Now().Add(timeToAdd)
 	timein = timein.AddDate(offset.years, offset.months, 0)
 
-	fmt.Println(timein.Format(time.RFC3339))
+	fmt.Fprintln(cmd.OutOrStdout(), timein.Format(time.RFC3339))
 
-	return true
+	return nil
 }
 
 type timeOffset struct {
@@ -77,29 +70,36 @@ func parseTime(str string) (timeOffset, error) {
 	offset := timeOffset{}
 
 	// Regexp taken from github.com/taskcluster/taskcluster-client/blob/master/lib/parsetime.js
-	reg := []string{
-		"^(\\s*(-|\\+))?",
-		"(\\s*(\\d+)\\s*y((ears?)|r)?)?",
-		"(\\s*(\\d+)\\s*mo(nths?)?)?",
-		"(\\s*(\\d+)\\s*w((eeks?)|k)?)?",
-		"(\\s*(\\d+)\\s*d(ays?)?)?",
-		"(\\s*(\\d+)\\s*h((ours?)|r)?)?",
-		"(\\s*(\\d+)\\s*min(utes?)?)?",
-		"(\\s*(\\d+)\\s*s(ec(onds?)?)?)?",
-		"\\s*$",
-	}
-
-	re := regexp.MustCompile(strings.Join(reg, ""))
+	re := regexp.MustCompile(
+		// beginning and sign (group 2)
+		`^(\s*(-|\+))?` +
+			// years offset (group 4)
+			`(\s*(\d+)\s*y((ears?)|r)?)?` +
+			// months offset (group 8)
+			`(\s*(\d+)\s*mo(nths?)?)?` +
+			// weeks offset (group 11)
+			`(\s*(\d+)\s*w((eeks?)|k)?)?` +
+			// days offset (group 15)
+			`(\s*(\d+)\s*d(ays?)?)?` +
+			// hours offset (group 18)
+			`(\s*(\d+)\s*h((ours?)|r)?)?` +
+			// minutes offset (group 22)
+			`(\s*(\d+)\s*min(utes?)?)?` +
+			// seconds offset (group 25)
+			`(\s*(\d+)\s*s(ec(onds?)?)?)?` +
+			// the end
+			`\s*$`,
+	)
 
 	if !re.MatchString(str) {
 		return offset, errors.New("invalid input")
 	}
 
-	groupMatches := re.FindAllStringSubmatch(str, -1)
+	groupMatches := re.FindAllStringSubmatch(strings.TrimSpace(str), -1)
 
 	// Add negative support after we figure out what we are doing with docopt because it complains about the '-'
 	// neg := 1
-	// if groupMatches[0][2] == "-" {
+	// if groupMatches[0][1] == "-" {
 	// 	neg = -1
 	// }
 

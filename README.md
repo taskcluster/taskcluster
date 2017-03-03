@@ -12,9 +12,9 @@ _practical_ tasks like listing and cancelling scheduled runs.
 ## Usage
 
 For a list of all commands run `taskcluster help`, detailed information about
-each command is available with `taskcluster help <command>`. Some commands may
-even specify additional help for sub-commands using `taskcluster <command> help
-<subcommand>`, refer to the individual commands' help text for details.
+each command is available with
+`taskcluster help <command> [<sub-command> [...]]`. You can also use the `-h`
+or `--help` parameter to get a command's help information.
 
 ### Installation
 
@@ -63,10 +63,13 @@ go generate ./apis
 
 ### Commands
 
-A command is just an implementation of the `CommandProvider` interface, which
-is registered in `func init() {...}` using `extpoints.Register(name,
-implememtation)`. Thus, commands are registered as an import side-effect.
-Commands are implemented in sub-packages.
+We are using [cobra](https://github.com/spf13/cobra) to manage the various
+commands and sub-commands that are implemented in taskcluster-cli.
 
-To add a new command, create a new sub-package and add an import for that
-sub-package to `subtree_import.go`, keeping the imports in order.
+Each command is a instance of the `cobra.Command` struct, and is dynamically
+registered at run-time in the command tree (in `func init() {...}`). Thus,
+commands are registered as an import side-effect. Commands are implemented in
+sub-packages.
+
+To add a new command, create a new sub-package under `cmds` and add an import
+for that sub-package to `subtree_import.go`, keeping the imports in order.

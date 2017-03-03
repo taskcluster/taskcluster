@@ -1,13 +1,15 @@
 package slugid
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"regexp"
 
+	"github.com/taskcluster/taskcluster-cli/root"
+
 	uuidlib "github.com/pborman/uuid"
+	"github.com/spf13/cobra"
 	sluglib "github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster-cli/extpoints"
 )
 
 var (
@@ -28,93 +30,89 @@ var (
 
 	// RegexpUUIDNice is the regular expression that all "nice" UUIDs should conform to
 	RegexpUUIDNice = regexp.MustCompile("^[0-7][a-f0-9]{7}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
+
+	// Command is the root of the slugid subtree.
+	Command = &cobra.Command{
+		Use:   "slugid",
+		Short: "Generates V4 UUIDs and encodes/decodes them from/to 22 character URL-safe base64 slugs.",
+	}
 )
 
 func init() {
-	extpoints.Register("slugid", slugid{})
-}
-
-type slugid struct{}
-
-func (slugid) ConfigOptions() map[string]extpoints.ConfigOption {
-	return nil
-}
-
-func (slugid) Summary() string {
-	return "Generates V4 UUIDs and encodes/decodes them from/to 22 character URL-safe base64 slugs"
-}
-
-func (slugid) Usage() string {
-	return `
-Usage:
-  taskcluster slugid v4
-  taskcluster slugid nice
-  taskcluster slugid decode <slug>
-  taskcluster slugid encode <uuid>
-`
-}
-
-func (slugid) Execute(context extpoints.Context) bool {
-	args := context.Arguments
-
-	var out string
-	var err error
-
-	// what function was called?
-	if args["v4"].(bool) {
-		out, err = generateV4()
-	} else if args["nice"].(bool) {
-		out, err = generateNice()
-	} else if args["decode"].(bool) { // decode slug
-		out, err = decode(context.Arguments["<slug>"].(string))
-	} else if args["encode"].(bool) { // encode slug
-		out, err = encode(context.Arguments["<uuid>"].(string))
+	// the generate command and its 'nice' flag
+	generate := &cobra.Command{
+		Use:   "generate",
+		Short: "Generate a V4 UUID and output its slug.",
+		Run:   generate,
 	}
-	// ...and docopt will react to unrecognized commands
+	generate.Flags().BoolP("nice", "n", false, "Generate a 'nice' slug.")
 
-	// print the error if there's one
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		return false
+	// add commands
+	Command.AddCommand(
+		generate,
+		// decode
+		&cobra.Command{
+			Use:   "decode <slug>",
+			Short: "Decode a slug into a UUID.",
+			RunE:  decode,
+		},
+		// encode
+		&cobra.Command{
+			Use:   "encode <uuid>",
+			Short: "Encode an UUID into a slug.",
+			RunE:  encode,
+		},
+	)
+
+	// Add the slugid subtree to the root.
+	root.Command.AddCommand(Command)
+}
+
+// generate generates the slug of a v4 uuid
+// --nice generates a slug that respects tighter format constraints
+func generate(cmd *cobra.Command, args []string) {
+	// v4 and nice
+	if nice, _ := cmd.Flags().GetBool("nice"); nice {
+		fmt.Fprintln(cmd.OutOrStdout(), sluglib.Nice())
+	} else { // v4 but not nice
+		fmt.Fprintln(cmd.OutOrStdout(), sluglib.V4())
 	}
-
-	// or print the output
-	fmt.Println(out)
-	return true
-}
-
-// generateV4 generates a normal v4 uuid
-func generateV4() (string, error) {
-	return sluglib.V4(), nil
-}
-
-// generateNice generates a uuid with "nice" properties
-func generateNice() (string, error) {
-	return sluglib.Nice(), nil
 }
 
 // decode decodes a slug into a uuid
-func decode(slug string) (string, error) {
+func decode(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("decode requires argument <slug>")
+	}
+	slug := args[0]
+
 	// nice slugs are just a subset of all slugs, which must match V4 pattern
 	// this slug may be nice or not; we don't know, so use general pattern
 	match := RegexpSlugV4.MatchString(slug)
 	if !match {
-		return "", fmt.Errorf("Invalid slug format: %s", slug)
+		return fmt.Errorf("invalid slug format '%s'", slug)
 	}
 
 	// and decode
-	return fmt.Sprintf("%s", sluglib.Decode(slug)), nil
+	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Decode(slug))
+	return nil
 }
 
 // encode encodes a uuid into a slug
-func encode(uuid string) (string, error) {
+func encode(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("encode requires argument <uuid>")
+	}
+	uuid := args[0]
+
 	// nice slugs are just a subset of all slugs, which must match V4 pattern
 	// this slug may be nice or not; we don't know, so use general pattern
 	match := RegexpUUIDV4.MatchString(uuid)
 	if !match {
-		return "", fmt.Errorf("Invalid uuid format: %s", uuid)
+		return fmt.Errorf("invalid uuid format '%s'", uuid)
 	}
 
 	// the uuid string needs to be parsed into uuidlib.UUID before encoding
-	return sluglib.Encode(uuidlib.Parse(uuid)), nil
+	fmt.Fprintln(cmd.OutOrStdout(), sluglib.Encode(uuidlib.Parse(uuid)))
+	return nil
 }

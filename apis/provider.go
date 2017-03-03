@@ -1,224 +1,183 @@
+//go:generate go run _codegen/fetch-apis.go
+
+// Package apis implements all the API CommandProviders.
 package apis
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"hash"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+	got "github.com/taskcluster/go-got"
+	"github.com/xeipuuv/gojsonschema"
+
 	"github.com/taskcluster/taskcluster-cli/apis/definitions"
 	"github.com/taskcluster/taskcluster-cli/client"
-	"github.com/taskcluster/taskcluster-cli/extpoints"
-	"github.com/xeipuuv/gojsonschema"
+	"github.com/taskcluster/taskcluster-cli/config"
+	"github.com/taskcluster/taskcluster-cli/root"
 )
 
-type apiProvider struct {
-	definitions.Service
-	Name string
-}
+var (
+	// Command is the root of the api commands.
+	Command = &cobra.Command{
+		Use:   "api",
+		Short: "Direct access to TaskCluster APIs.",
+	}
+)
 
-func (p apiProvider) ConfigOptions() map[string]extpoints.ConfigOption {
-	return map[string]extpoints.ConfigOption{
-		"baseUrl": extpoints.ConfigOption{
-			Default: p.BaseURL,
-			Env:     "TASKCLUSTER_QUEUE_BASE_URL",
-			Validate: func(value interface{}) error {
-				return nil
+func init() {
+	for name, service := range services {
+		cmdString := strings.ToLower(name[0:1]) + name[1:]
+		cmd := &cobra.Command{
+			Use:   cmdString,
+			Short: "Operates on the " + name + " service",
+			Long:  service.Description,
+		}
+		for _, entry := range service.Entries {
+			line := entry.Name
+			for _, arg := range entry.Args {
+				line += " <" + arg + ">"
+			}
+
+			subCmd := &cobra.Command{
+				Use:   line,
+				Short: entry.Title,
+				Long:  buildHelp(&entry),
+				RunE:  buildExecutor(entry, "api-"+name),
+			}
+
+			fs := subCmd.Flags()
+			for _, q := range entry.Query {
+				fs.String(q, "", "Specify the '"+q+"' query-string parameter")
+			}
+
+			cmd.AddCommand(subCmd)
+		}
+
+		fs := cmd.PersistentFlags()
+		fs.StringP("base-url", "b", service.BaseURL, "BaseURL for "+cmdString)
+
+		Command.AddCommand(cmd)
+		config.RegisterOptions("api-"+name, map[string]config.OptionDefinition{
+			"baseUrl": config.OptionDefinition{
+				Default: service.BaseURL,
+				Env:     "TASKCLUSTER_QUEUE_BASE_URL",
+				Validate: func(value interface{}) error {
+					return nil
+				},
 			},
-		},
-	}
-}
-
-func (p apiProvider) Summary() string {
-	return "Operate on the " + p.Name + " service"
-}
-
-func pad(s string, length int) string {
-	p := length - len(s)
-	if p < 0 {
-		p = 0
-	}
-	return s + strings.Repeat(" ", p)
-}
-
-func (p apiProvider) Usage() string {
-	query := []string{}
-	usage := p.Title + "\n\n"
-	usage += "Usage:\n"
-	for _, e := range p.Entries {
-		args := ""
-		for _, arg := range e.Args {
-			args += " <" + arg + ">"
-		}
-		usage += fmt.Sprintf("  taskcluster %s [options] %s", p.Name, e.Name)
-		if args != "" {
-			usage += " [--]" + args
-		}
-		for _, q := range e.Query {
-			usage += fmt.Sprintf(" [--%s <%s>]", q, q)
-			// Add q to opts, if not already in the list
-			unique := true
-			for _, o := range query {
-				if o == q {
-					unique = false
-				}
-			}
-			if unique {
-				query = append(query, q)
-			}
-		}
-		if e.Input != "" {
-			usage += " <payload>"
-		}
-		usage += "\n"
-	}
-	usage += fmt.Sprintf("  taskcluster %s help <method>", p.Name)
-	usage += "\n\n"
-	usage += "Options:\n"
-	opts := [][]string{
-		[]string{"-o, --output <output>", "Output file [default: -]"},
-		[]string{"-b, --base-url <baseUrl>", fmt.Sprintf("BaseUrl for %s [default: %s]", p.Name, p.BaseURL)},
-		[]string{"-d, --dry-run", "Validate input again schema without making a request"},
-	}
-	for _, opt := range query {
-		opts = append(opts, []string{
-			"    --" + opt + " <" + opt + ">",
-			"Specify the '" + opt + "' query-string parameter",
 		})
 	}
-	// Find max option size to align all options
-	maxSize := 0
-	for _, opt := range opts {
-		if len(opt[0]) > maxSize {
-			maxSize = len(opt[0])
-		}
-	}
-	for _, opt := range opts {
-		usage += "  " + pad(opt[0], maxSize+2) + opt[1] + "\n"
-	}
-	usage += "\n"
-	usage += p.Description
-	usage += "\n"
 
-	return usage
+	fs := Command.PersistentFlags()
+	fs.StringP("output", "o", "-", "Output file")
+	fs.BoolP("dry-run", "d", false, "Validate input against schema without making an actual request")
+	Command.MarkPersistentFlagFilename("output")
+
+	root.Command.AddCommand(Command)
 }
 
-func (p apiProvider) Execute(context extpoints.Context) bool {
-	argv := context.Arguments
+func buildHelp(entry *definitions.Entry) string {
+	buf := &bytes.Buffer{}
 
-	// Find then entry if possible
-	var entry *definitions.Entry
-	for _, e := range p.Entries {
-		if argv[e.Name].(bool) {
-			entry = &e
-			break
+	fmt.Fprintf(buf, "%s\n", entry.Title)
+	fmt.Fprintf(buf, "Method:    %s\n", entry.Method)
+	fmt.Fprintf(buf, "Path:      %s\n", entry.Route)
+	fmt.Fprintf(buf, "Stability: %s\n", entry.Stability)
+	fmt.Fprintf(buf, "Scopes:\n")
+	for i, scopes := range entry.Scopes {
+		fmt.Fprintf(buf, "  * %s", strings.Join(scopes, ","))
+		if i < len(entry.Scopes)-1 {
+			fmt.Fprintf(buf, ", or")
 		}
+		fmt.Fprintln(buf, "")
 	}
-	// Print help information about the end-point
-	if entry == nil {
-		if !argv["help"].(bool) {
-			// Internal error
-			panic("Unknown command, internal error!")
+	fmt.Fprintln(buf, "")
+	fmt.Fprint(buf, entry.Description)
+
+	return buf.String()
+}
+
+func buildExecutor(entry definitions.Entry, configKey string) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		// Because cobra doesn't extract the args or map them to their
+		// name, we build it ourselves.
+		line := strings.Split(cmd.Use, " ")[1:]
+		if len(args) < len(args) {
+			return errors.New("Insufficient arguments given")
 		}
-		// Print help
-		method := argv["<method>"].(string)
-		for _, e := range p.Entries {
-			if e.Name == method {
-				entry = &e
+
+		argmap := make(map[string]string)
+		for i, a := range line {
+			name := a[1 : len(a)-1]
+			argmap[name] = args[i]
+		}
+
+		// Same with the local flags.
+		query := make(map[string]string)
+		fs := cmd.LocalFlags()
+		for _, opt := range entry.Query {
+			if val, err := fs.GetString(opt); err == nil {
+				query[opt] = val
+			} else {
+				return err
 			}
 		}
-		if entry == nil {
-			fmt.Fprintf(os.Stderr, "Unknown method: '%s'\n", method)
+
+		// Read payload if present
+		var input io.Reader = os.Stdin
+		if payload, ok := argmap["payload"]; ok {
+			if payload != "-" {
+				input = bytes.NewBufferString(payload)
+			}
 		}
-		p.help(entry)
-		return true
-	}
 
-	// Read payload
-	var input io.Reader
-	if payload, ok := argv["<payload>"].(string); ok {
-		if payload == "-" {
-			input = os.Stdin
-		} else {
-			input = bytes.NewBufferString(payload)
+		// Setup output
+		var output = cmd.OutOrStdout()
+		if flag := cmd.Flags().Lookup("output"); flag != nil && flag.Changed {
+			filename := flag.Value.String()
+			f, err := os.Create(filename)
+			if err != nil {
+				return fmt.Errorf("Failed to open output file, error: %s", err)
+			}
+			defer f.Close()
+			output = f
 		}
-	}
 
-	// Setup output
-	var output io.Writer = os.Stdout
-	if out := argv["--output"].(string); out != "-" {
-		f, err := os.Create(out)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to open output file, error: %s\n", err)
-			return false
+		if dry, _ := cmd.Flags().GetBool("dry-run"); dry {
+			return validate(&entry, argmap, query, input, output)
 		}
-		defer f.Close()
-		output = f
-	}
 
-	// Construct arguments
-	args := make(map[string]string)
-	for _, arg := range entry.Args {
-		args[arg] = argv["<"+arg+">"].(string)
-	}
+		baseURL := config.Configuration[configKey]["baseUrl"].(string)
+		if flag := cmd.Flags().Lookup("base-url"); flag != nil && flag.Changed {
+			baseURL = flag.Value.String()
+		}
 
-	// Construct query
-	query := make(map[string]string)
-	for _, opt := range entry.Query {
-		query[opt] = argv["--"+opt].(string)
+		return execute(baseURL, &entry, argmap, query, input, output)
 	}
-
-	// Do a dry run
-	if argv["--dry-run"].(bool) {
-		return p.dryrun(entry, args, query, input, output)
-	}
-
-	// Find baseURL
-	baseURL := context.Config["baseUrl"].(string)
-	if s, ok := argv["--base-url"].(string); ok {
-		baseURL = s
-	}
-
-	// Execute method
-	return p.execute(baseURL, entry, context, args, query, input, output)
 }
 
-func (p apiProvider) help(entry *definitions.Entry) {
-	fmt.Printf("%s\n", entry.Title)
-	fmt.Printf("Method:    %s\n", entry.Method)
-	fmt.Printf("BaseUrl:   %s\n", p.BaseURL)
-	fmt.Printf("Path:      %s\n", entry.Route)
-	fmt.Printf("Stability: %s\n", entry.Stability)
-	fmt.Printf("Scopes:\n")
-	for i, scopes := range entry.Scopes {
-		fmt.Printf("  %s", strings.Join(scopes, ","))
-		if i == len(scopes) {
-			fmt.Printf(", or")
-		}
-		fmt.Println("")
-	}
-	fmt.Println(entry.Description)
-}
-
-func (p apiProvider) dryrun(
+func validate(
 	entry *definitions.Entry, args, query map[string]string,
 	payload io.Reader, output io.Writer,
-) bool {
+) error {
 	// If there is no schema, there is nothing to validate
 	schema, ok := schemas[entry.Input]
 	if !ok {
-		return true
+		return nil
 	}
 
 	// Read all input
 	data, err := ioutil.ReadAll(payload)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to read input, error: %s\n", err)
+		return fmt.Errorf("Failed to read input, error: %s", err)
 	}
 	input := gojsonschema.NewStringLoader(string(data))
 
@@ -227,8 +186,7 @@ func (p apiProvider) dryrun(
 		gojsonschema.NewStringLoader(schema), input,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Validation failed, error: %s\n", err)
-		return false
+		return fmt.Errorf("Validation failed, error: %s", err)
 	}
 
 	// Print all validation errors
@@ -236,19 +194,22 @@ func (p apiProvider) dryrun(
 		fmt.Fprintf(os.Stderr, " - %s\n", e.Description())
 	}
 
-	return result.Valid()
+	if !result.Valid() {
+		return errors.New("Input is invalid")
+	}
+	return nil
 }
 
-func (p apiProvider) execute(
-	baseURL string, entry *definitions.Entry, context extpoints.Context,
-	args, query map[string]string, payload io.Reader, output io.Writer,
-) bool {
+func execute(
+	baseURL string, entry *definitions.Entry, args, query map[string]string,
+	payload io.Reader, output io.Writer,
+) error {
 	var input []byte
 	// Read all input
 	if entry.Input != "" {
 		data, err := ioutil.ReadAll(payload)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to read input, error: %s\n", err)
+			return fmt.Errorf("Failed to read input, error: %s", err)
 		}
 		input = data
 	}
@@ -271,62 +232,47 @@ func (p apiProvider) execute(
 	}
 
 	// Construct parameters
-	var method = strings.ToUpper(entry.Method)
-	var url = baseURL + route + q
-	var body io.Reader
-	if len(input) > 0 {
-		body = bytes.NewReader(input)
+	method := strings.ToUpper(entry.Method)
+	url := baseURL + route + q
+
+	// Try to make the request up to 5 times using go-got
+	// Allow unlimited responses.
+	g := got.New()
+	g.Retries = 5
+	g.MaxSize = 0
+
+	req := g.NewRequest(method, url, input)
+
+	// If there is a body, we set a content-type
+	if len(input) != 0 {
+		req.Header.Set("Content-Type", "application/json")
 	}
 
-	// Try to make the request up to 5 times
-	var err error
-	var res *http.Response
-	for i := 0; i < 5; i++ {
-
-		// New request
-		req, err2 := http.NewRequest(method, url, body)
-		if err2 != nil {
-			panic(fmt.Sprintf("Internal error constructing request, error: %s", err))
+	// Sign request if credentials are available
+	if config.Credentials != nil {
+		var h hash.Hash
+		// Create payload hash if there is any
+		if len(input) != 0 {
+			h = client.PayloadHash("application/json")
+			h.Write(input)
 		}
-
-		// If there is a body, we set a content-type
-		if body != nil {
-			req.Header.Set("Content-Type", "application/json")
+		err := config.Credentials.SignGotRequest(req, h)
+		if err != nil {
+			return fmt.Errorf("Failed to sign request, error: %s", err)
 		}
-
-		// Sign request if credentials are available
-		if context.Credentials != nil {
-			var h hash.Hash
-			// Create payload hash if there is any
-			if body != nil {
-				h = client.PayloadHash("application/json")
-				h.Write(input)
-			}
-			err2 := context.Credentials.SignRequest(req, h)
-			if err2 != nil {
-				fmt.Fprintf(os.Stderr, "Failed to sign request, error: %s\n", err2)
-				return false
-			}
-		}
-
-		// Send request
-		res, err = http.DefaultClient.Do(req)
-		// If error or 5xx we retry
-		if err != nil && res.StatusCode/100 == 5 {
-			continue
-		}
-		break
 	}
-	// Handle request errors
+
+	res, err := req.Send()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Request failed\n")
-		return false
+		return fmt.Errorf("Request failed: %s", err)
 	}
 
 	// Print the request to whatever output
-	defer res.Body.Close()
-	_, err = io.Copy(output, res.Body)
+	_, err = output.Write(res.Body)
+	if err != nil {
+		return fmt.Errorf("Failed to print response: %s", err)
+	}
 
 	// Exit
-	return err == nil && res.StatusCode/100 == 2
+	return nil
 }

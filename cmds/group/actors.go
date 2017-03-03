@@ -3,17 +3,13 @@ package group
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"sync"
 
+	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
-
-type arguments map[string]interface{}
-
-// SubCommand represents the function interface of the task subcommand.
-type SubCommand func(credentials *tcclient.Credentials, args arguments) bool
 
 // runCancel cancels all tasks of a group.
 //
@@ -21,9 +17,9 @@ type SubCommand func(credentials *tcclient.Credentials, args arguments) bool
 // then filters for only cancellable tasks (unscheduled, pending, running),
 // and finally runs all cancellations concurrently, because they are
 // independent of each other.
-func runCancel(credentials *tcclient.Credentials, args arguments) bool {
+func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
 	q := queue.New(credentials)
-	groupID := args["<groupId>"].(string)
+	groupID := args[0]
 
 	// Because the list of tasks can be arbitrarily long, we have to loop until
 	// we are told not to.
@@ -32,8 +28,7 @@ func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 	for {
 		ts, err := q.ListTaskGroup(groupID, continuation, "")
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: could not fetch tasks for group %s: %v", groupID, err)
-			return false
+			return fmt.Errorf("could not fetch tasks for group %s: %v", groupID, err)
 		}
 
 		for _, t := range ts.Tasks {
@@ -54,6 +49,9 @@ func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 	// The context allows us to exit early if any of the cancellation fails.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	// errChan allows the first request that panics to propagate the error message
+	// up to us.
+	errChan := make(chan error, 1)
 
 	for _, taskID := range tasks {
 		wg.Add(1)
@@ -62,12 +60,16 @@ func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 			defer func() {
 				//recover from panic and abort
 				if err := recover(); err != nil {
-					fmt.Fprintln(os.Stderr, err)
+					if e, ok := err.(error); ok {
+						errChan <- e
+					} else {
+						errChan <- fmt.Errorf("%v", err)
+					}
 					cancel()
 				}
 			}()
 
-			fmt.Printf("cancelling task %s\n", taskID)
+			fmt.Fprintf(out, "cancelling task %s\n", taskID)
 			c := make(chan error, 1)
 			go func() { _, err := q.CancelTask(taskID); c <- err }()
 
@@ -76,7 +78,7 @@ func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 			// - c if we got a completed cancellation.
 			select {
 			case <-ctx.Done():
-				// nothing
+				// nothing because we can't cancel the existing requests.
 			case err := <-c:
 				if err != nil {
 					panic(fmt.Errorf("could not cancel task %s: %v", taskID, err))
@@ -96,9 +98,8 @@ func runCancel(credentials *tcclient.Credentials, args arguments) bool {
 	// - regularExit if all the goroutine exited manually.
 	select {
 	case <-ctx.Done():
-		fmt.Fprintln(os.Stderr, "error: could not cancel all tasks")
-		return false
+		return fmt.Errorf("could not cancel all tasks: %v", <-errChan)
 	case <-regularExit:
-		return true
+		return nil
 	}
 }

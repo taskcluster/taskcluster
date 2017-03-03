@@ -14,6 +14,7 @@ import (
 
 	"github.com/tent/hawk-go"
 
+	got "github.com/taskcluster/go-got"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
@@ -118,6 +119,13 @@ func (c *Credentials) SignURL(URL string) (string, error) {
 // SignRequest will add an Authorization header
 func (c *Credentials) SignRequest(req *http.Request, hash hash.Hash) error {
 	s, err := c.SignHeader(req.Method, req.URL.String(), hash)
+	req.Header.Set("Authorization", s)
+	return err
+}
+
+// SignGotRequest will add an Authorization header
+func (c *Credentials) SignGotRequest(req *got.Request, hash hash.Hash) error {
+	s, err := c.SignHeader(req.Method, req.URL, hash)
 	req.Header.Set("Authorization", s)
 	return err
 }

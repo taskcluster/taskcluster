@@ -21,16 +21,16 @@
 			"revisionTime": "2016-10-29T20:57:26Z"
 		},
 		{
-			"checksumSHA1": "F+YOz/6ymsuIxUy511OAdxjyhRI=",
-			"path": "github.com/docopt/docopt-go",
-			"revision": "784ddc588536785e7299f7272f39101f7faccc3f",
-			"revisionTime": "2016-02-16T23:20:12Z"
-		},
-		{
 			"checksumSHA1": "kR64D1QzAOSM9LHOnTPdbigC8q0=",
 			"path": "github.com/fatih/camelcase",
 			"revision": "f6a740d52f961c60348ebb109adde9f4635d7540",
 			"revisionTime": "2016-03-18T18:15:35Z"
+		},
+		{
+			"checksumSHA1": "40vJyUB4ezQSn/NSadsKEOrudMc=",
+			"path": "github.com/inconshreveable/mousetrap",
+			"revision": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75",
+			"revisionTime": "2014-10-17T20:07:13Z"
 		},
 		{
 			"checksumSHA1": "V/quM7+em2ByJbWBLOsEwnY3j/Q=",
@@ -51,16 +51,34 @@
 			"revisionTime": "2016-01-10T10:55:54Z"
 		},
 		{
+			"checksumSHA1": "hgI9+1CnDX7GUG7WuHqjYH2nyA0=",
+			"path": "github.com/spf13/cobra",
+			"revision": "fcd0c5a1df88f5d6784cb4feead962c3f3d0b66c",
+			"revisionTime": "2017-02-28T19:17:48Z"
+		},
+		{
+			"checksumSHA1": "5KvHyB1CImtwZT3fwNkNUlc8R0k=",
+			"path": "github.com/spf13/pflag",
+			"revision": "9ff6c6923cfffbcd502984b8e0c80539a94968b7",
+			"revisionTime": "2017-01-30T21:42:45Z"
+		},
+		{
 			"checksumSHA1": "JXUVA1jky8ZX8w09p2t5KLs97Nc=",
 			"path": "github.com/stretchr/testify/assert",
-			"revision": "2402e8e7a02fc811447d11f881aa9746cdc57983",
-			"revisionTime": "2016-12-17T20:04:45Z"
+			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
+			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
 			"checksumSHA1": "2PpOCNkWnshDrXeCVH2kp3VHhIM=",
 			"path": "github.com/stretchr/testify/require",
-			"revision": "2402e8e7a02fc811447d11f881aa9746cdc57983",
-			"revisionTime": "2016-12-17T20:04:45Z"
+			"revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
+			"revisionTime": "2017-01-30T11:31:45Z"
+		},
+		{
+			"checksumSHA1": "DhE10FKCr1kEa3NjyBiKU+NyNSQ=",
+			"path": "github.com/taskcluster/go-got",
+			"revision": "a115d494d6f30477c3b5c22a8341fff71e3486a4",
+			"revisionTime": "2017-02-28T17:33:47Z"
 		},
 		{
 			"checksumSHA1": "Y3FCWxJ8fakDsn6T3RxfRf+GQn4=",
@@ -81,16 +99,16 @@
 			"revisionTime": "2017-01-12T10:02:13Z"
 		},
 		{
-			"checksumSHA1": "kcpgn92ygqG4gYnk8LcjqnHJMYo=",
+			"checksumSHA1": "6zyHi0i8zjjUfQz5JLB0bPTv8w0=",
 			"path": "github.com/taskcluster/taskcluster-client-go",
-			"revision": "654d64ef2198fd4d904ad558595d9d524004f28d",
-			"revisionTime": "2017-01-25T16:25:24Z"
+			"revision": "1167481a5f3f2aa5bad9ab61946d4632decbad88",
+			"revisionTime": "2017-03-01T19:25:55Z"
 		},
 		{
-			"checksumSHA1": "8VBA6vZ2+HCimbEXUodMqXPNyy8=",
+			"checksumSHA1": "6kKQcm2sNLmflnmNxm7+SGNdY7Q=",
 			"path": "github.com/taskcluster/taskcluster-client-go/queue",
-			"revision": "654d64ef2198fd4d904ad558595d9d524004f28d",
-			"revisionTime": "2017-01-25T16:25:24Z"
+			"revision": "1167481a5f3f2aa5bad9ab61946d4632decbad88",
+			"revisionTime": "2017-03-01T19:25:55Z"
 		},
 		{
 			"checksumSHA1": "wQ6D99ew5s03NI+0LxIR9QddMc8=",
@@ -99,10 +117,10 @@
 			"revisionTime": "2016-10-26T21:09:32Z"
 		},
 		{
-			"checksumSHA1": "drSl/ipSHSsHWWTrp3WZw4LN/No=",
+			"checksumSHA1": "B9K+5clCq0PU8n8/utbKT0QjQyU=",
 			"path": "github.com/xeipuuv/gojsonpointer",
-			"revision": "e0fe6f68307607d540ed8eac07a342c33fa1b54a",
-			"revisionTime": "2015-10-27T08:21:46Z"
+			"revision": "6fe8760cad3569743d51ddbb243b26f8456742dc",
+			"revisionTime": "2017-02-25T23:34:18Z"
 		},
 		{
 			"checksumSHA1": "pSoUW+qY6LwIJ5lFwGohPU5HUpg=",
@@ -111,22 +129,22 @@
 			"revisionTime": "2015-08-08T06:50:54Z"
 		},
 		{
-			"checksumSHA1": "bPCPYvRb4pzC97N+NkvLH0J/rrA=",
+			"checksumSHA1": "yuSXFgYAa6NfA3+8Kv1s7pYdFZE=",
 			"path": "github.com/xeipuuv/gojsonschema",
-			"revision": "f06f290571ce81ab347174c6f7ad2e1865af41a7",
-			"revisionTime": "2016-12-31T05:55:40Z"
+			"revision": "ff0417f4272e480246b4507459b3f6ae721a87ac",
+			"revisionTime": "2017-02-25T17:21:24Z"
 		},
 		{
-			"checksumSHA1": "lgNSTxay86o7/HxemA3ilBfazIk=",
+			"checksumSHA1": "O9E8G234qCcPA7f7srGpnawDmMs=",
 			"path": "gopkg.in/tylerb/graceful.v1",
-			"revision": "0e9129e9c6d47da90dc0c188b26bd7bb1dab53cd",
-			"revisionTime": "2017-01-16T09:04:26Z"
+			"revision": "4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb",
+			"revisionTime": "2017-02-01T19:58:55Z"
 		},
 		{
-			"checksumSHA1": "QpWY2ygzClg3Bw+GHjD7yXlcTxw=",
+			"checksumSHA1": "0KwOlQV1dNUh9X8t+5s7nX5bqfk=",
 			"path": "gopkg.in/yaml.v2",
-			"revision": "4c78c975fe7c825c6d1466c42be594d1d6f3aba6",
-			"revisionTime": "2017-01-25T14:37:19Z"
+			"revision": "a3f3340b5840cee44f372bddb5880fcbc419b46a",
+			"revisionTime": "2017-02-08T14:18:51Z"
 		}
 	],
 	"rootPath": "github.com/taskcluster/taskcluster-cli"
