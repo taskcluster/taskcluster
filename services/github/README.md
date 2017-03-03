@@ -1,5 +1,7 @@
 TaskCluster GitHub Service
 ==========================
+![Task Status](https://github.taskcluster.net/v1/badge/taskcluster/taskcluster-github/badgers)
+
 
 This service monitors all of the repositories associated with an organization for changes and schedules TaskCluster tasks for any repository which contains a `.taskcluster.yml` configuration file. The goal of this project is to provide project owners a method for scheduling jobs in TaskCluster which is quick and straight forward.
 
@@ -7,6 +9,11 @@ This service monitors all of the repositories associated with an organization fo
 
 ### Docs
 See: https://docs.taskcluster.net/manual/vcs/github
+
+### Adding status badges to your project's readme:
+Insert the following string (replacing the words in caps with your organization or user name, repository name and the branch name) to the readme file in your project's repository:
+`![Task Status](https://github.taskcluster.net/v1/badge/USERNAME/REPONAME/BRANCHNAME)`
+
 
 ## Components
 
@@ -28,7 +35,7 @@ To test the components separately, run:
 ### Deploying
 
 This service will auto-deploy *to staging* in Heroku once merged into master
-and CI runs are successful. If you need to force a deploy because we've broken
+and CI runs are successful. (You can install our staging integration [here](https://github.com/integration/taskcluster-staging).) If you need to force a deploy because we've broken
 CI in some way and this urgently needs to be deployed, you can do it from the
 [Heroku
 console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github).
@@ -40,3 +47,9 @@ run this check (but, no other credentials!)
 
 After you confirm it works on stage, deploy to production with [the
 pipeline](https://dashboard.heroku.com/pipelines/b867da9f-e443-4ddd-b8b1-2209532897b4).
+
+## Copyright notes
+Emoji fonts for this project were taken from:
+- [Mozilla Firefox OS Emojis](https://github.com/mozilla/fxemoji)
+- [Google Internationalization (i18n)](https://github.com/googlei18n/noto-emoji) (provided under the [SIL Open Font License, version 1.1](https://github.com/googlei18n/noto-emoji/blob/master/fonts/LICENSE))
+- [EmojiOne](http://emojione.com/) (provided under the [Creative Commons License](http://emojione.com/licensing/))
