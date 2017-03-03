@@ -531,6 +531,11 @@
         }
       }
     },
+    "bluebird": {
+      "version": "3.4.7",
+      "from": "bluebird@latest",
+      "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.4.7.tgz"
+    },
     "body-parser": {
       "version": "1.13.3",
       "from": "body-parser@1.13.3",
@@ -1983,7 +1988,7 @@
     },
     "promise": {
       "version": "7.1.1",
-      "from": "promise@>=7.1.1 <8.0.0",
+      "from": "promise@>=7.0.4 <8.0.0",
       "resolved": "https://registry.npmjs.org/promise/-/promise-7.1.1.tgz"
     },
     "propagate": {

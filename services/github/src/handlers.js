@@ -5,7 +5,7 @@ let yaml = require('js-yaml');
 let assert = require('assert');
 let EventEmitter = require('events');
 let _ = require('lodash');
-let Promise = require('promise');
+let Promise = require('bluebird');
 let prAllowed = require('./pr-allowed');
 
 let INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';

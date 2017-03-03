@@ -1,6 +1,6 @@
 let debug = require('debug')('taskcluster-github:github-auth');
 let Github = require('github');
-let Promise = require('promise');
+let Promise = require('bluebird');
 let jwt = require('jsonwebtoken');
 
 module.exports = async ({cfg}) => {
@@ -8,23 +8,30 @@ module.exports = async ({cfg}) => {
     promise: Promise,
   });
 
+  let setupToken = _ => {
+    let inteToken = jwt.sign(
+      {iss: cfg.github.credentials.integrationId},
+      cfg.github.credentials.privatePEM,
+      {algorithm: 'RS256', expiresIn: '1m'},
+    );
+    try {
+      github.authenticate({type: 'integration', token: inteToken});
+    } catch (e) {
+      debug('Authentication as integration failed!');
+      throw e;
+    }
+    return github;
+  };
+
   // This object insures that the authentication is delayed until we need it.
   // Also, the authentication happens not just once in the beginning, but for each request.
   return {
+    getIntegrationGithub: async _ => {
+      setupToken();
+      return github;
+    },
     getInstallationGithub: async (inst_id) => {
-      // Authenticating as integration
-      let inteToken = jwt.sign(
-        {iss: cfg.github.credentials.integrationId},
-        cfg.github.credentials.privatePEM,
-        {algorithm: 'RS256', expiresIn: '1m'},
-      );
-      try {
-        github.authenticate({type: 'integration', token: inteToken});
-      } catch (e) {
-        debug('Authentication as integration failed!');
-        throw e;
-      }
-
+      setupToken();
       // Authenticating as installation
       var instaToken = await github.integrations.createInstallationToken({
         installation_id: inst_id,

@@ -6,6 +6,7 @@ let Handlers = require('./handlers');
 let Intree = require('./intree');
 let data = require('./data');
 let _ = require('lodash');
+let Promise = require('bluebird');
 let taskcluster = require('taskcluster-client');
 let config = require('typed-env-config');
 let monitor = require('taskcluster-lib-monitor');
@@ -142,6 +143,20 @@ let load = loader({
       exchangePrefix:   cfg.app.exchangePrefix,
       credentials:      cfg.pulse,
     }),
+  },
+
+  syncInstallations: {
+    requires: ['github', 'OwnersDirectory'],
+    setup: async ({github, OwnersDirectory}) => {
+      let gh = await github.getIntegrationGithub();
+      let installations = await gh.integrations.getInstallations({});
+      await Promise.map(installations, inst => {
+        return OwnersDirectory.create({
+          installationId: inst.id,
+          owner: inst.account.login,
+        }, true);
+      });
+    },
   },
 
   handlers: {
