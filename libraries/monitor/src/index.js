@@ -13,6 +13,7 @@ let Monitor = require('./monitor');
  * {
  *   project: '...',
  *   patchGlobal:  true,
+ *   bailOnUnhandledRejection: false,
  *   reportStatsumErrors: true,
  *   resourceInterval: 10, // seconds
  *   crashTimeout: 5 * 1000, //milliseconds
@@ -29,6 +30,7 @@ let Monitor = require('./monitor');
 async function monitor(options) {
   options = _.defaults({}, options, {
     patchGlobal: true,
+    bailOnUnhandledRejection: false,
     reportStatsumErrors: true,
     resourceInterval: 10,
     crashTimeout: 5 * 1000,
@@ -98,10 +100,26 @@ async function monitor(options) {
         process.exit(1);
       }
     });
-    process.on('unhandledRejection', (reason, p) => {
+    process.on('unhandledRejection', async (reason, p) => {
       let err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
       console.log(err);
-      m.reportError(err, 'warning');
+      if (!options.bailOnUnhandledRejection) {
+        await m.reportError(err, 'warning');
+        return;
+      }
+      setTimeout(() => {
+        console.log('Failed to report error to Sentry after timeout!');
+        process.exit(1);
+      }, options.crashTimeout);
+      try {
+        await m.reportError(err, 'fatal', {});
+        console.log('Succesfully reported error to Sentry.');
+      } catch (e) {
+        console.log('Failed to report to Sentry with error:');
+        console.log(e);
+      } finally {
+        process.exit(1);
+      }
     });
   }
 
