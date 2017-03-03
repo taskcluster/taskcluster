@@ -304,18 +304,18 @@ api.declare({
     try {
       let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
 
-      let taskclusterBot = await instGithub.users.getForUser({username: 'taskcluster[bot]'});
+      let taskclusterBot = await instGithub.users.getForUser({user: 'taskcluster[bot]'});
       // Statuses is an array of status objects, where we find the relevant status
-      let statuses = await instGithub.repos.getStatuses({owner, repo, ref: branch});
+      let statuses = await instGithub.repos.getStatuses({owner, repo, sha: branch});
       let status = statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 
       // Then we send a corresponding image.
       return res.sendFile(status.state + '.svg', fileConfig);
     } catch (e) {
-      return res.sendFile('error.svg', fileConfig);
       if (e.code < 500) {
-        throw e;
+        return res.sendFile('error.svg', fileConfig);
       }
+      throw e;
     }
   } else {
     return res.sendFile('newrepo.svg', fileConfig);
