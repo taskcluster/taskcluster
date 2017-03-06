@@ -1,6 +1,6 @@
 # TaskCluster CLI Client
 
-[Task Status](https://github.taskcluster.net/v1/badge/taskcluster/taskcluster-cli/master)
+![Task Status](https://github.taskcluster.net/v1/badge/taskcluster/taskcluster-cli/master)
 
 ## Overview
 
