@@ -242,6 +242,19 @@ let load = loader({
         timeLimit: 10,
       });
       let groups = entries.map(entry => entry.object.cn);
+
+      // SCM groups are posixGroup objects with the email in the memberUid
+      // field.  This code does not capture other POSIX groups (which have the
+      // user's uid field in the memberUid field).
+      entries = await client.search(
+        "dc=mozilla", {
+        scope: 'sub',
+        filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
+        attributes: ['cn'],
+        timeLimit: 10,
+      });
+      groups = groups.concat(entries.map(entry => entry.object.cn));
+
       groups.sort();
       groups.forEach(gp => console.log(gp));
 
