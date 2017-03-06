@@ -298,7 +298,12 @@ api.declare({
   let ownerInfo = await this.OwnersDirectory.load({owner}, true);
 
   // This has nothing to do with user input, so we should be safe
-  let fileConfig = {root : __dirname + '/../assets/'};
+  let fileConfig = {
+    root : __dirname + '/../assets/',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    },
+  };
 
   if (ownerInfo) {
     try {
