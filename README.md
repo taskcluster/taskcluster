@@ -1,6 +1,6 @@
 # TaskCluster CLI Client
 
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-cli.svg)](https://travis-ci.org/taskcluster/taskcluster-cli)
+[Task Status](https://github.taskcluster.net/v1/badge/taskcluster/taskcluster-cli/master)
 
 ## Overview
 
