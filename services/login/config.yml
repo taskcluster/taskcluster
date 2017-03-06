@@ -134,6 +134,7 @@ Profiles:
       - 'scm_level_1'
       - 'scm_level_2'
       - 'scm_level_3'
+      - 'scm_autoland'
       - 'vpn_tooltooleditor'
       - 'team_relops'
       - 'releng'
