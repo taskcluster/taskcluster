@@ -53,7 +53,7 @@ Defaults:
     key:            !env LDAP_KEY
     user:           !env LDAP_USER
     password:       !env LDAP_PASSWORD
-    allowedGroups:  !env:list SSO_ALLOWED_GROUPS
+    allowedGroups:  all
   sso:
     entryPoint:     !env SSO_ENTRYPOINT
     certificate:    !env SSO_CERTIFICATE
@@ -90,7 +90,7 @@ Profiles:
       forceSSL: false
     ldap:
       url: ldaps://example.com
-      allowedGroups: ['releng', 'shipit', 'Everyone', 'team_moco', 'shipitdev']
+      allowedGroups: all
     sso:
       issuer: taskcluster-login.ngrok.io
       entryPoint: "https://mozilla.oktapreview.com/app/mozilla_taskcluster_1/exk58q0ytqJycvEJ10h7/sso/saml"
@@ -125,21 +125,7 @@ Profiles:
     mozillians:
       allowedGroups: ['taskcluster-users']
     ldap:
-      allowedGroups: 
-      - 'releng'
-      - 'shipit'
-      - 'Everyone'
-      - 'team_moco'
-      - 'shipitdev'
-      - 'scm_level_1'
-      - 'scm_level_2'
-      - 'scm_level_3'
-      - 'scm_autoland'
-      - 'vpn_tooltooleditor'
-      - 'team_relops'
-      - 'releng'
-      - 'team_taskcluster'
-      - 'ateam'
+      allowedGroups:  all
     sso:
       issuer: taskcluster-login.ngrok.io
       entryPoint: "https://mozilla.oktapreview.com/app/mozilla_taskcluster_1/exk58q0ytqJycvEJ10h7/sso/saml"
