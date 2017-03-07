@@ -96,3 +96,8 @@ Upon deploying a new version of this service, investigate heroku and/or papertra
 logs for any errors.  Also, the [pulse inspector](https://tools.taskcluster.net/pulse-inspector)
 can be used to subsribe to the exchange and inspect the pulse messages that are being
 produced.
+
+
+# Service Owner
+
+Service Owner: garndt@mozilla.com
