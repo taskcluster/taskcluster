@@ -14,7 +14,7 @@ class LDAPAuthorizer {
    *   key:           // Client side key (for certificate)
    *   user:          // Bind user
    *   password:      // Password for bind user
-   *   allowedGroups: // groups to reflect into roles
+   *   allowedGroups: // groups to reflect into roles, or "all"
    */
   constructor(options) {
     assert(options, 'options are required');
@@ -56,7 +56,15 @@ class LDAPAuthorizer {
       entries.forEach((entry) => {
         let group = entry.object.cn;
         debug("..found", group);
-        if (this.allowedGroups.indexOf(group) !== -1) {
+
+        // This is unlikely, and probably forbidden in LDAP, but just in case, let's
+        // avoid characters that have special meanings in scopes.
+        if (group.endsWith('*')) {
+          debug('    rejecting, as it ends with *');
+          return;
+        }
+
+        if (this.allowedGroups === 'all' || this.allowedGroups.indexOf(group) !== -1) {
           user.addRole('mozilla-group:' + group);
         }
       });
