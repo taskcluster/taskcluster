@@ -137,6 +137,11 @@ artifact bucket:
 }
 ```
 
+Service Owner
+-------------
+
+Service Owner: jonasfj@mozilla.com
+
 Deployment Testing
 ------------------
 To test a deployment create a simple task with the [task-creator](https://tools.taskcluster.net/task-creator/).
