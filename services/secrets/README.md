@@ -22,3 +22,7 @@ The scheduler add-on is used to run the expiration process (described above).
 
 After deploying a new version of this service, open up the tools site and sign in.
 Using the "secrets" tool, make sure you can read some secret that you have access to (that is, one listed in the UI).
+
+# Service Owner
+
+Service Owner: dustin@mozilla.com
