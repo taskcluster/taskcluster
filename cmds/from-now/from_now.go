@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster-cli/root"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 
 	"github.com/spf13/cobra"
 )

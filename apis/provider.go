@@ -20,8 +20,8 @@ import (
 
 	"github.com/taskcluster/taskcluster-cli/apis/definitions"
 	"github.com/taskcluster/taskcluster-cli/client"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
-	"github.com/taskcluster/taskcluster-cli/root"
 )
 
 var (

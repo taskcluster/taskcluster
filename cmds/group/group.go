@@ -2,7 +2,7 @@ package group
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster-cli/root"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 )
 
 var (

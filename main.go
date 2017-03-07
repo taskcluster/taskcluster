@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/taskcluster/taskcluster-cli/config"
-	"github.com/taskcluster/taskcluster-cli/root"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 )
 
 func main() {

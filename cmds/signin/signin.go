@@ -11,8 +11,8 @@ import (
 
 	"github.com/bryanl/webbrowser"
 	"github.com/spf13/cobra"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
-	"github.com/taskcluster/taskcluster-cli/root"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 

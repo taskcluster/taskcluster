@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/taskcluster/taskcluster-cli/root"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 
 	uuidlib "github.com/pborman/uuid"
 	"github.com/spf13/cobra"
