@@ -57,3 +57,8 @@ If you want to verify these credentials, such as to present the user with
 appropriate error messages, you can call the
 [auth.currentScopes](https://docs.taskcluster.net/reference/platform/auth/api-docs#currentScopes)
 method.
+
+Service Owner
+-------------
+
+Service Owner: dustin@mozilla.com
