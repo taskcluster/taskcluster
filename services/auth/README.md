@@ -18,6 +18,10 @@ On the server side, `CLIENT_ID`s will resolve to `ACCESS_TOKEN` for HMAC
 validation and a set of scopes, which will be used to determine what resources
 the client is authorized to access.
 
+## Service Owner
+
+Service Owner: jonasfj@mozilla.com
+
 ## Post-Deployment Verification
 
 If you deploy a copy of this application that fails to start, all of
