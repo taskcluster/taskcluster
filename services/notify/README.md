@@ -37,6 +37,11 @@ This service will auto-deploy in Heroku once merged into master and CI runs are 
 ]
 ```
 
+Service Owner
+-------------
+
+Service Owner: bstack@mozilla.com
+
 License
 -------
 
