@@ -55,8 +55,9 @@ type ReducedHTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// DefaultHTTPClient is the HTTP Client used to make requests.
-// A single object is created an used because http.Client is thread-safe when
+// DefaultHTTPClient is the HTTP Client used to make requests if none are
+// defined in the client.
+// A single object is created and used because http.Client is thread-safe when
 // making multiple requests in various goroutines.
 var DefaultHTTPClient ReducedHTTPClient = &http.Client{}
 
@@ -103,7 +104,12 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 				return nil, nil, err
 			}
 		}
-		resp, err := DefaultHTTPClient.Do(callSummary.HTTPRequest)
+		var resp *http.Response
+		if client.HTTPClient != nil {
+			resp, err = client.HTTPClient.Do(callSummary.HTTPRequest)
+		} else {
+			resp, err = DefaultHTTPClient.Do(callSummary.HTTPRequest)
+		}
 		// b, e := httputil.DumpResponse(resp, true)
 		// if e == nil {
 		// 	fmt.Println(string(b))

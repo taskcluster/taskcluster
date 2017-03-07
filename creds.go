@@ -56,6 +56,9 @@ type Client struct {
 	// Please note calling auth.New(clientId string, accessToken string) is an
 	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
+	// HTTPClient is a ReducedHTTPClient to be used for the http call instead of
+	// the DefaultHTTPClient.
+	HTTPClient ReducedHTTPClient
 }
 
 // Certificate represents the certificate used in Temporary Credentials. See
