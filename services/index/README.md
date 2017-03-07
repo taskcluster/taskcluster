@@ -54,3 +54,8 @@ Deployment
 ----------
 1) Supply configuration, see environment variables in `config.yml`
 2) Create a task with route `index.garbage.my-irc-nick.index-works` and see if it works.
+
+Service Owner
+-------------
+
+Service Owner: jonasfj@mozilla.com
