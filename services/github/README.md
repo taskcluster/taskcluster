@@ -32,7 +32,7 @@ To test the components separately, run:
 - server: `npm run compile && <set the environment variables> node lib/main.js server`
 - handlers: `npm run compile && <set the environment variables> node lib/main.js worker`
 
-### Deploying
+## Deploying
 
 This service will auto-deploy *to staging* in Heroku once merged into master
 and CI runs are successful. (You can install our staging integration [here](https://github.com/integration/taskcluster-staging).) If you need to force a deploy because we've broken
@@ -53,3 +53,7 @@ Emoji fonts for this project were taken from:
 - [Mozilla Firefox OS Emojis](https://github.com/mozilla/fxemoji)
 - [Google Internationalization (i18n)](https://github.com/googlei18n/noto-emoji) (provided under the [SIL Open Font License, version 1.1](https://github.com/googlei18n/noto-emoji/blob/master/fonts/LICENSE))
 - [EmojiOne](http://emojione.com/) (provided under the [Creative Commons License](http://emojione.com/licensing/))
+
+## Service Owner
+
+Service Owner: bstack@mozilla.com
