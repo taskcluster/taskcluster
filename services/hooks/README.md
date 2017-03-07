@@ -28,6 +28,11 @@ to obtain credentials if you need them.
 
 Tests can then be executed with `npm test`.
 
+Service Owner
+-------------
+
+Service Owner: dustin@mozilla.com
+
 Post-Deploy Verification
 ------------------------
 This service will auto-deploy upon merging to master. Once it is deployed, you
