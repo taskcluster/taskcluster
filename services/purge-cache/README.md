@@ -21,6 +21,11 @@ matching the given `<cacheName>`.
 
 This makes it easy to blow away poisoned caches should this ever be necessary.
 
+Service Owner
+-------------
+
+Service Owner: jonasfj@mozilla.com
+
 Deployment
 ----------
 1) Supply configuration needed to run post-deploy verification tests. Example is in `user-config-example.yml`.
