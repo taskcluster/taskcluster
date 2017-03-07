@@ -1,7 +1,6 @@
 package group
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"sync"
@@ -9,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+	"golang.org/x/net/context"
 )
 
 // runCancel cancels all tasks of a group.

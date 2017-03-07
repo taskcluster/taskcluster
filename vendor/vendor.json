@@ -135,6 +135,12 @@
 			"revisionTime": "2017-02-25T17:21:24Z"
 		},
 		{
+			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
+			"path": "golang.org/x/net/context",
+			"revision": "d379faa25cbdc04d653984913a2ceb43b0bc46d7",
+			"revisionTime": "2017-01-16T00:30:03Z"
+		},
+		{
 			"checksumSHA1": "O9E8G234qCcPA7f7srGpnawDmMs=",
 			"path": "gopkg.in/tylerb/graceful.v1",
 			"revision": "4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb",
