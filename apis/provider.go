@@ -34,37 +34,11 @@ var (
 
 func init() {
 	for name, service := range services {
-		cmdString := strings.ToLower(name[0:1]) + name[1:]
-		cmd := &cobra.Command{
-			Use:   cmdString,
-			Short: "Operates on the " + name + " service",
-			Long:  service.Description,
-		}
-		for _, entry := range service.Entries {
-			line := entry.Name
-			for _, arg := range entry.Args {
-				line += " <" + arg + ">"
-			}
-
-			subCmd := &cobra.Command{
-				Use:   line,
-				Short: entry.Title,
-				Long:  buildHelp(&entry),
-				RunE:  buildExecutor(entry, "api-"+name),
-			}
-
-			fs := subCmd.Flags()
-			for _, q := range entry.Query {
-				fs.String(q, "", "Specify the '"+q+"' query-string parameter")
-			}
-
-			cmd.AddCommand(subCmd)
-		}
-
-		fs := cmd.PersistentFlags()
-		fs.StringP("base-url", "b", service.BaseURL, "BaseURL for "+cmdString)
-
+		// command for service
+		cmd := makeCmdFromDefinition(name, service)
 		Command.AddCommand(cmd)
+
+		// config options for service
 		config.RegisterOptions("api-"+name, map[string]config.OptionDefinition{
 			"baseUrl": config.OptionDefinition{
 				Default: service.BaseURL,
@@ -76,12 +50,52 @@ func init() {
 		})
 	}
 
+	// flags for the main `api` command
 	fs := Command.PersistentFlags()
 	fs.StringP("output", "o", "-", "Output file")
 	fs.BoolP("dry-run", "d", false, "Validate input against schema without making an actual request")
 	Command.MarkPersistentFlagFilename("output")
 
 	root.Command.AddCommand(Command)
+}
+
+func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Command {
+	// lowercase first letter
+	cmdString := strings.ToLower(name[0:1]) + name[1:]
+
+	// cobra command for the service, a subcommand of Command
+	cmd := &cobra.Command{
+		Use:   cmdString,
+		Short: "Operates on the " + name + " service",
+		Long:  service.Description,
+	}
+
+	// one subcommand for every function of the service
+	for _, entry := range service.Entries {
+		usage := entry.Name
+		for _, arg := range entry.Args {
+			usage += " <" + arg + ">"
+		}
+
+		subCmd := &cobra.Command{
+			Use:   usage,
+			Short: entry.Title,
+			Long:  buildHelp(&entry),
+			RunE:  buildExecutor(entry, "api-"+name),
+		}
+
+		fs := subCmd.Flags()
+		for _, q := range entry.Query {
+			fs.String(q, "", "Specify the '"+q+"' query-string parameter")
+		}
+
+		cmd.AddCommand(subCmd)
+	}
+
+	fs := cmd.PersistentFlags()
+	fs.StringP("base-url", "b", service.BaseURL, "BaseURL for "+cmdString)
+
+	return cmd
 }
 
 func buildHelp(entry *definitions.Entry) string {
@@ -107,17 +121,16 @@ func buildHelp(entry *definitions.Entry) string {
 
 func buildExecutor(entry definitions.Entry, configKey string) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		// Because cobra doesn't extract the args or map them to their
-		// name, we build it ourselves.
-		line := strings.Split(cmd.Use, " ")[1:]
-		if len(args) < len(args) {
+		// validate that we have as much arguments as in the definition
+		if len(args) < len(entry.Args) {
 			return errors.New("Insufficient arguments given")
 		}
 
+		// Because cobra doesn't extract the args or map them to their
+		// name, we build it ourselves.
 		argmap := make(map[string]string)
-		for i, a := range line {
-			name := a[1 : len(a)-1]
-			argmap[name] = args[i]
+		for pos, name := range entry.Args {
+			argmap[name] = args[pos]
 		}
 
 		// Same with the local flags.
