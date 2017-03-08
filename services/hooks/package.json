@@ -40,7 +40,9 @@
     "mocha": "^2.2.5",
     "taskcluster-lib-testing": "^1.0.3"
   },
+  "engine-strict": true,
   "engines": {
-    "node": "7.4.0"
+    "node": "7.4.0",
+    "yarn": "0.21.3"
   }
 }

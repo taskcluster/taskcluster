@@ -26,7 +26,7 @@ editing the values.
 Speak to the Taskcluster team on IRC via `irc.mozilla.org#taskcluster` channel
 to obtain credentials if you need them.
 
-Tests can then be executed with `npm test`.
+Fetch dependencies with `yarn install`. Tests can then be executed with `yarn test`.
 
 Service Owner
 -------------
