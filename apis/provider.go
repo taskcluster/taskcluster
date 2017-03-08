@@ -37,17 +37,6 @@ func init() {
 		// command for service
 		cmd := makeCmdFromDefinition(name, service)
 		Command.AddCommand(cmd)
-
-		// config options for service
-		config.RegisterOptions("api-"+name, map[string]config.OptionDefinition{
-			"baseUrl": config.OptionDefinition{
-				Default: service.BaseURL,
-				Env:     "TASKCLUSTER_QUEUE_BASE_URL",
-				Validate: func(value interface{}) error {
-					return nil
-				},
-			},
-		})
 	}
 
 	// flags for the main `api` command
@@ -94,6 +83,17 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 
 	fs := cmd.PersistentFlags()
 	fs.StringP("base-url", "b", service.BaseURL, "BaseURL for "+cmdString)
+
+	// add baseURL for this service to configuration
+	config.RegisterOptions("api-"+name, map[string]config.OptionDefinition{
+		"baseUrl": config.OptionDefinition{
+			Default: service.BaseURL,
+			Env:     "TASKCLUSTER_QUEUE_BASE_URL",
+			Validate: func(value interface{}) error {
+				return nil
+			},
+		},
+	})
 
 	return cmd
 }
