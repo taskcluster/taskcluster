@@ -14,7 +14,7 @@ import (
 	"github.com/taskcluster/taskcluster-cli/apis/definitions"
 )
 
-func GenerateServices(manifestURL string) ([]byte, error) {
+func GenerateServices(manifestURL, servicesVar, schemasVar string) ([]byte, error) {
 	// synchronization objects
 	mutex := &sync.Mutex{}
 	wg := &sync.WaitGroup{}
@@ -57,7 +57,7 @@ func GenerateServices(manifestURL string) ([]byte, error) {
 	}
 	wg.Wait()
 
-	gen.Print("var services = ")
+	gen.Printf("var %s = ", servicesVar)
 	gen.PrettyPrint(services)
 	gen.Print("\n")
 
@@ -93,7 +93,7 @@ func GenerateServices(manifestURL string) ([]byte, error) {
 	}
 	wg.Wait()
 
-	gen.Print("var schemas = ")
+	gen.Printf("var %s = ", schemasVar)
 	gen.PrettyPrint(schemas)
 	gen.Print("\n")
 

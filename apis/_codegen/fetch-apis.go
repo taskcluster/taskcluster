@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	source, err := apis.GenerateServices("http://references.taskcluster.net/manifest.json")
+	source, err := apis.GenerateServices("http://references.taskcluster.net/manifest.json", "services", "schemas")
 	if err != nil {
 		log.Fatalln("error: go fmt, code generation failed: ", err)
 	}
