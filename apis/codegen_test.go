@@ -42,8 +42,8 @@ func manifestServer() *http.Server {
 	handler.HandleFunc("/definition.json", apiDefHandler)
 
 	server := &http.Server{
-		Addr:		":8080",
-		Handler:	handler,
+		Addr:    ":8080",
+		Handler: handler,
 	}
 
 	go server.ListenAndServe()

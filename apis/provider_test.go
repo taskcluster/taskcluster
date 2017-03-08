@@ -55,8 +55,8 @@ func apiServer() *http.Server {
 	handler.HandleFunc("/test", apiHandler)
 
 	server := &http.Server{
-		Addr:		":8080",
-		Handler:	handler,
+		Addr:    ":8080",
+		Handler: handler,
 	}
 
 	go server.ListenAndServe()
