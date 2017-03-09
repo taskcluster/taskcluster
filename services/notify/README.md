@@ -23,7 +23,7 @@ Testing
 -------
 
 You'll first need to set up your credentials based on how they are in `user-config-example.yml`. Ask a Taskcluster team member for the aws keys, etc.
-`npm install` and `npm test`. You can set `DEBUG=taskcluster-notify,test` if you want to see what's going on.
+`yarn install` and `yarn test`. You can set `DEBUG=taskcluster-notify,test` if you want to see what's going on.
 
 Deploying
 ---------
