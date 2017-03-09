@@ -4,8 +4,9 @@ env:
   global:
   - CXX=g++-4.8
 node_js:
-- '5'
+- '7'
 cache:
+  yarn: true
   directories:
     - node_modules
 addons:
@@ -14,7 +15,6 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: npm test
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094
