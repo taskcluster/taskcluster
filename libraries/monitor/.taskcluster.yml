@@ -18,11 +18,11 @@ tasks:
           - push
     payload:
       maxRunTime: 3600
-      image: "node:5"
+      image: "node:7"
       command:
         - "/bin/bash"
         - "-lc"
-        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install . && npm test"
+        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && yarn global add node-gyp && yarn install && yarn test"
     metadata:
       name: "taskcluster-lib-monitor test"
       description: "tests for metrics and monitoring library"
