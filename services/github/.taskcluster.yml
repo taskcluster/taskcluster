@@ -27,7 +27,7 @@ tasks:
       command:
         - "/bin/bash"
         - "-lc"
-        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install . && npm test"
+        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && yarn global add node-gyp && yarn install && yarn test"
     metadata:
       name: "TaskCluster GitHub Tests"
       description: "All non-integration tests"
