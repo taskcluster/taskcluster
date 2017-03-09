@@ -10,7 +10,7 @@ The service expects the following to run periodically (daily?) to flush expired 
 
 # Running Tests
 
-From the project's base run ``npm test``.
+From the project's base ``yarn install`` then ``yarn test``.
 No special configuration is required.
 
 # Deploying
