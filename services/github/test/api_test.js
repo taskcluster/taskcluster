@@ -146,16 +146,19 @@ suite('api', () => {
   });
 
   test('build badges', async function() {
+    // status: failure
     await request.get('http://localhost:60415/v1/badge/abc123/coolRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 8627);
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 8615);
     });
 
+    // status: success
     await request.get('http://localhost:60415/v1/badge/abc123/awesomeRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 9180);
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 9189);
     });
 
+    // error
     await request.get('http://localhost:60415/v1/badge/abc123/unknownRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 4291);
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 4268);
     });
   });
 });
