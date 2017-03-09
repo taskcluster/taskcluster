@@ -49,6 +49,14 @@ defaults:
     statsum:
       secret:                   !env STATSUM_API_SECRET
       baseUrl:                  !env STATSUM_BASE_URL
+
+    # Overrides of s3 buckets for redeployability
+    # Leave unset if running inside Heroku
+    buckets:
+      docs:                     !env DOCS_BUCKET
+      schemas:                  !env SCHEMAS_BUCKET
+      references:               !env REFS_BUCKET
+
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                https://auth.taskcluster.net
