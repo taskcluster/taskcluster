@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
 	"github.com/taskcluster/taskcluster-cli/config"
 )
+
+var providerServer *httptest.Server
 
 // TestCommandGeneration checks that we generate a valid command from a definition
 // it uses a test server to see that the command makes the right request to the backend
@@ -17,9 +20,16 @@ func TestCommandGeneration(t *testing.T) {
 	assert := assert.New(t)
 
 	// start test server
-	server := apiServer()
+	providerServer := apiServer()
+	defer providerServer.Close()
 
 	// make command/subcommand from definition
+	// we're not actually using the URL/port in the def, we get one from httptest
+	// apparently you have to write these 3 things below instead of just one...
+	def := servicesTest["Test"]
+	def.BaseURL = providerServer.URL
+	servicesTest["Test"] = def
+
 	cmd := makeCmdFromDefinition("Test", servicesTest["Test"])
 
 	// set payload through stdin, if necessary
@@ -44,24 +54,14 @@ func TestCommandGeneration(t *testing.T) {
 	desired := "true"
 	received := buf.String()
 	assert.Equal(desired, received, "request sent to test server was invalid, replied: %s", received)
-
-	// close server
-	server.Close()
 }
 
 // apiServer sets up the server and launches it in a new thread
-func apiServer() *http.Server {
+func apiServer() *httptest.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/test", apiHandler)
 
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: handler,
-	}
-
-	go server.ListenAndServe()
-
-	return server
+	return httptest.NewServer(handler)
 }
 
 // apiHandler checks that the received request is valid, and replies

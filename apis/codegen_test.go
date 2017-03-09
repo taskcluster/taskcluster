@@ -5,11 +5,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
 )
+
+var codegenServer *httptest.Server
 
 // TestCodeGeneration ensures that we generate the right code
 // (i.e. matches the code in services_test.go) when calling a server
@@ -18,14 +21,12 @@ func TestCodeGeneration(t *testing.T) {
 	assert := assert.New(t)
 
 	// launch server
-	server := manifestServer()
+	codegenServer = manifestServer()
+	defer codegenServer.Close()
 
 	// query server, generate code
-	source, err := GenerateServices("http://localhost:8080/manifest.json", "servicesTest", "schemasTest")
+	source, err := GenerateServices(codegenServer.URL + "/manifest.json", "servicesTest", "schemasTest")
 	assert.NoError(err, fmt.Sprintf("failed generating services: %s", err))
-
-	// close server so our other tests using servers don't clash
-	server.Close()
 
 	// check that the returned byte thing is correct
 	generated := strings.Trim(string(source), "\n\r\t ")
@@ -36,24 +37,17 @@ func TestCodeGeneration(t *testing.T) {
 }
 
 // manifestServer sets up the server before launching it in a new thread
-func manifestServer() *http.Server {
+func manifestServer() *httptest.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/manifest.json", manifestHandler)
 	handler.HandleFunc("/definition.json", apiDefHandler)
 
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: handler,
-	}
-
-	go server.ListenAndServe()
-
-	return server
+	return httptest.NewServer(handler)
 }
 
 // manifestHandler returns the test manifest on request
 func manifestHandler(w http.ResponseWriter, _ *http.Request) {
-	manifest := `{"Test": "http://localhost:8080/definition.json"}`
+	manifest := `{"Test": "` + codegenServer.URL + `/definition.json"}`
 	io.WriteString(w, manifest)
 }
 
