@@ -130,7 +130,7 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 	// This will also print the error message for failed requests.
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		fmt.Fprintln(out, scanner.Text())
 	}
 
 	if resp.StatusCode/100 != 2 {
