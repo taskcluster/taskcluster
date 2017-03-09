@@ -43,9 +43,10 @@
     "taskcluster-lib-validate": "^2.0.0",
     "typed-env-config": "^1.1.0"
   },
+  "engine-strict": true,
   "engines": {
-    "node": "^6.7.0",
-    "npm": "^3.10.3"
+    "node": "6.7.0",
+    "yarn": "0.21.3"
   },
   "devDependencies": {
     "fs-extra": "^2.0.0"
