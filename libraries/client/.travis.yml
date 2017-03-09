@@ -12,7 +12,6 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: npm test
 env:
   global:
   - CXX=g++-4.8
