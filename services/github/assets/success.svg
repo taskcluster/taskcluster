@@ -7,9 +7,9 @@
    xmlns="http://www.w3.org/2000/svg"
    version="1.1"
    id="svg2"
-   viewBox="0 0 185 45.000001"
-   height="45"
-   width="185">
+   viewBox="0 0 135 27.000001"
+   height="27"
+   width="135">
   <defs
      id="defs4" />
   <metadata
@@ -27,13 +27,13 @@
   <rect
      style="fill:#333333"
      id="rect4174"
-     width="136.3179"
-     height="26.127754"
-     x="4.8244324"
-     y="15.130806"
-     ry="4.0479622" />
+     width="115.14362"
+     height="20.000002"
+     x="-7.6293954e-06"
+     y="6.9999995"
+     ry="3.0985923" />
   <g
-     transform="matrix(0.44159455,0,0,0.40485836,124.92293,-4.758586)"
+     transform="matrix(0.27969626,0,0,0.2679405,98.432926,-5.3940048)"
      id="g3660">
     <path
        style="fill:#d65a8c"
@@ -52,7 +52,7 @@
        id="path3666" />
   </g>
   <g
-     transform="matrix(0.77553243,0,0,0.72859597,-3.570266,2.521268)"
+     transform="matrix(0.65506882,0,0,0.62139373,-7.0907556,-4.6919387)"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5px;line-height:125%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      id="text3339">
     <path
