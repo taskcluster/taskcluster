@@ -153,9 +153,9 @@ Development & Testing
 This library requires a set of Taskcluster credentials to test. Copy `user-config-example.yml` over to `user-config.yml`
 and follow the instructions within to get set up.
 
-Once that is complete, `npm install` and `npm test`. You can set `DEBUG=taskcluster-lib-docs,test` if you want to see what's going on.
+Once that is complete, `yarn install` and `yarn test`. You can set `DEBUG=taskcluster-lib-docs,test` if you want to see what's going on.
 
-To release, run `npm version [major, minor, patch]` (following semver) and push
+To release, run `yarn version [major, minor, patch]` (following semver) and push
 to master.  Travis will take care of the rest.  Generally this change is not
 included in the PR.
 

@@ -11,7 +11,6 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: npm test
 env:
   global:
   - DEBUG='taskcluster-lib-docs test'
