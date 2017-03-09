@@ -93,7 +93,8 @@ let load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => Validate({
       prefix:  'auth/v1/',
-      aws:      cfg.aws
+      aws:      cfg.aws,
+      bucket:   cfg.app.buckets.schemas,
     })
   },
 
@@ -104,6 +105,7 @@ let load = Loader({
       aws: cfg.aws,
       tier: 'platform',
       schemas: validator.schemas,
+      bucket: cfg.app.buckets.docs,
       project: 'auth',
       references: [
         {
@@ -131,6 +133,7 @@ let load = Loader({
         referencePrefix:  'auth/v1/exchanges.json',
         publish:          cfg.app.publishMetaData,
         aws:              cfg.aws,
+        referenceBucket:  cfg.app.buckets.references,
         monitor:          monitor.prefix('publisher'),
       })
   },
@@ -184,6 +187,7 @@ let load = Loader({
         baseUrl:            cfg.server.publicUrl + '/v1',
         referencePrefix:    'auth/v1/api.json',
         aws:                cfg.aws,
+        referenceBucket:    cfg.app.buckets.references,
         monitor:            monitor.prefix('api'),
       });
     }
