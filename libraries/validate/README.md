@@ -135,7 +135,7 @@ that directory called `constants.yaml`. You may override these if desired.
 Testing
 -------
 
-Just `npm install` and `npm test`. You can set `DEBUG=taskcluster-lib-validate,test` if you want to see what's going on.
+Just `yarn install` and `yarn test`. You can set `DEBUG=taskcluster-lib-validate,test` if you want to see what's going on.
 There are no keys needed to test this library.
 
 License

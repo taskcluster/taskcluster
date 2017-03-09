@@ -1,17 +1,16 @@
 language: node_js
 sudo: false
 node_js:
-- '0.12'
 - '4'
 - '5'
 - '6'
+- '7'
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: npm test
 env:
   global:
   - DEBUG='taskcluster-lib-validate test'
