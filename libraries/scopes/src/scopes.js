@@ -8,7 +8,7 @@ let assert = require('assert');
 
 let _validScope = /^[\x20-\x7e]*$/;
 exports.validScope = function(scope) {
-  return typeof(scope) == 'string' && _validScope.test(scope);
+  return typeof scope == 'string' && _validScope.test(scope);
 };
 
 /**
@@ -16,11 +16,11 @@ exports.validScope = function(scope) {
  * of a scope-set.
  */
 exports.validateScopeSets = function(scopesets) {
-  let msg = "scopes must be an array of arrays of strings " +
-            "(disjunctive normal form)";
+  let msg = 'scopes must be an array of arrays of strings ' +
+            '(disjunctive normal form)';
   assert(Array.isArray(scopesets), msg);
   assert(scopesets.every(function(conj) {
-      return Array.isArray(conj) && conj.every(exports.validScope);
+    return Array.isArray(conj) && conj.every(exports.validScope);
   }), msg);
 };
 
@@ -40,8 +40,8 @@ exports.validateScopeSets = function(scopesets) {
 exports.scopeMatch = function(scopePatterns, scopesets) {
   exports.validateScopeSets(scopesets);
   assert(scopePatterns instanceof Array && scopePatterns.every(function(scope) {
-    return typeof(scope) === 'string';
-  }), "scopes must be an array of strings");
+    return typeof scope === 'string';
+  }), 'scopes must be an array of strings');
   return scopesets.some(function(scopeset) {
     return scopeset.every(function(scope) {
       return scopePatterns.some(function(pattern) {
