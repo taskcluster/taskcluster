@@ -30,9 +30,11 @@ tasks:
           && go get -u github.com/alecthomas/gometalinter 
           && gometalinter --install --force
           && go install ./...
-          && gometalinter --vendor --disable-all --enable=gotype --enable=golint 
+          && gometalinter --vendor --disable-all --deadline 5m
+          --enable=gotype --enable=golint 
           --enable=deadcode --enable=staticcheck --enable=misspell
-          --enable=vet --enable=vetshadow --enable=gosimple --skip=apis ./...
+          --enable=vet --enable=vetshadow --enable=gosimple
+          --skip=apis --skip=vendor ./...
     metadata:
       name: "TaskCluster .taskcluster.yml file"
       description: "All non-integration tests"
