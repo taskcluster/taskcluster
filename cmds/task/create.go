@@ -106,7 +106,7 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 		MaxRunTime  int               `json:"maxRunTime"`
 	}{
 		Image:       args[0],
-		Command:     strings.Join(args[1:len(args)], `'`),
+		Command:     strings.Join(args[1:], `'`),
 		Environment: env,
 		MaxRunTime:  7200, // 2 hours
 	})
