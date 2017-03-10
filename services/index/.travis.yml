@@ -8,13 +8,14 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
-script: npm test
+script: yarn test
 env:
   global:
     - DEBUG='index:* routes:*'
     - CXX=g++-4.8
 
 cache:
+  yarn: true
   directories:
     - node_modules
 
