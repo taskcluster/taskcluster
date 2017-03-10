@@ -45,6 +45,8 @@ func init() {
 	fs.StringVar(&createPayload.Metadata.Owner, "owner", "", "Email of the task's owner")
 	fs.StringVar(&createPayload.Metadata.Source, "source", "", "URL pointing to the source of the task")
 	fs.StringSliceVar(&createPayload.Dependencies, "dependency", []string{}, "TaskID of a dependency (repeatable)")
+	fs.IntVar(&createPayload.Retries, "retries", 5, "Number of retries due to infrastructure issues")
+
 	for _, f := range []string{"provisioner", "worker-type"} {
 		createCmd.MarkFlagRequired(f)
 	}
