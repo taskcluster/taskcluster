@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster-cli/apis/definitions"
 	"github.com/taskcluster/taskcluster-cli/config"
 )
 
@@ -55,6 +56,32 @@ func TestCommandGeneration(t *testing.T) {
 	received := buf.String()
 	assert.Equal(desired, received, "request sent to test server was invalid, replied: %s", received)
 }
+
+// the code from which we generate the test command
+var servicesTest = map[string]definitions.Service{
+	"Test": definitions.Service{
+		BaseURL:     "http://localhost:8080", // will be modified before call for httptest purposes
+		Title:       "Test API",
+		Description: "This is a Test service to test taskcluster-cli",
+		Entries: []definitions.Entry{
+			definitions.Entry{
+				Type:        "function",
+				Name:        "test",
+				Title:       "Do a test",
+				Description: "The server will match the request against a specific format to see if tc-cli works properly.",
+				Scopes:      [][]string(nil),
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/test",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "",
+				Output:      "",
+			},
+		},
+	},
+}
+var schemasTest = map[string]string{}
 
 // apiServer sets up the server and launches it in a new thread
 func apiServer() *httptest.Server {
