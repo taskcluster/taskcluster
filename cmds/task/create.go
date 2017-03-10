@@ -54,6 +54,7 @@ func init() {
 	Command.AddCommand(createCmd)
 }
 
+// checkCreateFlags checks that the required flags were specified.
 func checkCreateFlags(cmd *cobra.Command, args []string) error {
 	for _, f := range []string{"provisioner", "worker-type"} {
 		if !cmd.Flag(f).Changed {
@@ -63,6 +64,7 @@ func checkCreateFlags(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// runCreateTask takes the task creation payload and creates the task.
 func runCreateTask(cmd *cobra.Command, args []string) error {
 	if len(args) < 2 {
 		return errors.New("create requires at least 2 arguments: image and command")
@@ -73,6 +75,7 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 		creds = config.Credentials.ToClientCredentials()
 	}
 
+	// Either generates a new taskID or uses the one provided on the CLI.
 	var taskID string
 	if s := stringFlagHelper(cmd.Flags(), "task-id"); s != "" {
 		if slugid.Decode(s) != nil {
@@ -85,6 +88,7 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 	}
 	createPayload.TaskGroupID = taskID
 
+	// Build the environment variables.
 	env := make(map[string]string)
 	envs, err := cmd.Flags().GetStringSlice("env")
 	if err != nil {
@@ -102,6 +106,7 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Build the task payload.
 	createPayload.Payload, err = json.Marshal(struct {
 		Image       string            `json:"image"`
 		Command     []string          `json:"command"`
@@ -117,10 +122,12 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("could not marshal execution payload: %v", err)
 	}
 
+	// Arbitrary URL to match the metadata spec.
 	if createPayload.Metadata.Source == "" {
 		createPayload.Metadata.Source = "http://taskcluster-cli/task/create"
 	}
 
+	// Adds a tag to indicate that this task was built through tccli.
 	tags := make(map[string]string)
 	tags["misc_info"] = "created by taskcluster-cli"
 	createPayload.Tags, err = json.Marshal(tags)
