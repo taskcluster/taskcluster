@@ -39,7 +39,7 @@ func executeHelperE(f Executor) func(*cobra.Command, []string) error {
 func stringFlagHelper(flagset *pflag.FlagSet, flag string) string {
 	val, err := flagset.GetString(flag)
 	if err != nil {
-		panic(fmt.Errorf("error: error encountered getting the value of %s: %v", flag, err))
+		panic(fmt.Errorf("could not get the value of %s: %v", flag, err))
 	}
 	return val
 }

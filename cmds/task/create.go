@@ -128,7 +128,7 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 	q := queue.New(creds)
 	resp, err := q.CreateTask(taskID, createPayload)
 	if err != nil {
-		return fmt.Errorf("Could not create task: %v", err)
+		return fmt.Errorf("could not create task: %v", err)
 	}
 
 	// If we got no error, that means the task was successfully created
