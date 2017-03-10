@@ -52,9 +52,9 @@ func TestCommandGeneration(t *testing.T) {
 
 	// the server will reply 'true' if the request is what was expected
 	// currently the server always replies true when getting a request, any request
-	desired := "true"
-	received := buf.String()
-	assert.Equal(desired, received, "request sent to test server was invalid, replied: %s", received)
+	expected := "true"
+	actual := buf.String()
+	assert.Equal(expected, actual, "request sent to test server was invalid, replied: %s", actual)
 }
 
 // the code from which we generate the test command
