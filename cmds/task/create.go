@@ -39,11 +39,12 @@ func init() {
 	fs.String("task-id", "", "taskID of the task, if omitted, a new one will be assigned")
 	fs.StringVar(&createPayload.ProvisionerID, "provisioner", "", "ID of the provisioner to use")
 	fs.StringVar(&createPayload.WorkerType, "worker-type", "", "worker-type to use within the provisioner")
-	fs.StringSliceP("env", "e", []string{}, "Environment variables to add to the task's environment (VARIABLE=VALUE)")
+	fs.StringSliceP("env", "e", []string{}, "Environment variable to add to the task's environment (repeatable) (format: VARIABLE=VALUE)")
 	fs.StringVar(&createPayload.Metadata.Name, "name", "", "Human readable name of the task")
 	fs.StringVar(&createPayload.Metadata.Description, "description", "", "Human readable description of the task")
 	fs.StringVar(&createPayload.Metadata.Owner, "owner", "", "Email of the task's owner")
 	fs.StringVar(&createPayload.Metadata.Source, "source", "", "URL pointing to the source of the task")
+	fs.StringSliceVar(&createPayload.Dependencies, "dependency", []string{}, "TaskID of a dependency (repeatable)")
 	for _, f := range []string{"provisioner", "worker-type"} {
 		createCmd.MarkFlagRequired(f)
 	}
