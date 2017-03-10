@@ -70,6 +70,18 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 		creds = config.Credentials.ToClientCredentials()
 	}
 
+	var taskID string
+	if s := stringFlagHelper(cmd.Flags(), "task-id"); s != "" {
+		if slugid.Decode(s) != nil {
+			taskID = s
+		} else {
+			return fmt.Errorf("task id '%s' is not a valid slugid", s)
+		}
+	} else {
+		taskID = slugid.V4()
+	}
+	createPayload.TaskGroupID = taskID
+
 	env := make(map[string]string)
 	envs, err := cmd.Flags().GetStringSlice("env")
 	if err != nil {
@@ -87,26 +99,14 @@ func runCreateTask(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	var taskID string
-	if s := stringFlagHelper(cmd.Flags(), "task-id"); s != "" {
-		if slugid.Decode(s) != nil {
-			taskID = s
-		} else {
-			return fmt.Errorf("task id '%s' is not a valid slugid", s)
-		}
-	} else {
-		taskID = slugid.V4()
-	}
-	createPayload.TaskGroupID = taskID
-
 	createPayload.Payload, err = json.Marshal(struct {
 		Image       string            `json:"image"`
-		Command     string            `json:"command"`
+		Command     []string          `json:"command"`
 		Environment map[string]string `json:"env"`
 		MaxRunTime  int               `json:"maxRunTime"`
 	}{
 		Image:       args[0],
-		Command:     strings.Join(args[1:], `'`),
+		Command:     args[1:],
 		Environment: env,
 		MaxRunTime:  7200, // 2 hours
 	})
