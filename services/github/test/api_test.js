@@ -167,8 +167,9 @@ suite('api', () => {
       err ? console.log(err) : assert.equal(res.headers['content-length'], 4268);
     });
 
+    // new repo (no info yet)
     await request.get('http://localhost:60415/v1/badge/abc123/nonTCGHRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 4268);
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 7873);
     });
   });
 });
