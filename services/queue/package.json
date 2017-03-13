@@ -5,8 +5,8 @@
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
     "test": "./test/runtests.sh",
-    "pretest": "npm run compile",
-    "install": "npm run compile"
+    "pretest": "yarn run compile",
+    "install": "yarn run compile"
   },
   "repository": {
     "type": "git",
