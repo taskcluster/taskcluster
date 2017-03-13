@@ -82,7 +82,7 @@ suite('api', () => {
 
   setup(async () => {
     github = await helper.load('github');
-    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo');
+    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo');
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'coolRepo',
@@ -94,6 +94,12 @@ suite('api', () => {
       repo: 'awesomeRepo',
       sha: 'master',
       info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'success'}],
+    });
+    github.inst(9090).setStatuses({
+      owner: 'abc123',
+      repo: 'nonTCGHRepo',
+      sha: 'master',
+      info: [{creator: {id: 123345}, state: 'success'}],
     });
     github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', user: 'magicalTCspirit'});
   });
@@ -158,6 +164,10 @@ suite('api', () => {
 
     // error
     await request.get('http://localhost:60415/v1/badge/abc123/unknownRepo/master').end((err, res) => {
+      err ? console.log(err) : assert.equal(res.headers['content-length'], 4268);
+    });
+
+    await request.get('http://localhost:60415/v1/badge/abc123/nonTCGHRepo/master').end((err, res) => {
       err ? console.log(err) : assert.equal(res.headers['content-length'], 4268);
     });
   });
