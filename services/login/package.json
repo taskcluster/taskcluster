@@ -11,8 +11,8 @@
   },
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "npm run compile && ./test/runtests.sh",
-    "postinstall": "npm run compile"
+    "test": "yarn run compile && ./test/runtests.sh",
+    "postinstall": "yarn run compile"
   },
   "dependencies": {
     "assume": "https://registry.npmjs.org/assume/-/assume-1.4.1.tgz",
@@ -50,7 +50,9 @@
     "mocha": "^3.0.2",
     "taskcluster-lib-testing": "^1.0.0"
   },
+  "engine-strict": true,
   "engines": {
-    "node": "5"
+    "node": "7.4.0",
+    "yarn": "0.21.3"
   }
 }
