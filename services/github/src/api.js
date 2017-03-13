@@ -314,8 +314,13 @@ api.declare({
       let statuses = await instGithub.repos.getStatuses({owner, repo, sha: branch});
       let status = statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 
-      // Then we send a corresponding image.
-      return res.sendFile(status.state + '.svg', fileConfig);
+      if (status) {
+        // If we got a status, send a corresponding image.
+        return res.sendFile(status.state + '.svg', fileConfig);
+      } else {
+        // otherwise, it's a commit without a TC status, which probably means a new repo
+        return res.sendFile('newrepo.svg', fileConfig);
+      }
     } catch (e) {
       if (e.code < 500) {
         return res.sendFile('error.svg', fileConfig);
