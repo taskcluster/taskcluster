@@ -7,6 +7,7 @@ env:
 node_js:
 - '6'
 cache:
+  yarn: true
   directories:
     - node_modules
 addons:
@@ -15,7 +16,7 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: npm test
+script: yarn test
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094
