@@ -49,6 +49,18 @@ type APICall struct {
 	Payload     io.Reader
 }
 
+// ReducedHTTPClient is the interface that wraps the functionality of
+// http.Client that we actually use in Client.APICall.
+type ReducedHTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// defaultHTTPClient is the HTTP Client used to make requests if none are
+// defined in the client.
+// A single object is created and used because http.Client is thread-safe when
+// making multiple requests in various goroutines.
+var defaultHTTPClient ReducedHTTPClient = &http.Client{}
+
 // utility function to create a URL object based on given data
 func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
 	u, err = url.Parse(client.BaseURL + route)
@@ -92,7 +104,12 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 				return nil, nil, err
 			}
 		}
-		resp, err := (&http.Client{}).Do(callSummary.HTTPRequest)
+		var resp *http.Response
+		if client.HTTPClient != nil {
+			resp, err = client.HTTPClient.Do(callSummary.HTTPRequest)
+		} else {
+			resp, err = defaultHTTPClient.Do(callSummary.HTTPRequest)
+		}
 		// b, e := httputil.DumpResponse(resp, true)
 		// if e == nil {
 		// 	fmt.Println(string(b))
