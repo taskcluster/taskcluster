@@ -42,14 +42,14 @@ travis ci)
 
 The following processes are designed to run constantly:
 
- * `npm run start`
- * `npm run claim-reaper`
- * `npm run deadline-reaper`
+ * `yarn run start`
+ * `yarn run claim-reaper`
+ * `yarn run deadline-reaper`
 
 With the following processes running as cron jobs on daily basis:
 
- * `npm run expire-artifacts`
- * `npm run retire-tasks`
+ * `yarn run expire-artifacts`
+ * `yarn run retire-tasks`
 
 On heroku these are configured using the scheduler.
 
