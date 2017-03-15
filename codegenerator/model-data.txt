@@ -1,4 +1,4 @@
-Generated: 1488569028
+Generated: 1489602223
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5583,6 +5583,14 @@ Properties
     Type                   = 'string'
     TypeName               = 'Subject'
     SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/subject'
+  Property 'template' =
+    Default                = 'simple'
+    Description            = 'E-mail html template used to format your content.
+    '
+    Enum                   = '[simple fullscreen]'
+    Type                   = 'string'
+    TypeName               = 'Template'
+    SourceURL              = 'http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/template'
 Required               = '[address subject content]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Send Email Request'
