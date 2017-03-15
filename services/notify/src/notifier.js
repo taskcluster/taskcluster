@@ -15,7 +15,7 @@ class Notifier {
   constructor(options = {}) {
     // Set default options
     this.options = _.defaults({}, options, {
-
+      template: 'simple',
     });
     this.hashCache = [];
     this.ses = new aws.SES(_.defaults({
@@ -23,7 +23,7 @@ class Notifier {
         Source: options.email,
       },
     }, options.aws));
-    this.template = new EmailTemplate(path.join(__dirname, 'templates', 'simple'));
+    this.template = new EmailTemplate(path.join(__dirname, 'templates', this.options.template));
     this.publisher = options.publisher;
     this.sqs = new aws.SQS(options.aws);
     this.queueUrl = this.sqs.createQueue({
