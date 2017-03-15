@@ -50,6 +50,14 @@ properties:
     format:         email
     description: |
       Reply-to e-mail (this property is optional)
+  template:
+    type:           string
+    default:        "simple"
+    enum:
+      - "simple"
+      - "fullscreen"
+    description: |
+      E-mail html template used to format your content.
 additionalProperties: false
 required:
   - address
