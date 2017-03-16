@@ -88,10 +88,9 @@ api.declare({
 
   // Validate that a proper value was given for level
   if (level !== 'read-write' && level !== 'read-only') {
-    return res.status(400).json({
-      message:      "the 'level' URL parameter must be read-only or read-write",
-      levelGiven:   level
-    });
+    return res.reportError('InputError', 
+      "the 'level' URL parameter must be read-only or read-write; got {{levelGiven}}",
+      {levelGiven: level});
   }
 
   // Construct scope-sets requires (one of sets in the scopesets must be satisfied
@@ -109,10 +108,9 @@ api.declare({
   // we could easily support it, S3 does, but people rarely wants double
   // slashes in their URIs intentionally.
   if (prefix[0] === '/') {
-    return res.status(400).json({
-      message:      "The `prefix` may not start with a slash `/`",
-      prefix:       prefix
-    });
+    return res.reportError('InputError',
+      "The `prefix` may not start with a slash `/`; got `{{prefix}}`",
+      {prefix});
   }
 
   // Decide actions to be allowed on S3 objects

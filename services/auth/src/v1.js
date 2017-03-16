@@ -150,7 +150,7 @@ api.declare({
   let client = await this.Client.load({clientId}, true);
 
   if (!client) {
-    return res.status(404).json({message: "Client not found!"});
+    return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
   res.reply(client.json(this.resolver));
@@ -223,11 +223,9 @@ api.declare({
         !_.isEqual(client.scopes, scopes) ||
         client.disabled !== 0 ||
         created > Date.now() - 15 * 60 * 1000) {
-      res.status(409).json({
-        message: "client with same clientId already exists, possibly " +
-                 "an issue with retry logic or idempotency"
-      });
-      return null;
+      return res.reportError('RequesetConflict', 
+        'client with same clientId already exists, possibly an issue with retry logic or idempotency',
+        {});
     }
 
     return client;
@@ -282,7 +280,7 @@ api.declare({
   // Load client
   let client = await this.Client.load({clientId}, true);
   if (!client) {
-    return res.status(404).json({message: "Client not found!"});
+    return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
   // Reset accessToken
@@ -334,7 +332,7 @@ api.declare({
   // Load client
   let client = await this.Client.load({clientId}, true);
   if (!client) {
-    return res.status(404).json({message: "Client not found!"});
+    return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
   // the new scopes must be satisfied by the combination of the existing
@@ -394,7 +392,7 @@ api.declare({
   // Load client
   let client = await this.Client.load({clientId}, true);
   if (!client) {
-    return res.status(404).json({message: "Client not found!"});
+    return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
   // Update client
@@ -440,7 +438,7 @@ api.declare({
   // Load client
   let client = await this.Client.load({clientId}, true);
   if (!client) {
-    return res.status(404).json({message: "Client not found!"});
+    return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
   // Update client
@@ -534,7 +532,7 @@ api.declare({
   let role = await this.Role.load({roleId}, true);
 
   if (!role) {
-    return res.status(404).json({message: "Role not found!"});
+    return res.reportError('ResourceNotFound', 'Role not found', {});
   }
 
   res.reply(role.json(this.resolver));
@@ -591,11 +589,9 @@ api.declare({
     if (role.description !== input.description ||
         !_.isEqual(role.scopes, input.scopes) ||
         role > Date.now() - 15 * 60 * 1000) {
-      res.status(409).json({
-        message: "Role with same roleId already exists, possibly " +
-                 "an issue with retry logic or idempotency"
-      });
-      return null;
+      return res.reportError('RequesetConflict', 
+        'role with same clientId already exists, possibly an issue with retry logic or idempotency',
+        {});
     }
 
     return role;
@@ -647,7 +643,7 @@ api.declare({
   // Load role
   let role = await this.Role.load({roleId}, true);
   if (!role) {
-    return res.status(404).json({message: "role not found!"});
+    return res.reportError('ResourceNotFound', 'Role not found', {});
   }
 
   // Check that requester has all the scopes added.  The combined
