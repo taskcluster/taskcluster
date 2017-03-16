@@ -3,10 +3,13 @@ BINARY = taskcluster
 
 # Flags that are to be passed to the linker, can be overwritten by
 # the environment or as an argument to make.
-LDFLAGS ?= ""
+LDFLAGS ?=
 
 SOURCEDIR = .
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
+
+VERSION := $(shell git describe --always  --dirty --tags)
+LDFLAGS += -X github.com/taskcluster/taskcluster-cli/cmds/version.VersionNumber=$(VERSION)
 
 all: prep build
 
@@ -17,7 +20,7 @@ prep:
 build: $(BINARY)
 
 $(BINARY): $(SOURCES)
-	go build -ldflags ${LDFLAGS} -o ${BINARY} .
+	go build -ldflags "${LDFLAGS}" -o ${BINARY} .
 
 clean:
 	rm -f ${BINARY}

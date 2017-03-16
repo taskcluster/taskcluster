@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/taskcluster/taskcluster-cli/cmds/root"
 )
 
 func init() {
@@ -16,7 +17,7 @@ func init() {
 	cmd.Flags().StringP("output", "o", "", "Write output to file [default: -]")
 	cmd.Flags().StringP("format", "f", "yaml", "Select output format [default: yaml]")
 
-	Command.AddCommand(cmd)
+	root.Command.AddCommand(cmd)
 }
 
 func cmdGet(cmd *cobra.Command, args []string) error {

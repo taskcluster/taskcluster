@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
 )
 
@@ -16,8 +15,9 @@ var (
 		Run:   printVersion,
 	}
 
-	// VersionNumber is a formatted string with the version information.
-	VersionNumber = "1.0.0"
+	// VersionNumber is a formatted string with the version information. This is
+	// filled in by the Makefile
+	VersionNumber string
 )
 
 func init() {
