@@ -43,7 +43,7 @@ func init() {
 	fs := runCmd.Flags()
 
 	fs.StringVar(&runPayload.ProvisionerID, "provisioner", "", "ID of the provisioner to use")
-	fs.StringVar(&runPayload.WorkerType, "worker-type", "", "worker-type to use within the provisioner")
+	fs.StringVar(&runPayload.WorkerType, "worker-type", "", "Type of worker to use within the provisioner")
 	fs.StringSliceP("env", "e", []string{}, "Environment variable to add to the task's environment (repeatable) (format: VARIABLE=VALUE)")
 	fs.StringVar(&runPayload.Metadata.Name, "name", "Taskcluster-cli Task", "Human readable name of the task")
 	fs.StringVar(&runPayload.Metadata.Description, "description", "Created by Taskcluster-cli", "Human readable description of the task")
