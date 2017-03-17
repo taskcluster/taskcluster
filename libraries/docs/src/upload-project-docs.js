@@ -9,7 +9,7 @@ const main = async () => {
 
   await docs.documenter({
     // use the taskclusterProxy if running in a task
-    authBaseUrl: process.env.TASK_ID ? 'http://taskcluster/auth' : undefined,
+    authBaseUrl: process.env.TASK_ID ? 'http://taskcluster/auth/v1/' : undefined,
     project: env('DOCS_PROJECT'),
     tier: env('DOCS_TIER'),
     docsFolder: env('DOCS_FOLDER'),
