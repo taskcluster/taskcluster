@@ -21,6 +21,10 @@ A taskcluster-lib-docs tarball has the following contents:
     └── <some other schema>.json
 ```
 
+All components except `metadata.json` are optional. They are treated as if they
+were included in `src/reference/<tier>/<project>` in the
+[taskcluster-docs](https://github.com/taskcluster/taskcluster-docs) repo.
+
 The `metadata.json` file should contain the following:
 
 ```json
@@ -31,4 +35,4 @@ The `metadata.json` file should contain the following:
 }
 ```
 
-Where `version` is locked to `1`, `tier` is either `platform` or `core`, and `menuIndex` is an integer that reorders this document in the menu on the docs site (lower is earlier).
+Where `version` is locked to `1`, `tier` must be one of the allowed tiers, and `menuIndex` is an integer that reorders this document in the menu on the docs site (lower is earlier).
