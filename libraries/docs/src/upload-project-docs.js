@@ -20,6 +20,7 @@ const main = async () => {
 
 if (!module.parent) {
   main().catch(err => {
+    console.log(err);
     console.log(err.stack);
     process.exit(1);
   });
