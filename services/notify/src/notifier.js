@@ -106,6 +106,10 @@ class Notifier {
   }
 
   async irc({channel, user, message}) {
+    if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
+      debug('imatchrc channel ' + channel + ' invalid format. Not attempting to send.');
+      return;
+    }
     if (this.isDuplicate(channel, user, message)) {
       debug('Duplicate irc message send detected. Not attempting resend.');
       return;
