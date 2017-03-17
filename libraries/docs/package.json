@@ -10,6 +10,9 @@
     "pretest": "npm run compile",
     "test": "mocha .test/lint.js .test/*_test.js"
   },
+  "bin": {
+    "upload-project-docs": "lib/upload-project-docs.js"
+  },
   "files": [
     "lib"
   ],
@@ -36,7 +39,7 @@
     "babel-preset-taskcluster": "^2.3.0",
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
-    "mocha": "^2.5.3",
+    "mocha": "^3.2.0",
     "mocha-eslint": "^2.0.2",
     "pulse-publisher": "^1.1.2",
     "source-map-support": "^0.4.0",

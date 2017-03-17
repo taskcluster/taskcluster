@@ -14,11 +14,12 @@ let debug = require('debug')('taskcluster-lib-docs');
 async function documenter(options) {
   options = _.defaults({}, options, {
     aws: null,
-    credentials: {},
+    credentials: undefined,
     project: null,
     tier: null,
     schemas: {},
     menuIndex: 10,
+    readme: path.join(rootdir.get(), 'README.md'),
     docsFolder: path.join(rootdir.get(), '/docs'),
     bucket: 'taskcluster-raw-docs',
     references: [],
@@ -32,8 +33,9 @@ async function documenter(options) {
     'platform',
     'integrations',
     'operations',
+    'library',
   ].indexOf(options.tier) !== -1,
-    'options.tier is one of core, platform, integration, or operations');
+    'options.tier is one of core, platform, integration, operations, or library');
 
   if (!options.project) {
     let pack = require(path.join(rootdir.get(), 'package.json'));
@@ -71,7 +73,7 @@ async function documenter(options) {
   try {
     tarball.entry(
       headers('README.md'),
-      await fs.readFile(path.join(rootdir.get(), 'README.md'))
+      await fs.readFile(options.readme)
     );
   } catch (err) {
     if (err.code !== 'ENOENT') {
@@ -101,6 +103,7 @@ async function documenter(options) {
     if (!creds) {
       let auth = new client.Auth({
         credentials: options.credentials,
+        baseUrl: options.authBaseUrl,
       });
 
       creds = await auth.awsS3Credentials('read-write', options.bucket, options.project + '/');
