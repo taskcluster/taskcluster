@@ -17,7 +17,7 @@ Example routes:
 ]
 ```
 
-Further specification of this is contained in the docs.
+Further specification of this is contained in the docs. **Note: The channel should have the # preceeding it.**
 
 Testing
 -------
