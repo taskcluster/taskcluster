@@ -32,6 +32,8 @@ EOF
 docker build --no-cache -t taskcluster/upload-project-docs:$VERSION .
 docker tag taskcluster/upload-project-docs:$VERSION taskcluster/upload-project-docs:latest
 
+set +x
+
 echo "If taskcluster/upload-project-docs:$VERSION is suitable, run"
 echo docker push taskcluster/upload-project-docs:$VERSION
 echo docker push taskcluster/upload-project-docs:latest
