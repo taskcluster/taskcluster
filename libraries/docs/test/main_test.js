@@ -73,7 +73,7 @@ suite('End to End', () => {
     return output;
   }
 
-  function assertInTarball(shoulds, tarball, done) {
+  function assertInTarball(shoulds, tarball) {
     shoulds.push('taskcluster-lib-docs/metadata.json');
     shoulds.push('taskcluster-lib-docs/README.md');
     let contains = [];
@@ -86,11 +86,18 @@ suite('End to End', () => {
       stream.resume(); // just auto drain the stream
     });
 
-    extractor.on('finish', function() {
-      done(assert.deepEqual(contains.sort(), shoulds.sort()));
-    });
+    return new Promise((resolve, reject) => {
+      extractor.on('finish', function() {
+        try {
+          assert.deepEqual(contains.sort(), shoulds.sort());
+        } catch (e) {
+          reject(e);
+        }
+        resolve();
+      });
 
-    tarball.pipe(zlib.Unzip()).pipe(extractor);
+      tarball.pipe(zlib.Unzip()).pipe(extractor);
+    });
   }
 
   test('tarball exists', async function() {
@@ -109,6 +116,9 @@ suite('End to End', () => {
   });
 
   test('test publish tarball', async function() {
+    if (!credentials.clientId) {
+      this.skip();
+    }
     let doc = await documenter({
       project: 'docs-testing',
       schemas: validate.schemas,
@@ -122,7 +132,7 @@ suite('End to End', () => {
     assert.ok(doc.tgz);
   });
 
-  test('tarball contains docs and metadata', async function(done) {
+  test('tarball contains docs and metadata', async function() {
     let doc = await documenter({
       docsFolder: './test/docs',
       tier,
@@ -131,10 +141,10 @@ suite('End to End', () => {
       'taskcluster-lib-docs/docs/example.md',
       'taskcluster-lib-docs/docs/nested/nested-example.md',
     ];
-    assertInTarball(shoulds, doc.tgz, done);
+    assertInTarball(shoulds, doc.tgz);
   });
 
-  test('tarball contains schemas and metadata', async function(done) {
+  test('tarball contains schemas and metadata', async function() {
     let doc = await documenter({
       schemas: validate.schemas,
       tier,
@@ -144,10 +154,10 @@ suite('End to End', () => {
       'taskcluster-lib-docs/schemas/bar.json',
       'taskcluster-lib-docs/docs/format.md',
     ];
-    assertInTarball(shoulds, doc.tgz, done);
+    assertInTarball(shoulds, doc.tgz);
   });
 
-  test('tarball contains references and metadata', async function(done) {
+  test('tarball contains references and metadata', async function() {
     let doc = await documenter({
       references,
       tier,
@@ -157,20 +167,23 @@ suite('End to End', () => {
       'taskcluster-lib-docs/references/events.json',
       'taskcluster-lib-docs/docs/format.md',
     ];
-    assertInTarball(shoulds, doc.tgz, done);
+    assertInTarball(shoulds, doc.tgz);
   });
 
-  test('tarball contains only metadata', async function(done) {
+  test('tarball contains only metadata', async function() {
     let doc = await documenter({
       tier,
     });
     let shoulds = [
       'taskcluster-lib-docs/docs/format.md',
     ];
-    assertInTarball(shoulds, doc.tgz, done);
+    assertInTarball(shoulds, doc.tgz);
   });
 
   test('download tarball contains project', async function() {
+    if (!credentials.clientId) {
+      this.skip();
+    }
 
     let stream = await downloader({
       project: 'docs-testing',
