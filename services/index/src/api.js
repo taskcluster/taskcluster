@@ -154,13 +154,7 @@ api.declare({
     if (err.code !== 'ResourceNotFound') {
       throw err;
     }
-    // Return a 404 error
-    return res.status(404).json({
-      message:      'Indexed task not found',
-      error: {
-        namespace:  req.params.namespace
-      }
-    });
+    return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   });
 });
 
@@ -347,12 +341,6 @@ api.declare({
     if (err.code !== 'ResourceNotFound') {
       throw err;
     }
-    // Return a 404 error
-    return res.status(404).json({
-      message:      'Indexed task not found',
-      error: {
-        namespace:  req.params.namespace
-      }
-    });
+    return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   });
 });
