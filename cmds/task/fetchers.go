@@ -127,7 +127,18 @@ func runArtifacts(credentials *tcclient.Credentials, args []string, out io.Write
 }
 
 func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	q := makeQueue(credentials)
 	taskID := args[0]
+
+	s, err := q.Status(taskID)
+	if err != nil {
+		return fmt.Errorf("could not get the status of the task %s: %v", taskID, err)
+	}
+
+	state := s.Status.State
+	if state == "unscheduled" || state == "pending" {
+		return fmt.Errorf("could not fetch the logs of task %s because it's in a %s state", taskID, state)
+	}
 
 	path := "https://queue.taskcluster.net/v1/task/" + taskID + "/artifacts/public/logs/live.log"
 
@@ -138,7 +149,6 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 	defer resp.Body.Close()
 
 	// Read line by line for live logs.
-	// This will also print the error message for failed requests.
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
 		fmt.Fprintln(out, scanner.Text())

@@ -65,7 +65,7 @@ func TestLogCommand(t *testing.T) {
 	cmd.SetOutput(buf)
 
 	args := []string{"TtAsnXdCS1-tAQxvMO4rHQ"}
-	runLog(nil, args, cmd.OutOrStdout(), cmd.Flags())
+	runLog(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
 	// This is the output of a static log
 	s := "[taskcluster 2017-03-03 21:18:34.946Z] Task ID: TtAsnXdCS1-tAQxvMO4rHQ\n" +
