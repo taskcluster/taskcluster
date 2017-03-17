@@ -43,6 +43,8 @@ tasks:
           - push
         branches:
           - master
+    scopes:
+      - auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-docs/
     payload:
       maxRunTime: 3600
           # temporary
