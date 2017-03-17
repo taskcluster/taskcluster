@@ -28,7 +28,7 @@ git clone {{event.head.repo.url}} repo &&
 cd repo &&
 git config advice.detachedHead false &&
 git checkout {{event.head.sha}} &&
-export DEBUG=* DOCS_PROJECT=taskcluster-lib-docs DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
+export DOCS_PROJECT=taskcluster-lib-docs DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
 upload-project-docs
 ```
 
