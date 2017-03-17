@@ -44,7 +44,7 @@ async function documenter(options) {
   }
 
   function headers(name, dir) {
-    return {name: path.join(options.project, dir || '', name)};
+    return {name: path.join(dir || '', name)};
   }
 
   let tarball = tar.pack();
