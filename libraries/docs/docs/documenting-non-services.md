@@ -32,4 +32,4 @@ export DOCS_PROJECT=taskcluster-lib-docs DOCS_TIER=libraries DOCS_FOLDER=docs DO
 upload-project-docs
 ```
 
-See this project's `.taskcluster.yml` for an example.
+See [this project's .taskcluster.yml](https://github.com/taskcluster/taskcluster-lib-docs/blob/master/.taskcluster.yml) for an example.
