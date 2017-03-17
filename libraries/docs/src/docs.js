@@ -28,13 +28,13 @@ async function documenter(options) {
 
   assert(options.schemas, 'options.schemas must be given');
   assert(options.tier, 'options.tier must be given');
-  const tiers = 
-      [
+  const tiers = [
     'core',
     'platform',
     'integrations',
     'operations',
     'libraries',
+  ];
   assert(tiers.indexOf(options.tier) !== -1,
     `options.tier must be one of ${tiers.join(', ')}`);
 

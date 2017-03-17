@@ -48,7 +48,7 @@ tasks:
     payload:
       maxRunTime: 3600
           # temporary
-      image: taskcluster/upload-project-docs:latest
+      image: taskcluster/upload-project-docs:latest3
       features:
         taskclusterProxy:
           true
