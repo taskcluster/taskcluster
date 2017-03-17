@@ -107,14 +107,23 @@ Options and Defaults
 The following are the options that can be passed to the publisher function in this library. They are listed with their defaults.
 
 ```js
-    // A set of Taskcluster credentials that must contain both 'clientId' and 'accessToken' fields
-    // The client must have scopes for [ auth:aws-s3:read-write:taskcluster-raw-docs/<project>/ ]
-    // Don't forget the trailing slash!
+
+    // A set of Taskcluster credentials. The client must have scope
+    // `auth:aws-s3:read-write:taskcluster-raw-docs/<project>/`. Don't forget the
+    // trailing slash! Credentials can be omitted if the authBaseUrl points to a
+    // proxy that will add credentials.
     credentials: {},
+
+    // The base URL for the auth service.  This can be useful when running in a task with access
+    // to a taskclusterProxy
+    authBaseUrl: undefined,
 
     // The name of the project will automatically be set to your package name from package.json,
     // but can be overridden if needed.
     project: '<name of project in package.json>',
+
+    // The path to the README.md file for the project
+    readme: '<project root>/README.md',
 
     // This must be set to the project's tier, corresponding to the section of the docs reference
     // chapter that this will appear in. Options include 'platform', 'core', 'integrations', 'operations',
@@ -146,6 +155,39 @@ The following are the options that can be passed to the publisher function in th
     // and 'secretAccessKey'.  This is only required if credentials is unavailable.
     aws: null,
 ```
+
+Documenting Non-JS Projects
+---------------------------
+
+For projects that aren't in JS, or can't publish on deploy (such as libraries), you can push documentation manually:
+
+```sh
+npm install -g taskcluster-lib-docs
+
+export TASKCLUSTER_CLIENT_ID=..
+export TASKCLUSTER_ACCESS_TOKEN=..
+export DOCS_PROJECT=my-project
+export DOCS_TIER=integration
+export DOCS_FOLDER=/path/to/myproject/docs
+export DOCS_README=/path/to/myproject/README.md
+upload-project-docs
+```
+
+This will upload the docs directory and README, but does not include any references or schemas.
+The credentials must have the same scopes as described above.
+If upload-project-docs is run in a task with access to taskcluster-proxy, the credentials can be omitted.
+
+This is even easier from a task run within TaskCluster.
+There is a docker image named `taskcluster/upload-project-docs:latest` which can do all of this with a command like
+
+```
+/bin/bash -lc 'git clone https://github.com/taskcluster/taskcluster-github repo
+    && cd repo 
+    && git checkout master 
+    && DOCS_PROJECT=test DOCS_TIER=operations DOCS_FOLDER=docs DOCS_README=README.md upload-project-docs'
+```
+
+See this project's `.taskcluster.yml` for an example.
 
 Development & Testing
 ---------------------
