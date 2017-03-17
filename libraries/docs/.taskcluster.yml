@@ -58,7 +58,7 @@ tasks:
           cd repo &&
           git config advice.detachedHead false &&
           git checkout {{event.head.sha}} &&
-          export DOCS_PROJECT=taskcluster-lib-docs DOCS_TIER=library DOCS_FOLDER=docs DOCS_README=README.md &&
+          export DEBUG=* DOCS_PROJECT=taskcluster-lib-docs DOCS_TIER=library DOCS_FOLDER=docs DOCS_README=README.md &&
           upload-project-docs
     metadata:
       name: "taskcluster-lib-docs docs upload"
