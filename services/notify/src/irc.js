@@ -104,6 +104,10 @@ class IRCBot {
   }
 
   async notify({channel, user, message}) {
+    if (channel && !/^[#&][^ ,\u{0007}]{1,199}$/u.test(channel)) {
+      debug('irc channel ' + channel + ' invalid format. Not attempting to send.');
+      return;
+    }
     debug(`Sending message to ${user || channel}: ${message}.`);
     if (channel) {
       // This callback does not ever have an error. If it triggers, we have succeeded
