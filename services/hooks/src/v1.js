@@ -76,9 +76,7 @@ api.declare({
     },
   });
   if (hooks.length == 0) {
-    return res.status(404).json({
-      message: 'No such group',
-    });
+    return res.reportError('ResourceNotFound', 'No such group', {});
   }
   return res.reply({hooks: hooks});
 });
@@ -104,9 +102,7 @@ api.declare({
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   // Reply with the hook definition
@@ -134,9 +130,7 @@ api.declare({
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   let reply = {lastFire: hook.lastFire};
@@ -172,9 +166,7 @@ api.declare({
 
   // Handle the case where the hook doesn't exist
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   // Return a schedule only if a schedule is defined
@@ -230,9 +222,8 @@ api.declare({
     try {
       parser.parseExpression(schedule);
     } catch (err) {
-      return res.status(400).json({
-        message: err.message + ' in ' + schedule,
-      });
+      return res.reportError('InputError',
+        '{{message}} in {{schedule}}', {message: err.message, schedule});
     }
   });
 
@@ -253,9 +244,9 @@ api.declare({
     let existingHook = await this.Hook.load({hookGroupId, hookId}, true);
 
     if (!_.isEqual(hookDef, await existingHook.definition())) {
-      return res.status(409).json({
-        message: 'hook `' + hookGroupId + '/' + hookId + '` already exists.',
-      });
+      return res.reportError('RequestConflict',
+        'hook `' + hookGroupId + '/' + hookId + '` already exists.',
+        {});
     }
   }
 
@@ -293,10 +284,7 @@ api.declare({
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found. ' +
-        'Use PUT instead of PATCH to create a resource.',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   // Attempt to modify properties of the hook
@@ -305,9 +293,8 @@ api.declare({
     try {
       parser.parseExpression(schedule);
     } catch (err) {
-      return res.status(400).json({
-        message: err.message + ' in ' + schedule,
-      });
+      return res.reportError('InputError',
+        '{{message}} in {{schedule}}', {message: err.message, schedule});
     }
   });
 
@@ -380,9 +367,7 @@ api.declare({
   var error = null;
 
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   try {
@@ -408,9 +393,8 @@ api.declare({
   if (resp) {
     return res.reply(resp);
   } else {
-    return res.status(400).json({
-      error: 'could not create task: ' + (error || 'unknown').toString(),
-    });
+    return res.reportError('InputError', 'Could not create task: {{error}}',
+      {error: (error || 'unknown').toString()});
   }
 });
 
@@ -439,9 +423,7 @@ api.declare({
   let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   return res.reply({
@@ -474,9 +456,7 @@ api.declare({
   let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   await hook.modify((hook) => {
@@ -510,16 +490,12 @@ api.declare({
 
   // Return a 404 if the hook entity doesn't exist
   if (!hook) {
-    return res.status(404).json({
-      message: 'Hook not found',
-    });
+    return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   // Return 401 if the token doesn't exist or doesn't match
   if (req.params.token !== hook.triggerToken) {
-    return res.status(401).json({
-      message: 'Invalid token',
-    });
+    return res.reportError('AuthenticationFailed', 'invalid hook token', {});
   }
 
   let resp = await this.taskcreator.fire(hook, payload);

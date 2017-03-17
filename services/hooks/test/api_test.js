@@ -262,7 +262,7 @@ suite('API', function() {
         await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'});
       } catch (err) {
         assume(err.statusCode).equals(400);
-        assume(err.body.error).exists();
+        assume(err.body.message).exists();
         return;
       }
       throw new Error('should have thrown an exception');
