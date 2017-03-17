@@ -74,8 +74,8 @@ suite('End to End', () => {
   }
 
   function assertInTarball(shoulds, tarball) {
-    shoulds.push('taskcluster-lib-docs/metadata.json');
-    shoulds.push('taskcluster-lib-docs/README.md');
+    shoulds.push('metadata.json');
+    shoulds.push('README.md');
     let contains = [];
     let extractor = tar.extract();
     extractor.on('entry', (header, stream, callback) => {
@@ -138,8 +138,8 @@ suite('End to End', () => {
       tier,
     });
     let shoulds = [
-      'taskcluster-lib-docs/docs/example.md',
-      'taskcluster-lib-docs/docs/nested/nested-example.md',
+      'docs/example.md',
+      'docs/nested/nested-example.md',
     ];
     assertInTarball(shoulds, doc.tgz);
   });
@@ -150,9 +150,9 @@ suite('End to End', () => {
       tier,
     });
     let shoulds = [
-      'taskcluster-lib-docs/schemas/foo.json',
-      'taskcluster-lib-docs/schemas/bar.json',
-      'taskcluster-lib-docs/docs/format.md',
+      'schemas/foo.json',
+      'schemas/bar.json',
+      'docs/format.md',
     ];
     assertInTarball(shoulds, doc.tgz);
   });
@@ -163,9 +163,9 @@ suite('End to End', () => {
       tier,
     });
     let shoulds = [
-      'taskcluster-lib-docs/references/api.json',
-      'taskcluster-lib-docs/references/events.json',
-      'taskcluster-lib-docs/docs/format.md',
+      'references/api.json',
+      'references/events.json',
+      'docs/format.md',
     ];
     assertInTarball(shoulds, doc.tgz);
   });
@@ -175,7 +175,7 @@ suite('End to End', () => {
       tier,
     });
     let shoulds = [
-      'taskcluster-lib-docs/docs/format.md',
+      'docs/format.md',
     ];
     assertInTarball(shoulds, doc.tgz);
   });
@@ -194,7 +194,7 @@ suite('End to End', () => {
     let files = await getObjectsInStream(stream);
 
     let shoulds = [
-      'docs-testing/metadata.json',
+      'metadata.json',
     ];
 
     for (let should of shoulds) {
