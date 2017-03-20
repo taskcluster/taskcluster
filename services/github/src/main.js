@@ -46,7 +46,6 @@ let load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'integrations',
       schemas: validator.schemas,
-      project: 'github',
       references: [
         {
           name: 'api',
