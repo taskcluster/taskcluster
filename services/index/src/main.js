@@ -11,6 +11,7 @@ var loader      = require('taskcluster-lib-loader');
 var monitor     = require('taskcluster-lib-monitor');
 var validator   = require('taskcluster-lib-validate');
 var App         = require('taskcluster-lib-app');
+var docs        = require('taskcluster-lib-docs');
 
 // Create component loader
 var load = loader({
@@ -70,6 +71,21 @@ var load = loader({
     }),
   },
 
+  docs: {
+    requires: ['cfg', 'validator'],
+    setup: ({cfg, validator}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        },
+      ],
+    }),
+  },
+
   api: {
     requires: ['cfg', 'validator', 'IndexedTask', 'Namespace', 'monitor', 'queue'],
     setup: async ({cfg, validator, IndexedTask, Namespace, monitor, queue}) => v1.setup({
@@ -90,8 +106,8 @@ var load = loader({
   },
 
   server: {
-    requires: ['cfg', 'api'],
-    setup: async ({cfg, api}) => {
+    requires: ['cfg', 'api', 'docs'],
+    setup: async ({cfg, api, docs}) => {
       let app = App(cfg.server);
       app.use('/v1', api);
       return app.createServer();
