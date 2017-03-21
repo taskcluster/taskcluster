@@ -91,6 +91,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
             `,
             subject: `Task ${status.status.state}: ${task.metadata.name} - ${taskId}`,
             link: {text: 'Inspect Task', href},
+            template: 'simple',
           });
         default:
       }
