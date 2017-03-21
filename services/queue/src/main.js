@@ -68,7 +68,6 @@ let load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'platform',
       schemas: validator.schemas,
-      project: 'queue',
       references: [{
         name: 'api',
         reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
