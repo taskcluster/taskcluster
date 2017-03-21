@@ -23,10 +23,9 @@ type FakeServerSuite struct {
 func (suite *FakeServerSuite) SetupSuite() {
 	// set up a fake server that knows how to answer the `task()` method
 	handler := http.NewServeMux()
-	handler.HandleFunc("/v1/task/"+fakeTaskID,
-		func(w http.ResponseWriter, _ *http.Request) {
-			io.WriteString(w, `{"metadata": {"name": "my-test"}}`)
-		})
+	handler.HandleFunc("/v1/task/"+fakeTaskID, taskHandler)
+
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/status", manifestHandler)
 	suite.testServer = httptest.NewServer(handler)
 
 	// set the base URL the subcommands use to point to the fake server
@@ -36,6 +35,30 @@ func (suite *FakeServerSuite) SetupSuite() {
 func (suite *FakeServerSuite) TearDownSuite() {
 	suite.testServer.Close()
 	queueBaseURL = ""
+}
+
+// returns the test task on request
+func taskHandler(w http.ResponseWriter, _ *http.Request) {
+	metadata := `{"metadata": {"name": "my-test"}, "taskGroupId": "my-test"}`
+	io.WriteString(w, metadata)
+}
+
+// returns the test status on request
+func manifestHandler(w http.ResponseWriter, _ *http.Request) {
+	status := `{
+				  "status": {
+				    "state": "completed",
+				    "runs": [
+				      {
+				        "runId": 0,
+				        "state": "completed",
+				        "reasonCreated": "scheduled",
+				        "reasonResolved": "completed"
+				      }
+				    ]
+				  }
+				}`
+	io.WriteString(w, status)
 }
 
 func (suite *FakeServerSuite) TestNameCommand() {
@@ -81,4 +104,48 @@ func TestLogCommand(t *testing.T) {
 		"[taskcluster 2017-03-03 21:18:48.946Z] Successful task run with exit code: 0 completed in 14.001 seconds\n"
 
 	assert.Equal(string(buf.Bytes()), s, "Log's are not equal.")
+}
+
+func (suite *FakeServerSuite) TestArtifactsCommand() {
+	// TO-DO
+}
+
+func (suite *FakeServerSuite) TestGroupCommand() {
+	// set up to run a command and capture output
+	buf := &bytes.Buffer{}
+	cmd := &cobra.Command{}
+	cmd.SetOutput(buf)
+
+	// run the command
+	args := []string{fakeTaskID}
+	runGroup(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal(string(buf.Bytes()), "my-test\n")
+}
+
+func (suite *FakeServerSuite) TestStatusCommand() {
+	// set up to run a command and capture output
+	buf := &bytes.Buffer{}
+	cmd := &cobra.Command{}
+	cmd.SetOutput(buf)
+
+	args := []string{fakeTaskID}
+
+	// Test run flag
+	cmd.Flags().IntP("run", "r", 0, "Specifies which run to consider.")
+	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal(string(buf.Bytes()), "completed 'completed'\n")
+
+	// Test all-runs flag
+	buf2 := &bytes.Buffer{}
+	cmd.SetOutput(buf2)
+
+	cmd.Flags().Set("run", "-1")
+	cmd.Flags().BoolP("all-runs", "a", true, "Specifies which run to consider.")
+
+	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal(string(buf2.Bytes()), "Run #0: completed 'completed'\n")
+
 }
