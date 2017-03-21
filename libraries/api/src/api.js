@@ -48,7 +48,7 @@ var debug = Debug('api');
  * DEBUG settings; otherwise, log with debug
  */
 var authLog = (...args) => console.log(...args);
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV !== 'production') {
   var authLog = Debug('api.authz');
 }
 
