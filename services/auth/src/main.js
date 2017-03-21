@@ -106,7 +106,6 @@ let load = Loader({
       tier: 'platform',
       schemas: validator.schemas,
       bucket: cfg.app.buckets.docs,
-      project: 'auth',
       references: [
         {
           name: 'api',
