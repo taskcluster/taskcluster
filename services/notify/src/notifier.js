@@ -14,16 +14,13 @@ let EmailTemplate = require('email-templates').EmailTemplate;
 class Notifier {
   constructor(options = {}) {
     // Set default options
-    this.options = _.defaults({}, options, {
-      template: 'simple',
-    });
+    this.options = _.defaults({}, options);
     this.hashCache = [];
     this.ses = new aws.SES(_.defaults({
       params: {
         Source: options.email,
       },
     }, options.aws));
-    this.template = new EmailTemplate(path.join(__dirname, 'templates', this.options.template));
     this.publisher = options.publisher;
     this.sqs = new aws.SQS(options.aws);
     this.queueUrl = this.sqs.createQueue({
@@ -47,7 +44,7 @@ class Notifier {
     this.hashCache = _.take(this.hashCache, 1000);
   }
 
-  async email({address, subject, content, link, replyTo}) {
+  async email({address, subject, content, link, replyTo, template}) {
     if (this.isDuplicate(address, subject, content, link, replyTo)) {
       debug('Duplicate email send detected. Not attempting resend.');
       return;
@@ -63,7 +60,9 @@ class Notifier {
       smartLists:   true,
       smartypants:  false,
     });
-    let mail = await this.template.render({address, subject, content, formatted, link});
+
+    let tmpl = new EmailTemplate(path.join(__dirname, 'templates', template || 'simple'));
+    let mail = await tmpl.render({address, subject, content, formatted, link});
     let html = mail.html;
     content = mail.text;
     subject = mail.subject;
