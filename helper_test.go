@@ -94,7 +94,7 @@ func setup(t *testing.T) {
 		config.CachesDir = filepath.Join(defaultTasksDir(), "caches")
 	}
 
-	// Needed for tests that don't call runWorker()
+	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskContext = &TaskContext{
 		TaskDir: testdataDir,

@@ -49,7 +49,7 @@ func TestAppDataNotShared(t *testing.T) {
 	taskID2, _ := submitTask(t, td2, payload2)
 
 	config.NumberOfTasksToRun = 2
-	runWorker()
+	RunWorker()
 
 	// make sure both tasks resolved successfully
 	for _, taskID := range []string{taskID1, taskID2} {
