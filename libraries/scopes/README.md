@@ -70,3 +70,4 @@ assert(scopeUtils.scopeMatch(['a*', 'b'], [['a', 'b'], ['c']]));
 
 // Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
 assert(!scopeUtils.scopeMatch(['b'], [['a', 'b'], ['c']]));
+```
