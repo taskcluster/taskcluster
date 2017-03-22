@@ -14,9 +14,6 @@ node_js:
 - '5'
 - '6'
 - '7'
-before_install:
-- openssl aes-256-cbc -K $encrypted_f6dcbce4fb59_key -iv $encrypted_f6dcbce4fb59_iv
-  -in taskcluster-base-test.conf.json.enc -out taskcluster-base-test.conf.json -d
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094
