@@ -1,12 +1,11 @@
-suite('Shutdown on idle', function() {
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-  var cmd = require('./helper/cmd');
+import assert from 'assert';
+import * as settings from '../settings';
+import cmd from './helper/cmd';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
 
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-
-  suite('with retrict CPU enabled', function() {
+suite('Shutdown on idle', () => {
+  suite('with retrict CPU enabled', () => {
     var worker;
     setup(async function () {
       settings.configure({

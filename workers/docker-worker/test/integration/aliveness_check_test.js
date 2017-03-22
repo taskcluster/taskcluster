@@ -1,38 +1,36 @@
+import waitForEvent from '../../build/lib/wait_for_event';
+import * as settings from '../settings';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
+
 suite('Aliveness check', function() {
-  var co = require('co');
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-
   // Ensure we don't leave behind our test configurations.
-  teardown(co(function* () {
-    yield worker.terminate();
+  teardown(async () => {
+    await worker.terminate();
     settings.cleanup();
-  }));
+  });
 
   var worker;
-  setup(co(function * () {
+  setup(async () => {
     settings.configure({
       alivenessCheckInterval: 200, // 200ms
     });
 
     worker = new TestWorker(DockerWorker);
-  }));
+  });
 
-  test('Aliveness check pings', co(function *() {
+  test('Aliveness check pings', async () => {
     // So we don't immediately shutdown.
-    yield worker.launch();
+    await worker.launch();
 
     var checks = 20;
 
     var now = Date.now();
     while (checks-- > 0) {
-      yield waitForEvent(worker, 'aliveness check');
+      await waitForEvent(worker, 'aliveness check');
     }
     var end = Date.now();
     assert.ok(end - now > 2000, 'aliveness check ran over 2s');
-  }));
+  });
 });
 

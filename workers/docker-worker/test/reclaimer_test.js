@@ -1,6 +1,6 @@
 suite('Reclaimer', function() {
   var assert = require('assert');
-  var Reclaimer = require('../lib/task').Reclaimer;
+  var Reclaimer = require('../build/lib/task').Reclaimer;
   var fakeRuntime, fakeTask;
   var reclaims;
   var taskAction;
@@ -22,6 +22,7 @@ suite('Reclaimer', function() {
 
     class FakeTask extends EventEmitter {
       constructor() {
+        super();
         this.queue = { reclaimTask: fakeReclaimTask };
       }
 

@@ -5,7 +5,7 @@ import url from 'url';
 import DockerWorker from '../../dockerworker';
 import * as settings from '../../settings';
 import TestWorker from '../../testworker';
-import waitForEvent from '../../../lib/wait_for_event';
+import waitForEvent from '../../../build/lib/wait_for_event';
 
 suite('secure local live logging', () => {
   let worker;

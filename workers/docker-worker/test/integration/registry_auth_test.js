@@ -2,12 +2,12 @@ import assert from 'assert';
 import slugid from 'slugid';
 
 import cmd from './helper/cmd';
-import Docker from '../../lib/docker';
+import Docker from '../../build/lib/docker';
 import DockerWorker from '../dockerworker';
 import Registry from './helper/docker_registry';
 import * as settings from '../settings';
 import TestWorker from '../testworker';
-import {removeImage} from '../../lib/util/remove_image';
+import {removeImage} from '../../build/lib/util/remove_image';
 
 const CREDENTIALS = {
   username: 'testuser',

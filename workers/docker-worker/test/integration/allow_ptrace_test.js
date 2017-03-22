@@ -9,7 +9,7 @@ import request from 'superagent-promise';
 import * as settings from '../settings';
 import tar from 'tar-fs';
 import TestWorker from '../testworker';
-import waitForEvent from '../../lib/wait_for_event';
+import waitForEvent from '../../build/lib/wait_for_event';
 import Debug from 'debug';
 
 let debug = Debug('docker-worker:test:allow-ptrace-test');

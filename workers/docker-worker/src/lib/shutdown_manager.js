@@ -95,7 +95,7 @@ export default class ShutdownManager extends EventEmitter {
   }
 
   scheduleTerminationPoll() {
-    return async () => {
+    return (async () => {
       if (this.terminationTimeout) clearTimeout(this.terminationTimeout);
 
       let terminated = await this.host.getTerminationTime();
@@ -108,7 +108,7 @@ export default class ShutdownManager extends EventEmitter {
       this.terminationTimeout = setTimeout(
         this.scheduleTerminationPoll.bind(this), this.nodeTerminationPoll
       );
-    }();
+    })();
   }
 }
 

@@ -1,10 +1,10 @@
 import slugid from 'slugid';
 import * as settings from '../settings';
-import Docker from '../../lib/docker';
+import Docker from '../../build/lib/docker';
 import cmd from './helper/cmd';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
-import waitForEvent from '../../lib/wait_for_event';
+import waitForEvent from '../../build/lib/wait_for_event';
 
 let docker = new Docker();
 

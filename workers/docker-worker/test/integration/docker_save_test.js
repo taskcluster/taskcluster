@@ -9,9 +9,9 @@ import request from 'superagent-promise';
 import * as settings from '../settings';
 import tar from 'tar-fs';
 import TestWorker from '../testworker';
-import waitForEvent from '../../lib/wait_for_event';
+import waitForEvent from '../../build/lib/wait_for_event';
 import Debug from 'debug';
-import {removeImage} from '../../lib/util/remove_image';
+import {removeImage} from '../../build/lib/util/remove_image';
 
 let debug = Debug('docker-worker:test:docker-save-test');
 

@@ -1,28 +1,22 @@
-suite('taskcluster proxy', function() {
-  var co = require('co');
-  var request = require('superagent-promise');
-  var queue = new (require('taskcluster-client').Queue);
-  var cmd = require('./helper/cmd');
-  var expires = require('./helper/expires')
+import assert from 'assert';
+import cmd from './helper/cmd';
+import expires from './helper/expires';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
 
-
-  // We need to use the docker worker host here so the network connection code
-  // actually runs...
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
+suite('taskcluster proxy', () => {
 
   var worker;
-  setup(co(function * () {
+  setup(async () => {
     worker = new TestWorker(DockerWorker);
-    yield worker.launch();
-  }));
+    await worker.launch();
+  });
 
-  teardown(co(function* () {
-    yield worker.terminate();
-  }));
+  teardown(async () => {
+    await worker.terminate();
+  });
 
-  test('issue a request to taskcluster via the proxy', co(function* () {
-    var expected = 'is woot';
+  test('issue a request to taskcluster via the proxy', async () => {
     var payload = {
       storageType: 'reference',
       expires: expires().toJSON(),
@@ -30,11 +24,11 @@ suite('taskcluster proxy', function() {
       url: 'https://mozilla.com'
     };
 
-    var result = yield worker.postToQueue({
+    var result = await worker.postToQueue({
       scopes: ['queue:create-artifact:custom'],
       payload: {
         image: 'centos:latest',
-        features: { taskclusterProxy: true },
+        features: {taskclusterProxy: true},
         artifacts: {},
         command: cmd(
           'curl --retry 5 -X POST ' +
@@ -48,7 +42,7 @@ suite('taskcluster proxy', function() {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
-    assert.ok(result.artifacts['custom'], 'custom artifact is available');
-    assert.equal(result.artifacts['custom'].storageType, 'reference');
-  }));
+    assert.ok(result.artifacts.custom, 'custom artifact is available');
+    assert.equal(result.artifacts.custom.storageType, 'reference');
+  });
 });

@@ -1,29 +1,26 @@
-suite('Extend Task Graph', function() {
-  var co = require('co');
-  var get = require('./helper/get');
-  var cmd = require('./helper/cmd');
-  var slugid = require('slugid');
+import assert from 'assert';
+import get from './helper/get';
+import cmd from './helper/cmd';
+import slugid from 'slugid';
+import LocalWorker from '../dockerworker';
+import TestWorker from '../testworker';
+import Task from 'taskcluster-task-factory/task';
 
-  var scheduler = new (require('taskcluster-client').Scheduler);
-  var queue = new (require('taskcluster-client').Queue);
-
-  var LocalWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-  var Task = require('taskcluster-task-factory/task');
+suite('Extend Task Graph', () => {
 
   var EXTENSION_LABEL = 'test_task_extension';
 
   var worker;
-  setup(co(function * () {
+  setup(async () => {
     worker = new TestWorker(LocalWorker);
-    yield worker.launch();
-  }));
+    await worker.launch();
+  });
 
-  teardown(co(function* () {
-    yield worker.terminate();
-  }));
+  teardown(async () => {
+    await worker.terminate();
+  });
 
-  test('successfully extend graph', co(function* () {
+  test('successfully extend graph', async () => {
     var graphId = slugid.v4();
     var primaryTaskId = slugid.v4();
     var customTaskId = slugid.v4();
@@ -61,7 +58,7 @@ suite('Extend Task Graph', function() {
     };
 
     var json = JSON.stringify(graph);
-    var result = yield worker.postToScheduler(graphId, {
+    var result = await worker.postToScheduler(graphId, {
       metadata: {
         source: 'http://xfoobar.com'
       },
@@ -96,11 +93,11 @@ suite('Extend Task Graph', function() {
 
     assert.equal(result.length, 2, 'two tasks ran in graph');
 
-    var extendingTask = result.filter(function(task) {
-      return task.taskId === primaryTaskId
+    var extendingTask = result.filter((task) => {
+      return task.taskId === primaryTaskId;
     })[0];
 
-    var customTask = result.filter(function(task) {
+    var customTask = result.filter((task) => {
       return task.taskId === customTaskId;
     })[0];
 
@@ -116,13 +113,13 @@ suite('Extend Task Graph', function() {
     assert.ok(
       customTask.log.indexOf('wooot custom') !== 1, 'correctly executed commands'
     );
-  }));
+  });
 
-  test('task failure when graph json is invalid', co(function* () {
+  test('task failure when graph json is invalid', async () => {
     var graphId = slugid.v4();
     var primaryTaskId = slugid.v4();
 
-    var result = yield worker.postToScheduler(graphId, {
+    var result = await worker.postToScheduler(graphId, {
       metadata: {
         source: 'http://xfoobar.com'
       },
@@ -157,7 +154,7 @@ suite('Extend Task Graph', function() {
 
     console.log(result[0].log);
     assert.ok(
-      result[0].log.includes("Invalid json in taskgraph extension path"),
+      result[0].log.includes('Invalid json in taskgraph extension path'),
       'Task graph should have been logged as invalid'
     );
     assert.ok(
@@ -168,9 +165,9 @@ suite('Extend Task Graph', function() {
       result[0].run.state === 'failed',
       'Task should have been marked as failed'
     );
-  }));
+  });
 
-  test('Update invalid taskgraph id', co(function* () {
+  test('Update invalid taskgraph id', async () => {
     var graphId = slugid.v4();
     var badGraphId = slugid.v4();
     var primaryTaskId = slugid.v4();
@@ -205,7 +202,7 @@ suite('Extend Task Graph', function() {
     };
 
     var json = JSON.stringify(graph);
-    var result = yield worker.postToScheduler(graphId, {
+    var result = await worker.postToScheduler(graphId, {
       metadata: {
         source: 'http://xfoobar.com'
       },
@@ -239,16 +236,16 @@ suite('Extend Task Graph', function() {
     });
 
     assert.ok(
-      result[0].log.includes("Graph server error while extending task graph"),
+      result[0].log.includes('Graph server error while extending task graph'),
       'Task graph error not logged'
     );
     assert.ok(
       result[0].run.state === 'failed',
       'Task should have been marked as failed'
     );
-  }));
+  });
 
-  test('Update graph with invalid task scopes', co(function* () {
+  test('Update graph with invalid task scopes', async () => {
     var graphId = slugid.v4();
     var primaryTaskId = slugid.v4();
 
@@ -289,7 +286,7 @@ suite('Extend Task Graph', function() {
     };
 
     var json = JSON.stringify(graph);
-    var result = yield worker.postToScheduler(graphId, {
+    var result = await worker.postToScheduler(graphId, {
       metadata: {
         source: 'http://xfoobar.com'
       },
@@ -324,7 +321,7 @@ suite('Extend Task Graph', function() {
 
     var log = result[0].log;
     assert.ok(
-      log.includes("Graph server error while extending task graph"),
+      log.includes('Graph server error while extending task graph'),
       'Task graph error not logged'
     );
     assert.ok(
@@ -335,5 +332,5 @@ suite('Extend Task Graph', function() {
       result[0].run.state === 'failed',
       'Task should have been marked as failed'
     );
-  }));
+  });
 });

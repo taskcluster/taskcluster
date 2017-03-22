@@ -4,8 +4,9 @@ set -e -v -x
 
 sudo ln -s /vagrant /worker
 
-NODE_VERSION=v0.12.4
+NODE_VERSION=v6.9.1
 DOCKER_VERSION=1.12.6-0~ubuntu-trusty
+
 # Kernels < 3.13.0.77 and > 3.13.0.71 have an AUFS bug which can cause docker
 # containers to not exit properly because of zombie processes that can't be reaped.
 KERNEL_VER=3.13.0-79-generic
@@ -70,6 +71,9 @@ sudo apt-get install -y \
 cd /usr/local/ && \
   curl https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-linux-x64.tar.gz | tar -xz --strip-components 1 && \
   node -v
+
+# Install some necessary node packages
+npm install -g yarn
 
 # Install Video loopback devices
 sudo apt-get install -y \

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { settingsPath } from '../../test/settings';
+import { settingsPath } from '../../../.test/settings';
 import Debug from 'debug';
 
 let debug = Debug('docker-worker:host:test');

@@ -10,5 +10,7 @@
 docker-worker.conf.json
 *.box
 docker-worker-*.pub
-.test
 docker-worker.tgz
+build
+.test
+yarn-error.log

@@ -1,7 +1,7 @@
-FROM node:0.12.4
+FROM node:6.9.1
 
 # Top level bins to override system defaults
-RUN npm install -g babel@4.7.16
+RUN npm install -g babel-cli babel-preset-es2015 babel-polyfill
 RUN mkdir /hack_bins/
 ENV PATH /hack_bins/:$PATH
 

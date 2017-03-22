@@ -49,7 +49,7 @@ suite('use docker exec websocket server', () => {
           resolve(res);
         }).end();
       });
-      assert(res.statusCode === 303);
+      assert.equal(res.statusCode, 303);
       return URL.parse(res.headers.location, true).query.socketUrl;
     };
     let signedUrl = queue.buildSignedUrl(

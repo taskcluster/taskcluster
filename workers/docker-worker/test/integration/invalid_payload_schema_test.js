@@ -15,7 +15,7 @@ suite('Invalid payload schema', () => {
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
     assert.equal(result.run.reasonResolved, 'malformed-payload', 'invalid schema should fail');
-    assert.ok(result.log.contains('schema errors'));
+    assert.ok(result.log.includes('schema errors'));
   });
 
   test('invalid artifact expiration', async () => {
@@ -39,7 +39,7 @@ suite('Invalid payload schema', () => {
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
     assert.equal(result.run.reasonResolved, 'malformed-payload', 'invalid schema should fail');
-    assert.ok(result.log.contains('must not be greater than task expiration'));
+    assert.ok(result.log.includes('must not be greater than task expiration'));
   });
 
   test('invalid exit status - status string not number', async () => {
@@ -83,8 +83,8 @@ suite('Invalid payload schema', () => {
 
     assert.equal(result.run.state, 'exception', 'invalid schema should fail');
     assert.equal(result.run.reasonResolved, 'malformed-payload', 'invalid schema should fail');
-    assert.ok(result.log.contains('format is invalid json schema errors'));
-    assert.ok(result.log.contains('must not be greater than task expiration'));
-    assert.ok(result.log.contains('maxRunTime'));
+    assert.ok(result.log.includes('format is invalid json schema errors'));
+    assert.ok(result.log.includes('must not be greater than task expiration'));
+    assert.ok(result.log.includes('maxRunTime'));
   });
 });

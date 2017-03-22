@@ -14,6 +14,9 @@ export function settingsPath(path) {
 }
 
 export function write(path, data) {
+  if (!fs.existsSync(SETTINGS_DIR)) {
+    fs.mkdirSync(SETTINGS_DIR);
+  }
   fs.writeFileSync(settingsPath(path), data);
 }
 

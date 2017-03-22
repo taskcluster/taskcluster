@@ -1,10 +1,10 @@
 import assert from 'assert';
 import testworker from '../post_task';
-import Docker from '../../lib/docker';
+import Docker from '../../build/lib/docker';
 import cmd from './helper/cmd';
 import {ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, NAMESPACE} from '../fixtures/image_artifacts';
 import {createHash} from 'crypto';
-import {removeImage} from '../../lib/util/remove_image';
+import {removeImage} from '../../build/lib/util/remove_image';
 
 let docker = Docker();
 

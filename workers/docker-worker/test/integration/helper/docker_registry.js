@@ -3,9 +3,9 @@ import dockerUtils from 'dockerode-process/utils';
 import path from 'path';
 import slugid from 'slugid';
 
-import waitForEvent from '../../../lib/wait_for_event';
-import sleep from '../../../lib/util/sleep';
-import {removeImage} from '../../../lib/util/remove_image';
+import waitForEvent from '../../../build/lib/wait_for_event';
+import sleep from '../../../build/lib/util/sleep';
+import {removeImage} from '../../../build/lib/util/remove_image';
 
 // Registry proxy image...
 const DOCKER_IMAGE = 'registry:2';

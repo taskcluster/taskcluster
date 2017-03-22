@@ -5,7 +5,7 @@ import taskcluster from 'taskcluster-client';
 import cmd from '../helper/cmd';
 import DockerWorker from '../../dockerworker';
 import TestWorker from '../../testworker';
-import waitForEvent from '../../../lib/wait_for_event';
+import waitForEvent from '../../../build/lib/wait_for_event';
 
 suite('live logging', () => {
   let worker;

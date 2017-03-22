@@ -1,21 +1,33 @@
-suite('garbage collection tests', function () {
-  var assert = require('assert');
-  var co = require('co');
-  var debug = require('debug')('garbageCollectionTests');
-  var fs = require('fs');
-  var devnull = require('dev-null');
-  var docker = require('../lib/docker')();
-  var GarbageCollector = require('../lib/gc');
-  var ImageManager = require('../lib/docker/image_manager');
-  var logger = require('../lib/log').createLogger;
-  var VolumeCache = require('../lib/volume_cache');
-  var waitForEvent = require('../lib/wait_for_event');
-  var path = require('path');
-  var rmrf = require('rimraf');
-  var removeImage = require('../lib/util/remove_image').removeImage;
-  var base = require('taskcluster-base');
-  var monitoring = require('taskcluster-lib-monitor');
-  var sleep = require('../lib/util/sleep');
+import ImageManager from '../build/lib/docker/image_manager';
+import sleep from '../build/lib/util/sleep';
+import VolumeCache from '../build/lib/volume_cache';
+import assert from 'assert';
+import Debug from 'debug';
+import fs from 'fs';
+import devnull from 'dev-null';
+import Docker from '../build/lib/docker';
+import GarbageCollector from '../build/lib/gc';
+import {createLogger} from '../build/lib/log';
+import path from 'path';
+import rmrf from 'rimraf';
+import {removeImage} from '../build/lib/util/remove_image';
+import monitoring from 'taskcluster-lib-monitor';
+
+let docker = Docker();
+let debug = Debug('garbageCollectionTests');
+
+async function getImageId(docker, imageName) {
+  var dockerImages = await docker.listImages();
+  var imageId;
+  dockerImages.forEach((dockerImage) => {
+    if (dockerImage.RepoTags.indexOf(imageName) !== -1) {
+      imageId = dockerImage.Id;
+    }
+  });
+  return imageId;
+}
+
+suite('garbage collection tests', () => {
 
   var IMAGE = 'taskcluster/test-ubuntu';
 
@@ -23,19 +35,9 @@ suite('garbage collection tests', function () {
   var monitor;
   var imageManager;
 
-  function* getImageId(docker, imageName) {
-    var dockerImages = yield docker.listImages();
-    var imageId;
-    dockerImages.forEach(function (dockerImage) {
-      if (dockerImage.RepoTags.indexOf(imageName) !== -1) {
-        imageId = dockerImage.Id;
-      }
-    });
-    return imageId;
-  }
 
-  setup(co(function* () {
-    monitor = yield monitoring({
+  setup(async () => {
+    monitor = await monitoring({
         credentials: {},
         project: 'docker-worker-tests',
         mock: true
@@ -49,10 +51,10 @@ suite('garbage collection tests', function () {
         delayFactor: 15 * 1000,
         randomizationFactor: 0.25
       },
-      log: logger(),
+      log: createLogger(),
       monitor: monitor
     });
-  })),
+  }),
 
   teardown(function () {
     if (fs.existsSync(localCacheDir)) {
@@ -60,8 +62,8 @@ suite('garbage collection tests', function () {
     }
   }),
 
-  test('remove container', co(function* () {
-    var imageId = yield imageManager.ensureImage(IMAGE, devnull());
+  test('remove container', async () => {
+    var imageId = await imageManager.ensureImage(IMAGE, devnull());
     var testMarkedContainers = [];
 
     var gc = new GarbageCollector({
@@ -72,15 +74,15 @@ suite('garbage collection tests', function () {
       monitor: monitor
     });
 
-    var container = yield docker.createContainer({Image: imageId});
+    var container = await docker.createContainer({Image: imageId});
     gc.removeContainer(container.id);
-    yield gc.sweep();
+    await gc.sweep();
     assert.ok(!gc.markedContainers.length,
               'List of marked containers is not empty when it should be');
-  })),
+  }),
 
-  test('remove running container', co(function* () {
-    var imageId = yield imageManager.ensureImage(IMAGE, devnull());
+  test('remove running container', async () => {
+    var imageId = await imageManager.ensureImage(IMAGE, devnull());
     var gc = new GarbageCollector({
       capacity: 1,
       log: debug,
@@ -89,25 +91,25 @@ suite('garbage collection tests', function () {
       monitor: monitor
     });
 
-    var container = yield docker.createContainer({Image: imageId,
+    var container = await docker.createContainer({Image: imageId,
       Cmd: ['/bin/bash', '-cvex', 'sleep 5']});
     var containerId = container.id;
     container = docker.getContainer(containerId);
-    yield container.start();
+    await container.start();
 
     gc.removeContainer(containerId);
     assert.ok(containerId in gc.markedContainers,
               'Container was not found in the list of garbage ' +
               'collected containers.');
 
-    yield gc.sweep();
+    await gc.sweep();
     assert.ok(!(containerId in gc.markedContainers),
               'Container was found in the list of garbage ' +
               'collected containers.');
-  })),
+  }),
 
-  test('container removal retry limit exceeded', co(function* () {
-    var imageId = yield imageManager.ensureImage(IMAGE, devnull());
+  test('container removal retry limit exceeded', async () => {
+    var imageId = await imageManager.ensureImage(IMAGE, devnull());
     var gc = new GarbageCollector({
       capacity: 1,
       log: debug,
@@ -116,10 +118,10 @@ suite('garbage collection tests', function () {
       monitor: monitor
     });
 
-    var container = yield docker.createContainer({Image: imageId});
+    var container = await docker.createContainer({Image: imageId});
     gc.removeContainer(container.id);
     gc.markedContainers[container.id].retries = 0;
-    yield gc.sweep();
+    await gc.sweep();
 
     assert.ok(!(container.id in gc.markedContainers),
               'Container has exceeded the retry limit but has not been ' +
@@ -129,11 +131,11 @@ suite('garbage collection tests', function () {
               'added to the list of ignored containers');
 
     var c = docker.getContainer(container.id);
-    yield c.remove({force: true});
-  })),
+    await c.remove({force: true});
+  }),
 
-  test('remove container that does not exist', co(function* () {
-    var imageId = yield imageManager.ensureImage(IMAGE, devnull());
+  test('remove container that does not exist', async () => {
+    var imageId = await imageManager.ensureImage(IMAGE, devnull());
     var gc = new GarbageCollector({
       capacity: 1,
       log: debug,
@@ -142,20 +144,20 @@ suite('garbage collection tests', function () {
       monitor: monitor
     });
 
-    var container = yield docker.createContainer({Image: imageId});
+    var container = await docker.createContainer({Image: imageId});
     gc.removeContainer(container.id);
 
     container = docker.getContainer(container.id);
-    yield container.remove();
+    await container.remove();
 
-    yield gc.sweep();
+    await gc.sweep();
 
     assert.ok(!(container.id in gc.markedContainers),
               'Container does not exist anymore but has not been ' +
               'removed from the list of marked containers.');
-  }));
+  });
 
-  test('remove marked images that are not in use', co(function* () {
+  test('remove marked images that are not in use', async () => {
     var gc = new GarbageCollector({
       capacity: 2,
       log: debug,
@@ -169,27 +171,27 @@ suite('garbage collection tests', function () {
     });
 
     var imageName = 'busybox:ubuntu-14.04';
-    var imageId = yield imageManager.ensureImage(imageName, devnull());
+    var imageId = await imageManager.ensureImage(imageName, devnull());
 
-    var container = yield docker.createContainer({Image: imageId,
+    var container = await docker.createContainer({Image: imageId,
       Cmd: ['/bin/sh', '-c', 'ls && sleep 5']});
     container = docker.getContainer(container.id);
-    yield container.start();
+    await container.start();
 
     gc.markImage(imageId);
-    yield gc.sweep(true);
+    await gc.sweep(true);
 
     assert(gc.markedImages[imageId], 'Image does not appear in list of marked images');
 
-    yield sleep(6000);
-    yield gc.sweep(true);
+    await sleep(6000);
+    await gc.sweep(true);
     assert(!gc.markedImages[imageId], 'Image should have been removed from marked images list');
 
-    imageId = yield getImageId(docker, imageName);
+    imageId = await getImageId(docker, imageName);
     assert.ok(!imageId, 'Image has not been removed.');
-  }));
+  });
 
-  test('images are removed when expiration is reached', co(function* () {
+  test('images are removed when expiration is reached', async () => {
     var gc = new GarbageCollector({
       capacity: 2,
       log: debug,
@@ -202,23 +204,23 @@ suite('garbage collection tests', function () {
     });
 
     var imageName = 'busybox:ubuntu-14.04';
-    var imageId = yield imageManager.ensureImage(imageName, devnull());
+    var imageId = await imageManager.ensureImage(imageName, devnull());
 
     gc.markImage(imageId);
-    yield gc.sweep(true);
+    await gc.sweep(true);
     assert(gc.markedImages[imageId]);
 
 
     gc.markedImages[imageId] = new Date();
 
-    yield gc.sweep(true);
+    await gc.sweep(true);
 
-    imageId = yield getImageId(docker, imageName);
+    imageId = await getImageId(docker, imageName);
     assert.ok(!imageId, 'Image has not been removed.');
-  }));
+  });
 
   test('unexpired images are not removed when diskspace threshold is not reached',
-    co(function* () {
+    async () => {
       var gc = new GarbageCollector({
         capacity: 2,
         log: debug,
@@ -232,23 +234,22 @@ suite('garbage collection tests', function () {
       });
 
       var imageName = 'busybox:ubuntu-14.04';
-      var imageId = yield imageManager.ensureImage(imageName, devnull());
+      var imageId = await imageManager.ensureImage(imageName, devnull());
 
       gc.markImage(imageId);
-      yield gc.sweep(true);
-      imageId = yield getImageId(docker, imageName);
+      await gc.sweep(true);
+      imageId = await getImageId(docker, imageName);
       assert.ok(imageId, 'Image has been removed.');
 
       gc.diskspaceThreshold = 500000 * 100000000;
-      yield gc.sweep(true);
+      await gc.sweep(true);
 
-      imageId = yield getImageId(docker, imageName);
+      imageId = await getImageId(docker, imageName);
       assert.ok(!imageId, 'Image has not been removed.');
-    })
-  );
+  });
 
   test('unexpired images are removed when diskspace threshold is reached',
-    co(function* () {
+    async () => {
       var gc = new GarbageCollector({
         capacity: 2,
         log: debug,
@@ -261,17 +262,17 @@ suite('garbage collection tests', function () {
       });
 
       var imageName = 'busybox:ubuntu-14.04';
-      var imageId = yield imageManager.ensureImage(imageName, devnull());
+      var imageId = await imageManager.ensureImage(imageName, devnull());
 
       gc.markImage(imageId);
-      yield gc.sweep(true);
+      await gc.sweep(true);
 
-      imageId = yield getImageId(docker, imageName);
+      imageId = await getImageId(docker, imageName);
       assert.ok(!imageId, 'Image has not been removed.');
-    })
+    }
   );
 
-  test('remove image that does not exist', co(function* () {
+  test('remove image that does not exist', async () => {
     var gc = new GarbageCollector({
       capacity: 2,
       log: debug,
@@ -284,19 +285,19 @@ suite('garbage collection tests', function () {
     });
 
     var imageName = 'busybox:ubuntu-14.04';
-    var imageId = yield imageManager.ensureImage(imageName, devnull());
+    var imageId = await imageManager.ensureImage(imageName, devnull());
     gc.markImage(imageId);
 
     var image = docker.getImage(imageId);
-    yield removeImage(docker, imageId);
+    await removeImage(docker, imageId);
 
-    yield gc.sweep();
+    await gc.sweep();
 
     assert.ok(!(imageName in gc.markedImages),
               'Image still appears in the list of marked images');
-  }));
+  });
 
-  test('clear volume cache when diskspace threshold reached', co(function* () {
+  test('clear volume cache when diskspace threshold reached', async () => {
     var gc = new GarbageCollector({
       capacity: 2,
       log: debug,
@@ -321,19 +322,19 @@ suite('garbage collection tests', function () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
     var fullPath = path.join(localCacheDir, cacheName);
 
-    var instance1 = yield cache.get(cacheName);
-    var instance2 = yield cache.get(cacheName);
+    var instance1 = await cache.get(cacheName);
+    var instance2 = await cache.get(cacheName);
     cache.set(instance2.key, {mounted: false});
 
-    yield gc.sweep();
+    await gc.sweep();
 
     assert.ok(fs.existsSync(instance1.path));
     assert.ok(!fs.existsSync(instance2.path));
-  }));
+  });
 
   test('Unmarked exited containers are marked for removal when expiration reached',
-    co(function* () {
-      var imageId = yield imageManager.ensureImage(IMAGE, devnull());
+    async () => {
+      var imageId = await imageManager.ensureImage(IMAGE, devnull());
       var containerExpiration =  1000;
 
       var gc = new GarbageCollector({
@@ -345,19 +346,19 @@ suite('garbage collection tests', function () {
         monitor: monitor
       });
 
-      var container = yield docker.createContainer({Image: imageId,
+      var container = await docker.createContainer({Image: imageId,
         Cmd: ['/bin/bash', '-c', 'echo "hello"']
       });
       var containerId = container.id;
       container = docker.getContainer(container.id);
-      yield container.start();
+      await container.start();
 
       var removedIds = [];
       gc.on('gc:container:removed', msg => { removedIds.push(msg.id); });
 
       var start = Date.now();
       while (!removedIds.includes(containerId)) {
-        yield gc.sweep();
+        await gc.sweep();
       }
       var stop = Date.now();
       var duration = stop - start;
@@ -366,6 +367,6 @@ suite('garbage collection tests', function () {
         `Should have waited at least ${containerExpiration / 1000} seconds ` +
         `before marking for removal. Duration: ${duration / 1000} seconds`
       );
-    })
+    }
   );
 });

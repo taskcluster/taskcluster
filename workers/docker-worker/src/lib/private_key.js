@@ -43,7 +43,7 @@ function validateDecryptedData(taskPayload, decryptedData, taskId) {
                                 errorPrefix, logMsg, incidentId));
   }
 
-  if (_.contains(reservedKeys, decryptedData.name)) {
+  if (_.includes(reservedKeys, decryptedData.name)) {
       var debugMsg = 'the environment variable (' + decryptedData.name + ') ' +
                      'conflicts with a reserved environment variable';
       var logMsg = 'an environment variable conflicts with an existing environment variable';

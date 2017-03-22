@@ -1,6 +1,6 @@
 import app from './fixtures/aws_metadata';
 import http from 'http';
-import * as awsConfig from '../lib/host/aws';
+import * as awsConfig from '../build/lib/host/aws';
 import assert from 'assert';
 import taskcluster from 'taskcluster-client';
 import request from 'superagent-promise';

@@ -1,14 +1,13 @@
-suite('Shutdown on idle', function() {
-  var co = require('co');
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-  var cmd = require('./helper/cmd');
+import assert from 'assert';
+import waitForEvent from '../../build/lib/wait_for_event';
+import * as settings from '../settings';
+import cmd from './helper/cmd';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
 
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-
+suite('Shutdown on idle', () => {
   var worker;
-  setup(co(function * () {
+  setup(async () => {
     settings.cleanup();
     settings.billingCycleInterval(40);
     settings.configure({
@@ -19,38 +18,38 @@ suite('Shutdown on idle', function() {
     });
 
     worker = new TestWorker(DockerWorker);
-  }));
+  });
 
   // Ensure we don't leave behind our test configurations.
-  teardown(co(function* () {
+  teardown(async () => {
     try {
       // If the worker did not setup, terminate() will throw an exception.  Ignore
       // for tests.
-      yield worker.terminate();
+      await worker.terminate();
       settings.cleanup();
     } catch(e) {
       // If the worker did not setup, terminate() will throw an exception.  Ignore
       // for tests.
       settings.cleanup();
     }
-  }));
+  });
 
-  test('shutdown without ever working a task', co(function* () {
+  test('shutdown without ever working a task', async () => {
     settings.billingCycleUptime(30);
-    var res = yield {
-      start: worker.launch(),
-      pendingShutdown: waitForEvent(worker, 'pending shutdown'),
-      exit: waitForEvent(worker, 'exit')
-    };
-    assert.equal(res.pendingShutdown.time, 8);
-  }));
+    var res = await Promise.all([
+      worker.launch(),
+      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'exit')
+    ]);
+    assert.equal(res[1].time, 8);
+  });
 
-  test('with timer shutdown', co(function *() {
-    yield [worker.launch(), waitForEvent(worker, 'pending shutdown')];
+  test('with timer shutdown', async () => {
+    await [worker.launch(), waitForEvent(worker, 'pending shutdown')];
     settings.billingCycleUptime(469);
 
-    var res = yield {
-      post: worker.postToQueue({
+    var res = await Promise.all([
+      worker.postToQueue({
         payload: {
           features: {
             localLiveLog: false,
@@ -62,29 +61,29 @@ suite('Shutdown on idle', function() {
           maxRunTime: 60 * 60
         }
       }),
-      pendingShutdown: waitForEvent(worker, 'pending shutdown'),
-      exit: waitForEvent(worker, 'exit')
-    };
-    assert.equal(res.pendingShutdown.time, 9);
-  }));
+      waitForEvent(worker, 'pending shutdown'),
+      waitForEvent(worker, 'exit')
+    ]);
+    assert.equal(res[1].time, 9);
+  });
 
-  test('in range of shutdown', co(function *() {
+  test('in range of shutdown', async () => {
     // We are very close to end of the cycle so might as well wait for some more
     // work rather then shutting down...
     settings.billingCycleUptime(79);
     // 2 seconds prior to the next billing interval.
-    var res = yield {
-      start: worker.launch(),
-      pendingShutdown: waitForEvent(worker, 'pending shutdown'),
-    };
-    assert.equal(res.pendingShutdown.time, 39);
-  }));
+    var res = await Promise.all([
+      worker.launch(),
+      waitForEvent(worker, 'pending shutdown'),
+    ]);
+    assert.equal(res[1].time, 39);
+  });
 
-  test('cancel idle', co(function *() {
+  test('cancel idle', async () => {
     settings.billingCycleUptime(20);
-    yield worker.launch();
-    var idling = yield {
-      post: worker.postToQueue({
+    await worker.launch();
+    var idling = await Promise.all([
+      worker.postToQueue({
         payload: {
           features: {
             localLiveLog: false,
@@ -96,12 +95,12 @@ suite('Shutdown on idle', function() {
           maxRunTime: 60 * 60
         }
       }),
-      pendingShutdown: waitForEvent(worker, 'pending shutdown')
-    };
-    assert.equal(idling.pendingShutdown.time, 18);
+      waitForEvent(worker, 'pending shutdown')
+    ]);
+    assert.equal(idling[1].time, 18);
 
-    var working = yield {
-      create: worker.postToQueue({
+    var working = await Promise.all([
+      worker.postToQueue({
         payload: {
           features: {
             localLiveLog: false,
@@ -113,8 +112,8 @@ suite('Shutdown on idle', function() {
           maxRunTime: 60 * 60
         }
       }),
-      canceled: waitForEvent(worker, 'cancel pending shutdown')
-    };
-    assert.ok(working.canceled, 'cancel event fired');
-  }));
+      waitForEvent(worker, 'cancel pending shutdown')
+    ]);
+    assert.ok(working[1], 'cancel event fired');
+  });
 });

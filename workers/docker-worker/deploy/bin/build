@@ -31,7 +31,7 @@ packer_config() {
 
 cmd_app() {
   # Package up the node app.
-  local npm_package=$(npm pack)
+  tar --exclude='./node_modules' --exclude='./*.pub' --exclude='./build/' --exclude='./deploy' --exclude='.test' --exclude='.git' --exclude='.vagrant' --exclude='./.DS_Store' --exclude='./vagrant/' --exclude='app.box' -zcvf docker-worker.tgz .
   local git_rev=$(git rev-parse --verify HEAD)
 
   # Configure the deployment if needed...
@@ -42,7 +42,7 @@ cmd_app() {
     $@ \
     -var-file $(template_vars app) \
     -var "templateContents=deploy/deploy.tar.gz" \
-    -var "npmPackage=$npm_package" \
+    -var "npmPackage=docker-worker.tgz" \
     -var "workerRevision=$git_rev" \
     $(packer_config app)
 }

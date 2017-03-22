@@ -1,27 +1,25 @@
-var Docker = require('../lib/docker/docker');
-var fs = require('fs');
-var os = require('os');
-var path = require('path');
-var program = require('commander');
-var taskcluster = require('taskcluster-client');
-var base = require('taskcluster-base');
-var createLogger = require('../lib/log').createLogger;
-var debug = require('debug')('docker-worker:bin:worker');
-var _ = require('lodash');
-var monitoring = require('taskcluster-lib-monitor');
-
-var Runtime = require('../lib/runtime');
-var TaskListener = require('../lib/task_listener');
-var ShutdownManager = require('../lib/shutdown_manager');
-var GarbageCollector = require('../lib/gc');
-var VolumeCache = require('../lib/volume_cache');
-var PrivateKey = require('../lib/private_key');
-var reportHostMetrics = require('../lib/stats/host_metrics');
-var ImageManager = require('../lib/docker/image_manager');
-
+import 'source-map-support/register'
+import reportHostMetrics from '../lib/stats/host_metrics';
+import fs from 'fs';
+import os from 'os';
+import program from 'commander';
+import taskcluster from 'taskcluster-client';
+import base from 'taskcluster-base';
+import {createLogger} from '../lib/log';
+import Debug from 'debug';
+import _ from 'lodash';
+import monitoring from 'taskcluster-lib-monitor';
+import Runtime from '../lib/runtime';
+import TaskListener from '../lib/task_listener';
+import ShutdownManager from '../lib/shutdown_manager';
+import GarbageCollector from '../lib/gc';
+import VolumeCache from '../lib/volume_cache';
+import PrivateKey from '../lib/private_key';
+import ImageManager from '../lib/docker/image_manager';
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
+let debug = Debug('docker-worker:bin:worker');
 
 // All overridable configuration options from the CLI.
 var overridableFields = [
@@ -93,7 +91,7 @@ o('--worker-node-type <worker-node-type>', 'override the worker node type');
 program.parse(process.argv);
 
 // Main.
-async () => {
+(async () => {
   var profile = program.args[0];
 
   if (!profile) {
@@ -102,7 +100,7 @@ async () => {
   }
 
   var config = base.config({
-    files: [`${__dirname}/../config.yml`],
+    files: [`${__dirname}/../../config.yml`],
     profile: profile,
     env: process.env
   });
@@ -275,4 +273,5 @@ async () => {
       taskListener.once('idle', halt);
     });
   }
-}();
+})()
+

@@ -8,7 +8,7 @@ let debug = Debug('docker-worker:indexedImage');
 /*
  * Image manager for indexed images.
  */
-export default class IndexedImage extends ArtifactImage {
+module.exports = class IndexedImage extends ArtifactImage {
   /*
    * @param {Object}  runtime       - Runtime object
    * @param {Object}  imageDetails  - Type, namespace, and path object
@@ -16,6 +16,7 @@ export default class IndexedImage extends ArtifactImage {
    * @param {Array}   taskScopes        - Array of task scopes
    */
   constructor(runtime, imageDetails, stream, task, taskScopes=[]) {
+    super(runtime, imageDetails, stream, task, taskScopes);
     this.runtime = runtime;
     this.taskScopes = taskScopes;
     this.stream = stream;
@@ -78,6 +79,4 @@ export default class IndexedImage extends ArtifactImage {
     this.taskId = await this.getTaskIdForImage();
     return await this._checkIfImageExists();
   }
-
-
 }

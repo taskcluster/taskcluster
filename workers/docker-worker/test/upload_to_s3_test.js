@@ -1,5 +1,6 @@
+import uploadToS3 from '../build/lib/upload_to_s3';
+
 suite('upload to s3 test', function () {
-  let uploadToS3 = require('../lib/upload_to_s3');
   let temporary = require('temporary');
   let fs = require('fs');
   let path = require('path');

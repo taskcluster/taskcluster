@@ -1,11 +1,11 @@
 var devnull = require('dev-null');
 var path = require('path');
 var util = require('util');
-var docker = require('../lib/docker')();
+var docker = require('../build/lib/docker')();
 var dockerOpts = require('dockerode-options');
 var DockerProc = require('dockerode-process');
 var dockerUtils = require('dockerode-process/utils');
-var waitForEvent = require('../lib/wait_for_event');
+var waitForEvent = require('../build/lib/wait_for_event');
 
 var Promise = require('promise');
 
@@ -56,9 +56,6 @@ export default class DockerWorker {
     stream.pipe(devnull());
     await waitForEvent(stream, 'end');
 
-    // Path to babel in the docker container...
-    var babel = '/worker/node_modules/.bin/babel-node';
-
     var createConfig = {
       name: this.workerId,
       Image: IMAGE,
@@ -71,7 +68,7 @@ export default class DockerWorker {
           'securityfs',
           '/sys/kernel/security',
           '&&',
-          `${babel} /worker/bin/worker.js`,
+          `node /worker/build/bin/worker.js`,
           '--host test',
           '--worker-group', 'random-local-worker',
           '--worker-id', this.workerId,

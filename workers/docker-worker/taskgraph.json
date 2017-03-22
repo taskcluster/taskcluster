@@ -21,9 +21,9 @@
         ],
         "payload": {
           "command": [
-            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 1 --total-chunks 5"
+            "yarn install --frozen-lockfile && yarn build && ./build.sh && ./.test/docker-worker-test --this-chunk 1 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.2.0",
+          "image": "taskcluster/worker-ci:0.3.1",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -58,9 +58,9 @@
         ],
         "payload": {
           "command": [
-            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 2 --total-chunks 5"
+            "yarn install --frozen-lockfile && yarn build && ./build.sh && ./.test/docker-worker-test --this-chunk 2 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.2.0",
+          "image": "taskcluster/worker-ci:0.3.1",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -95,9 +95,9 @@
         ],
         "payload": {
           "command": [
-            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 3 --total-chunks 5"
+            "yarn install --frozen-lockfile && yarn build && ./build.sh && ./.test/docker-worker-test --this-chunk 3 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.2.0",
+          "image": "taskcluster/worker-ci:0.3.1",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -132,9 +132,9 @@
         ],
         "payload": {
           "command": [
-            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 4 --total-chunks 5"
+            "yarn install --frozen-lockfile && yarn build && ./build.sh && ./.test/docker-worker-test --this-chunk 4 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.2.0",
+          "image": "taskcluster/worker-ci:0.3.1",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,
@@ -169,46 +169,9 @@
         ],
         "payload": {
           "command": [
-            "npm install && ./build.sh && ./test/docker-worker-test --this-chunk 5 --total-chunks 5"
+            "yarn install --frozen-lockfile && yarn build && ./build.sh && ./.test/docker-worker-test --this-chunk 5 --total-chunks 5"
           ],
-          "image": "taskcluster/worker-ci:0.2.0",
-          "maxRunTime": 3600,
-          "capabilities": {
-            "privileged": true,
-            "devices": {
-              "loopbackAudio": true,
-              "loopbackVideo": true
-            }
-          },
-          "env": {
-            "WORKER_CI": "1"
-          }
-        },
-        "extra": {
-        },
-        "schedulerId": "task-graph-scheduler"
-      }
-    },
-    {
-      "task": {
-        "metadata": {
-          "name": "Docker-worker tests - all",
-          "description": "Runs entire docker-worker test suite",
-          "source": "https://github.com/taskcluster/docker-worker",
-          "owner": "mozilla@mozilla.org"
-        },
-        "workerType": "worker-ci-test",
-        "provisionerId": "aws-provisioner-v1",
-        "scopes": [
-          "docker-worker:capability:privileged",
-          "docker-worker:capability:device:loopbackAudio",
-          "docker-worker:capability:device:loopbackVideo"
-        ],
-        "payload": {
-          "command": [
-            "npm install && ./build.sh && ./test/docker-worker-test"
-          ],
-          "image": "taskcluster/worker-ci:0.2.0",
+          "image": "taskcluster/worker-ci:0.3.1",
           "maxRunTime": 3600,
           "capabilities": {
             "privileged": true,

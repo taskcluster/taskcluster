@@ -3,28 +3,25 @@
  * this automatically generated workerType and listens for the task completion
  * event.
  */
-var devnull = require('dev-null');
-var slugid = require('slugid');
-var request = require('superagent-promise');
-var debug = require('debug')('docker-worker:test:testworker');
-var waitForEvent = require('../lib/wait_for_event');
-var split = require('split2');
-var getArtifact = require('./integration/helper/get_artifact');
+import devnull from 'dev-null';
+import slugid from 'slugid';
+import request from 'superagent-promise';
+import Debug from 'debug';
+import waitForEvent from '../build/lib/wait_for_event';
+import split from 'split2';
+import getArtifact from './integration/helper/get_artifact';
+import Task from 'taskcluster-task-factory/task';
+import Graph from 'taskcluster-task-factory/graph';
+import LocalWorker from './localworker';
+import taskcluster from 'taskcluster-client';
+import base from 'taskcluster-base';
+import Promise from 'promise';
+import {EventEmitter} from 'events';
+import getLogsLocationsFromTask from '../build/lib/features/logs_location.js';
 
-var Task = require('taskcluster-task-factory/task');
-var Graph = require('taskcluster-task-factory/graph');
-
-var LocalWorker = require('./localworker');
-var Queue  = require('taskcluster-client').Queue;
-var Scheduler = require('taskcluster-client').Scheduler;
-var PulseListener = require('taskcluster-client').PulseListener;
-var base = require('taskcluster-base');
-var Promise = require('promise');
-var EventEmitter = require('events').EventEmitter;
-var getLogsLocationsFromTask = require('../lib/features/logs_location.js');
-
-var queueEvents = new (require('taskcluster-client').QueueEvents);
-var schedulerEvents = new (require('taskcluster-client').SchedulerEvents);
+let queueEvents = new taskcluster.QueueEvents();
+let schedulerEvents = new taskcluster.SchedulerEvents();
+let debug = Debug('docker-worker:test:testworker');
 
 /** Test provisioner id, don't change this... */
 const PROVISIONER_ID = 'no-provisioning-nope';
@@ -51,11 +48,11 @@ export default class TestWorker extends EventEmitter {
 
     this.pulse = config.pulse;
 
-    this.queue = new Queue({
+    this.queue = new taskcluster.Queue({
       credentials: config.taskcluster
     });
 
-    this.scheduler = new Scheduler({
+    this.scheduler = new taskcluster.Scheduler({
       credentials: config.taskcluster
     });
 
@@ -196,8 +193,8 @@ export default class TestWorker extends EventEmitter {
   async postToScheduler(graphId, graph) {
     // Create and bind the listener which will notify us when the worker
     // completes a task.
-    var listener = new PulseListener({
-      credentials:      this.pulse
+    var listener = new taskcluster.PulseListener({
+      credentials: this.pulse
     });
 
     // Listen for either blocked or finished...

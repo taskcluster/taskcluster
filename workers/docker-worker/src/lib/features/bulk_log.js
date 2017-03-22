@@ -3,15 +3,17 @@ The bulk logger writes the task stream directly to disk then uploads that file
 to s3 after the task has completed running.
 */
 
-var debug = require('debug')('taskcluster-docker-worker:features:bulk_log');
-var fs = require('mz/fs');
-var https = require('https');
-var streamClosed = require('../stream_closed');
-var temporary = require('temporary');
-var uploadToS3 = require('../upload_to_s3');
-var url = require('url');
-var zlib = require('zlib');
-var taskcluster = require('taskcluster-client');
+import Debug from 'debug';
+import fs from 'mz/fs';
+import https from 'https';
+import streamClosed from '../stream_closed';
+import temporary from 'temporary';
+import uploadToS3 from '../upload_to_s3';
+import url from 'url';
+import zlib from 'zlib';
+import taskcluster from 'taskcluster-client';
+
+var debug = Debug('taskcluster-docker-worker:features:bulk_log');
 
 var ARTIFACT_NAME = 'public/logs/terminal_bulk.log.gz';
 

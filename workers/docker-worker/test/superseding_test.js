@@ -1,16 +1,18 @@
+import TaskListener from '../build/lib/task_listener';
+import assert from 'assert';
+import nock from 'nock';
+import Debug from 'debug';
+
+var fakeLog = Debug('fakeRuntime.log');
+
 suite('TaskListener.applySuperseding', function() {
-  var assert = require('assert');
-  var nock = require('nock');
-  var TaskListener = require('../lib/task_listener');
-  var fakeLog = require('debug')('fakeRuntime.log');
   var listener;
   var claimTaskResponses;
   var SUPERSEDER_URL = "http://supersed.er/superkey";
 
   class TestTaskListener extends TaskListener {
     constructor(runtime) {
-      this.runtime = runtime;
-      // don't initialize anything else
+      super(runtime);
     }
   }
 
@@ -21,6 +23,19 @@ suite('TaskListener.applySuperseding', function() {
       log: fakeLog,
       workerId: 'wkri',
       workerGroup: 'wkrg',
+      workerType: 'wkrt',
+      provisionerId: 'provid',
+      taskQueue: {
+        pollInterval: 1,
+        expiration: 30000
+      },
+      task: {
+        dequeueCount: 5
+      },
+      workerTypeMonitor: {
+        prefix: () => { }
+      },
+      deviceManagement: {enabled: false},
       queue: {
         claimTask: async function(taskId, runId, claimConfig) {
           assert.equal(claimConfig.workerId, 'wkri');

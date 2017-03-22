@@ -1,7 +1,6 @@
 FROM ubuntu:14.04
 
-ENV NODE_VERSION 0.12.4
-ENV NPM_VERSION 2.10.1
+ENV NODE_VERSION 6.9.1
 ENV DOCKER_VERSION 1.12.6-0~ubuntu-trusty
 
 RUN apt-get update && apt-get install -y apt-transport-https
@@ -21,8 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" | \
     tar xz -C /usr/local --strip-components=1 && \
-    npm install -g npm@"$NPM_VERSION" && \
-    npm install -g babel@4.7.16
+    npm install -g babel-cli yarn
 
 env HOME /home/tester
 env SHELL /bin/bash

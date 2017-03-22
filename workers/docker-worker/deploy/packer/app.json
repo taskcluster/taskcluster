@@ -62,22 +62,6 @@
         "Revision":         "{{user `workerRevision`}}",
         "Base_AMI":         "{{user `hvmSourceAMI`}}"
       }
-    },
-    {
-      "type":           "amazon-ebs",
-      "name":           "pv-builder",
-      "region":         "us-west-2",
-      "ami_regions":    ["us-west-1", "us-east-1"],
-      "source_ami":     "{{user `pvSourceAMI`}}",
-      "instance_type":  "m1.medium",
-      "ssh_username":   "ubuntu",
-      "ami_name":       "taskcluster-docker-worker-{{user `fsType`}}-PV-{{timestamp}}",
-      "tags": {
-        "OS_Version":       "Ubuntu",
-        "Release":          "Latest",
-        "Revision":         "{{user `workerRevision`}}",
-        "Base_AMI":         "{{user `pvSourceAMI`}}"
-      }
     }
   ]
 }

@@ -195,12 +195,7 @@ export class Reclaimer {
     // Figure out when we need to make the next claim...
     this.clearClaimTimeout();
 
-    this.claimTimeoutId =
-      setTimeout(function() {
-        async () => {
-          await this.reclaimTask();
-        }()
-      }.bind(this), nextClaim);
+    this.claimTimeoutId = setTimeout(async () => await this.reclaimTask(), nextClaim);
   }
 
   /**
@@ -285,6 +280,7 @@ export class Task extends EventEmitter {
   @param {Number} [options.cpusetCpus] cpu(s) to use for this container/task.
   */
   constructor(runtime, task, claims, options) {
+    super();
     this.runtime = runtime;
     this.task = task;
     this.claims = claims;

@@ -2,18 +2,16 @@
 Primary interface which handles listening for messages and initializing the
 execution of tasks.
 */
+import TaskQueue from './queueservice';
+import DeviceManager from './devices/device_manager';
+import Debug from 'debug';
+import taskcluster from 'taskcluster-client';
+import request from 'superagent-promise';
+import { Task } from './task';
+import { EventEmitter } from 'events';
+import { exceedsDiskspaceThreshold } from './util/capacity';
 
-var QUEUE_PREFIX = 'worker/v1/';
-
-var debug = require('debug')('docker-worker:task-listener');
-var taskcluster = require('taskcluster-client');
-
-var { Task } = require('./task');
-var request = require('superagent-promise');
-var EventEmitter = require('events').EventEmitter;
-var TaskQueue = require('./queueservice');
-var exceedsDiskspaceThreshold = require('./util/capacity').exceedsDiskspaceThreshold;
-var DeviceManager = require('./devices/device_manager.js');
+const debug = Debug('docker-worker:task-listener');
 
 /**
 @param {Configuration} config for worker.
@@ -46,24 +44,19 @@ export default class TaskListener extends EventEmitter {
   listenForShutdowns() {
     // If node will be shutdown, stop consuming events.
     if (this.runtime.shutdownManager) {
-      this.runtime.shutdownManager.once(
-        'nodeTermination', () => {
-          debug('nodeterm');
-          this.runtime.monitor.count('spotTermination');
-          async () => {
-            await this.pause();
-            for(let state of this.runningTasks) {
-              try {
-                state.handler.abort('worker-shutdown');
-              }
-              catch (e) {
-                debug('Caught error, but node is being terminated so continue on.');
-              }
-              this.cleanupRunningState(state);
-            }
-          }();
-        }.bind(this)
-      );
+      this.runtime.shutdownManager.once('nodeTermination', async () => {
+        debug('nodeterm');
+        this.runtime.monitor.count('spotTermination');
+        await this.pause();
+        for (let state of this.runningTasks) {
+          try {
+            state.handler.abort('worker-shutdown');
+          } catch (e) {
+            debug('Caught error, but node is being terminated so continue on.');
+          }
+          this.cleanupRunningState(state);
+        }
+      });
     }
   }
 
@@ -196,50 +189,45 @@ export default class TaskListener extends EventEmitter {
   }
 
   scheduleTaskPoll(nextPoll=this.taskPollInterval) {
-    this.pollTimeoutId = setTimeout(() => {
-      async () => {
-        clearTimeout(this.pollTimeoutId);
+    this.pollTimeoutId = setTimeout(async () => {
+      try {
+        await this.getTasks();
+      } catch (e) {
+        this.runtime.log('[alert-operator] task retrieval error', {
+            message: e.toString(),
+            err: e,
+            stack: e.stack
+        });
+      }
+      let stats = {
+        uptime: this.host.billingCycleUptime(),
+        interval: this.runtime.billingCycleInterval
+      };
+      let remainder = stats.interval - (stats.uptime % stats.interval);
+      if (remainder * this.runtime.taskQueue.slowdownDivisor < stats.interval) {
+        //slow down the polling because it's nearing the end of the billing cycle
+        if (this.taskPollInterval === this.runtime.taskQueue.pollInterval) {
+          this.taskPollInterval = this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier;
 
-        try {
-          await this.getTasks();
-        }
-        catch (e) {
-          this.runtime.log('[alert-operator] task retrieval error', {
-              message: e.toString(),
-              err: e,
-              stack: e.stack
+          this.runtime.log('polling', {
+            message: 'polling interval adjusted',
+            oldInterval: this.runtime.taskQueue.pollInterval,
+            newInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier
           });
         }
-        let stats = {
-          uptime: this.host.billingCycleUptime(),
-          interval: this.runtime.billingCycleInterval
-        };
-        let remainder = stats.interval - (stats.uptime % stats.interval);
-        if (remainder * this.runtime.taskQueue.slowdownDivisor < stats.interval) {
-          //slow down the polling because it's nearing the end of the billing cycle
-          if (this.taskPollInterval === this.runtime.taskQueue.pollInterval) {
-            this.taskPollInterval = this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier;
+      } else {
+        //speed it up
+        if (this.taskPollInterval !== this.runtime.taskQueue.pollInterval) {
+          this.taskPollInterval = this.runtime.taskQueue.pollInterval;
 
-            this.runtime.log('polling', {
-              message: 'polling interval adjusted',
-              oldInterval: this.runtime.taskQueue.pollInterval,
-              newInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier
-            });
-          }
-        } else {
-          //speed it up
-          if (this.taskPollInterval !== this.runtime.taskQueue.pollInterval) {
-            this.taskPollInterval = this.runtime.taskQueue.pollInterval;
-
-            this.runtime.log('polling', { message: 'polling interval adjusted',
-              oldInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier,
-              newInterval: this.runtime.taskQueue.pollInterval
-            });
-          }
+          this.runtime.log('polling', { message: 'polling interval adjusted',
+            oldInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier,
+            newInterval: this.runtime.taskQueue.pollInterval
+          });
         }
-        this.scheduleTaskPoll();
-      }();
-    }.bind(this), nextPoll);
+      }
+      this.scheduleTaskPoll();
+    }, nextPoll);
   }
 
   async connect() {

@@ -1,20 +1,18 @@
-suite('Reclaiming task', function() {
-  var assert = require('assert');
-  var co = require('co');
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-  var cmd = require('./helper/cmd');
+import assert from 'assert';
+import waitForEvent from '../../build/lib/wait_for_event';
+import * as settings from '../settings';
+import cmd from './helper/cmd';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
+import taskcluster from 'taskcluster-client';
+import expires from './helper/expires';
 
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-  var taskcluster = require('taskcluster-client');
-  var expires = require('./helper/expires')
-
+suite('Reclaiming task', () => {
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
 
   var worker;
-  setup(co(function * () {
+  setup(async () => {
     settings.configure({
       task: {
         // just use crazy high reclaim divisor... This will result in way to
@@ -26,20 +24,20 @@ suite('Reclaiming task', function() {
     });
 
     worker = new TestWorker(DockerWorker);
-    yield worker.launch();
-  }));
+    await worker.launch();
+  });
 
-  teardown(co(function* () {
-    yield worker.terminate();
-  }));
+  teardown(async () => {
+    await worker.terminate();
+  });
 
-  test('wait for reclaim', co(function* () {
+  test('wait for reclaim', async () => {
     var reclaims = [];
     worker.on('reclaimed task', function(value) {
       reclaims.push(value);
     });
 
-    var result = yield worker.postToQueue({
+    var result = await worker.postToQueue({
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
@@ -61,7 +59,7 @@ suite('Reclaiming task', function() {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
-  }));
+  });
 
   test('task canceled when reclaiming past deadline', async () => {
     let deadline = new Date();

@@ -1,12 +1,12 @@
 import assert from 'assert';
 import dockerUtils from 'dockerode-process/utils';
-import ImageManager from '../lib/docker/image_manager';
-import Docker from '../lib/docker';
+import ImageManager from '../build/lib/docker/image_manager';
+import Docker from '../build/lib/docker';
 import {Index} from 'taskcluster-client';
 import base from 'taskcluster-base';
 import {createHash} from 'crypto';
 import slugid from 'slugid';
-import {createLogger} from '../lib/log';
+import {createLogger} from '../build/lib/log';
 import {NAMESPACE, TASK_ID} from './fixtures/image_artifacts';
 import taskcluster from 'taskcluster-client';
 import monitoring from 'taskcluster-lib-monitor';

@@ -1,10 +1,10 @@
-suite('logging to artifact', function() {
-  var co = require('co');
-  var testworker = require('../../post_task');
-  var getArtifact = require('../helper/get_artifact');
+import assert from 'assert';
+import testworker from '../../post_task';
+import getArtifact from '../helper/get_artifact';
 
-  test('artifact logger', co(function* () {
-    var result = yield testworker({
+suite('logging to artifact', () => {
+  test('artifact logger', async () => {
+    var result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [
@@ -30,7 +30,7 @@ suite('logging to artifact', function() {
       log += 'Hello Number ' + i + '\r\n';
     }
 
-    var content = yield getArtifact(
+    var content = await getArtifact(
       result, result.artifacts['public/logs/terminal_bulk.log.gz'].name
     );
 
@@ -41,5 +41,5 @@ suite('logging to artifact', function() {
     assert.equal(
       content, result.log, 'livelog and bulk log should be identical'
     );
-  }));
+  });
 });

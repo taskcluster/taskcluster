@@ -1,30 +1,28 @@
+import assert from 'assert';
 import base from 'taskcluster-base';
 import cmd from './helper/cmd';
 import DockerWorker from '../dockerworker';
 import * as settings from '../settings';
-import slugid from 'slugid';
 import TestWorker from '../testworker';
-import waitForEvent from '../../lib/wait_for_event';
+import waitForEvent from '../../build/lib/wait_for_event';
 
+let worker;
 suite('Task Polling', () => {
-
   // Ensure we don't leave behind our test configurations.
   teardown(async () => {
     if (worker) {
       await worker.terminate();
-      worker = null
+      worker = null;
     }
     settings.cleanup();
   });
-
-  let worker;
 
   test('do not poll if diskspace threshold is reached', async () => {
     settings.configure({
       capacityManagement: {
         diskspaceThreshold: 50 * 50000000000
       }
-    })
+    });
 
     worker = new TestWorker(DockerWorker);
     await worker.launch();
@@ -42,7 +40,7 @@ suite('Task Polling', () => {
       }
     };
 
-    let task = worker.postToQueue(taskTpl);
+    worker.postToQueue(taskTpl);
 
     await waitForEvent(worker, 'created task');
     let claimedTask = false;
@@ -58,60 +56,20 @@ suite('Task Polling', () => {
     assert.ok(!claimedTask, 'Task should not have been claimed');
   });
 
-  test('poll for tasks beyond Azure queue limit', async () => {
-    const QUEUE_LIMIT = 32;
-    const CAPACITY = QUEUE_LIMIT + 4;
-
-    settings.configure({
-      capacity: CAPACITY,
-      capacityManagement: {
-        diskspaceThreshold: 1
-      }
-    });
-
-    worker = new TestWorker(DockerWorker);
-    worker.setMaxListeners(CAPACITY);
-    await worker.launch();
-
-    let tasks = [];
-
-    for (let i = 0; i < CAPACITY; i++) {
-      tasks.push(worker.postToQueue({
-        payload: {
-          features: {
-            localLiveLog: false
-          },
-          image: 'taskcluster/test-ubuntu',
-          command: cmd(
-            "ls"
-          ),
-          maxRunTime: 60 * 60
-        }
-      }));
-    }
-
-    let results = await Promise.all(tasks);
-
-    assert.equal(results.length, CAPACITY, `all ${CAPACITY} tasks must have completed`);
-    results.forEach((taskRes) => {
-      assert.equal(taskRes.run.state, 'completed');
-      assert.equal(taskRes.run.reasonResolved, 'completed');
-    });
-  });
-
   test('task polling at normal speed', async () => {
     settings.billingCycleUptime(30);
     settings.billingCycleInterval(40);
 
     worker = new TestWorker(DockerWorker);
     await worker.launch();
-    //make sure the polling timer is accurate
-    await base.testing.sleep(6000);
+    // wait for one polling cycle so that the next polling cycle with uptime
+    // adjustment triggers a change that can be validated
+    await waitForEvent(worker, 'polling');
 
     settings.billingCycleUptime(0);
     let pollingMessage = await waitForEvent(worker, 'polling');
-    assert(pollingMessage.message ===  'polling interval adjusted' &&
-      pollingMessage.oldInterval > pollingMessage.newInterval)
+    assert.equal(pollingMessage.message, 'polling interval adjusted');
+    assert.ok(pollingMessage.oldInterval > pollingMessage.newInterval);
   });
 
   test('task polling slows down', async () => {
@@ -123,8 +81,9 @@ suite('Task Polling', () => {
     await base.testing.sleep(6000);
 
     settings.billingCycleUptime(30);
+
     let pollingMessage = await waitForEvent(worker, 'polling');
-        assert(pollingMessage.message ===  'polling interval adjusted' &&
-          pollingMessage.oldInterval < pollingMessage.newInterval)
+    assert.equal(pollingMessage.message, 'polling interval adjusted');
+    assert.ok(pollingMessage.oldInterval < pollingMessage.newInterval);
   });
 });

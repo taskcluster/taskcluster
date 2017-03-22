@@ -1,16 +1,17 @@
-suite('Capacity', function() {
-  var assert = require('assert');
-  var co = require('co');
-  var devnull = require('dev-null');
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-  var cmd = require('./helper/cmd');
-  var docker = require('../../lib/docker')();
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-  var ImageManager = require('../../lib/docker/image_manager');
-  var logger = require('../../lib/log').createLogger;
+import assert from 'assert';
+import devnull from 'dev-null';
+import waitForEvent from '../../build/lib/wait_for_event';
+import * as settings from '../settings';
+import cmd from './helper/cmd';
+import Docker from '../../build/lib/docker';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
+import ImageManager from '../../build/lib/docker/image_manager';
+import {createLogger} from '../../build/lib/log';
 
+let docker = Docker();
+
+suite('Capacity', () => {
   const CAPACITY = 10;
   const IMAGE = 'taskcluster/test-ubuntu:latest';
 
@@ -22,14 +23,14 @@ suite('Capacity', function() {
       delayFactor: 15 * 1000,
       randomizationFactor: 0.25
     },
-    log: logger()
+    log: createLogger()
   });
 
   var worker;
-  setup(co(function * () {
+  setup(async () => {
     // Ensure that the image is available before starting test to not skew
     // task run times
-    yield imageManager.ensureImage(IMAGE, devnull());
+    await imageManager.ensureImage(IMAGE, devnull());
     settings.configure({
       deviceManagement: {
         cpu: {
@@ -52,15 +53,15 @@ suite('Capacity', function() {
     });
 
     worker = new TestWorker(DockerWorker);
-    yield worker.launch();
-  }));
+    await worker.launch();
+  });
 
-  teardown(co(function* () {
-    yield worker.terminate();
+  teardown(async () => {
+    await worker.terminate();
     settings.cleanup();
-  }));
+  });
 
-  test(CAPACITY + ' tasks in parallel', co(function* () {
+  test(CAPACITY + ' tasks in parallel', async () => {
     var sleep = 2;
     var tasks = [];
 
@@ -84,18 +85,18 @@ suite('Capacity', function() {
 
     // Wait for the first claim to start timing.  This weeds out any issues with
     // waiting for the task queue to be polled
-    yield waitForEvent(worker, 'claimed task');
+    await waitForEvent(worker, 'claimed task');
     var start = Date.now();
 
-    var results = yield tasks;
+    var results = await Promise.all(tasks);
     var end = (Date.now() - start) / 1000;
 
     assert.equal(results.length, CAPACITY, `all ${CAPACITY} tasks must have completed`);
-    results.forEach(function(taskRes) {
+    results.forEach((taskRes) => {
       assert.equal(taskRes.run.state, 'completed');
       assert.equal(taskRes.run.reasonResolved, 'completed');
     });
     assert.ok(end < sleep * CAPACITY,
       `tasks ran in parallel. Duration ${end} seconds > expected ${sleep * CAPACITY}`);
-  }));
+  });
 });

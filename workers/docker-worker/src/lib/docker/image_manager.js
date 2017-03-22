@@ -1,9 +1,12 @@
 import assert from 'assert';
+import IndexedImage from './indexed_image';
+import TaskImage from './artifact_image';
+import DockerImage from './docker_image';
 
 const IMAGE_HANDLERS = {
-  'indexed-image': require('./indexed_image'),
-  'task-image': require('./artifact_image'),
-  'docker-image': require('./docker_image')
+  'indexed-image': IndexedImage,
+  'task-image': TaskImage,
+  'docker-image': DockerImage
 };
 
 /**

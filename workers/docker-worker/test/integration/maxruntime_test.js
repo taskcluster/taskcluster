@@ -1,16 +1,16 @@
-suite('worker timeouts', function() {
-  var co = require('co');
-  var testworker = require('../post_task');
+import assert from 'assert';
+import testworker from '../post_task';
 
-  test('worker sleep more than maxRunTime', co(function* () {
-    var result = yield testworker({
+suite('worker timeouts', () => {
+  test('worker sleep more than maxRunTime', async () => {
+    var result = await testworker({
       payload: {
-        image:          'taskcluster/test-ubuntu',
-        command:        [
+        image: 'taskcluster/test-ubuntu',
+        command: [
           '/bin/bash', '-c', 'echo "Hello"; sleep 20; echo "done";'
         ],
         features: {},
-        maxRunTime:         10
+        maxRunTime: 10
       }
     });
     // Get task specific results
@@ -22,5 +22,5 @@ suite('worker timeouts', function() {
       result.log.indexOf('[taskcluster:error] Task timeout') !== -1,
       'Task should contain logs about timeout'
     );
-  }));
+  });
 });

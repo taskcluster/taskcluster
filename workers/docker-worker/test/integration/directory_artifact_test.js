@@ -163,9 +163,14 @@ suite('Directory artifact', function() {
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
+    let artifacts = [];
+    for (let i of _.range(1, ARTIFACT_COUNT+1)) {
+      artifacts.push(`public/dir/test${i}.html`);
+    }
+
     assert.deepEqual(
       Object.keys(result.artifacts).sort(),
-      [for (i of _.range(1, ARTIFACT_COUNT+1)) `public/dir/test${i}.html`].sort()
+      artifacts.sort()
     );
 
     for (let i = 1; i <= ARTIFACT_COUNT; ++i) {

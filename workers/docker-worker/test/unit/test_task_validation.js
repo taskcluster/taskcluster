@@ -3,7 +3,7 @@ import base from 'taskcluster-base';
 import path from 'path';
 import _ from 'lodash';
 
-import { PAYLOAD_SCHEMA } from '../../lib/task.js';
+import { PAYLOAD_SCHEMA } from '../../build/lib/task.js';
 
 suite('Task validation', async function() {
   before(async function() {

@@ -1,10 +1,10 @@
-suite('Task duration stats', function() {
-  var co = require('co');
-  var testworker = require('../post_task');
-  var cmd = require('./helper/cmd');
+import assert from 'assert';
+import testworker from '../post_task';
+import cmd from './helper/cmd';
 
-  test('1s long task minimum', co(function* () {
-    var result = yield testworker({
+suite('Task duration stats', () => {
+  test('1s long task minimum', async () => {
+    var result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: cmd(
@@ -20,5 +20,5 @@ suite('Task duration stats', function() {
 
     var duration = new Date(result.run.resolved) - new Date(result.run.started);
     assert.ok(duration > 1000, 'Duration should exist and be greater then 1s');
-  }));
+  });
 });

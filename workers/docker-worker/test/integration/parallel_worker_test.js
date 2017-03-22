@@ -1,13 +1,11 @@
-suite('Parallel workers', function() {
-  var co = require('co');
-  var waitForEvent = require('../../lib/wait_for_event');
-  var settings = require('../settings');
-  var cmd = require('./helper/cmd');
-  var slugid = require('slugid');
+import waitForEvent from '../../build/lib/wait_for_event';
+import * as settings from '../settings';
+import cmd from './helper/cmd';
+import slugid from 'slugid';
+import DockerWorker from '../dockerworker';
+import TestWorker from '../testworker';
 
-  var DockerWorker = require('../dockerworker');
-  var TestWorker = require('../testworker');
-
+suite('Parallel workers', () => {
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
 
@@ -16,19 +14,19 @@ suite('Parallel workers', function() {
 
   var workerA, workerB;
 
-  setup(co(function * () {
+  setup(async () => {
     // Each worker should use the same worker type but a unique worker id.
     var workerType = `dummy-type-${slugid.v4()}`.substring(0,22);
     workerA = new TestWorker(DockerWorker, workerType);
     workerB = new TestWorker(DockerWorker, workerType);
-    yield [workerA.launch(), workerB.launch()];
-  }));
+    await [workerA.launch(), workerB.launch()];
+  });
 
-  teardown(co(function* () {
-    yield [workerA.terminate(), workerB.terminate()];
-  }));
+  teardown(async () => {
+    await [workerA.terminate(), workerB.terminate()];
+  });
 
-  test('tasks for two workers running in parallel', co(function* () {
+  test('tasks for two workers running in parallel', async () => {
     var taskTpl = {
       payload: {
         image: 'taskcluster/test-ubuntu',
@@ -45,14 +43,14 @@ suite('Parallel workers', function() {
     workerA.postToQueue(taskTpl, taskIds[0]);
     workerB.postToQueue(taskTpl, taskIds[1]);
 
-    yield [
+    await Promise.all([
       waitForEvent(workerA, 'task resolved'),
       waitForEvent(workerB, 'task resolved')
-    ];
+    ]);
 
     var tasks = []
     for (var taskId of taskIds) {
-      var task = yield workerA.queue.status(taskId);
+      var task = await workerA.queue.status(taskId);
       tasks.push(task);
     }
 
@@ -66,6 +64,6 @@ suite('Parallel workers', function() {
       tasks[1].status.runs[0].workerId,
       'Tasks ran on different workers'
     );
-  }));
+  });
 });
 

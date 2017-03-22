@@ -1,19 +1,20 @@
+import assert from 'assert';
+import VolumeCache from '../build/lib/volume_cache';
+import GarbageCollector from '../build/lib/gc';
+import {createLogger} from '../build/lib/log';
+import Debug from 'debug';
+import Docker from '../build/lib/docker';
+import waitForEvent from '../build/lib/wait_for_event';
+import fs from 'fs';
+import path from 'path';
+import rmrf from 'rimraf';
+import cmd from './integration/helper/cmd';
+import monitoring from 'taskcluster-lib-monitor';
+
+let debug = Debug('volumeCacheTest');
+let docker = Docker();
+
 suite('volume cache test', function () {
-  var VolumeCache = require('../lib/volume_cache');
-  var GarbageCollector = require('../lib/gc');
-  var createLogger = require('../lib/log').createLogger;
-  var debug = require('debug')('volumeCacheTest');
-  var devnull = require('dev-null');
-  var docker = require('../lib/docker')();
-  var waitForEvent = require('../lib/wait_for_event');
-  var fs = require('fs');
-  var path = require('path');
-  var mkdirp = require('mkdirp');
-  var rmrf = require('rimraf');
-  var co = require('co');
-  var cmd = require('./integration/helper/cmd');
-  var base = require('taskcluster-base');
-  var monitoring = require('taskcluster-lib-monitor');
 
   // Location on the machine running the test where the cache will live
   var localCacheDir = path.join('/tmp', 'test-cache');
@@ -29,13 +30,13 @@ suite('volume cache test', function () {
   var monitor;
   var IMAGE = 'taskcluster/test-ubuntu';
 
-  setup(co(function* () {
-    monitor = yield monitoring({
+  setup(async () => {
+    monitor = await monitoring({
         credentials: {},
         project: 'docker-worker-tests',
         mock: true
     });
-  })),
+  }),
 
   teardown(function () {
     if (fs.existsSync(localCacheDir)) {
@@ -43,7 +44,7 @@ suite('volume cache test', function () {
     }
   });
 
-  test('cache directories created', co(function* () {
+  test('cache directories created', async () => {
     var cache = new VolumeCache({
       cache: {
         volumeCachePath: localCacheDir
@@ -55,9 +56,9 @@ suite('volume cache test', function () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
     var fullPath = path.join(localCacheDir, cacheName);
 
-    var instance1 = yield cache.get(cacheName);
-    var instance2 = yield cache.get(cacheName);
-    var instance3 = yield cache.get(cacheName);
+    var instance1 = await cache.get(cacheName);
+    var instance2 = await cache.get(cacheName);
+    var instance3 = await cache.get(cacheName);
 
     assert.ok(fs.existsSync(instance1.path));
     assert.ok(fs.existsSync(instance2.path));
@@ -68,16 +69,16 @@ suite('volume cache test', function () {
     assert.ok(instance2.path !== instance3.path);
 
     // Release clame on cached volume
-    yield cache.release(instance2.key);
+    await cache.release(instance2.key);
 
     // Should reclaim cache directory path created by instance2
-    var instance4 = yield cache.get(cacheName);
+    var instance4 = await cache.get(cacheName);
 
     assert.ok(instance2.key === instance4.key);
     assert.ok(instance2.path === instance4.path);
-  }));
+  });
 
-  test('most recently used unmounted cache instance is used', co(function* () {
+  test('most recently used unmounted cache instance is used', async () => {
     var cache = new VolumeCache({
       cache: {
         volumeCachePath: localCacheDir
@@ -89,25 +90,25 @@ suite('volume cache test', function () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
     var fullPath = path.join(localCacheDir, cacheName);
 
-    var instance1 = yield cache.get(cacheName);
-    var instance2 = yield cache.get(cacheName);
-    var instance3 = yield cache.get(cacheName);
-    var instance4 = yield cache.get(cacheName);
+    var instance1 = await cache.get(cacheName);
+    var instance2 = await cache.get(cacheName);
+    var instance3 = await cache.get(cacheName);
+    var instance4 = await cache.get(cacheName);
 
     // Release claim on cached volume
-    yield cache.release(instance4.key);
-    yield cache.release(instance2.key);
+    await cache.release(instance4.key);
+    await cache.release(instance2.key);
 
     // Should reclaim cache directory path created by instance2
-    var instance5 = yield cache.get(cacheName);
+    var instance5 = await cache.get(cacheName);
 
     assert.ok(instance5.key === instance2.key);
     assert.ok(instance5.path === instance2.path);
     assert.ok(instance5.lastUsed > instance2.lastUsed);
-  }));
+  });
 
 
-  test('cache directory mounted in container', co(function* () {
+  test('cache directory mounted in container', async () => {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
 
     var cache = new VolumeCache({
@@ -131,7 +132,7 @@ suite('volume cache test', function () {
     var fullPath = path.join(localCacheDir, cacheName);
 
 
-    var cacheInstance = yield cache.get(cacheName);
+    var cacheInstance = await cache.get(cacheName);
 
     var c = cmd(
       'echo "foo" > /docker_cache/tmp-obj-dir/blah.txt'
@@ -149,21 +150,21 @@ suite('volume cache test', function () {
       }
     };
 
-    var create = yield docker.createContainer(createConfig);
+    var create = await docker.createContainer(createConfig);
 
     var container = docker.getContainer(create.id);
-    var stream = yield container.attach({stream: true, stdout: true, stderr: true});
+    var stream = await container.attach({stream: true, stdout: true, stderr: true});
     stream.pipe(process.stdout);
 
-    yield container.start({});
+    await container.start({});
     gc.removeContainer(create.id);
     gc.sweep();
-    var removedContainerId = yield waitForEvent(gc, 'gc:container:removed');
+    var removedContainerId = await waitForEvent(gc, 'gc:container:removed');
 
     assert.ok(fs.existsSync(path.join(cacheInstance.path, 'blah.txt')));
-  }));
+  });
 
-  test('invalid cache name is rejected', co(function* () {
+  test('invalid cache name is rejected', async () => {
     var cacheName = 'tmp-obj::dir-' + Date.now().toString();
 
     var fullPath = path.join(localCacheDir, cacheName);
@@ -176,16 +177,18 @@ suite('volume cache test', function () {
       monitor: monitor
     });
 
+    try {
+      await cache.get(cacheName);
+      assert(false, 'Error should have been thrown when retrieving invalid cache name');
+    } catch(e) {
+      assert.ok(!fs.existsSync(fullPath),
+        'Volume cache created cached volume directory when it should not ' +
+        'have.'
+      );
+    }
+  });
 
-    assert.throws(cache.get(cacheName), Error);
-
-    assert.ok(!fs.existsSync(fullPath),
-      'Volume cache created cached volume directory when it should not ' +
-      'have.'
-    );
-  }));
-
-  test('purge volume cache', co(function* () {
+  test('purge volume cache', async () => {
     var cache = new VolumeCache({
       cache: {
         volumeCachePath: localCacheDir
@@ -197,10 +200,10 @@ suite('volume cache test', function () {
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
     var fullPath = path.join(localCacheDir, cacheName);
 
-    var instance1 = yield cache.get(cacheName);
-    var instance2 = yield cache.get(cacheName);
+    var instance1 = await cache.get(cacheName);
+    var instance2 = await cache.get(cacheName);
 
-    yield cache.release(instance1.key);
+    await cache.release(instance1.key);
 
     let futurePurgeDate = new Date();
     futurePurgeDate.setHours(futurePurgeDate.getHours() + 5);
@@ -208,25 +211,25 @@ suite('volume cache test', function () {
     // should remove only instance1
     cache.purge(cacheName, futurePurgeDate);
 
-    var instance3 = yield cache.get(cacheName);
+    var instance3 = await cache.get(cacheName);
     assert.notEqual(instance3.key !== instance1.key);
 
-    yield cache.release(instance2);
-    yield cache.release(instance3);
+    await cache.release(instance2);
+    await cache.release(instance3);
 
     cache.purge(cacheName, futurePurgeDate);
 
-    var instance4 = yield cache.get(cacheName);
+    var instance4 = await cache.get(cacheName);
 
     assert.notEqual(instance4.key !== instance3.key);
     assert.ok(instance4.key !== instance2.key);
 
-    instance1 = yield cache.get(cacheName);
+    instance1 = await cache.get(cacheName);
     cache.purge(cacheName, futurePurgeDate);
-    yield cache.release(instance1.key);
+    await cache.release(instance1.key);
 
     // Cannot return a volume marked for purge
-    instance2 = yield cache.get(cacheName);
+    instance2 = await cache.get(cacheName);
     assert.ok(instance1.key !== instance2.key);
-  }));
+  });
 });

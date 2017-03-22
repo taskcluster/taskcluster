@@ -1,13 +1,12 @@
-import fs from 'fs';
+import assert from 'assert';
 import slugid from 'slugid';
-import co from 'co';
 import * as settings from '../settings';
 import taskcluster from 'taskcluster-client';
 import DockerWorker from '../dockerworker';
 import TestWorker from '../testworker';
 
 suite('Cancel Task', () => {
-  test("cancel", async () => {
+  test('cancel', async () => {
     settings.configure({
       task: {
         // just use crazy high reclaim divisor... This will result in way to
@@ -34,9 +33,9 @@ suite('Cancel Task', () => {
     let taskId = slugid.v4();
     let worker = new TestWorker(DockerWorker);
     let canceledTask;
-    worker.on('task run', co(function* () { yield queue.cancelTask(taskId); }));
-    worker.on('cancel task', () => { canceledTask = true });
-    let launch = await worker.launch();
+    worker.on('task run', async () => await queue.cancelTask(taskId));
+    worker.on('cancel task', () => canceledTask = true);
+    await worker.launch();
     let result = await worker.postToQueue(task, taskId);
     await worker.terminate();
     assert.ok(canceledTask, 'task execution should have been canceled');

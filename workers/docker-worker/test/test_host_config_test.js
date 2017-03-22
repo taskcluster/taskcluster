@@ -1,13 +1,13 @@
-suite('test host', function() {
-  var co = require('co');
-  var subject = require('../lib/host/test');
-  var settings = require('./settings');
+import assert from 'assert';
+import * as subject from '../build/lib/host/test';
+import * as settings from './settings';
 
+suite('test host', () => {
   setup(settings.cleanup);
   teardown(settings.cleanup);
 
-  test('configure', co(function* () {
-    settings.configure({ capacity: 2, billingCycleInterval: 3600 });
+  test('configure', async () => {
+    settings.configure({capacity: 2, billingCycleInterval: 3600});
     assert.deepEqual(
       {
         capacity: 2,
@@ -19,7 +19,7 @@ suite('test host', function() {
         privateIp: '169.254.1.1',
         region: 'us-middle-1a'
       },
-      (yield subject.configure())
+      subject.configure()
     );
-  }));
+  });
 });

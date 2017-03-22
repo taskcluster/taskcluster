@@ -163,7 +163,7 @@ export default class VolumeCache {
   @return {Object} Cached volume instance.
   */
   async get(cacheName) {
-    if (cacheName.indexOf(KEY_DELIMITER) !== -1) {
+    if (cacheName.includes(KEY_DELIMITER)) {
       throw new Error('Invalid key name was provided.  Ensure that the cache ' +
         'name does not contain "' + KEY_DELIMITER + '".');
     }

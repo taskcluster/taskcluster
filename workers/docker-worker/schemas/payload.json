@@ -1,5 +1,4 @@
 {
-  "id": "http://schemas.taskcluster.net/docker-worker/v1/payload.json#",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
     "artifact": {

@@ -1,16 +1,18 @@
-suite('encrypted private env variables', function() {
-  var co            = require('co');
-  var devnull       = require('dev-null');
-  var docker        = require('../../lib/docker')();
-  var dockerUtils   = require('dockerode-process/utils');
-  var fs            = require('fs');
-  var _             = require('lodash');
-  var openpgp       = require('openpgp');
-  var testworker    = require('../post_task');
-  var settings      = require('../settings');
-  var slugid        = require('slugid');
-  var waitForEvent  = require('../../lib/wait_for_event');
+import assert from 'assert';
+import devnull from 'dev-null';
+import Docker from '../../build/lib/docker';
+import dockerUtils from 'dockerode-process/utils';
+import fs from 'fs';
+import _  from 'lodash';
+import * as openpgp from 'openpgp';
+import testworker from '../post_task';
+import * as settings from '../settings';
+import slugid from 'slugid';
+import waitForEvent from '../../build/lib/wait_for_event';
 
+var docker = Docker();
+
+suite('encrypted private env variables', () => {
   var defaultMessageVersion = '1';
   var secretDataContent1 = 'this is secret data 1';
   var secretDataContent2 = 'this is secret data 2';
@@ -18,9 +20,9 @@ suite('encrypted private env variables', function() {
   var envVar2 = 'ENV_VAR2';
   var pubKey;
 
-  setup(co(function * () {
+  setup(async () =>{
     settings.configure({
-      dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
+      dockerWorkerPrivateKey: '/worker/.test/docker-worker-priv.pem'
     });
 
     var pubKeyArmored = fs.readFileSync('test\/docker-worker.pem', 'ascii');
@@ -30,12 +32,12 @@ suite('encrypted private env variables', function() {
     var stream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu');
     // Ensure the test proxy actually exists...
     stream.pipe(devnull());
-    yield waitForEvent(stream, 'end');
-  }));
+    await waitForEvent(stream, 'end');
+  });
 
   function getEncryptedEnvPayload(payloadData) {
 
-    return Promise.all(_.map(payloadData, function(data) {
+    return Promise.all(_.map(payloadData, (data) => {
 
      // Create message to encrypt
       var message = {
@@ -79,10 +81,10 @@ suite('encrypted private env variables', function() {
     });
   }
 
-  test('success case', co(function* () {
+  test('success case', async () => {
 
     var taskId = slugid.v4();
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{messageVersion: '1',
         taskId: taskId,
         name: envVar1,
@@ -93,22 +95,22 @@ suite('encrypted private env variables', function() {
         value: secretDataContent2}]
     );
 
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok(result.log.indexOf(secretDataContent1) !== -1, 'env is dumped');
     assert.ok(result.log.indexOf(secretDataContent2) !== -1, 'env is dumped');
-  }));
+  });
 
-  test('unsupported message version', co(function* () {
+  test('unsupported message version', async () => {
 
     // Also test that the encrypted env var validation aborts the task
     // if one encrypted var passes vaildation but one validation fails.
     // In this case, the message version of the first message is supported
     // but the message version of the second message is unsupported.
     var taskId = slugid.v4();
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         value: secretDataContent1,
         name: envVar1,
@@ -120,18 +122,18 @@ suite('encrypted private env variables', function() {
     );
 
     var expected = 'the version of the message is not supported';
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
-  }));
+  });
 
-  test('duplicate environment variable', co(function* () {
+  test('duplicate environment variable', async () => {
 
     var taskId = slugid.v4();
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         name: envVar1,
         value: secretDataContent1},
@@ -141,18 +143,18 @@ suite('encrypted private env variables', function() {
     );
 
     var expected = 'an environment variable has been duplicated in the task payload';
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
-  }));
+  });
 
-  test('conflict with reserved environment variable (TASK_ID)', co(function* () {
+  test('conflict with reserved environment variable (TASK_ID)', async () => {
 
     var taskId = slugid.v4();
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         name: 'TASK_ID',
         value: secretDataContent1},
@@ -162,18 +164,18 @@ suite('encrypted private env variables', function() {
     );
 
     var expected = 'an environment variable conflicts with an existing environment variable';
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
-  }));
+  });
 
-  test('conflict with reserved environment variable (RUN_ID)', co(function* () {
+  test('conflict with reserved environment variable (RUN_ID)', async () => {
 
     var taskId = slugid.v4();
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         name: 'RUN_ID',
         value: secretDataContent1},
@@ -183,18 +185,18 @@ suite('encrypted private env variables', function() {
     );
 
     var expected = 'an environment variable conflicts with an existing environment variable';
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1, 'env is dumped');
-  }));
+  });
 
-  test('invalid taskId', co(function* () {
+  test('invalid taskId', async () => {
 
     var taskId = 0;
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         name: envVar1,
         value: secretDataContent1,
@@ -209,19 +211,19 @@ suite('encrypted private env variables', function() {
                    'the taskId of the task';
 
     // Let task id of task default to a valid task id
-    var result = yield testworker(taskPayload);
+    var result = await testworker(taskPayload);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1);
-  }));
+  });
 
-  test('start time is in the future', co(function* () {
+  test('start time is in the future', async () => {
 
     var taskId = slugid.v4();
     var startTime = (Date.now() + 120000);
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         startTime: startTime,
         name: envVar1,
@@ -235,19 +237,19 @@ suite('encrypted private env variables', function() {
     );
 
     var expected = 'the start time in the env payload is in the future';
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1);
-  }));
+  });
 
-  test('end time is in the past', co(function* () {
+  test('end time is in the past', async () => {
 
     var taskId = slugid.v4();
     var endTime = (Date.now() - 1);
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         endTime: endTime,
         name: envVar1,
@@ -261,18 +263,18 @@ suite('encrypted private env variables', function() {
     );
 
     var expected = 'the end time in the env payload is in the past'; 
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
     var log = result.log.replace(/\n/gm, ' ');
 
     assert.equal(result.run.state, 'failed', 'task should have failed');
     assert.equal(result.run.reasonResolved, 'failed', 'task should have failed');
     assert.ok(log.indexOf(expected) !== -1);
-  }));
+  });
 
-  test('value includes newlines', co(function* () {
+  test('value includes newlines', async () => {
 
     var taskId = slugid.v4();
-    var taskPayload = yield getTaskPayload(
+    var taskPayload = await getTaskPayload(
       [{taskId: taskId,
         name: envVar1,
         value: '1\n2\n3\n4',
@@ -287,11 +289,11 @@ suite('encrypted private env variables', function() {
     // become \r\n
     var expected1 = '1\r\n2\r\n3\r\n4';
     var expected2 = secretDataContent2;
-    var result = yield testworker(taskPayload, taskId);
+    var result = await testworker(taskPayload, taskId);
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok(result.log.indexOf(expected1) !== -1);
     assert.ok(result.log.indexOf(expected2) !== -1);
-  }));
+  });
 });
