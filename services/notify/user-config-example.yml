@@ -6,9 +6,6 @@ defaults:
   aws:
     accessKeyId:        '...'
     secretAccessKey:    '...'
-    region:             us-west-2
   pulse:
     username:           '...'
-    password:           '...'
-  irc:
     password:           '...'
