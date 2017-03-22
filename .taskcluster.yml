@@ -286,6 +286,7 @@ tasks:
           - -vxec
           - |
             export GOPATH="$(pwd)/go"
+            export PATH="${GOPATH}/bin:${PATH}"
             source "${GW_CREDS_BOOTSTRAP}"
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             mkdir -p public/build
@@ -305,7 +306,7 @@ tasks:
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
             GORACE=history_size=7 go test -v ./...
-            "${GOPATH}/bin/ineffassign" .
+            ineffassign .
       artifacts:
         - path: public/build/generic-worker-darwin-amd64
           expires: "{{ '2 weeks' | $fromNow }}"
