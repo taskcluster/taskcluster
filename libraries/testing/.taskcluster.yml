@@ -1,0 +1,69 @@
+version: 0
+metadata:
+  name: taskcluster-lib-testing
+  description: 'Helpers for testing taskcluster'
+  owner: '{{ event.head.user.email }}'
+  source: '{{ event.head.repo.url }}'
+tasks:
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+        branches:
+          - master
+    payload:
+      maxRunTime: 3600
+      image: 'node:6'
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          yarn &&
+          yarn test
+    metadata:
+      name: taskcluster-lib-testing test run
+      description: Run library test suite
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - push
+        branches:
+          - master
+    scopes:
+      - auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-testing/
+    payload:
+      maxRunTime: 3600
+      image: taskcluster/upload-project-docs:latest
+      features:
+        taskclusterProxy:
+          true
+      command:
+        - /bin/bash
+        - '--login'
+        - '-cx'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          export DEBUG=* DOCS_PROJECT=taskcluster-lib-testing DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
+          upload-project-docs
+    metadata:
+      name: "taskcluster-lib-testing docs upload"
+      description: "Upload documentation for this project"
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
