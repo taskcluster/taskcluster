@@ -304,7 +304,7 @@ func main() {
 			fmt.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		runWorker()
+		RunWorker()
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
@@ -425,7 +425,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	return c, nil
 }
 
-func runWorker() {
+func RunWorker() {
 	log.Printf("Detected %s platform", runtime.GOOS)
 	err := taskCleanup()
 	// any errors are fatal

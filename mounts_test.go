@@ -119,7 +119,7 @@ func TestMounts(t *testing.T) {
 	}
 
 	taskID, myQueue := submitTask(t, td, payload)
-	runWorker()
+	RunWorker()
 
 	// check task succeeded
 	tsr, err := myQueue.Status(taskID)
@@ -197,7 +197,7 @@ func TestMissingScopes(t *testing.T) {
 	// don't set any scopes
 
 	taskID, myQueue := submitTask(t, td, payload)
-	runWorker()
+	RunWorker()
 
 	// check task had exception/malformed-payload
 	tsr, err := myQueue.Status(taskID)
@@ -246,7 +246,7 @@ func TestCachesCanBeModified(t *testing.T) {
 		td.Scopes = []string{"generic-worker:cache:test-modifications"}
 		submitTask(t, td, payload)
 	}
-	runWorker()
+	RunWorker()
 
 	counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
 	bytes, err := ioutil.ReadFile(counterFile)
