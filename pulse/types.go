@@ -8,6 +8,35 @@ import (
 )
 
 type (
+	// Response from a request to list namespaces
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#
+	ListNamespacesResponse struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token as a query parameter to load
+		// the additional results.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of namespaces.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces
+		Namespaces []struct {
+
+			// The contact information which will be handed off to the notification service
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact
+			Contact json.RawMessage `json:"contact"`
+
+			// The namespace's name
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace
+			Namespace string `json:"namespace"`
+		} `json:"namespaces"`
+	}
+
 	// Namespace creation request
 	//
 	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#
@@ -181,17 +210,23 @@ type (
 	// See http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/oneOf[1]
 	Var1 json.RawMessage
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]
+	// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[0]
 	Var2 PostIRCMessageRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
+	// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[1]
 	Var3 SendEmailRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]
 	Var4 PostIRCMessageRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
 	Var5 SendEmailRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
+	Var6 PostIRCMessageRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
+	Var7 SendEmailRequest
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

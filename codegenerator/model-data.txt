@@ -1,4 +1,4 @@
-Generated: 1489710175
+Generated: 1490207087
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5704,8 +5704,8 @@ Description = 'The taskcluster-pulse service, typically available at `pulse.task
 manages pulse credentials for taskcluster users.
 
 A service to manage Pulse credentials for anything using
-Taskcluster credentials. This allows us self-service and
-greater control within the Taskcluster project.'
+Taskcluster credentials. This allows for self-service pulse
+access and greater control within the Taskcluster project.'
 Base URL    = 'https://pulse.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -5719,7 +5719,7 @@ Entry 0     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json'
     Entry Title       = 'Rabbit Overview'
-    Entry Description = 'An overview of the Rabbit cluster'
+    Entry Description = 'Get an overview of the Rabbit cluster.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -5732,33 +5732,42 @@ Entry 1     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json'
     Entry Title       = 'Rabbit Exchanges'
-    Entry Description = 'A list of exchanges in the rabbit cluster'
+    Entry Description = 'Get a list of all exchanges in the rabbit cluster.  This will include exchanges
+not managed by this service, if any exist.'
 Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/namespaces'
+    Entry Args        = '[]'
+    Entry Query        = '[continuation limit]'
+    Entry Name        = 'listNamespaces'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json'
+    Entry Title       = 'List Namespaces'
+    Entry Description = 'List the namespaces managed by this service.
+
+This will list up to 1000 namespaces. If more namespaces are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, do not provide continuation.'
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/namespace/<namespace>'
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
-    Entry Name        = 'createNamespace'
+    Entry Name        = 'claimNamespace'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[[pulse:namespace:<namespace>]]'
     Entry Input       = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json'
     Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json'
-    Entry Title       = 'Create a namespace'
-    Entry Description = 'Creates a namespace, given the taskcluster credentials with scopes.'
-Entry 3     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/namespace/<namespace>'
-    Entry Args        = '[namespace]'
-    Entry Query        = '[]'
-    Entry Name        = 'namespace'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[[pulse:namespace:<namespace>]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Get namespace information'
-    Entry Description = 'Gets a namespace, given the taskcluster credentials with scopes.'
+    Entry Title       = 'Claim a namespace'
+    Entry Description = 'Claim a namespace, returning a username and password with access to that
+namespace good for a short time.  Clients should call this endpoint again
+at the re-claim time given in the response, as the password will be rotated
+soon after that time.  The namespace will expire, and any associated queues
+and exchanges will be deleted, at the given expiration time'
 Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -5951,6 +5960,83 @@ TypeName               = 'Var1'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#/properties/payload/oneOf[1]'
 
 
+http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#
+======================================================================
+Additional Properties  = 'false'
+Description            = 'Response from a request to list namespaces
+'
+ID                     = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#'
+Properties
+  Property 'continuationToken' =
+    Description            = 'A continuation token is returned if there are more results than listed
+    here. You can optionally provide the token as a query parameter to load
+    the additional results.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = 'ContinuationToken'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/continuationToken'
+  Property 'namespaces' =
+    Description            = 'List of namespaces.
+    '
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Representation of the namespace
+      '
+      Properties
+        Property 'contact' =
+          Description            = 'The contact information which will be handed off to the notification service'
+          OneOf
+            Item '0' =
+              Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
+              TypeName               = 'Var2'
+              SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[0]'
+            Item '1' =
+              Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
+              TypeName               = 'Var3'
+              SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[1]'
+          Title                  = 'Contact Information'
+          Type                   = 'object'
+          TypeName               = 'ContactInformation'
+          SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact'
+        Property 'namespace' =
+          Description            = 'The namespace's name
+          '
+          Title                  = 'Name'
+          Type                   = 'string'
+          TypeName               = 'Name'
+          SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace'
+      Required               = '[namespace contact]'
+      Title                  = 'Namespace'
+      Type                   = 'object'
+      TypeName               = 'Namespace'
+      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items'
+    Title                  = 'Namespaces'
+    Type                   = 'array'
+    TypeName               = 'Namespaces'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces'
+Required               = '[namespaces]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Namespaces Response'
+Type                   = 'object'
+TypeName               = 'ListNamespacesResponse'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#'
+
+
+http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[0]
+==============================================================================================================================
+Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
+TypeName               = 'Var2'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[0]'
+
+
+http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[1]
+==============================================================================================================================
+Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
+TypeName               = 'Var3'
+SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[1]'
+
+
 http://schemas.taskcluster.net/pulse/v1/namespace-request.json#
 ===============================================================
 Additional Properties  = 'false'
@@ -5963,11 +6049,11 @@ Properties
     OneOf
       Item '0' =
         Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
-        TypeName               = 'Var2'
+        TypeName               = 'Var4'
         SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]'
       Item '1' =
         Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
-        TypeName               = 'Var3'
+        TypeName               = 'Var5'
         SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]'
     Title                  = 'Contact Information'
     Type                   = 'object'
@@ -5984,14 +6070,14 @@ SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-requ
 http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]
 ===========================================================================================
 Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
-TypeName               = 'Var2'
+TypeName               = 'Var4'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]'
 
 
 http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
 ===========================================================================================
 Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
-TypeName               = 'Var3'
+TypeName               = 'Var5'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]'
 
 
@@ -6007,11 +6093,11 @@ Properties
     OneOf
       Item '0' =
         Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
-        TypeName               = 'Var4'
+        TypeName               = 'Var6'
         SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]'
       Item '1' =
         Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
-        TypeName               = 'Var5'
+        TypeName               = 'Var7'
         SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]'
     Title                  = 'Contact Information'
     Type                   = 'object'
@@ -6046,14 +6132,14 @@ SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-resp
 http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
 ============================================================================================
 Ref                    = 'http://schemas.taskcluster.net/pulse/v1/irc-request.json#'
-TypeName               = 'Var4'
+TypeName               = 'Var6'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]'
 
 
 http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
 ============================================================================================
 Ref                    = 'http://schemas.taskcluster.net/pulse/v1/email-request.json#'
-TypeName               = 'Var5'
+TypeName               = 'Var7'
 SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]'
 
 

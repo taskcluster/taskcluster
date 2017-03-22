@@ -12,8 +12,8 @@
 // manages pulse credentials for taskcluster users.
 //
 // A service to manage Pulse credentials for anything using
-// Taskcluster credentials. This allows us self-service and
-// greater control within the Taskcluster project.
+// Taskcluster credentials. This allows for self-service pulse
+// access and greater control within the Taskcluster project.
 //
 // See: https://docs.do.not.exist.yet.service.not.in.production
 //
@@ -35,13 +35,12 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 17 Mar 2017 at 00:22:00 UTC. The code was generated
+// Wed, 22 Mar 2017 at 18:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
 import (
 	"net/url"
-	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
@@ -78,7 +77,7 @@ func New(credentials *tcclient.Credentials) *Pulse {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// An overview of the Rabbit cluster
+// Get an overview of the Rabbit cluster.
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#overview
 func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
@@ -89,7 +88,8 @@ func (myPulse *Pulse) Overview() (*RabbitOverviewResponse, error) {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// A list of exchanges in the rabbit cluster
+// Get a list of all exchanges in the rabbit cluster.  This will include exchanges
+// not managed by this service, if any exist.
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#exchanges
 func (myPulse *Pulse) Exchanges() (*RabbitMQExchanges, error) {
@@ -98,43 +98,42 @@ func (myPulse *Pulse) Exchanges() (*RabbitMQExchanges, error) {
 	return responseObject.(*RabbitMQExchanges), err
 }
 
+// List the namespaces managed by this service.
+//
+// This will list up to 1000 namespaces. If more namespaces are present a
+// `continuationToken` will be returned, which can be given in the next
+// request. For the initial request, do not provide continuation.
+//
+// See https://docs.do.not.exist.yet.service.not.in.production#listNamespaces
+func (myPulse *Pulse) ListNamespaces(continuation, limit string) (*ListNamespacesResponse, error) {
+	v := url.Values{}
+	if continuation != "" {
+		v.Add("continuation", continuation)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*myPulse)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/namespaces", new(ListNamespacesResponse), v)
+	return responseObject.(*ListNamespacesResponse), err
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
-// Creates a namespace, given the taskcluster credentials with scopes.
+// Claim a namespace, returning a username and password with access to that
+// namespace good for a short time.  Clients should call this endpoint again
+// at the re-claim time given in the response, as the password will be rotated
+// soon after that time.  The namespace will expire, and any associated queues
+// and exchanges will be deleted, at the given expiration time
 //
 // Required scopes:
 //   * pulse:namespace:<namespace>
 //
-// See https://docs.do.not.exist.yet.service.not.in.production#createNamespace
-func (myPulse *Pulse) CreateNamespace(namespace string, payload *NamespaceCreationRequest) (*NamespaceCreationResponse, error) {
+// See https://docs.do.not.exist.yet.service.not.in.production#claimNamespace
+func (myPulse *Pulse) ClaimNamespace(namespace string, payload *NamespaceCreationRequest) (*NamespaceCreationResponse, error) {
 	cd := tcclient.Client(*myPulse)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespace/"+url.QueryEscape(namespace), new(NamespaceCreationResponse), nil)
 	return responseObject.(*NamespaceCreationResponse), err
-}
-
-// Stability: *** EXPERIMENTAL ***
-//
-// Gets a namespace, given the taskcluster credentials with scopes.
-//
-// Required scopes:
-//   * pulse:namespace:<namespace>
-//
-// See https://docs.do.not.exist.yet.service.not.in.production#namespace
-func (myPulse *Pulse) Namespace(namespace string) error {
-	cd := tcclient.Client(*myPulse)
-	_, _, err := (&cd).APICall(nil, "GET", "/namespace/"+url.QueryEscape(namespace), nil, nil)
-	return err
-}
-
-// Returns a signed URL for Namespace, valid for the specified duration.
-//
-// Required scopes:
-//   * pulse:namespace:<namespace>
-//
-// See Namespace for more details.
-func (myPulse *Pulse) Namespace_SignedURL(namespace string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*myPulse)
-	return (&cd).SignedURL("/namespace/"+url.QueryEscape(namespace), nil, duration)
 }
 
 // Respond without doing anything.
