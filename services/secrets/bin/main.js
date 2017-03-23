@@ -10,6 +10,7 @@ import loader from 'taskcluster-lib-loader';
 import validator from 'taskcluster-lib-validate';
 import monitor from 'taskcluster-lib-monitor';
 import app from 'taskcluster-lib-app';
+import docs from 'taskcluster-lib-docs';
 import taskcluster from 'taskcluster-client';
 import stats from 'taskcluster-lib-stats';
 import config from 'typed-env-config';
@@ -68,9 +69,24 @@ var load = loader({
     })
   },
 
+  docs: {
+    requires: ['cfg', 'validator'],
+    setup: ({cfg, validator}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'api',
+          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+        },
+      ],
+    }),
+	},
+
   server: {
-    requires: ['cfg', 'router'],
-    setup: ({cfg, router}) => {
+    requires: ['cfg', 'router', 'docs'],
+    setup: ({cfg, router, docs}) => {
       let secretsApp = app({
         port:           Number(process.env.PORT || cfg.server.port),
         env:            cfg.server.env,
