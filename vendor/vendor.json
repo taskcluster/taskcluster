@@ -131,14 +131,20 @@
 		{
 			"checksumSHA1": "ODdwcwOg+ivpBVyEwR3TVHBmu44=",
 			"path": "github.com/taskcluster/taskcluster-client-go",
-			"revision": "3a44d4e22a199a2553baea25255c6269b5d3ceb4",
-			"revisionTime": "2017-03-15T18:24:49Z"
+			"revision": "1e025a74e8888498e76899ef961c962a09e0028f",
+			"revisionTime": "2017-03-17T00:23:37Z"
 		},
 		{
-			"checksumSHA1": "6zp9haYf29wNfshsHwi4fEIc45Y=",
+			"checksumSHA1": "XI8RmvUCvs4Y/elgWEZqIEbl9SQ=",
+			"path": "github.com/taskcluster/taskcluster-client-go/auth",
+			"revision": "1e025a74e8888498e76899ef961c962a09e0028f",
+			"revisionTime": "2017-03-17T00:23:37Z"
+		},
+		{
+			"checksumSHA1": "eqohe4XT70R2z+WKUV0cy+b97YI=",
 			"path": "github.com/taskcluster/taskcluster-client-go/queue",
-			"revision": "3a44d4e22a199a2553baea25255c6269b5d3ceb4",
-			"revisionTime": "2017-03-15T18:24:49Z"
+			"revision": "1e025a74e8888498e76899ef961c962a09e0028f",
+			"revisionTime": "2017-03-17T00:23:37Z"
 		},
 		{
 			"checksumSHA1": "wQ6D99ew5s03NI+0LxIR9QddMc8=",
