@@ -29,7 +29,7 @@ func (suite *FakeServerSuite) SetupSuite() {
 	handler.HandleFunc("/v1/task/"+fakeTaskID+"/status", manifestHandler)
 	suite.testServer = httptest.NewServer(handler)
 
-	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+ fakeRunID + "/artifacts", runHandler)
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/artifacts", artifactsHandler)
 
 	// set the base URL the subcommands use to point to the fake server
 	queueBaseURL = suite.testServer.URL + "/v1"
@@ -64,8 +64,8 @@ func manifestHandler(w http.ResponseWriter, _ *http.Request) {
 	io.WriteString(w, status)
 }
 
-func runHandler(w http.ResponseWriter, _ *http.Request) {
-	artifacts:= `{
+func artifactsHandler(w http.ResponseWriter, _ *http.Request) {
+	artifacts := `{
 				  	"artifacts": [
 				    {
 				      	"storageType": "reference",
@@ -83,7 +83,6 @@ func runHandler(w http.ResponseWriter, _ *http.Request) {
 				}`
 	io.WriteString(w, artifacts)
 }
-
 
 func (suite *FakeServerSuite) TestNameCommand() {
 	// set up to run a command and capture output
@@ -129,7 +128,6 @@ func TestLogCommand(t *testing.T) {
 
 	assert.Equal(string(buf.Bytes()), s, "Log's are not equal.")
 }
-
 
 func (suite *FakeServerSuite) TestArtifactsCommand() {
 	// set up to run a command and capture output
