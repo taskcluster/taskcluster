@@ -14,6 +14,7 @@ import (
 )
 
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
+const fakeRunID = "0"
 
 type FakeServerSuite struct {
 	suite.Suite
@@ -27,6 +28,8 @@ func (suite *FakeServerSuite) SetupSuite() {
 
 	handler.HandleFunc("/v1/task/"+fakeTaskID+"/status", manifestHandler)
 	suite.testServer = httptest.NewServer(handler)
+
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+ fakeRunID + "/artifacts", runHandler)
 
 	// set the base URL the subcommands use to point to the fake server
 	queueBaseURL = suite.testServer.URL + "/v1"
@@ -60,6 +63,27 @@ func manifestHandler(w http.ResponseWriter, _ *http.Request) {
 				}`
 	io.WriteString(w, status)
 }
+
+func runHandler(w http.ResponseWriter, _ *http.Request) {
+	artifacts:= `{
+				  	"artifacts": [
+				    {
+				      	"storageType": "reference",
+				      	"name": "fake_live.log",
+				      	"expires": "2318-02-02T21:58:38.425Z",
+				      	"contentType": "text/plain"
+				    },
+				    {
+				      	"storageType": "s3",
+				      	"name": "fake_live_backing.log",
+				      	"expires": "2318-02-02T21:58:37.584Z",
+				      	"contentType": "text/plain"
+				    }
+				  ]
+				}`
+	io.WriteString(w, artifacts)
+}
+
 
 func (suite *FakeServerSuite) TestNameCommand() {
 	// set up to run a command and capture output
@@ -106,8 +130,19 @@ func TestLogCommand(t *testing.T) {
 	assert.Equal(string(buf.Bytes()), s, "Log's are not equal.")
 }
 
+
 func (suite *FakeServerSuite) TestArtifactsCommand() {
-	// TO-DO
+	// set up to run a command and capture output
+	buf := &bytes.Buffer{}
+	cmd := &cobra.Command{}
+	cmd.SetOutput(buf)
+
+	// run the command
+	args := []string{fakeTaskID}
+
+	runArtifacts(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+	suite.Equal(string(buf.Bytes()), "fake_live.log\nfake_live_backing.log\n")
+
 }
 
 func (suite *FakeServerSuite) TestGroupCommand() {
