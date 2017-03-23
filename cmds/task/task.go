@@ -12,22 +12,22 @@ var (
 		Use:   "task",
 		Short: "Provides task-related actions and commands.",
 	}
-)
-
-func init() {
-	statusCmd := &cobra.Command{
+	statusCmd = &cobra.Command{
 		Use:   "status <taskId>",
 		Short: "Get the status of a task.",
 		RunE:  executeHelperE(runStatus),
 	}
-	statusCmd.Flags().BoolP("all-runs", "a", false, "Check all runs of the task.")
-	statusCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
-
-	artifactsCmd := &cobra.Command{
+	artifactsCmd = &cobra.Command{
 		Use:   "artifacts <taskId>",
 		Short: "Get the name of the artifacts of a task.",
 		RunE:  executeHelperE(runArtifacts),
 	}
+)
+
+func init() {
+	statusCmd.Flags().BoolP("all-runs", "a", false, "Check all runs of the task.")
+	statusCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
+
 	artifactsCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
 
 	// Commands that fetch information
