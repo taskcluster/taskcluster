@@ -60,11 +60,6 @@ func getS3() (*s3.S3, error) {
 	return s3.New(sess), nil
 }
 
-func exitErrorf(msg string, args ...interface{}) {
-	log.Printf(msg+"\n", args...)
-	os.Exit(1)
-}
-
 func upload(svc *s3.S3, bucket string, folder string, filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -118,23 +113,23 @@ var filename = flag.String("filename", "", "filename of the binary")
 func main() {
 	flag.Parse()
 	if *version == "" || *arch == "" || *filename == "" {
-		exitErrorf("Missing version, arch, or filename")
+		log.Fatalf("Missing version, arch, or filename")
 	}
 
 	svc, err := getS3()
 	if err != nil {
-		exitErrorf("Unable to get service object, %v", err)
+		log.Fatalf("Unable to get service object, %v", err)
 	}
 
 	folder := fmt.Sprintf("%s%s/%s", OBJECT_PREFIX, *version, *arch)
 	url, err := upload(svc, BUCKET_NAME, folder, *filename)
 	if err != nil {
-		exitErrorf("Unable to upload object: %s", err)
+		log.Fatalf("Unable to upload object: %s", err)
 	}
 
 	latestKey := fmt.Sprintf("%s%s/%s/taskcluster", OBJECT_PREFIX, "latest", *arch)
 	err = redirect(svc, BUCKET_NAME, latestKey, url)
 	if err != nil {
-		exitErrorf("Unable to create redirect: %s", err)
+		log.Fatalf("Unable to create redirect: %s", err)
 	}
 }
