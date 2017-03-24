@@ -29,7 +29,7 @@
     "lodash": "^4.11.1",
     "mocha": "^2.2.1",
     "mocha-eslint": "^2.0.2",
-    "pulse-publisher": "^1.1.1",
+    "pulse-publisher": "^1.2.0",
     "sinon": "^1.17.6",
     "slugid": "^1.1.0",
     "source-map-support": "^0.4.0",

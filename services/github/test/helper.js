@@ -15,7 +15,6 @@ let config = require('typed-env-config');
 let testing = require('taskcluster-lib-testing');
 let validator = require('taskcluster-lib-validate');
 let fakeGithubAuth = require('./github-auth');
-let FakePublisher = require('./publisher');
 
 // Load configuration
 let cfg = config({profile: 'test'});
@@ -75,7 +74,7 @@ mocha.before(async () => {
 
   // inject some fakes
   helper.fakeGithub = overwrites.github = fakeGithubAuth();
-  helper.publisher = overwrites.publisher = new FakePublisher();
+  helper.publisher = overwrites.publisher = await helper.load('publisher');
 
   helper.Builds = await helper.load('Builds', overwrites);
   helper.OwnersDirectory = await helper.load('OwnersDirectory', overwrites);
@@ -106,9 +105,6 @@ mocha.before(async () => {
 mocha.beforeEach(async () => {
   let github = await helper.load('github');
   github.resetStubs();
-
-  let publisher = await helper.load('publisher');
-  publisher.resetStubs();
 });
 
 // Cleanup after all tests have completed
