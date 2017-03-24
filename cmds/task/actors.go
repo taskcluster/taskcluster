@@ -11,11 +11,12 @@ import (
 
 // runCancel cancels the runs of a given task.
 func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
-	q := queue.New(credentials)
+	q := makeQueue(credentials)
 	taskID := args[0]
 
 	c, err := q.CancelTask(taskID)
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 	}
 
@@ -26,7 +27,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 // runRerun re-runs a given task.
 func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
-	q := queue.New(credentials)
+	q := makeQueue(credentials)
 	taskID := args[0]
 
 	c, err := q.RerunTask(taskID)
@@ -41,7 +42,7 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, _
 
 // runComplete completes a given task.
 func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
-	q := queue.New(credentials)
+	q := makeQueue(credentials)
 	taskID := args[0]
 
 	s, err := q.Status(taskID)
@@ -57,7 +58,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 		return fmt.Errorf("could not claim the task %s: %v", taskID, err)
 	}
 
-	wq := queue.New(&tcclient.Credentials{
+	wq := makeQueue(&tcclient.Credentials{
 		ClientID:    c.Credentials.ClientID,
 		AccessToken: c.Credentials.AccessToken,
 		Certificate: c.Credentials.Certificate,

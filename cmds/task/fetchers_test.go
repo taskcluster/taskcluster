@@ -31,6 +31,14 @@ func (suite *FakeServerSuite) SetupSuite() {
 
 	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/artifacts", artifactsHandler)
 
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/cancel", cancelHandler)
+
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/rerun", reRunHandler)
+
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/claim", claimTaskHandler)
+
+	handler.HandleFunc("/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/completed", manifestHandler)
+
 	// set the base URL the subcommands use to point to the fake server
 	queueBaseURL = suite.testServer.URL + "/v1"
 }
@@ -38,6 +46,10 @@ func (suite *FakeServerSuite) SetupSuite() {
 func (suite *FakeServerSuite) TearDownSuite() {
 	suite.testServer.Close()
 	queueBaseURL = ""
+}
+
+func TestFakeServerSuite(t *testing.T) {
+	suite.Run(t, new(FakeServerSuite))
 }
 
 // returns the test task on request
@@ -95,10 +107,6 @@ func (suite *FakeServerSuite) TestNameCommand() {
 	runName(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
 	suite.Equal(string(buf.Bytes()), "my-test\n")
-}
-
-func TestFakeServerSuite(t *testing.T) {
-	suite.Run(t, new(FakeServerSuite))
 }
 
 // Test the `task log` subcommand against a real task, since it does its own
