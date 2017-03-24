@@ -18,8 +18,11 @@ or `--help` parameter to get a command's help information.
 
 ### Installation
 
-To install, download the `taskcluster` binary for your platform from the latest
-release on [the releases page](https://github.com/taskcluster/taskcluster-cli/releases).
+To install, download the `taskcluster` binary for the latest release your
+platform, and run it!
+
+ * [amd64](https://downloads.taskcluster.net/taskcluster-cli/latest/amd64/taskcluster) (note: you must chmod +x the result)
+
 
 ## Development
 

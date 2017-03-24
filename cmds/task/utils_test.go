@@ -29,3 +29,20 @@ func TestExecuteHelper(t *testing.T) {
 	assert.Error(runable(&cobra.Command{}, []string{}), "executeHelperE expects at least one argument")
 	assert.NoError(runable(&cobra.Command{}, []string{"one"}))
 }
+
+func TestStringFlagHelper(t *testing.T) {
+	assert := assert.New(t)
+
+	fs := pflag.NewFlagSet("TestStringFlagHelper", pflag.ContinueOnError)
+	fs.String("exists", "val", "this one exists")
+
+	assert.NotPanics(func() {
+		stringFlagHelper(fs, "exists")
+	}, "should not panic")
+
+	assert.Equal("val", stringFlagHelper(fs, "exists"))
+
+	assert.Panics(func() {
+		stringFlagHelper(fs, "not-exists")
+	}, "should panic")
+}
