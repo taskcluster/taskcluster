@@ -118,3 +118,5 @@ test:
   taskcluster:
     schedulerId: tc-gh-devel
 
+  pulse:
+    fake: true
