@@ -235,8 +235,10 @@ async function jobHandler(message) {
   // We must attempt to convert the sanitized fields back to normal here. 
   // Further discussion of how to deal with this cleanly is in
   // https://github.com/taskcluster/taskcluster-github/issues/52
-  let organization = message.payload.organization.replace(/%/g, '.');
-  let repository = message.payload.repository.replace(/%/g, '.');
+  message.payload.organization = message.payload.organization.replace(/%/g, '.');
+  message.payload.repository = message.payload.repository.replace(/%/g, '.');
+  let organization = message.payload.organization;
+  let repository = message.payload.repository;
   let sha = message.payload.details['event.head.sha'];
   if (!sha) {
     debug('Trying to get commit info in job handler...');
