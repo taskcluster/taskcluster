@@ -4,6 +4,7 @@ import taskcluster from 'taskcluster-client';
 import { Handler } from './handler';
 import exchanges from './exchanges';
 import loader from 'taskcluster-lib-loader';
+import docs from 'taskcluster-lib-docs';
 import config from 'typed-env-config';
 import monitor from 'taskcluster-lib-monitor';
 import validator from 'taskcluster-lib-validate';
@@ -37,6 +38,14 @@ let load = loader({
     }),
   },
 
+  reference: {
+    requires: ['cfg'],
+    setup: ({cfg}) => exchanges.reference({
+      exchangePrefix:   cfg.app.exchangePrefix,
+      credentials:      cfg.pulse.credentials,
+    }),
+  },
+
   publisher: {
     requires: ['cfg', 'validator', 'process', 'monitor'],
     setup: ({cfg, validator, process, monitor}) => {
@@ -54,9 +63,24 @@ let load = loader({
     }
   },
 
+  docs: {
+    requires: ['cfg', 'validator', 'reference'],
+    setup: ({cfg, validator, reference}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      schemas: validator.schemas,
+      references: [
+        {
+          name: 'events',
+          reference: reference,
+        },
+      ],
+    }),
+  },
+
   server: {
-    requires: ['cfg', 'publisher', 'validator', 'monitor'],
-    setup: async ({cfg, publisher, validator, monitor}) => {
+    requires: ['cfg', 'publisher', 'validator', 'monitor', 'docs'],
+    setup: async ({cfg, publisher, validator, monitor, docs}) => {
       debug('Configuring handler');
       let queue = new taskcluster.Queue();
       let scheduler = new taskcluster.Scheduler();
