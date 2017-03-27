@@ -52,7 +52,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	}
 
 	// ask for confirmation before cancellation
-	if confirmCancellation(tasks, out) == false {
+	if !confirmCancellation(tasks, out) {
 		fmt.Fprintln(out, "Cancellation of tasks aborted.")
 		return nil
 	}
