@@ -26,6 +26,15 @@ platform, and run it!
 
 ## Development
 
+### Requirements
+
+We currently support Go versions starting at 1.8; the project may or may not
+build on earlier versions.
+
+Please note that the default repositories for popular Linux distributions (e.g.
+Ubuntu) do not carry that version of Go. We recommend you download the latest
+version of the language from [the official website](https://golang.org/dl/).
+
 ### Building
 
 Getting the source is as simple as running the following command in your shell.
