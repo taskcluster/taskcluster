@@ -77,8 +77,8 @@ func init() {
 		use = use + " [" + validArg + "]"
 	}
 	statusCmd := &cobra.Command{
-		Short: "taskcluster-cli status will query the current running status of taskcluster services",
-		Long: `When called without arguments, taskcluster-cli status will return the current running
+		Short: "status queries the current running status of taskcluster services",
+		Long: `When called without arguments, taskcluster status will return the current running
 status of all production taskcluster services.
 
 By specifying one or more optional services as arguments, you can limit the
