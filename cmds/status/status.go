@@ -142,7 +142,7 @@ func (p PingURLs) Cache(cache *configdir.Config, cachePath string) (cachedURLs *
 	color.Magenta("Writing cache file %v", filepath.Join(cache.Path, cachePath))
 
 	///////////////////////////////////////////////////////////////////////
-	// workaround until https://github.com/shibukawa/configdir/pull/2 lands
+	// workaround until https://github.com/shibukawa/configdir/pull/3 lands
 	parentDir := filepath.Dir(filepath.Join(cache.Path, cachePath))
 	err = os.MkdirAll(parentDir, 0755)
 	if err != nil {
