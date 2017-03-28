@@ -12,7 +12,6 @@ import monitor from 'taskcluster-lib-monitor';
 import app from 'taskcluster-lib-app';
 import docs from 'taskcluster-lib-docs';
 import taskcluster from 'taskcluster-client';
-import stats from 'taskcluster-lib-stats';
 import config from 'typed-env-config';
 
 let debug = Debug('secrets:server');
@@ -20,7 +19,7 @@ let debug = Debug('secrets:server');
 var load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => config({profile})
+    setup: ({profile}) => config({profile}),
   },
 
   monitor: {
@@ -28,7 +27,7 @@ var load = loader({
     setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-secrets',
       credentials: cfg.taskcluster.credentials,
-      mock: profile === 'test',
+      mock: profile !== 'production',
       process,
     }),
   },
@@ -49,9 +48,8 @@ var load = loader({
       table:            cfg.azure.tableName,
       cryptoKey:        cfg.azure.cryptoKey,
       signingKey:       cfg.azure.signingKey,
-      component:        cfg.taskclusterSecrets.statsComponent,
       monitor:          monitor.prefix(cfg.azure.tableName.toLowerCase()),
-    })
+    }),
   },
 
   router: {
@@ -63,10 +61,9 @@ var load = loader({
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'secrets/v1/api.json',
       aws:              cfg.aws,
-      component:        cfg.taskclusterSecrets.statsComponent,
       monitor:          monitor.prefix('api'),
       validator,
-    })
+    }),
   },
 
   docs: {
@@ -82,7 +79,7 @@ var load = loader({
         },
       ],
     }),
-	},
+  },
 
   server: {
     requires: ['cfg', 'router', 'docs'],
@@ -91,7 +88,7 @@ var load = loader({
         port:           Number(process.env.PORT || cfg.server.port),
         env:            cfg.server.env,
         forceSSL:       cfg.server.forceSSL,
-        trustProxy:     cfg.server.trustProxy
+        trustProxy:     cfg.server.trustProxy,
       });
 
       // Mount API router
@@ -99,7 +96,7 @@ var load = loader({
 
       // Create server
       return secretsApp.createServer();
-    }
+    },
   },
 
   expire: {
@@ -108,11 +105,11 @@ var load = loader({
       // Find an secret expiration delay
       var delay = cfg.taskclusterSecrets.secretExpirationDelay;
       var now   = taskcluster.fromNow(delay);
-      assert(!_.isNaN(now), "Can't have NaN as now");
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
-      debug("Expiring secrets");
+      debug('Expiring secrets');
       let count = await entity.expire(now);
-      debug("Expired " + count + " secrets");
+      debug('Expired ' + count + ' secrets');
     },
   },
 }, ['process', 'profile']);
