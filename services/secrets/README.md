@@ -6,7 +6,7 @@ The secrets service allows task cluster clients with appropriate scopes to write
 
 The service expects the following to run periodically (daily?) to flush expired secrets:
 
-    NODE_ENV=production babel-node bin/main.js expire
+    NODE_ENV=production node lib/main.js expire
 
 # Running Tests
 
