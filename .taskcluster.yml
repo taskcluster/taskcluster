@@ -21,8 +21,9 @@ tasks:
         - /bin/bash
         - '-c'
         - >-
-          go get -t github.com/taskcluster/taskcluster-cli
+          mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
           && cd  /go/src/github.com/taskcluster/taskcluster-cli 
+          && git init
           && git fetch {{ event.head.repo.url }} {{ event.head.ref }} 
           && git checkout {{ event.head.sha }} 
           && make 
