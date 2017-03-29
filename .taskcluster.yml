@@ -264,6 +264,8 @@ tasks:
   #################### OS X 10.11 build ####################
   ##########################################################
 
+  # - provisionerId: scl3-puppet
+  #   workerType: os-x-10-10-gw
   - provisionerId: pmoore-manual
     workerType: mac-os-x
     metadata:
@@ -285,12 +287,13 @@ tasks:
         - - /bin/bash
           - -vxec
           - |
-            export GOPATH="$(pwd)/go"
-            export PATH="${GOPATH}/bin:${PATH}"
+            export GOROOT="$(pwd)/go1.8/go"
+            export GOPATH="$(pwd)/gopath"
+            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             source "${GW_CREDS_BOOTSTRAP}"
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             mkdir -p public/build
-            cd "go/src/github.com/taskcluster"
+            cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
             git fetch --tags
@@ -313,7 +316,11 @@ tasks:
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: go/src
+          directory: gopath/src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.8.darwin-amd64.tar.gz
+          directory: go1.8
+          format: tar.gz
 
   ##########################################################
   #################### Linux ARM6 build ####################
