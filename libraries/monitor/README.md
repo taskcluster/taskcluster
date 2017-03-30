@@ -58,6 +58,8 @@ The available options are:
     turned on by monitor.resources(...) later if wanted.  That allows for
     gracefully stopping as well.
  * `mock` - If true, the monitoring object will be a fake that stores data for testing but does not report it.
+ * `aws` - If provided, these should be of the form `{credentials: {accessKeyId: '...', secretAccessKey: '...'}, region: '...'}`
+ * `logName` - If provided, this should be the name of a AWS Firehose deliveryStream that can be written to with the aws creds
 
 ### Measuring and Counting Things
 
@@ -225,6 +227,23 @@ let doodad = monitor.timeKeeper('metricName');
 // ...
 // Keep doing stuff here however long you like
 doodad.measure();
+```
+
+
+###  Audit Logs
+For the time being, this is restricted to services that have use AWS credentials directly rather than via accessing via the
+auth service. Given a set of credentials that allow writing to a Kinesis Firehose and the name of that Firehose, this will
+allow writing arbitrary JSON blobs to that endpoint. The blobs will end up in S3 for permanent storage. We use this for things
+like audit logs that we want to keep for a long time. Records must be less than 1MB when stringified.
+
+```js
+    let monitor = await monitoring({
+      ...,
+      aws: {credentials: {accessKeyId: 'foo', secretAccessKey: 'bar'}, region: 'us-east-1'},
+      logName: 'audit-log-stream',
+    });
+    monitor.log({foo: 'bar', baz: 233}); // This will be submitted on a timed interval
+    await monitor.flush(); // This will await all records being submitted
 ```
 
 Testing

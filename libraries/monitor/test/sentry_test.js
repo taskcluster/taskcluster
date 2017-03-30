@@ -1,5 +1,6 @@
 suite('Sentry', () => {
   let assert = require('assert');
+  let Promise = require('bluebird');
   let monitoring = require('../');
   let debug = require('debug')('test');
   let nock = require('nock');
