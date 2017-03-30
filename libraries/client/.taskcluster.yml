@@ -1,7 +1,7 @@
 version: 0
 metadata:
   name: "taskcluster-client test"
-  description: "Things for metrics and monitoring library"
+  description: "Interact with taskcluster from nodejs"
   owner: "{{ event.head.user.email }}"
   source: "{{ event.head.repo.url }}"
 
