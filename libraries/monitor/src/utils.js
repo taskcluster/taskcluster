@@ -7,7 +7,7 @@
  */
 let debug = require('debug')('taskcluster-lib-monitor');
 let usage = require('usage');
-let Promise = require('promise');
+let Promise = require('bluebird');
 
 /**
  * Given an express api method, this will time it
