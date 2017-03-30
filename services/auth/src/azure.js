@@ -64,8 +64,10 @@ api.declare({
   title:      "Get Shared-Access-Signature for Azure Table",
   description: [
     "Get a shared access signature (SAS) string for use with a specific Azure",
-    "Table Storage table. By not specifying a level as in azureTableSASLevel,",
-    "you will get read-write permissions. If you get read-write from this, it will create the",
+    "Table Storage table.",
+    "",
+    "The `level` parameter can be `read-write` or `read-only` and determines",
+    "which type of credentials are returned.  If level is read-write, it will create the",
     "table if it doesn't already exist.",
   ].join('\n')
 }, async function(req, res) {
@@ -137,8 +139,11 @@ api.declare({
   title:      "Get Shared-Access-Signature for Azure Blob",
   description: [
     "Get a shared access signature (SAS) string for use with a specific Azure",
-    "Blob Storage container. If the level is read-write, the container will be created, " +
-    "if it doesn't already exists."
+    "Blob Storage container.",
+    "",
+    "The `level` parameter can be `read-write` or `read-only` and determines",
+    "which type of credentials are returned.  If level is read-write, it will create the",
+    "container if it doesn't already exist."
   ].join('\n')
 }, async function(req, res){
   // Get parameters
