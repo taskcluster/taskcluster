@@ -1,12 +1,12 @@
 let debug = require('debug')('taskcluster-lib-monitor');
 let _ = require('lodash');
 let assert = require('assert');
-let Promise = require('promise');
 let taskcluster = require('taskcluster-client');
 let utils = require('./utils');
 let Statsum = require('statsum');
 let MockMonitor = require('./mockmonitor');
 let Monitor = require('./monitor');
+let auditlogs = require('./auditlogs');
 
 /**
  * Create a new monitor, given options:
@@ -25,6 +25,10 @@ let Monitor = require('./monitor');
  *   // If credentials aren't given, you must supply:
  *   statsumToken: async (project) => {token, expires, baseUrl}
  *   sentryDNS: async (project) => {dsn: {secret: '...'}, expires}
+ *   // If you'd like to use the logging bits, you'll need to provide
+ *   // s3 creds directly for now
+ *   aws: {credentials: {accessKeyId, secretAccessKey}},
+ *   logName: '', // name of audit log
  * }
  */
 async function monitor(options) {
@@ -32,9 +36,12 @@ async function monitor(options) {
     patchGlobal: true,
     bailOnUnhandledRejection: false,
     reportStatsumErrors: true,
+    reportAuditLogErrors: true,
     resourceInterval: 10,
     crashTimeout: 5 * 1000,
     mock: false,
+    logName: null,
+    aws: null,
   });
   assert(options.authBaseUrl || options.credentials || options.statsumToken && options.sentryDSN ||
          options.mock,
@@ -45,6 +52,14 @@ async function monitor(options) {
   if (options.mock) {
     return new MockMonitor(options);
   }
+
+  let auditlog;
+  if (!options.aws && !options.logName) {
+    auditlog = new auditlogs.NoopLog();
+  } else {
+    auditlog = new auditlogs.FirehoseLog(options);
+  }
+  await auditlog.setup();
 
   // Find functions for statsum and sentry
   let statsumToken = options.statsumToken;
@@ -77,11 +92,28 @@ async function monitor(options) {
     emitErrors: options.reportStatsumErrors,
   });
 
-  let m = new Monitor(sentryDSN, null, statsum, options);
+  let m = new Monitor(sentryDSN, null, statsum, auditlog, options);
 
   if (options.reportStatsumErrors) {
     statsum.on('error', err => m.reportError(err, 'warning'));
   }
+  if (options.reportAuditLogErrors) {
+    auditlog.on('error', err => m.reportError(err, 'warning'));
+  }
+
+  process.on('SIGTERM', async () => {
+    setTimeout(() => {
+      console.log('Failed to flush after timeout!');
+      process.exit(1);
+    }, options.crashTimeout);
+    try {
+      await m.flush();
+    } catch (e) {
+      console.log('Failed to flush  with error:');
+      console.log(e);
+    }
+    process.exit(143); // Node docs specify that SIGTERM should exit with 128 + number of signal (SIGTERM is 15)
+  });
 
   if (options.patchGlobal) {
     process.on('uncaughtException', async (err) => {
