@@ -4,11 +4,12 @@ let assert = require('assert');
 let utils = require('./utils');
 
 class MockMonitor {
-  constructor(opts, counts = {}, measures = {}, errors = []) {
+  constructor(opts, counts = {}, measures = {}, errors = [], records = []) {
     this._opts = opts;
     this.counts = counts;
     this.measures = measures;
     this.errors = errors;
+    this.records = records;
     this._resourceInterval = null;
   }
 
@@ -16,6 +17,10 @@ class MockMonitor {
     debug('reportError: %j', err);
     this.errors.push(err);
     return true;
+  }
+
+  log(record) {
+    this.records.push(record);
   }
 
   async captureError(err, level='error', tags={}) {
