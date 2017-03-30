@@ -5,6 +5,8 @@ package pulse
 import (
 	"encoding/json"
 	"errors"
+
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type (
@@ -30,6 +32,11 @@ type (
 			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact
 			Contact json.RawMessage `json:"contact"`
 
+			// Date-time at which this namespace was first claimed.
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/created
+			Created tcclient.Time `json:"created,omitempty"`
+
 			// The namespace's name
 			//
 			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace
@@ -46,6 +53,13 @@ type (
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact
 		Contact json.RawMessage `json:"contact"`
+
+		// Date-time after which the username, and all associated queues and
+		// exchanges, should be deleted. This can be updated on every claim, with no
+		// limit. In most cases it should be set to several days in the future.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
 	}
 
 	// Namespace creation response
@@ -58,6 +72,17 @@ type (
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact
 		Contact json.RawMessage `json:"contact"`
 
+		// Date-time at which this namespace was first claimed.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/created
+		Created tcclient.Time `json:"created,omitempty"`
+
+		// Date-time after which the username, and all associated queues and
+		// exchanges, should be deleted.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/expires
+		Expires tcclient.Time `json:"expires,omitempty"`
+
 		// The name of the namespace created
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/namespace
@@ -67,6 +92,12 @@ type (
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/password
 		Password string `json:"password"`
+
+		// The caller should plan to call `claimNamespace` again at this time. The provided
+		// password will become invalid a short time after this.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/reclaimAt
+		ReclaimAt tcclient.Time `json:"reclaimAt,omitempty"`
 
 		// The username created for authentication
 		//

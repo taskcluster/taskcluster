@@ -1,4 +1,4 @@
-Generated: 1490207087
+Generated: 1490887417
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5767,7 +5767,10 @@ Entry 3     =
 namespace good for a short time.  Clients should call this endpoint again
 at the re-claim time given in the response, as the password will be rotated
 soon after that time.  The namespace will expire, and any associated queues
-and exchanges will be deleted, at the given expiration time'
+and exchanges will be deleted, at the given expiration time.
+
+The `expires` and `contact` properties can be updated at any time in a reclaim
+operation.'
 Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -5999,6 +6002,12 @@ Properties
           Type                   = 'object'
           TypeName               = 'ContactInformation'
           SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact'
+        Property 'created' =
+          Description            = 'Date-time at which this namespace was first claimed.'
+          Format                 = 'date-time'
+          Type                   = 'string'
+          TypeName               = 'Created'
+          SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/created'
         Property 'namespace' =
           Description            = 'The namespace's name
           '
@@ -6059,7 +6068,16 @@ Properties
     Type                   = 'object'
     TypeName               = 'ContactInformation'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact'
-Required               = '[contact]'
+  Property 'expires' =
+    Description            = 'Date-time after which the username, and all associated queues and
+    exchanges, should be deleted. This can be updated on every claim, with no
+    limit. In most cases it should be set to several days in the future.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'Expires'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/expires'
+Required               = '[contact expires]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Namespace Creation Request'
 Type                   = 'object'
@@ -6103,6 +6121,20 @@ Properties
     Type                   = 'object'
     TypeName               = 'ContactInformation'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact'
+  Property 'created' =
+    Description            = 'Date-time at which this namespace was first claimed.'
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'Created'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/created'
+  Property 'expires' =
+    Description            = 'Date-time after which the username, and all associated queues and
+    exchanges, should be deleted.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'Expires'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/expires'
   Property 'namespace' =
     Description            = 'The name of the namespace created'
     Title                  = 'Namespace'
@@ -6115,6 +6147,14 @@ Properties
     Type                   = 'string'
     TypeName               = 'Password'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/password'
+  Property 'reclaimAt' =
+    Description            = 'The caller should plan to call `claimNamespace` again at this time. The provided
+    password will become invalid a short time after this.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'ReclaimAt'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/reclaimAt'
   Property 'username' =
     Description            = 'The username created for authentication'
     Title                  = 'Username'

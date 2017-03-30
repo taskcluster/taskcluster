@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 22 Mar 2017 at 18:24:00 UTC. The code was generated
+// Thu, 30 Mar 2017 at 15:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -124,7 +124,10 @@ func (myPulse *Pulse) ListNamespaces(continuation, limit string) (*ListNamespace
 // namespace good for a short time.  Clients should call this endpoint again
 // at the re-claim time given in the response, as the password will be rotated
 // soon after that time.  The namespace will expire, and any associated queues
-// and exchanges will be deleted, at the given expiration time
+// and exchanges will be deleted, at the given expiration time.
+//
+// The `expires` and `contact` properties can be updated at any time in a reclaim
+// operation.
 //
 // Required scopes:
 //   * pulse:namespace:<namespace>
