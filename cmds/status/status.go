@@ -28,30 +28,46 @@ var (
 )
 
 type (
+	// PingURLs maps a service name (e.g. "queue") to the http ping endpoint of that service
 	PingURLs map[string]string
 
+	// CachedURLs defines the json data format of the cache.json file used for
+	// caching the ping urls (see above)
 	CachedURLs struct {
 		LastUpdated time.Time `json:"lastUpdated"`
 		PingURLs    PingURLs  `json:"pingURLs"`
 	}
 
+	// PingResponse defines the data format of the http response from the ping url endpoints
 	PingResponse struct {
 		Alive  bool    `json:"alive"`
 		Uptime float64 `json:"uptime"`
 	}
 
+	// API defines the subset of fields returned from a taskcluster api
+	// definition, that are required to determine the service's name and ping
+	// endpoint.
+	//
+	// See https://docs.taskcluster.net/manual/integrations/tools/references#api-references
+	// for more information.
 	API struct {
 		BaseURL string     `json:"baseUrl"`
 		Entries []APIEntry `json:"entries"`
 	}
 
+	// APIEntry defines the subset of fields in a specific taskcluster api
+	// endpoint (such as ping) for establishing the endpoint name (function)
+	// and url path
+	//
+	// See https://docs.taskcluster.net/manual/integrations/tools/references#api-references
+	// for more information.
 	APIEntry struct {
 		Name  string `json:"name"`
 		Route string `json:"route"`
 	}
 )
 
-// CacheFilePath returns the file system path to the cache file storing the ping URLs
+// Cache returns the file system path to the cache file storing the ping URLs
 func Cache() (cache *configdir.Config) {
 	configDirs := configdir.New("taskcluster", "taskcluster-cli")
 	cache = configDirs.QueryCacheFolder()
@@ -153,6 +169,8 @@ func (p PingURLs) Cache(cache *configdir.Config, cachePath string) (cachedURLs *
 	return
 }
 
+// Expired checks if the time since the ping urls were cached is more than the
+// specified duration
 func (cachedURLs *CachedURLs) Expired(d time.Duration) bool {
 	return time.Since(cachedURLs.LastUpdated) > d
 }
@@ -161,19 +179,19 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return validateArgs(cmd, args)
 }
 
-//  ScrapePingURLs queries manifestURL to return a manifest of services, which
-//  are then queried to fetch ping URLs for taskcluster services
+// ScrapePingURLs queries manifestURL to return a manifest of services, which
+// are then queried to fetch ping URLs for taskcluster services
 func ScrapePingURLs(manifestURL string) (pingURLs PingURLs, err error) {
 	color.Yellow("Scraping ping URLs from %v", manifestURL)
 	var allAPIs map[string]string
-	err = objectFromJsonURL(manifestURL, &allAPIs)
+	err = objectFromJSONURL(manifestURL, &allAPIs)
 	if err != nil {
 		return
 	}
 	pingURLs = map[string]string{}
 	for _, apiURL := range allAPIs {
 		reference := new(API)
-		err = objectFromJsonURL(apiURL, reference)
+		err = objectFromJSONURL(apiURL, reference)
 		if err != nil {
 			return
 		}
@@ -197,21 +215,24 @@ func ScrapePingURLs(manifestURL string) (pingURLs PingURLs, err error) {
 	return
 }
 
-func objectFromJsonURL(urlReturningJSON string, object interface{}) (err error) {
-	resp, err := http.Get(urlReturningJSON)
+func objectFromJSONURL(urlReturningJSON string, object interface{}) (err error) {
+	var resp *http.Response
+	resp, err = http.Get(urlReturningJSON)
 	if err != nil {
-		return err
+		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err2 := resp.Body.Close()
+		if err == nil {
+			err = err2
+		}
+	}()
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Bad (!= 200) status code %v from (*URL) Hostnamerl %v", resp.StatusCode, urlReturningJSON)
+		return fmt.Errorf("Bad (!= 200) status code %v from %v", resp.StatusCode, urlReturningJSON)
 	}
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&object)
-	if err != nil {
-		return err
-	}
-	return nil
+	return
 }
 
 func validateArgs(cmd *cobra.Command, args []string) error {
@@ -229,11 +250,11 @@ outer:
 
 func respbody(service string) error {
 	var servstat PingResponse
-	err := objectFromJsonURL(pingURLs[service], &servstat)
+	err := objectFromJSONURL(pingURLs[service], &servstat)
 	if err != nil {
 		return err
 	}
-	if servstat.Alive == true {
+	if servstat.Alive {
 		living := "Alive"
 		fmt.Printf("      %v\n", service)
 		color.Green("      %v\n", living)
