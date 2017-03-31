@@ -8,12 +8,18 @@ import (
 	assert "github.com/stretchr/testify/require"
 )
 
-func TestVersionCommand(t *testing.T) {
-	assert := assert.New(t)
-
+func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
 	cmd.SetOutput(buf)
+
+	return buf, cmd
+}
+
+func TestVersionCommand(t *testing.T) {
+	assert := assert.New(t)
+
+	buf, cmd := setUpCommand()
 
 	printVersion(cmd, nil)
 

@@ -96,11 +96,17 @@ func artifactsHandler(w http.ResponseWriter, _ *http.Request) {
 	io.WriteString(w, artifacts)
 }
 
-func (suite *FakeServerSuite) TestNameCommand() {
-	// set up to run a command and capture output
+func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
 	cmd.SetOutput(buf)
+
+	return buf, cmd
+}
+
+func (suite *FakeServerSuite) TestNameCommand() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
 
 	// run the command
 	args := []string{fakeTaskID}
@@ -114,9 +120,7 @@ func (suite *FakeServerSuite) TestNameCommand() {
 func TestLogCommand(t *testing.T) {
 	assert := assert.New(t)
 
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	args := []string{"TtAsnXdCS1-tAQxvMO4rHQ"}
 	runLog(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
@@ -139,9 +143,7 @@ func TestLogCommand(t *testing.T) {
 
 func (suite *FakeServerSuite) TestArtifactsCommand() {
 	// set up to run a command and capture output
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	// run the command
 	args := []string{fakeTaskID}
@@ -153,9 +155,7 @@ func (suite *FakeServerSuite) TestArtifactsCommand() {
 
 func (suite *FakeServerSuite) TestGroupCommand() {
 	// set up to run a command and capture output
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	// run the command
 	args := []string{fakeTaskID}
@@ -166,9 +166,7 @@ func (suite *FakeServerSuite) TestGroupCommand() {
 
 func (suite *FakeServerSuite) TestStatusCommand() {
 	// set up to run a command and capture output
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	args := []string{fakeTaskID}
 

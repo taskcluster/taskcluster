@@ -1,11 +1,9 @@
 package task
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 
-	"github.com/spf13/cobra"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
@@ -66,9 +64,7 @@ func claimTaskHandler(w http.ResponseWriter, _ *http.Request) {
 
 func (suite *FakeServerSuite) TestRunCancelCommand() {
 	// set up to run a command and capture output
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	// run the command
 	args := []string{fakeTaskID}
@@ -79,9 +75,7 @@ func (suite *FakeServerSuite) TestRunCancelCommand() {
 
 func (suite *FakeServerSuite) TestRunRerunCommand() {
 	// set up to run a command and capture output
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	// run the command
 	args := []string{fakeTaskID}
@@ -92,9 +86,7 @@ func (suite *FakeServerSuite) TestRunRerunCommand() {
 
 func (suite *FakeServerSuite) TestRunCompleteCommand() {
 	// set up to run a command and capture output
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	// run the command
 	args := []string{fakeTaskID}

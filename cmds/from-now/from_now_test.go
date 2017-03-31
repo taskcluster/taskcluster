@@ -84,13 +84,19 @@ func TestFromNowEmpty(t *testing.T) {
 	assert.Error(err, "the input is empty and should produce an error")
 }
 
+func setUpCommand() (*bytes.Buffer, *cobra.Command) {
+	buf := &bytes.Buffer{}
+	cmd := &cobra.Command{}
+	cmd.SetOutput(buf)
+
+	return buf, cmd
+}
+
 // TestFromNowInvalid tests an invalid call of the cobra command.
 func TestFromNowInvalid(t *testing.T) {
 	assert := assert.New(t)
 
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	_, cmd := setUpCommand()
 
 	err := fromNow(cmd, []string{"this should produce an error"})
 
@@ -101,9 +107,7 @@ func TestFromNowInvalid(t *testing.T) {
 func TestFromNowValid(t *testing.T) {
 	assert := assert.New(t)
 
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	err := fromNow(cmd, []string{"2 years 5 days 6 minutes"})
 
@@ -119,9 +123,7 @@ func TestFromNowValid(t *testing.T) {
 func TestFromNowSplitValid(t *testing.T) {
 	assert := assert.New(t)
 
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	buf, cmd := setUpCommand()
 
 	err := fromNow(cmd, []string{"2", "years", "5", "days", "6", "minutes"})
 
