@@ -35,13 +35,46 @@ type (
 			// Date-time at which this namespace was first claimed.
 			//
 			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/created
-			Created tcclient.Time `json:"created,omitempty"`
+			Created tcclient.Time `json:"created"`
+
+			// Date-time after which the username, and all associated queues and
+			// exchanges, should be deleted.
+			//
+			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/expires
+			Expires tcclient.Time `json:"expires"`
 
 			// The namespace's name
 			//
 			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace
 			Namespace string `json:"namespace"`
 		} `json:"namespaces"`
+	}
+
+	// Representation of the namespace
+	//
+	// See http://schemas.taskcluster.net/pulse/v1/namespace.json#
+	Namespace1 struct {
+
+		// The contact information which will be handed off to the notification service
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace.json#/properties/contact
+		Contact json.RawMessage `json:"contact"`
+
+		// Date-time at which this namespace was first claimed.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace.json#/properties/created
+		Created tcclient.Time `json:"created"`
+
+		// Date-time after which the username, and all associated queues and
+		// exchanges, should be deleted.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// The namespace's name
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace.json#/properties/namespace
+		Namespace string `json:"namespace"`
 	}
 
 	// Namespace creation request
@@ -247,17 +280,23 @@ type (
 	// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact/oneOf[1]
 	Var3 SendEmailRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]
+	// See http://schemas.taskcluster.net/pulse/v1/namespace.json#/properties/contact/oneOf[0]
 	Var4 PostIRCMessageRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
+	// See http://schemas.taskcluster.net/pulse/v1/namespace.json#/properties/contact/oneOf[1]
 	Var5 SendEmailRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[0]
 	Var6 PostIRCMessageRequest
 
-	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact/oneOf[1]
 	Var7 SendEmailRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[0]
+	Var8 PostIRCMessageRequest
+
+	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact/oneOf[1]
+	Var9 SendEmailRequest
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 30 Mar 2017 at 15:23:00 UTC. The code was generated
+// Fri, 31 Mar 2017 at 17:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -98,6 +98,8 @@ func (myPulse *Pulse) Exchanges() (*RabbitMQExchanges, error) {
 	return responseObject.(*RabbitMQExchanges), err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
 // List the namespaces managed by this service.
 //
 // This will list up to 1000 namespaces. If more namespaces are present a
@@ -116,6 +118,18 @@ func (myPulse *Pulse) ListNamespaces(continuation, limit string) (*ListNamespace
 	cd := tcclient.Client(*myPulse)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/namespaces", new(ListNamespacesResponse), v)
 	return responseObject.(*ListNamespacesResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get public information about a single namespace. This is the same information
+// as returned by `listNamespaces`.
+//
+// See https://docs.do.not.exist.yet.service.not.in.production#namespace
+func (myPulse *Pulse) Namespace(namespace string) (*Namespace1, error) {
+	cd := tcclient.Client(*myPulse)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/namespace/"+url.QueryEscape(namespace), new(Namespace1), nil)
+	return responseObject.(*Namespace1), err
 }
 
 // Stability: *** EXPERIMENTAL ***
