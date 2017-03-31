@@ -230,6 +230,7 @@ var github = new taskcluster.Github(options);
 ```
  * `github.githubWebHookConsumer() : void`
  * `github.builds([options]) : result`
+ * `github.badge(owner, repo, branch) : void`
  * `github.isInstalledFor(owner, repo) : result`
  * `github.ping() : void`
 
@@ -294,8 +295,8 @@ var pulse = new taskcluster.Pulse(options);
 ```
  * `pulse.overview() : result`
  * `pulse.exchanges() : result`
- * `pulse.createNamespace(namespace, payload) : result`
- * `pulse.namespace(namespace) : void`
+ * `pulse.listNamespaces([options]) : result`
+ * `pulse.claimNamespace(namespace, payload) : result`
  * `pulse.ping() : void`
 
 ### Methods in `taskcluster.PurgeCache`
