@@ -124,6 +124,6 @@ if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
   echo
   echo 'This will update:'
   echo
-  echo '  https://docs.taskcluster.net/manual/execution/workers/generic-worker !'
+  echo '  https://docs.taskcluster.net/reference/workers/generic-worker/payload !'
   echo
 fi
