@@ -1134,6 +1134,22 @@ module.exports = {
         {
           "args": [
             "owner",
+            "repo",
+            "branch"
+          ],
+          "description": "Checks the status of the latest build of a given branch \nand returns corresponding badge image.",
+          "method": "get",
+          "name": "badge",
+          "query": [
+          ],
+          "route": "/badge/<owner>/<repo>/<branch>",
+          "stability": "experimental",
+          "title": "Latest Build Status Badge",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
             "repo"
           ],
           "description": "Checks if the integration has been installed for\na given repository of a given organization or user.",
@@ -1761,12 +1777,12 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://pulse.taskcluster.net/v1",
-      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows us self-service and\ngreater control within the Taskcluster project.",
+      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows for self-service pulse\naccess and greater control within the Taskcluster project.",
       "entries": [
         {
           "args": [
           ],
-          "description": "An overview of the Rabbit cluster",
+          "description": "Get an overview of the Rabbit cluster.",
           "method": "get",
           "name": "overview",
           "output": "http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json",
@@ -1780,7 +1796,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "A list of exchanges in the rabbit cluster",
+          "description": "Get a list of all exchanges in the rabbit cluster.  This will include exchanges\nnot managed by this service, if any exist.",
           "method": "get",
           "name": "exchanges",
           "output": "http://schemas.taskcluster.net/pulse/v1/exchanges-response.json",
@@ -1793,12 +1809,28 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "description": "List the namespaces managed by this service.\n\nThis will list up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, do not provide continuation.",
+          "method": "get",
+          "name": "listNamespaces",
+          "output": "http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json",
+          "query": [
+            "limit",
+            "continuation"
+          ],
+          "route": "/namespaces",
+          "stability": "stable",
+          "title": "List Namespaces",
+          "type": "function"
+        },
+        {
+          "args": [
             "namespace"
           ],
-          "description": "Creates a namespace, given the taskcluster credentials with scopes.",
+          "description": "Claim a namespace, returning a username and password with access to that\nnamespace good for a short time.  Clients should call this endpoint again\nat the re-claim time given in the response, as the password will be rotated\nsoon after that time.  The namespace will expire, and any associated queues\nand exchanges will be deleted, at the given expiration time.\n\nThe `expires` and `contact` properties can be updated at any time in a reclaim\noperation.",
           "input": "http://schemas.taskcluster.net/pulse/v1/namespace-request.json",
           "method": "post",
-          "name": "createNamespace",
+          "name": "claimNamespace",
           "output": "http://schemas.taskcluster.net/pulse/v1/namespace-response.json",
           "query": [
           ],
@@ -1809,26 +1841,7 @@ module.exports = {
             ]
           ],
           "stability": "experimental",
-          "title": "Create a namespace",
-          "type": "function"
-        },
-        {
-          "args": [
-            "namespace"
-          ],
-          "description": "Gets a namespace, given the taskcluster credentials with scopes.",
-          "method": "get",
-          "name": "namespace",
-          "query": [
-          ],
-          "route": "/namespace/<namespace>",
-          "scopes": [
-            [
-              "pulse:namespace:<namespace>"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Get namespace information",
+          "title": "Claim a namespace",
           "type": "function"
         },
         {
@@ -2247,7 +2260,7 @@ module.exports = {
             "taskId",
             "runId"
           ],
-          "description": "reclaim a task more to be added later...",
+          "description": "Refresh the claim for a specific `runId` for given `taskId`. This updates\nthe `takenUntil` property and returns a new set of temporary credentials\nfor performing requests on behalf of the task. These credentials should\nbe used in-place of the credentials returned by `claimWork`.\n\nThe `reclaimTask` requests serves to:\n * Postpone `takenUntil` preventing the queue from resolving\n   `claim-expired`,\n * Refresh temporary credentials used for processing the task, and\n * Abort execution if the task/run have been resolved.\n\nIf the `takenUntil` timestamp is exceeded the queue will resolve the run\nas _exception_ with reason `claim-expired`, and proceeded to retry to the\ntask. This ensures that tasks are retried, even if workers disappear\nwithout warning.\n\nIf the task is resolved, this end-point will return `409` reporting\n`RequestConflict`. This typically happens if the task have been canceled\nor the `task.deadline` have been exceeded. If reclaiming fails, workers\nshould abort the task and forget about the given `runId`. There is no\nneed to resolve the run or upload artifacts.",
           "method": "post",
           "name": "reclaimTask",
           "output": "http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#",
