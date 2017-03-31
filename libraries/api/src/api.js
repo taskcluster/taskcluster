@@ -44,14 +44,6 @@ var ping = {
 
 var debug = Debug('api');
 
-/* In production, log authorizations so they are included in papertrail regardless of
- * DEBUG settings; otherwise, log with debug
- */
-var authLog = (...args) => console.log(...args);
-if (process.env.NODE_ENV !== 'production') {
-  var authLog = Debug('api.authz');
-}
-
 /**
  * Create parameter validation middle-ware instance, given a mapping from
  * parameter to regular expression or function that returns a message as string
@@ -361,7 +353,21 @@ var createRemoteSignatureValidator = function(options) {
  */
 var remoteAuthentication = function(options, entry) {
   assert(options.signatureValidator instanceof Function,
-         "Expected options.signatureValidator to be a function!");
+         'Expected options.signatureValidator to be a function!');
+
+  /* In production, log authorizations so they are included in audit log regardless of
+   * DEBUG settings; otherwise, log with debug
+   */
+  let authLog;
+  if (options.monitor) {
+    authLog = options.monitor.log;
+  } else if (process.env.NODE_ENV !== 'production') {
+    let adb = Debug('api.authz');
+    authLog = (obj) => adb(JSON.stringify(obj));
+  } else {
+    authLog = (obj) => console.log(JSON.stringify(obj));
+  }
+
   // Returns promise for object on the form:
   //   {status, message, scopes, scheme, hash}
   // scopes, scheme, hash are only present if status isn't auth-failed
@@ -486,11 +492,14 @@ var remoteAuthentication = function(options, entry) {
 
         // Test that we have scope intersection, and hence, is authorized
         var retval = scopes.scopeMatch(result.scopes, scopesets);
-        if (retval) {
-          // TODO: log this in a structured format when structured logging is
-          // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
-          authLog(`Authorized ${clientId} for ${req.method} access to ${req.originalUrl}`);
-        }
+        authLog({
+          event: 'authorization',
+          ts: Date.now(),
+          satisfied: retval,
+          clientId,
+          method: req.method,
+          url: req.originalUrl,
+        });
         if (!retval && !noReply) {
           res.reportError('InsufficientScopes', [
             "You do not have sufficient scopes. This request requires you",
@@ -732,7 +741,6 @@ API.prototype.router = function(options) {
     signatureValidator:   createRemoteSignatureValidator({
       authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL
     }),
-    raven:                null,
   });
 
   // Validate context
@@ -744,7 +752,8 @@ API.prototype.router = function(options) {
   // Authentication strategy (default to remote authentication)
   var authStrategy = function(entry) {
     return remoteAuthentication({
-      signatureValidator: options.signatureValidator
+      signatureValidator: options.signatureValidator,
+      monitor: options.monitor,
     }, entry);
   };
 
@@ -760,11 +769,6 @@ API.prototype.router = function(options) {
                 '`monitor` should be an instance of taskcluster-lib-monitor.\n' +
                 '`component` is no longer needed. Prefix your `monitor` before use.\n' +
                 '`raven` is deprecated. An instance of `monitor` will work instead.');
-  }
-
-  var monitor = null;
-  if (options.monitor) {
-    monitor = options.monitor;
   }
 
   // Create router
@@ -801,14 +805,14 @@ API.prototype.router = function(options) {
     // Route pattern
     var middleware = [entry.route];
 
-    if (monitor) {
-      middleware.push(monitor.expressMiddleware(entry.name));
+    if (options.monitor) {
+      middleware.push(options.monitor.expressMiddleware(entry.name));
     }
 
     // Add authentication, schema validation and handler
     middleware.push(
       errors.BuildReportErrorMethod(
-        entry.name, this._options.errorCodes, (monitor || options.raven),
+        entry.name, this._options.errorCodes, options.monitor,
         entry.cleanPayload
       ),
       bodyParser.text({
