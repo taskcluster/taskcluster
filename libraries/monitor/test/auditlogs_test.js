@@ -15,18 +15,21 @@ suite('Audit Logs', () => {
       callback(null, {DeliveryStreamDescription: {DeliveryStreamStatus: 'ACTIVE'}});
     });
     AWS.mock('Firehose', 'putRecordBatch', (params, callback) => {
+      if (!params.Records.length) {
+        return callback(new Error('Must always submit at least 1 record!'), null);
+      }
       if (params.Records.length > 500) {
-        throw new Error('Too many records written at once!');
+        return callback(new Error('Too many records written at once!'), null);
       }
       let size = params.Records.reduce((acc, line) => {
         let length = Buffer.byteLength(line.Data.trim(), 'utf-8');
         if (length > 1000 * 1000) {
-          throw new Error('Individual record too large!');
+          return callback(new Error('Individual record too large!'), null);
         }
         return acc + length;
       }, 0);
       if (size > 4 * 1000 * 1000) {
-        throw new Error('Total group of records too large!');
+        return callback(new Error('Total group of records too large!'), null);
       }
       let DeliveryStreamName = params.DeliveryStreamName;
       records[DeliveryStreamName] = records[DeliveryStreamName].concat(params.Records.map(x => x.Data.trim()));
@@ -56,6 +59,11 @@ suite('Audit Logs', () => {
     await monitor.flush();
     assert.equal(records[logName].length, 1);
     assert.deepEqual(records[logName].map(JSON.parse)[0], subject);
+  });
+
+  test('should not write 0 logs on flush', async function () {
+    await monitor.flush();
+    assert.equal(records[logName].length, 0);
   });
 
   test('should write logs on 500 records', async function () {
@@ -140,7 +148,7 @@ suite('Audit Logs', () => {
     AWS.mock('Firehose', 'putRecordBatch', (params, callback) => {
       if (!tried) {
         tried = true;
-        return callback({code: 500, message: 'uh oh!'}, null);
+        return callback({statusCode: 500, message: 'uh oh!', retryable: true}, null);
       }
       let DeliveryStreamName = params.DeliveryStreamName;
       records[DeliveryStreamName] = records[DeliveryStreamName].concat(params.Records.map(x => x.Data.trim()));
