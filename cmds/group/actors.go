@@ -11,6 +11,16 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
+var queueBaseURL string
+
+func makeQueue(credentials *tcclient.Credentials) *queue.Queue {
+	q := queue.New(credentials)
+	if queueBaseURL != "" {
+		q.BaseURL = queueBaseURL
+	}
+	return q
+}
+
 // runCancel cancels all tasks of a group.
 //
 // It first fetches the list of all tasks associated with the given group,
@@ -18,7 +28,7 @@ import (
 // and finally runs all cancellations concurrently, because they are
 // independent of each other.
 func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
-	q := queue.New(credentials)
+	q := makeQueue(credentials)
 	groupID := args[0]
 
 	// Because the list of tasks can be arbitrarily long, we have to loop until
