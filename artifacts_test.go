@@ -32,6 +32,7 @@ func validateArtifacts(
 	t *testing.T,
 	payloadArtifacts []struct {
 		Expires tcclient.Time `json:"expires"`
+		Name    string        `json:"name,omitempty"`
 		Path    string        `json:"path"`
 		Type    string        `json:"type"`
 	},
@@ -53,6 +54,88 @@ func validateArtifacts(
 	}
 }
 
+func TestFileArtifactWithNames(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]struct {
+			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Expires: inAnHour,
+				Path:    "SampleArtifacts/_/X.txt",
+				Type:    "file",
+				Name:    "public/build/firefox.exe",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]Artifact{
+			S3Artifact{
+				BaseArtifact: BaseArtifact{
+					CanonicalPath: "SampleArtifacts/_/X.txt",
+					Name:          "public/build/firefox.exe",
+					Expires:       inAnHour,
+				},
+				MimeType: "text/plain; charset=utf-8",
+			},
+		})
+}
+
+func TestDirectoryArtifactWithNames(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]struct {
+			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Expires: inAnHour,
+				Path:    "SampleArtifacts",
+				Type:    "directory",
+				Name:    "public/b/c",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]Artifact{
+			S3Artifact{
+				BaseArtifact: BaseArtifact{
+					CanonicalPath: "SampleArtifacts/%%%/v/X",
+					Name:          "public/b/c/%%%/v/X",
+					Expires:       inAnHour,
+				},
+				MimeType: "application/octet-stream",
+			},
+			S3Artifact{
+				BaseArtifact: BaseArtifact{
+					CanonicalPath: "SampleArtifacts/_/X.txt",
+					Name:          "public/b/c/_/X.txt",
+					Expires:       inAnHour,
+				},
+				MimeType: "text/plain; charset=utf-8",
+			},
+			S3Artifact{
+				BaseArtifact: BaseArtifact{
+					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
+					Name:          "public/b/c/b/c/d.jpg",
+					Expires:       inAnHour,
+				},
+				MimeType: "image/jpeg",
+			},
+		})
+}
+
 // See the testdata/SampleArtifacts subdirectory of this project. This
 // simulates adding it as a directory artifact in a task payload, and checks
 // that all files underneath this directory are discovered and created as s3
@@ -65,6 +148,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 		// what appears in task payload
 		[]struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
@@ -78,6 +162,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/%%%/v/X",
+					Name:          "SampleArtifacts/%%%/v/X",
 					Expires:       inAnHour,
 				},
 				MimeType: "application/octet-stream",
@@ -85,6 +170,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
+					Name:          "SampleArtifacts/_/X.txt",
 					Expires:       inAnHour,
 				},
 				MimeType: "text/plain; charset=utf-8",
@@ -92,6 +178,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 			S3Artifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
+					Name:          "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
 				},
 				MimeType: "image/jpeg",
@@ -108,6 +195,7 @@ func TestMissingFileArtifact(t *testing.T) {
 		// what appears in task payload
 		[]struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
@@ -121,6 +209,7 @@ func TestMissingFileArtifact(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "TestMissingFileArtifact/no_such_file",
+					Name:          "TestMissingFileArtifact/no_such_file",
 					Expires:       inAnHour,
 				},
 				Message: "Could not read file '" + filepath.Join(taskContext.TaskDir, "TestMissingFileArtifact", "no_such_file") + "'",
@@ -138,6 +227,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 		// what appears in task payload
 		[]struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
@@ -151,6 +241,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "TestMissingDirectoryArtifact/no_such_dir",
+					Name:          "TestMissingDirectoryArtifact/no_such_dir",
 					Expires:       inAnHour,
 				},
 				Message: "Could not read directory '" + filepath.Join(taskContext.TaskDir, "TestMissingDirectoryArtifact", "no_such_dir") + "'",
@@ -168,6 +259,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 		// what appears in task payload
 		[]struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
@@ -181,6 +273,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c",
+					Name:          "SampleArtifacts/b/c",
 					Expires:       inAnHour,
 				},
 				Message: "File artifact '" + filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c") + "' exists as a directory, not a file, on the worker",
@@ -198,11 +291,13 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 		// what appears in task payload
 		[]struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{{
 			Expires: inAnHour,
 			Path:    "SampleArtifacts/b/c/d.jpg",
+			Name:    "SampleArtifacts/b/c/d.jpg",
 			Type:    "directory",
 		}},
 
@@ -211,6 +306,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 			ErrorArtifact{
 				BaseArtifact: BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
+					Name:          "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
 				},
 				Message: "Directory artifact '" + filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg") + "' exists as a file, not a directory, on the worker",
@@ -230,6 +326,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 		MaxRunTime: 30,
 		Artifacts: []struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{
@@ -265,6 +362,7 @@ func TestUpload(t *testing.T) {
 		MaxRunTime: 30,
 		Artifacts: []struct {
 			Expires tcclient.Time `json:"expires"`
+			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
 		}{

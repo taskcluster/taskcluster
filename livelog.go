@@ -89,6 +89,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 		RedirectArtifact{
 			BaseArtifact: BaseArtifact{
 				CanonicalPath: "public/logs/live.log",
+				Name:          "public/logs/live.log",
 				// same expiry as underlying log it points to
 				Expires: l.task.Definition.Expires,
 			},
@@ -120,6 +121,7 @@ func (l *LiveLogTask) uploadLiveLog() error {
 		RedirectArtifact{
 			BaseArtifact: BaseArtifact{
 				CanonicalPath: "public/logs/live.log",
+				Name:          "public/logs/live.log",
 				// livelog expires when task must have completed
 				Expires: tcclient.Time(maxRunTimeDeadline),
 			},

@@ -58,6 +58,10 @@ properties:
           title: Artifact location
           type: string
           description: Filesystem path of artifact
+        name:
+          title: Name of the artifact
+          type: string
+          description: Name of the artifact, as it will be published. If not set, `path` will be used.
         expires:
           title: Expiry date and time
           type: string

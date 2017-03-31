@@ -43,6 +43,9 @@ type (
 			// Date when artifact should expire must be in the future
 			Expires tcclient.Time `json:"expires"`
 
+			// Name of the artifact, as it will be published. If not set, `path` will be used.
+			Name string `json:"name,omitempty"`
+
 			// Filesystem path of artifact
 			Path string `json:"path"`
 
@@ -356,6 +359,11 @@ func taskPayloadSchema() string {
             "description": "Date when artifact should expire must be in the future",
             "format": "date-time",
             "title": "Expiry date and time",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.",
+            "title": "Name of the artifact",
             "type": "string"
           },
           "path": {

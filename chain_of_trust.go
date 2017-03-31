@@ -160,7 +160,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 }
 
 func calculateHash(artifact S3Artifact) (hash string, err error) {
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Base().CanonicalPath)
+	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
 	rawContent, err := os.Open(rawContentFile)
 	if err != nil {
 		return

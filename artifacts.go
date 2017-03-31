@@ -40,6 +40,7 @@ type (
 
 	BaseArtifact struct {
 		CanonicalPath string
+		Name          string
 		Expires       tcclient.Time
 	}
 
@@ -131,7 +132,7 @@ func gzipCompressFile(rawContentFile string) string {
 
 func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 	response := resp.(*queue.S3ArtifactResponse)
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Base().CanonicalPath)
+	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
 
 	// if Content-Encoding is gzip then we will need to gzip content...
 	transferContentFile := rawContentFile
@@ -205,7 +206,12 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 	for _, artifact := range task.Payload.Artifacts {
 		base := BaseArtifact{
 			CanonicalPath: canonicalPath(artifact.Path),
+			Name:          artifact.Name,
 			Expires:       artifact.Expires,
+		}
+		// if no name given, use canonical path
+		if base.Name == "" {
+			base.Name = base.CanonicalPath
 		}
 		switch artifact.Type {
 		case "file":
@@ -219,13 +225,20 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 				// I think we don't need to handle incomingErr != nil since
 				// resolve(...) gets called which should catch the same issues
 				// raised in incomingErr - *** I GUESS *** !!
-				relativePath, err := filepath.Rel(taskContext.TaskDir, path)
+				subPath, err := filepath.Rel(taskContext.TaskDir, path)
 				if err != nil {
-					log.Printf("WIERD ERROR - skipping file: %s", err)
-					return nil
+					// this indicates a bug in the code
+					panic(err)
 				}
+				relativePath, err := filepath.Rel(base.CanonicalPath, subPath)
+				if err != nil {
+					// this indicates a bug in the code
+					panic(err)
+				}
+				subName := filepath.Join(base.Name, relativePath)
 				b := BaseArtifact{
-					CanonicalPath: canonicalPath(relativePath),
+					CanonicalPath: canonicalPath(subPath),
+					Name:          canonicalPath(subName),
 					Expires:       artifact.Expires,
 				}
 				switch {
@@ -323,6 +336,7 @@ func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 		S3Artifact{
 			BaseArtifact: BaseArtifact{
 				CanonicalPath: logFile,
+				Name:          logFile,
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
@@ -343,7 +357,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	parsp, err := task.Queue.CreateArtifact(
 		task.TaskID,
 		strconv.Itoa(int(task.RunID)),
-		artifact.Base().CanonicalPath,
+		artifact.Base().Name,
 		&par,
 	)
 	if err != nil {
@@ -353,7 +367,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 			return Failure(err)
 		case httpbackoff.BadHttpResponseCode:
 			if t.HttpResponseCode/100 == 5 {
-				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
+				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v", t.HttpResponseCode, artifact))
 			} else {
 				// if not a 5xx error, then either task cancelled, or a problem with the request == worker bug
 				task.StatusManager.UpdateStatus()
@@ -361,10 +375,10 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 				if status == deadlineExceeded || status == cancelled {
 					return nil
 				}
-				panic(fmt.Errorf("TASK FAIL due to response code %v from Queue when uploading artifact %v", t.HttpResponseCode, artifact))
+				panic(fmt.Errorf("TASK FAIL due to response code %v from Queue when uploading artifact %#v", t.HttpResponseCode, artifact))
 			}
 		default:
-			panic(fmt.Errorf("TASK EXCEPTION due to non-recoverable error when uploading artifact: %v", t))
+			panic(fmt.Errorf("TASK EXCEPTION due to non-recoverable error when uploading artifact: %#v", t))
 		}
 	}
 	// unmarshal response into object
