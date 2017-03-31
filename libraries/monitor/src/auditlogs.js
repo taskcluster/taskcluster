@@ -73,6 +73,10 @@ class FirehoseLog extends events.EventEmitter {
       this._flushTimer = null;
     }
 
+    if (!this._records.length) {
+      return;
+    }
+
     let chunks = [[]];
     let c = 0;
 
@@ -95,7 +99,10 @@ class FirehoseLog extends events.EventEmitter {
           Records: records.map(line => ({Data: line.line})),
         }).promise();
       } catch (err) {
-        if (err.statusCode < 500) {
+        if (!err.statusCode) {
+          throw err;
+        } else if (!err.retryable) {
+          // We screwed up somehow and we should not attempt to resubmit these lines
           if (this._reportErrors) {
             this.emit('error', err);
           }
@@ -105,7 +112,7 @@ class FirehoseLog extends events.EventEmitter {
         // they normall reject specific records and pass that to the requeuing below
         res = {
           FailedPutCount: records.length,
-          RequestResponses: records.map(() => ({ErrorCode: err.code, ErrorMessage: err.message})),
+          RequestResponses: records.map(() => ({ErrorCode: err.statusCode, ErrorMessage: err.message})),
         };
       }
       if (res.FailedPutCount === 0) {
@@ -142,14 +149,8 @@ class NoopLog extends events.EventEmitter {
   async setup() {
   }
 
-  async close() {
-  }
-
-  async drained() {
-  }
-
   log(record) {
-    throw new Error('Must give aws credentials and logName to lib-monitor to use auditlogs!');
+    console.log(record);
   }
 
   async flush() {
