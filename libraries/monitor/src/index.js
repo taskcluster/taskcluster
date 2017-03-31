@@ -54,10 +54,10 @@ async function monitor(options) {
   }
 
   let auditlog;
-  if (!options.aws && !options.logName) {
-    auditlog = new auditlogs.NoopLog();
-  } else {
+  if (options.aws && options.logName) {
     auditlog = new auditlogs.FirehoseLog(options);
+  } else {
+    auditlog = new auditlogs.NoopLog();
   }
   await auditlog.setup();
 
