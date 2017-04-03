@@ -469,7 +469,8 @@ func RunWorker() {
 
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
-	lastQueriedProvisioner := time.Now()
+	// use zero value, to be sure that a check is made before first task runs
+	lastQueriedProvisioner := time.Time{}
 	lastReportedNoTasks := time.Now()
 	tasksResolved := uint(0)
 	PrepareTaskEnvironment()
@@ -506,6 +507,9 @@ func RunWorker() {
 			}
 			tasksResolved++
 			if tasksResolved == config.NumberOfTasksToRun {
+				if configureForAws {
+					shutdownIfNewDeploymentID()
+				}
 				break
 			}
 			lastActive = time.Now()
