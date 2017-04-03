@@ -100,7 +100,7 @@ class AsyncBaseClient(BaseClient):
             if retry > 0:
                 snooze = float(retry * retry) / 10.0
                 log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-                asyncio.sleep(utils.calculateSleepTime(retry))
+                await asyncio.sleep(utils.calculateSleepTime(retry))
             # Construct header
             if self._hasCredentials():
                 sender = mohawk.Sender(

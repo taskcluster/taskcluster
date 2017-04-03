@@ -28,7 +28,7 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
         if retry > 0:
             snooze = float(retry * retry) / 10.0
             log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-            asyncio.sleep(snooze)
+            await asyncio.sleep(snooze)
 
         # Seek payload to start, if it is a file
         if hasattr(payload, 'seek'):
