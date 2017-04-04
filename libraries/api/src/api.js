@@ -284,7 +284,8 @@ var nonceManager = function(options) {
 var createRemoteSignatureValidator = function(options) {
   assert(options.authBaseUrl, "options.authBaseUrl is required");
   var auth = new taskcluster.Auth({
-    baseUrl: options.authBaseUrl
+    baseUrl: options.authBaseUrl,
+    credentials: {}, // We do this to avoid sending auth headers to authenticateHawk
   });
   return function(data) {
     return auth.authenticateHawk(data);
