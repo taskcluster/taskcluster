@@ -319,6 +319,7 @@ var pulse = new taskcluster.Pulse(options);
  * `pulse.overview() : result`
  * `pulse.exchanges() : result`
  * `pulse.listNamespaces([options]) : result`
+ * `pulse.namespace(namespace) : result`
  * `pulse.claimNamespace(namespace, payload) : result`
  * `pulse.ping() : void`
 
