@@ -1,4 +1,5 @@
-# TaskCluster Client [![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client)
+# TaskCluster Client
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client)
 _A taskcluster client library for node.js._
 
 This client library is generated from the auto-generated API reference.
@@ -47,6 +48,7 @@ documentation. The methods always returns a _promise_ for the response JSON
 object as documented in the REST API documentation.
 
 ## Listening for Events
+
 Many TaskCluster components publishes messages about current events to pulse.
 The JSON reference object also contains meta-data about declared pulse
 exchanges and their routing key construction. This is designed to make it easy
@@ -157,6 +159,27 @@ On the [documentation site](http://docs.taskcluster.net) entries often have a
 _signature_, you'll find that it matches the signatures below. Notice that all
 the methods returns a promise. A method with `: void` also returns a promise,
 that either resolves without giving a value or rejects with an error.
+
+## Fake Listening
+
+It's inconvenient and error-prone to use real Pulse credentials in tests.  The
+PulseListener class supports a "fake" mode where it does not use any
+credentials, and messages are delivered by means of a `fakeMessage` method.
+
+To set up the listener, intialize it with `credentials: {fake: true}`. Once the
+listener has been `resume()`d, call `listener.fakeMessage`.  Example:
+
+```js
+await listener.fakeMessage({
+  payload: {aNumber: 13},
+  exchange: 'exchange/foo/bar',
+  routingKey: 'some.route',
+  routes: ['some.other.routes'],
+});
+```
+
+Note that the fake listener does no route filtering (RabbitMQ would do that in
+a real scenario).  Every fake message is delivered to the listeners' bindings.
 
 <!-- START OF GENERATED DOCS -->
 

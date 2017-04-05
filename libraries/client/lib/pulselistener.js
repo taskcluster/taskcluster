@@ -175,6 +175,7 @@ exports.PulseConnection = PulseConnection;
  *                        // defaults to pulse.mozilla.org
  *     connectionString:  // connectionString overwrites username/password and
  *                        // hostname (if given)
+ *     fake:              // if true, do not connect to pulse (for tests)
  *   }
  *   maxLength:           // Maximum queue size, undefined for none
  * }
@@ -194,9 +195,12 @@ var PulseListener = function(options) {
     queueName:              undefined,
     maxLength:              undefined
   });
+
+  this._fake = options.credentials && options.credentials.fake;
+
   // Ensure that we have connection object
   this._connection = options.connection || null;
-  if (!(this._connection instanceof PulseConnection)) {
+  if (!(this._connection instanceof PulseConnection) && !this._fake) {
     this._connection = new PulseConnection(options.credentials);
     // If listener owner the connection, then connection errors are also
     // listener errors
@@ -232,7 +236,7 @@ PulseListener.prototype.bind = function(binding) {
   assert(typeof(binding.routingKeyPattern) === 'string',
          "routingKeyPattern is required!");
   this._bindings.push(binding);
-  if(this._channel) {
+  if(!this._fake && this._channel) {
     debug("Binding %s to %s with pattern '%s'",
           this._queueName || 'exclusive queue',
           binding.exchange, binding.routingKeyPattern);
@@ -249,6 +253,8 @@ PulseListener.prototype.bind = function(binding) {
 /** Connect, setup queue and binding to exchanges */
 PulseListener.prototype.connect = function() {
   var that = this;
+
+  assert(!this._fake, "Fake listeners can't connect");
 
   // Return channel if we have one
   if (this._channel) {
@@ -327,9 +333,15 @@ PulseListener.prototype.connect = function() {
 
 /** Pause consumption of messages */
 PulseListener.prototype.pause = function() {
+  if (this._fake) {
+    assert(this._fakeListening, "cannot pause when not listening");
+    this._fakeListening = false;
+    return Promise.resolve();
+  }
+
   if (!this._channel) {
     debug("WARNING: Paused PulseListener instance was wasn't connected yet");
-    return;
+    return Promise.resolve();
   }
   assert(this._channel, "Can't pause when not connected");
   return this._channel.cancel(this._consumerTag);
@@ -338,6 +350,13 @@ PulseListener.prototype.pause = function() {
 /** Connect or resume consumption of message */
 PulseListener.prototype.resume = function() {
   var that = this;
+
+  if (this._fake) {
+    assert(!this._fakeListening, "cannot resume when already listening");
+    this._fakeListening = true;
+    return Promise.resolve();
+  }
+
   return this.connect().then(function(channel) {
     return channel.consume(that._queueName, function(msg) {
       that._handle(msg);
@@ -346,6 +365,35 @@ PulseListener.prototype.resume = function() {
     });
   });
 };
+
+/** Inject a fake message
+ *
+ * Message has the form
+ * {
+ *   payload: data (not JSON encoded),
+ *   exchange: exchange name
+ *   routingKey: routing key (string)
+ *   routes: [..] CC'd routes (without the `route.` prefix)
+ * }
+ */
+PulseListener.prototype.fakeMessage = function(message) {
+  assert(this._fake, "fakeMessage can only be called on a fake PulseListener");
+  assert(this._fakeListening, "fakeMessage must be called on a resume'd listener");
+  let msg = {
+    content: new Buffer(JSON.stringify(message.payload), "utf-8"),
+    fields: {
+      exchange: message.exchange,
+      routingKey: message.routingKey,
+      redelivered: false,
+    },
+    properties: {
+      headers: {
+        CC: message.routes.map(function(r) { return 'route.' + r; }),
+      },
+    },
+  };
+  return this._handle(msg);
+}
 
 /** Handle message*/
 PulseListener.prototype._handle = function(msg) {
@@ -428,10 +476,17 @@ PulseListener.prototype._handle = function(msg) {
       return handler.call(that, message);
     });
   })).then(function() {
-    return that._channel.ack(msg);
+    if (!that._fake) {
+      return that._channel.ack(msg);
+    } else {
+      debug("Processed fake message %j from %s", message, message.exchange);
+    }
   }).then(null, function(err) {
     debug("Failed to process message %j from %s with error: %s, as JSON: %j",
           message, message.exchange, err, err, err.stack);
+    if (that._fake) {
+      return;
+    }
     if (message.redelivered) {
       debug("Nack (without requeueing) message %j from %s",
             message, message.exchange);
@@ -454,6 +509,10 @@ PulseListener.prototype._handle = function(msg) {
  */
 PulseListener.prototype.deleteQueue = function() {
   var that = this;
+  if (this._fake) {
+    return Promise.resolve();
+  }
+
   return this.connect().then(function(channel) {
     return channel.deleteQueue(that._queueName).then(function() {
       that.close();
@@ -464,6 +523,9 @@ PulseListener.prototype.deleteQueue = function() {
 /** Close the PulseListener */
 PulseListener.prototype.close = function() {
   var connection = this._connection;
+  if (this._fake) {
+    return Promise.resolve();
+  }
 
   // If we were given connection by option, we shouldn't close it
   if (connection === this._options.connection) {
