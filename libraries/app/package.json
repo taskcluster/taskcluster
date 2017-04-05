@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-app",
   "license": "MPL-2.0",
@@ -26,9 +26,7 @@
     "hsts": "^1.0.0",
     "lodash": "4.13.1",
     "morgan-debug": "^1.0.0",
-    "promise": "^7.0.4",
-    "superagent": "^1.8.3",
-    "superagent-promise": "^1.1.0"
+    "promise": "^7.0.4"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
@@ -39,7 +37,9 @@
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "2.5.3",
-    "source-map-support": "^0.4.0"
+    "source-map-support": "^0.4.0",
+    "superagent": "^1.8.3",
+    "superagent-promise": "^1.1.0"
   },
   "main": "./lib/app.js"
 }
