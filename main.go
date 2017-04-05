@@ -1089,6 +1089,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		if r := recover(); r != nil {
 			task.Log(string(debug.Stack()))
 			task.Logf("%#v", r)
+			task.Logf("%v", r)
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
