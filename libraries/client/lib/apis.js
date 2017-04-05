@@ -1819,8 +1819,23 @@ module.exports = {
             "continuation"
           ],
           "route": "/namespaces",
-          "stability": "stable",
+          "stability": "experimental",
           "title": "List Namespaces",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Get public information about a single namespace. This is the same information\nas returned by `listNamespaces`.",
+          "method": "get",
+          "name": "namespace",
+          "output": "http://schemas.taskcluster.net/pulse/v1/namespace.json",
+          "query": [
+          ],
+          "route": "/namespace/<namespace>",
+          "stability": "experimental",
+          "title": "Get a namespace",
           "type": "function"
         },
         {
