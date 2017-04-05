@@ -5,6 +5,7 @@ import (
 	"io"
 	"sync"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -35,6 +36,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	// Because the list of tasks can be arbitrarily long, we have to loop until
 	// we are told not to.
 	tasks := make([]string, 0)
+	tasksNames := make([]string, 0)
 	cont := ""
 
 	for {
@@ -47,7 +49,9 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 		// set tasks that meet the criteria (see filterTask) to be deleted
 		for _, t := range ts.Tasks {
 			if filterTask(t.Status, flags) {
+				// add id to be deleted, and name for cancellation
 				tasks = append(tasks, t.Status.TaskID)
+				tasksNames = append(tasksNames, t.Task.Metadata.Name)
 			}
 		}
 
@@ -63,7 +67,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	}
 
 	// ask for confirmation before cancellation
-	if !confirmCancellation(tasks, out) {
+	if !confirmCancellation(tasks, tasksNames, out) {
 		fmt.Fprintln(out, "Cancellation of tasks aborted.")
 		return nil
 	}
@@ -151,16 +155,16 @@ func filterTask(status queue.TaskStatusStructure, flags *pflag.FlagSet) bool {
 }
 
 // confirmCancellation lists the tasks to be cancelled and prompts to confirm cancellation
-func confirmCancellation(tasks []string, out io.Writer) bool {
+func confirmCancellation(ids []string, names []string, out io.Writer) bool {
 	// list tasks
-	fmt.Fprintf(out, "The following %d tasks will be cancelled:\n", len(tasks))
+	fmt.Fprintf(out, "The following %d tasks will be cancelled:\n", len(ids))
 
-	for _, task := range tasks {
-		fmt.Fprintf(out, "\tTask %s\n", task)
+	for n, id := range ids {
+		fmt.Fprintf(out, "\tTask %s: %s\n", id, names[n])
 	}
 
 	for {
-		fmt.Fprint(out, "Are you sure you want to cancel these tasks? [Y/n] ")
+		fmt.Fprint(out, "Are you sure you want to cancel these tasks? [y/n] ")
 
 		var c string
 		fmt.Scanf("%s", &c)
