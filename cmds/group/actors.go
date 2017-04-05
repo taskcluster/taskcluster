@@ -11,6 +11,17 @@ import (
 	"golang.org/x/net/context"
 )
 
+func init() {
+	cancelCmd := &cobra.Command{
+		Use:   "cancel <taskGroupId>",
+		Short: "Cancel a whole group by taskGroupId.",
+		RunE:  executeHelperE(runCancel),
+	}
+	cancelCmd.Flags().StringP("worker-type", "w", "", "Only cancel tasks with a certain worker type.")
+
+	Command.AddCommand(cancelCmd)
+}
+
 // runCancel cancels all tasks of a group.
 //
 // It first fetches the list of all tasks associated with the given group,
