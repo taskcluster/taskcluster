@@ -51,7 +51,7 @@ function route(context) {
     case '/meta-data/instance-type':
       return 'c3.xlarge';
     case '/meta-data/placement/availability-zone':
-      return 'us-west-2';
+      return 'us-west-2d';
     case '/meta-data/instance-id':
       return 'i-123456';
     default:

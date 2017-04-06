@@ -88,7 +88,7 @@ export async function configure(baseUrl=BASE_URL) {
     billingCycleInterval: minutes(60),
     privateIp: metadata[2],
     workerId: metadata[3],
-    workerGroup: metadata[4],
+    workerGroup: metadata[4].replace(/[a-z]$/, ''),
     workerNodeType: metadata[5],
     // for aws, instance ID and worker IDs are one and the same
     instanceId: metadata[3],
