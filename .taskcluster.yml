@@ -7,6 +7,38 @@ metadata:
   owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
   source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
 tasks:
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - push
+        branches:
+          - master
+    scopes:
+      - auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/
+    payload:
+      maxRunTime: 3600
+      image: taskcluster/upload-project-docs:latest
+      features:
+        taskclusterProxy:
+          true
+      command:
+        - /bin/bash
+        - '--login'
+        - '-cx'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          export DOCS_PROJECT=generic-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md &&
+          upload-project-docs
+    metadata:
+      name: "generic-worker docs upload"
+      description: "Upload documentation for this project"
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
 
 
   ##########################################################
