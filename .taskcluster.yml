@@ -19,7 +19,7 @@ tasks:
       - auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/
     payload:
       maxRunTime: 3600
-      image: taskcluster/upload-project-docs:3.3.2
+      image: taskcluster/upload-project-docs:latest
       features:
         taskclusterProxy:
           true
