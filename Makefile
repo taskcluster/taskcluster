@@ -44,4 +44,22 @@ clean:
 	rm -f ${BINARY}
 	rm -rf build
 
+test: prep build
+	go test -v -race ./...
+
+lint: prep
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install --force
+	go install ./...
+	gometalinter --vendor --disable-all --deadline 5m \
+		--enable=golint \
+		--enable=deadcode \
+		--enable=staticcheck \
+		--enable=misspell \
+		--enable=vet \
+		--enable=vetshadow \
+		--enable=gosimple \
+		--skip=apis --skip=vendor \
+		./...
+
 .PHONY: all prep build clean upload release

@@ -82,7 +82,7 @@ func Execute(cmd *cobra.Command, args []string) error {
 
 	switch redirectURL.Query().Get("v") {
 	case "1":
-		return errors.New("The shell client doens't yet support v1 shells.")
+		return errors.New("the shell client doens't yet support v1 shells")
 	case "2":
 		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
 		shell, err = v2client.Dial(sockURL.String(), []string{"bash"}, tty)
@@ -90,7 +90,7 @@ func Execute(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("could not create the shell client: %v", err)
 		}
 	default:
-		return errors.New("Unknown shell version.")
+		return errors.New("unknown shell version")
 	}
 
 	// Switch terminal to raw mode
