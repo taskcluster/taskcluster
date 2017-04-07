@@ -207,7 +207,7 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
-          provisioner_id                    The taskcluster provisioner which is taking care
+          provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
           refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
