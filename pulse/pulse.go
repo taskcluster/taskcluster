@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 31 Mar 2017 at 17:23:00 UTC. The code was generated
+// Fri, 7 Apr 2017 at 13:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -151,6 +151,21 @@ func (myPulse *Pulse) ClaimNamespace(namespace string, payload *NamespaceCreatio
 	cd := tcclient.Client(*myPulse)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespace/"+url.QueryEscape(namespace), new(NamespaceCreationResponse), nil)
 	return responseObject.(*NamespaceCreationResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Immediately delete the given namespace.  This will delete all exchanges and queues which the
+// namespace had configure access to, as if it had just expired.
+//
+// Required scopes:
+//   * pulse:namespace:<namespace>
+//
+// See https://docs.do.not.exist.yet.service.not.in.production#deleteNamespace
+func (myPulse *Pulse) DeleteNamespace(namespace string) error {
+	cd := tcclient.Client(*myPulse)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/namespace/"+url.QueryEscape(namespace), nil, nil)
+	return err
 }
 
 // Respond without doing anything.

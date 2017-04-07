@@ -1,4 +1,4 @@
-Generated: 1490981018
+Generated: 1491571473
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5786,6 +5786,20 @@ and exchanges will be deleted, at the given expiration time.
 The `expires` and `contact` properties can be updated at any time in a reclaim
 operation.'
 Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/namespace/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Query        = '[]'
+    Entry Name        = 'deleteNamespace'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[pulse:namespace:<namespace>]]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Delete a namespace'
+    Entry Description = 'Immediately delete the given namespace.  This will delete all exchanges and queues which the
+namespace had configure access to, as if it had just expired.'
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
