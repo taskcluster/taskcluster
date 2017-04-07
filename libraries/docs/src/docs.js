@@ -34,6 +34,7 @@ async function documenter(options) {
     'integrations',
     'operations',
     'libraries',
+    'workers',
   ];
   assert(tiers.indexOf(options.tier) !== -1,
     `options.tier must be one of ${tiers.join(', ')}`);
