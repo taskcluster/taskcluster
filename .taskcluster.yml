@@ -34,6 +34,6 @@ tasks:
           upload-project-docs
     metadata:
       name: "taskcluster-client-go docs upload"
-      description: "Upload documentation for this project"
+      description: "Upload documentation for tc-client-go"
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
