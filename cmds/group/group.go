@@ -14,12 +14,5 @@ var (
 )
 
 func init() {
-	cancelCmd := &cobra.Command{
-		Use:   "cancel <taskGroupId>",
-		Short: "Cancel a whole group by taskGroupId.",
-		RunE:  executeHelperE(runCancel),
-	}
-	Command.AddCommand(cancelCmd)
-
 	root.Command.AddCommand(Command)
 }
