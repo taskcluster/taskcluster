@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -15,9 +16,11 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/auth"
 )
 
-const BUCKET_NAME = "downloads-taskcluster-net"
-const URL_PREFIX = "https://downloads.taskcluster.net"
-const OBJECT_PREFIX = "taskcluster-cli/"
+const (
+	bucketName   = "downloads-taskcluster-net"
+	urlPrefix    = "https://downloads.taskcluster.net"
+	objectPrefix = "taskcluster-cli/"
+)
 
 func getSTSCredentials() (id, secret, token string, err error) {
 	creds := tcclient.Credentials{}
@@ -26,16 +29,16 @@ func getSTSCredentials() (id, secret, token string, err error) {
 	// if running in a task, use the taskcluster proxy
 	if os.Getenv("TASK_ID") != "" {
 		client.BaseURL = "http://taskcluster/auth/v1"
-		log.Printf("Getting AWS credentials for %s/%s via taskcluster-proxy", BUCKET_NAME, OBJECT_PREFIX)
+		log.Printf("Getting AWS credentials for %s/%s via taskcluster-proxy", bucketName, objectPrefix)
 	} else {
 		creds.ClientID = os.Getenv("TASKCLUSTER_CLIENT_ID")
 		creds.AccessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 		creds.Certificate = os.Getenv("TASKCLUSTER_CERTIFICATE")
 		log.Printf("Getting AWS credentials for %s/%s with clientId %s",
-			BUCKET_NAME, OBJECT_PREFIX, creds.ClientID)
+			bucketName, objectPrefix, creds.ClientID)
 	}
 
-	resp, err := client.AwsS3Credentials("read-write", BUCKET_NAME, OBJECT_PREFIX, "")
+	resp, err := client.AwsS3Credentials("read-write", bucketName, objectPrefix, "")
 	if err != nil {
 		return "", "", "", err
 	}
@@ -84,7 +87,7 @@ func upload(svc *s3.S3, bucket string, folder string, filename string) (string, 
 	}
 
 	// Pretty-print the response data.
-	url := fmt.Sprintf("%s/%s", URL_PREFIX, key)
+	url := fmt.Sprintf("%s/%s", urlPrefix, key)
 	log.Printf("Uploaded %s to %s with ETag %s", filename, url, *resp.ETag)
 	return url, nil
 }
@@ -106,14 +109,16 @@ func redirect(svc *s3.S3, bucket string, key string, target string) error {
 	return nil
 }
 
-var version = flag.String("version", "", "release version")
-var arch = flag.String("arch", "", "architecture")
-var filename = flag.String("filename", "", "filename of the binary")
+var (
+	version    = flag.String("version", "", "release version")
+	binaryName = flag.String("name", "taskcluster", "binary name")
+)
 
 func main() {
 	flag.Parse()
-	if *version == "" || *arch == "" || *filename == "" {
-		log.Fatalf("Missing version, arch, or filename")
+	args := flag.Args()
+	if *version == "" || *binaryName == "" || len(args) == 0 {
+		log.Fatalf("Missing version, name, or filename(s)")
 	}
 
 	svc, err := getS3()
@@ -121,15 +126,28 @@ func main() {
 		log.Fatalf("Unable to get service object, %v", err)
 	}
 
-	folder := fmt.Sprintf("%s%s/%s", OBJECT_PREFIX, *version, *arch)
-	url, err := upload(svc, BUCKET_NAME, folder, *filename)
-	if err != nil {
-		log.Fatalf("Unable to upload object: %s", err)
-	}
+	formatRegexp := regexp.MustCompile(`^.*/` + *binaryName + `-(?P<osarch>(?P<os>[^-]+)-(?P<arch>[^-]+?))(?P<suffix>\..*)?$`)
+	names := formatRegexp.SubexpNames()
+	for _, filename := range args {
+		sm := formatRegexp.FindStringSubmatch(filename)
+		if sm == nil {
+			continue
+		}
+		subMatches := map[string]string{}
+		for i, m := range sm {
+			subMatches[names[i]] = m
+		}
+		folder := fmt.Sprintf("%s%s/%s", objectPrefix, *version, subMatches["osarch"])
+		url, err := upload(svc, bucketName, folder, filename)
+		if err != nil {
+			log.Fatalf("Unable to upload object: %s", err)
+		}
 
-	latestKey := fmt.Sprintf("%s%s/%s/taskcluster", OBJECT_PREFIX, "latest", *arch)
-	err = redirect(svc, BUCKET_NAME, latestKey, url)
-	if err != nil {
-		log.Fatalf("Unable to create redirect: %s", err)
+		latestKey := fmt.Sprintf("%s%s/%s/%s", objectPrefix, "latest", subMatches["osarch"], *binaryName)
+		err = redirect(svc, bucketName, latestKey, url)
+		if err != nil {
+			log.Fatalf("Unable to create redirect: %s", err)
+		}
+		log.Printf("Uploaded %s (%s) %s", *binaryName, *version, subMatches["osarch"])
 	}
 }

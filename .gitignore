@@ -10,3 +10,4 @@ _test
 
 # Binaries
 /taskcluster
+/build

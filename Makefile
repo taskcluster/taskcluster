@@ -11,7 +11,12 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 VERSION := $(shell git describe --always  --dirty --tags)
 LDFLAGS += -X github.com/taskcluster/taskcluster-cli/cmds/version.VersionNumber=$(VERSION)
 
-GOARCH := $(shell go env GOARCH)
+BUILD_ARCH ?= amd64 386
+BUILD_OS ?= !netbsd !plan9
+
+# Removing openbsd/386 because gopsutil can't cross compile for it yet.
+# Removing darwin/386 until https://github.com/shirou/gopsutil/issues/348 is fixed
+BUILD_OSARCH = !openbsd/386 !darwin/386
 
 all: prep build
 
@@ -28,10 +33,15 @@ _upload_release/upload: _upload_release/upload.go
 	go get ./_upload_release
 	go build -o $@ ./_upload_release
 
-upload: _upload_release/upload $(BINARY)
-	_upload_release/upload -version $(VERSION) -arch $(GOARCH) -filename $(BINARY)
+release: $(SOURCES)
+	go get -u github.com/mitchellh/gox
+	gox -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -osarch="${BUILD_OSARCH}" -ldflags "${LDFLAGS}" -output="build/${BINARY}-{{.OS}}-{{.Arch}}" .
+
+upload: _upload_release/upload
+	_upload_release/upload -version $(VERSION) build/*
 
 clean:
 	rm -f ${BINARY}
+	rm -rf build
 
-.PHONY: all prep build clean upload
+.PHONY: all prep build clean upload release

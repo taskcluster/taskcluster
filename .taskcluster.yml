@@ -22,17 +22,17 @@ tasks:
         - '-c'
         - >-
           mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
-          && cd  /go/src/github.com/taskcluster/taskcluster-cli 
+          && cd  /go/src/github.com/taskcluster/taskcluster-cli
           && git init
-          && git fetch {{ event.head.repo.url }} {{ event.head.ref }} 
-          && git checkout {{ event.head.sha }} 
-          && make 
+          && git fetch {{ event.head.repo.url }} {{ event.head.ref }}
+          && git checkout {{ event.head.sha }}
+          && make
           && go test -v -race ./...
-          && go get -u github.com/alecthomas/gometalinter 
+          && go get -u github.com/alecthomas/gometalinter
           && gometalinter --install --force
           && go install ./...
           && gometalinter --vendor --disable-all --deadline 5m
-          --enable=gotype --enable=golint 
+          --enable=gotype --enable=golint
           --enable=deadcode --enable=staticcheck --enable=misspell
           --enable=vet --enable=vetshadow --enable=gosimple
           --skip=apis --skip=vendor ./...
@@ -66,9 +66,9 @@ tasks:
           && cd  /go/src/github.com/taskcluster/taskcluster-cli
           && git fetch {{ event.head.repo.url }} {{ event.version }}
           && git checkout FETCH_HEAD
-          && make upload
+          && make prep release upload
     metadata:
-      name: "Build and upload a binary for release"
+      name: "Build and upload binaries for release"
       description: "Binary release"
       owner: "{{ event.head.user.email }}"
       source: "{{ event.head.repo.url }}"
