@@ -19,6 +19,7 @@ func init() {
 		RunE:  executeHelperE(runCancel),
 	}
 	cancelCmd.Flags().StringP("worker-type", "w", "", "Only cancel tasks with a certain worker type.")
+	cancelCmd.Flags().BoolP("force", "f", false, "Skip cancellation confirmation.")
 
 	Command.AddCommand(cancelCmd)
 }
@@ -77,7 +78,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	}
 
 	// ask for confirmation before cancellation
-	if !confirmCancellation(tasks, tasksNames, out) {
+	if force, _ := flags.GetBool("force"); !force && !confirmCancellation(tasks, tasksNames, out) {
 		fmt.Fprintln(out, "Cancellation of tasks aborted.")
 		return nil
 	}

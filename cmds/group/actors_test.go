@@ -102,6 +102,7 @@ func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
 	cmd.SetOutput(buf)
+	cmd.Flags().Bool("force", true, "")
 
 	return buf, cmd
 }
