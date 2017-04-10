@@ -57,6 +57,7 @@ var retryConnect = function(connectionString, retries) {
  *                      // defaults to pulse.mozilla.org
  *   connectionString:  // connectionString cannot be used with username,
  *                      // password and/or hostname.
+ *   fake:              // If true, do not connect to pulse (for tests)
  * }
  */
 var PulseConnection = function(options) {
@@ -64,6 +65,12 @@ var PulseConnection = function(options) {
   options = _.defaults({}, options, {
     namespace:          options.username || ''
   });
+
+  // a fake connection does notihng but signal its fake-ness to listeners
+  if (options.fake) {
+    this.fake = true;
+    return;
+  }
 
   if (!options.connectionString) {
     options.connectionString = buildPulseConnectionString(options);
@@ -196,7 +203,8 @@ var PulseListener = function(options) {
     maxLength:              undefined
   });
 
-  this._fake = options.credentials && options.credentials.fake;
+  this._fake = (options.credentials && options.credentials.fake) ||
+               (options.connection && options.connection.fake);
 
   // Ensure that we have connection object
   this._connection = options.connection || null;
