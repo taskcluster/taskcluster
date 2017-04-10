@@ -63,14 +63,13 @@ func getS3() (*s3.S3, error) {
 	return s3.New(sess), nil
 }
 
-func upload(svc *s3.S3, bucket string, folder string, filename string) (string, error) {
+func upload(svc *s3.S3, bucket, folder, exeName, filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return "", fmt.Errorf("opening %s: %s", filename, err)
 	}
 	defer file.Close()
 
-	_, exeName := filepath.Split(filename)
 	key := filepath.Join(folder, exeName)
 
 	params := &s3.PutObjectInput{
@@ -138,7 +137,7 @@ func main() {
 			subMatches[names[i]] = m
 		}
 		folder := fmt.Sprintf("%s%s/%s", objectPrefix, *version, subMatches["osarch"])
-		url, err := upload(svc, bucketName, folder, filename)
+		url, err := upload(svc, bucketName, folder, *binaryName+subMatches["suffix"], filename)
 		if err != nil {
 			log.Fatalf("Unable to upload object: %s", err)
 		}
