@@ -166,7 +166,8 @@ It's inconvenient and error-prone to use real Pulse credentials in tests.  The
 PulseListener class supports a "fake" mode where it does not use any
 credentials, and messages are delivered by means of a `fakeMessage` method.
 
-To set up the listener, intialize it with `credentials: {fake: true}`. Once the
+To set up the listener, intialize it with `credentials: {fake: true}`, or with
+a PulseConnection created with `new PulseConnection({fake: true})`. Once the
 listener has been `resume()`d, call `listener.fakeMessage`.  Example:
 
 ```js
