@@ -132,6 +132,7 @@ let load = loader({
       let Artifact = data.Artifact.setup({
         table:            ctx.cfg.app.artifactTableName,
         account:          ctx.cfg.azureTableAccount,
+        credentials:      ctx.cfg.taskcluster.credentials,
         context: {
           blobStore:      ctx.artifactStore,
           publicBucket:   ctx.publicArtifactBucket,
@@ -152,6 +153,7 @@ let load = loader({
       let Task = data.Task.setup({
         table:            cfg.app.taskTableName,
         account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
         monitor:          monitor.prefix('table.tasks'),
       });
       await Task.ensureTable();
@@ -166,6 +168,7 @@ let load = loader({
       let TaskGroup = data.TaskGroup.setup({
         table:            cfg.app.taskGroupTableName,
         account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
         monitor:          monitor.prefix('table.taskgroups'),
       });
       await TaskGroup.ensureTable();
@@ -180,6 +183,7 @@ let load = loader({
       let TaskGroupMember = data.TaskGroupMember.setup({
         table:            cfg.app.taskGroupMemberTableName,
         account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
         monitor:          monitor.prefix('table.taskgroupmembers'),
       });
       await TaskGroupMember.ensureTable();
@@ -194,6 +198,7 @@ let load = loader({
       let TaskGroupActiveSet = data.TaskGroupMember.setup({
         table:            cfg.app.taskGroupActiveSetTableName,
         account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
         monitor:          monitor.prefix('table.taskgroupactivesets'),
       });
       await TaskGroupActiveSet.ensureTable();
@@ -208,6 +213,7 @@ let load = loader({
       let TaskRequirement = data.TaskRequirement.setup({
         table:            cfg.app.taskRequirementTableName,
         account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
         monitor:          monitor.prefix('table.taskrequirements'),
       });
       await TaskRequirement.ensureTable();
@@ -222,6 +228,7 @@ let load = loader({
       let TaskDependency = data.TaskDependency.setup({
         table:            cfg.app.taskDependencyTableName,
         account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
         monitor:          monitor.prefix('table.taskdependencies'),
       });
       await TaskDependency.ensureTable();
