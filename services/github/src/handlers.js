@@ -49,46 +49,38 @@ class Handlers {
   }
 
   /**
-   * Set up the handlers.  If {noConnect: true}, the handlers are not actually
-   * connected to a pulse connection (used for tests).
+   * Set up the handlers.
    */
   async setup(options) {
     debug('Setting up handlers...');
     options = options || {};
-    assert(this.connection === null, 'Cannot setup twice!');
-    if (!options.noConnect) {
-      assert(this.credentials.username, 'credentials.username must be provided');
-      assert(this.credentials.password, 'credentials.password must be provided');
-      this.connection = new taskcluster.PulseConnection(this.credentials);
-      this.statusListener = new taskcluster.PulseListener({
-        queueName: this.statusQueueName,
-        connection: this.connection,
-      });
-      this.jobListener = new taskcluster.PulseListener({
-        queueName: this.jobQueueName,
-        connection: this.connection,
-      });
+    assert(!this.connection, 'Cannot setup twice!');
+    this.connection = new taskcluster.PulseConnection(this.credentials);
+    this.statusListener = new taskcluster.PulseListener({
+      queueName: this.statusQueueName,
+      connection: this.connection,
+    });
+    this.jobListener = new taskcluster.PulseListener({
+      queueName: this.jobQueueName,
+      connection: this.connection,
+    });
 
-      // Listen for new jobs created via the api webhook endpoint
-      let GithubEvents = taskcluster.createClient(this.reference);
-      let githubEvents = new GithubEvents();
-      await this.jobListener.bind(githubEvents.pullRequest());
-      await this.jobListener.bind(githubEvents.push());
-      await this.jobListener.bind(githubEvents.release());
+    // Listen for new jobs created via the api webhook endpoint
+    let GithubEvents = taskcluster.createClient(this.reference);
+    let githubEvents = new GithubEvents();
+    await this.jobListener.bind(githubEvents.pullRequest());
+    await this.jobListener.bind(githubEvents.push());
+    await this.jobListener.bind(githubEvents.release());
 
-      // Listen for state changes to the taskcluster tasks and taskgroups
-      // We only need to listen for failure and exception events on
-      // tasks. We wait for the entire group to be resolved before checking
-      // for success.
-      let queueEvents = new taskcluster.QueueEvents();
-      let schedulerId = this.context.cfg.taskcluster.schedulerId;
-      await this.statusListener.bind(queueEvents.taskFailed({schedulerId}));
-      await this.statusListener.bind(queueEvents.taskException({schedulerId}));
-      await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId}));
-    } else {
-      this.statusListener = new EventEmitter();
-      this.jobListener = new EventEmitter();
-    }
+    // Listen for state changes to the taskcluster tasks and taskgroups
+    // We only need to listen for failure and exception events on
+    // tasks. We wait for the entire group to be resolved before checking
+    // for success.
+    let queueEvents = new taskcluster.QueueEvents();
+    let schedulerId = this.context.cfg.taskcluster.schedulerId;
+    await this.statusListener.bind(queueEvents.taskFailed({schedulerId}));
+    await this.statusListener.bind(queueEvents.taskException({schedulerId}));
+    await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId}));
 
     const callHandler = (name, handler) => message => {
       handler.call(this, message).catch(async err => {
@@ -108,16 +100,12 @@ class Handlers {
     this.statusListener.on('message',
       this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler)));
 
-    if (!options.noConnect) {
-      await this.jobListener.connect();
-      await this.statusListener.connect();
-
-      // If this is awaited, it should return [undefined, undefined]
-      await Promise.all([this.jobListener.resume(), this.statusListener.resume()]);
-    }
+    // If this is awaited, it should return [undefined, undefined]
+    await Promise.all([this.jobListener.resume(), this.statusListener.resume()]);
   }
 
   async terminate() {
+    debug('Terminating handlers...');
     if (this.connection) {
       await this.connection.close();
       this.connection = undefined;
