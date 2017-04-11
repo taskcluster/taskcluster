@@ -100,10 +100,13 @@ defaults:
     forceSSL:         !env:flag FORCE_SSL
     trustProxy:       false
 
-  # Azure credentials (for table, blob and queue storage)
+  # Azure credentials (for blob and queue storage)
   azure:
     accountName:              !env AZURE_ACCOUNT_NAME
     accountKey:               !env AZURE_ACCOUNT_KEY
+
+  # Azure account (for table storage which uses auth for access)
+  azureTableAccount:          !env AZURE_TABLE_ACCOUNT_NAME
 
   pulse:
     username:                 !env PULSE_USERNAME
@@ -159,13 +162,6 @@ test:
     artifactContainer:            'artifacts'
     queuePrefix:                  'hacks'
     queuePrefix2:                 'hacks2' # For testing deletion of queues
-    taskTableName:                'TestTasks2'
-    artifactTableName:            'TestArtifacts2'
-    taskGroupTableName:           'TestTaskGroups2'
-    taskGroupMemberTableName:     'TestTaskGroupMembers2'
-    taskGroupActiveSetTableName:  'TestTaskSizeMembers2'
-    taskRequirementTableName:     'TestTaskRequirement2'
-    taskDependencyTableName:      'TestTaskDependency2'
     claimQueue:                   'test-claim-queue'
     deadlineQueue:                'test-deadline-queue'
     deadlineDelay:                1000
@@ -195,6 +191,7 @@ test:
     publicUrl:        http://localhost:60401
     port:             60401
     env:              development
+  azureTableAccount:  inMemory
 load-test:
   app:
     publishMetaData:              false
