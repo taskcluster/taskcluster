@@ -25,7 +25,7 @@ suite('handlers', () => {
     handlers.oldCreateTasks = handlers.createTasks;
     handlers.createTasks = sinon.stub();
 
-    await handlers.setup({noConnect: true});
+    await handlers.setup();
 
     // set up the allowPullRequests key
     github.inst(5828).setRepoInfo({
@@ -49,6 +49,9 @@ suite('handlers', () => {
 
         debug(`publishing ${JSON.stringify({user, head, base, eventType})}`);
         const message = {
+          exchange: 'exchange/taskcluster-github/v1/release',
+          routingKey: 'ignored',
+          routes: [],
           payload: {
             organization: 'TaskClusterRobot',
             details: {
@@ -69,7 +72,7 @@ suite('handlers', () => {
           },
         };
 
-        handlers.jobListener.emit('message', message);
+        handlers.jobListener.fakeMessage(message);
       });
     }
 
@@ -294,12 +297,14 @@ suite('handlers', () => {
         debug(`publishing ${JSON.stringify({taskGroupId, exchange})}`);
         const message = {
           exchange,
+          routingKey: 'ignored',
+          routes: [],
           payload: {
             status: {taskGroupId},
           },
         };
 
-        handlers.statusListener.emit('message', message);
+        handlers.statusListener.fakeMessage(message);
       });
     }
 
