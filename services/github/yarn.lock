@@ -1466,13 +1466,9 @@ formatio@1.1.1:
   dependencies:
     samsam "~1.1"
 
-formidable@1.0.14:
+formidable@1.0.14, formidable@~1.0.14:
   version "1.0.14"
   resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.0.14.tgz#2b3f4c411cbb5fdd695c44843e2a23514a43231a"
-
-formidable@~1.0.14:
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.0.17.tgz#ef5491490f9433b705faa77249c99029ae348559"
 
 fresh@0.2.4:
   version "0.2.4"
@@ -3068,7 +3064,7 @@ taskcluster-client@0.23.4:
   optionalDependencies:
     sockjs-client "^1.0.3"
 
-taskcluster-client@^1.0.1, taskcluster-client@^1.2.0, taskcluster-client@^1.4.0:
+taskcluster-client@^1.0.1, taskcluster-client@^1.2.0:
   version "1.6.3"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-1.6.3.tgz#46e08445b7fcb590d4effb35df3f21bab0bb6da2"
   dependencies:
@@ -3088,6 +3084,23 @@ taskcluster-client@^1.0.1, taskcluster-client@^1.2.0, taskcluster-client@^1.4.0:
 taskcluster-client@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-2.1.0.tgz#d7ab239248fb4319895466e13abdd9d616530474"
+  dependencies:
+    amqplib "^0.5.1"
+    debug "^2.1.3"
+    hawk "^2.3.1"
+    lodash "^3.6.0"
+    promise "^6.1.0"
+    slugid "^1.1.0"
+    superagent "~1.7.0"
+    superagent-hawk "^0.0.6"
+    superagent-promise "^0.2.0"
+    url-join "^0.0.1"
+  optionalDependencies:
+    sockjs-client "^1.0.3"
+
+taskcluster-client@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-2.3.0.tgz#6bb938beccc7d682d7adf14e2a69c57882254797"
   dependencies:
     amqplib "^0.5.1"
     debug "^2.1.3"
