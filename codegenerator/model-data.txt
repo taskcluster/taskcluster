@@ -1,4 +1,4 @@
-Generated: 1491571473
+Generated: 1491999829
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1901,7 +1901,7 @@ Entry 4     =
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
     Entry Title       = 'Get Worker Type'
-    Entry Description = 'Retreive a copy of the requested worker type definition.
+    Entry Description = 'Retrieve a copy of the requested worker type definition.
 This copy contains a lastModified field as well as the worker
 type name.  As such, it will require manipulation to be able to
 use the results of this method to submit date to the update
@@ -1947,81 +1947,6 @@ type definition but are still running in AWS.'
 Entry 7     =
     Entry Type        = 'function'
     Entry Method      = 'put'
-    Entry Route       = '/ami-set/<id>'
-    Entry Args        = '[id]'
-    Entry Query        = '[]'
-    Entry Name        = 'createAmiSet'
-    Entry Stability   = 'stable'
-    Entry Scopes      = '[[aws-provisioner:manage-ami-set:<amiSetId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#'
-    Entry Output      = ''
-    Entry Title       = 'Create new AMI Set'
-    Entry Description = 'Create an AMI Set. An AMI Set is a collection of AMIs with a single name.'
-Entry 8     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/ami-set/<id>'
-    Entry Args        = '[id]'
-    Entry Query        = '[]'
-    Entry Name        = 'amiSet'
-    Entry Stability   = 'stable'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#'
-    Entry Title       = 'Get AMI Set'
-    Entry Description = 'Retreive a copy of the requested AMI set.'
-Entry 9     =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/ami-set/<id>/update'
-    Entry Args        = '[id]'
-    Entry Query        = '[]'
-    Entry Name        = 'updateAmiSet'
-    Entry Stability   = 'stable'
-    Entry Scopes      = '[[aws-provisioner:manage-ami-set:<amiSetId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#'
-    Entry Title       = 'Update AMI Set'
-    Entry Description = 'Provide a new copy of an AMI Set to replace the existing one.
-This will overwrite the existing AMI Set if there
-is already an AMI Set of that name. This method will return a
-200 response along with a copy of the AMI Set created.
-Note that if you are using the result of a GET on the ami-set
-end point that you will need to delete the lastModified and amiSet
-keys from the object returned, since those fields are not allowed
-the request body for this method.
-
-Otherwise, all input requirements and actions are the same as the
-create method.'
-Entry 10    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/list-ami-sets'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'listAmiSets'
-    Entry Stability   = 'stable'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#'
-    Entry Title       = 'List AMI sets'
-    Entry Description = 'Return a list of AMI sets names.'
-Entry 11    =
-    Entry Type        = 'function'
-    Entry Method      = 'delete'
-    Entry Route       = '/ami-set/<id>'
-    Entry Args        = '[id]'
-    Entry Query        = '[]'
-    Entry Name        = 'removeAmiSet'
-    Entry Stability   = 'stable'
-    Entry Scopes      = '[[aws-provisioner:manage-ami-set:<amiSetId>]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Delete AMI Set'
-    Entry Description = 'Delete an AMI Set.'
-Entry 12    =
-    Entry Type        = 'function'
-    Entry Method      = 'put'
     Entry Route       = '/secret/<token>'
     Entry Args        = '[token]'
     Entry Query        = '[]'
@@ -2037,7 +1962,7 @@ be converted into credentials by `getSecret`.
 
 This method is not ordinarily used in production; instead, the provisioner
 creates a new secret directly for each spot bid.'
-Entry 13    =
+Entry 8     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/secret/<token>'
@@ -2056,7 +1981,7 @@ based on the scopes specified when the secret was created.
 It is important that this secret is deleted by the consumer (`removeSecret`),
 or else the secrets will be visible to any process which can access the
 user data associated with the instance.'
-Entry 14    =
+Entry 9     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/instance-started/<instanceId>/<token>'
@@ -2073,7 +1998,7 @@ as its security token.  The token is given and checked to ensure
 that it matches a real token that exists to ensure that random
 machines do not check in.  We could generate a different token
 but that seems like overkill'
-Entry 15    =
+Entry 10    =
     Entry Type        = 'function'
     Entry Method      = 'delete'
     Entry Route       = '/secret/<token>'
@@ -2091,7 +2016,7 @@ token will return no information.
 It is very important that the consumer of a 
 secret delete the secret from storage before handing over control
 to untrusted processes to prevent credential and/or secret leakage.'
-Entry 16    =
+Entry 11    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/worker-type/<workerType>/launch-specifications'
@@ -2108,7 +2033,7 @@ that this worker type definition could submit to EC2.  It is used to
 test worker types, nothing more
 
 **This API end-point is experimental and may be subject to change without warning.**'
-Entry 17    =
+Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/state/<workerType>'
@@ -2124,22 +2049,23 @@ Entry 17    =
 This state is stored as three lists: 1 for running instances, 1 for
 pending requests.  The `summary` property contains an updated summary
 similar to that returned from `listWorkerTypeSummaries`.'
-Entry 18    =
+Entry 13    =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/ping'
-    Entry Args        = '[]'
+    Entry Route       = '/new-state/<workerType>'
+    Entry Args        = '[workerType]'
     Entry Query        = '[]'
-    Entry Name        = 'ping'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[]'
+    Entry Name        = 'newState'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[[aws-provisioner:view-worker-type:<workerType>] [aws-provisioner:manage-worker-type:<workerType>]]'
     Entry Input       = ''
     Entry Output      = ''
-    Entry Title       = 'Ping Server'
-    Entry Description = 'Documented later...
-
-**Warning** this api end-point is **not stable**.'
-Entry 19    =
+    Entry Title       = 'Get AWS State for a worker type'
+    Entry Description = 'Return the state of a given workertype as stored by the provisioner. 
+This state is stored as three lists: 1 for running instances, 1 for
+pending requests.  The `summary` property contains an updated summary
+similar to that returned from `listWorkerTypeSummaries`.'
+Entry 14    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/backend-status'
@@ -2158,7 +2084,7 @@ and used to tell if the background provisioning process is still
 running.
 
 **Warning** this api end-point is **not stable**.'
-Entry 20    =
+Entry 15    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/worker-type/<workerType>/terminate-all-instances'
@@ -2177,7 +2103,7 @@ this method, which is why it has an obnoxious name.  Don't even try
 to claim you didn't know what this method does!
 
 **This API end-point is experimental and may be subject to change without warning.**'
-Entry 21    =
+Entry 16    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/shutdown/every/single/ec2/instance/managed/by/this/provisioner'
@@ -2196,6 +2122,20 @@ this method, which is why it has an obnoxious name.  Don't even try
 to claim you didn't know what this method does!
 
 **This API end-point is experimental and may be subject to change without warning.**'
+Entry 17    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = 'stable'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Respond without doing anything.
+This endpoint is used to check that the service is up.'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#
@@ -2230,52 +2170,6 @@ TypeName               = 'BackendStatusResponse'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#'
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#
-==============================================================================
-Additional Properties  = 'false'
-Description            = 'Create a new AMI Set
-'
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#'
-Properties
-  Property 'amis' =
-    Description            = 'AMIs in this set
-    '
-    Items
-      Additional Properties  = 'false'
-      Properties
-        Property 'hvm' =
-          Description            = 'The AMI that uses HVM virtualization type
-          '
-          Type                   = 'string'
-          TypeName               = 'Hvm'
-          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items/properties/hvm'
-        Property 'pv' =
-          Description            = 'The AMI that uses PV virtualization type
-          '
-          Type                   = 'string'
-          TypeName               = 'Pv'
-          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items/properties/pv'
-        Property 'region' =
-          Description            = 'The Amazon AWS region of the AMI set
-          '
-          Type                   = 'string'
-          TypeName               = 'Region'
-          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items/properties/region'
-      Required               = '[region hvm pv]'
-      Type                   = 'object'
-      TypeName               = 'AmisEntry'
-      SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis/items'
-    Type                   = 'array'
-    TypeName               = 'Amis'
-    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#/properties/amis'
-Required               = '[amis]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Create AMI Set Request'
-Type                   = 'object'
-TypeName               = 'CreateAMISetRequest'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#'
-
-
 http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
 =============================================================================
 Additional Properties  = 'false'
@@ -2284,7 +2178,7 @@ Description            = 'A Secret
 ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'
 Properties
   Property 'expiration' =
-    Description            = 'The date at which the secret is no longer guarunteed to exist
+    Description            = 'The date at which the secret is no longer guaranteed to exist
     '
     Format                 = 'date-time'
     Type                   = 'string'
@@ -2529,7 +2423,7 @@ Properties
     time before starting to run.
     A higher scaling ratio often results in better utilization and longer
     waiting times. For workerTypes running long tasks a short scaling ratio
-    may be prefered, but for workerTypes running quick tasks a higher scaling
+    may be preferred, but for workerTypes running quick tasks a higher scaling
     ratio may increase utilization without major delays.
     If using a scaling ratio of 0, the provisioner will attempt to keep the
     capacity of pending spot requests equal to the number of pending tasks.
@@ -2567,66 +2461,6 @@ Title                  = 'Create Worker Type Request'
 Type                   = 'object'
 TypeName               = 'CreateWorkerTypeRequest'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#
-============================================================================
-Additional Properties  = 'false'
-Description            = 'An AMI Set from the provisioner
-'
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#'
-Properties
-  Property 'amis' =
-    Description            = 'AMIs in this set
-    '
-    Items
-      Additional Properties  = 'false'
-      Properties
-        Property 'hvm' =
-          Description            = 'The AMI that uses HVM virtualization type
-          '
-          Type                   = 'string'
-          TypeName               = 'Hvm'
-          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items/properties/hvm'
-        Property 'pv' =
-          Description            = 'The AMI that uses PV virtualization type
-          '
-          Type                   = 'string'
-          TypeName               = 'Pv'
-          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items/properties/pv'
-        Property 'region' =
-          Description            = 'The Amazon AWS region of the AMI set
-          '
-          Type                   = 'string'
-          TypeName               = 'Region'
-          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items/properties/region'
-      Required               = '[region hvm pv]'
-      Type                   = 'object'
-      TypeName               = 'AmisEntry'
-      SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis/items'
-    Type                   = 'array'
-    TypeName               = 'Amis'
-    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/amis'
-  Property 'id' =
-    Description            = 'Name of the AMI set
-    '
-    Type                   = 'string'
-    TypeName               = 'ID'
-    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/id'
-  Property 'lastModified' =
-    Description            = 'ISO Date string (e.g. new Date().toISOString()) which represents the time
-    when this AMI Set was last altered (inclusive of creation)
-    '
-    Format                 = 'date-time'
-    Type                   = 'string'
-    TypeName               = 'LastModified'
-    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#/properties/lastModified'
-Required               = '[id amis]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'Get AMI Set Response'
-Type                   = 'object'
-TypeName               = 'GetAMISetResponse'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
@@ -2916,7 +2750,7 @@ Properties
     time before starting to run.
     A higher scaling ratio often results in better utilization and longer
     waiting times. For workerTypes running long tasks a short scaling ratio
-    may be prefered, but for workerTypes running quick tasks a higher scaling
+    may be preferred, but for workerTypes running quick tasks a higher scaling
     ratio may increase utilization without major delays.
     If using a scaling ratio of 0, the provisioner will attempt to keep the
     capacity of pending spot requests equal to the number of pending tasks.
@@ -2961,19 +2795,6 @@ Title                  = 'Get Worker Type Response'
 Type                   = 'object'
 TypeName               = 'GetWorkerTypeResponse'
 SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#
-==============================================================================
-ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#'
-Items
-  Type                   = 'string'
-  TypeName               = 'Entry2'
-  SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#/items'
-Title                  = 'List AMI sets'
-Type                   = 'array'
-TypeName               = 'ListAMISets'
-SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#'
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#

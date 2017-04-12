@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 7 Apr 2017 at 13:24:00 UTC. The code was generated
+// Wed, 12 Apr 2017 at 12:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -178,7 +178,7 @@ func (awsProvisioner *AwsProvisioner) WorkerTypeLastModified(workerType string) 
 	return responseObject.(*GetWorkerTypeResponse1), err
 }
 
-// Retreive a copy of the requested worker type definition.
+// Retrieve a copy of the requested worker type definition.
 // This copy contains a lastModified field as well as the worker
 // type name.  As such, it will require manipulation to be able to
 // use the results of this method to submit date to the update
@@ -238,70 +238,6 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes1, erro
 	cd := tcclient.Client(*awsProvisioner)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/list-worker-types", new(ListWorkerTypes1), nil)
 	return responseObject.(*ListWorkerTypes1), err
-}
-
-// Create an AMI Set. An AMI Set is a collection of AMIs with a single name.
-//
-// Required scopes:
-//   * aws-provisioner:manage-ami-set:<amiSetId>
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#createAmiSet
-func (awsProvisioner *AwsProvisioner) CreateAmiSet(id string, payload *CreateAMISetRequest) error {
-	cd := tcclient.Client(*awsProvisioner)
-	_, _, err := (&cd).APICall(payload, "PUT", "/ami-set/"+url.QueryEscape(id), nil, nil)
-	return err
-}
-
-// Retreive a copy of the requested AMI set.
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#amiSet
-func (awsProvisioner *AwsProvisioner) AmiSet(id string) (*GetAMISetResponse, error) {
-	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/ami-set/"+url.QueryEscape(id), new(GetAMISetResponse), nil)
-	return responseObject.(*GetAMISetResponse), err
-}
-
-// Provide a new copy of an AMI Set to replace the existing one.
-// This will overwrite the existing AMI Set if there
-// is already an AMI Set of that name. This method will return a
-// 200 response along with a copy of the AMI Set created.
-// Note that if you are using the result of a GET on the ami-set
-// end point that you will need to delete the lastModified and amiSet
-// keys from the object returned, since those fields are not allowed
-// the request body for this method.
-//
-// Otherwise, all input requirements and actions are the same as the
-// create method.
-//
-// Required scopes:
-//   * aws-provisioner:manage-ami-set:<amiSetId>
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#updateAmiSet
-func (awsProvisioner *AwsProvisioner) UpdateAmiSet(id string, payload *CreateAMISetRequest) (*GetAMISetResponse, error) {
-	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/ami-set/"+url.QueryEscape(id)+"/update", new(GetAMISetResponse), nil)
-	return responseObject.(*GetAMISetResponse), err
-}
-
-// Return a list of AMI sets names.
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#listAmiSets
-func (awsProvisioner *AwsProvisioner) ListAmiSets() (*ListAMISets, error) {
-	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/list-ami-sets", new(ListAMISets), nil)
-	return responseObject.(*ListAMISets), err
-}
-
-// Delete an AMI Set.
-//
-// Required scopes:
-//   * aws-provisioner:manage-ami-set:<amiSetId>
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#removeAmiSet
-func (awsProvisioner *AwsProvisioner) RemoveAmiSet(id string) error {
-	cd := tcclient.Client(*awsProvisioner)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/ami-set/"+url.QueryEscape(id), nil, nil)
-	return err
 }
 
 // Insert a secret into the secret storage.  The supplied secrets will
@@ -422,17 +358,32 @@ func (awsProvisioner *AwsProvisioner) State_SignedURL(workerType string, duratio
 	return (&cd).SignedURL("/state/"+url.QueryEscape(workerType), nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
+// Return the state of a given workertype as stored by the provisioner.
+// This state is stored as three lists: 1 for running instances, 1 for
+// pending requests.  The `summary` property contains an updated summary
+// similar to that returned from `listWorkerTypeSummaries`.
 //
-// Documented later...
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
 //
-// **Warning** this api end-point is **not stable**.
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#ping
-func (awsProvisioner *AwsProvisioner) Ping() error {
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#newState
+func (awsProvisioner *AwsProvisioner) NewState(workerType string) error {
 	cd := tcclient.Client(*awsProvisioner)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/new-state/"+url.QueryEscape(workerType), nil, nil)
 	return err
+}
+
+// Returns a signed URL for NewState, valid for the specified duration.
+//
+// Required scopes:
+//   * aws-provisioner:view-worker-type:<workerType>, or
+//   * aws-provisioner:manage-worker-type:<workerType>
+//
+// See NewState for more details.
+func (awsProvisioner *AwsProvisioner) NewState_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*awsProvisioner)
+	return (&cd).SignedURL("/new-state/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -489,5 +440,15 @@ func (awsProvisioner *AwsProvisioner) TerminateAllInstancesOfWorkerType(workerTy
 func (awsProvisioner *AwsProvisioner) ShutdownEverySingleEc2InstanceManagedByThisProvisioner() error {
 	cd := tcclient.Client(*awsProvisioner)
 	_, _, err := (&cd).APICall(nil, "POST", "/shutdown/every/single/ec2/instance/managed/by/this/provisioner", nil, nil)
+	return err
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#ping
+func (awsProvisioner *AwsProvisioner) Ping() error {
+	cd := tcclient.Client(*awsProvisioner)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }
