@@ -6,16 +6,11 @@ Project Structure
 -----------------
 _The following itemization of folders outlines how this project is structured._
 
- * `queue/`, contains queue application logic.
- * `config/`, contains nconf based configuration for tests / production.
- * `routes/`, contains all forms of HTTP entries, including the API, though the
-   API is mainly implemented by the application logic in `queue/`
-   (or at least this is the intention, as we improve the implementation).
+ * `src/`, contains queue application logic.
+ * `config.yml`, contains configuration for tests / production.
  * `schemas/`, JSON Schemas against which all input and output, i.e. messages,
     S3 files, requests and responses should be validated against.
- * `tests/`, automated tests using `mocha`, launched with `node tests` so
-   that we can stick in other test frameworks should we ever need it.
-
+ * `test/`, automated tests using `mocha`, launched with `yarn test`.
 
 Development
 -----------
