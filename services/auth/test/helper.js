@@ -51,15 +51,15 @@ mocha.before(async () => {
     helper.Client = overwrites['Client'] = data.Client.setup({
       table: 'Client',
       account: 'inMemory',
+      credentials: null,
       cryptoKey,
       signingKey,
-      context: {resolver: overwrites.resolver},
     });
     helper.Role = overwrites['Role'] = data.Role.setup({
       table: 'Role',
       account: 'inMemory',
+      credentials: null,
       signingKey,
-      context: {resolver: overwrites.resolver},
     });
   } else {
     helper.Client = overwrites['Client'] = await serverLoad('Client', overwrites);
