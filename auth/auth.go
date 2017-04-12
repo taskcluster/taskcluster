@@ -10,10 +10,15 @@
 
 // Authentication related API end-points for TaskCluster and related
 // services. These API end-points are of interest if you wish to:
-//   * Authenticate request signed with TaskCluster credentials,
+//   * Authorize a request signed with TaskCluster credentials,
 //   * Manage clients and roles,
 //   * Inspect or audit clients and roles,
 //   * Gain access to various services guarded by this API.
+//
+// Note that in this service "authentication" refers to validating the
+// correctness of the supplied credentials (that the caller posesses the
+// appropriate access token). This service does not provide any kind of user
+// authentication (identifying a particular person).
 //
 // ### Clients
 // The authentication service manages _clients_, at a high-level each client
@@ -63,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 12 Apr 2017 at 12:23:00 UTC. The code was generated
+// Wed, 12 Apr 2017 at 17:27:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -463,8 +468,10 @@ func (myAuth *Auth) AzureTables_SignedURL(account, continuationToken string, dur
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
-// Table Storage table. By not specifying a level as in azureTableSASLevel,
-// you will get read-write permissions. If you get read-write from this, it will create the
+// Table Storage table.
+//
+// The `level` parameter can be `read-write` or `read-only` and determines
+// which type of credentials are returned.  If level is read-write, it will create the
 // table if it doesn't already exist.
 //
 // Required scopes:
@@ -489,7 +496,11 @@ func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, durati
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
-// Blob Storage container. If the level is read-write, the container will be created, if it doesn't already exists.
+// Blob Storage container.
+//
+// The `level` parameter can be `read-write` or `read-only` and determines
+// which type of credentials are returned.  If level is read-write, it will create the
+// container if it doesn't already exist.
 //
 // Required scopes:
 //   * auth:azure-blob:<level>:<account>/<container>

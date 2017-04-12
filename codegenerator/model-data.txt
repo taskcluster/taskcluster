@@ -1,4 +1,4 @@
-Generated: 1491999829
+Generated: 1492018078
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9,10 +9,15 @@ Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Authentication API'
 Description = 'Authentication related API end-points for TaskCluster and related
 services. These API end-points are of interest if you wish to:
-  * Authenticate request signed with TaskCluster credentials,
+  * Authorize a request signed with TaskCluster credentials,
   * Manage clients and roles,
   * Inspect or audit clients and roles,
   * Gain access to various services guarded by this API.
+
+Note that in this service "authentication" refers to validating the
+correctness of the supplied credentials (that the caller posesses the
+appropriate access token). This service does not provide any kind of user
+authentication (identifying a particular person).
 
 ### Clients
 The authentication service manages _clients_, at a high-level each client
@@ -396,8 +401,10 @@ Entry 18    =
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#'
     Entry Title       = 'Get Shared-Access-Signature for Azure Table'
     Entry Description = 'Get a shared access signature (SAS) string for use with a specific Azure
-Table Storage table. By not specifying a level as in azureTableSASLevel,
-you will get read-write permissions. If you get read-write from this, it will create the
+Table Storage table.
+
+The `level` parameter can be `read-write` or `read-only` and determines
+which type of credentials are returned.  If level is read-write, it will create the
 table if it doesn't already exist.'
 Entry 19    =
     Entry Type        = 'function'
@@ -412,7 +419,11 @@ Entry 19    =
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#'
     Entry Title       = 'Get Shared-Access-Signature for Azure Blob'
     Entry Description = 'Get a shared access signature (SAS) string for use with a specific Azure
-Blob Storage container. If the level is read-write, the container will be created, if it doesn't already exists.'
+Blob Storage container.
+
+The `level` parameter can be `read-write` or `read-only` and determines
+which type of credentials are returned.  If level is read-write, it will create the
+container if it doesn't already exist.'
 Entry 20    =
     Entry Type        = 'function'
     Entry Method      = 'get'
