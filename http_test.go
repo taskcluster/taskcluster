@@ -1,8 +1,11 @@
 package tcclient
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
@@ -165,5 +168,37 @@ func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
 	}
 	if actualHeader != expectedHeader {
 		t.Fatalf("Expected header %q but got %q", expectedHeader, actualHeader)
+	}
+}
+
+func TestRequestWithContext(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Second)
+		w.WriteHeader(200)
+		w.Write([]byte(`{"value": "hello world"}`))
+	}))
+	defer s.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := Client{
+		BaseURL:      s.URL,
+		Authenticate: false,
+		Context:      ctx,
+	}
+
+	// Make a call
+	var result struct {
+		Value string `json:"value"`
+	}
+	_, _, err := c.APICall(nil, "GET", "/whatever", &result, nil)
+	if err != nil {
+		t.Fatal("Unexpected error: ", err)
+	}
+
+	// Make a call and cancel
+	time.AfterFunc(1*time.Second, cancel)
+	_, _, err = c.APICall(nil, "GET", "/whatever", &result, nil)
+	if err != context.Canceled {
+		t.Fatal("Expected canceled error")
 	}
 }
