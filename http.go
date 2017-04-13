@@ -104,11 +104,19 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 				return nil, nil, err
 			}
 		}
+		// Set context if one is given
+		if client.Context != nil {
+			callSummary.HTTPRequest = callSummary.HTTPRequest.WithContext(client.Context)
+		}
 		var resp *http.Response
 		if client.HTTPClient != nil {
 			resp, err = client.HTTPClient.Do(callSummary.HTTPRequest)
 		} else {
 			resp, err = defaultHTTPClient.Do(callSummary.HTTPRequest)
+		}
+		// return cancelled error, if context was cancelled
+		if client.Context != nil && client.Context.Err() != nil {
+			return nil, nil, client.Context.Err()
 		}
 		// b, e := httputil.DumpResponse(resp, true)
 		// if e == nil {

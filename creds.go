@@ -1,6 +1,7 @@
 package tcclient
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -59,6 +60,8 @@ type Client struct {
 	// HTTPClient is a ReducedHTTPClient to be used for the http call instead of
 	// the DefaultHTTPClient.
 	HTTPClient ReducedHTTPClient
+	// Context that aborts all requests with this client
+	Context context.Context
 }
 
 // Certificate represents the certificate used in Temporary Credentials. See
