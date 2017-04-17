@@ -103,6 +103,12 @@ type (
 	// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#
 	NamespaceCreationResponse struct {
 
+		// The AMQP URL for connecting to the pulse service.  Note that this URL
+		// contains a password, so it should not be logged or displayed to users.
+		//
+		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/connectionString
+		ConnectionString string `json:"connectionString"`
+
 		// E-mail address that will reach people who can address problems with runaway queue length.
 		// The service will send warning notifications to this address before forcibly deleting the
 		// queue.
@@ -126,21 +132,11 @@ type (
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/namespace
 		Namespace string `json:"namespace"`
 
-		// The password created for authentication
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/password
-		Password string `json:"password"`
-
 		// The caller should plan to call `claimNamespace` again at this time. The provided
 		// password will become invalid a short time after this.
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/reclaimAt
 		ReclaimAt tcclient.Time `json:"reclaimAt,omitempty"`
-
-		// The username created for authentication
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/username
-		Username string `json:"username"`
 	}
 
 	// An array of RabbitMQ exchanges containing the details of RabbitMQ exchanges

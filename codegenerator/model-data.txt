@@ -1,4 +1,4 @@
-Generated: 1492122194
+Generated: 1492460796
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5814,6 +5814,14 @@ Description            = 'Namespace creation response
 '
 ID                     = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#'
 Properties
+  Property 'connectionString' =
+    Description            = 'The AMQP URL for connecting to the pulse service.  Note that this URL
+    contains a password, so it should not be logged or displayed to users.
+    '
+    Title                  = 'AMQP URL'
+    Type                   = 'string'
+    TypeName               = 'AMQPURL'
+    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/connectionString'
   Property 'contact' =
     Description            = 'E-mail address that will reach people who can address problems with runaway queue length.
     The service will send warning notifications to this address before forcibly deleting the
@@ -5843,12 +5851,6 @@ Properties
     Type                   = 'string'
     TypeName               = 'Namespace'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/namespace'
-  Property 'password' =
-    Description            = 'The password created for authentication'
-    Title                  = 'Password'
-    Type                   = 'string'
-    TypeName               = 'Password'
-    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/password'
   Property 'reclaimAt' =
     Description            = 'The caller should plan to call `claimNamespace` again at this time. The provided
     password will become invalid a short time after this.
@@ -5857,13 +5859,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'ReclaimAt'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/reclaimAt'
-  Property 'username' =
-    Description            = 'The username created for authentication'
-    Title                  = 'Username'
-    Type                   = 'string'
-    TypeName               = 'Username'
-    SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/username'
-Required               = '[namespace username password contact]'
+Required               = '[namespace contact connectionString]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Namespace Creation Response'
 Type                   = 'object'
