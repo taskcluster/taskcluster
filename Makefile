@@ -35,10 +35,8 @@ _upload_release/upload: _upload_release/upload.go
 
 release: $(SOURCES)
 	go get -u github.com/mitchellh/gox
-	gox -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -osarch="${BUILD_OSARCH}" -ldflags "${LDFLAGS}" -output="build/${BINARY}-{{.OS}}-{{.Arch}}" .
-
-upload: _upload_release/upload
-	_upload_release/upload -version $(VERSION) build/*
+	rm -rf build/
+	gox -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -osarch="${BUILD_OSARCH}" -ldflags "${LDFLAGS}" -output="build/{{.OS}}-{{.Arch}}/${BINARY}"
 
 clean:
 	rm -f ${BINARY}

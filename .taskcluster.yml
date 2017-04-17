@@ -82,6 +82,7 @@ tasks:
           - release
     scopes:
       - auth:aws-s3:read-write:downloads-taskcluster-net/taskcluster-cli/
+      - queue:route:project.taskcluster.taskcluster-cli.latest
     payload:
       maxRunTime: 3600
       image: 'golang:1.8'
@@ -95,7 +96,11 @@ tasks:
           && cd  /go/src/github.com/taskcluster/taskcluster-cli
           && git fetch {{ event.head.repo.url }} {{ event.version }}
           && git checkout FETCH_HEAD
-          && make prep release upload
+          && make prep release
+      artifacts:
+        public:
+          path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster/build
+          type: directory
     metadata:
       name: "Build and upload binaries for release"
       description: "Binary release"
