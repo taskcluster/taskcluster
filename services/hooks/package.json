@@ -28,7 +28,7 @@
     "mocha-eslint": "^3.0.1",
     "promise": "^7.0.4",
     "taskcluster-client": "^1.6.3",
-    "taskcluster-lib-api": "^3.0.1",
+    "taskcluster-lib-api": "3.2.2",
     "taskcluster-lib-app": "^0.8.10",
     "taskcluster-lib-docs": "^3.3.0",
     "taskcluster-lib-loader": "0.0.8",
