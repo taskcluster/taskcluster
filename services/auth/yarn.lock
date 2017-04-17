@@ -2606,9 +2606,9 @@ taskcluster-client@^2.0.0:
   optionalDependencies:
     sockjs-client "^1.0.3"
 
-taskcluster-lib-api@^3.0.0:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-3.1.1.tgz#57c9853f0ceb0b97cdfce7e0cee8849738377c6c"
+taskcluster-lib-api@3.2.2:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-3.2.2.tgz#a7fd694214e3a1f347dd5ed7f0679e5ff95353fd"
   dependencies:
     ajv "^4.8.2"
     aws-sdk "^2.5.3"
