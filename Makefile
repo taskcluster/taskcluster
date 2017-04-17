@@ -47,6 +47,10 @@ clean:
 test: prep build
 	go test -v -race ./...
 
+generate-apis:
+	go get github.com/taskcluster/go-got
+	go generate ./apis
+
 lint: prep
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install --force
@@ -62,4 +66,4 @@ lint: prep
 		--skip=apis --skip=vendor \
 		./...
 
-.PHONY: all prep build clean upload release
+.PHONY: all prep build clean upload release generate-apis
