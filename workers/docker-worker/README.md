@@ -57,12 +57,12 @@ for the docker worker in particular these are important:
 
 ### Directory Structure
 
-  - [src/bin - primary entrypoint for worker](/bin)
+  - [src/bin - primary entrypoint for worker](src/bin)
   - [/deploy - code related to pakcer and deployment](/deploy)
-  - [src/lib - source of internal worker apis](/lib)
-  - [src/lib/task_listener.js - primary entrypoint of worker](/lib/task_listener.js)
-  - [src/lib/task.js - handler for individual tasks](/lib/task_listener.js)
-  - [src/lib/features/ - individual features for worker](/lib/features/)
+  - [src/lib - source of internal worker apis](src/lib)
+  - [src/lib/task_listener.js - primary entrypoint of worker](src/lib/task_listener.js)
+  - [src/lib/task.js - handler for individual tasks](src/lib/task_listener.js)
+  - [src/lib/features/ - individual features for worker](src/lib/features/)
 
 ### Environment
 
