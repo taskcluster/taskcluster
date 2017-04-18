@@ -33,7 +33,7 @@ are for hacking on the worker itself.
 
 ## Requirements
 
-  - Node 0.12.x
+  - Node >= 6.0
   - Docker
   - Packer (to build AMI)
 
@@ -46,7 +46,7 @@ node --harmony bin/worker.js <config>
 
 ### Configuration
 
-The [defaults](config/defaults.js) contains all configuration options
+The [defaults](config.yml) contains all configuration options
 for the docker worker in particular these are important:
 
   - `taskcluster` the credentials needed to authenticate all pull jobs
@@ -55,19 +55,14 @@ for the docker worker in particular these are important:
   - `pulse` the credentials for listening to [pulse](pulse.mozilla.org)
     exchanges.
 
-  - `registries` registry credentials
-
-  - `influx` connection string and settings for sending metrics to influx.
-
 ### Directory Structure
 
-  - [/bin - primary entrypoint for worker](/bin)
+  - [src/bin - primary entrypoint for worker](/bin)
   - [/deploy - code related to pakcer and deployment](/deploy)
-  - [/config - configuration profiles for worker](/config)
-  - [/lib - source of internal worker apis](/lib)
-  - [/lib/task_listener.js - primary entrypoint of worker](/lib/task_listener.js)
-  - [/lib/task.js - handler for individual tasks](/lib/task_listener.js)
-  - [/lib/features/ - individual features for worker](/lib/features/)
+  - [src/lib - source of internal worker apis](/lib)
+  - [src/lib/task_listener.js - primary entrypoint of worker](/lib/task_listener.js)
+  - [src/lib/task.js - handler for individual tasks](/lib/task_listener.js)
+  - [src/lib/features/ - individual features for worker](/lib/features/)
 
 ### Environment
 
@@ -115,7 +110,7 @@ an environment very similar to the one docker-worker runs in production.
 The following set of scopes are needed for running the test suites:
 
 * queue:create-task:no-provisioning-nope/dummy-type-*
-* queue:poll-task-urls
+* queue:claim-work:no-provisioning-nope/*
 * queue:claim-task
 * queue:resolve-task
 * queue:create-artifact:public/*
@@ -146,8 +141,8 @@ list](/deploy/checklist.md)
 
   - [packer](www.packer.io)
   - make
-  - node 0.12.x
-  - credentials for required services (i
+  - node >= 6.0
+  - credentials for required services
 
 ### Amazon Credentials
 
