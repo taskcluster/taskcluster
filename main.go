@@ -4,16 +4,12 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -25,7 +21,6 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/taskcluster/generic-worker/process"
-	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/auth"
@@ -44,17 +39,9 @@ var (
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue       *queue.Queue
 	Provisioner *awsprovisioner.AwsProvisioner
-	// See SignedURLsManager() for more information:
-	// signedURsRequestChan is the channel you can pass a channel to, to get
-	// back signed urls from the Task Cluster Queue, for querying Azure queues.
-	signedURLsRequestChan chan chan *queue.PollTaskUrlsResponse
-	// The *currently* one-and-only channel we request signedURLs to be written
-	// to. In future we might require more channels to perform requests in
-	// parallel, in which case we won't have a single global package var.
-	signedURLsResponseChan chan *queue.PollTaskUrlsResponse
-	config                 *Config
-	configFile             string
-	Features               []Feature = []Feature{
+	config      *Config
+	configFile  string
+	Features    []Feature = []Feature{
 		&LiveLogFeature{},
 		&OSGroupsFeature{},
 		&ChainOfTrustFeature{},
@@ -210,9 +197,6 @@ and reports back results to the queue.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
-          refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
-                                            that the generic worker should refresh them.
-                                            [default: 310]
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -463,10 +447,6 @@ func RunWorker() {
 		},
 	)
 
-	// Start the SignedURLsManager in a dedicated go routine, to take care of
-	// keeping signed urls up-to-date (i.e. refreshing as old urls expire).
-	signedURLsRequestChan, signedURLsResponseChan = SignedURLsManager()
-
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
@@ -482,8 +462,8 @@ func RunWorker() {
 			lastQueriedProvisioner = time.Now()
 			shutdownIfNewDeploymentID()
 		}
-		// make sure at least 1 second passes between iterations
-		waitASec := time.NewTimer(time.Second * 1)
+		// make sure at least 5 seconds passes between iterations
+		wait5Seconds := time.NewTimer(time.Second * 5)
 		taskFound := FindAndRunTask()
 		if !taskFound {
 			// let's not be over-verbose in logs - has cost implications
@@ -515,55 +495,54 @@ func RunWorker() {
 			lastActive = time.Now()
 			PrepareTaskEnvironment()
 		}
-		// To avoid hammering queue, make sure there is at least a second
+		// To avoid hammering queue, make sure there is at least 5 seconds
 		// between consecutive requests. Note we do this even if a task ran,
-		// since a task could complete in less than a second.
-		<-waitASec.C
+		// since a task could complete in less than that amount of time.
+		<-wait5Seconds.C
 	}
 }
 
-// FindAndRunTask loops through the Azure queues in order, to find a task to
+// FindAndRunTask queries the TaskCluster Queue to find a task to
 // run. If it finds one, it handles all the bookkeeping, as well as running the
 // task. Returns true if it successfully claimed a task (regardless of whether
 // the task ran successfully) otherwise false.
 func FindAndRunTask() bool {
-	// Write to the signed urls channel, to request signed urls back on
-	// channel c.
-	signedURLsRequestChan <- signedURLsResponseChan
-	// Read the result.
-	signedURLs := <-signedURLsResponseChan
 	taskFound := false
-	// Each of these signedURLs represent an underlying Azure queue, there
-	// are multiple of these so that we can support priority. For this
-	// reason the worker must poll the Azure queues in order they are
-	// given.
-	for _, urlPair := range signedURLs.Queues {
-		// try to grab a task using the url pair (url pair = poll url + delete
-		// url)
-		task, err := SignedURLPair(urlPair).Poll()
-		if err != nil {
-			// This can be any error at all occurs in queryAzureQueue that
-			// prevents us from claiming this task.  Log, and continue.
-			log.Printf("%v", err)
-			continue
-		}
-		if task == nil {
-			// no task to run, and logging done in function call, so just
-			// continue...
-			continue
-		}
-		// from this point on we should "break" rather than "continue", since
-		// there could be more tasks on the same queue - we only "continue"
-		// to next queue if we found nothing on this queue...
+	req := &queue.ClaimWorkRequest{
+		Tasks:       1,
+		WorkerGroup: config.WorkerGroup,
+		WorkerID:    config.WorkerID,
+	}
+
+	resp, err := Queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
+	if err != nil {
+		log.Printf("Could not claim work. %v", err)
+		return taskFound
+	}
+
+	for _, taskResponse := range resp.Tasks {
 		taskFound = true
+		taskQueue := queue.New(
+			&tcclient.Credentials{
+				ClientID:    taskResponse.Credentials.ClientID,
+				AccessToken: taskResponse.Credentials.AccessToken,
+				Certificate: taskResponse.Credentials.Certificate,
+			},
+		)
+		task := &TaskRun{
+			TaskID:            taskResponse.Status.TaskID,
+			RunID:             uint(taskResponse.RunID),
+			Status:            claimed,
+			Definition:        taskResponse.Task,
+			Queue:             taskQueue,
+			TaskClaimResponse: queue.TaskClaimResponse(taskResponse),
+		}
+
 		task.StatusManager = NewTaskStatusManager(task)
 
-		// Now we found a task, run it, and then exit the loop. This is because
-		// the loop is in order of priority, most important first, so we will
-		// run the most important task we find, and then return, ignorning
-		// remaining urls for lower priority tasks that might still be left to
-		// loop through, since by the time we complete the first task, maybe
-		// higher priority jobs are waiting, so we need to poll afresh.
+		// Now we found a task, run it, and then exit the loop.  Work is returned
+		// by the queue in the order of priority.  Higher priority tasks will be claimed
+		// and returned before lower priority tasks.
 		log.Print("Task found")
 		execErr := task.Run()
 		if execErr.Occurred() {
@@ -579,194 +558,6 @@ func (task *TaskRun) reportPossibleError(err error) {
 		log.Printf("ERROR encountered: %v", err)
 		task.Log(err.Error())
 	}
-}
-
-// Queries the given Azure Queue signed url pair (poll url/delete url) and
-// translates the Azure response into a Task object
-func (urlPair SignedURLPair) Poll() (*TaskRun, error) {
-	queueMessagesList := new(QueueMessagesList)
-	// To poll an Azure Queue the worker must do a `GET` request to the
-	// `signedPollUrl` from the object, representing the Azure queue. To
-	// receive multiple messages at once the parameter `&numofmessages=N`
-	// may be appended to `signedPollUrl`. The parameter `N` is the
-	// maximum number of messages desired, `N` can be up to 32.
-	// Since we can only process one task at a time, grab only one.
-	resp, _, err := httpbackoff.Get(urlPair.SignedPollURL + "&numofmessages=1")
-	if err != nil {
-		log.Printf("%v", err)
-		return nil, err
-	}
-	// When executing a `GET` request to `signedPollUrl` from an Azure queue object,
-	// the request will return an XML document on the form:
-	//
-	// ```xml
-	// <QueueMessagesList>
-	//     <QueueMessage>
-	//       <MessageId>...</MessageId>
-	//       <InsertionTime>...</InsertionTime>
-	//       <ExpirationTime>...</ExpirationTime>
-	//       <PopReceipt>...</PopReceipt>
-	//       <TimeNextVisible>...</TimeNextVisible>
-	//       <DequeueCount>...</DequeueCount>
-	//       <MessageText>...</MessageText>
-	//     </QueueMessage>
-	//     ...
-	// </QueueMessagesList>
-	// ```
-	// We unmarshal the response into go objects, using the go xml decoder.
-	fullBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	reader := strings.NewReader(string(fullBody))
-	dec := xml.NewDecoder(reader)
-	err = dec.Decode(&queueMessagesList)
-	if err != nil {
-		log.Print("ERROR: not able to xml decode the response from the azure Queue:")
-		log.Print(string(fullBody))
-		return nil, err
-	}
-	if len(queueMessagesList.QueueMessages) == 0 {
-		return nil, nil
-	}
-	if size := len(queueMessagesList.QueueMessages); size > 1 {
-		return nil, fmt.Errorf("%v tasks returned in Azure XML QueueMessagesList, even though &numofmessages=1 was specified in poll url", size)
-	}
-
-	// at this point we know there is precisely one QueueMessage (== task)
-	qm := queueMessagesList.QueueMessages[0]
-
-	// Utility method for replacing a placeholder within a uri with
-	// a string value which first must be uri encoded...
-	detokeniseUri := func(uri, placeholder, rawValue string) string {
-		return strings.Replace(uri, placeholder, strings.Replace(url.QueryEscape(rawValue), "+", "%20", -1), -1)
-	}
-
-	// Before using the signedDeleteUrl the worker must replace the placeholder
-	// {{messageId}} with the contents of the <MessageId> tag. It is also
-	// necessary to replace the placeholder {{popReceipt}} with the URI encoded
-	// contents of the <PopReceipt> tag.  Notice, that the worker must URI
-	// encode the contents of <PopReceipt> before substituting into the
-	// signedDeleteUrl. Otherwise, the worker will experience intermittent
-	// failures.
-
-	// Since urlPair is a value, not a pointer, we can update this copy which
-	// is associated only with this particular task
-	urlPair.SignedDeleteURL = detokeniseUri(
-		detokeniseUri(
-			urlPair.SignedDeleteURL,
-			"{{messageId}}",
-			qm.MessageId,
-		),
-		"{{popReceipt}}",
-		qm.PopReceipt,
-	)
-
-	// Workers should read the value of the `<DequeueCount>` and log messages
-	// that alert the operator if a message has been dequeued a significant
-	// number of times, for example 15 or more.
-	if qm.DequeueCount >= 15 {
-		log.Printf("WARN: Queue Message with message id %v has been dequeued %v times!", qm.MessageId, qm.DequeueCount)
-		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
-		if deleteErr != nil {
-			log.Print("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
-			log.Printf("%v", deleteErr)
-		}
-	}
-
-	// To find the task referenced in a message the worker must base64
-	// decode and JSON parse the contents of the <MessageText> tag. This
-	// would return an object on the form: {taskId, runId}.
-	m, err := base64.StdEncoding.DecodeString(qm.MessageText)
-	if err != nil {
-		// try to delete from Azure, if it fails, nothing we can do about it
-		// not very serious - another worker will try to delete it
-		log.Print("ERROR: Not able to base64 decode the Message Text '" + qm.MessageText + "' in Azure QueueMessage response.")
-		log.Print("Deleting from Azure queue as other workers will have the same problem.")
-		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
-		if deleteErr != nil {
-			log.Print("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
-			log.Printf("%v", deleteErr)
-		}
-		return nil, err
-	}
-
-	// initialise fields of TaskRun not contained in json string m
-	taskRun := TaskRun{
-		QueueMessage:  qm,
-		SignedURLPair: urlPair,
-		Status:        unclaimed,
-	}
-
-	// now populate remaining json fields of TaskRun from json string m
-	err = json.Unmarshal(m, &taskRun)
-	if err != nil {
-		log.Printf("Not able to unmarshal json from base64 decoded MessageText '%v'", m)
-		log.Printf("%v", err)
-		deleteErr := deleteFromAzure(urlPair.SignedDeleteURL)
-		if deleteErr != nil {
-			log.Print("WARN: Not able to call Azure delete URL %v" + urlPair.SignedDeleteURL)
-			log.Printf("%v", deleteErr)
-		}
-		return nil, err
-	}
-
-	return &taskRun, nil
-}
-
-// deleteFromAzure will attempt to delete a task from the Azure queue and
-// return an error in case of failure
-func (task *TaskRun) deleteFromAzure() error {
-	if task == nil {
-		return fmt.Errorf("Cannot delete task from Azure - task is nil")
-	}
-	log.Print("Deleting task " + task.TaskID + " from Azure queue...")
-	return deleteFromAzure(task.SignedURLPair.SignedDeleteURL)
-}
-
-// deleteFromAzure is a wrapper around calling an Azure delete URL with error
-// handling in case of failure
-func deleteFromAzure(deleteUrl string) error {
-
-	// Messages are deleted from the Azure queue with a DELETE request to the
-	// signedDeleteUrl from the Azure queue object returned from
-	// queue.pollTaskUrls.
-
-	// Also remark that the worker must delete messages if the queue.claimTask
-	// operations fails with a 4xx error. A 400 hundred range error implies
-	// that the task wasn't created, not scheduled or already claimed, in
-	// either case the worker should delete the message as we don't want
-	// another worker to receive message later.
-
-	httpCall := func() (*http.Response, error, error) {
-		req, err := http.NewRequest("DELETE", deleteUrl, nil)
-		if err != nil {
-			return nil, nil, err
-		}
-		resp, err := http.DefaultClient.Do(req)
-		return resp, err, nil
-	}
-
-	resp, _, err := httpbackoff.Retry(httpCall)
-
-	// Notice, that failure to delete messages from Azure queue is serious, as
-	// it wouldn't manifest itself in an immediate bug. Instead if messages
-	// repeatedly fails to be deleted, it would result in a lot of unnecessary
-	// calls to the queue and the Azure queue. The worker will likely continue
-	// to work, as the messages eventually disappears when their deadline is
-	// reached. However, the provisioner would over-provision aggressively as
-	// it would be unable to tell the number of pending tasks. And the worker
-	// would spend a lot of time attempting to claim faulty messages. For these
-	// reasons outlined above it's strongly advised that workers logs failures
-	// to delete messages from Azure queues.
-	if err != nil {
-		log.Printf("Not able to delete task from azure queue (delete url: %v)", deleteUrl)
-		log.Printf("%v", err)
-		return err
-	}
-	log.Printf("Successfully deleted task from azure queue (delete url: %v) with http response code %v.", deleteUrl, resp.StatusCode)
-	// no errors occurred, yay!
-	return nil
 }
 
 func (task *TaskRun) setReclaimTimer() {
@@ -945,16 +736,6 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	return nil
 }
 
-func (task *TaskRun) claim() (err *CommandExecutionError) {
-	// If there is one or more messages the worker must claim the tasks
-	// referenced in the messages, and delete the messages.
-	e := task.StatusManager.Claim()
-	if e != nil {
-		return ResourceUnavailable(fmt.Errorf("Not able to claim task %v due to %v", task.TaskID, e))
-	}
-	return nil
-}
-
 type executionErrors []*CommandExecutionError
 
 func (e *executionErrors) add(err *CommandExecutionError) {
@@ -1051,10 +832,6 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	err = &executionErrors{}
 
-	err.add(task.claim())
-	if err.Occurred() {
-		return
-	}
 	defer func() {
 		if r := recover(); r != nil {
 			err.add(executionError("worker-shutdown", errored, fmt.Errorf("%#v", r)))

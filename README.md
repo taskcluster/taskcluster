@@ -185,9 +185,6 @@ and reports back results to the queue.
           provisioner_id                    The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
-          refreshURLsPrematurelySecs        The number of seconds before azure urls expire,
-                                            that the generic worker should refresh them.
-                                            [default: 310]
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -248,31 +245,6 @@ Simply run:
 
 ```
 generic-worker --config CONFIG-FILE
-```
-
-and watch logs for a successful startup. If you can see it is polling the Queue, and the process does not exit, then you can continue. If it reports a problem, follow any instructions it provides. If you are really stuck, join #taskcluster channel on irc.mozilla.org, and ask for help.
-
-It should look something like this:
-
-```
-22:29:40.326 2ms    2ms    generic-worker - Detected darwin platform
-22:29:40.327 3ms    3ms    queue - Making http request: &{GET https://queue.taskcluster.net/v1/poll-task-url/aws-provisioner-v1/win2012r2 HTTP/1.1 1 1 map[Content-Type:[application/json] Authorization:[Hawk id="aws-provisioner", mac="MVfkV6dfr36FFDR3434GoOxPRV+Bsdpqnyso9mtejHY=", ts="1449354580", nonce="pKTcnRfr", ext="eyJjZXJgFGHsdfVFTSI6eyJ2ZXJzaW9uFDf9gu3hjdkrh3khykfkj45zdW1lOndvcmtlci10eXBlOmF3cy1wcm92aXNpb25lci12MS93aW4yMDEycjIiLCJhc3N1bWU6d29ya2VyLWlkOioiXSwic3RhcnQiOjE0NDkzMjg0MTc1MDYsImV4cGlyeSI6MTQ0OTY3NDMxNzUwNiwic2VlZCI6ImR2eGdReXVFVFltUzZzeTE3ZFY2TUFmYjdLVWd0WVNTeUs3V2FWajZLR2dBIiwic2lnbmF0dXJlIjoiUjVPL3Jtdk5OR2RPNXNxcEZibWppcitGM3FKZ2RYNS90QU1DQ3ltK2ZIdz0ifX0="]] <nil> 0 [] false queue.taskcluster.net map[] map[] <nil> map[]   <nil> <nil>}
-22:29:41.455 1s     1s     generic-worker - Refreshing signed urls in 24m49.928485914s
-22:29:41.455 20us   20us   generic-worker -   Priority (1) Delete URL: https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-5/messages/{{messageId}}?popreceipt={{popReceipt}}&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=wPRqqdRtqnIK3n6Qss4rkMiAO0KSE12P8Y3E3S0cLmU%3D&st=2015-12-05T22%3A14%3A41Z
-22:29:41.455 1us    1us    generic-worker -   Priority (1) Poll URL:   https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-5/messages?visibilitytimeout=300&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=wPRqqdRtqnIK3n6Qss4rkMiAO0KSE12P8Y3E3S0cLmU%3D&st=2015-12-05T22%3A14%3A41Z
-22:29:41.455 1us    1us    generic-worker -   Priority (2) Delete URL: https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-1/messages/{{messageId}}?popreceipt={{popReceipt}}&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=H%2B5fkdbb8A3FMODzY94k7bmVXur18mbRQA%2FJDxNgUoc%3D&st=2015-12-05T22%3A14%3A41Z
-22:29:41.455 1us    1us    generic-worker -   Priority (2) Poll URL:   https://taskclusterqueuev1.queue.core.windows.net/queue-b7s5ezzeusysb327h2qdcv4y-sergv56zmysxaedc7n2h5t5a-1/messages?visibilitytimeout=300&sv=2015-04-05&se=2015-12-05T22%3A59%3A41Z&sp=p&spr=https&sig=H%2B5fkdbb8A3FMODzY94k7bmVXur18mbRQA%2FJDxNgUoc%3D&st=2015-12-05T22%3A14%3A41Z
-22:29:42.337 881ms  881ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:42.564 226ms  226ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:42.564 994ns  978ns  generic-worker - No task claimed from any Azure queue...
-22:29:42.767 203ms  203ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:42.970 202ms  202ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:42.970 1us    1us    generic-worker - No task claimed from any Azure queue...
-22:29:43.767 797ms  797ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:43.968 201ms  201ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:43.968 928ns  918ns  generic-worker - No task claimed from any Azure queue...
-22:29:44.767 798ms  798ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
-22:29:44.959 192ms  192ms  generic-worker - Zero tasks returned in Azure XML QueueMessagesList
 ```
 
 # Create a test job

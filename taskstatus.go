@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
@@ -107,59 +106,6 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 		},
 		claimed,
 		reclaimed,
-	)
-}
-
-func (tsm *TaskStatusManager) Claim() error {
-	return tsm.updateStatus(
-		claimed,
-		func(task *TaskRun) error {
-			log.Printf("Claiming task %v...", task.TaskID)
-			task.TaskClaimRequest = queue.TaskClaimRequest{
-				WorkerGroup: config.WorkerGroup,
-				WorkerID:    config.WorkerID,
-			}
-			// Using the taskId and runId from the <MessageText> tag, the worker
-			// must call queue.claimTask().
-			tcrsp, err := Queue.ClaimTask(task.TaskID, fmt.Sprintf("%d", task.RunID), &task.TaskClaimRequest)
-			// check if an error occurred...
-			if err != nil {
-				// If the queue.claimTask() operation fails with a 4xx error, the
-				// worker must delete the messages from the Azure queue (except 401).
-				switch err := err.(type) {
-				case httpbackoff.BadHttpResponseCode:
-					switch {
-					case err.HttpResponseCode == 401:
-						log.Printf("Whoops - not authorized to claim task %v, *not* deleting it from Azure queue!", task.TaskID)
-					case err.HttpResponseCode/100 == 4:
-						// attempt to delete, but if it fails, log and continue
-						// nothing we can do, and better to return the first 4xx error
-						errDelete := task.deleteFromAzure()
-						if errDelete != nil {
-							log.Printf("Not able to delete task %v from Azure after receiving http status code %v when claiming it.", task.TaskID, err.HttpResponseCode)
-							log.Printf("%v", errDelete)
-						}
-					}
-				}
-				log.Print(task.String())
-				log.Printf("%v", err)
-				return err
-			}
-			task.TaskClaimResponse = *tcrsp
-			// note we don't need to worry about a mutex here since either old
-			// value or new value can be used for some crossover time, and the
-			// update should be atomic
-			task.Queue = queue.New(&tcclient.Credentials{
-				ClientID:    tcrsp.Credentials.ClientID,
-				AccessToken: tcrsp.Credentials.AccessToken,
-				Certificate: tcrsp.Credentials.Certificate,
-			})
-
-			// don't report failure if this fails, as it is already logged and failure =>
-			task.deleteFromAzure()
-			return nil
-		},
-		unclaimed,
 	)
 }
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net"
@@ -51,32 +50,10 @@ type (
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 	}
 
-	// Used for modelling the xml we get back from Azure
-	QueueMessagesList struct {
-		XMLName       xml.Name       `xml:"QueueMessagesList"`
-		QueueMessages []QueueMessage `xml:"QueueMessage"`
-	}
-
-	// Used for modelling the xml we get back from Azure
-	QueueMessage struct {
-		XMLName         xml.Name        `xml:"QueueMessage"`
-		MessageId       string          `xml:"MessageId"`
-		InsertionTime   azureTimeFormat `xml:"InsertionTime"`
-		ExpirationTime  azureTimeFormat `xml:"ExpirationTime"`
-		DequeueCount    uint            `xml:"DequeueCount"`
-		PopReceipt      string          `xml:"PopReceipt"`
-		TimeNextVisible azureTimeFormat `xml:"TimeNextVisible"`
-		MessageText     string          `xml:"MessageText"`
-	}
-
 	// TaskId and RunId are taken from the json encoding of
-	// QueueMessage.MessageId that we get back from Azure
 	TaskRun struct {
 		TaskID              string                       `json:"taskId"`
 		RunID               uint                         `json:"runId"`
-		QueueMessage        QueueMessage                 `json:"-"`
-		SignedURLPair       SignedURLPair                `json:"-"`
-		TaskClaimRequest    queue.TaskClaimRequest       `json:"-"`
 		TaskClaimResponse   queue.TaskClaimResponse      `json:"-"`
 		TaskReclaimResponse queue.TaskReclaimResponse    `json:"-"`
 		Definition          queue.TaskDefinitionResponse `json:"-"`
@@ -92,17 +69,6 @@ type (
 		StatusManager      *TaskStatusManager `json:"-"`
 	}
 
-	// Custom time format to enable unmarshalling of azure xml directly into go
-	// object with native go time.Time implementation under-the-hood
-	azureTimeFormat struct {
-		time.Time
-	}
-
-	SignedURLPair struct {
-		SignedDeleteURL string `json:"signedDeleteUrl"`
-		SignedPollURL   string `json:"signedPollUrl"`
-	}
-
 	S3ArtifactResponse struct {
 		StorageType string    `json:"storageType"`
 		PutURL      string    `json:"putUrl"`
@@ -114,28 +80,10 @@ type (
 	TaskUpdateReason string
 )
 
-// Custom Unmarshaller in order to interpret time formats in the azure expected
-// format
-func (c *azureTimeFormat) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	const shortForm = "Mon, 2 Jan 2006 15:04:05 MST" // date format of azure xml responses
-	var v string
-	d.DecodeElement(&v, &start)
-	parse, err := time.Parse(shortForm, v)
-	*c = azureTimeFormat{parse}
-	return err
-}
-
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)
 	response += fmt.Sprintf("Run Id:                  %v\n", task.RunID)
 	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
-	response += fmt.Sprintf("Message Id:              %v\n", task.QueueMessage.MessageId)
-	response += fmt.Sprintf("Insertion Time:          %v\n", task.QueueMessage.InsertionTime)
-	response += fmt.Sprintf("Expiration Time:         %v\n", task.QueueMessage.ExpirationTime)
-	response += fmt.Sprintf("Dequeue Count:           %v\n", task.QueueMessage.DequeueCount)
-	response += fmt.Sprintf("Pop Receipt:             %v\n", task.QueueMessage.PopReceipt)
-	response += fmt.Sprintf("Time Next Visible:       %v\n", task.QueueMessage.TimeNextVisible)
-	response += fmt.Sprintf("Message Text:            %v\n", task.QueueMessage.MessageText)
 	for i, run := range task.TaskClaimResponse.Status.Runs {
 		response += fmt.Sprintf("Run %v:\n", i)
 		response += fmt.Sprintf("  Reason Created:        %v\n", string(run.ReasonCreated))
@@ -161,9 +109,6 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Taken Until:             %v\n", task.TaskClaimResponse.TakenUntil)
 	response += fmt.Sprintf("Worker Group:            %v\n", task.TaskClaimResponse.WorkerGroup)
 	response += fmt.Sprintf("Worker Id:               %v\n", task.TaskClaimResponse.WorkerID)
-	response += fmt.Sprintf("==========================================\n")
-	response += fmt.Sprintf("Signed Poll URL:         %v\n", task.SignedURLPair.SignedPollURL)
-	response += fmt.Sprintf("Signed Delete URL:       %v\n", task.SignedURLPair.SignedDeleteURL)
 	response += fmt.Sprintf("==========================================\n")
 	response += fmt.Sprintf("Created:                 %v\n", task.Definition.Created)
 	response += fmt.Sprintf("Deadline:                %v\n", task.Definition.Deadline)
