@@ -157,7 +157,7 @@ func TestBewit(t *testing.T) {
 		req, err := http.NewRequest(
 			"POST",
 			"http://localhost:60024/bewit",
-			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/DD1kmgFiRMWTjyiNoEJIMA/runs/0/artifacts/private%2Fbuild%2Fsources.xml"),
+			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/CWrFcq90Sb6ZT1eGn6ZWMA/runs/0/artifacts/private%2Fbuild%2Fsources.xml"),
 		)
 		if err != nil {
 			log.Fatal(err)
