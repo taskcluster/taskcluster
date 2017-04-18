@@ -359,6 +359,9 @@ tasks:
   #################### Linux ARM6 build ####################
   ##########################################################
 
+  ############ Currently not using Raspberry PI ############
+  ############    --- therefore disabled ---    ############
+
   # - provisionerId: pmoore-manual
   #   workerType: raspberry-pi-3b
   #   metadata:

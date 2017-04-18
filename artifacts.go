@@ -175,14 +175,16 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 		return putResp, err, nil
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	defer putResp.Body.Close()
 	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
-	respBody, dumpError := httputil.DumpResponse(putResp, true)
-	if dumpError != nil {
-		log.Print("Could not dump response output, never mind...")
-	} else {
-		log.Print("Response")
-		log.Print(string(respBody))
+	if putResp != nil {
+		defer putResp.Body.Close()
+		respBody, dumpError := httputil.DumpResponse(putResp, true)
+		if dumpError != nil {
+			log.Print("Could not dump response output, never mind...")
+		} else {
+			log.Print("Response")
+			log.Print(string(respBody))
+		}
 	}
 	return err
 }
