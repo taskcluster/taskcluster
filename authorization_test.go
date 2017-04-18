@@ -74,7 +74,7 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
 	skipIfNoPermCreds(t)
 	tempScopes := []string{
-		"auth:azure-table-access:fakeaccount/DuMmYtAbLe",
+		"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe",
 		"queue:define-task:win-provisioner/win2008-worker",
 		"queue:get-artifact:private/build/sources.xml",
 		"queue:route:tc-treeherder.mozilla-inbound.*",
@@ -82,7 +82,7 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		"queue:task-priority:high",
 	}
 
-	tempScopesJSON := `["auth:azure-table-access:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high"]`
+	tempScopesJSON := `["auth:azure-table:read-write:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high"]`
 
 	tempCredsClientId := "garbage/" + slugid.Nice()
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
@@ -207,7 +207,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 				},
 			}
 
-			// Requires scope "auth:azure-table-access:fakeaccount/DuMmYtAbLe"
+			// Requires scope "auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"
 			req, err := http.NewRequest(
 				"GET",
 				fmt.Sprintf(
@@ -230,8 +230,8 @@ func TestAuthorizationDelegate(t *testing.T) {
 			return res
 		}
 	}
-	testWithPermCreds(t, test("A", []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}), 404)
-	testWithTempCreds(t, test("B", []string{"auth:azure-table-access:fakeaccount/DuMmYtAbLe"}), 404)
+	testWithPermCreds(t, test("A", []string{"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"}), 404)
+	testWithTempCreds(t, test("B", []string{"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"}), 404)
 	testWithPermCreds(t, test("C", []string{"queue:get-artifact:private/build/sources.xml"}), 403)
 	testWithTempCreds(t, test("D", []string{"queue:get-artifact:private/build/sources.xml"}), 403)
 }
