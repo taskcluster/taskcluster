@@ -40,3 +40,6 @@ coverage.report
 # For any releases made locally
 /target/
 worker_type_definitions
+
+# Files created by generic-worker when run for the first time
+generic-worker.config
