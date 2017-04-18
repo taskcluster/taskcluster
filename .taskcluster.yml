@@ -328,7 +328,7 @@ tasks:
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
-            git fetch --tags
+            git fetch --tags '{{ event.head.repo.url }}'
             git checkout -f '{{ event.head.sha }}'
             git clean -fdx
             go get -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
