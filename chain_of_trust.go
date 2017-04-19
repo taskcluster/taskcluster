@@ -88,7 +88,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range cot.task.Artifacts {
 		switch a := artifact.(type) {
-		case S3Artifact:
+		case *S3Artifact:
 			// make sure SHA256 is calculated
 			hash, err := calculateHash(a)
 			if err != nil {
@@ -159,7 +159,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	return nil
 }
 
-func calculateHash(artifact S3Artifact) (hash string, err error) {
+func calculateHash(artifact *S3Artifact) (hash string, err error) {
 	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
 	rawContent, err := os.Open(rawContentFile)
 	if err != nil {

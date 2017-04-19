@@ -934,7 +934,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			// found, and so an error artifact was uploaded. So we do that
 			// here:
 			switch a := artifact.(type) {
-			case ErrorArtifact:
+			case *ErrorArtifact:
 				err.add(Failure(fmt.Errorf("%v: %v", a.Reason, a.Message)))
 			}
 		}

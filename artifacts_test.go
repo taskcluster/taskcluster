@@ -76,8 +76,8 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Name:          "public/build/firefox.exe",
 					Expires:       inAnHour,
@@ -109,24 +109,24 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/%%%/v/X",
 					Name:          "public/b/c/%%%/v/X",
 					Expires:       inAnHour,
 				},
 				MimeType: "application/octet-stream",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Name:          "public/b/c/_/X.txt",
 					Expires:       inAnHour,
 				},
 				MimeType: "text/plain; charset=utf-8",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Name:          "public/b/c/b/c/d.jpg",
 					Expires:       inAnHour,
@@ -159,24 +159,24 @@ func TestDirectoryArtifacts(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/%%%/v/X",
 					Name:          "SampleArtifacts/%%%/v/X",
 					Expires:       inAnHour,
 				},
 				MimeType: "application/octet-stream",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Name:          "SampleArtifacts/_/X.txt",
 					Expires:       inAnHour,
 				},
 				MimeType: "text/plain; charset=utf-8",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Name:          "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
@@ -206,8 +206,8 @@ func TestMissingFileArtifact(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "TestMissingFileArtifact/no_such_file",
 					Name:          "TestMissingFileArtifact/no_such_file",
 					Expires:       inAnHour,
@@ -238,8 +238,8 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "TestMissingDirectoryArtifact/no_such_dir",
 					Name:          "TestMissingDirectoryArtifact/no_such_dir",
 					Expires:       inAnHour,
@@ -270,8 +270,8 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c",
 					Name:          "SampleArtifacts/b/c",
 					Expires:       inAnHour,
@@ -303,8 +303,8 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Name:          "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
@@ -357,8 +357,12 @@ func TestUpload(t *testing.T) {
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
+	command := helloGoodbye()
+	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyArtifact("SampleArtifacts/b/c/d.jpg")...)
+
 	payload := GenericWorkerPayload{
-		Command:    append(helloGoodbye(), copyArtifact("SampleArtifacts/_/X.txt")...),
+		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
 			Expires tcclient.Time `json:"expires"`
@@ -368,6 +372,11 @@ func TestUpload(t *testing.T) {
 		}{
 			{
 				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "SampleArtifacts/b/c/d.jpg",
 				Expires: expires,
 				Type:    "file",
 			},
@@ -387,6 +396,7 @@ func TestUpload(t *testing.T) {
 	// some required substrings - not all, just a selection
 	expectedArtifacts := map[string]struct {
 		extracts        []string
+		contentType     string
 		contentEncoding string
 		expires         tcclient.Time
 	}{
@@ -396,6 +406,7 @@ func TestUpload(t *testing.T) {
 				"goodbye world!",
 				`"instance-type": "p3.enormous"`,
 			},
+			contentType:     "text/plain; charset=utf-8",
 			contentEncoding: "gzip",
 			expires:         td.Expires,
 		},
@@ -406,6 +417,7 @@ func TestUpload(t *testing.T) {
 				"=== Task Finished ===",
 				"Exit Code: 0",
 			},
+			contentType:     "text/plain; charset=utf-8",
 			contentEncoding: "gzip",
 			expires:         td.Expires,
 		},
@@ -416,6 +428,7 @@ func TestUpload(t *testing.T) {
 				"=== Task Finished ===",
 				"Exit Code: 0",
 			},
+			contentType:     "text/plain; charset=utf-8",
 			contentEncoding: "gzip",
 			expires:         td.Expires,
 		},
@@ -426,6 +439,7 @@ func TestUpload(t *testing.T) {
 			extracts: []string{
 				"8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
 			},
+			contentType:     "text/plain; charset=utf-8",
 			contentEncoding: "gzip",
 			expires:         td.Expires,
 		},
@@ -433,7 +447,14 @@ func TestUpload(t *testing.T) {
 			extracts: []string{
 				"test artifact",
 			},
-			contentEncoding: "",
+			contentType:     "text/plain; charset=utf-8",
+			contentEncoding: "gzip",
+			expires:         payload.Artifacts[0].Expires,
+		},
+		"SampleArtifacts/b/c/d.jpg": {
+			extracts:        []string{},
+			contentType:     "image/jpeg",
+			contentEncoding: "", // jpg files are blacklisted against gzip compression
 			expires:         payload.Artifacts[0].Expires,
 		},
 	}
@@ -457,8 +478,8 @@ func TestUpload(t *testing.T) {
 
 	for artifact := range expectedArtifacts {
 		if a, ok := actualArtifacts[artifact]; ok {
-			if a.ContentType != "text/plain; charset=utf-8" {
-				t.Errorf("Artifact %s should have mime type 'text/plain; charset=utf-8' but has '%s'", artifact, a.ContentType)
+			if a.ContentType != expectedArtifacts[artifact].contentType {
+				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expectedArtifacts[artifact].contentType, a.ContentType)
 			}
 			if a.Expires.String() != expectedArtifacts[artifact].expires.String() {
 				t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, expires, a.Expires)
@@ -504,8 +525,8 @@ func TestUpload(t *testing.T) {
 		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != content.contentEncoding {
 			t.Fatalf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", content.contentEncoding, actualContentEncoding, artifact, url)
 		}
-		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != "text/plain; charset=utf-8" {
-			t.Fatalf("Content-Type in Signed URL response does not match Content-Type of artifact")
+		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != content.contentType {
+			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, content.contentType)
 		}
 		// check openpgp signature is valid
 		if artifact == "public/logs/chainOfTrust.json.asc" {
@@ -561,8 +582,8 @@ func TestUpload(t *testing.T) {
 	if !reflect.DeepEqual(cotCertTaskRequest, td) {
 		t.Fatalf("Did not get back expected task definition in chain of trust certificate:\n%#v\n ** vs **\n%#v", cotCertTaskRequest, td)
 	}
-	if len(cotCert.Artifacts) != 2 {
-		t.Fatalf("Expected 2 artifact hashes to be listed")
+	if len(cotCert.Artifacts) != 3 {
+		t.Fatalf("Expected 3 artifact hashes to be listed, but found %v", len(cotCert.Artifacts))
 	}
 	if cotCert.TaskID != taskID {
 		t.Fatalf("Expected taskId to be %q but was %q", taskID, cotCert.TaskID)

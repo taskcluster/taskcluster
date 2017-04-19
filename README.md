@@ -1,5 +1,7 @@
 # generic-worker
-<img src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
+
+[![logo](https://tools.taskcluster.net/lib/assets/taskcluster-120.png)](https://tools.taskcluster.net/lib/assets/taskcluster-120.png)
+
 [![Linux Build Status](https://img.shields.io/travis/taskcluster/generic-worker.svg?style=flat-square&label=linux+build)](https://travis-ci.org/taskcluster/generic-worker)
 [![Windows Build Status](https://img.shields.io/appveyor/ci/petemoore/generic-worker.svg?style=flat-square&label=windows+build)](https://ci.appveyor.com/project/petemoore/generic-worker)
 [![GoDoc](https://godoc.org/github.com/taskcluster/generic-worker?status.svg)](https://godoc.org/github.com/taskcluster/generic-worker)

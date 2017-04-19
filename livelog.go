@@ -86,8 +86,8 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 	log.Print("Redirecting live.log to live_backing.log")
 	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, l.task.TaskID, l.task.RunID, "public/logs/live_backing.log")
 	err := l.task.uploadArtifact(
-		RedirectArtifact{
-			BaseArtifact: BaseArtifact{
+		&RedirectArtifact{
+			BaseArtifact: &BaseArtifact{
 				CanonicalPath: "public/logs/live.log",
 				Name:          "public/logs/live.log",
 				// same expiry as underlying log it points to
@@ -118,8 +118,8 @@ func (l *LiveLogTask) uploadLiveLog() error {
 	}
 	getURL.Host = statelessHostname + ":" + strconv.Itoa(int(l.liveLog.GETPort))
 	uploadErr := l.task.uploadArtifact(
-		RedirectArtifact{
-			BaseArtifact: BaseArtifact{
+		&RedirectArtifact{
+			BaseArtifact: &BaseArtifact{
 				CanonicalPath: "public/logs/live.log",
 				Name:          "public/logs/live.log",
 				// livelog expires when task must have completed

@@ -35,7 +35,7 @@ type (
 		ProcessResponse(response interface{}) error
 		RequestObject() interface{}
 		ResponseObject() interface{}
-		Base() BaseArtifact
+		Base() *BaseArtifact
 	}
 
 	BaseArtifact struct {
@@ -45,39 +45,39 @@ type (
 	}
 
 	S3Artifact struct {
-		BaseArtifact
+		*BaseArtifact
 		MimeType        string
 		ContentEncoding string
 	}
 
 	AzureArtifact struct {
-		BaseArtifact
+		*BaseArtifact
 		MimeType string
 	}
 
 	RedirectArtifact struct {
-		BaseArtifact
+		*BaseArtifact
 		MimeType string
 		URL      string
 	}
 
 	ErrorArtifact struct {
-		BaseArtifact
+		*BaseArtifact
 		Message string
 		Reason  string
 	}
 )
 
-func (base BaseArtifact) Base() BaseArtifact {
+func (base *BaseArtifact) Base() *BaseArtifact {
 	return base
 }
 
-func (artifact RedirectArtifact) ProcessResponse(response interface{}) error {
+func (artifact *RedirectArtifact) ProcessResponse(response interface{}) error {
 	// nothing to do
 	return nil
 }
 
-func (redirectArtifact RedirectArtifact) RequestObject() interface{} {
+func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
 	return &queue.RedirectArtifactRequest{
 		ContentType: redirectArtifact.MimeType,
 		Expires:     redirectArtifact.Expires,
@@ -86,16 +86,16 @@ func (redirectArtifact RedirectArtifact) RequestObject() interface{} {
 	}
 }
 
-func (redirectArtifact RedirectArtifact) ResponseObject() interface{} {
+func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
 	return new(queue.RedirectArtifactResponse)
 }
 
-func (artifact ErrorArtifact) ProcessResponse(response interface{}) error {
+func (artifact *ErrorArtifact) ProcessResponse(response interface{}) error {
 	// TODO: process error response
 	return nil
 }
 
-func (errArtifact ErrorArtifact) RequestObject() interface{} {
+func (errArtifact *ErrorArtifact) RequestObject() interface{} {
 	return &queue.ErrorArtifactRequest{
 		Expires:     errArtifact.Expires,
 		Message:     errArtifact.Message,
@@ -104,42 +104,80 @@ func (errArtifact ErrorArtifact) RequestObject() interface{} {
 	}
 }
 
-func (errArtifact ErrorArtifact) ResponseObject() interface{} {
+func (errArtifact *ErrorArtifact) ResponseObject() interface{} {
 	return new(queue.ErrorArtifactResponse)
 }
 
-// gzipCompressFile gzip-compresses the file at path rawContentFile and writes
+func (errArtifact *ErrorArtifact) String() string {
+	return fmt.Sprintf("%q", *errArtifact)
+}
+
+// createTempFileForPUTBody gzip-compresses the file at path rawContentFile and writes
 // it to a temporary file. The file path of the generated temporary file is returned.
 // It is the responsibility of the caller to delete the temporary file.
-func gzipCompressFile(rawContentFile string) string {
+func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
+	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
 	baseName := filepath.Base(rawContentFile)
 	tmpFile, err := ioutil.TempFile("", baseName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer tmpFile.Close()
-	gzipLogWriter := gzip.NewWriter(tmpFile)
-	gzipLogWriter.Name = baseName
-	rawContent, err := os.Open(rawContentFile)
+	var target io.Writer = tmpFile
+	if artifact.ContentEncoding == "gzip" {
+		gzipLogWriter := gzip.NewWriter(tmpFile)
+		defer gzipLogWriter.Close()
+		gzipLogWriter.Name = baseName
+		target = gzipLogWriter
+	}
+	source, err := os.Open(rawContentFile)
 	if err != nil {
 		panic(err)
 	}
-	defer rawContent.Close()
-	io.Copy(gzipLogWriter, rawContent)
-	gzipLogWriter.Close()
+	defer source.Close()
+	io.Copy(target, source)
 	return tmpFile.Name()
 }
 
-func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
-	response := resp.(*queue.S3ArtifactResponse)
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
-
-	// if Content-Encoding is gzip then we will need to gzip content...
-	transferContentFile := rawContentFile
-	if artifact.ContentEncoding == "gzip" {
-		transferContentFile = gzipCompressFile(rawContentFile)
-		defer os.Remove(transferContentFile)
+func (artifact *S3Artifact) ChooseContentEncoding() {
+	// respect value, if already set
+	if artifact.ContentEncoding != "" {
+		return
 	}
+	// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
+	SKIP_COMPRESS_EXTENSIONS := map[string]bool{
+		// Images
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".gif":  true,
+		".webp": true,
+		// Compressed files
+		".zip": true,
+		".gz":  true,
+		".tgz": true,
+		".bz2": true,
+		".tbz": true,
+		// Flash
+		".swf": true,
+		".flv": true,
+		// Fonts
+		".woff":  true,
+		".woff2": true,
+	}
+	if SKIP_COMPRESS_EXTENSIONS[filepath.Ext(artifact.CanonicalPath)] {
+		return
+	}
+
+	artifact.ContentEncoding = "gzip"
+}
+
+func (artifact *S3Artifact) ProcessResponse(resp interface{}) (err error) {
+	response := resp.(*queue.S3ArtifactResponse)
+
+	artifact.ChooseContentEncoding()
+	transferContentFile := artifact.CreateTempFileForPUTBody()
+	defer os.Remove(transferContentFile)
 
 	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}
@@ -189,7 +227,7 @@ func (artifact S3Artifact) ProcessResponse(resp interface{}) (err error) {
 	return err
 }
 
-func (s3Artifact S3Artifact) RequestObject() interface{} {
+func (s3Artifact *S3Artifact) RequestObject() interface{} {
 	return &queue.S3ArtifactRequest{
 		ContentType: s3Artifact.MimeType,
 		Expires:     s3Artifact.Expires,
@@ -197,8 +235,12 @@ func (s3Artifact S3Artifact) RequestObject() interface{} {
 	}
 }
 
-func (s3Artifact S3Artifact) ResponseObject() interface{} {
+func (s3Artifact *S3Artifact) ResponseObject() interface{} {
 	return new(queue.S3ArtifactResponse)
+}
+
+func (s3Artifact *S3Artifact) String() string {
+	return fmt.Sprintf("%q", *s3Artifact)
 }
 
 // Returns the artifacts as listed in the payload of the task (note this does
@@ -206,7 +248,7 @@ func (s3Artifact S3Artifact) ResponseObject() interface{} {
 func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, 0)
 	for _, artifact := range task.Payload.Artifacts {
-		base := BaseArtifact{
+		base := &BaseArtifact{
 			CanonicalPath: canonicalPath(artifact.Path),
 			Name:          artifact.Name,
 			Expires:       artifact.Expires,
@@ -238,7 +280,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 					panic(err)
 				}
 				subName := filepath.Join(base.Name, relativePath)
-				b := BaseArtifact{
+				b := &BaseArtifact{
 					CanonicalPath: canonicalPath(subPath),
 					Name:          canonicalPath(subName),
 					Expires:       artifact.Expires,
@@ -268,12 +310,12 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base BaseArtifact, artifactType string) Artifact {
+func resolve(base *BaseArtifact, artifactType string) Artifact {
 	fullPath := filepath.Join(taskContext.TaskDir, base.CanonicalPath)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact
-		return ErrorArtifact{
+		return &ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Could not read %s '%s'", artifactType, fullPath),
 			Reason:       "file-missing-on-worker",
@@ -283,21 +325,21 @@ func resolve(base BaseArtifact, artifactType string) Artifact {
 	// ok it exists, but is it right type?
 	fileinfo, err := fileReader.Stat()
 	if err != nil {
-		return ErrorArtifact{
+		return &ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Could not stat %s '%s'", artifactType, fullPath),
 			Reason:       "invalid-resource-on-worker",
 		}
 	}
 	if artifactType == "file" && fileinfo.IsDir() {
-		return ErrorArtifact{
+		return &ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("File artifact '%s' exists as a directory, not a file, on the worker", fullPath),
 			Reason:       "invalid-resource-on-worker",
 		}
 	}
 	if artifactType == "directory" && !fileinfo.IsDir() {
-		return ErrorArtifact{
+		return &ErrorArtifact{
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Directory artifact '%s' exists as a file, not a directory, on the worker", fullPath),
 			Reason:       "invalid-resource-on-worker",
@@ -318,7 +360,7 @@ func resolve(base BaseArtifact, artifactType string) Artifact {
 		// application/octet-stream is the mime type for "unknown"
 		mimeType = "application/octet-stream"
 	}
-	return S3Artifact{
+	return &S3Artifact{
 		BaseArtifact: base,
 		MimeType:     mimeType,
 	}
@@ -335,8 +377,8 @@ func canonicalPath(path string) string {
 
 func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 	return task.uploadArtifact(
-		S3Artifact{
-			BaseArtifact: BaseArtifact{
+		&S3Artifact{
+			BaseArtifact: &BaseArtifact{
 				CanonicalPath: logFile,
 				Name:          logFile,
 				// logs expire when task expires
