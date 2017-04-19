@@ -14,25 +14,17 @@ suite('Audit Logs', () => {
       records[params.DeliveryStreamName] = [];
       callback(null, {DeliveryStreamDescription: {DeliveryStreamStatus: 'ACTIVE'}});
     });
-    AWS.mock('Firehose', 'putRecordBatch', (params, callback) => {
-      if (!params.Records.length) {
+    AWS.mock('Firehose', 'putRecord', (params, callback) => {
+      if (params.Record.Data.indexOf('\n') === -1) {
         return callback(new Error('Must always submit at least 1 record!'), null);
       }
-      if (params.Records.length > 500) {
-        return callback(new Error('Too many records written at once!'), null);
-      }
-      let size = params.Records.reduce((acc, line) => {
-        let length = Buffer.byteLength(line.Data.trim(), 'utf-8');
-        if (length > 1000 * 1000) {
-          return callback(new Error('Individual record too large!'), null);
-        }
-        return acc + length;
-      }, 0);
-      if (size > 4 * 1000 * 1000) {
-        return callback(new Error('Total group of records too large!'), null);
+      if (Buffer.byteLength(params.Record.Data, 'utf-8') > 1000 * 1000) {
+        return callback(new Error('Record size too large!'), null);
       }
       let DeliveryStreamName = params.DeliveryStreamName;
-      records[DeliveryStreamName] = records[DeliveryStreamName].concat(params.Records.map(x => x.Data.trim()));
+      let r = params.Record.Data.split('\n').map(x => x.trim());
+      r.pop(); // To get rid of empty space at end
+      records[DeliveryStreamName] = records[DeliveryStreamName].concat(r);
       callback(null, {FailedPutCount: 0});
     });
 
@@ -64,6 +56,14 @@ suite('Audit Logs', () => {
   test('should not write 0 logs on flush', async function () {
     await monitor.flush();
     assert.equal(records[logName].length, 0);
+  });
+
+  test('should write logs with newlines in them', async function () {
+    let subject = {test: 'abc\n123'};
+    monitor.log(subject);
+    await monitor.flush();
+    assert.equal(records[logName].length, 1);
+    assert.deepEqual(records[logName].map(JSON.parse)[0], subject);
   });
 
   test('should write logs on 500 records', async function () {
@@ -98,42 +98,10 @@ suite('Audit Logs', () => {
     });
   });
 
-  test('should write previously failed records', async function () {
-    let tries = 0;
-    AWS.restore('Firehose', 'putRecordBatch');
-    AWS.mock('Firehose', 'putRecordBatch', (params, callback) => {
-      let DeliveryStreamName = params.DeliveryStreamName;
-      let success = params.Records.splice(0, tries++);
-      records[DeliveryStreamName] = records[DeliveryStreamName].concat(success.map(x => x.Data.trim()));
-      let responses = success.map(() => ({RecordId: 'fake'}));
-      responses = responses.concat(params.Records.map(() => ({ErrorCode: '500', ErrorMessage: 'oh no!'})));
-      callback(null, {
-        FailedPutCount: params.Records.length,
-        RequestResponses: responses,
-      });
-    });
-    let subjects = [
-      {test: 1000},
-      {test: 2000},
-      {test: 3000},
-      {test: 4000},
-      {test: 5000},
-    ];
-    subjects.forEach(subject => monitor.log(subject));
-    await monitor.flush();
-    await testing.poll(async () => {
-      assert.equal(records[logName].length, 5);
-      assert.deepEqual(records[logName].map(JSON.parse), subjects);
-    });
-  });
-
   test('should eventually stop trying to resubmit', async function () {
-    AWS.restore('Firehose', 'putRecordBatch');
-    AWS.mock('Firehose', 'putRecordBatch', (params, callback) => {
-      callback(null, {
-        FailedPutCount: 1,
-        RequestResponses: [{ErrorCode: '500', ErrorMessage: 'oh no!'}],
-      });
+    AWS.restore('Firehose', 'putRecord');
+    AWS.mock('Firehose', 'putRecord', (params, callback) => {
+      return callback({statusCode: 500, message: 'uh oh!', retryable: true}, null);
     });
     let closed = false;
     monitor.log({test: 'foobar'});
@@ -144,14 +112,16 @@ suite('Audit Logs', () => {
 
   test('should resubmit all on error', async function () {
     let tried = false;
-    AWS.restore('Firehose', 'putRecordBatch');
-    AWS.mock('Firehose', 'putRecordBatch', (params, callback) => {
+    AWS.restore('Firehose', 'putRecord');
+    AWS.mock('Firehose', 'putRecord', (params, callback) => {
       if (!tried) {
         tried = true;
         return callback({statusCode: 500, message: 'uh oh!', retryable: true}, null);
       }
       let DeliveryStreamName = params.DeliveryStreamName;
-      records[DeliveryStreamName] = records[DeliveryStreamName].concat(params.Records.map(x => x.Data.trim()));
+      let r = params.Record.Data.split('\n').map(x => x.trim());
+      r.pop();
+      records[DeliveryStreamName] = records[DeliveryStreamName].concat(r);
       callback(null, {FailedPutCount: 0});
     });
     monitor.log({test: 'foobar'});
@@ -160,5 +130,30 @@ suite('Audit Logs', () => {
     await testing.poll(async () => {
       assert.equal(records[logName].length, 2);
     });
+  });
+
+  test('should resubmit all on error even with multiple chunks', async function () {
+    let tried = false;
+    let submissions = 0;
+    AWS.restore('Firehose', 'putRecord');
+    AWS.mock('Firehose', 'putRecord', (params, callback) => {
+      submissions++;
+      if (!tried) {
+        tried = true;
+        return callback({statusCode: 500, message: 'uh oh!', retryable: true}, null);
+      }
+      let DeliveryStreamName = params.DeliveryStreamName;
+      let r = params.Record.Data.split('\n').map(x => x.trim());
+      r.pop();
+      records[DeliveryStreamName] = records[DeliveryStreamName].concat(r);
+      callback(null, {FailedPutCount: 0});
+    });
+    let subjects = _.range(999).map(i => ({foo: Array(5000).join('x')}));
+    subjects.forEach(subject => monitor.log(subject));
+    await monitor.flush();
+    await testing.poll(async () => {
+      assert.equal(records[logName].length, 999);
+    });
+    assert.equal(submissions, 7); // We would normally need 6 submissions
   });
 });

@@ -5,8 +5,6 @@ let Promise = require('bluebird');
 let AWS = require('aws-sdk');
 
 // These numbers come from the Firehose docs.
-const MAX_PUT_RECORDS = 500;
-const MAX_PUT_SIZE = 4 * 1000 * 1000;
 const MAX_RECORD_SIZE = 1000 * 1000;
 
 // This is just a number I picked.
@@ -26,7 +24,6 @@ class FirehoseLog extends events.EventEmitter {
     this._logName = logName;
     this._records = [];
     this._flushTimer = null;
-    this._done = false;
     this._flushTimer = setTimeout(this.flush.bind(this), this._flushInterval);
     this._reportErrors = reportAuditLogErrors;
   }
@@ -41,10 +38,6 @@ class FirehoseLog extends events.EventEmitter {
   }
 
   log(record) {
-    if (this._done) {
-      throw new Error('Cannot write to logs when logging is marked done!');
-    }
-
     let line = JSON.stringify(record) + '\n';
     let length = Buffer.byteLength(line, 'utf-8');
 
@@ -82,8 +75,7 @@ class FirehoseLog extends events.EventEmitter {
 
     // First break up the records into chunks that kinesis will accept
     this._records.forEach(rec => {
-      if (chunks[c].length >= MAX_PUT_RECORDS ||
-      chunks[c].reduce((a, r) => a + r.length, 0) + rec.length  > MAX_PUT_SIZE) {
+      if (chunks[c].reduce((a, r) => a + r.length, 0) + rec.length  > MAX_RECORD_SIZE) {
         chunks[++c] = [];
       }
       chunks[c].push(rec);
@@ -94,9 +86,9 @@ class FirehoseLog extends events.EventEmitter {
     await Promise.map(chunks, async records => {
       let res;
       try {
-        res = await this._firehose.putRecordBatch({
+        res = await this._firehose.putRecord({
           DeliveryStreamName: this._logName,
-          Records: records.map(line => ({Data: line.line})),
+          Record: {Data: records.map(line => line.line).join('')},
         }).promise();
       } catch (err) {
         if (!err.statusCode) {
@@ -108,23 +100,10 @@ class FirehoseLog extends events.EventEmitter {
           }
           return;
         }
-        // If this was a server-side error, we'll construct a response similar to how
-        // they normall reject specific records and pass that to the requeuing below
-        res = {
-          FailedPutCount: records.length,
-          RequestResponses: records.map(() => ({ErrorCode: err.statusCode, ErrorMessage: err.message})),
-        };
-      }
-      if (res.FailedPutCount === 0) {
-        return;
-      }
-      // Continue on here if we've failed to process any records.
-      // We'll add them back to our records and try again next time
-      let retries = [];
-      res.RequestResponses.forEach((req, i) => {
-        if (req.ErrorCode) {
-          let record = records[i];
-          debug('Failed to write record ' + JSON.stringify(record) + '. Reason: ' + req.ErrorMessage);
+        // If this was a server-side error, we'll queue these records back up
+        // and try to submit them again
+        records.forEach(record => {
+          debug('Failed to write record ' + JSON.stringify(record) + '. Reason: ' + err.ErrorMessage);
           if (record.retries > MAX_RETRIES) {
             let msg = `Record failed during submission more than ${MAX_RETRIES} times. Rejecting.`;
             console.error(msg);
@@ -135,8 +114,9 @@ class FirehoseLog extends events.EventEmitter {
           }
           record.retries += 1;
           this._records.push(record);
-        }
-      });
+        });
+      }
+
       if (this._records.length) {
         this._scheduleFlush();
       }
