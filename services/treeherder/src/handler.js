@@ -86,14 +86,21 @@ function parseRouteInfo(prefix, taskId, routes, task) {
 }
 
 
-function validateTask(validate, taskId, task, schema) {
+function validateTask(monitor, validate, taskId, task, schema) {
     if (!task.extra || !task.extra.treeherder) {
-      throw new Error(`Message is missing Treeherder job configuration. Task ID: ${taskId}`);
+      monitor.count('validateTask.no-config');
+      debug(`Message is missing Treeherder job configuration. Task ID: ${taskId}`);
+      return false;
     }
     let validationErrors = validate(task.extra.treeherder, schema);
     if (validationErrors) {
-      throw new Error(`Message contains an invalid Treeherder job configuration. Task ID: ${taskId} ${validationErrors}`);
+      monitor.count('validateTask.invalid-config');
+      debug(`Message contains an invalid Treeherder job configuration. Task ID: ${taskId} ${validationErrors}`);
+      return false;
     }
+
+    monitor.count('validateTask.good-config');
+    return true;
 }
 
 export class Handler {
@@ -113,14 +120,14 @@ export class Handler {
     this.listener.on('message', async (message) => {
       try {
         await this.monitor.timer('handle-message.time', this.handleMessage(message));
-        this.monitor.timer('handle-message.success');
+        this.monitor.count('handle-message.success');
       } catch(err) {
-        this.monitor.timer('handle-message.failure');
-        console.log(`Error caught when processing message. ${err.message}. ${err.stack}`);
+        this.monitor.count('handle-message.failure');
+        this.monitor.reportError(err);
       };
     });
     this.listener.on('error', (error) => {
-      console.log(`Error encountered with pulse listener. ${error.stack}`);
+      this.monitor.reportError(error);
       process.exit();
     });
     await this.listener.resume();
@@ -140,7 +147,10 @@ export class Handler {
     debug(`message received for task ${taskId} with route ${message.routes}`);
     this.monitor.count(`${parsedRoute.project}.handle-message`);
 
-    validateTask(this.validator, taskId, task, TASK_TREEHERDER_SCHEMA);
+    // validation failures are common and logged, so do nothing more.
+    if (!validateTask(this.monitor, this.validator, taskId, task, TASK_TREEHERDER_SCHEMA)) {
+      return;
+    }
 
     switch (EVENT_MAP[message.exchange]) {
       case 'pending':
@@ -170,16 +180,16 @@ export class Handler {
   // Publishes the Treeherder job message to pulse.
   async publishJobMessage(pushInfo, job, taskId) {
     try {
-      console.log(`Publishing message for ${pushInfo.project} with task ID ${taskId}`);
+      debug(`Publishing message for ${pushInfo.project} with task ID ${taskId}`);
       await this.publisher.jobs(job, {project:pushInfo.project, destination: pushInfo.destination});
-      console.log(`Published message for ${pushInfo.project} with task ID ${taskId}`);
+      debug(`Published message for ${pushInfo.project} with task ID ${taskId}`);
       this.monitor.count(`${pushInfo.project}.publish-message.success`);
     } catch(err) {
       this.monitor.count(`${pushInfo.project}.publish-message.failure`);
+      this.monitor.reportError(err, {project: pushInfo.project});
       let e = new Error(
         `Could not publish job message for ${pushInfo.project} with task ID ${taskId}. ${err.message}. \n` +
         `Job: ${JSON.stringify(job, null, 4)}`);
-      console.log(e)
       throw e;
     }
   }
@@ -294,6 +304,7 @@ export class Handler {
     job.isRetried = true;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
+                                         this.monitor,
                                          message.status.taskId,
                                          message.runId-1,
                                          job);
@@ -315,6 +326,7 @@ export class Handler {
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
+                                         this.monitor,
                                          message.status.taskId,
                                          message.runId,
                                          job);
@@ -349,6 +361,7 @@ export class Handler {
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
+                                         this.monitor,
                                          message.status.taskId,
                                          message.runId,
                                          job);
@@ -368,6 +381,7 @@ export class Handler {
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
+                                         this.monitor,
                                          message.status.taskId,
                                          message.runId,
                                          job);
