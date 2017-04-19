@@ -73,8 +73,7 @@ tasks:
           source ~/env_private.sh
           go get -d "github.com/taskcluster/generic-worker"
           cd "${GOPATH}/src/github.com/taskcluster/generic-worker"
-          git remote add '{{ event.head.user.login }}' '{{ event.head.repo.url }}'
-          git fetch --tags '{{ event.head.user.login }}'
+          git fetch '{{ event.head.repo.url }}' "+refs/*:refs/tasks/${TASK_ID}/*"
           git checkout '{{ event.head.sha }}'
           go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
           cd gw-codegen
@@ -119,8 +118,7 @@ tasks:
         - git config --global core.autocrlf false
         - 'go get -d "github.com/taskcluster/generic-worker"'
         - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
-        - 'git remote add "{{ event.head.user.login }}" "{{ event.head.repo.url }}"'
-        - 'git fetch --tags "{{ event.head.user.login }}"'
+        - 'git fetch "{{ event.head.repo.url }}" "+refs/*:refs/tasks/%TASK_ID%/*"'
         - git checkout {{ event.head.sha }}
         - go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
@@ -186,8 +184,7 @@ tasks:
         - git config --global core.autocrlf false
         - go get -d "github.com/taskcluster/generic-worker"
         - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
-        - 'git remote add "{{ event.head.user.login }}" "{{ event.head.repo.url }}"'
-        - 'git fetch --tags "{{ event.head.user.login }}"'
+        - 'git fetch "{{ event.head.repo.url }}" "+refs/*:refs/tasks/%TASK_ID%/*"'
         - git checkout {{ event.head.sha }}
         - go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
@@ -253,8 +250,7 @@ tasks:
         - git config --global core.autocrlf false
         - go get -d "github.com/taskcluster/generic-worker"
         - 'cd "gopath\src\github.com\taskcluster\generic-worker"'
-        - 'git remote add "{{ event.head.user.login }}" "{{ event.head.repo.url }}"'
-        - 'git fetch --tags "{{ event.head.user.login }}"'
+        - 'git fetch "{{ event.head.repo.url }}" "+refs/*:refs/tasks/%TASK_ID%/*"'
         - git checkout {{ event.head.sha }}
         - go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
@@ -328,8 +324,7 @@ tasks:
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
-            if [ ! -d '.git/refs/remotes/{{ event.head.user.login }}' ]; then git remote add '{{ event.head.user.login }}' '{{ event.head.repo.url }}'; fi
-            git fetch --tags '{{ event.head.user.login }}'
+            git fetch '{{ event.head.repo.url }}' "+refs/*:refs/tasks/${TASK_ID}/*"
             git checkout -f '{{ event.head.sha }}'
             git clean -fdx
             go get -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
@@ -393,8 +388,7 @@ tasks:
   #           cd "${GOPATH}/src/github.com/taskcluster"
   #           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
   #           cd 'generic-worker'
-  #           if [ ! -d '.git/refs/remotes/{{ event.head.user.login }}' ]; then git remote add '{{ event.head.user.login }}' '{{ event.head.repo.url }}'; fi
-  #           git fetch --tags '{{ event.head.user.login }}'
+  #           git fetch '{{ event.head.repo.url }}' "+refs/*:refs/tasks/${TASK_ID}/*"
   #           git checkout -f '{{ event.head.sha }}'
   #           git clean -fdx
   #           go get -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
