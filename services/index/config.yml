@@ -85,7 +85,7 @@ test:
     routePrefix:                  'dummy-routes.index-testing'
     indexedTaskTableName:         'DummyTestIndexedTasks'
     namespaceTableName:           'DummyTestNamespaces'
-    azureAccount:                 'jungle'
+    azureAccount:                 'inMemory'
 
   server:
     publicUrl:                    'http://localhost:60020'
@@ -93,3 +93,6 @@ test:
 
   aws:
     region:                       'us-west-2'
+
+  pulse:
+    fake: true
