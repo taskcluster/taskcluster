@@ -76,8 +76,8 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Name:          "public/build/firefox.exe",
 					Expires:       inAnHour,
@@ -109,24 +109,24 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/%%%/v/X",
 					Name:          "public/b/c/%%%/v/X",
 					Expires:       inAnHour,
 				},
 				MimeType: "application/octet-stream",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Name:          "public/b/c/_/X.txt",
 					Expires:       inAnHour,
 				},
 				MimeType: "text/plain; charset=utf-8",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Name:          "public/b/c/b/c/d.jpg",
 					Expires:       inAnHour,
@@ -159,24 +159,24 @@ func TestDirectoryArtifacts(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/%%%/v/X",
 					Name:          "SampleArtifacts/%%%/v/X",
 					Expires:       inAnHour,
 				},
 				MimeType: "application/octet-stream",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/_/X.txt",
 					Name:          "SampleArtifacts/_/X.txt",
 					Expires:       inAnHour,
 				},
 				MimeType: "text/plain; charset=utf-8",
 			},
-			S3Artifact{
-				BaseArtifact: BaseArtifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Name:          "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
@@ -206,8 +206,8 @@ func TestMissingFileArtifact(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "TestMissingFileArtifact/no_such_file",
 					Name:          "TestMissingFileArtifact/no_such_file",
 					Expires:       inAnHour,
@@ -238,8 +238,8 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "TestMissingDirectoryArtifact/no_such_dir",
 					Name:          "TestMissingDirectoryArtifact/no_such_dir",
 					Expires:       inAnHour,
@@ -270,8 +270,8 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c",
 					Name:          "SampleArtifacts/b/c",
 					Expires:       inAnHour,
@@ -303,8 +303,8 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 		// what we expect to discover on file system
 		[]Artifact{
-			ErrorArtifact{
-				BaseArtifact: BaseArtifact{
+			&ErrorArtifact{
+				BaseArtifact: &BaseArtifact{
 					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
 					Name:          "SampleArtifacts/b/c/d.jpg",
 					Expires:       inAnHour,
@@ -433,7 +433,7 @@ func TestUpload(t *testing.T) {
 			extracts: []string{
 				"test artifact",
 			},
-			contentEncoding: "",
+			contentEncoding: "gzip",
 			expires:         payload.Artifacts[0].Expires,
 		},
 	}
