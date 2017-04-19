@@ -1,4 +1,4 @@
-Generated: 1492460796
+Generated: 1492608250
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5555,20 +5555,6 @@ Entry 0     =
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/exchanges'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'exchanges'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[]'
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json'
-    Entry Title       = 'Rabbit Exchanges'
-    Entry Description = 'Get a list of all exchanges in the rabbit cluster.  This will include exchanges
-not managed by this service, if any exist.'
-Entry 2     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
     Entry Route       = '/namespaces'
     Entry Args        = '[]'
     Entry Query        = '[continuation limit]'
@@ -5583,7 +5569,7 @@ Entry 2     =
 This will list up to 1000 namespaces. If more namespaces are present a
 `continuationToken` will be returned, which can be given in the next
 request. For the initial request, do not provide continuation.'
-Entry 3     =
+Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/namespace/<namespace>'
@@ -5597,7 +5583,7 @@ Entry 3     =
     Entry Title       = 'Get a namespace'
     Entry Description = 'Get public information about a single namespace. This is the same information
 as returned by `listNamespaces`.'
-Entry 4     =
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/namespace/<namespace>'
@@ -5617,7 +5603,7 @@ and exchanges will be deleted, at the given expiration time.
 
 The `expires` and `contact` properties can be updated at any time in a reclaim
 operation.'
-Entry 5     =
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'delete'
     Entry Route       = '/namespace/<namespace>'
@@ -5631,7 +5617,7 @@ Entry 5     =
     Entry Title       = 'Delete a namespace'
     Entry Description = 'Immediately delete the given namespace.  This will delete all exchanges and queues which the
 namespace had configure access to, as if it had just expired.'
-Entry 6     =
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -5645,62 +5631,6 @@ Entry 6     =
     Entry Title       = 'Ping Server'
     Entry Description = 'Respond without doing anything.
 This endpoint is used to check that the service is up.'
-
-
-http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#
-================================================================
-Additional Properties  = 'false'
-Description            = 'An array of RabbitMQ exchanges containing the details of RabbitMQ exchanges
-'
-ID                     = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#'
-Items
-  Properties
-    Property 'arguments' =
-      Properties
-      Title                  = 'Arguments'
-      Type                   = 'object'
-      TypeName               = 'Arguments'
-      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/arguments'
-    Property 'auto-delete' =
-      Description            = 'Whether or not the exchange deletes when all queues are finished using it'
-      Title                  = 'Auto-Delete'
-      Type                   = 'boolean'
-      TypeName               = 'AutoDelete'
-      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/auto-delete'
-    Property 'durable' =
-      Description            = 'Whether or not the exchange survives broker restart'
-      Title                  = 'Durable'
-      Type                   = 'boolean'
-      TypeName               = 'Durable'
-      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/durable'
-    Property 'name' =
-      Description            = 'The exchange's name'
-      Title                  = 'Name'
-      Type                   = 'string'
-      TypeName               = 'Name'
-      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/name'
-    Property 'type' =
-      Description            = 'The exchange's type'
-      Title                  = 'Type'
-      Type                   = 'string'
-      TypeName               = 'Type'
-      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/type'
-    Property 'vhost' =
-      Description            = 'The exchange's vhost'
-      Title                  = 'Virtual Host'
-      Type                   = 'string'
-      TypeName               = 'VirtualHost'
-      SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/vhost'
-  Title                  = 'Exchange'
-  Type                   = 'object'
-  TypeName               = 'Exchange'
-  SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items'
-Required               = '[name vhost type]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'RabbitMQ Exchanges'
-Type                   = 'array'
-TypeName               = 'RabbitMQExchanges'
-SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#'
 
 
 http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#

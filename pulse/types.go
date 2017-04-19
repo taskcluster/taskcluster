@@ -139,41 +139,6 @@ type (
 		ReclaimAt tcclient.Time `json:"reclaimAt,omitempty"`
 	}
 
-	// An array of RabbitMQ exchanges containing the details of RabbitMQ exchanges
-	//
-	// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#
-	RabbitMQExchanges []struct {
-
-		// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/arguments
-		Arguments struct {
-		} `json:"arguments,omitempty"`
-
-		// Whether or not the exchange deletes when all queues are finished using it
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/auto-delete
-		AutoDelete bool `json:"auto-delete,omitempty"`
-
-		// Whether or not the exchange survives broker restart
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/durable
-		Durable bool `json:"durable,omitempty"`
-
-		// The exchange's name
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/name
-		Name string `json:"name,omitempty"`
-
-		// The exchange's type
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/type
-		Type string `json:"type,omitempty"`
-
-		// The exchange's vhost
-		//
-		// See http://schemas.taskcluster.net/pulse/v1/exchanges-response.json#/items/properties/vhost
-		Vhost string `json:"vhost,omitempty"`
-	}
-
 	// Rabbit overview response
 	//
 	// See http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json#
