@@ -11,36 +11,65 @@ var testing     = require('taskcluster-lib-testing');
 
 // Load configuration
 const profile = 'test';
-let loadOptions = {profile, process: 'test'};
 var cfg = Config({profile});
 
 // Create helper to be tested by test
 var helper = module.exports = {};
-
-// Skip tests if no AWS credentials is configured
-if (!cfg.app.azureAccount ||
-    !cfg.taskcluster.credentials.accessToken ||
-    !cfg.pulse.password) {
-  console.log("Skip tests due to missing credentials!");
-  process.exit(1);
-}
 
 // Hold reference to all listeners created with `helper.listenFor`
 var listeners = [];
 
 // Hold reference to servers
 var server = null;
-var handlers = null;
+helper.handlers = null;
 
 var testclients = {
+  'index-server': ['*'],
   'test-client': ['*'],
+  'public-only-client': [], // no scopes at all
+};
+
+// make a queue object with some methods stubbed
+var stubbedQueue = () => {
+  var queue = new taskcluster.Queue({
+    credentials:      {
+      clientId: 'index-server',
+      accessToken: 'none'
+    }
+  });
+  var tasks = {};
+
+  queue.task = async function(taskId) {
+    var task = tasks[taskId];
+    assert(task, `fake queue has no task ${taskId}`);
+    return task;
+  };
+
+  queue.addTask = function(taskId, task) {
+    tasks[taskId] = task;
+  };
+
+  return queue;
 };
 
 // Setup server
 mocha.before(async () => {
   await testing.fakeauth.start(testclients);
-  server = await load('server', loadOptions);
-  handlers = await load('handlers', loadOptions);
+
+  let loadOptions = {profile, process: 'test'};
+
+  // initialize the tables
+  loadOptions.IndexedTask = await load('IndexedTask', loadOptions);
+  await loadOptions.IndexedTask.ensureTable();
+  loadOptions.Namespace = await load('Namespace', loadOptions);
+  await loadOptions.Namespace.ensureTable();
+
+  // set up a fake queue
+  helper.queue = loadOptions.queue = stubbedQueue();
+
+  // and load everything up
+  server = loadOptions.server = await load('server', loadOptions);
+  helper.handlers = loadOptions.handlers = await load('handlers', loadOptions);
 
   // Utility function to listen for a message
   helper.listenFor = function(binding) {
@@ -80,10 +109,7 @@ mocha.before(async () => {
     }
   });
 
-  // Create queueEvents and Queue client
-  helper.queue = new taskcluster.Queue({
-    credentials: cfg.taskcluster.credentials
-  });
+  // Create queueEvents
   helper.queueEvents = new taskcluster.QueueEvents();
 });
 
@@ -91,8 +117,9 @@ mocha.after(async () => {
   if (server) {
     await server.terminate();
   }
-  if (handlers) {
-    await handlers.terminate();
+  if (helper.handlers) {
+    await helper.handlers.terminate();
+    helper.handlers = null;
   }
   testing.fakeauth.stop();
 });

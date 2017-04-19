@@ -129,7 +129,9 @@ var load = loader({
       });
 
       // Start listening for events and handle them
-      return handlers.setup();
+      await handlers.setup();
+
+      return handlers;
     }
   },
 }, ['process', 'profile']);
