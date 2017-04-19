@@ -86,107 +86,80 @@ suite("API", () => {
     });
   });
 
-  test('access public and private artifact', function() {
-    var taskId = slugid.v4();
-    return helper.queue.createTask(taskId, {
-      provisionerId:    "dummy-test-provisioner",
-      workerType:       "dummy-test-worker-type",
-      retries:          3,
-      created:          taskcluster.fromNowJSON(),
-      deadline:         taskcluster.fromNowJSON('30 min'),
-      payload: {
-        desiredResolution:  "success"
-      },
-      metadata: {
-        name:           "Print `'Hello World'` Once",
-        description:    "This task will prìnt `'Hello World'` **once**!",
-        owner:          "jojensen@mozilla.com",
-        source:         "https://github.com/taskcluster/taskcluster-index"
-      },
-      tags: {
-        objective:      "Test task indexing"
-      }
-    }).then(function() {
-      debug("### Claim task");
-      return helper.queue.claimTask(taskId, 0, {
-        workerGroup:  'dummy-test-workergroup',
-        workerId:     'dummy-test-worker-id'
-      });
-    }).then(function() {
-      debug("### Create public artifact");
-      return helper.queue.createArtifact(taskId, 0, publicArtifactName, {
-        storageType:  'error',
-        expires:      taskcluster.fromNowJSON('24 hours'),
-        reason:       'invalid-resource-on-worker',
-        message:      "Testing that we can access public artifacts from index"
-      });
-    }).then(function() {
-      debug("### Create private artifact");
-      return helper.queue.createArtifact(taskId, 0, privateArtifactName, {
-        storageType:  'error',
-        expires:      taskcluster.fromNowJSON('24 hours'),
-        reason:       'file-missing-on-worker',
-        message:      "Testing that we can access private artifacts from index"
-      });
-    }).then(function() {
-      debug("### Report task completed");
-      return helper.queue.reportCompleted(taskId, 0);
-    }).then(function() {
-      debug("### Insert task into index");
-      return helper.index.insertTask(taskId + '.my-task', {
-        taskId:     taskId,
-        rank:       41,
-        data:       {hello: "world"},
-        expires:    taskcluster.fromNowJSON('24 hours')
-      });
-    }).then(function() {
-      debug("### Download public artifact using index");
-      var url = helper.index.buildUrl(
-        helper.index.findArtifactFromTask,
-        taskId + '.my-task',
-        publicArtifactName
-      );
-      return request.get(url).redirects(0).end().catch(function(err) {
-        return err.response;
-      });
-    }).then(function(res) {
-      assert(res.statusCode === 303, "Expected 303 redirect");
-      return request.get(res.headers.location).end().then(function() {
-        assert(false, "Expected 403 response");
-      }, function(err) {
-        assert(err.response.statusCode === 403, "Expected 403");
-        assert(err.response.body.reason === 'invalid-resource-on-worker');
-      });
-    }).then(function() {
-      debug("### Download private artifact using index (no auth)");
-      var url = helper.index.buildUrl(
-        helper.index.findArtifactFromTask,
-        taskId + '.my-task',
-        privateArtifactName
-      );
-      return request.get(url).redirects(0).end().catch(function(err) {
-        return err.response;
-      });
-    }).then(function(res) {
-      assert(res.statusCode === 403, "Expected 403 access denied");
-    }).then(function() {
-      debug("### Download private artifact using index (with auth)");
-      var url = helper.index.buildSignedUrl(
-        helper.index.findArtifactFromTask,
-        taskId + '.my-task',
-        privateArtifactName, {
-        expiration:     15 * 60
-      });
-      return request.get(url).redirects(0).end().catch(function(err) {
-        return err.response;
-      });
-    }).then(function(res) {
-      assert(res.statusCode === 303, "Expected 303 redirect");
-      // We can't call the URL because server isn't configured with real
-      // credentials in the test.
-      assert(res.headers.location.indexOf('bewit') !== -1,
-             "Expected redirect to signed url");
+  test('access public artifact', async function() {
+    let taskId = slugid.nice();
+    debug("### Insert task into index");
+    await  helper.index.insertTask('my.name.space', {
+      taskId:     taskId,
+      rank:       41,
+      data:       {hello: "world"},
+      expires:    taskcluster.fromNowJSON('24 hours')
     });
+
+    debug("### Download public artifact using index");
+    var url = helper.index.buildUrl(
+      helper.index.findArtifactFromTask,
+      'my.name.space',
+      'public/abc.zip'
+    );
+    var res = await request.get(url).redirects(0).end().catch(function(err) {
+      return err.response;
+    });
+    assert.equal(res.statusCode, 303, "Expected 303 redirect");
+    assert.equal(res.headers.location, `https://queue.taskcluster.net/v1/task/${taskId}/artifacts/public%2Fabc.zip`);
+  });
+
+  test('access private artifact (with * scope)', async function() {
+    let taskId = slugid.nice();
+    debug("### Insert task into index");
+    await  helper.index.insertTask('my.name.space', {
+      taskId:     taskId,
+      rank:       41,
+      data:       {hello: "world"},
+      expires:    taskcluster.fromNowJSON('24 hours')
+    });
+
+    debug("### Download private artifact using index");
+    var url = helper.index.buildSignedUrl(
+      helper.index.findArtifactFromTask,
+      'my.name.space',
+      'not-public/abc.zip'
+    );
+    var res = await request.get(url).redirects(0).end().catch(function(err) {
+      return err.response;
+    });
+    assert.equal(res.statusCode, 303, "Expected 303 redirect");
+    let location = res.headers.location.replace(/bewit=.*/, 'bewit=xyz');
+    assert.equal(location, `https://queue.taskcluster.net/v1/task/${taskId}/artifacts/not-public%2Fabc.zip?bewit=xyz`);
+  });
+
+  test('access private artifact (with no scopes)', async function() {
+    let taskId = slugid.nice();
+    debug("### Insert task into index");
+    await  helper.index.insertTask('my.name.space', {
+      taskId:     taskId,
+      rank:       41,
+      data:       {hello: "world"},
+      expires:    taskcluster.fromNowJSON('24 hours')
+    });
+
+    debug("### Download private artifact using index with no scopes");
+    var index = new taskcluster.Index({
+      baseUrl: helper.baseUrl,
+      credentials: {
+        clientId: 'public-only-client',
+        accessToken: 'none',
+      },
+    });
+    var url = index.buildSignedUrl(
+      helper.index.findArtifactFromTask,
+      'my.name.space',
+      'not-public/abc.zip'
+    );
+    var res = await request.get(url).redirects(0).end().catch(function(err) {
+      return err.response;
+    });
+    assert.equal(res.statusCode, 403, "Expected 403 Forbidden");
   });
 });
 

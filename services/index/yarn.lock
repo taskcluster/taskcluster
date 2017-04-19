@@ -2488,7 +2488,7 @@ taskcluster-client@0.23.4:
   optionalDependencies:
     sockjs-client "^1.0.3"
 
-taskcluster-client@^1.0.1, taskcluster-client@^1.2.0, taskcluster-client@^1.6.3:
+taskcluster-client@^1.0.1, taskcluster-client@^1.2.0:
   version "1.6.3"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-1.6.3.tgz#46e08445b7fcb590d4effb35df3f21bab0bb6da2"
   dependencies:
@@ -2508,6 +2508,23 @@ taskcluster-client@^1.0.1, taskcluster-client@^1.2.0, taskcluster-client@^1.6.3:
 taskcluster-client@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-2.1.0.tgz#d7ab239248fb4319895466e13abdd9d616530474"
+  dependencies:
+    amqplib "^0.5.1"
+    debug "^2.1.3"
+    hawk "^2.3.1"
+    lodash "^3.6.0"
+    promise "^6.1.0"
+    slugid "^1.1.0"
+    superagent "~1.7.0"
+    superagent-hawk "^0.0.6"
+    superagent-promise "^0.2.0"
+    url-join "^0.0.1"
+  optionalDependencies:
+    sockjs-client "^1.0.3"
+
+taskcluster-client@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-2.2.0.tgz#e87c3fd79d9f13e27d653ee4ddcccae77af169fb"
   dependencies:
     amqplib "^0.5.1"
     debug "^2.1.3"

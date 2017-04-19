@@ -24,13 +24,10 @@ var Handlers = function(options) {
   // Validate options
   assert(options.IndexedTask, "A subclass of data.IndexedTask is required");
   assert(options.Namespace,   "A subclass of data.Namespace is required");
-  assert(options.queue instanceof taskcluster.Queue,
-         "And instance of taskcluster.Queue is required");
+  assert(options.queue,       "An instance of taskcluster.Queue is required");
   assert(options.queueEvents instanceof taskcluster.QueueEvents,
          "An instance of taskcluster.QueueEvents is required");
   assert(options.credentials, "credentials must be provided");
-  assert(options.credentials.username, "credentials.username must be provided");
-  assert(options.credentials.password, "credentials.password must be provided");
   assert(options.routePrefix,       "routePrefix is required");
   assert(options.monitor,           "monitor is required for statistics");
   // Store options on this for use in event handlers
@@ -80,12 +77,19 @@ Handlers.prototype.setup = function() {
   this.listener.on('message', this.monitor.timedHandler('listener', handler));
 
   // Start listening
-  return this.listener.connect().then(function() {
-    return that.listener.resume();
-  });
+  return this.listener.resume();
 
   console.log("Handler listening for pulse messages");
 };
+
+Handlers.prototype.terminate = async function() {
+  debug('Terminating handlers...');
+  if (this.listener) {
+    await this.listener.close();
+    this.listener = undefined;
+  }
+}
+
 
 // Export Handlers
 module.exports = Handlers;

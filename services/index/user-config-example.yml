@@ -1,8 +1,0 @@
-defaults:
-  taskcluster:
-    credentials: # With scope: assume:project:taskcluster:index-test-scopes
-      clientId: "..."
-      accessToken: "..."
-  pulse:
-    username: "..."
-    password: "..."

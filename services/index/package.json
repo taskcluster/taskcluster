@@ -26,7 +26,7 @@
     "source-map-support": "^0.4.2",
     "superagent": "^1.8.3",
     "superagent-promise": "^1.1.0",
-    "taskcluster-client": "^1.6.3",
+    "taskcluster-client": "^2.2.0",
     "taskcluster-lib-api": "3.2.2",
     "taskcluster-lib-app": "^1.0.0",
     "taskcluster-lib-docs": "^3.3.1",
