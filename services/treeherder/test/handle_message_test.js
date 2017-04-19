@@ -111,24 +111,18 @@ suite('handle message', () => {
         }
       }
     });
-    let err;
 
-    try {
-      await handler.handleMessage({
-        routes: ['foo.bar.123'],
-        payload: {
-          status: {
-            taskId: 'abc',
-          }
+    await handler.handleMessage({
+      routes: ['foo.bar.123'],
+      payload: {
+        status: {
+          taskId: 'abc',
         }
-      })
-    } catch(e) {
-      err = e;
-    }
+      }
+    })
 
-    assert(err, 'Error was not thrown');
     assert(called, 'Task was not retrieved by the queue');
-    assert(err.message.includes("Message is missing Treeherder job configuration"));
+    assert.equal(monitor.counts['tc-treeherder-test.validateTask.no-config'], 1)
   });
 
   test('invalid message - invalid treeherder config', async () => {
@@ -159,22 +153,16 @@ suite('handle message', () => {
         aws:    {}
     });
 
-    let err;
-    try {
-      await handler.handleMessage({
-        routes: ['foo.bar.123'],
-        payload: {
-          status: {
-            taskId: 'abc'
-          }
+    await handler.handleMessage({
+      routes: ['foo.bar.123'],
+      payload: {
+        status: {
+          taskId: 'abc'
         }
-      })
-    } catch(e) {
-      err = e;
-    }
+      }
+    })
 
-    assert(err, 'Error was not thrown');
     assert(called, 'Task was retrieved by the queue');
-    assert(err.message.includes("Message contains an invalid Treeherder job configuration"));
+    assert.equal(monitor.counts['tc-treeherder-test.validateTask.invalid-config'], 1)
   });
 });

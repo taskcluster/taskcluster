@@ -1,12 +1,12 @@
 import path from 'path';
 import taskcluster from 'taskcluster-client';
 
-export default async function(queue, taskId, runId, job) {
+export default async function(queue, monitor, taskId, runId, job) {
   let res;
   try {
     res = await queue.listArtifacts(taskId, runId);
   } catch(e) {
-    console.log(`Error fetching artifacts for ${taskId}, ${e.message}`);
+    monitor.reportError(e, {taskId, runId});
     return job;
   }
 
@@ -18,7 +18,7 @@ export default async function(queue, taskId, runId, job) {
     try {
       res = await queue.listArtifacts(taskId, runId, continuation);
     } catch(e) {
-      console.log(`Error fetching artifacts for ${taskId}, ${e.message}`);
+      monitor.reportError(e, {taskId, runId});
       break;
     }
 
