@@ -103,7 +103,7 @@ an environment very similar to the one docker-worker runs in production.
 2. The tests require TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME, PULSE_PASSWORD to be setup within the environment.  If they were not available locally when building, add them to the virtual machine now.
 3. `cd /vagrant` # Your local checkout of the docker-worker repo is made available under the '/vagrant' directory
 4. `./build.sh` # Builds some of the test images that are required
-5. `npm install` # Installs all the necessary node modules
+5. `yarn install` # Installs all the necessary node modules
 
 #### Running Tests
 
@@ -120,8 +120,8 @@ The following set of scopes are needed for running the test suites:
 * assume:scheduler-id:docker-worker-tests/*
 * assume:worker-id:random-local-worker/dummy-worker-*
 
-1. Either all the tests can be run, but running `npm test` or `./test/test.sh`, however, under most circumstances one only wants to run a single test suite
-2. For individual test files, run `./node_modules/mocha/bin/mocha --bail test/<file>`
+1. Either all the tests can be run, but running `yarn test` or `./test/test.sh`, however, under most circumstances one only wants to run a single test suite
+2. For individual test files, run `./node_modules/mocha/bin/mocha --bail .test/<file>`
 3. For running tests within a test file, add "--grep <phrase>" when running the above command to capture just the individual test name.
 
 *** Note: Sometimes things don't go as planned and tests will hang until they timeout.  To get more insight into what went wrong, set "DEBUG=*" when running the tests to get more detailed output. ***
