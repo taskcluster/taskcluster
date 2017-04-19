@@ -140,6 +140,35 @@ func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
 }
 
 func (artifact *S3Artifact) ChooseContentEncoding() {
+	// respect value, if already set
+	if artifact.ContentEncoding != "" {
+		return
+	}
+	// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
+	SKIP_COMPRESS_EXTENSIONS := map[string]bool{
+		// Images
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".gif":  true,
+		".webp": true,
+		// Compressed files
+		".zip": true,
+		".gz":  true,
+		".tgz": true,
+		".bz2": true,
+		".tbz": true,
+		// Flash
+		".swf": true,
+		".flv": true,
+		// Fonts
+		".woff":  true,
+		".woff2": true,
+	}
+	if SKIP_COMPRESS_EXTENSIONS[filepath.Ext(artifact.CanonicalPath)] {
+		return
+	}
+
 	artifact.ContentEncoding = "gzip"
 }
 
