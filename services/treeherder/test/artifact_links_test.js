@@ -1,8 +1,19 @@
 import assert from 'assert';
 import { taskDefinition } from './fixtures/task';
+import Monitor from 'taskcluster-lib-monitor';
 import artifactLinkTransform from '../lib/transform/artifact_links';
 
+let monitor;
+
 suite('artifact link transform', () => {
+  suiteSetup(async () => {
+    monitor = await Monitor({
+      project: 'tc-treeherder-test',
+      credentials: {},
+      mock: true
+    });
+  })
+
   test('artifact link added', async () => {
     let links = ['foo'];
     let expectedLink = {
@@ -21,7 +32,7 @@ suite('artifact link transform', () => {
       }
     };
 
-    job = await artifactLinkTransform(queue, '123', 0, job);
+    job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     links.push(expectedLink);
 
     assert.deepEqual(links, job.jobInfo.links);
@@ -55,7 +66,7 @@ suite('artifact link transform', () => {
       }
     };
 
-    job = await artifactLinkTransform(queue, '123', 0, job);
+    job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     assert.deepEqual(expectedLinks, job.jobInfo.links);
   });
 
@@ -94,7 +105,7 @@ suite('artifact link transform', () => {
       }
     };
 
-    job = await artifactLinkTransform(queue, '123', 0, job);
+    job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     assert.deepEqual(expectedLinks, job.jobInfo.links);
   });
 
@@ -109,7 +120,7 @@ suite('artifact link transform', () => {
       listArtifacts: () => { throw new Error('bad things happened') }
     };
 
-    job = await artifactLinkTransform(queue, '123', 0, job);
+    job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     assert.deepEqual(links, job.jobInfo.links);
   });
 });
