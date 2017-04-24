@@ -82,4 +82,6 @@ if __name__ == '__main__':
         tests_require=tests_require,
         cmdclass={'test': Tox},
         zip_safe=False,
+        classifiers=['Programming Language :: Python :: 2',
+                     'Programming Language :: Python :: 3'],
     )
