@@ -102,7 +102,7 @@ tasks:
           && make prep release
       artifacts:
         public:
-          path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster/build
+          path: /go/src/github.com/taskcluster/taskcluster-cli/build
           type: directory
     metadata:
       name: "Build and upload binaries for release"
