@@ -82,9 +82,9 @@ tasks:
           - release
     scopes:
       - auth:aws-s3:read-write:downloads-taskcluster-net/taskcluster-cli/
-      - queue:route:index.project.taskcluster.taskcluster-cli.latest
     routes:
       - index.project.taskcluster.taskcluster-cli.latest
+      - index.project.taskcluster.taskcluster-cli.{{ event.version }}
     payload:
       maxRunTime: 3600
       image: 'golang:1.8'
