@@ -166,11 +166,12 @@ and reports back results to the queue.
           downloadsDir                      The location where resources are downloaded for
                                             populating preloaded caches and readonly mounts.
                                             [default: C:\generic-worker\downloads]
-          idleShutdownTimeoutSecs           How many seconds to wait without getting a new
-                                            task to perform, before shutting down the computer.
-                                            An integer, >= 0. A value of 0 means "do not shut
-                                            the computer down" - i.e. continue running
-                                            indefinitely. [default: 0]
+          idleTimeoutSecs                   How many seconds to wait without getting a new
+                                            task to perform, before the worker process exits.
+                                            An integer, >= 0. A value of 0 means "never reach
+                                            the idle state" - i.e. continue running
+                                            indefinitely. See also shutdownMachineOnIdle.
+                                            [default: 0]
           livelogCertificate                SSL certificate to be used by livelog for hosting
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
@@ -184,7 +185,7 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
-          provisioner_id                    The taskcluster provisioner which is taking care
+          provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: aws-provisioner-v1]
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
@@ -203,12 +204,17 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
+          shutdownMachineOnIdle             If true, when the worker is deemed to have been
+                                            idle for enough time (see idleTimeoutSecs) the
+                                            worker will issue an OS shutdown command. If false,
+                                            the worker process will simply terminate, but the
+                                            machine will not be shut down. [default: false]
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: taskcluster-worker.net]
           tasksDir                          The location where task directories should be
-                                            created on the worker. [default: C:\Users]
+                                            created on the worker. [default: /Users]
           workerTypeMetaData                This arbitrary json blob will be uploaded as an
                                             artifact called worker_type_metadata.json with each
                                             task. Providing information here, such as a URL to
@@ -217,6 +223,12 @@ and reports back results to the queue.
                                             will have more information about how it was set up
                                             (for example what has been installed on the
                                             machine).
+          runAfterUserCreation              A string, that if non-empty, will be treated as a
+                                            command to be executed as the newly generated task
+                                            user, each time a task user is created. This is a
+                                            way to provide generic user initialisation logic
+                                            that should apply to all generated users (and thus
+                                            all tasks).
 
     Here is an syntactically valid example configuration file:
 
