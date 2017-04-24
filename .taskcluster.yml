@@ -97,8 +97,8 @@ tasks:
           mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
           && cd  /go/src/github.com/taskcluster/taskcluster-cli
           && git init
-          && git fetch {{ event.head.repo.url }} {{ event.head.ref }}
-          && git checkout {{ event.head.sha }}
+          && git fetch {{ event.head.repo.url }} {{ event.version }}
+          && git checkout FETCH_HEAD
           && make prep release
       artifacts:
         public:
