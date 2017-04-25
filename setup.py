@@ -61,11 +61,11 @@ if sys.version_info.major == 2:
         'subprocess32==3.2.6',
     ])
 elif sys.version_info[:2] < (3, 5):
-    raise Exception('this library does not support python >2 and <3.5')
+    raise Exception('This library does not support Python 3 versions below 3.5')
 elif sys.version_info[:2] >= (3, 5):
     install_requires.extend([
-        'aiohttp',
-        'async_timeout',
+        'aiohttp>=2.0.0,<3',
+        'async_timeout>=1.2.0,<2',
     ])
 
 if __name__ == '__main__':

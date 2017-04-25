@@ -74,7 +74,14 @@ class BaseClient(object):
         if session:
             self.session = session
         else:
-            self.session = createSession()
+            self.session = self._createSession()
+
+    def _createSession(self):
+        """ Create a requests session.
+
+        Helper method which can be overridden by child classes.
+        """
+        return createSession()
 
     def makeHawkExt(self):
         """ Make an 'ext' for Hawk authentication """
@@ -400,17 +407,18 @@ class BaseClient(object):
                 )
 
             # Handle non 2xx status code and retry if possible
-            try:
-                response.raise_for_status()
-                if response.status_code == 204:
-                    return None
+            status = response.status_code
+            if status == 204:
+                return None
 
-            except requests.exceptions.RequestException as rerr:
-                status = response.status_code
-                if 500 <= status and status < 600 and retry < retries:
-                    log.warn('Retrying because of: %s' % rerr)
-                    continue
-                # Parse messages from errors
+            # Catch retryable errors and go to the beginning of the loop
+            # to do the retry
+            if 500 <= status and status < 600 and retry < retries:
+                log.warn('Retrying because of a %s status code' % status)
+                continue
+
+            # Throw errors for non-retryable errors
+            if status < 200 or status >= 300:
                 data = {}
                 try:
                     data = response.json()
@@ -431,14 +439,14 @@ class BaseClient(object):
                         message,
                         status_code=status,
                         body=data,
-                        superExc=rerr
+                        superExc=None
                     )
                 # Raise TaskclusterRestFailure for all other issues
                 raise exceptions.TaskclusterRestFailure(
                     message,
                     status_code=status,
                     body=data,
-                    superExc=rerr
+                    superExc=None
                 )
 
             # Try to load JSON

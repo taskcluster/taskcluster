@@ -9,7 +9,6 @@ import hashlib
 import hmac
 import datetime
 import calendar
-import requests
 import six
 from six.moves import urllib
 
@@ -39,8 +38,8 @@ _defaultConfig = config = {
 
 
 def createSession(*args, **kwargs):
-    """ Create a new requests session.  This passes through all positional and
-    keyword arguments to the requests.Session() constructor
+    """ Create a new aiohttp session.  This passes through all positional and
+    keyword arguments to the aiohttp.CreateSession() constructor
     """
     return asyncutils.createSession(*args, **kwargs)
 
@@ -51,6 +50,16 @@ class AsyncBaseClient(BaseClient):
     routing key patterns.  The _makeApiCall() and _topicExchange() methods
     help with this.
     """
+
+    def _createSession(self):
+        """ Create a new aiohttp session.
+        """
+        return createSession()
+
+    def __del__(self):
+        """ Make sure self.session is closed, to avoid `Unclosed client session`
+        warnings. """
+        self.session.close()
 
     async def _makeApiCall(self, entry, *args, **kwargs):
         """ This function is used to dispatch calls to other functions
@@ -127,8 +136,10 @@ class AsyncBaseClient(BaseClient):
 
             log.debug('Making attempt %d', retry)
             try:
-                response = await asyncutils.makeSingleHttpRequest(method, url, payload, headers)
-            except requests.exceptions.RequestException as rerr:
+                response = await asyncutils.makeSingleHttpRequest(
+                    method, url, payload, headers, session=self.session
+                )
+            except aiohttp.ClientError as rerr:
                 if retry < retries:
                     log.warn('Retrying because of: %s' % rerr)
                     continue
@@ -138,17 +149,18 @@ class AsyncBaseClient(BaseClient):
                     superExc=rerr
                 )
 
-            # Handle non 2xx status code and retry if possible
-            try:
-                response.raise_for_status()
-                if response.status == 204:
-                    return None
+            status = response.status
+            if status == 204:
+                return None
 
-            except aiohttp.HttpProcessingError as rerr:
-                status = response.status
-                if 500 <= status and status < 600 and retry < retries:
-                    log.warn('Retrying because of: %s' % rerr)
-                    continue
+            # Catch retryable errors and go to the beginning of the loop
+            # to do the retry
+            if 500 <= status and status < 600 and retry < retries:
+                log.warn('Retrying because of: %s' % rerr)
+                continue
+
+            # Throw errors for non-retryable errors
+            if status < 200 or status >= 300:
                 # Parse messages from errors
                 data = {}
                 try:
