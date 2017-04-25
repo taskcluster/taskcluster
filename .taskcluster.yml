@@ -41,8 +41,8 @@ tasks:
           export DOCS_PROJECT=generic-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md &&
           upload-project-docs
     metadata:
-      name: "Publish [generic-worker docs](https://docs.taskcluster.net/reference/workers/generic-worker)"
-      description: "Upload [generic-worker documentation](https://docs.taskcluster.net/reference/workers/generic-worker)."
+      name: "Publish generic-worker docs to https://docs.taskcluster.net/reference/workers/generic-worker"
+      description: "Upload generic-worker documentation to taskcluster [docs site](https://docs.taskcluster.net/reference/workers/generic-worker)."
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
 
