@@ -7,6 +7,12 @@ metadata:
   owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
   source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
 tasks:
+
+
+  ##########################################################
+  ###################### docs upload #######################
+  ##########################################################
+
   - provisionerId: '{{ taskcluster.docker.provisionerId }}'
     workerType: '{{ taskcluster.docker.workerType }}'
     extra:
@@ -35,8 +41,8 @@ tasks:
           export DOCS_PROJECT=generic-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md &&
           upload-project-docs
     metadata:
-      name: "generic-worker docs upload"
-      description: "Upload documentation for this project"
+      name: "Publish [generic-worker docs](https://docs.taskcluster.net/reference/workers/generic-worker)"
+      description: "Upload [generic-worker documentation](https://docs.taskcluster.net/reference/workers/generic-worker)."
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
 
