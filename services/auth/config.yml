@@ -57,6 +57,9 @@ defaults:
       schemas:                  !env SCHEMAS_BUCKET
       references:               !env REFS_BUCKET
 
+    # Name of a kinesis firehose stream to write audit logs to
+    auditLog:                   !env AUDIT_LOG
+
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                https://auth.taskcluster.net
