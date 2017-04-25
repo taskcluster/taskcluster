@@ -185,6 +185,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
  *    clientLoader:   async (clientId) => {clientId, expires, accessToken, scopes},
  *    nonceManager:   nonceManager({size: ...}),
  *    expandScopes:   (scopes) => scopes,
+ *    monitor:        // an instance of taskcluster-lib-monitor
  * }
  *
  * The function returned takes an object:
@@ -203,15 +204,16 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
  * `remoteAuthentication`.
  */
 var createSignatureValidator = function(options) {
-  assert(typeof(options) === 'object', "options must be an object");
+  assert(typeof(options) === 'object', 'options must be an object');
   assert(options.clientLoader instanceof Function,
-         "options.clientLoader must be a function");
+         'options.clientLoader must be a function');
   if (!options.expandScopes) {
     // Default to the identity function
     options.expandScopes = function(scopes) { return scopes; };
   }
   assert(options.expandScopes instanceof Function,
-         "options.expandScopes must be a function");
+         'options.expandScopes must be a function');
+  assert(options.monitor, 'options.monitor must be provided');
   var loadCredentials = function(clientId, ext, callback) {
     // We may have two clientIds here: the credentialName (the one the caller
     // sent in the Hawk Authorization header) and the issuingClientId (the one
@@ -282,13 +284,21 @@ var createSignatureValidator = function(options) {
           if (artifacts.hash) {
             result.hash = artifacts.hash;
           }
-
-          // TODO: log this in a structured format when structured logging is
-          // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
-          console.log(
-              `Authenticated ${result.clientId} for ${req.method.toUpperCase()} access to ` +
-              `https://${req.host}:${req.port}${req.resource}`)
         }
+        options.monitor.log({
+          event: 'signature-validation',
+          expires: credentials? credentials.expires : '',
+          scopes: credentials? credentials.scopes : [],
+          clientId: credentials? credentials.clientId : '',
+          status: result.status || '',
+          scheme: result.scheme || '',
+          message: result.message || '',
+          hash: result.hash || '',
+          host: req.host,
+          port: req.port,
+          resource: req.resource,
+          method: req.method.toUpperCase(),
+        });
         return accept(result);
       };
       if (req.authorization) {
