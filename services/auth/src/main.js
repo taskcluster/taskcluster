@@ -38,6 +38,8 @@ let load = Loader({
         project: 'taskcluster-auth',
         process,
         mock: profile === 'test',
+        aws: {credentials: _.pick(cfg.aws, ['accessKeyId', 'secretAccessKey']), region: cfg.aws.region},
+        logName: cfg.app.auditLog, // Audit logs will be noop if this is null
         statsumToken: async (project) => {
           return {
             project,
@@ -167,6 +169,7 @@ let load = Loader({
       let signatureValidator = signaturevalidator.createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
+        monitor,
       });
 
       return v1.setup({
@@ -179,6 +182,7 @@ let load = Loader({
           signatureValidator,
           sentryManager,
           statsum:            cfg.app.statsum,
+          monitor,
         },
         validator,
         signatureValidator,

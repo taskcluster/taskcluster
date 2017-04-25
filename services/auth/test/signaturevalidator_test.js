@@ -10,6 +10,7 @@ suite("signature validation", function() {
   var crypto       = require('crypto');
   var taskcluster  = require('taskcluster-client');
   var sigvalidator = require('../lib/signaturevalidator');
+  var Monitor      = require('taskcluster-lib-monitor');
 
   var one_hour = taskcluster.fromNow('1 hour');
   var two_hours = taskcluster.fromNow('2 hour');
@@ -31,7 +32,7 @@ suite("signature validation", function() {
     },
   };
 
-  before(function() {
+  before(async function() {
     validator = sigvalidator.createSignatureValidator({
       clientLoader: async clientId => {
         if (!clients[clientId]) {
@@ -40,6 +41,7 @@ suite("signature validation", function() {
         return clients[clientId];
       },
       expandScopes: scopes => scopes,
+      monitor: await Monitor({project: 'foo', mock: true}),
     });
   });
 

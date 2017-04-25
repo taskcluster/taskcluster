@@ -95,6 +95,9 @@ var api = new API({
 
     // Statsum configuration {secret, baseUrl}
     'statsum',
+
+    // A tc-lib-monitor for use beyond the lib-api level
+    'monitor',
   ]
 });
 
@@ -822,7 +825,8 @@ api.declare({
           accessToken: 'no-secret',
           scopes: req.body.clientScopes,
         };
-      }
+      },
+      monitor: this.monitor,
     }),
   }, {
     scopes: [],
@@ -878,7 +882,8 @@ api.declare({
           accessToken: 'no-secret',
           scopes: ['test:*', 'auth:create-client:test:*'],
         };
-      }
+      },
+      monitor: this.monitor,
     }),
   }, {
     scopes: [['test:authenticate-get']],
