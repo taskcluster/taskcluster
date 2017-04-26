@@ -355,10 +355,18 @@ api.declare({
       let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
       let reposList = await instGithub.integrations.getInstallationRepositories({});
 
-      // GitHub API returns an array of objects, each of wich has an array of repos
-      let installed = reposList.repositories.map(repo => repo.name).indexOf(repo);
+      while (true) {
+        let installed = reposList.repositories.map(repo => repo.name).indexOf(repo);
+        if (installed !== -1) {
+          return res.reply({installed: true});
+        }
+        if (instGithub.hasNextPage(reposList)) {
+          reposList = await instGithub.getNextPage(reposList);
+        } else {
+          return res.reply({installed: false});
+        }
+      }
 
-      return res.reply({installed: installed != -1});
     } catch (e) {
       if (e.code > 400 && e.code < 500) {
         return res.reply({installed: false});
