@@ -67,10 +67,10 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'integrations.getInstallationRepositories': async() => {
+      'integrations.getInstallationRepositories': async () => {
         return this.repositories;
       },
-      'repos.getStatuses': async({owner, repo, sha}) => {
+      'repos.getStatuses': async ({owner, repo, sha}) => {
         const key = `${owner}/${repo}@${sha}`;
         if (this.statuses[key]) {
           return this.statuses[key];
@@ -144,11 +144,16 @@ class FakeGithub {
   setRepositories(...repoNames) {
     // This function accepts 1 to n strings
     this.repositories.repositories = [...repoNames].map(repo => {return {name: repo};});
+    this.repositories.total_count = this.repositories.repositories.length;
   }
 
   setStatuses({owner, repo, sha, info}) {
     const key = `${owner}/${repo}@${sha}`;
     this.statuses[key] = info;
+  }
+
+  hasNextPage() {
+    return false;
   }
 }
 
