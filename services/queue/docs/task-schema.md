@@ -6,6 +6,7 @@ marked:       true
 ejs:          true
 superagent:   true
 docref:       true
+title:        "Task Schema"
 ---
 
 # Task Definition
