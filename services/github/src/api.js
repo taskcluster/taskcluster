@@ -227,7 +227,7 @@ api.declare({
   let headUser = msg.details['event.head.user.id'].toString();
   let userDetails = await instGithub.users.getById({id: headUser});
   msg.details['event.head.user.email'] = userDetails.email ||
-    msg.details['event.head.user.login'] + '@users.noreply.github.com';
+    msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 
