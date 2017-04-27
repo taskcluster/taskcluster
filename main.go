@@ -267,7 +267,7 @@ and reports back results to the queue.
 func main() {
 	arguments, err := docopt.Parse(usage, nil, true, "generic-worker "+version, false, true)
 	if err != nil {
-		fmt.Println("Error parsing command line arguments!")
+		log.Println("Error parsing command line arguments!")
 		panic(err)
 	}
 
@@ -284,8 +284,8 @@ func main() {
 			config.persist(configFile)
 		}
 		if err != nil {
-			fmt.Printf("Error loading configuration from file '%v':\n", configFile)
-			fmt.Printf("%v\n", err)
+			log.Printf("Error loading configuration from file '%v':\n", configFile)
+			log.Printf("%v\n", err)
 			os.Exit(64)
 		}
 		RunWorker()
@@ -294,15 +294,15 @@ func main() {
 		// platform specific...
 		err := install(arguments)
 		if err != nil {
-			fmt.Println("Error installing generic worker:")
-			fmt.Printf("%#v\n", err)
+			log.Println("Error installing generic worker:")
+			log.Printf("%#v\n", err)
 			os.Exit(65)
 		}
 	case arguments["new-openpgp-keypair"]:
 		err := generateOpenPGPKeypair(arguments["--file"].(string))
 		if err != nil {
-			fmt.Println("Error generating OpenPGP keypair for worker:")
-			fmt.Printf("%#v\n", err)
+			log.Println("Error generating OpenPGP keypair for worker:")
+			log.Printf("%#v\n", err)
 			os.Exit(66)
 		}
 	}
@@ -467,19 +467,26 @@ func RunWorker() {
 		wait5Seconds := time.NewTimer(time.Second * 5)
 		taskFound := FindAndRunTask()
 		if !taskFound {
-			// let's not be over-verbose in logs - has cost implications
-			// so report only once per minute that no task was claimed, not every second
-			if time.Now().Sub(lastReportedNoTasks) > 1*time.Minute {
-				lastReportedNoTasks = time.Now()
-				log.Print("No task claimed...")
-			}
+			idleTime := time.Now().Sub(lastActive)
+			remainingIdleTimeText := ""
 			if config.IdleTimeoutSecs > 0 {
-				idleTime := time.Now().Sub(lastActive)
+				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
 					taskCleanup()
 					exitOrShutdown(config.ShutdownMachineOnIdle, fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime), 0)
 					break
 				}
+			}
+			// let's not be over-verbose in logs - has cost implications
+			// so report only once per minute that no task was claimed, not every second
+			if time.Now().Sub(lastReportedNoTasks) > 1*time.Minute {
+				lastReportedNoTasks = time.Now()
+				// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
+				remainingTaskCountText := ""
+				if remainingTasks := config.NumberOfTasksToRun - tasksResolved; remainingTasks >= 0 {
+					remainingTaskCountText = fmt.Sprintf(" %v more tasks to run before exiting.", remainingTasks)
+				}
+				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
 			}
 		} else {
 			err := taskCleanup()
@@ -487,8 +494,16 @@ func RunWorker() {
 				log.Printf("Error cleaning up after task!\n%v", err)
 			}
 			tasksResolved++
-			log.Printf("Resolved %v tasks in total so far", tasksResolved)
-			if tasksResolved == config.NumberOfTasksToRun {
+			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
+			remainingTasks := config.NumberOfTasksToRun - tasksResolved
+			remainingTaskCountText := ""
+			if config.NumberOfTasksToRun > 0 {
+				if remainingTasks > 0 {
+					remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
+				}
+			}
+			log.Printf("Resolved %v tasks in total so far%v", tasksResolved, remainingTaskCountText)
+			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
 				if configureForAws {
 					shutdownIfNewDeploymentID()
@@ -938,7 +953,9 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			// here:
 			switch a := artifact.(type) {
 			case *ErrorArtifact:
-				err.add(Failure(fmt.Errorf("%v: %v", a.Reason, a.Message)))
+				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
+				err.add(fail)
+				task.Logf("Artifact failure: %v", fail)
 			}
 		}
 	}()
@@ -1005,8 +1022,7 @@ func (task *TaskRun) uploadBackingLog() *CommandExecutionError {
 
 // writes config to json file
 func (c *Config) persist(file string) error {
-	fmt.Println("Worker ID: " + c.WorkerID)
-	fmt.Println("Creating file " + file + "...")
+	log.Print("Creating file " + file + "...")
 	return writeToFileAsJSON(c, file)
 }
 

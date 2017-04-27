@@ -391,7 +391,7 @@ func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
-	log.Print("Uploading artifact: " + artifact.Base().CanonicalPath)
+	task.Log("Uploading artifact: " + artifact.Base().CanonicalPath + " as " + artifact.Base().Name)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
@@ -408,6 +408,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 		switch t := err.(type) {
 		case *os.PathError:
 			// artifact does not exist or is not readable...
+			task.Logf("Artifact could not be read: %v", err)
 			return Failure(err)
 		case httpbackoff.BadHttpResponseCode:
 			if t.HttpResponseCode/100 == 5 {
@@ -419,10 +420,10 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 				if status == deadlineExceeded || status == cancelled {
 					return nil
 				}
-				panic(fmt.Errorf("TASK FAIL due to response code %v from Queue when uploading artifact %#v", t.HttpResponseCode, artifact))
+				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v", t.HttpResponseCode, artifact))
 			}
 		default:
-			panic(fmt.Errorf("TASK EXCEPTION due to non-recoverable error when uploading artifact: %#v", t))
+			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when uploading artifact: %#v", t))
 		}
 	}
 	// unmarshal response into object
@@ -431,6 +432,10 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	if e != nil {
 		panic(e)
 	}
+	e = artifact.ProcessResponse(resp)
 	// note: this only returns an error, if ProcessResponse returns an error...
-	return ResourceUnavailable(artifact.ProcessResponse(resp))
+	if e != nil {
+		task.Logf("Error uploading artifact: %v", e)
+	}
+	return ResourceUnavailable(e)
 }
