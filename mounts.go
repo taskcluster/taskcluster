@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -574,21 +575,35 @@ func downloadURLToFile(url, file string) error {
 		log.Printf("Could not make MkdirAll %v: %v", filepath.Dir(file), err)
 		return err
 	}
-	resp, _, err := httpbackoff.Get(url)
-	if err != nil {
-		log.Printf("Could not fetch url %v: %v", url, err)
-		return err
+	// httpbackoff.Get(url) is not sufficient as that only guarantees we have
+	// an http response to read from, but does not retry if we lose
+	// connectivity while reading from it. Therefore include the reading of the
+	// response body inside the retry function.
+	retryFunc := func() (resp *http.Response, tempError error, permError error) {
+		resp, err := http.Get(url)
+		// assume all errors should result in a retry
+		if err != nil {
+			return resp, err, nil
+		}
+		defer resp.Body.Close()
+		f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		if err != nil {
+			log.Printf("Could not open file %v: %v", file, err)
+			// permanent error!
+			return resp, nil, err
+		}
+		defer f.Close()
+		_, err = io.Copy(f, resp.Body)
+		if err != nil {
+			log.Printf("Could not write http response from url %v to file %v: %v", url, file, err)
+			// likely a temporary error - network blip
+			return resp, err, nil
+		}
+		return resp, nil, nil
 	}
-	defer resp.Body.Close()
-	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	_, _, err = httpbackoff.Retry(retryFunc)
 	if err != nil {
-		log.Printf("Could not open file %v: %v", file, err)
-		return err
-	}
-	defer f.Close()
-	_, err = io.Copy(f, resp.Body)
-	if err != nil {
-		log.Printf("Could not write http response from url %v to file %v: %v", url, file, err)
+		log.Printf("Could not fetch from url %v into file %v: %v", url, file, err)
 		return err
 	}
 	return nil
