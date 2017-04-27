@@ -7,6 +7,7 @@
     - [Loopback Devices](#loopback-devices)
   - [Running tests](#running-tests)
     - [Common problems](#common-problems)
+  - [Updating Documentation](#updating-documentation)
   - [Deployment](#deployment)
     - [Requirements](#requirements-1)
     - [Building AMI's](#building-amis)
@@ -130,6 +131,10 @@ The following set of scopes are needed for running the test suites:
 
   - Time synchronization : if you're running docker in a VM your VM may
     drift in time... This often results in stale warnings on the queue.
+    
+## Updating Documentation
+
+Documentation for this project lives under docs/ .  Upon merging, documentation will be uploaded to s3 to display on docs.taskcluster.net automatically.
 
 ## Deployment
 
