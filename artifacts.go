@@ -391,7 +391,7 @@ func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
-	task.Log("Uploading artifact: " + artifact.Base().CanonicalPath + " as " + artifact.Base().Name)
+	task.Logf("Uploading file %v as artifact %v", artifact.Base().CanonicalPath, artifact.Base().Name)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {

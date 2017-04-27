@@ -955,7 +955,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			case *ErrorArtifact:
 				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
 				err.add(fail)
-				task.Logf("Artifact failure: %v", fail)
+				task.Logf("TASK FAILURE during artifact upload: %v", fail)
 			}
 		}
 	}()
