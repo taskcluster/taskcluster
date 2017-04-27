@@ -289,6 +289,7 @@ func main() {
 			os.Exit(64)
 		}
 		RunWorker()
+		log.Print("Exiting worker")
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
@@ -486,7 +487,9 @@ func RunWorker() {
 				log.Printf("Error cleaning up after task!\n%v", err)
 			}
 			tasksResolved++
+			log.Printf("Resolved %v tasks in total so far", tasksResolved)
 			if tasksResolved == config.NumberOfTasksToRun {
+				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
 				if configureForAws {
 					shutdownIfNewDeploymentID()
 				}
