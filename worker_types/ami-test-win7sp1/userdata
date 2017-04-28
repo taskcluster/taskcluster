@@ -182,6 +182,7 @@ Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-openpgp-ke
 # Expand-ZIPFile -File "C:\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
 
 # install ProcessMonitor (useful utility for troubleshooting, not required)
+# md "C:\ProcessMonitor"
 # Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
 
 # now shutdown, in preparation for creating an image
