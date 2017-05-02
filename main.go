@@ -482,7 +482,7 @@ func RunWorker() {
 				lastReportedNoTasks = time.Now()
 				// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
 				remainingTaskCountText := ""
-				if remainingTasks := config.NumberOfTasksToRun - tasksResolved; remainingTasks >= 0 {
+				if remainingTasks := int(config.NumberOfTasksToRun - tasksResolved); remainingTasks >= 0 {
 					remainingTaskCountText = fmt.Sprintf(" %v more tasks to run before exiting.", remainingTasks)
 				}
 				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
@@ -494,14 +494,12 @@ func RunWorker() {
 			}
 			tasksResolved++
 			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
-			remainingTasks := config.NumberOfTasksToRun - tasksResolved
+			remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
 			remainingTaskCountText := ""
-			if config.NumberOfTasksToRun > 0 {
-				if remainingTasks > 0 {
-					remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
-				}
+			if remainingTasks > 0 {
+				remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
 			}
-			log.Printf("Resolved %v tasks in total so far%v", tasksResolved, remainingTaskCountText)
+			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
 				if configureForAws {
