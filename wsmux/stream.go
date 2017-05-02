@@ -3,6 +3,7 @@ package wsmux
 import (
 	"fmt"
 	"io"
+	"net"
 	"sync"
 	"time"
 )
@@ -31,7 +32,7 @@ type Stream struct {
 	capLock        sync.Mutex
 	remoteCapacity int
 
-	writeChan chan *Frame
+	writeChan chan frame
 
 	ackCond  *sync.Cond
 	readCond *sync.Cond
@@ -45,7 +46,7 @@ type Stream struct {
 	session *Session
 }
 
-func newStream(id uint32, writeChan chan *Frame, session *Session) *Stream {
+func newStream(id uint32, writeChan chan frame, session *Session) *Stream {
 	stream := &Stream{
 		id:             id,
 		rb:             make([]byte, 0),
@@ -206,4 +207,12 @@ func (s *Stream) SetDeadline(t time.Time) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Stream) LocalAddr() net.Addr {
+	return s.session.conn.LocalAddr()
+}
+
+func (s *Stream) RemoteAddr() net.Addr {
+	return s.session.conn.RemoteAddr()
 }

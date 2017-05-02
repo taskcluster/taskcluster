@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"testing"
@@ -42,7 +43,7 @@ func init() {
 	}()
 }
 
-func handleStream(stream *Stream) {
+func handleStream(stream net.Conn) {
 	for {
 		b := make([]byte, 2048)
 		size, err := stream.Read(b)

@@ -41,40 +41,39 @@ func newHeader(msg byte, id uint32) header {
 	return h
 }
 
-// Frame ...
-type Frame struct {
+type frame struct {
 	id      uint32
 	msg     byte
 	payload []byte
 }
 
-func (f *Frame) Write() []byte {
+func (f frame) Write() []byte {
 	h := []byte(newHeader(f.msg, f.id))
 	h = append(h, f.payload...)
 	return h
 }
 
-func newDataFrame(id uint32, buf []byte) *Frame {
-	frame := &Frame{id: id, msg: msgDAT, payload: buf}
+func newDataFrame(id uint32, buf []byte) frame {
+	frame := frame{id: id, msg: msgDAT, payload: buf}
 	return frame
 }
 
-func newSynFrame(id uint32) *Frame {
-	frame := &Frame{id: id, msg: msgSYN, payload: nil}
+func newSynFrame(id uint32) frame {
+	frame := frame{id: id, msg: msgSYN, payload: nil}
 	return frame
 }
 
-func newAckFrame(id uint32, cap uint32) *Frame {
-	frame := &Frame{id: id, msg: msgACK}
+func newAckFrame(id uint32, cap uint32) frame {
+	frame := frame{id: id, msg: msgACK}
 	frame.payload = make([]byte, 4)
 	binary.LittleEndian.PutUint32(frame.payload, cap)
 	return frame
 }
 
-func newFinFrame(id uint32, buf []byte) *Frame {
-	return &Frame{id: id, msg: msgFIN, payload: buf}
+func newFinFrame(id uint32, buf []byte) frame {
+	return frame{id: id, msg: msgFIN, payload: buf}
 }
 
-func newClsFrame(id uint32) *Frame {
-	return &Frame{id: id, msg: msgCLS}
+func newClsFrame(id uint32) frame {
+	return frame{id: id, msg: msgCLS}
 }

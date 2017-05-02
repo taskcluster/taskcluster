@@ -3,15 +3,17 @@ package wsmux
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/taskcluster/slugid-go/slugid"
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/taskcluster/slugid-go/slugid"
 )
 
 const (
@@ -30,7 +32,7 @@ type Session struct {
 	streamLock sync.RWMutex
 
 	streams    map[uint32]*Stream
-	writes     chan *Frame
+	writes     chan frame
 	streamChan chan *Stream
 
 	conn     *websocket.Conn
@@ -48,7 +50,7 @@ type Session struct {
 func newSession(conn *websocket.Conn, server uint32, onRemoteClose func(*Session)) *Session {
 	s := &Session{
 		streams:        make(map[uint32]*Stream),
-		writes:         make(chan *Frame, defaultQueueSize),
+		writes:         make(chan frame, defaultQueueSize),
 		streamChan:     make(chan *Stream, defaultStreamQueueSize),
 		conn:           conn,
 		nextID:         server,
@@ -159,10 +161,8 @@ func (s *Session) recvLoop() {
 
 func (s *Session) sendLoop() {
 	for {
-		frame := <-s.writes
-		err := s.conn.WriteMessage(websocket.BinaryMessage, frame.Write())
-		s.logger.Printf("wrote frame: ")
-		s.logger.Print(frame)
+		fr := <-s.writes
+		err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
 		if err != nil {
 			s.logger.Print(err)
 		}
@@ -170,7 +170,7 @@ func (s *Session) sendLoop() {
 }
 
 // Accept ...
-func (s *Session) Accept() (*Stream, error) {
+func (s *Session) Accept() (net.Conn, error) {
 	select {
 	case stream := <-s.streamChan:
 		return stream, nil
@@ -180,7 +180,7 @@ func (s *Session) Accept() (*Stream, error) {
 }
 
 // Open ...
-func (s *Session) Open() (*Stream, error) {
+func (s *Session) Open() (net.Conn, error) {
 	if s.remoteClosed {
 		return nil, errRemoteClosed
 	}
@@ -213,4 +213,8 @@ func (s *Session) removeStream(id uint32) {
 	s.streamLock.Lock()
 	defer s.streamLock.Unlock()
 	delete(s.streams, id)
+}
+
+func (s *Session) Addr() net.Addr {
+	return s.conn.LocalAddr()
 }
