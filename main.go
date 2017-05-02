@@ -482,8 +482,10 @@ func RunWorker() {
 				lastReportedNoTasks = time.Now()
 				// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
 				remainingTaskCountText := ""
-				if remainingTasks := int(config.NumberOfTasksToRun - tasksResolved); remainingTasks >= 0 {
-					remainingTaskCountText = fmt.Sprintf(" %v more tasks to run before exiting.", remainingTasks)
+				if config.NumberOfTasksToRun > 0 {
+					if remainingTasks := int(config.NumberOfTasksToRun - tasksResolved); remainingTasks >= 0 {
+						remainingTaskCountText = fmt.Sprintf(" %v more tasks to run before exiting.", remainingTasks)
+					}
 				}
 				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
 			}
