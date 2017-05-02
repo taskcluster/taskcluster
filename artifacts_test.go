@@ -258,8 +258,8 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 		})
 }
 
-// Task payload specifies a directory artifact which is a regular file on worker
-func TestDirectoryArtifactIsFile(t *testing.T) {
+// TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
+func TestDefaultArtifactExpiry(t *testing.T) {
 
 	setup(t)
 	validateArtifacts(t,
@@ -284,8 +284,8 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 	)
 }
 
-// TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
-func TestDefaultArtifactExpiry(t *testing.T) {
+// Task payload specifies a directory artifact which is a regular file on worker
+func TestDirectoryArtifactIsFile(t *testing.T) {
 
 	setup(t)
 	validateArtifacts(t,
