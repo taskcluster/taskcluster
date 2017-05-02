@@ -258,7 +258,7 @@ and reports back results to the queue.
 Simply run:
 
 ```
-generic-worker --config CONFIG-FILE
+generic-worker run --config CONFIG-FILE
 ```
 
 # Create a test job
