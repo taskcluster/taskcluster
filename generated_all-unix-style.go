@@ -40,8 +40,9 @@ type (
 		// `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
 		Artifacts []struct {
 
-			// Date when artifact should expire must be in the future
-			Expires tcclient.Time `json:"expires"`
+			// Date when artifact should expire must be in the future, no earlier than task deadline, but
+			// no later than task expiry. If not set, defaults to task expiry.
+			Expires tcclient.Time `json:"expires,omitempty"`
 
 			// Name of the artifact, as it will be published. If not set, `path` will be used.
 			Name string `json:"name,omitempty"`
@@ -356,7 +357,7 @@ func taskPayloadSchema() string {
         "additionalProperties": false,
         "properties": {
           "expires": {
-            "description": "Date when artifact should expire must be in the future",
+            "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.",
             "format": "date-time",
             "title": "Expiry date and time",
             "type": "string"
@@ -383,8 +384,7 @@ func taskPayloadSchema() string {
         },
         "required": [
           "type",
-          "path",
-          "expires"
+          "path"
         ],
         "type": "object"
       },

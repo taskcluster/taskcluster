@@ -17,6 +17,13 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
+type PayloadArtifact struct {
+	Expires tcclient.Time `json:"expires,omitempty"`
+	Name    string        `json:"name,omitempty"`
+	Path    string        `json:"path"`
+	Type    string        `json:"type"`
+}
+
 var (
 	inAnHour    tcclient.Time
 	testdataDir string
@@ -105,7 +112,6 @@ func setup(t *testing.T) {
 }
 
 func submitTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
-	taskID = slugid.Nice()
 	// check we have all the env vars we need to run this test
 	if config.ClientID == "" || config.AccessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
@@ -116,6 +122,7 @@ func submitTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWo
 		Certificate: config.Certificate,
 	}
 	myQueue = queue.New(creds)
+	taskID = slugid.Nice()
 
 	b, err := json.Marshal(&payload)
 	if err != nil {

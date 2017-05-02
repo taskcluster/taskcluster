@@ -66,11 +66,12 @@ properties:
           title: Expiry date and time
           type: string
           format: date-time
-          description: Date when artifact should expire must be in the future
+          description: |-
+            Date when artifact should expire must be in the future, no earlier than task deadline, but
+            no later than task expiry. If not set, defaults to task expiry.
       required:
       - type
       - path
-      - expires
   features:
     title: Feature flags
     description: Feature flags enable additional functionality.

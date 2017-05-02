@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/httpbackoff"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -256,6 +257,10 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 		// if no name given, use canonical path
 		if base.Name == "" {
 			base.Name = base.CanonicalPath
+		}
+		// default expiry should be task expiry
+		if time.Time(base.Expires).IsZero() {
+			base.Expires = task.Definition.Expires
 		}
 		switch artifact.Type {
 		case "file":

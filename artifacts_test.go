@@ -30,12 +30,7 @@ var (
 
 func validateArtifacts(
 	t *testing.T,
-	payloadArtifacts []struct {
-		Expires tcclient.Time `json:"expires"`
-		Name    string        `json:"name,omitempty"`
-		Path    string        `json:"path"`
-		Type    string        `json:"type"`
-	},
+	payloadArtifacts []PayloadArtifact,
 	expected []Artifact) {
 
 	// to test, create a dummy task run with given artifacts
@@ -43,8 +38,19 @@ func validateArtifacts(
 	// artifacts would get uploaded...
 	tr := &TaskRun{
 		Payload: GenericWorkerPayload{
-			Artifacts: payloadArtifacts,
+			Artifacts: []struct {
+				Expires tcclient.Time `json:"expires,omitempty"`
+				Name    string        `json:"name,omitempty"`
+				Path    string        `json:"path"`
+				Type    string        `json:"type"`
+			}{},
 		},
+		Definition: queue.TaskDefinitionResponse{
+			Expires: inAnHour,
+		},
+	}
+	for i := range payloadArtifacts {
+		tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts[i])
 	}
 	artifacts := tr.PayloadArtifacts()
 
@@ -60,12 +66,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{
+		[]PayloadArtifact{
 			{
 				Expires: inAnHour,
 				Path:    "SampleArtifacts/_/X.txt",
@@ -93,12 +94,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{
+		[]PayloadArtifact{
 			{
 				Expires: inAnHour,
 				Path:    "SampleArtifacts",
@@ -146,12 +142,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{{
+		[]PayloadArtifact{{
 			Expires: inAnHour,
 			Path:    "SampleArtifacts",
 			Type:    "directory",
@@ -193,12 +184,7 @@ func TestMissingFileArtifact(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{{
+		[]PayloadArtifact{{
 			Expires: inAnHour,
 			Path:    "TestMissingFileArtifact/no_such_file",
 			Type:    "file",
@@ -225,12 +211,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{{
+		[]PayloadArtifact{{
 			Expires: inAnHour,
 			Path:    "TestMissingDirectoryArtifact/no_such_dir",
 			Type:    "directory",
@@ -257,12 +238,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{{
+		[]PayloadArtifact{{
 			Expires: inAnHour,
 			Path:    "SampleArtifacts/b/c",
 			Type:    "file",
@@ -289,12 +265,33 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 	validateArtifacts(t,
 
 		// what appears in task payload
-		[]struct {
-			Expires tcclient.Time `json:"expires"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
-		}{{
+		[]PayloadArtifact{{
+			Path: "SampleArtifacts/b/c/d.jpg",
+			Type: "file",
+		}},
+
+		// what we expect to discover on file system
+		[]Artifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
+					CanonicalPath: "SampleArtifacts/b/c/d.jpg",
+					Name:          "SampleArtifacts/b/c/d.jpg",
+					Expires:       inAnHour,
+				},
+				MimeType: "image/jpeg",
+			},
+		},
+	)
+}
+
+// TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
+func TestDefaultArtifactExpiry(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]PayloadArtifact{{
 			Expires: inAnHour,
 			Path:    "SampleArtifacts/b/c/d.jpg",
 			Name:    "SampleArtifacts/b/c/d.jpg",
@@ -325,7 +322,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 		Command:    append(helloGoodbye()),
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires,omitempty"`
 			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
@@ -365,7 +362,7 @@ func TestUpload(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires"`
+			Expires tcclient.Time `json:"expires,omitempty"`
 			Name    string        `json:"name,omitempty"`
 			Path    string        `json:"path"`
 			Type    string        `json:"type"`
@@ -387,7 +384,6 @@ func TestUpload(t *testing.T) {
 			ChainOfTrust: true,
 		},
 	}
-
 	td := testTask()
 
 	taskID, myQueue := submitTask(t, td, payload)
