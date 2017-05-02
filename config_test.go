@@ -92,9 +92,9 @@ func TestWorkerTypeMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Config should pass validation, but get:\n%s", err)
 	}
-	// loadConfig function specifies a value, let's check we can override it in the config file
-	if config.WorkerTypeMetadata["generic-worker"].(map[string]interface{})["go-os"] != "fakeos" {
-		t.Fatalf("Was expecting key 'go-os' from file worker-type-metadata.json to override default value\n%#v", config)
+	// loadConfig function specifies a value, let's check we can't override it in the config file ("fakeos")
+	if config.WorkerTypeMetadata["generic-worker"].(map[string]interface{})["go-os"] != runtime.GOOS {
+		t.Fatalf("Was not expecting key 'go-os' from file worker-type-metadata.json to override default value\n%#v", config)
 	}
 	// go-version not specified in config file, but should be set in loadConfig, let's check it is
 	if config.WorkerTypeMetadata["generic-worker"].(map[string]interface{})["go-version"] != runtime.Version() {

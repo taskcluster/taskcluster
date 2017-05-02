@@ -341,15 +341,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
 		TasksDir:                       defaultTasksDir(),
-		WorkerTypeMetadata: map[string]interface{}{
-			"generic-worker": map[string]string{
-				"go-arch":    runtime.GOARCH,
-				"go-os":      runtime.GOOS,
-				"go-version": runtime.Version(),
-				"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
-				"version":    version,
-			},
-		},
+		WorkerTypeMetadata:             map[string]interface{}{},
 	}
 
 	// now overlay with data from amazon, if applicable
@@ -371,6 +363,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	c.WorkerTypeMetadata["config"] = map[string]interface{}{
 		"runTaskAsCurrentUser": c.RunTasksAsCurrentUser,
 		"deploymentId":         c.DeploymentID,
+	}
+	c.WorkerTypeMetadata["generic-worker"] = map[string]interface{}{
+		"go-arch":    runtime.GOARCH,
+		"go-os":      runtime.GOOS,
+		"go-version": runtime.Version(),
+		"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
+		"version":    version,
 	}
 
 	// now check all required values are set
