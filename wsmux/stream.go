@@ -209,10 +209,12 @@ func (s *Stream) SetDeadline(t time.Time) error {
 	return nil
 }
 
+// LocalAddr ...
 func (s *Stream) LocalAddr() net.Addr {
 	return s.session.conn.LocalAddr()
 }
 
+// RemoteAddr ...
 func (s *Stream) RemoteAddr() net.Addr {
 	return s.session.conn.RemoteAddr()
 }

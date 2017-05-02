@@ -215,6 +215,7 @@ func (s *Session) removeStream(id uint32) {
 	delete(s.streams, id)
 }
 
+// Addr ...
 func (s *Session) Addr() net.Addr {
 	return s.conn.LocalAddr()
 }
