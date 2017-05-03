@@ -62,3 +62,29 @@ func TestAppDataNotShared(t *testing.T) {
 		}
 	}
 }
+
+// Test we don't get weird error:
+//  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
+func TestNoCreateFileMappingError(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command: []string{
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+		},
+		MaxRunTime: 10,
+	}
+	td := testTask()
+
+	taskID, myQueue := submitTask(t, td, payload)
+	RunWorker()
+
+	// make sure task resolved successfully
+	tsr, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatalf("Could not retrieve task status")
+	}
+	if tsr.Status.State != "completed" {
+		t.Fatalf("Was expecting state %q but got %q", "completed", tsr.Status.State)
+	}
+}
