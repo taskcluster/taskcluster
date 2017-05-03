@@ -76,7 +76,9 @@ func (f frame) String() string {
 }
 
 func newDataFrame(id uint32, buf []byte) frame {
-	frame := frame{id: id, msg: msgDAT, payload: buf}
+	b := make([]byte, len(buf))
+	_ = copy(b, buf)
+	frame := frame{id: id, msg: msgDAT, payload: b}
 	return frame
 }
 
@@ -92,8 +94,8 @@ func newAckFrame(id uint32, cap uint32) frame {
 	return frame
 }
 
-func newFinFrame(id uint32, buf []byte) frame {
-	return frame{id: id, msg: msgFIN, payload: buf}
+func newFinFrame(id uint32) frame {
+	return frame{id: id, msg: msgFIN, payload: nil}
 }
 
 func newClsFrame(id uint32) frame {

@@ -177,8 +177,7 @@ func (s *Session) recvLoop() {
 }
 
 func (s *Session) sendLoop() {
-	for {
-		fr := <-s.writes
+	for fr := range s.writes {
 		err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
 		s.logger.Print("wrote message: ")
 		s.logger.Print(fr)

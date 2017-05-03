@@ -91,7 +91,7 @@ func TestEchoLarge(t *testing.T) {
 	}
 	buf := make([]byte, 0)
 	for i := 0; i < 1500; i++ {
-		buf = append(buf, byte(5))
+		buf = append(buf, byte(i%127))
 	}
 	final := make([]byte, 0)
 

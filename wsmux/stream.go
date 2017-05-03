@@ -39,9 +39,13 @@ type stream struct {
 
 	id uint32
 
+	// rb is the read buffer
 	rb []byte
+	// bufLen stores the number of bytes in the read buffer
+	// use atomic to manipulate
+	bufLen uint32
 
-	// remoteCapacity is modified using atomics
+	// remoteCapacity is modified using atomic
 	remoteCapacity uint32
 
 	writeCond *sync.Cond
@@ -83,6 +87,7 @@ func (s *stream) addToBuffer(buf []byte) error {
 		return errBufferFull
 	}
 	s.rb = append(s.rb, buf...)
+	atomic.AddUint32(&s.bufLen, uint32(len(buf)))
 	return nil
 }
 
@@ -127,9 +132,9 @@ func (s *stream) Write(buf []byte) (int, error) {
 			}
 		}
 		cap := min(len(buf), int(atomic.LoadUint32(&s.remoteCapacity)))
-		frame := newDataFrame(s.id, buf[:cap])
+		fr := newDataFrame(s.id, buf[:cap])
 		buf = buf[cap:]
-		s.session.writes <- frame
+		s.session.writes <- fr
 		written += cap
 		atomic.AddUint32(&s.remoteCapacity, ^uint32(cap-1))
 	}
@@ -149,7 +154,8 @@ func (s *stream) Read(buf []byte) (int, error) {
 	defer func() {
 		_ = timer.Stop()
 	}()
-	if len(s.rb) == 0 {
+
+	if atomic.LoadUint32(&s.bufLen) == 0 {
 		if s.remoteClosed {
 			return 0, io.EOF
 		}
@@ -165,6 +171,7 @@ func (s *stream) Read(buf []byte) (int, error) {
 	defer s.bufLock.Unlock()
 	m := copy(buf, s.rb)
 	s.rb = s.rb[m:]
+	atomic.AddUint32(&s.bufLen, ^uint32(m-1))
 	s.session.writes <- newAckFrame(s.id, uint32(m))
 	return m, nil
 }
@@ -175,7 +182,7 @@ func (s *stream) Close() error {
 		return errBrokenPipe
 	}
 	s.closed = true
-	s.session.writes <- newFinFrame(s.id, nil)
+	s.session.writes <- newFinFrame(s.id)
 	if s.remoteClosed {
 		s.session.removeStream(s.id)
 	}

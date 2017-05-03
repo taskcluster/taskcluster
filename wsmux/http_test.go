@@ -70,7 +70,6 @@ func init() {
 }
 
 func TestGet(t *testing.T) {
-	t.Skip("No idea why this is failing")
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9998/http", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -101,6 +100,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestWebSocket(t *testing.T) {
+	// t.Skip("No idea why this is failing")
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9998/http", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -124,4 +124,5 @@ func TestWebSocket(t *testing.T) {
 		t.Log(bytes.NewBuffer(b).String())
 		t.Fatal("message inconsistent")
 	}
+
 }
