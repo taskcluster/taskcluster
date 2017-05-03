@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -24,18 +25,27 @@ var (
 
 // Stream ...
 type Stream struct {
+	// Locks
+	// readLock is used to make sure Read operations are mutually exclusive
+	readLock sync.Mutex
+	// writeLock is used to ensure that Write operations are mutually exclusive
+	writeLock sync.Mutex
+	// readTimeLock is passed to the the readCond conditional
+	readTimeLock sync.Mutex
+	// writeTimeLock is passed to the writeCond conditional
+	writeTimeLock sync.Mutex
+	// bufLock locks the read buffer rb
+	bufLock sync.Mutex
+
 	id uint32
 
-	rb       []byte
-	readLock sync.Mutex
+	rb []byte
 
-	capLock        sync.Mutex
-	remoteCapacity int
+	// remoteCapacity is modified using atomics
+	remoteCapacity uint32
 
-	writeChan chan frame
-
-	ackCond  *sync.Cond
-	readCond *sync.Cond
+	writeCond *sync.Cond
+	readCond  *sync.Cond
 
 	remoteClosed bool
 	closed       bool
@@ -46,36 +56,33 @@ type Stream struct {
 	session *Session
 }
 
-func newStream(id uint32, writeChan chan frame, session *Session) *Stream {
+func newStream(id uint32, session *Session) *Stream {
 	stream := &Stream{
 		id:             id,
 		rb:             make([]byte, 0),
-		writeChan:      writeChan,
 		remoteCapacity: DefaultCapacity,
 		writeDeadline:  time.Now().Add(time.Second * 30),
 		readDeadline:   time.Now().Add(time.Second * 30),
 	}
-	stream.ackCond = sync.NewCond(&stream.capLock)
-	stream.readCond = sync.NewCond(&stream.readLock)
+	stream.writeCond = sync.NewCond(&stream.writeTimeLock)
+	stream.readCond = sync.NewCond(&stream.readTimeLock)
 	stream.session = session
 	return stream
 }
 
 func (s *Stream) ack(read uint32) {
-	defer s.ackCond.Signal()
-	s.capLock.Lock()
-	s.remoteCapacity += int(read)
-	s.capLock.Unlock()
+	defer s.writeCond.Signal()
+	atomic.AddUint32(&s.remoteCapacity, read)
 }
 
-func (s *Stream) write(buf []byte) error {
+func (s *Stream) addToBuffer(buf []byte) error {
 	defer s.readCond.Signal()
-	s.readLock.Lock()
+	defer s.bufLock.Unlock()
+	s.bufLock.Lock()
 	if len(s.rb)+len(buf) > DefaultCapacity {
 		return errBufferFull
 	}
 	s.rb = append(s.rb, buf...)
-	s.readLock.Unlock()
 	return nil
 }
 
@@ -86,62 +93,44 @@ func (s *Stream) setRemoteClosed() {
 	}
 }
 
-func (s *Stream) waitForAck() <-chan struct{} {
-	signal := make(chan struct{}, 1)
-	go func() {
-		s.ackCond.Wait()
-		signal <- struct{}{}
-	}()
-	return signal
-}
-
-func (s *Stream) waitForData() <-chan struct{} {
-	signal := make(chan struct{}, 1)
-	go func() {
-		s.readCond.Wait()
-		signal <- struct{}{}
-	}()
-	return signal
-}
-
 /*
 Write is used to write bytes to the stream
 */
 func (s *Stream) Write(buf []byte) (int, error) {
-	// Trivial Case: len of buffer is less than capacity of remote buffer
-	// No need to wait for an ack packet in this case
-	s.capLock.Lock()
-	defer s.capLock.Unlock()
-
-	if s.closed {
-		return 0, errBrokenPipe
-	}
+	s.writeLock.Lock()
+	defer s.writeLock.Unlock()
 
 	// Length of buffer is greater than remoteCapacity
 	l, written := len(buf), 0
+	timeout := false
+	timer := time.AfterFunc(s.writeDeadline.Sub(time.Now()), func() {
+		timeout = true
+		s.writeCond.Signal()
+	})
 	for written != l {
+		if s.closed {
+			return written, errBrokenPipe
+		}
+		if timeout {
+			return written, errWriteTimeout
+		}
 		// If remote capacity is zero, wait for an ack packet
-		if s.remoteCapacity == 0 {
-			var timeout <-chan time.Time
-			if !s.writeDeadline.IsZero() {
-				timeout = time.After(s.writeDeadline.Sub(time.Now()))
-			}
-			select {
-			case <-timeout:
-				// caplock would be unlocked by Wait in waitForAck
-				// lock before returning
-				s.capLock.Lock()
+		if atomic.LoadUint32(&s.remoteCapacity) == 0 {
+			s.writeTimeLock.Lock()
+			s.writeCond.Wait()
+			s.writeTimeLock.Unlock()
+			if timeout {
 				return written, errWriteTimeout
-			case <-s.waitForAck():
 			}
 		}
-		cap := min(len(buf), s.remoteCapacity)
+		cap := min(len(buf), int(atomic.LoadUint32(&s.remoteCapacity)))
 		frame := newDataFrame(s.id, buf[:cap])
 		buf = buf[cap:]
-		s.writeChan <- frame
+		s.session.writes <- frame
 		written += cap
-		s.remoteCapacity -= cap
+		atomic.AddUint32(&s.remoteCapacity, ^uint32(cap-1))
 	}
+	_ = timer.Stop()
 	return l, nil
 }
 
@@ -150,26 +139,29 @@ func (s *Stream) Read(buf []byte) (int, error) {
 	s.readLock.Lock()
 	defer s.readLock.Unlock()
 
+	timeout := false
+	timer := time.AfterFunc(s.readDeadline.Sub(time.Now()), func() {
+		timeout = true
+		s.readCond.Signal()
+	})
 	if len(s.rb) == 0 {
 		if s.remoteClosed {
 			return 0, io.EOF
 		}
-		var timeout <-chan time.Time
-		if !s.readDeadline.IsZero() {
-			timeout = time.After(s.readDeadline.Sub(time.Now()))
-		}
-		select {
-		case <-timeout:
-			// Mutex unlocked by wait call from waitForData()
-			// Lock before return
-			s.readLock.Lock()
+		s.readTimeLock.Lock()
+		s.readCond.Wait()
+		s.readTimeLock.Unlock()
+		if timeout {
 			return 0, errReadTimeout
-		case <-s.waitForData():
 		}
+
 	}
+	s.bufLock.Lock()
+	defer s.bufLock.Unlock()
 	m := copy(buf, s.rb)
 	s.rb = s.rb[m:]
-	s.writeChan <- newAckFrame(s.id, uint32(m))
+	s.session.writes <- newAckFrame(s.id, uint32(m))
+	_ = timer.Stop()
 	return m, nil
 }
 
@@ -179,7 +171,7 @@ func (s *Stream) Close() error {
 		return errBrokenPipe
 	}
 	s.closed = true
-	s.writeChan <- newFinFrame(s.id, nil)
+	s.session.writes <- newFinFrame(s.id, nil)
 	if s.remoteClosed {
 		s.session.removeStream(s.id)
 	}

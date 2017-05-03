@@ -1,6 +1,7 @@
 package wsmux
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -88,7 +89,7 @@ func (s *Session) recvLoop() {
 				break
 			}
 			s.streamLock.Lock()
-			s.streams[streamID] = newStream(streamID, s.writes, s)
+			s.streams[streamID] = newStream(streamID, s)
 			s.streamLock.Unlock()
 			s.logger.Printf("created stream with id %d", streamID)
 			s.streamChan <- s.streams[streamID]
@@ -127,7 +128,7 @@ func (s *Session) recvLoop() {
 				s.logger.Printf("Error reading data from FIN packet for stream %d", streamID)
 				break
 			}
-			err = stream.write(buf)
+			err = stream.addToBuffer(buf)
 			if err != nil {
 				s.logger.Print(err)
 			}
@@ -141,7 +142,7 @@ func (s *Session) recvLoop() {
 				s.logger.Printf("DAT packet for unknown stream with id %d dropped", streamID)
 			}
 			buf, err := ioutil.ReadAll(msgReader)
-			err = stream.write(buf)
+			err = stream.addToBuffer(buf)
 			s.logger.Printf("received DAT packet with id %d: payload length %d bytes", streamID, len(buf))
 			if err != nil {
 				s.logger.Print(err)
@@ -163,6 +164,8 @@ func (s *Session) sendLoop() {
 	for {
 		fr := <-s.writes
 		err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
+		s.logger.Print("wrote message: ")
+		s.logger.Print(bytes.NewBuffer(fr.payload).String())
 		if err != nil {
 			s.logger.Print(err)
 		}
@@ -191,7 +194,7 @@ func (s *Session) Open() (net.Conn, error) {
 		return nil, errRemoteClosed
 	}
 
-	stream := newStream(s.nextID, s.writes, s)
+	stream := newStream(s.nextID, s)
 	s.streamLock.Lock()
 	defer s.streamLock.Unlock()
 	s.writes <- newSynFrame(s.nextID)
