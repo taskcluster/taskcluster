@@ -14,10 +14,10 @@ const DefaultCapacity = 1024
 
 var (
 	// errWriteTimeout is returned if no ack frame arrives before the duration.
-	errWriteTimeout = fmt.Errorf("write operation timed out")
+	errWriteTimeout = fmt.Errorf("wsmux: write operation timed out")
 
 	// errReadTimeout
-	errReadTimeout = fmt.Errorf("read operation timed out")
+	errReadTimeout = fmt.Errorf("wsmux: read operation timed out")
 
 	// errBufferFull
 	errBufferFull = fmt.Errorf("read buffer is full")
@@ -50,8 +50,8 @@ type stream struct {
 	remoteClosed bool
 	closed       bool
 
-	writeDeadline time.Time
-	readDeadline  time.Time
+	writeDeadline time.Duration
+	readDeadline  time.Duration
 
 	session *Session
 }
@@ -61,8 +61,8 @@ func newStream(id uint32, session *Session) *stream {
 		id:             id,
 		rb:             make([]byte, 0),
 		remoteCapacity: DefaultCapacity,
-		writeDeadline:  time.Now().Add(time.Second * 30),
-		readDeadline:   time.Now().Add(time.Second * 30),
+		writeDeadline:  30 * time.Second,
+		readDeadline:   30 * time.Second,
 	}
 	str.writeCond = sync.NewCond(&str.writeTimeLock)
 	str.readCond = sync.NewCond(&str.readTimeLock)
@@ -103,10 +103,13 @@ func (s *stream) Write(buf []byte) (int, error) {
 	// Length of buffer is greater than remoteCapacity
 	l, written := len(buf), 0
 	timeout := false
-	timer := time.AfterFunc(s.writeDeadline.Sub(time.Now()), func() {
+	timer := time.AfterFunc(30*time.Second, func() {
 		timeout = true
 		s.writeCond.Signal()
 	})
+	defer func() {
+		_ = timer.Stop()
+	}()
 	for written != l {
 		if s.closed {
 			return written, errBrokenPipe
@@ -130,7 +133,6 @@ func (s *stream) Write(buf []byte) (int, error) {
 		written += cap
 		atomic.AddUint32(&s.remoteCapacity, ^uint32(cap-1))
 	}
-	_ = timer.Stop()
 	return l, nil
 }
 
@@ -140,10 +142,13 @@ func (s *stream) Read(buf []byte) (int, error) {
 	defer s.readLock.Unlock()
 
 	timeout := false
-	timer := time.AfterFunc(s.readDeadline.Sub(time.Now()), func() {
+	timer := time.AfterFunc(30*time.Second, func() {
 		timeout = true
 		s.readCond.Signal()
 	})
+	defer func() {
+		_ = timer.Stop()
+	}()
 	if len(s.rb) == 0 {
 		if s.remoteClosed {
 			return 0, io.EOF
@@ -151,7 +156,7 @@ func (s *stream) Read(buf []byte) (int, error) {
 		s.readTimeLock.Lock()
 		s.readCond.Wait()
 		s.readTimeLock.Unlock()
-		if timeout {
+		if timeout == true {
 			return 0, errReadTimeout
 		}
 
@@ -161,7 +166,6 @@ func (s *stream) Read(buf []byte) (int, error) {
 	m := copy(buf, s.rb)
 	s.rb = s.rb[m:]
 	s.session.writes <- newAckFrame(s.id, uint32(m))
-	_ = timer.Stop()
 	return m, nil
 }
 
@@ -180,13 +184,13 @@ func (s *stream) Close() error {
 
 // SetReadDeadline ...
 func (s *stream) SetReadDeadline(t time.Time) error {
-	s.readDeadline = t
+	s.readDeadline = t.Sub(time.Now())
 	return nil
 }
 
 // SetWriteDeadline ...
 func (s *stream) SetWriteDeadline(t time.Time) error {
-	s.writeDeadline = t
+	s.writeDeadline = t.Sub(time.Now())
 	return nil
 }
 

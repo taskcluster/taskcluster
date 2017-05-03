@@ -1,7 +1,9 @@
 package wsmux
 
 import (
+	"bytes"
 	"encoding/binary"
+	"strconv"
 )
 
 const (
@@ -51,6 +53,26 @@ func (f frame) Write() []byte {
 	h := []byte(newHeader(f.msg, f.id))
 	h = append(h, f.payload...)
 	return h
+}
+
+func (f frame) String() string {
+	str := strconv.Itoa(int(f.id))
+	str += " "
+	switch f.msg {
+	case msgDAT:
+		str += "DAT"
+	case msgSYN:
+		str += "SYN"
+	case msgACK:
+		str += "ACK"
+	case msgFIN:
+		str += "FIN"
+	case msgCLS:
+		str += "CLS"
+	}
+	str += " "
+	str += bytes.NewBuffer(f.payload).String()
+	return str
 }
 
 func newDataFrame(id uint32, buf []byte) frame {

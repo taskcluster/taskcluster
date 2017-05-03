@@ -1,7 +1,6 @@
 package wsmux
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -43,24 +42,37 @@ type Session struct {
 	closed       bool
 	nextID       uint32
 
-	onRemoteClose  func(*Session)
-	acceptDeadline time.Duration
-	logger         *log.Logger
+	RemoteCloseCallback func()
+	acceptDeadline      time.Duration
+	logger              *log.Logger
 }
 
-func newSession(conn *websocket.Conn, server bool, onRemoteClose func(*Session)) *Session {
+/*
+newSession creates a new session over a gorilla websocket connection
+
+if server == true then nextID = 0
+else nextID = 1
+This ensures that server and client do not accidentally open a new connection with
+the same ID
+
+*/
+
+func newSession(conn *websocket.Conn, server bool, conf *Config) *Session {
+	if conf == nil {
+		conf = &Config{}
+	}
 	nextID := uint32(1)
 	if server {
 		nextID = 0
 	}
 	s := &Session{
-		streams:        make(map[uint32]*stream),
-		writes:         make(chan frame, defaultQueueSize),
-		streamChan:     make(chan *stream, defaultStreamQueueSize),
-		conn:           conn,
-		nextID:         nextID,
-		onRemoteClose:  onRemoteClose,
-		acceptDeadline: 30 * time.Second,
+		streams:             make(map[uint32]*stream),
+		writes:              make(chan frame, defaultQueueSize),
+		streamChan:          make(chan *stream, defaultStreamQueueSize),
+		conn:                conn,
+		nextID:              nextID,
+		RemoteCloseCallback: conf.RemoteCloseCallback,
+		acceptDeadline:      30 * time.Second,
 	}
 	file, err := os.Create("log_session_" + slugid.Nice())
 	if err != nil {
@@ -156,8 +168,8 @@ func (s *Session) recvLoop() {
 		case msgCLS:
 			s.logger.Printf("Received cls packet from remote session")
 			s.remoteClosed = true
-			if s.onRemoteClose != nil {
-				s.onRemoteClose(s)
+			if s.RemoteCloseCallback != nil {
+				s.RemoteCloseCallback()
 			}
 		}
 
@@ -169,7 +181,7 @@ func (s *Session) sendLoop() {
 		fr := <-s.writes
 		err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
 		s.logger.Print("wrote message: ")
-		s.logger.Print(bytes.NewBuffer(fr.payload).String())
+		s.logger.Print(fr)
 		if err != nil {
 			s.logger.Print(err)
 		}
