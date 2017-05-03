@@ -234,7 +234,7 @@ tasks:
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: gecko-t-win10-64-cu
+    workerType: gecko-t-win10-64
     metadata:
       name: "Build/test 64 bit generic-worker on Windows 10"
       description: "This builds and tests the 32 bit Windows version of generic-worker on Windows 10"
