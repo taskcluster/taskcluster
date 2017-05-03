@@ -23,8 +23,8 @@ var (
 	errBufferFull = fmt.Errorf("read buffer is full")
 )
 
-// Stream ...
-type Stream struct {
+// stream ...
+type stream struct {
 	// Locks
 	// readLock is used to make sure Read operations are mutually exclusive
 	readLock sync.Mutex
@@ -56,26 +56,26 @@ type Stream struct {
 	session *Session
 }
 
-func newStream(id uint32, session *Session) *Stream {
-	stream := &Stream{
+func newStream(id uint32, session *Session) *stream {
+	str := &stream{
 		id:             id,
 		rb:             make([]byte, 0),
 		remoteCapacity: DefaultCapacity,
 		writeDeadline:  time.Now().Add(time.Second * 30),
 		readDeadline:   time.Now().Add(time.Second * 30),
 	}
-	stream.writeCond = sync.NewCond(&stream.writeTimeLock)
-	stream.readCond = sync.NewCond(&stream.readTimeLock)
-	stream.session = session
-	return stream
+	str.writeCond = sync.NewCond(&str.writeTimeLock)
+	str.readCond = sync.NewCond(&str.readTimeLock)
+	str.session = session
+	return str
 }
 
-func (s *Stream) ack(read uint32) {
+func (s *stream) ack(read uint32) {
 	defer s.writeCond.Signal()
 	atomic.AddUint32(&s.remoteCapacity, read)
 }
 
-func (s *Stream) addToBuffer(buf []byte) error {
+func (s *stream) addToBuffer(buf []byte) error {
 	defer s.readCond.Signal()
 	defer s.bufLock.Unlock()
 	s.bufLock.Lock()
@@ -86,7 +86,7 @@ func (s *Stream) addToBuffer(buf []byte) error {
 	return nil
 }
 
-func (s *Stream) setRemoteClosed() {
+func (s *stream) setRemoteClosed() {
 	s.remoteClosed = true
 	if s.closed {
 		s.session.removeStream(s.id)
@@ -96,7 +96,7 @@ func (s *Stream) setRemoteClosed() {
 /*
 Write is used to write bytes to the stream
 */
-func (s *Stream) Write(buf []byte) (int, error) {
+func (s *stream) Write(buf []byte) (int, error) {
 	s.writeLock.Lock()
 	defer s.writeLock.Unlock()
 
@@ -135,7 +135,7 @@ func (s *Stream) Write(buf []byte) (int, error) {
 }
 
 // Read ...
-func (s *Stream) Read(buf []byte) (int, error) {
+func (s *stream) Read(buf []byte) (int, error) {
 	s.readLock.Lock()
 	defer s.readLock.Unlock()
 
@@ -166,7 +166,7 @@ func (s *Stream) Read(buf []byte) (int, error) {
 }
 
 // Close ...
-func (s *Stream) Close() error {
+func (s *stream) Close() error {
 	if s.closed {
 		return errBrokenPipe
 	}
@@ -179,19 +179,19 @@ func (s *Stream) Close() error {
 }
 
 // SetReadDeadline ...
-func (s *Stream) SetReadDeadline(t time.Time) error {
+func (s *stream) SetReadDeadline(t time.Time) error {
 	s.readDeadline = t
 	return nil
 }
 
 // SetWriteDeadline ...
-func (s *Stream) SetWriteDeadline(t time.Time) error {
+func (s *stream) SetWriteDeadline(t time.Time) error {
 	s.writeDeadline = t
 	return nil
 }
 
 // SetDeadline ...
-func (s *Stream) SetDeadline(t time.Time) error {
+func (s *stream) SetDeadline(t time.Time) error {
 	if err := s.SetReadDeadline(t); err != nil {
 		return err
 	}
@@ -202,11 +202,11 @@ func (s *Stream) SetDeadline(t time.Time) error {
 }
 
 // LocalAddr ...
-func (s *Stream) LocalAddr() net.Addr {
+func (s *stream) LocalAddr() net.Addr {
 	return s.session.conn.LocalAddr()
 }
 
 // RemoteAddr ...
-func (s *Stream) RemoteAddr() net.Addr {
+func (s *stream) RemoteAddr() net.Addr {
 	return s.session.conn.RemoteAddr()
 }

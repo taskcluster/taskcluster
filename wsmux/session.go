@@ -32,9 +32,9 @@ var (
 type Session struct {
 	streamLock sync.RWMutex
 
-	streams    map[uint32]*Stream
+	streams    map[uint32]*stream
 	writes     chan frame
-	streamChan chan *Stream
+	streamChan chan *stream
 
 	conn     *websocket.Conn
 	connLock sync.Mutex
@@ -48,13 +48,17 @@ type Session struct {
 	logger         *log.Logger
 }
 
-func newSession(conn *websocket.Conn, server uint32, onRemoteClose func(*Session)) *Session {
+func newSession(conn *websocket.Conn, server bool, onRemoteClose func(*Session)) *Session {
+	nextID := uint32(1)
+	if server {
+		nextID = 0
+	}
 	s := &Session{
-		streams:        make(map[uint32]*Stream),
+		streams:        make(map[uint32]*stream),
 		writes:         make(chan frame, defaultQueueSize),
-		streamChan:     make(chan *Stream, defaultStreamQueueSize),
+		streamChan:     make(chan *stream, defaultStreamQueueSize),
 		conn:           conn,
-		nextID:         server,
+		nextID:         nextID,
 		onRemoteClose:  onRemoteClose,
 		acceptDeadline: 30 * time.Second,
 	}
@@ -97,9 +101,9 @@ func (s *Session) recvLoop() {
 
 		case msgACK:
 			s.streamLock.RLock()
-			stream := s.streams[streamID]
+			str := s.streams[streamID]
 			s.streamLock.RUnlock()
-			if stream == nil {
+			if str == nil {
 				s.logger.Printf("ACK packet for unknown stream with id %d dropped", streamID)
 				break
 			}
@@ -111,14 +115,14 @@ func (s *Session) recvLoop() {
 			} else {
 				read := binary.LittleEndian.Uint32(buf)
 				s.logger.Printf("received ACK packet with id %d: remote read %d bytes", streamID, read)
-				stream.ack(read)
+				str.ack(read)
 			}
 
 		case msgFIN:
 			s.streamLock.RLock()
-			stream := s.streams[streamID]
+			str := s.streams[streamID]
 			s.streamLock.RUnlock()
-			if stream == nil {
+			if str == nil {
 				s.logger.Printf("FIN packet for unknown stream with id %d dropped", streamID)
 				break
 			}
@@ -128,21 +132,21 @@ func (s *Session) recvLoop() {
 				s.logger.Printf("Error reading data from FIN packet for stream %d", streamID)
 				break
 			}
-			err = stream.addToBuffer(buf)
+			err = str.addToBuffer(buf)
 			if err != nil {
 				s.logger.Print(err)
 			}
-			stream.setRemoteClosed()
+			str.setRemoteClosed()
 
 		case msgDAT:
 			s.streamLock.Lock()
-			stream := s.streams[streamID]
+			str := s.streams[streamID]
 			s.streamLock.Unlock()
-			if stream == nil {
+			if str == nil {
 				s.logger.Printf("DAT packet for unknown stream with id %d dropped", streamID)
 			}
 			buf, err := ioutil.ReadAll(msgReader)
-			err = stream.addToBuffer(buf)
+			err = str.addToBuffer(buf)
 			s.logger.Printf("received DAT packet with id %d: payload length %d bytes", streamID, len(buf))
 			if err != nil {
 				s.logger.Print(err)
@@ -175,8 +179,8 @@ func (s *Session) sendLoop() {
 // Accept ...
 func (s *Session) Accept() (net.Conn, error) {
 	select {
-	case stream := <-s.streamChan:
-		return stream, nil
+	case str := <-s.streamChan:
+		return str, nil
 	case <-time.After(s.acceptDeadline):
 		return nil, errAcceptTimeout
 	}
@@ -194,12 +198,12 @@ func (s *Session) Open() (net.Conn, error) {
 		return nil, errRemoteClosed
 	}
 
-	stream := newStream(s.nextID, s)
+	str := newStream(s.nextID, s)
 	s.streamLock.Lock()
 	defer s.streamLock.Unlock()
 	s.writes <- newSynFrame(s.nextID)
-	s.streams[s.nextID] = stream
-	return stream, nil
+	s.streams[s.nextID] = str
+	return str, nil
 }
 
 // Close ...
