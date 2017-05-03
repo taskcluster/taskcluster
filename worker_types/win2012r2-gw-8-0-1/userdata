@@ -219,9 +219,9 @@ md "C:\ProcessMonitor"
 Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
 
 # now shutdown, in preparation for creating an image
-# we need to specify -AsJob due to following bug:
+# Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
 #   * https://www.reddit.com/r/PowerShell/comments/65250s/windows_10_creators_update_stopcomputer_not/dgfofug/?st=j1o3oa29&sh=e0c29c6d
 #   * https://support.microsoft.com/en-in/help/4014551/description-of-the-security-and-quality-rollup-for-the-net-framework-4
 #   * https://support.microsoft.com/en-us/help/4020459
-Stop-Computer -AsJob
+shutdown -s
 </powershell>
