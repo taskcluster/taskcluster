@@ -2,7 +2,6 @@ package wsmux
 
 import (
 	"encoding/binary"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,12 +18,6 @@ import (
 const (
 	defaultQueueSize       = 10
 	defaultStreamQueueSize = 10
-)
-
-var (
-	errRemoteClosed  = fmt.Errorf("remote session is no longer accepting connections")
-	errAcceptTimeout = fmt.Errorf("accept timed out")
-	errBrokenPipe    = fmt.Errorf("broken pipe")
 )
 
 // Session ...
@@ -189,24 +182,27 @@ func (s *Session) sendLoop() {
 
 // Accept ...
 func (s *Session) Accept() (net.Conn, error) {
+	if s.closed {
+		return nil, ErrBrokenPipe
+	}
 	select {
 	case str := <-s.streamChan:
 		return str, nil
 	case <-time.After(s.acceptDeadline):
-		return nil, errAcceptTimeout
+		return nil, ErrAcceptTimeout
 	}
 }
 
 // Open ...
 func (s *Session) Open() (net.Conn, error) {
 	if s.remoteClosed {
-		return nil, errRemoteClosed
+		return nil, ErrRemoteClosed
 	}
 
 	atomic.AddUint32(&s.nextID, 2)
 	if s.nextID == s.nextID%2 {
 		_ = s.Close()
-		return nil, errRemoteClosed
+		return nil, ErrRemoteClosed
 	}
 
 	str := newStream(s.nextID, s)
@@ -220,7 +216,7 @@ func (s *Session) Open() (net.Conn, error) {
 // Close ...
 func (s *Session) Close() error {
 	if s.closed {
-		return errBrokenPipe
+		return ErrBrokenPipe
 	}
 	s.closed = true
 	s.writes <- newClsFrame(0)

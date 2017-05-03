@@ -1,7 +1,6 @@
 package wsmux
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -11,17 +10,6 @@ import (
 
 // DefaultCapacity is the maximum length the read buffer will accept
 const DefaultCapacity = 1024
-
-var (
-	// errWriteTimeout is returned if no ack frame arrives before the duration.
-	errWriteTimeout = fmt.Errorf("wsmux: write operation timed out")
-
-	// errReadTimeout
-	errReadTimeout = fmt.Errorf("wsmux: read operation timed out")
-
-	// errBufferFull
-	errBufferFull = fmt.Errorf("read buffer is full")
-)
 
 // stream ...
 type stream struct {
@@ -45,6 +33,7 @@ type stream struct {
 	// use atomic to manipulate
 	bufLen uint32
 
+	// remoteCapacity tracks the spare buffer length of the remote read buffer
 	// remoteCapacity is modified using atomic
 	remoteCapacity uint32
 
@@ -84,7 +73,7 @@ func (s *stream) addToBuffer(buf []byte) error {
 	defer s.bufLock.Unlock()
 	s.bufLock.Lock()
 	if len(s.rb)+len(buf) > DefaultCapacity {
-		return errBufferFull
+		return ErrBufferFull
 	}
 	s.rb = append(s.rb, buf...)
 	atomic.AddUint32(&s.bufLen, uint32(len(buf)))
@@ -117,10 +106,10 @@ func (s *stream) Write(buf []byte) (int, error) {
 	}()
 	for written != l {
 		if s.closed {
-			return written, errBrokenPipe
+			return written, ErrBrokenPipe
 		}
 		if timeout {
-			return written, errWriteTimeout
+			return written, ErrWriteTimeout
 		}
 		// If remote capacity is zero, wait for an ack packet
 		if atomic.LoadUint32(&s.remoteCapacity) == 0 {
@@ -128,7 +117,7 @@ func (s *stream) Write(buf []byte) (int, error) {
 			s.writeCond.Wait()
 			s.writeTimeLock.Unlock()
 			if timeout {
-				return written, errWriteTimeout
+				return written, ErrWriteTimeout
 			}
 		}
 		cap := min(len(buf), int(atomic.LoadUint32(&s.remoteCapacity)))
@@ -163,7 +152,7 @@ func (s *stream) Read(buf []byte) (int, error) {
 		s.readCond.Wait()
 		s.readTimeLock.Unlock()
 		if timeout == true {
-			return 0, errReadTimeout
+			return 0, ErrReadTimeout
 		}
 
 	}
@@ -179,7 +168,7 @@ func (s *stream) Read(buf []byte) (int, error) {
 // Close ...
 func (s *stream) Close() error {
 	if s.closed {
-		return errBrokenPipe
+		return ErrBrokenPipe
 	}
 	s.closed = true
 	s.session.writes <- newFinFrame(s.id)
