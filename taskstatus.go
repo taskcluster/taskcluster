@@ -125,7 +125,7 @@ func (tsm *TaskStatusManager) Reclaim() error {
 			}
 
 			task.TaskReclaimResponse = *tcrsp
-			// TODO: probably should use a mutex here
+			// Don't need a mutex here, since tsm.updateStatus is already mutex-protected
 			task.Queue = queue.New(&tcclient.Credentials{
 				ClientID:    tcrsp.Credentials.ClientID,
 				AccessToken: tcrsp.Credentials.AccessToken,
