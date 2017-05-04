@@ -26,9 +26,13 @@ If you prefer not to use a prepackaged binary, or want to have the latest unrele
 
 All being well, the binaries will be built under `${GOPATH}/bin`.
 
-# Create TaskCluster account
+# Acquire taskcluster credentials
 
-Head over to https://tools.taskcluster.net/auth/clients/ and create yourself a clientId with permanent credentials. Then go to https://tools.taskcluster.net/auth/roles/ and create a role called `client-id:<your-client-id>` and give it the scope `worker-developer`. Keep a note of your clientId and accessToken.
+* Sign up for a [Mozillians account](https://mozillians.org/en-US/)
+* Using your new Mozillians account, sign into [tools.taskcluster.net](https://tools.taskcluster.net/)
+* Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/)
+* Request membership of the [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/) mozillians group
+* Configure generic worker to use your new taskcluster credentials (see below)
 
 # Set up your env
 
@@ -305,4 +309,3 @@ Please see:
 * [Generic Worker presentations](https://docs.taskcluster.net/presentations) (focus on Windows platform)
 * [TaskCluster Web Tools](https://tools.taskcluster.net/)
 * [Generic Worker Open Bugs](https://bugzilla.mozilla.org/buglist.cgi?f1=product&list_id=12722874&o1=equals&query_based_on=Taskcluster%20last%202%20days&o2=equals&query_format=advanced&f2=component&v1=Taskcluster&v2=Generic-Worker&known_name=Taskcluster%20last%202%20days)
-
