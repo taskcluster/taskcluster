@@ -217,9 +217,9 @@ tasks:
           exit /b 0
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - go test -v -race ./...
+        - go test -v ./...
         - set GW_TESTS_GENERATE_USERS=true
-        - go test -v -race
+        - go test -v
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-386.exe
