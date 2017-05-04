@@ -194,8 +194,7 @@ type (
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/expires
 			Expires tcclient.Time `json:"expires"`
 
-			// Namespace of the indexed task, used to find the indexed task in the
-			// index.
+			// Index path of the task.
 			//
 			// Max length: 255
 			//
@@ -210,9 +209,7 @@ type (
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/rank
 			Rank float64 `json:"rank"`
 
-			// Unique task identifier, this is UUID encoded as
-			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-			// stripped of `=` padding.
+			// Unique task identifier for the task currently indexed at `namespace`.
 			//
 			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 			//
