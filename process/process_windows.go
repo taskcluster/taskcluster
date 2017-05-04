@@ -106,12 +106,13 @@ func (r *Result) String() string {
 %v`, r.SystemError)
 	}
 	if r.SubprocessResult != nil {
-		return fmt.Sprintf(`  Exit Code: %v
-  User Time: %v
-Kernel Time: %v
-  Wall Time: %v
-Peak Memory: %v
-     Result: %v`, r.ExitCode, r.UserTime, r.KernelTime, r.WallTime, r.PeakMemory, GetVerdict(r))
+		return fmt.Sprintf(`   Exit Code: %v
+Success Code: 0x%X
+   User Time: %v
+ Kernel Time: %v
+   Wall Time: %v
+ Peak Memory: %v
+      Result: %v`, r.ExitCode, r.SuccessCode, r.UserTime, r.KernelTime, r.WallTime, r.PeakMemory, GetVerdict(r))
 	}
 	return fmt.Sprintf("Worker in unknown state: %#v", r)
 }
