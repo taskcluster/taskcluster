@@ -18,16 +18,13 @@ properties:
         namespace:
           title:          "Namespace"
           description: |
-            Namespace of the indexed task, used to find the indexed task in the
-            index.
+            Index path of the task.
           type:           string
           maxLength:      255
         taskId:
           title:          "Task Identifier"
           description: |
-            Unique task identifier, this is UUID encoded as
-            [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-            stripped of `=` padding.
+            Unique task identifier for the task currently indexed at `namespace`.
           type:           string
           pattern:        {$const: slugid-pattern}
         rank:
