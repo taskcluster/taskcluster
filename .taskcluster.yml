@@ -90,10 +90,10 @@ tasks:
           git clean -fdx
           go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
           cd gw-codegen
-          go get -v
+          go get -v -u
           cd ..
           go generate
-          go get -v -t ./...
+          go get -v -u -t ./...
           test "$(git status --porcelain | wc -l)" == 0
           GORACE=history_size=7 go test -v -race ./...
           "${GOPATH}/bin/ineffassign" .
@@ -143,10 +143,10 @@ tasks:
         - git checkout {{ event.head.sha }}
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
-        - go get -v
+        - go get -v -u
         - cd ..
         - go generate
-        - go get -v -t ./...
+        - go get -v -u -t ./...
         - |
           :: this counts the number of lines returned by git status
           :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
@@ -217,10 +217,10 @@ tasks:
         - git checkout {{ event.head.sha }}
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
-        - go get -v
+        - go get -v -u
         - cd ..
         - go generate
-        - go get -v -t ./...
+        - go get -v -u -t ./...
         - |
           :: this counts the number of lines returned by git status
           :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
@@ -291,10 +291,10 @@ tasks:
         - git checkout {{ event.head.sha }}
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
-        - go get -v
+        - go get -v -u
         - cd ..
         - go generate
-        - go get -v -t ./...
+        - go get -v -u -t ./...
         - |
           :: this counts the number of lines returned by git status
           :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
@@ -368,10 +368,10 @@ tasks:
             git clean -fdx
             go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
             cd gw-codegen
-            go get -v
+            go get -v -u
             cd ..
             go generate
-            go get -v -t ./...
+            go get -v -u -t ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
             GORACE=history_size=7 go test -race -v ./...
@@ -429,10 +429,10 @@ tasks:
             git clean -fdx
             go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
             cd gw-codegen
-            go get -v
+            go get -v -u
             cd ..
             go generate
-            go get -v -t ./...
+            go get -v -u -t ./...
             test "$(git status --porcelain | wc -l)" == 0
             GORACE=history_size=7 go test -v ./...
             ineffassign .
