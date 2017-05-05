@@ -10,7 +10,7 @@ tasks:
 
 
   ##########################################################
-  ###################### docs upload #######################
+  ###################### Docs Upload #######################
   ##########################################################
 
   - provisionerId: '{{ taskcluster.docker.provisionerId }}'
@@ -47,65 +47,7 @@ tasks:
 
 
   ##########################################################
-  ##################### linux 64 build #####################
-  ##########################################################
-
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    metadata:
-      name: "Build/test 64 bit generic-worker on Debian GNU/Linux 8 (jessie)"
-      description: "This builds the 64 bit linux version of generic-worker"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.*
-          - push
-    scopes:
-      - secrets:get:repo:github.com/taskcluster/generic-worker
-      - docker-worker:cache:generic-worker-checkout
-    payload:
-      features:
-        taskclusterProxy: true
-      maxRunTime: 3600
-      image: golang
-      command:
-        - /bin/bash
-        - -vxec
-        - |
-          go version
-          go env
-          curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/generic-worker | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
-          source ~/env_private.sh
-          mkdir -p "${GOPATH}/src/github.com/taskcluster"
-          cd "${GOPATH}/src/github.com/taskcluster"
-          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
-          cd 'generic-worker'
-          git fetch '{{ event.head.repo.url }}' "+{{ event.head.sha }}:refs/heads/${TASK_ID}"
-          git checkout -B tmp -t "${TASK_ID}"
-          git clean -fdx
-          go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
-          cd gw-codegen
-          go get -v -u
-          cd ..
-          go generate
-          go get -v -u -t ./...
-          test "$(git status --porcelain | wc -l)" == 0
-          GORACE=history_size=7 go test -v -race ./...
-          "${GOPATH}/bin/ineffassign" .
-      artifacts:
-        public/build/generic-worker-linux-amd64:
-          path: "/go/bin/generic-worker"
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      cache:
-        generic-worker-checkout: /go/src
-
-
-  ##########################################################
-  ######################## win2012r2 #######################
+  ############## Windows Server 2012 R2 ####################
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
@@ -137,7 +79,9 @@ tasks:
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
         - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.sha }}:refs/heads/%TASK_ID%"'
-        - git checkout -B tmp -t "%TASK_ID%"
+        - 'git checkout "%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git checkout -B tmp -t "%TASK_ID%"'
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -178,7 +122,7 @@ tasks:
 
 
   ##########################################################
-  ########################## win7 ##########################
+  ##################### Windows 7 ##########################
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
@@ -210,7 +154,9 @@ tasks:
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
         - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.sha }}:refs/heads/%TASK_ID%"'
-        - git checkout -B tmp -t "%TASK_ID%"
+        - 'git checkout "%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git checkout -B tmp -t "%TASK_ID%"'
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -251,7 +197,7 @@ tasks:
 
 
   ##########################################################
-  ########################## win10 #########################
+  ##################### Windows 10 #########################
   ##########################################################
 
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
@@ -283,7 +229,9 @@ tasks:
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
         - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.sha }}:refs/heads/%TASK_ID%"'
-        - git checkout -B tmp -t "%TASK_ID%"
+        - 'git checkout "%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git checkout -B tmp -t "%TASK_ID%"'
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -324,7 +272,7 @@ tasks:
 
 
   ##########################################################
-  #################### OS X 10.11 build ####################
+  #################### OS X 10.11 Build ####################
   ##########################################################
 
   # - provisionerId: scl3-puppet
@@ -361,6 +309,8 @@ tasks:
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
             git fetch '{{ event.head.repo.url }}' "+{{ event.head.sha }}:refs/heads/${TASK_ID}"
+            git checkout "${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
             git checkout -B tmp -t "${TASK_ID}"
             git clean -fdx
             go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
@@ -388,7 +338,7 @@ tasks:
 
 
   ##########################################################
-  #################### Linux ARM6 build ####################
+  #################### Linux ARM6 Build ####################
   ##########################################################
 
   - provisionerId: pmoore-manual
@@ -424,6 +374,8 @@ tasks:
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
             git fetch '{{ event.head.repo.url }}' "+{{ event.head.sha }}:refs/heads/${TASK_ID}"
+            git checkout "${TASK_ID}"
+            git reset --hard '{{ event.head.sha }}'
             git checkout -B tmp -t "${TASK_ID}"
             git clean -fdx
             go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
@@ -447,3 +399,63 @@ tasks:
             url: https://storage.googleapis.com/golang/go1.8.linux-armv6l.tar.gz
           directory: go1.8
           format: tar.gz
+
+
+  ##########################################################
+  ################### Linux amd64 Build ####################
+  ##########################################################
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: "{{ taskcluster.docker.workerType }}"
+    metadata:
+      name: "Build/test 64 bit generic-worker on Debian GNU/Linux 8 (jessie)"
+      description: "This builds the 64 bit linux version of generic-worker"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    scopes:
+      - secrets:get:repo:github.com/taskcluster/generic-worker
+      - docker-worker:cache:generic-worker-checkout
+    payload:
+      features:
+        taskclusterProxy: true
+      maxRunTime: 3600
+      image: golang
+      command:
+        - /bin/bash
+        - -vxec
+        - |
+          go version
+          go env
+          curl -s http://taskcluster/secrets/v1/secret/repo:github.com/taskcluster/generic-worker | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | base64 -d > ~/env_private.sh
+          source ~/env_private.sh
+          mkdir -p "${GOPATH}/src/github.com/taskcluster"
+          cd "${GOPATH}/src/github.com/taskcluster"
+          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+          cd 'generic-worker'
+          git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/${TASK_ID}"
+          git checkout "${TASK_ID}"
+          git reset --hard '{{ event.head.sha }}'
+          git checkout -B tmp -t "${TASK_ID}"
+          git clean -fdx
+          go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+          cd gw-codegen
+          go get -v -u
+          cd ..
+          go generate
+          go get -v -u -t ./...
+          test "$(git status --porcelain | wc -l)" == 0
+          GORACE=history_size=7 go test -v -race ./...
+          "${GOPATH}/bin/ineffassign" .
+      artifacts:
+        public/build/generic-worker-linux-amd64:
+          path: "/go/bin/generic-worker"
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      cache:
+        generic-worker-checkout: /go/src
