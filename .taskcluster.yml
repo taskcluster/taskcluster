@@ -36,8 +36,7 @@ tasks:
         - |
           git clone {{event.head.repo.url}} repo
           cd repo
-          git config advice.detachedHead false
-          git checkout {{event.head.sha}}
+          git checkout -b "${TASK_ID}" '{{event.head.sha}}'
           export DOCS_PROJECT=generic-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md
           upload-project-docs
     metadata:
@@ -85,8 +84,7 @@ tasks:
           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
           cd 'generic-worker'
           git fetch '{{ event.head.repo.url }}' "+refs/*:refs/tasks/${TASK_ID}/*"
-          git config advice.detachedHead false
-          git checkout -f '{{ event.head.sha }}'
+          git checkout -b "${TASK_ID}" '{{ event.head.sha }}'
           git clean -fdx
           go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
           cd gw-codegen
@@ -132,7 +130,6 @@ tasks:
         - set GOROOT=%CD%\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
-        - git config --global advice.detachedHead false
         - go version
         - go env
         - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
@@ -140,7 +137,7 @@ tasks:
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
         - 'git fetch "{{ event.head.repo.url }}" "+refs/*:refs/tasks/%TASK_ID%/*"'
-        - git checkout {{ event.head.sha }}
+        - git checkout -b "%TASK_ID%" "{{ event.head.sha }}"
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -206,7 +203,6 @@ tasks:
         - set GOROOT=%CD%\go
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
-        - git config --global advice.detachedHead false
         - go version
         - go env
         - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
@@ -214,7 +210,7 @@ tasks:
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
         - 'git fetch "{{ event.head.repo.url }}" "+refs/*:refs/tasks/%TASK_ID%/*"'
-        - git checkout {{ event.head.sha }}
+        - git checkout -b "%TASK_ID%" "{{ event.head.sha }}"
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -280,7 +276,6 @@ tasks:
         - set GOROOT=%CD%\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
-        - git config --global advice.detachedHead false
         - go version
         - go env
         - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
@@ -288,7 +283,7 @@ tasks:
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
         - 'git fetch "{{ event.head.repo.url }}" "+refs/*:refs/tasks/%TASK_ID%/*"'
-        - git checkout {{ event.head.sha }}
+        - git checkout -b "%TASK_ID%" "{{ event.head.sha }}"
         - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -358,13 +353,15 @@ tasks:
             export GOROOT="$(pwd)/go1.8/go"
             export GOPATH="$(pwd)/gopath"
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+            go version
+            go env
             source "${GW_CREDS_BOOTSTRAP}"
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
             git fetch '{{ event.head.repo.url }}' "+refs/*:refs/tasks/${TASK_ID}/*"
-            git checkout -f '{{ event.head.sha }}'
+            git checkout -b "${TASK_ID}" '{{ event.head.sha }}'
             git clean -fdx
             go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
             cd gw-codegen
@@ -419,13 +416,15 @@ tasks:
             export GOPATH="$(pwd)/gopath"
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             export CGO_ENABLED=0
+            go version
+            go env
             source "${GW_CREDS_BOOTSTRAP}"
             mkdir -p "${GOPATH}/src/github.com/taskcluster"
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
             git fetch '{{ event.head.repo.url }}' "+refs/*:refs/tasks/${TASK_ID}/*"
-            git checkout -f '{{ event.head.sha }}'
+            git checkout -b "${TASK_ID}" '{{ event.head.sha }}'
             git clean -fdx
             go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
             cd gw-codegen
