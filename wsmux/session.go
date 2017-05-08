@@ -36,7 +36,7 @@ type Session struct {
 	nextID       uint32
 
 	RemoteCloseCallback func()
-	acceptDeadline      time.Duration
+	acceptDeadline      time.Time
 	logger              *log.Logger
 }
 
@@ -65,7 +65,7 @@ func newSession(conn *websocket.Conn, server bool, conf *Config) *Session {
 		conn:                conn,
 		nextID:              nextID,
 		RemoteCloseCallback: conf.RemoteCloseCallback,
-		acceptDeadline:      30 * time.Second,
+		acceptDeadline:      conf.acceptDeadline,
 	}
 	file, err := os.Create("log_session_" + slugid.Nice())
 	if err != nil {
@@ -185,11 +185,18 @@ func (s *Session) Accept() (net.Conn, error) {
 	if s.closed {
 		return nil, ErrBrokenPipe
 	}
+	var timeout <-chan time.Time
+	if !s.acceptDeadline.IsZero() {
+		deadline := s.acceptDeadline.Sub(time.Now())
+		timer := time.NewTimer(deadline)
+		defer timer.Stop()
+		timeout = timer.C
+	}
 	select {
+	case <-timeout:
+		return nil, ErrAcceptTimeout
 	case str := <-s.streamChan:
 		return str, nil
-	case <-time.After(s.acceptDeadline):
-		return nil, ErrAcceptTimeout
 	}
 }
 

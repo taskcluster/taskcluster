@@ -2,10 +2,12 @@ package wsmux
 
 import (
 	"github.com/gorilla/websocket"
+	"time"
 )
 
 type Config struct {
 	RemoteCloseCallback func()
+	acceptDeadline      time.Time
 }
 
 // Server (NOTE: set server field to 0 for server connection)

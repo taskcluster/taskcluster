@@ -13,11 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const (
-	getSuccess = "GET successful\n"
-	wsSuccess  = "WS successful\n"
-)
-
 func handler(w http.ResponseWriter, r *http.Request) {
 
 	upgrader := websocket.Upgrader{

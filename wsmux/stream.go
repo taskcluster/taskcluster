@@ -1,7 +1,6 @@
 package wsmux
 
 import (
-	"io"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -11,202 +10,171 @@ import (
 // DefaultCapacity is the maximum length the read buffer will accept
 const DefaultCapacity = 1024
 
-// stream ...
 type stream struct {
-	// Locks
-	// readLock is used to make sure Read operations are mutually exclusive
-	readLock sync.Mutex
-	// writeLock is used to ensure that Write operations are mutually exclusive
-	writeLock sync.Mutex
-	// readTimeLock is passed to the the readCond conditional
-	readTimeLock sync.Mutex
-	// writeTimeLock is passed to the writeCond conditional
-	writeTimeLock sync.Mutex
-	// bufLock locks the read buffer rb
-	bufLock sync.Mutex
+	id      uint32
+	bufLock sync.Mutex // lock b of type []byte
+	b       []byte
+	bc      uint32 // buffer length. Use atomics
+	rc      uint32 // track remote buffer capacity
 
-	id uint32
-
-	// rb is the read buffer
-	rb []byte
-	// bufLen stores the number of bytes in the read buffer
-	// use atomic to manipulate
-	bufLen uint32
-
-	// remoteCapacity tracks the spare buffer length of the remote read buffer
-	// remoteCapacity is modified using atomic
-	remoteCapacity uint32
-
-	writeCond *sync.Cond
-	readCond  *sync.Cond
-
-	remoteClosed bool
-	closed       bool
-
-	writeDeadline time.Duration
-	readDeadline  time.Duration
+	readLock  sync.Mutex // makes read operations mutually exclusive
+	writeLock sync.Mutex // makes write operations mutually exclusive
 
 	session *Session
+
+	readDeadline  time.Time
+	writeDeadline time.Time
+
+	readWaiting  atomic.Value
+	writeWaiting atomic.Value
+
+	readAvaliable  chan struct{}
+	writeAvailable chan struct{}
+
+	closed       atomic.Value
+	remoteClosed atomic.Value
 }
 
-func newStream(id uint32, session *Session) *stream {
+func newStream(id uint32, s *Session) *stream {
 	str := &stream{
-		id:             id,
-		rb:             make([]byte, 0),
-		remoteCapacity: DefaultCapacity,
-		writeDeadline:  30 * time.Second,
-		readDeadline:   30 * time.Second,
+		id:      id,
+		b:       make([]byte, 0),
+		bc:      0,
+		rc:      DefaultCapacity,
+		session: s,
 	}
-	str.writeCond = sync.NewCond(&str.writeTimeLock)
-	str.readCond = sync.NewCond(&str.readTimeLock)
-	str.session = session
+
+	str.readAvaliable = make(chan struct{}, 1)
+	str.writeAvailable = make(chan struct{}, 1)
+	str.readWaiting.Store(false)
+	str.writeWaiting.Store(false)
+	str.closed.Store(false)
+	str.remoteClosed.Store(false)
 	return str
 }
 
-func (s *stream) ack(read uint32) {
-	defer s.writeCond.Signal()
-	atomic.AddUint32(&s.remoteCapacity, read)
-}
-
-func (s *stream) addToBuffer(buf []byte) error {
-	defer s.readCond.Signal()
-	defer s.bufLock.Unlock()
-	s.bufLock.Lock()
-	if len(s.rb)+len(buf) > DefaultCapacity {
-		return ErrBufferFull
-	}
-	s.rb = append(s.rb, buf...)
-	atomic.AddUint32(&s.bufLen, uint32(len(buf)))
-	return nil
-}
-
-func (s *stream) setRemoteClosed() {
-	s.remoteClosed = true
-	if s.closed {
-		s.session.removeStream(s.id)
-	}
-}
-
-/*
-Write is used to write bytes to the stream
-*/
-func (s *stream) Write(buf []byte) (int, error) {
-	s.writeLock.Lock()
-	defer s.writeLock.Unlock()
-
-	// Length of buffer is greater than remoteCapacity
-	l, written := len(buf), 0
-	timeout := false
-	timer := time.AfterFunc(30*time.Second, func() {
-		timeout = true
-		s.writeCond.Signal()
-	})
-	defer func() {
-		_ = timer.Stop()
-	}()
-	for written != l {
-		if s.closed {
-			return written, ErrBrokenPipe
-		}
-		if timeout {
-			return written, ErrWriteTimeout
-		}
-		// If remote capacity is zero, wait for an ack packet
-		if atomic.LoadUint32(&s.remoteCapacity) == 0 {
-			s.writeTimeLock.Lock()
-			s.writeCond.Wait()
-			s.writeTimeLock.Unlock()
-			if timeout {
-				return written, ErrWriteTimeout
-			}
-		}
-		cap := min(len(buf), int(atomic.LoadUint32(&s.remoteCapacity)))
-		fr := newDataFrame(s.id, buf[:cap])
-		buf = buf[cap:]
-		s.session.writes <- fr
-		written += cap
-		atomic.AddUint32(&s.remoteCapacity, ^uint32(cap-1))
-	}
-	return l, nil
-}
-
-// Read ...
-func (s *stream) Read(buf []byte) (int, error) {
-	s.readLock.Lock()
-	defer s.readLock.Unlock()
-
-	timeout := false
-	timer := time.AfterFunc(30*time.Second, func() {
-		timeout = true
-		s.readCond.Signal()
-	})
-	defer func() {
-		_ = timer.Stop()
-	}()
-
-	if atomic.LoadUint32(&s.bufLen) == 0 {
-		if s.remoteClosed {
-			return 0, io.EOF
-		}
-		s.readTimeLock.Lock()
-		s.readCond.Wait()
-		s.readTimeLock.Unlock()
-		if timeout == true {
-			return 0, ErrReadTimeout
-		}
-
-	}
-	s.bufLock.Lock()
-	defer s.bufLock.Unlock()
-	m := copy(buf, s.rb)
-	s.rb = s.rb[m:]
-	atomic.AddUint32(&s.bufLen, ^uint32(m-1))
-	s.session.writes <- newAckFrame(s.id, uint32(m))
-	return m, nil
-}
-
-// Close ...
-func (s *stream) Close() error {
-	if s.closed {
-		return ErrBrokenPipe
-	}
-	s.closed = true
-	s.session.writes <- newFinFrame(s.id)
-	if s.remoteClosed {
-		s.session.removeStream(s.id)
-	}
-	return nil
-}
-
-// SetReadDeadline ...
-func (s *stream) SetReadDeadline(t time.Time) error {
-	s.readDeadline = t.Sub(time.Now())
-	return nil
-}
-
-// SetWriteDeadline ...
-func (s *stream) SetWriteDeadline(t time.Time) error {
-	s.writeDeadline = t.Sub(time.Now())
-	return nil
-}
-
-// SetDeadline ...
-func (s *stream) SetDeadline(t time.Time) error {
-	if err := s.SetReadDeadline(t); err != nil {
-		return err
-	}
-	if err := s.SetWriteDeadline(t); err != nil {
-		return err
-	}
-	return nil
-}
-
-// LocalAddr ...
 func (s *stream) LocalAddr() net.Addr {
 	return s.session.conn.LocalAddr()
 }
 
-// RemoteAddr ...
 func (s *stream) RemoteAddr() net.Addr {
 	return s.session.conn.RemoteAddr()
+}
+
+func (s *stream) SetReadDeadline(t time.Time) error {
+	s.readDeadline = t
+	return nil
+}
+
+func (s *stream) SetWriteDeadline(t time.Time) error {
+	s.writeDeadline = t
+	return nil
+}
+
+func (s *stream) SetDeadline(t time.Time) error {
+	s.readDeadline = t
+	s.writeDeadline = t
+	return nil
+}
+
+func (s *stream) Read(buf []byte) (int, error) {
+	s.readLock.Lock()
+	defer s.readLock.Unlock()
+	if atomic.LoadUint32(&s.bc) == 0 {
+		s.readWaiting.Store(true)
+		// wait
+		var timeout <-chan time.Time
+		if !s.readDeadline.IsZero() {
+			timer := time.NewTimer(s.readDeadline.Sub(time.Now()))
+			defer timer.Stop()
+			timeout = timer.C
+		}
+
+		select {
+		case <-timeout:
+			s.readWaiting.Store(false)
+			return 0, ErrReadTimeout
+		case <-s.readAvaliable:
+			s.readWaiting.Store(false)
+		}
+	}
+	m := copy(buf, s.b)
+	s.b = s.b[m:]
+	atomic.AddUint32(&s.bc, ^uint32(m-1))
+	s.session.writes <- newAckFrame(s.id, uint32(m))
+	return m, nil
+}
+
+func (s *stream) Write(buf []byte) (int, error) {
+	s.writeLock.Lock()
+	defer s.writeLock.Unlock()
+
+	l, written := len(buf), 0
+	for l != written {
+		// remote has no capacity
+		if atomic.LoadUint32(&s.rc) == 0 {
+			// wait
+			s.writeWaiting.Store(true)
+			var timeout <-chan time.Time
+			if !s.writeDeadline.IsZero() {
+				timer := time.NewTimer(s.writeDeadline.Sub(time.Now()))
+				defer timer.Stop()
+				timeout = timer.C
+			}
+
+			select {
+			case <-timeout:
+				s.writeWaiting.Store(false)
+				return written, ErrWriteTimeout
+			case <-s.writeAvailable:
+			}
+		}
+		rc := int(atomic.LoadUint32(&s.rc))
+		cap := min(len(buf), rc)
+		b := buf[:cap]
+		buf = buf[cap:]
+		s.session.writes <- newDataFrame(s.id, b)
+		atomic.AddUint32(&s.rc, ^uint32(cap-1))
+		written += cap
+	}
+	return written, nil
+}
+
+func (s *stream) Close() error {
+	if s.closed.Load() == true {
+		return ErrBrokenPipe
+	}
+	s.closed.Store(true)
+	if s.remoteClosed.Load() == true {
+		s.session.removeStream(s.id)
+	}
+	return nil
+}
+
+func (s *stream) addToBuffer(buf []byte) error {
+	s.bufLock.Lock()
+	defer s.bufLock.Unlock()
+	if atomic.LoadUint32(&s.bc)+uint32(len(buf)) > DefaultCapacity {
+		return ErrBufferFull
+	}
+	s.b = append(s.b, buf...)
+	atomic.AddUint32(&s.bc, uint32(len(buf)))
+	if s.readWaiting.Load() == true {
+		s.readAvaliable <- struct{}{}
+	}
+	return nil
+}
+
+func (s *stream) ack(read uint32) {
+	atomic.AddUint32(&s.rc, read)
+	if s.writeWaiting.Load() == true {
+		s.writeAvailable <- struct{}{}
+	}
+}
+
+func (s *stream) setRemoteClosed() {
+	s.remoteClosed.Store(true)
+	if s.closed.Load() == true {
+		s.session.removeStream(s.id)
+	}
 }
