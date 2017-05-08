@@ -34,7 +34,7 @@
         "name": "TaskCluster GitHub Tests",
         "description": "Tests for taskcluster github in production",
         "owner": "{{ event.head.user.email }}",
-		"source": "{{ event.head.repo.url }}"
+		    "source": "{{ event.head.repo.url }}"
       }
     }
   ]
