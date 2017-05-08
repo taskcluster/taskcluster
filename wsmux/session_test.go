@@ -3,68 +3,22 @@ package wsmux
 import (
 	"bytes"
 	"io"
-	"log"
-	"net"
-	"net/http"
-	"os"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-var testLogger *log.Logger
-
-func init() {
-	file, err := os.Create("test_log")
-	if err != nil {
-		panic(err)
-	}
-	testLogger = log.New(file, "test: ", log.Lshortfile)
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			testLogger.Fatal(err)
-		}
-		session := Server(conn, nil)
-		stream, err := session.Accept()
-		if err != nil {
-			testLogger.Fatal(err)
-		}
-		handleStream(stream)
-	})
-
-	go func() {
-		testLogger.Fatal(http.ListenAndServe(":9999", nil))
-	}()
-}
-
-func handleStream(stream net.Conn) {
-	for {
-		b := make([]byte, 2048)
-		size, err := stream.Read(b)
-		if err != nil {
-			testLogger.Fatal(err)
-		}
-		b = b[:size]
-		written, err := stream.Write(b)
-		testLogger.Printf("handler: wrote %d bytes", written)
-		if err != nil {
-			testLogger.Fatal(err)
-		}
-	}
-}
-
 func TestEcho(t *testing.T) {
+	server := genServer(genWebSocketHandler(t, echoConn), ":9999")
+	go server.ListenAndServe()
+	defer server.Close()
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	session := Client(conn, nil)
+	session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -85,6 +39,9 @@ func TestEcho(t *testing.T) {
 }
 
 func TestEchoLarge(t *testing.T) {
+	server := genServer(genWebSocketHandler(t, echoConn), ":9999")
+	go server.ListenAndServe()
+	defer server.Close()
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -96,9 +53,9 @@ func TestEchoLarge(t *testing.T) {
 	final := make([]byte, 0)
 
 	session := Client(conn, nil)
+	session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	written, err := stream.Write(buf)
-	testLogger.Printf("test_echo_large: wrote %d bytes to handler", written)
 	read := 0
 	for read != written {
 		catch := make([]byte, 100)
@@ -108,7 +65,6 @@ func TestEchoLarge(t *testing.T) {
 		}
 		catch = catch[:size]
 		final = append(final, catch...)
-		testLogger.Printf("test_echo_large: received total %d bytes from handler", len(final))
 		read += size
 	}
 

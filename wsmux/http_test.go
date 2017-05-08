@@ -3,73 +3,25 @@ package wsmux
 import (
 	"bufio"
 	"bytes"
-	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
-
-	switch r.Method {
-	case http.MethodGet:
-		if websocket.IsWebSocketUpgrade(r) {
-			ws, err := upgrader.Upgrade(w, r, nil)
-			if err != nil {
-				panic(err)
-			}
-			testLogger.Print("ws connection created on wsmux stream")
-
-			err = ws.WriteMessage(websocket.BinaryMessage, []byte(wsSuccess))
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			io.WriteString(w, getSuccess)
-		}
-	default:
-		http.NotFound(w, r)
-	}
-}
-
-func wrapSession(session *Session) {
-	server := &http.Server{Handler: http.HandlerFunc(handler)}
-	go server.Serve(session)
-}
-func init() {
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
-
-	http.HandleFunc("/http", func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			panic(err)
-		}
-		wrapSession(Server(conn, &Config{}))
-	})
-
-	go func() {
-		log.Fatal(http.ListenAndServe(":9998", nil))
-	}()
-}
-
 func TestGet(t *testing.T) {
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9998/http", nil)
+	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
+	go server.ListenAndServe()
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	session := Client(conn, &Config{})
+	session.readDeadline = time.Now().Add(10 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, "", nil)
 	stream, err := session.Open()
 	if err != nil {
@@ -96,11 +48,15 @@ func TestGet(t *testing.T) {
 
 func TestWebSocket(t *testing.T) {
 	// t.Skip("No idea why this is failing")
+	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
+	go server.ListenAndServe()
+	defer server.Close()
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9998/http", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	session := Client(conn, &Config{})
+	session.readDeadline = time.Now().Add(10 * time.Second)
 	url := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
 	stream, err := session.Open()
 	if err != nil {

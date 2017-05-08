@@ -2,10 +2,11 @@ package wsmux
 
 import (
 	"bytes"
-	"github.com/gorilla/websocket"
 	"io"
 	"net/http"
 	"testing"
+
+	"github.com/gorilla/websocket"
 )
 
 func genServer(handler http.Handler, addr string) *http.Server {
@@ -15,7 +16,7 @@ func genServer(handler http.Handler, addr string) *http.Server {
 	}
 }
 
-func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Conn)) func(http.ResponseWriter, *http.Request) {
+func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Conn)) http.Handler {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -33,7 +34,7 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 		handleConn(t, conn)
 	}
 
-	return handler
+	return http.HandlerFunc(handler)
 }
 
 // functions for session test

@@ -36,8 +36,11 @@ type Session struct {
 	nextID       uint32
 
 	RemoteCloseCallback func()
-	acceptDeadline      time.Time
-	logger              *log.Logger
+
+	readDeadline   time.Time
+	writeDeadline  time.Time
+	acceptDeadline time.Time
+	logger         *log.Logger
 }
 
 /*
@@ -65,7 +68,9 @@ func newSession(conn *websocket.Conn, server bool, conf *Config) *Session {
 		conn:                conn,
 		nextID:              nextID,
 		RemoteCloseCallback: conf.RemoteCloseCallback,
-		acceptDeadline:      conf.acceptDeadline,
+		acceptDeadline:      conf.AcceptDeadline,
+		readDeadline:        conf.ReadDeadline,
+		writeDeadline:       conf.WriteDeadline,
 	}
 	file, err := os.Create("log_session_" + slugid.Nice())
 	if err != nil {
@@ -99,6 +104,10 @@ func (s *Session) recvLoop() {
 			}
 			s.streamLock.Lock()
 			s.streams[streamID] = newStream(streamID, s)
+			err := s.streams[streamID].SetDeadline(s.readDeadline)
+			if err != nil {
+				s.logger.Print(err)
+			}
 			s.streamLock.Unlock()
 			s.logger.Printf("created stream with id %d", streamID)
 			s.streamChan <- s.streams[streamID]
@@ -213,6 +222,7 @@ func (s *Session) Open() (net.Conn, error) {
 	}
 
 	str := newStream(s.nextID, s)
+	str.SetDeadline(s.readDeadline)
 	s.streamLock.Lock()
 	defer s.streamLock.Unlock()
 	s.writes <- newSynFrame(s.nextID)

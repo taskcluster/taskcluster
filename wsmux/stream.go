@@ -1,6 +1,7 @@
 package wsmux
 
 import (
+	"io"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -22,11 +23,11 @@ type stream struct {
 
 	session *Session
 
-	readDeadline  time.Time
-	writeDeadline time.Time
+	readDeadline  atomic.Value // stores time.Time
+	writeDeadline atomic.Value // stores time.Time
 
-	readWaiting  atomic.Value
-	writeWaiting atomic.Value
+	readWaiting  atomic.Value // stores bool
+	writeWaiting atomic.Value // stores bool
 
 	readAvaliable  chan struct{}
 	writeAvailable chan struct{}
@@ -46,6 +47,8 @@ func newStream(id uint32, s *Session) *stream {
 
 	str.readAvaliable = make(chan struct{}, 1)
 	str.writeAvailable = make(chan struct{}, 1)
+	str.readDeadline.Store(time.Time{})
+	str.writeDeadline.Store(time.Time{})
 	str.readWaiting.Store(false)
 	str.writeWaiting.Store(false)
 	str.closed.Store(false)
@@ -62,18 +65,22 @@ func (s *stream) RemoteAddr() net.Addr {
 }
 
 func (s *stream) SetReadDeadline(t time.Time) error {
-	s.readDeadline = t
+	s.readDeadline.Store(t)
 	return nil
 }
 
 func (s *stream) SetWriteDeadline(t time.Time) error {
-	s.writeDeadline = t
+	s.writeDeadline.Store(t)
 	return nil
 }
 
 func (s *stream) SetDeadline(t time.Time) error {
-	s.readDeadline = t
-	s.writeDeadline = t
+	if err := s.SetReadDeadline(t); err != nil {
+		return err
+	}
+	if err := s.SetWriteDeadline(t); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -81,11 +88,14 @@ func (s *stream) Read(buf []byte) (int, error) {
 	s.readLock.Lock()
 	defer s.readLock.Unlock()
 	if atomic.LoadUint32(&s.bc) == 0 {
+		if s.remoteClosed.Load() == true {
+			return 0, io.EOF
+		}
 		s.readWaiting.Store(true)
 		// wait
 		var timeout <-chan time.Time
-		if !s.readDeadline.IsZero() {
-			timer := time.NewTimer(s.readDeadline.Sub(time.Now()))
+		if rd := s.readDeadline.Load().(time.Time); !rd.IsZero() {
+			timer := time.NewTimer(rd.Sub(time.Now()))
 			defer timer.Stop()
 			timeout = timer.C
 		}
@@ -98,6 +108,8 @@ func (s *stream) Read(buf []byte) (int, error) {
 			s.readWaiting.Store(false)
 		}
 	}
+	s.bufLock.Lock()
+	defer s.bufLock.Unlock()
 	m := copy(buf, s.b)
 	s.b = s.b[m:]
 	atomic.AddUint32(&s.bc, ^uint32(m-1))
@@ -108,16 +120,18 @@ func (s *stream) Read(buf []byte) (int, error) {
 func (s *stream) Write(buf []byte) (int, error) {
 	s.writeLock.Lock()
 	defer s.writeLock.Unlock()
-
 	l, written := len(buf), 0
 	for l != written {
+		if s.closed.Load() == true {
+			return written, ErrBrokenPipe
+		}
 		// remote has no capacity
 		if atomic.LoadUint32(&s.rc) == 0 {
 			// wait
 			s.writeWaiting.Store(true)
 			var timeout <-chan time.Time
-			if !s.writeDeadline.IsZero() {
-				timer := time.NewTimer(s.writeDeadline.Sub(time.Now()))
+			if wd := s.writeDeadline.Load().(time.Time); !wd.IsZero() {
+				timer := time.NewTimer(wd.Sub(time.Now()))
 				defer timer.Stop()
 				timeout = timer.C
 			}
@@ -127,15 +141,18 @@ func (s *stream) Write(buf []byte) (int, error) {
 				s.writeWaiting.Store(false)
 				return written, ErrWriteTimeout
 			case <-s.writeAvailable:
+				s.writeWaiting.Store(false)
 			}
 		}
 		rc := int(atomic.LoadUint32(&s.rc))
 		cap := min(len(buf), rc)
 		b := buf[:cap]
 		buf = buf[cap:]
-		s.session.writes <- newDataFrame(s.id, b)
+		fr := newDataFrame(s.id, b)
+		s.session.writes <- fr
 		atomic.AddUint32(&s.rc, ^uint32(cap-1))
 		written += cap
+		s.session.logger.Printf("stream %d pushed to write chan %v", s.id, fr)
 	}
 	return written, nil
 }
@@ -160,7 +177,9 @@ func (s *stream) addToBuffer(buf []byte) error {
 	s.b = append(s.b, buf...)
 	atomic.AddUint32(&s.bc, uint32(len(buf)))
 	if s.readWaiting.Load() == true {
+		s.session.logger.Printf("should signal read available")
 		s.readAvaliable <- struct{}{}
+		s.session.logger.Printf("signalled read available")
 	}
 	return nil
 }
@@ -168,7 +187,11 @@ func (s *stream) addToBuffer(buf []byte) error {
 func (s *stream) ack(read uint32) {
 	atomic.AddUint32(&s.rc, read)
 	if s.writeWaiting.Load() == true {
+		s.session.logger.Printf("should signal write available")
 		s.writeAvailable <- struct{}{}
+		s.session.logger.Printf("signalled write available")
+	} else {
+		s.session.logger.Printf("no write waiting")
 	}
 }
 

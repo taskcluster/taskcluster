@@ -7,7 +7,9 @@ import (
 
 type Config struct {
 	RemoteCloseCallback func()
-	acceptDeadline      time.Time
+	AcceptDeadline      time.Time
+	ReadDeadline        time.Time
+	WriteDeadline       time.Time
 }
 
 // Server (NOTE: set server field to 0 for server connection)
