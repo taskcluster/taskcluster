@@ -57,7 +57,7 @@ var load = loader({
     setup: ({cfg, entity, validator, monitor}) => api.setup({
       context:          {cfg, entity},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      publish:          cfg.taskclusterSecrets.publishMetaData === 'true',
+      publish:          cfg.taskclusterSecrets.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'secrets/v1/api.json',
       aws:              cfg.aws,
