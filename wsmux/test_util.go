@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -67,7 +68,11 @@ const (
 )
 
 func wsConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, nil)
+	conf := &Config{
+		ReadDeadline:  time.Now().Add(10 * time.Second),
+		WriteDeadline: time.Now().Add(10 * time.Second),
+	}
+	session := Server(conn, conf)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", genWsHandler(t))
 	go (&http.Server{Handler: mux, ErrorLog: session.logger}).Serve(session)

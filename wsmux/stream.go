@@ -26,11 +26,11 @@ type stream struct {
 	readDeadline  atomic.Value // stores time.Time
 	writeDeadline atomic.Value // stores time.Time
 
-	readWaiting  atomic.Value // stores bool
-	writeWaiting atomic.Value // stores bool
+	readWaitLock  sync.Mutex // used for signaling reads
+	writeWaitLock sync.Mutex // used for signaling writes
 
-	readAvaliable  chan struct{}
-	writeAvailable chan struct{}
+	readWaitCond  *sync.Cond
+	writeWaitCond *sync.Cond
 
 	closed       atomic.Value
 	remoteClosed atomic.Value
@@ -45,14 +45,12 @@ func newStream(id uint32, s *Session) *stream {
 		session: s,
 	}
 
-	str.readAvaliable = make(chan struct{}, 1)
-	str.writeAvailable = make(chan struct{}, 1)
 	str.readDeadline.Store(time.Time{})
 	str.writeDeadline.Store(time.Time{})
-	str.readWaiting.Store(false)
-	str.writeWaiting.Store(false)
 	str.closed.Store(false)
 	str.remoteClosed.Store(false)
+	str.readWaitCond = sync.NewCond(&str.readWaitLock)
+	str.writeWaitCond = sync.NewCond(&str.writeWaitLock)
 	return str
 }
 
@@ -87,11 +85,11 @@ func (s *stream) SetDeadline(t time.Time) error {
 func (s *stream) Read(buf []byte) (int, error) {
 	s.readLock.Lock()
 	defer s.readLock.Unlock()
+	done := make(chan struct{}, 1)
 	if atomic.LoadUint32(&s.bc) == 0 {
 		if s.remoteClosed.Load() == true {
 			return 0, io.EOF
 		}
-		s.readWaiting.Store(true)
 		// wait
 		var timeout <-chan time.Time
 		if rd := s.readDeadline.Load().(time.Time); !rd.IsZero() {
@@ -100,12 +98,12 @@ func (s *stream) Read(buf []byte) (int, error) {
 			timeout = timer.C
 		}
 
+		go s.waitForRead(done)
+
 		select {
 		case <-timeout:
-			s.readWaiting.Store(false)
 			return 0, ErrReadTimeout
-		case <-s.readAvaliable:
-			s.readWaiting.Store(false)
+		case <-done:
 		}
 	}
 	s.bufLock.Lock()
@@ -126,9 +124,9 @@ func (s *stream) Write(buf []byte) (int, error) {
 			return written, ErrBrokenPipe
 		}
 		// remote has no capacity
+		done := make(chan struct{}, 1)
 		if atomic.LoadUint32(&s.rc) == 0 {
 			// wait
-			s.writeWaiting.Store(true)
 			var timeout <-chan time.Time
 			if wd := s.writeDeadline.Load().(time.Time); !wd.IsZero() {
 				timer := time.NewTimer(wd.Sub(time.Now()))
@@ -136,12 +134,12 @@ func (s *stream) Write(buf []byte) (int, error) {
 				timeout = timer.C
 			}
 
+			go s.waitForWrite(done)
+
 			select {
 			case <-timeout:
-				s.writeWaiting.Store(false)
 				return written, ErrWriteTimeout
-			case <-s.writeAvailable:
-				s.writeWaiting.Store(false)
+			case <-done:
 			}
 		}
 		rc := int(atomic.LoadUint32(&s.rc))
@@ -171,28 +169,18 @@ func (s *stream) Close() error {
 func (s *stream) addToBuffer(buf []byte) error {
 	s.bufLock.Lock()
 	defer s.bufLock.Unlock()
+	defer s.readWaitCond.Broadcast()
 	if atomic.LoadUint32(&s.bc)+uint32(len(buf)) > DefaultCapacity {
 		return ErrBufferFull
 	}
 	s.b = append(s.b, buf...)
 	atomic.AddUint32(&s.bc, uint32(len(buf)))
-	if s.readWaiting.Load() == true {
-		s.session.logger.Printf("should signal read available")
-		s.readAvaliable <- struct{}{}
-		s.session.logger.Printf("signalled read available")
-	}
 	return nil
 }
 
 func (s *stream) ack(read uint32) {
 	atomic.AddUint32(&s.rc, read)
-	if s.writeWaiting.Load() == true {
-		s.session.logger.Printf("should signal write available")
-		s.writeAvailable <- struct{}{}
-		s.session.logger.Printf("signalled write available")
-	} else {
-		s.session.logger.Printf("no write waiting")
-	}
+	s.writeWaitCond.Broadcast()
 }
 
 func (s *stream) setRemoteClosed() {
@@ -200,4 +188,18 @@ func (s *stream) setRemoteClosed() {
 	if s.closed.Load() == true {
 		s.session.removeStream(s.id)
 	}
+}
+
+func (s *stream) waitForRead(done chan<- struct{}) {
+	s.readWaitLock.Lock()
+	defer s.readWaitLock.Unlock()
+	s.readWaitCond.Wait()
+	done <- struct{}{}
+}
+
+func (s *stream) waitForWrite(done chan<- struct{}) {
+	s.writeWaitLock.Lock()
+	defer s.writeWaitLock.Unlock()
+	s.writeWaitCond.Wait()
+	done <- struct{}{}
 }

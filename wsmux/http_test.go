@@ -51,7 +51,7 @@ func TestWebSocket(t *testing.T) {
 	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
 	go server.ListenAndServe()
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9998/http", nil)
+	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
