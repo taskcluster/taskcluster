@@ -34,7 +34,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 4 May 2017 at 13:36:00 UTC. The code was generated
+// Mon, 8 May 2017 at 19:25:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 

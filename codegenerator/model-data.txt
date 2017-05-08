@@ -1,4 +1,4 @@
-Generated: 1493904996
+Generated: 1494271502
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3061,6 +3061,20 @@ Entry 3     =
     Entry Description = 'Checks if the integration has been installed for
 a given repository of a given organization or user.'
 Entry 4     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/taskLink/<owner>/<repo>/<branch>'
+    Entry Args        = '[owner repo branch]'
+    Entry Query        = '[]'
+    Entry Name        = 'taskLink'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Redirects to the task inspector page'
+    Entry Description = 'Builds a link to the task inspector for the given task group
+ and redirects the user to that page.'
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
