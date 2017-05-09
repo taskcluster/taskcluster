@@ -52,7 +52,7 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 // functions for session test
 
 func echoConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{})
+	session := Server(conn, Config{Log: genLogger("echo-test")})
 	stream, err := session.Accept()
 	if err != nil {
 		t.Fatal(err)
@@ -79,7 +79,7 @@ const (
 )
 
 func wsConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{})
+	session := Server(conn, Config{Log: genLogger("http-test")})
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", genWsHandler(t))
 	go func() {

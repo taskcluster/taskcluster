@@ -8,9 +8,10 @@ import (
 
 // Config values for Session
 type Config struct {
-	KeepAliveInterval   time.Duration
-	RemoteCloseCallback func()
-	Log                 Logger
+	KeepAliveInterval    time.Duration
+	StreamAcceptDeadline time.Duration
+	RemoteCloseCallback  func()
+	Log                  Logger
 }
 
 // Server (NOTE: set server field to 0 for server connection)

@@ -15,6 +15,8 @@ type stream struct {
 	id      uint32
 	bufLock sync.Mutex // lock b of type []byte
 	b       []byte
+
+	remLock sync.Mutex
 	rc      uint32 // track remote buffer capacity
 
 	readLock  sync.Mutex // makes read operations mutually exclusive
@@ -31,6 +33,8 @@ type stream struct {
 	closed       chan struct{}
 	remoteClosed chan struct{}
 
+	accepted chan struct{}
+
 	closeLock sync.Mutex
 }
 
@@ -46,9 +50,11 @@ func newStream(id uint32, s *Session) *stream {
 
 	str.readDeadline.Store(time.Time{})
 	str.writeDeadline.Store(time.Time{})
+
 	str.closed = make(chan struct{})
 	str.remoteClosed = make(chan struct{})
 
+	str.accepted = make(chan struct{})
 	return str
 }
 
@@ -99,6 +105,8 @@ func (s *stream) Read(buf []byte) (int, error) {
 	default:
 	}
 
+	s.session.logger.Printf("read attempted")
+
 	//lock the read
 	s.readLock.Lock()
 	defer s.readLock.Unlock()
@@ -133,12 +141,17 @@ func (s *stream) Read(buf []byte) (int, error) {
 	m := copy(buf, s.b)
 	s.b = s.b[m:]
 	s.bufLock.Unlock()
-	s.session.writes <- newAckFrame(s.id, uint32(m))
+	select {
+	case s.session.writes <- newAckFrame(s.id, uint32(m)):
+	default:
+		return m, ErrBrokenPipe
+	}
 	return m, nil
 }
 
 // Write writes data to the stream
 func (s *stream) Write(buf []byte) (int, error) {
+	s.session.logger.Printf("requested write %d", len(buf))
 	// check if stream closed
 	select {
 	case <-s.closed:
@@ -151,7 +164,10 @@ func (s *stream) Write(buf []byte) (int, error) {
 	defer s.writeLock.Unlock()
 	l, w := len(buf), 0
 	for w < l {
-		if rc := atomic.LoadUint32(&s.rc); rc == 0 {
+		s.remLock.Lock()
+		rc := s.rc
+		s.remLock.Unlock()
+		if rc == 0 {
 			// wait
 			var timeout <-chan time.Time
 			var timer *time.Timer
@@ -171,11 +187,13 @@ func (s *stream) Write(buf []byte) (int, error) {
 			}
 		}
 		// write
-		cap := min(len(buf), int(atomic.LoadUint32(&s.rc)))
+		s.remLock.Lock()
+		cap := min(len(buf), int(s.rc))
 		s.session.writes <- newDataFrame(s.id, buf[:cap])
 		buf = buf[cap:]
-		atomic.AddUint32(&s.rc, ^uint32(cap-1))
+		s.rc -= uint32(cap)
 		w += cap
+		s.remLock.Unlock()
 	}
 	return w, nil
 }
@@ -209,7 +227,12 @@ func (s *stream) Close() error {
 }
 
 func (s *stream) updateRemoteCapacity(read uint32) {
-	atomic.AddUint32(&s.rc, read)
+	s.remLock.Lock()
+	if s.rc < 1024 {
+		s.rc += read
+	}
+	s.remLock.Unlock()
+	s.session.logger.Printf("updated capacity by %d bytes", read)
 }
 
 func (s *stream) addToBuffer(buf []byte) {
@@ -221,6 +244,7 @@ func (s *stream) addToBuffer(buf []byte) {
 func (s *stream) notifyRead() {
 	select {
 	case s.readAvailable <- struct{}{}:
+		s.session.logger.Printf("notified read")
 	default:
 	}
 }
@@ -228,6 +252,7 @@ func (s *stream) notifyRead() {
 func (s *stream) notifyWrite() {
 	select {
 	case s.writeAvailable <- struct{}{}:
+		s.session.logger.Printf("notified write")
 	default:
 	}
 }

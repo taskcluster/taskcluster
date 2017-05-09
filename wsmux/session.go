@@ -17,9 +17,10 @@ TODO: Set deadlines on streams
 */
 
 const (
-	defaultQueueSize         = 20
-	defaultStreamQueueSize   = 20
-	defaultKeepAliveInterval = 30 * time.Second
+	defaultQueueSize            = 20
+	defaultStreamQueueSize      = 20
+	defaultKeepAliveInterval    = 30 * time.Second
+	defaultStreamAcceptDeadline = 30 * time.Second
 )
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
@@ -30,7 +31,8 @@ type Session struct {
 	writes   chan frame
 	conn     *websocket.Conn
 
-	keepAliveInterval time.Duration
+	keepAliveInterval    time.Duration
+	streamAcceptDeadline time.Duration
 
 	logger Logger
 
@@ -59,6 +61,12 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 		s.keepAliveInterval = defaultKeepAliveInterval
 	} else {
 		s.keepAliveInterval = conf.KeepAliveInterval
+	}
+
+	if conf.StreamAcceptDeadline == 0 {
+		s.streamAcceptDeadline = defaultStreamAcceptDeadline
+	} else {
+		s.streamAcceptDeadline = conf.StreamAcceptDeadline
 	}
 
 	if server {
@@ -115,10 +123,24 @@ func (s *Session) Open() (net.Conn, error) {
 	default:
 		return nil, ErrBrokenPipe
 	}
+	// unlock mutex and wait
+	s.mu.Unlock()
 
-	s.nextID += 2
+	select {
+	case <-str.accepted:
+		s.nextID += 2
+		s.mu.Lock()
+		return str, nil
+	case <-s.closed:
+		s.mu.Lock()
+		delete(s.streams, id)
+		return nil, ErrSessionClosed
+	case <-time.After(s.streamAcceptDeadline):
+		s.mu.Lock()
+		delete(s.streams, id)
+		return nil, ErrAcceptTimeout
+	}
 
-	return str, nil
 }
 
 // Close closes the current session and underlying connection
@@ -215,8 +237,20 @@ func (s *Session) recvLoop() {
 				s.mu.Unlock()
 				break
 			}
+
 			str := newStream(id, s)
+			// no point in locking here
+			close(str.accepted)
+
 			s.streams[id] = str
+			select {
+			case s.writes <- newAckFrame(id, uint32(DefaultCapacity)):
+				s.logger.Printf("sent ack frame")
+			default:
+				s.logger.Printf("Error accepting stream")
+				s.mu.Unlock()
+				return
+			}
 			s.asyncPushStream(str)
 			s.mu.Unlock()
 
@@ -243,6 +277,7 @@ func (s *Session) recvLoop() {
 			s.mu.Lock()
 			str, ok := s.streams[id]
 			s.mu.Unlock()
+			s.logger.Printf("received ack frame")
 			if !ok {
 				s.logger.Printf("received ack frame for unknown stream %d", id)
 				break
@@ -255,6 +290,13 @@ func (s *Session) recvLoop() {
 				break
 			}
 			read := binary.LittleEndian.Uint32(b)
+			select {
+			case <-str.accepted:
+			default:
+				// close str.accepted to accept stream
+				s.logger.Printf("accepting stream")
+				close(str.accepted)
+			}
 			s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
 			str.updateRemoteCapacity(read)
 			str.notifyWrite()
