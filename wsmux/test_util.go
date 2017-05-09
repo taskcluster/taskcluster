@@ -53,7 +53,7 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 // functions for session test
 
 func echoConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, nil)
+	session := Server(conn, Config{})
 	stream, err := session.Accept()
 	if err != nil {
 		t.Fatal(err)
@@ -80,7 +80,7 @@ const (
 )
 
 func wsConn(t *testing.T, conn *websocket.Conn) {
-	conf := &Config{
+	conf := Config{
 		ReadDeadline:  time.Now().Add(10 * time.Second),
 		WriteDeadline: time.Now().Add(10 * time.Second),
 	}

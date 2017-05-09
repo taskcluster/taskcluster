@@ -14,11 +14,11 @@ type Config struct {
 }
 
 // Server (NOTE: set server field to 0 for server connection)
-func Server(conn *websocket.Conn, conf *Config) *Session {
+func Server(conn *websocket.Conn, conf Config) *Session {
 	return newSession(conn, true, conf)
 }
 
 // Client (set server field to 1, yes, it is unintuitive)
-func Client(conn *websocket.Conn, conf *Config) *Session {
+func Client(conn *websocket.Conn, conf Config) *Session {
 	return newSession(conn, false, conf)
 }

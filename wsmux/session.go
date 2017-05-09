@@ -37,10 +37,7 @@ type Session struct {
 	remoteCloseCallback func()
 }
 
-func newSession(conn *websocket.Conn, server bool, conf *Config) *Session {
-	if conf == nil {
-		conf = &Config{}
-	}
+func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s := &Session{}
 	s.conn = conn
 	s.streams = make(map[uint32]*stream)
@@ -80,14 +77,14 @@ func (s *Session) Accept() (net.Conn, error) {
 	}
 
 	select {
-	case <-timeout:
-		return nil, ErrAcceptTimeout
-	case str := <-s.streamCh:
-		return str, nil
 	case <-s.closed:
 		return nil, ErrSessionClosed
 	case <-s.remoteClosed:
 		return nil, ErrRemoteClosed
+	case <-timeout:
+		return nil, ErrAcceptTimeout
+	case str := <-s.streamCh:
+		return str, nil
 	}
 }
 
@@ -159,6 +156,7 @@ func (s *Session) sendLoop() {
 		case fr, ok := <-s.writes:
 			if !ok {
 				s.logger.Print("write channel closed")
+				return
 			}
 			err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
 			s.logger.Printf("wrote message: %v", fr)

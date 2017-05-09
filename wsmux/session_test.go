@@ -17,7 +17,7 @@ func TestEcho(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, nil)
+	session := Client(conn, Config{})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	if err != nil {
@@ -51,7 +51,7 @@ func TestEchoLarge(t *testing.T) {
 	}
 	final := make([]byte, 0)
 
-	session := Client(conn, nil)
+	session := Client(conn, Config{})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	written, err := stream.Write(buf)

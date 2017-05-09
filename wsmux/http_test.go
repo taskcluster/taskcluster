@@ -21,7 +21,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, &Config{Log: genLogger("get-test")})
+	session := Client(conn, Config{Log: genLogger("get-test")})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, "", nil)
 	stream, err := session.Open()
@@ -57,7 +57,7 @@ func TestWebSocket(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, &Config{Log: genLogger("ws-test")})
+	session := Client(conn, Config{Log: genLogger("ws-test")})
 	//runtime.Breakpoint()
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	url := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
