@@ -1,19 +1,14 @@
 package wsmux
 
 import (
-	"encoding/binary"
-	// "io"
-	"io/ioutil"
-	// "log"
-	"net"
-	// "runtime"
 	"bytes"
+	"encoding/binary"
+	"io/ioutil"
+	"net"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
-	// "github.com/taskcluster/slugid-go/slugid"
 )
 
 const (
@@ -34,10 +29,10 @@ type Session struct {
 
 	logger Logger
 
-	closed       atomic.Value
-	remoteClosed atomic.Value
-
 	nextID uint32
+
+	closed       chan struct{} // nil channel
+	remoteClosed chan struct{} // nil channel
 
 	remoteCloseCallback func()
 }
@@ -52,13 +47,13 @@ func newSession(conn *websocket.Conn, server bool, conf *Config) *Session {
 	s.streamCh = make(chan *stream, defaultStreamQueueSize)
 	s.writes = make(chan frame, defaultQueueSize)
 
+	s.closed = make(chan struct{})
+	s.remoteClosed = make(chan struct{})
+
 	s.acceptDeadline = conf.AcceptDeadline
 	s.readDeadline = conf.ReadDeadline
 	s.writeDeadline = conf.WriteDeadline
 	s.remoteCloseCallback = conf.RemoteCloseCallback
-
-	s.closed.Store(false)
-	s.remoteClosed.Store(false)
 
 	if server {
 		s.nextID = 0
@@ -89,32 +84,65 @@ func (s *Session) Accept() (net.Conn, error) {
 		return nil, ErrAcceptTimeout
 	case str := <-s.streamCh:
 		return str, nil
+	case <-s.closed:
+		return nil, ErrSessionClosed
+	case <-s.remoteClosed:
+		return nil, ErrRemoteClosed
 	}
 }
 
 func (s *Session) Open() (net.Conn, error) {
-	id := atomic.LoadUint32(&s.nextID)
 	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	select {
+	case <-s.remoteClosed:
+		return nil, ErrRemoteClosed
+	case <-s.closed:
+		return nil, ErrSessionClosed
+	default:
+	}
+
+	id := s.nextID
 	if _, ok := s.streams[id]; ok {
-		s.mu.Unlock()
 		return nil, ErrDuplicateStream
 	}
-	s.mu.Unlock()
-	s.writes <- newSynFrame(id)
+
 	str := newStream(id, s)
-	atomic.AddUint32(&s.nextID, 2)
-	s.mu.Lock()
-	s.streams[id] = str
-	s.mu.Unlock()
+
+	select {
+	case s.writes <- newSynFrame(id):
+		s.streams[id] = str
+	default:
+		return nil, ErrBrokenPipe
+	}
+
+	s.nextID += 2
+
 	return str, nil
 }
 
 func (s *Session) Close() error {
-	if s.closed.Load() == true {
-		return ErrBrokenPipe
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Check if channel has been closed
+	select {
+	case <-s.closed:
+		return ErrSessionClosed
+	default:
 	}
-	s.closed.Store(true)
-	s.writes <- newClsFrame(0)
+
+	// write cls frame and close write channel
+	select {
+	case s.writes <- newClsFrame(0):
+		close(s.writes)
+	default:
+		s.logger.Printf("write channel closed")
+	}
+
+	close(s.closed)
+
 	return nil
 }
 
@@ -123,11 +151,20 @@ func (s *Session) Addr() net.Addr {
 }
 
 func (s *Session) sendLoop() {
-	for fr := range s.writes {
-		err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
-		s.logger.Printf("wrote message: %v", fr)
-		if err != nil {
-			s.logger.Print(err)
+	for {
+		select {
+		case <-s.closed:
+			return
+
+		case fr, ok := <-s.writes:
+			if !ok {
+				s.logger.Print("write channel closed")
+			}
+			err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
+			s.logger.Printf("wrote message: %v", fr)
+			if err != nil {
+				s.logger.Print(err)
+			}
 		}
 	}
 }
@@ -212,7 +249,9 @@ func (s *Session) recvLoop() {
 
 		case msgCLS:
 			s.logger.Printf("remote session closed")
-			s.remoteClosed.Store(true)
+			s.mu.Lock()
+			close(s.remoteClosed)
+			s.mu.Unlock()
 			if s.remoteCloseCallback != nil {
 				s.remoteCloseCallback()
 			}

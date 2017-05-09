@@ -28,8 +28,10 @@ type stream struct {
 	readAvailable  chan struct{}
 	writeAvailable chan struct{}
 
-	closed       atomic.Value
-	remoteClosed atomic.Value
+	closed       chan struct{}
+	remoteClosed chan struct{}
+
+	closeLock sync.Mutex
 }
 
 func newStream(id uint32, s *Session) *stream {
@@ -44,8 +46,9 @@ func newStream(id uint32, s *Session) *stream {
 
 	str.readDeadline.Store(time.Time{})
 	str.writeDeadline.Store(time.Time{})
-	str.closed.Store(false)
-	str.remoteClosed.Store(false)
+	str.closed = make(chan struct{})
+	str.remoteClosed = make(chan struct{})
+
 	return str
 }
 
@@ -79,13 +82,15 @@ func (s *stream) SetDeadline(t time.Time) error {
 
 func (s *stream) Read(buf []byte) (int, error) {
 	//check stream state
-	if s.remoteClosed.Load() == true {
+	select {
+	case <-s.remoteClosed:
 		s.bufLock.Lock()
 		if len(s.b) == 0 {
 			s.bufLock.Unlock()
 			return 0, io.EOF
 		}
 		s.bufLock.Unlock()
+	default:
 	}
 
 	//lock the read
@@ -111,8 +116,13 @@ func (s *stream) Read(buf []byte) (int, error) {
 			if timer != nil {
 				_ = timer.Stop()
 			}
+		// Remote will not send any more data
+		case <-s.remoteClosed:
+			return 0, io.EOF
 		}
 	}
+
+	// read data
 	s.bufLock.Lock()
 	m := copy(buf, s.b)
 	s.b = s.b[m:]
@@ -123,8 +133,10 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 func (s *stream) Write(buf []byte) (int, error) {
 	// check if stream closed
-	if s.closed.Load() == true {
+	select {
+	case <-s.closed:
 		return 0, ErrBrokenPipe
+	default:
 	}
 
 	// check remote capacity
@@ -147,6 +159,8 @@ func (s *stream) Write(buf []byte) (int, error) {
 				if timer != nil {
 					timer.Stop()
 				}
+			case <-s.closed:
+				return w, ErrBrokenPipe
 			}
 		}
 		// write
@@ -160,13 +174,24 @@ func (s *stream) Write(buf []byte) (int, error) {
 }
 
 func (s *stream) Close() error {
-	if s.closed.Load() == true {
+	s.closeLock.Lock()
+	defer s.closeLock.Unlock()
+
+	// check to see if closed
+	select {
+	case <-s.closed:
 		return ErrBrokenPipe
+	default:
 	}
-	s.closed.Store(true)
-	if s.remoteClosed.Load() == true {
-		s.session.removeStream(s.id)
+
+	close(s.closed)
+
+	select {
+	case <-s.remoteClosed:
+		defer s.session.removeStream(s.id)
+	default:
 	}
+
 	return nil
 }
 
@@ -195,12 +220,22 @@ func (s *stream) notifyWrite() {
 }
 
 func (s *stream) setRemoteClosed() error {
-	if s.remoteClosed.Load() == true {
+	s.closeLock.Lock()
+	defer s.closeLock.Unlock()
+
+	// check to see if remote was previously closed
+	select {
+	case <-s.remoteClosed:
 		return ErrBrokenPipe
+	default:
 	}
-	s.remoteClosed.Store(true)
-	if s.closed.Load() == true {
-		s.session.removeStream(s.id)
+
+	close(s.remoteClosed)
+
+	select {
+	case <-s.closed:
+		defer s.session.removeStream(s.id)
+	default:
 	}
 	return nil
 }

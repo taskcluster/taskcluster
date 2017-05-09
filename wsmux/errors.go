@@ -27,4 +27,7 @@ var (
 
 	// ErrDuplicateStream is returned when a duplicate stream is found
 	ErrDuplicateStream = fmt.Errorf("duplicate stream")
+
+	//ErrSessionClosed is returned when a closed session tries to create a new stream
+	ErrSessionClosed = fmt.Errorf("session closed")
 )
