@@ -152,9 +152,6 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
           signingKeyLocation                The PGP signing key for signing artifacts with.
-          workerGroup                       Typically this would be an aws region - an
-                                            identifier to uniquely identify which pool of
-                                            workers this worker logically belongs to.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -210,7 +207,7 @@ and reports back results to the queue.
                                             this many tasks, exit. [default: 0]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
-                                            running on them. [default: aws-provisioner-v1]
+                                            running on them. [default: test-provisioner]
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -238,6 +235,10 @@ and reports back results to the queue.
                                             [default: taskcluster-worker.net]
           tasksDir                          The location where task directories should be
                                             created on the worker. [default: /Users]
+          workerGroup                       Typically this would be an aws region - an
+                                            identifier to uniquely identify which pool of
+                                            workers this worker logically belongs to.
+                                            [default: test-worker-group]
           workerTypeMetaData                This arbitrary json blob will be uploaded as an
                                             artifact called worker_type_metadata.json with each
                                             task. Providing information here, such as a URL to

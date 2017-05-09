@@ -138,9 +138,6 @@ and reports back results to the queue.
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
           signingKeyLocation                The PGP signing key for signing artifacts with.
-          workerGroup                       Typically this would be an aws region - an
-                                            identifier to uniquely identify which pool of
-                                            workers this worker logically belongs to.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -196,7 +193,7 @@ and reports back results to the queue.
                                             this many tasks, exit. [default: 0]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
-                                            running on them. [default: aws-provisioner-v1]
+                                            running on them. [default: test-provisioner]
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -224,6 +221,10 @@ and reports back results to the queue.
                                             [default: taskcluster-worker.net]
           tasksDir                          The location where task directories should be
                                             created on the worker. [default: ` + defaultTasksDir() + `]
+          workerGroup                       Typically this would be an aws region - an
+                                            identifier to uniquely identify which pool of
+                                            workers this worker logically belongs to.
+                                            [default: test-worker-group]
           workerTypeMetaData                This arbitrary json blob will be uploaded as an
                                             artifact called worker_type_metadata.json with each
                                             task. Providing information here, such as a URL to
@@ -238,21 +239,6 @@ and reports back results to the queue.
                                             way to provide generic user initialisation logic
                                             that should apply to all generated users (and thus
                                             all tasks).
-
-    Here is an syntactically valid example configuration file:
-
-            {
-              "accessToken":                "123bn234bjhgdsjhg234",
-              "clientId":                   "hskdjhfasjhdkhdbfoisjd",
-              "workerGroup":                "dev-test",
-              "workerId":                   "IP_10-134-54-89",
-              "workerType":                 "win2008-worker",
-              "provisionerId":              "my-provisioner",
-              "livelogSecret":              "baNaNa-SouP4tEa",
-              "publicIP":                   "12.24.35.46",
-              "signingKeyLocation":         "C:\\generic-worker\\generic-worker-gpg-signing-key.key"
-            }
-
 
     If an optional config setting is not provided in the json configuration file, the
     default will be taken (defaults documented above).
@@ -332,7 +318,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogPUTPort:                 60022,
 		LiveLogGETPort:                 60023,
 		NumberOfTasksToRun:             0,
-		ProvisionerID:                  "aws-provisioner-v1",
+		ProvisionerID:                  "test-provisioner",
 		RefreshUrlsPrematurelySecs:     310,
 		RequiredDiskSpaceMegabytes:     10240,
 		RunAfterUserCreation:           "",
@@ -341,6 +327,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
 		TasksDir:                       defaultTasksDir(),
+		WorkerGroup:                    "test-worker-group",
 		WorkerTypeMetadata:             map[string]interface{}{},
 	}
 
