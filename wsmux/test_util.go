@@ -3,12 +3,24 @@ package wsmux
 import (
 	"bytes"
 	"io"
+	"log"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// logger
+func genLogger(fname string) *log.Logger {
+	file, err := os.Create(fname)
+	if err != nil {
+		panic(err)
+	}
+	logger := log.New(file, "session: ", log.Lshortfile)
+	return logger
+}
 
 func genServer(handler http.Handler, addr string) *http.Server {
 	return &http.Server{
@@ -75,7 +87,7 @@ func wsConn(t *testing.T, conn *websocket.Conn) {
 	session := Server(conn, conf)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", genWsHandler(t))
-	go (&http.Server{Handler: mux, ErrorLog: session.logger}).Serve(session)
+	go (&http.Server{Handler: mux}).Serve(session)
 }
 
 func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {

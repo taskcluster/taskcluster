@@ -24,4 +24,7 @@ var (
 	// ErrBufferFull is returns if the read buffer is full and a session attempts to load
 	// more data into the buffer
 	ErrBufferFull = fmt.Errorf("read buffer is full")
+
+	// ErrDuplicateStream is returned when a duplicate stream is found
+	ErrDuplicateStream = fmt.Errorf("duplicate stream")
 )

@@ -10,6 +10,7 @@ type Config struct {
 	AcceptDeadline      time.Time
 	ReadDeadline        time.Time
 	WriteDeadline       time.Time
+	Log                 Logger
 }
 
 // Server (NOTE: set server field to 0 for server connection)

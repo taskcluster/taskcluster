@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 	"testing"
-	"time"
+	// "time"
 
 	"github.com/gorilla/websocket"
 )
@@ -18,14 +18,13 @@ func TestEcho(t *testing.T) {
 		t.Fatal(err)
 	}
 	session := Client(conn, nil)
-	session.readDeadline = time.Now().Add(10 * time.Second)
+	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
 	buf := []byte("Hello")
-	n, err := stream.Write(buf)
-	t.Log(n)
+	_, err = stream.Write(buf)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +52,7 @@ func TestEchoLarge(t *testing.T) {
 	final := make([]byte, 0)
 
 	session := Client(conn, nil)
-	session.readDeadline = time.Now().Add(10 * time.Second)
+	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	written, err := stream.Write(buf)
 	read := 0

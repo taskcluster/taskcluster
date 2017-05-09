@@ -6,8 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	// "runtime"
 	"testing"
-	"time"
+	// "time"
 
 	"github.com/gorilla/websocket"
 )
@@ -21,7 +22,7 @@ func TestGet(t *testing.T) {
 		t.Fatal(err)
 	}
 	session := Client(conn, &Config{})
-	session.readDeadline = time.Now().Add(10 * time.Second)
+	// session.readDeadline = time.Now().Add(10 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, "", nil)
 	stream, err := session.Open()
 	if err != nil {
@@ -52,17 +53,19 @@ func TestWebSocket(t *testing.T) {
 	go server.ListenAndServe()
 	defer server.Close()
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	//runtime.Breakpoint()
 	if err != nil {
 		t.Fatal(err)
 	}
 	session := Client(conn, &Config{})
-	session.readDeadline = time.Now().Add(10 * time.Second)
+	//runtime.Breakpoint()
+	// session.readDeadline = time.Now().Add(10 * time.Second)
 	url := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
 	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	//runtime.Breakpoint()
 	ws, _, err := websocket.NewClient(stream, url, nil, 1024, 1024)
 	if err != nil {
 		t.Fatal(err)

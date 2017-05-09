@@ -30,3 +30,13 @@ func getHeader(reader io.Reader) (header, error) {
 
 	return hdr, nil
 }
+
+type Logger interface {
+	Printf(format string, a ...interface{})
+	Print(a ...interface{})
+}
+
+type nilLogger struct{}
+
+func (n *nilLogger) Printf(format string, a ...interface{}) {}
+func (n *nilLogger) Print(a ...interface{})                 {}

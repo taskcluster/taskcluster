@@ -2,17 +2,18 @@ package wsmux
 
 import (
 	"encoding/binary"
-	"io"
+	// "io"
 	"io/ioutil"
-	"log"
+	// "log"
 	"net"
-	"os"
+	// "runtime"
+	"bytes"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/slugid-go/slugid"
+	// "github.com/taskcluster/slugid-go/slugid"
 )
 
 const (
@@ -20,233 +21,217 @@ const (
 	defaultStreamQueueSize = 10
 )
 
-// Session ...
 type Session struct {
-	streamLock sync.RWMutex
-
-	streams    map[uint32]*stream
-	writes     chan frame
-	streamChan chan *stream
-
+	mu       sync.Mutex
+	streams  map[uint32]*stream
+	streamCh chan *stream
+	writes   chan frame
 	conn     *websocket.Conn
-	connLock sync.Mutex
 
-	remoteClosed bool
-	closed       bool
-	nextID       uint32
-
-	RemoteCloseCallback func()
-
+	acceptDeadline time.Time
 	readDeadline   time.Time
 	writeDeadline  time.Time
-	acceptDeadline time.Time
-	logger         *log.Logger
+
+	logger Logger
+
+	closed       atomic.Value
+	remoteClosed atomic.Value
+
+	nextID uint32
+
+	remoteCloseCallback func()
 }
-
-/*
-newSession creates a new session over a gorilla websocket connection
-
-if server == true then nextID = 0
-else nextID = 1
-This ensures that server and client do not accidentally open a new connection with
-the same ID
-
-*/
 
 func newSession(conn *websocket.Conn, server bool, conf *Config) *Session {
 	if conf == nil {
 		conf = &Config{}
 	}
-	nextID := uint32(1)
+	s := &Session{}
+	s.conn = conn
+	s.streams = make(map[uint32]*stream)
+	s.streamCh = make(chan *stream, defaultStreamQueueSize)
+	s.writes = make(chan frame, defaultQueueSize)
+
+	s.acceptDeadline = conf.AcceptDeadline
+	s.readDeadline = conf.ReadDeadline
+	s.writeDeadline = conf.WriteDeadline
+	s.remoteCloseCallback = conf.RemoteCloseCallback
+
+	s.closed.Store(false)
+	s.remoteClosed.Store(false)
+
 	if server {
-		nextID = 0
+		s.nextID = 0
+	} else {
+		s.nextID = 1
 	}
-	s := &Session{
-		streams:             make(map[uint32]*stream),
-		writes:              make(chan frame, defaultQueueSize),
-		streamChan:          make(chan *stream, defaultStreamQueueSize),
-		conn:                conn,
-		nextID:              nextID,
-		RemoteCloseCallback: conf.RemoteCloseCallback,
-		acceptDeadline:      conf.AcceptDeadline,
-		readDeadline:        conf.ReadDeadline,
-		writeDeadline:       conf.WriteDeadline,
+
+	if conf.Log == nil {
+		s.logger = &nilLogger{}
+	} else {
+		s.logger = conf.Log
 	}
-	file, err := os.Create("log_session_" + slugid.Nice())
-	if err != nil {
-		panic(err)
-	}
-	s.logger = log.New(file, "session: ", log.Lshortfile)
-	go s.recvLoop()
 	go s.sendLoop()
+	go s.recvLoop()
 	return s
 }
 
-func (s *Session) recvLoop() {
-	for {
-		_, msgReader, err := s.conn.NextReader()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		h, err := getHeader(msgReader)
-		streamID, msgType := h.id(), h.msg()
-
-		switch msgType {
-		case msgSYN:
-			s.streamLock.Lock()
-			_, ok := s.streams[streamID]
-			s.streamLock.Unlock()
-			s.logger.Printf("SYN packet with id %d received", streamID)
-			if ok {
-				s.logger.Printf("SYN packet with id %d dropped as stream already exists", streamID)
-				break
-			}
-			s.streamLock.Lock()
-			s.streams[streamID] = newStream(streamID, s)
-			err := s.streams[streamID].SetDeadline(s.readDeadline)
-			if err != nil {
-				s.logger.Print(err)
-			}
-			s.streamLock.Unlock()
-			s.logger.Printf("created stream with id %d", streamID)
-			s.streamChan <- s.streams[streamID]
-			s.logger.Printf("pushed stream %d to chan", streamID)
-
-		case msgACK:
-			s.streamLock.RLock()
-			str := s.streams[streamID]
-			s.streamLock.RUnlock()
-			if str == nil {
-				s.logger.Printf("ACK packet for unknown stream with id %d dropped", streamID)
-				break
-			}
-
-			buf := make([]byte, 4)
-			_, err := msgReader.Read(buf)
-			if err != nil {
-				s.logger.Print(err)
-			} else {
-				read := binary.LittleEndian.Uint32(buf)
-				s.logger.Printf("received ACK packet with id %d: remote read %d bytes", streamID, read)
-				str.ack(read)
-			}
-
-		case msgFIN:
-			s.streamLock.RLock()
-			str := s.streams[streamID]
-			s.streamLock.RUnlock()
-			if str == nil {
-				s.logger.Printf("FIN packet for unknown stream with id %d dropped", streamID)
-				break
-			}
-			buf, err := ioutil.ReadAll(msgReader)
-			s.logger.Printf("received FIN packet with id %d: remote closed connection", streamID)
-			if err != nil && err != io.EOF {
-				s.logger.Printf("Error reading data from FIN packet for stream %d", streamID)
-				break
-			}
-			err = str.addToBuffer(buf)
-			if err != nil {
-				s.logger.Print(err)
-			}
-			str.setRemoteClosed()
-
-		case msgDAT:
-			s.streamLock.Lock()
-			str := s.streams[streamID]
-			s.streamLock.Unlock()
-			if str == nil {
-				s.logger.Printf("DAT packet for unknown stream with id %d dropped", streamID)
-			}
-			buf, err := ioutil.ReadAll(msgReader)
-			err = str.addToBuffer(buf)
-			s.logger.Printf("received DAT packet with id %d: payload length %d bytes", streamID, len(buf))
-			if err != nil {
-				s.logger.Print(err)
-			}
-
-		// Indicates the remote session has exited and will not accept any more streams
-		case msgCLS:
-			s.logger.Printf("Received cls packet from remote session")
-			s.remoteClosed = true
-			if s.RemoteCloseCallback != nil {
-				s.RemoteCloseCallback()
-			}
-		}
-
+func (s *Session) Accept() (net.Conn, error) {
+	var timeout <-chan time.Time
+	var timer *time.Timer
+	if !s.acceptDeadline.IsZero() {
+		timer = time.NewTimer(s.acceptDeadline.Sub(time.Now()))
+		timeout = timer.C
 	}
+
+	select {
+	case <-timeout:
+		return nil, ErrAcceptTimeout
+	case str := <-s.streamCh:
+		return str, nil
+	}
+}
+
+func (s *Session) Open() (net.Conn, error) {
+	id := atomic.LoadUint32(&s.nextID)
+	s.mu.Lock()
+	if _, ok := s.streams[id]; ok {
+		s.mu.Unlock()
+		return nil, ErrDuplicateStream
+	}
+	s.mu.Unlock()
+	s.writes <- newSynFrame(id)
+	str := newStream(id, s)
+	atomic.AddUint32(&s.nextID, 2)
+	s.mu.Lock()
+	s.streams[id] = str
+	s.mu.Unlock()
+	return str, nil
+}
+
+func (s *Session) Close() error {
+	if s.closed.Load() == true {
+		return ErrBrokenPipe
+	}
+	s.closed.Store(true)
+	s.writes <- newClsFrame(0)
+	return nil
+}
+
+func (s *Session) Addr() net.Addr {
+	return s.conn.LocalAddr()
 }
 
 func (s *Session) sendLoop() {
 	for fr := range s.writes {
 		err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
-		s.logger.Print("wrote message: ")
-		s.logger.Print(fr)
+		s.logger.Printf("wrote message: %v", fr)
 		if err != nil {
 			s.logger.Print(err)
 		}
 	}
 }
 
-// Accept ...
-func (s *Session) Accept() (net.Conn, error) {
-	if s.closed {
-		return nil, ErrBrokenPipe
-	}
-	var timeout <-chan time.Time
-	if !s.acceptDeadline.IsZero() {
-		deadline := s.acceptDeadline.Sub(time.Now())
-		timer := time.NewTimer(deadline)
-		defer timer.Stop()
-		timeout = timer.C
-	}
-	select {
-	case <-timeout:
-		return nil, ErrAcceptTimeout
-	case str := <-s.streamChan:
-		return str, nil
-	}
-}
+func (s *Session) recvLoop() {
+	for {
+		_, msgReader, err := s.conn.NextReader()
+		if err != nil {
+			_ = s.Close()
+			break
+		}
+		h, err := getHeader(msgReader)
+		id, msgType := h.id(), h.msg()
+		switch msgType {
+		//Used for creating a new stream
+		case msgSYN:
+			s.mu.Lock()
+			if _, ok := s.streams[id]; ok {
+				s.logger.Printf("received duplicate syn frame for stream %d", id)
+				s.mu.Unlock()
+				break
+			}
+			str := newStream(id, s)
+			s.streams[id] = str
+			s.asyncPushStream(str)
+			s.mu.Unlock()
 
-// Open ...
-func (s *Session) Open() (net.Conn, error) {
-	if s.remoteClosed {
-		return nil, ErrRemoteClosed
-	}
+		//received data
+		case msgDAT:
+			s.mu.Lock()
+			str, ok := s.streams[id]
+			s.mu.Unlock()
+			if !ok {
+				s.logger.Printf("received data frame for unknown stream %d", id)
+				break
+			}
+			b, err := ioutil.ReadAll(msgReader)
+			if err != nil {
+				s.logger.Print(err)
+				break
+			}
+			str.addToBuffer(b)
+			str.notifyRead()
+			s.logger.Printf("received DAT frame on stream %d: %v", id, bytes.NewBuffer(b))
 
-	atomic.AddUint32(&s.nextID, 2)
-	if s.nextID == s.nextID%2 {
-		_ = s.Close()
-		return nil, ErrRemoteClosed
-	}
+		//received ack frame
+		case msgACK:
+			s.mu.Lock()
+			str, ok := s.streams[id]
+			s.mu.Unlock()
+			if !ok {
+				s.logger.Printf("received ack frame for unknown stream %d", id)
+				break
+			}
 
-	str := newStream(s.nextID, s)
-	str.SetDeadline(s.readDeadline)
-	s.streamLock.Lock()
-	defer s.streamLock.Unlock()
-	s.writes <- newSynFrame(s.nextID)
-	s.streams[s.nextID] = str
-	return str, nil
-}
+			b := make([]byte, 4)
+			_, err := msgReader.Read(b)
+			if err != nil {
+				s.logger.Print(err)
+				break
+			}
+			read := binary.LittleEndian.Uint32(b)
+			s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
+			str.updateRemoteCapacity(read)
+			str.notifyWrite()
 
-// Close ...
-func (s *Session) Close() error {
-	if s.closed {
-		return ErrBrokenPipe
+		// received fin frame
+		case msgFIN:
+			s.mu.Lock()
+			str, ok := s.streams[id]
+			s.mu.Unlock()
+			if !ok {
+				s.logger.Printf("received fin frame for unknown stream %d", id)
+				break
+			}
+
+			err := str.setRemoteClosed()
+			if str != nil {
+				s.logger.Print(err)
+			}
+			s.logger.Printf("remote stream %d closed connection", id)
+
+		case msgCLS:
+			s.logger.Printf("remote session closed")
+			s.remoteClosed.Store(true)
+			if s.remoteCloseCallback != nil {
+				s.remoteCloseCallback()
+			}
+		}
+
 	}
-	s.closed = true
-	s.writes <- newClsFrame(0)
-	return nil
 }
 
 func (s *Session) removeStream(id uint32) {
-	s.streamLock.Lock()
-	defer s.streamLock.Unlock()
-	delete(s.streams, id)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.streams[id]; ok {
+		delete(s.streams, id)
+	}
 }
 
-// Addr ...
-func (s *Session) Addr() net.Addr {
-	return s.conn.LocalAddr()
+func (s *Session) asyncPushStream(str *stream) {
+	select {
+	case s.streamCh <- str:
+	default:
+	}
 }
