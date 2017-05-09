@@ -98,6 +98,9 @@ tasks:
     deadline: "{{ '2 hours' | $fromNow }}" # the task will timeout if it doesn't complete within 2 hours
 ```
 
+There is also a ``{{ timestamp }}`` token which coresponse to UNIX epoh in
+miliseconds.
+
 ---
 
 ## Token Substitution and Environment Variables
