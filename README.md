@@ -40,18 +40,18 @@ All being well, the binaries will be built under `${GOPATH}/bin`.
 * Create a generic worker configuration file somewhere, with the following content:
 
 ```
-            {
-              "accessToken":                "<access token of your permanent credentials>",
-              "certificate":                "",
-              "clientId":                   "<client ID of your permanent credentials>",
-              "livelogSecret":              "<anything you like>",
-              "provisionerId":              "test-provisioner",
-              "publicIP":                   "<ideally an IP address of one of your network interfaces>",
-              "signingKeyLocation":         "<file location you wrote gpg private key to>",
-              "workerGroup":                "test-worker-group",
-              "workerId":                   "<a name to uniquely identify the worker instance>",
-              "workerType":                 "<a unique name that only you will use for your test worker(s)>"
-            }
+{
+    "accessToken":                "<access token of your permanent credentials>",
+    "certificate":                "",
+    "clientId":                   "<client ID of your permanent credentials>",
+    "livelogSecret":              "<anything you like>",
+    "provisionerId":              "test-provisioner",
+    "publicIP":                   "<ideally an IP address of one of your network interfaces>",
+    "signingKeyLocation":         "<file location you wrote gpg private key to>",
+    "workerGroup":                "test-worker-group",
+    "workerId":                   "<a name to uniquely identify the worker instance>",
+    "workerType":                 "<a unique name that only you will use for your test worker(s)>"
+}
 ```
 
 To see a full description of all the config options available to you, run:
