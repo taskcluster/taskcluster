@@ -384,8 +384,9 @@ api.declare({
   name: 'taskLink',
   title: 'Redirects to the task inspector page',
   description: [
-    'Builds a link to the task inspector for the given task group',
-    ' and redirects the user to that page.',
+    'Finds a link to the task inspector for the given task group',
+    'in the status object returned by GitHub,',
+    'and returns the link to redirect the user to that page.',
   ].join('\n'),
   stability: 'experimental',
   method: 'get',
@@ -394,14 +395,12 @@ api.declare({
   // Extract owner, repo and branch from request into variables
   let {owner, repo, branch} = req.params;
 
-  let authenticate = installationAuthenticate.bind(this);
-  let instGithub = await authenticate(owner);
+  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
 
   // Get task group ID
   if (instGithub) {
     try {
-      let findStatus = findTCstatus.bind(this);
-      let status = await findStatus(instGithub, owner, repo, branch);
+      let status = await findTCstatus(instGithub, owner, repo, branch, this.cfg);
 
       return res.redirect(status.target_url);
     } catch (e) {
@@ -414,11 +413,11 @@ api.declare({
 
 // Helper function to look up repo owner in the Azure table to get installation ID,
 // authenticate with GitHub using that ID. Returns either authenticated GitHub object or null
-async function installationAuthenticate(owner) {
+async function installationAuthenticate(owner, directory, github) {
   // Look up the installation ID in Azure. If no such owner in the table, no error thrown
-  let ownerInfo = await this.OwnersDirectory.load({owner}, true);
+  let ownerInfo = await directory.load({owner}, true);
   if (ownerInfo) {
-    let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
+    let instGithub = await github.getInstallationGithub(ownerInfo.installationId);
     return instGithub;
   } else {
     return null;
@@ -428,8 +427,8 @@ async function installationAuthenticate(owner) {
 // Helper function to find the most fresh status set by our bot.
 // Get's the bot's ID, gets statuses for the repo/branch, finds there the status by the bot's ID
 // Returns either status object or undefined (if not found).
-async function findTCstatus(github, owner, repo, branch) {
-  let taskclusterBot = await github.users.getForUser({user: this.cfg.app.botName});
+async function findTCstatus(github, owner, repo, branch, configuration) {
+  let taskclusterBot = await github.users.getForUser({user: configuration.app.botName});
   // Statuses is an array of status objects, where we find the relevant status
   let statuses = await github.repos.getStatuses({owner, repo, sha: branch});
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);

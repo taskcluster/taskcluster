@@ -7,7 +7,7 @@ suite('api', () => {
   let helper = require('./helper');
   let assert = require('assert');
   let _ = require('lodash');
-  let request = require('superagent-promise');
+  let got = require('got');
 
   let github = Object.create(null);
 
@@ -95,7 +95,7 @@ suite('api', () => {
       sha: 'master',
       info: [
         {creator: {id: 12345}, state: 'success'},
-        {creator: {id: 55555}, state: 'success', target_url: 'http://google.com'},
+        {creator: {id: 55555}, state: 'success', target_url: 'Wonderland'},
       ],
     });
     github.inst(9090).setStatuses({
@@ -155,31 +155,50 @@ suite('api', () => {
   });
 
   test('build badges', async function() {
+    var res;
+
     // status: failure
-    await request.get('http://localhost:60415/v1/badge/abc123/coolRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 8615);
-    });
+    try {
+      res = await got('http://localhost:60415/v1/badge/abc123/coolRepo/master');
+    } catch (e) {
+      console.log(`Test for failure status failed. Error: ${JSON.stringify(e)}`);
+    }
+    assert.equal(res.headers['content-length'], 8615);
 
     // status: success
-    await request.get('http://localhost:60415/v1/badge/abc123/awesomeRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 9189);
-    });
+    try {
+      res = await got('http://localhost:60415/v1/badge/abc123/awesomeRepo/master');
+    } catch (e) {
+      console.log(`Test for success status failed. Error: ${JSON.stringify(e)}`);
+    }
+    assert.equal(res.headers['content-length'], 9189);
 
     // error
-    await request.get('http://localhost:60415/v1/badge/abc123/unknownRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 4268);
-    });
+    try {
+      res = await got('http://localhost:60415/v1/badge/abc123/unknownRepo/master');
+    } catch (e) {
+      console.log(`Test for error during getting status failed. Error: ${JSON.stringify(e)}`);
+    }
+    assert.equal(res.headers['content-length'], 4268);
 
     // new repo (no info yet)
-    await request.get('http://localhost:60415/v1/badge/abc123/nonTCGHRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.headers['content-length'], 7873);
-    });
+    try {
+      res = await got('http://localhost:60415/v1/badge/abc123/nonTCGHRepo/master');
+    } catch (e) {
+      console.log(`Test for new repo with no status failed. Error: ${JSON.stringify(e)}`);
+    }
+    assert.equal(res.headers['content-length'], 7873);
   });
 
   test('link for clickable badges', async function() {
+    var res;
+
     // check if the function returns a correct link
-    await request.get('http://localhost:60415/v1/taskLink/abc123/awesomeRepo/master').end((err, res) => {
-      err ? console.log(err) : assert.equal(res.text.includes('<title>Google</title>'), true);
-    });
+    try {
+      res = await got('http://localhost:60415/v1/taskLink/abc123/awesomeRepo/master', {followRedirect: false});
+    } catch (e) {
+      console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
+    }
+    assert.equal(res.body, 'Found. Redirecting to Wonderland');
   });
 });
