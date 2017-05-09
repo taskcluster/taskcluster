@@ -16,6 +16,7 @@ const (
 	defaultStreamQueueSize = 10
 )
 
+// Session implements net.Listener. Allows creating and acception multiplexed streams over ws
 type Session struct {
 	mu       sync.Mutex
 	streams  map[uint32]*stream
@@ -72,6 +73,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	return s
 }
 
+// Accept is used to accept an incoming stream
 func (s *Session) Accept() (net.Conn, error) {
 	var timeout <-chan time.Time
 	var timer *time.Timer
@@ -90,6 +92,7 @@ func (s *Session) Accept() (net.Conn, error) {
 	}
 }
 
+// Open creates a new stream
 func (s *Session) Open() (net.Conn, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -119,6 +122,7 @@ func (s *Session) Open() (net.Conn, error) {
 	return str, nil
 }
 
+// Close closes the current session and underlying connection
 func (s *Session) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -150,6 +154,7 @@ func (s *Session) Close() error {
 	return nil
 }
 
+// Addr used for implementing net.Listener
 func (s *Session) Addr() net.Addr {
 	return s.conn.LocalAddr()
 }

@@ -31,6 +31,7 @@ func getHeader(reader io.Reader) (header, error) {
 	return hdr, nil
 }
 
+// Logger is used by Session to write logs
 type Logger interface {
 	Printf(format string, a ...interface{})
 	Print(a ...interface{})

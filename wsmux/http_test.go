@@ -15,8 +15,12 @@ import (
 
 func TestGet(t *testing.T) {
 	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
-	go server.ListenAndServe()
-	defer server.Close()
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	defer func() {
+		_ = server.Close()
+	}()
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -50,8 +54,12 @@ func TestGet(t *testing.T) {
 func TestWebSocket(t *testing.T) {
 	// t.Skip("No idea why this is failing")
 	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
-	go server.ListenAndServe()
-	defer server.Close()
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	defer func() {
+		_ = server.Close()
+	}()
 	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
 	//runtime.Breakpoint()
 	if err != nil {

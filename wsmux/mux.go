@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Config values for Session
 type Config struct {
 	RemoteCloseCallback func()
 	AcceptDeadline      time.Time

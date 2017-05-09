@@ -87,7 +87,9 @@ func wsConn(t *testing.T, conn *websocket.Conn) {
 	session := Server(conn, conf)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", genWsHandler(t))
-	go (&http.Server{Handler: mux}).Serve(session)
+	go func() {
+		_ = (&http.Server{Handler: mux}).Serve(session)
+	}()
 }
 
 func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
@@ -109,7 +111,7 @@ func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
 					t.Fatal("handler: ws over wsmux stream sent inconsistent message")
 				}
 			} else {
-				io.WriteString(w, getSuccess)
+				_, _ = io.WriteString(w, getSuccess)
 			}
 		default:
 			t.Fatal("unsupported header")

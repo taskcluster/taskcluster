@@ -52,24 +52,29 @@ func newStream(id uint32, s *Session) *stream {
 	return str
 }
 
+// LocalAddr returns local address of the stream
 func (s *stream) LocalAddr() net.Addr {
 	return s.session.conn.LocalAddr()
 }
 
+// RemoteAddr returns remote address of the stream
 func (s *stream) RemoteAddr() net.Addr {
 	return s.session.conn.RemoteAddr()
 }
 
+// SetReadDeadline sets deadline for future reads
 func (s *stream) SetReadDeadline(t time.Time) error {
 	s.readDeadline.Store(t)
 	return nil
 }
 
+//SetWriteDeadline sets deadline for future writes
 func (s *stream) SetWriteDeadline(t time.Time) error {
 	s.writeDeadline.Store(t)
 	return nil
 }
 
+//SetDeadline sets read and write deadlines
 func (s *stream) SetDeadline(t time.Time) error {
 	if err := s.SetReadDeadline(t); err != nil {
 		return err
@@ -80,6 +85,7 @@ func (s *stream) SetDeadline(t time.Time) error {
 	return nil
 }
 
+// Read reads data from the stream
 func (s *stream) Read(buf []byte) (int, error) {
 	//check stream state
 	select {
@@ -131,6 +137,7 @@ func (s *stream) Read(buf []byte) (int, error) {
 	return m, nil
 }
 
+// Write writes data to the stream
 func (s *stream) Write(buf []byte) (int, error) {
 	// check if stream closed
 	select {
@@ -173,6 +180,7 @@ func (s *stream) Write(buf []byte) (int, error) {
 	return w, nil
 }
 
+// Close is used to close the stream
 func (s *stream) Close() error {
 	s.closeLock.Lock()
 	defer s.closeLock.Unlock()
@@ -184,6 +192,11 @@ func (s *stream) Close() error {
 	default:
 	}
 
+	// write fin frame and close
+	select {
+	case s.session.writes <- newFinFrame(s.id):
+	default:
+	}
 	close(s.closed)
 
 	select {
