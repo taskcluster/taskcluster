@@ -11,9 +11,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+/*
+TODO: Add ping and pong handlers
+TODO: Set deadlines on streams
+*/
+
 const (
-	defaultQueueSize       = 10
-	defaultStreamQueueSize = 10
+	defaultQueueSize         = 20
+	defaultStreamQueueSize   = 20
+	defaultKeepAliveInterval = 30 * time.Second
 )
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
@@ -24,9 +30,7 @@ type Session struct {
 	writes   chan frame
 	conn     *websocket.Conn
 
-	acceptDeadline time.Time
-	readDeadline   time.Time
-	writeDeadline  time.Time
+	keepAliveInterval time.Duration
 
 	logger Logger
 
@@ -49,10 +53,13 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s.closed = make(chan struct{})
 	s.closeConn = true
 
-	s.acceptDeadline = conf.AcceptDeadline
-	s.readDeadline = conf.ReadDeadline
-	s.writeDeadline = conf.WriteDeadline
 	s.remoteCloseCallback = conf.RemoteCloseCallback
+
+	if conf.KeepAliveInterval == 0 {
+		s.keepAliveInterval = defaultKeepAliveInterval
+	} else {
+		s.keepAliveInterval = conf.KeepAliveInterval
+	}
 
 	if server {
 		s.nextID = 0
@@ -75,18 +82,10 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 
 // Accept is used to accept an incoming stream
 func (s *Session) Accept() (net.Conn, error) {
-	var timeout <-chan time.Time
-	var timer *time.Timer
-	if !s.acceptDeadline.IsZero() {
-		timer = time.NewTimer(s.acceptDeadline.Sub(time.Now()))
-		timeout = timer.C
-	}
 
 	select {
 	case <-s.closed:
 		return nil, ErrSessionClosed
-	case <-timeout:
-		return nil, ErrAcceptTimeout
 	case str := <-s.streamCh:
 		return str, nil
 	}
@@ -194,13 +193,19 @@ func (s *Session) recvLoop() {
 			return
 		default:
 		}
-		_, msgReader, err := s.conn.NextReader()
+
+		t, msgReader, err := s.conn.NextReader()
 		if err != nil {
 			_ = s.Close()
 			break
 		}
+		if t != websocket.BinaryMessage {
+			continue
+		}
+
 		h, err := getHeader(msgReader)
 		id, msgType := h.id(), h.msg()
+
 		switch msgType {
 		//Used for creating a new stream
 		case msgSYN:

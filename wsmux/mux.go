@@ -1,16 +1,15 @@
 package wsmux
 
 import (
-	"github.com/gorilla/websocket"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 // Config values for Session
 type Config struct {
+	KeepAliveInterval   time.Duration
 	RemoteCloseCallback func()
-	AcceptDeadline      time.Time
-	ReadDeadline        time.Time
-	WriteDeadline       time.Time
 	Log                 Logger
 }
 
