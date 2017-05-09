@@ -31,8 +31,9 @@ type Session struct {
 
 	nextID uint32
 
-	closed       chan struct{} // nil channel
-	remoteClosed chan struct{} // nil channel
+	closed chan struct{} // nil channel
+
+	closeConn bool
 
 	remoteCloseCallback func()
 }
@@ -45,7 +46,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s.writes = make(chan frame, defaultQueueSize)
 
 	s.closed = make(chan struct{})
-	s.remoteClosed = make(chan struct{})
+	s.closeConn = true
 
 	s.acceptDeadline = conf.AcceptDeadline
 	s.readDeadline = conf.ReadDeadline
@@ -63,6 +64,9 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	} else {
 		s.logger = conf.Log
 	}
+
+	s.conn.SetCloseHandler(s.closeHandler)
+
 	go s.sendLoop()
 	go s.recvLoop()
 	return s
@@ -79,8 +83,6 @@ func (s *Session) Accept() (net.Conn, error) {
 	select {
 	case <-s.closed:
 		return nil, ErrSessionClosed
-	case <-s.remoteClosed:
-		return nil, ErrRemoteClosed
 	case <-timeout:
 		return nil, ErrAcceptTimeout
 	case str := <-s.streamCh:
@@ -93,8 +95,6 @@ func (s *Session) Open() (net.Conn, error) {
 	defer s.mu.Unlock()
 
 	select {
-	case <-s.remoteClosed:
-		return nil, ErrRemoteClosed
 	case <-s.closed:
 		return nil, ErrSessionClosed
 	default:
@@ -139,12 +139,27 @@ func (s *Session) Close() error {
 	}
 
 	close(s.closed)
+	if s.closeConn {
+		_ = s.conn.Close()
+	}
+
+	for _, v := range s.streams {
+		_ = v.Close()
+	}
 
 	return nil
 }
 
 func (s *Session) Addr() net.Addr {
 	return s.conn.LocalAddr()
+}
+
+func (s *Session) closeHandler(code int, text string) error {
+	s.logger.Printf("ws conn closed: code %d : %s", code, text)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.closeConn = false
+	return s.Close()
 }
 
 func (s *Session) sendLoop() {
@@ -169,6 +184,11 @@ func (s *Session) sendLoop() {
 
 func (s *Session) recvLoop() {
 	for {
+		select {
+		case <-s.closed:
+			return
+		default:
+		}
 		_, msgReader, err := s.conn.NextReader()
 		if err != nil {
 			_ = s.Close()
@@ -244,15 +264,6 @@ func (s *Session) recvLoop() {
 				s.logger.Print(err)
 			}
 			s.logger.Printf("remote stream %d closed connection", id)
-
-		case msgCLS:
-			s.logger.Printf("remote session closed")
-			s.mu.Lock()
-			close(s.remoteClosed)
-			s.mu.Unlock()
-			if s.remoteCloseCallback != nil {
-				s.remoteCloseCallback()
-			}
 		}
 
 	}
