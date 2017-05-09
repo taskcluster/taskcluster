@@ -312,4 +312,4 @@ Please see:
 * [TaskCluster Documentation](https://docs.taskcluster.net/)
 * [Generic Worker presentations](https://docs.taskcluster.net/presentations) (focus on Windows platform)
 * [TaskCluster Web Tools](https://tools.taskcluster.net/)
-* [Generic Worker Open Bugs](https://bugzilla.mozilla.org/buglist.cgi?f1=product&list_id=12722874&o1=equals&query_based_on=Taskcluster%20last%202%20days&o2=equals&query_format=advanced&f2=component&v1=Taskcluster&v2=Generic-Worker&known_name=Taskcluster%20last%202%20days)
+* [Generic Worker Open Bugs](https://bugzilla.mozilla.org/buglist.cgi?f1=product&resolution=---&o1=equals&o2=equals&query_format=advanced&f2=component&v1=Taskcluster&v2=Generic-Worker)
