@@ -32,7 +32,7 @@ All being well, the binaries will be built under `${GOPATH}/bin`.
 * Request membership of the [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/) mozillians group
 * If you are signed into tools.taskcluster.net already, **sign out**
 * Sign into [tools.taskcluster.net](https://tools.taskcluster.net/) using either your new Mozillians account, _or_ your LDAP account **if it uses the same email address as your Mozillians account**
-* Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/) **granting it the single scope `assume:project:taskcluster:generic-worker-tester`**
+* Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/) granting it the single scope `assume:project:taskcluster:generic-worker-tester`
 
 # Set up your env
 
