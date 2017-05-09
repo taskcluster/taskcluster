@@ -28,7 +28,6 @@ All being well, the binaries will be built under `${GOPATH}/bin`.
 
 # Acquire taskcluster credentials
 
-* Generate a GPG key pair with `generic-worker new-openpgp-keypair --file <file>` where `file` is where you want the generated GPG private key to be written to
 * Sign up for a [Mozillians account](https://mozillians.org/en-US/)
 * Request membership of the [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/) mozillians group
 * If you are signed into tools.taskcluster.net already, **sign out**
@@ -37,6 +36,7 @@ All being well, the binaries will be built under `${GOPATH}/bin`.
 
 # Set up your env
 
+* Generate a GPG key pair with `generic-worker new-openpgp-keypair --file <file>` where `file` is where you want the generated GPG private key to be written to
 * Create a generic worker configuration file somewhere, with the following content:
 
 ```
