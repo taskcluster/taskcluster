@@ -88,6 +88,7 @@ module.exports.setup = function(cfg) {
     // functions are used as default values for some fields.
     config = jparam(config, _.merge(payload.details, {
       $fromNow: (text) => tc.fromNowJSON(text),
+      timestamp: Math.floor(new Date()),
       organization: payload.organization,
       repository: payload.repository,
       'taskcluster.docker.provisionerId': cfg.intree.provisionerId,
