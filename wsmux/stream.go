@@ -93,6 +93,12 @@ func (s *stream) SetDeadline(t time.Time) error {
 
 // Read reads data from the stream
 func (s *stream) Read(buf []byte) (int, error) {
+	//check if stream has been accepted
+	select {
+	case <-s.accepted:
+	default:
+		return 0, ErrBrokenPipe
+	}
 	//check stream state
 	select {
 	case <-s.remoteClosed:
@@ -151,6 +157,11 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 // Write writes data to the stream
 func (s *stream) Write(buf []byte) (int, error) {
+	select {
+	case <-s.accepted:
+	default:
+		return 0, ErrBrokenPipe
+	}
 	s.session.logger.Printf("requested write %d", len(buf))
 	// check if stream closed
 	select {
