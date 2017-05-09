@@ -28,21 +28,40 @@ All being well, the binaries will be built under `${GOPATH}/bin`.
 
 # Acquire taskcluster credentials
 
+* Generate a GPG key pair with `generic-worker new-openpgp-keypair --file <file>` where `file` is where you want the generated GPG private key to be written to
 * Sign up for a [Mozillians account](https://mozillians.org/en-US/)
-* Using your new Mozillians account, sign into [tools.taskcluster.net](https://tools.taskcluster.net/)
-* Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/) granting it the scope `assume:project:taskcluster:generic-worker-tester`
 * Request membership of the [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/) mozillians group
-* Configure generic worker to use your new taskcluster credentials (see below)
+* If you are signed into tools.taskcluster.net already, **sign out**
+* Sign into [tools.taskcluster.net](https://tools.taskcluster.net/) using either your new Mozillians account, _or_ your LDAP account **if it uses the same email address as your Mozillians account**
+* Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/) **granting it the single scope `assume:project:taskcluster:generic-worker-tester`**
 
 # Set up your env
 
-View the generic worker help, to see what config you need to set up:
+* Create a generic worker configuration file somewhere, with the following content:
+
+```
+            {
+              "accessToken":                "<access token of your permanent credentials>",
+              "certificate":                "",
+              "clientId":                   "<client ID of your permanent credentials>",
+              "livelogSecret":              "<anything you like>",
+              "provisionerId":              "test-provisioner",
+              "publicIP":                   "<ideally an IP address of one of your network interfaces>",
+              "signingKeyLocation":         "<file location you wrote gpg private key to>",
+              "workerGroup":                "test-worker-group",
+              "workerId":                   "<a name to uniquely identify the worker instance>",
+              "workerType":                 "<a unique name that only you will use for your test worker(s)>"
+            }
+```
+
+To see a full description of all the config options available to you, run:
 
 ```
 generic-worker --help
 ```
 
-This should display something like this:
+This should display the help text, which includes detailed information about
+all sub commands and configuration settings:
 
 ```
 generic-worker
@@ -234,21 +253,6 @@ and reports back results to the queue.
                                             that should apply to all generated users (and thus
                                             all tasks).
 
-    Here is an syntactically valid example configuration file:
-
-            {
-              "accessToken":                "123bn234bjhgdsjhg234",
-              "clientId":                   "hskdjhfasjhdkhdbfoisjd",
-              "workerGroup":                "dev-test",
-              "workerId":                   "IP_10-134-54-89",
-              "workerType":                 "win2008-worker",
-              "provisionerId":              "my-provisioner",
-              "livelogSecret":              "baNaNa-SouP4tEa",
-              "publicIP":                   "12.24.35.46",
-              "signingKeyLocation":         "C:\\generic-worker\\generic-worker-gpg-signing-key.key"
-            }
-
-
     If an optional config setting is not provided in the json configuration file, the
     default will be taken (defaults documented above).
 
@@ -262,16 +266,16 @@ and reports back results to the queue.
 Simply run:
 
 ```
-generic-worker run --config CONFIG-FILE
+generic-worker run --config <config file>
 ```
+
+where `<config file>` is the generic worker config file you created above.
 
 # Create a test job
 
 Go to https://tools.taskcluster.net/task-creator/ and create a task to run on your generic worker.
 
 Use [this example](worker_types/win2012r2/task-definition.json) as a template, but make sure to edit `provisionerId` and `workerType` values so that they match what you set in your config file.
-
-Please note you should *NOT* use the default value of `aws-provisioner` for the `provisionerId` since then the production aws provisioner may start spawning ec2 instances, and the docker-worker may try to run the job. By specifying something unique for your local environment, the aws provisioner and docker workers will leave this task alone, and only your machine will claim the task.
 
 Don't forget to submit the task by clicking the *Create Task* icon.
 
