@@ -13,7 +13,6 @@ import (
 
 /*
 TODO: Add ping and pong handlers
-TODO: Set deadlines on streams
 */
 
 const (
@@ -111,6 +110,8 @@ func (s *Session) Open() (net.Conn, error) {
 	}
 
 	id := s.nextID
+	// increment here so that we can wait safely
+	s.nextID += 2
 	if _, ok := s.streams[id]; ok {
 		return nil, ErrDuplicateStream
 	}
@@ -121,6 +122,8 @@ func (s *Session) Open() (net.Conn, error) {
 	case s.writes <- newSynFrame(id):
 		s.streams[id] = str
 	default:
+		// decrement nextID so it can be used by a different stream
+		s.nextID -= 2
 		return nil, ErrBrokenPipe
 	}
 	// unlock mutex and wait
@@ -128,15 +131,17 @@ func (s *Session) Open() (net.Conn, error) {
 
 	select {
 	case <-str.accepted:
-		s.nextID += 2
 		s.mu.Lock()
 		return str, nil
 	case <-s.closed:
 		s.mu.Lock()
+		// state of s.nextID doesn't matter here
 		delete(s.streams, id)
 		return nil, ErrSessionClosed
 	case <-time.After(s.streamAcceptDeadline):
 		s.mu.Lock()
+		// nextID can be cyclically reused, and previous instance
+		// may be in use by a different stream
 		delete(s.streams, id)
 		return nil, ErrAcceptTimeout
 	}
@@ -153,14 +158,6 @@ func (s *Session) Close() error {
 	case <-s.closed:
 		return ErrSessionClosed
 	default:
-	}
-
-	// write cls frame and close write channel
-	select {
-	case s.writes <- newClsFrame(0):
-		close(s.writes)
-	default:
-		s.logger.Printf("write channel closed")
 	}
 
 	close(s.closed)
