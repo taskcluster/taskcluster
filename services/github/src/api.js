@@ -284,12 +284,12 @@ api.declare({
   name: 'badge',
   title: 'Latest Build Status Badge',
   description: [
-    'Checks the status of the latest build of a given branch ',
-    'and returns corresponding badge image.',
+    'Checks the status of the latest build of a given branch',
+    'and returns corresponding badge svg.',
   ].join('\n'),
   stability: 'experimental',
   method: 'get',
-  route: '/badge/:owner/:repo/:branch',
+  route: '/repository/:owner/:repo/:branch/badge.svg',
 }, async function(req, res) {
   // Extract owner, repo and branch from request into variables
   let {owner, repo, branch} = req.params;
@@ -333,16 +333,16 @@ api.declare({
 });
 
 api.declare({
-  name: 'isInstalledFor',
-  title: 'Check if Repository has Integration',
+  name: 'repository',
+  title: 'Get Repository Info',
   description: [
-    'Checks if the integration has been installed for',
-    'a given repository of a given organization or user.',
+    'Returns any repository metadata that is',
+    'useful within Taskcluster related services.',
   ].join('\n'),
   stability: 'experimental',
   method: 'get',
   route: '/repository/:owner/:repo',
-  output: 'is-installed-for.json',
+  output: 'repository.json',
 }, async function(req, res) {
   // Extract owner and repo from request into variables
   let {owner, repo} = req.params;
@@ -377,20 +377,19 @@ api.declare({
   return res.reply({installed: false});
 });
 
-// Below is the draft code to make the badges clickable.
-// In the finished thing, the helper function will go to the beginning of the module,
-// and will be used in other APIs as well.
 api.declare({
-  name: 'taskLink',
-  title: 'Redirects to the task inspector page',
+  name: 'latest',
+  title: 'Latest Status for Branch',
   description: [
-    'Finds a link to the task inspector for the given task group',
-    'in the status object returned by GitHub,',
-    'and returns the link to redirect the user to that page.',
+    'For a given branch of a repository, this will always point',
+    'to a status page for the most recent task triggered by that',
+    'branch.',
+    '',
+    'Note: This is a redirect rather than a direct link.',
   ].join('\n'),
   stability: 'experimental',
   method: 'get',
-  route: '/taskLink/:owner/:repo/:branch',
+  route: '/repository/:owner/:repo/:branch/latest',
 }, async function(req, res) {
   // Extract owner, repo and branch from request into variables
   let {owner, repo, branch} = req.params;
