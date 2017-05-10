@@ -146,11 +146,11 @@ suite('api', () => {
   });
 
   test('integration installation', async function() {
-    let result = await helper.github.isInstalledFor('abc123', 'coolRepo');
+    let result = await helper.github.repository('abc123', 'coolRepo');
     assert.deepEqual(result, {installed: true});
-    result = await helper.github.isInstalledFor('abc123', 'unknownRepo');
+    result = await helper.github.repository('abc123', 'unknownRepo');
     assert.deepEqual(result, {installed: false});
-    result = await helper.github.isInstalledFor('unknownOwner', 'unknownRepo');
+    result = await helper.github.repository('unknownOwner', 'unknownRepo');
     assert.deepEqual(result, {installed: false});
   });
 
@@ -159,7 +159,7 @@ suite('api', () => {
 
     // status: failure
     try {
-      res = await got('http://localhost:60415/v1/badge/abc123/coolRepo/master');
+      res = await got('http://localhost:60415/v1/repository/abc123/coolRepo/master/badge.svg');
     } catch (e) {
       console.log(`Test for failure status failed. Error: ${JSON.stringify(e)}`);
     }
@@ -167,7 +167,7 @@ suite('api', () => {
 
     // status: success
     try {
-      res = await got('http://localhost:60415/v1/badge/abc123/awesomeRepo/master');
+      res = await got('http://localhost:60415/v1/repository/abc123/awesomeRepo/master/badge.svg');
     } catch (e) {
       console.log(`Test for success status failed. Error: ${JSON.stringify(e)}`);
     }
@@ -175,7 +175,7 @@ suite('api', () => {
 
     // error
     try {
-      res = await got('http://localhost:60415/v1/badge/abc123/unknownRepo/master');
+      res = await got('http://localhost:60415/v1/repository/abc123/unknownRepo/master/badge.svg');
     } catch (e) {
       console.log(`Test for error during getting status failed. Error: ${JSON.stringify(e)}`);
     }
@@ -183,7 +183,7 @@ suite('api', () => {
 
     // new repo (no info yet)
     try {
-      res = await got('http://localhost:60415/v1/badge/abc123/nonTCGHRepo/master');
+      res = await got('http://localhost:60415/v1/repository/abc123/nonTCGHRepo/master/badge.svg');
     } catch (e) {
       console.log(`Test for new repo with no status failed. Error: ${JSON.stringify(e)}`);
     }
@@ -195,7 +195,7 @@ suite('api', () => {
 
     // check if the function returns a correct link
     try {
-      res = await got('http://localhost:60415/v1/taskLink/abc123/awesomeRepo/master', {followRedirect: false});
+      res = await got('http://localhost:60415/v1/repository/abc123/awesomeRepo/master/latest', {followRedirect: false});
     } catch (e) {
       console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
     }
