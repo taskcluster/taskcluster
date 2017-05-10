@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 9 May 2017 at 20:24:00 UTC. The code was generated
+// Wed, 10 May 2017 at 18:26:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -119,37 +119,39 @@ func (myGithub *Github) Builds(continuationToken, limit, organization, repositor
 // Stability: *** EXPERIMENTAL ***
 //
 // Checks the status of the latest build of a given branch
-// and returns corresponding badge image.
+// and returns corresponding badge svg.
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#badge
 func (myGithub *Github) Badge(owner, repo, branch string) error {
 	cd := tcclient.Client(*myGithub)
-	_, _, err := (&cd).APICall(nil, "GET", "/badge/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch), nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/badge.svg", nil, nil)
 	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Checks if the integration has been installed for
-// a given repository of a given organization or user.
+// Returns any repository metadata that is
+// useful within Taskcluster related services.
 //
-// See https://docs.taskcluster.net/reference/core/github/api-docs#isInstalledFor
-func (myGithub *Github) IsInstalledFor(owner, repo string) (*IsInstalledFor1, error) {
+// See https://docs.taskcluster.net/reference/core/github/api-docs#repository
+func (myGithub *Github) Repository(owner, repo string) (*Repository1, error) {
 	cd := tcclient.Client(*myGithub)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(IsInstalledFor1), nil)
-	return responseObject.(*IsInstalledFor1), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(Repository1), nil)
+	return responseObject.(*Repository1), err
 }
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Finds a link to the task inspector for the given task group
-// in the status object returned by GitHub,
-// and returns the link to redirect the user to that page.
+// For a given branch of a repository, this will always point
+// to a status page for the most recent task triggered by that
+// branch.
 //
-// See https://docs.taskcluster.net/reference/core/github/api-docs#taskLink
-func (myGithub *Github) TaskLink(owner, repo, branch string) error {
+// Note: This is a redirect rather than a direct link.
+//
+// See https://docs.taskcluster.net/reference/core/github/api-docs#latest
+func (myGithub *Github) Latest(owner, repo, branch string) error {
 	cd := tcclient.Client(*myGithub)
-	_, _, err := (&cd).APICall(nil, "GET", "/taskLink/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch), nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, nil)
 	return err
 }
 

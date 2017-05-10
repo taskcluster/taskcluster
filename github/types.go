@@ -91,14 +91,14 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 	}
 
-	// Check if Repository has Integration
+	// Any Taskcluster-specific Github repository information.
 	//
-	// See http://schemas.taskcluster.net/github/v1/is-installed-for.json#
-	IsInstalledFor1 struct {
+	// See http://schemas.taskcluster.net/github/v1/repository.json#
+	Repository1 struct {
 
 		// True if integration is installed, False otherwise.
 		//
-		// See http://schemas.taskcluster.net/github/v1/is-installed-for.json#/properties/installed
+		// See http://schemas.taskcluster.net/github/v1/repository.json#/properties/installed
 		Installed bool `json:"installed"`
 	}
 

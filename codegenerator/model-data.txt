@@ -1,4 +1,4 @@
-Generated: 1494361490
+Generated: 1494440809
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3035,7 +3035,7 @@ fields.'
 Entry 2     =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/badge/<owner>/<repo>/<branch>'
+    Entry Route       = '/repository/<owner>/<repo>/<branch>/badge.svg'
     Entry Args        = '[owner repo branch]'
     Entry Query        = '[]'
     Entry Name        = 'badge'
@@ -3044,37 +3044,39 @@ Entry 2     =
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Latest Build Status Badge'
-    Entry Description = 'Checks the status of the latest build of a given branch 
-and returns corresponding badge image.'
+    Entry Description = 'Checks the status of the latest build of a given branch
+and returns corresponding badge svg.'
 Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/repository/<owner>/<repo>'
     Entry Args        = '[owner repo]'
     Entry Query        = '[]'
-    Entry Name        = 'isInstalledFor'
+    Entry Name        = 'repository'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/github/v1/is-installed-for.json'
-    Entry Title       = 'Check if Repository has Integration'
-    Entry Description = 'Checks if the integration has been installed for
-a given repository of a given organization or user.'
+    Entry Output      = 'http://schemas.taskcluster.net/github/v1/repository.json'
+    Entry Title       = 'Get Repository Info'
+    Entry Description = 'Returns any repository metadata that is
+useful within Taskcluster related services.'
 Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/taskLink/<owner>/<repo>/<branch>'
+    Entry Route       = '/repository/<owner>/<repo>/<branch>/latest'
     Entry Args        = '[owner repo branch]'
     Entry Query        = '[]'
-    Entry Name        = 'taskLink'
+    Entry Name        = 'latest'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = ''
-    Entry Title       = 'Redirects to the task inspector page'
-    Entry Description = 'Finds a link to the task inspector for the given task group
-in the status object returned by GitHub,
-and returns the link to redirect the user to that page.'
+    Entry Title       = 'Latest Status for Branch'
+    Entry Description = 'For a given branch of a repository, this will always point
+to a status page for the most recent task triggered by that
+branch.
+
+Note: This is a redirect rather than a direct link.'
 Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -3211,25 +3213,25 @@ TypeName               = 'Var1'
 SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]'
 
 
-http://schemas.taskcluster.net/github/v1/is-installed-for.json#
-===============================================================
+http://schemas.taskcluster.net/github/v1/repository.json#
+=========================================================
 Additional Properties  = 'false'
-Description            = 'Check if Repository has Integration
+Description            = 'Any Taskcluster-specific Github repository information.
 '
-ID                     = 'http://schemas.taskcluster.net/github/v1/is-installed-for.json#'
+ID                     = 'http://schemas.taskcluster.net/github/v1/repository.json#'
 Properties
   Property 'installed' =
     Description            = 'True if integration is installed, False otherwise.
     '
     Type                   = 'boolean'
     TypeName               = 'Installed'
-    SourceURL              = 'http://schemas.taskcluster.net/github/v1/is-installed-for.json#/properties/installed'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/repository.json#/properties/installed'
 Required               = '[installed]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
-Title                  = 'isInstalledFor'
+Title                  = 'repository'
 Type                   = 'object'
-TypeName               = 'IsInstalledFor1'
-SourceURL              = 'http://schemas.taskcluster.net/github/v1/is-installed-for.json#'
+TypeName               = 'Repository1'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/repository.json#'
 
 
 http://references.taskcluster.net/github/v1/exchanges.json
