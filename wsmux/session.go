@@ -24,10 +24,11 @@ const (
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
 type Session struct {
-	mu       sync.Mutex
-	streams  map[uint32]*stream
-	streamCh chan *stream
-	conn     *websocket.Conn
+	mu        sync.Mutex
+	streams   map[uint32]*stream
+	streamCh  chan *stream
+	conn      *websocket.Conn
+	acceptErr error
 
 	sendLock sync.Mutex
 
@@ -61,37 +62,34 @@ func (s *Session) send(f frame) error {
 }
 
 func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
-	s := &Session{}
-	s.conn = conn
-	s.streams = make(map[uint32]*stream)
-	s.streamCh = make(chan *stream, defaultStreamQueueSize)
+	s := &Session{
+		conn:     conn,
+		streams:  make(map[uint32]*stream),
+		streamCh: make(chan *stream, defaultStreamQueueSize),
 
-	s.closed = make(chan struct{})
-	s.closeConn = true
+		closed:    make(chan struct{}),
+		closeConn: true,
 
-	s.remoteCloseCallback = conf.RemoteCloseCallback
+		nextID: 0,
 
-	if conf.KeepAliveInterval == 0 {
-		s.keepAliveInterval = defaultKeepAliveInterval
-	} else {
-		s.keepAliveInterval = conf.KeepAliveInterval
+		keepAliveInterval:    defaultKeepAliveInterval,
+		streamAcceptDeadline: defaultStreamAcceptDeadline,
+		logger:               &nilLogger{},
 	}
 
-	if conf.StreamAcceptDeadline == 0 {
-		s.streamAcceptDeadline = defaultStreamAcceptDeadline
-	} else {
-		s.streamAcceptDeadline = conf.StreamAcceptDeadline
-	}
-
-	if server {
-		s.nextID = 0
-	} else {
+	// streams opened by server are even numbered
+	// streams opened by client are odd numbered
+	if !server {
 		s.nextID = 1
 	}
 
-	if conf.Log == nil {
-		s.logger = &nilLogger{}
-	} else {
+	if conf.KeepAliveInterval != 0 {
+		s.keepAliveInterval = conf.KeepAliveInterval
+	}
+	if conf.StreamAcceptDeadline != 0 {
+		s.streamAcceptDeadline = 0
+	}
+	if conf.Log != nil {
 		s.logger = conf.Log
 	}
 
@@ -101,12 +99,22 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	return s
 }
 
+// IsClosed returns true if the session is closed
+func (s *Session) IsClosed() bool {
+	select {
+	case <-s.closed:
+		return true
+	default:
+	}
+	return false
+}
+
 // Accept is used to accept an incoming stream
 func (s *Session) Accept() (net.Conn, error) {
 
 	select {
 	case <-s.closed:
-		return nil, ErrSessionClosed
+		return nil, s.acceptErr
 	case str := <-s.streamCh:
 		return str, nil
 	}
@@ -165,15 +173,13 @@ func (s *Session) Close() error {
 	defer s.mu.Unlock()
 
 	// Check if channel has been closed
-	select {
-	case <-s.closed:
-		return ErrSessionClosed
-	default:
+	if s.IsClosed() {
+		return nil
 	}
 
-	close(s.closed)
+	var err error
 	if s.closeConn {
-		_ = s.conn.Close()
+		err = s.conn.Close()
 	}
 
 	for _, v := range s.streams {
@@ -181,7 +187,8 @@ func (s *Session) Close() error {
 	}
 	s.streams = nil
 
-	return nil
+	close(s.closed)
+	return err
 }
 
 // Addr used for implementing net.Listener
@@ -207,7 +214,7 @@ func (s *Session) recvLoop() {
 
 		t, msgReader, err := s.conn.NextReader()
 		if err != nil {
-			_ = s.Close()
+			_ = s.abort(err)
 			break
 		}
 		if t != websocket.BinaryMessage {
@@ -318,4 +325,16 @@ func (s *Session) asyncPushStream(str *stream) {
 	case s.streamCh <- str:
 	default:
 	}
+}
+
+func (s *Session) abort(e error) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.acceptErr = e
+
+	if s.IsClosed() {
+		return nil
+	}
+
+	return s.Close()
 }
