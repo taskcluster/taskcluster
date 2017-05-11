@@ -199,10 +199,15 @@ asyncAuth = taskcluster.async.Auth(options, session=session)
 ```
 Authentication related API end-points for TaskCluster and related
 services. These API end-points are of interest if you wish to:
-  * Authenticate request signed with TaskCluster credentials,
+  * Authorize a request signed with TaskCluster credentials,
   * Manage clients and roles,
   * Inspect or audit clients and roles,
   * Gain access to various services guarded by this API.
+
+Note that in this service "authentication" refers to validating the
+correctness of the supplied credentials (that the caller posesses the
+appropriate access token). This service does not provide any kind of user
+authentication (identifying a particular person).
 
 ### Clients
 The authentication service manages _clients_, at a high-level each client
@@ -673,8 +678,10 @@ await asyncAuth.azureTables(account='value') # -> result
 
 #### Get Shared-Access-Signature for Azure Table
 Get a shared access signature (SAS) string for use with a specific Azure
-Table Storage table. By not specifying a level as in azureTableSASLevel,
-you will get read-write permissions. If you get read-write from this, it will create the
+Table Storage table.
+
+The `level` parameter can be `read-write` or `read-only` and determines
+which type of credentials are returned.  If level is read-write, it will create the
 table if it doesn't already exist.
 
 
@@ -694,6 +701,33 @@ auth.azureTableSAS(account='value', table='value', level='value') # -> result
 # Async call
 await asyncAuth.azureTableSAS(account, table, level) # -> result
 await asyncAuth.azureTableSAS(account='value', table='value', level='value') # -> result
+```
+
+#### Get Shared-Access-Signature for Azure Blob
+Get a shared access signature (SAS) string for use with a specific Azure
+Blob Storage container.
+
+The `level` parameter can be `read-write` or `read-only` and determines
+which type of credentials are returned.  If level is read-write, it will create the
+container if it doesn't already exist.
+
+
+
+Takes the following arguments:
+
+  * `account`
+  * `container`
+  * `level`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#)
+
+```python
+# Sync calls
+auth.azureBlobSAS(account, container, level) # -> result`
+auth.azureBlobSAS(account='value', container='value', level='value') # -> result
+# Async call
+await asyncAuth.azureBlobSAS(account, container, level) # -> result
+await asyncAuth.azureBlobSAS(account='value', container='value', level='value') # -> result
 ```
 
 #### Get DSN for Sentry Project
@@ -1030,7 +1064,7 @@ await asyncAwsProvisioner.workerTypeLastModified(workerType='value') # -> result
 ```
 
 #### Get Worker Type
-Retreive a copy of the requested worker type definition.
+Retrieve a copy of the requested worker type definition.
 This copy contains a lastModified field as well as the worker
 type name.  As such, it will require manipulation to be able to
 use the results of this method to submit date to the update
@@ -1094,109 +1128,6 @@ Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-
 awsProvisioner.listWorkerTypes() # -> result`
 # Async call
 await asyncAwsProvisioner.listWorkerTypes() # -> result
-```
-
-#### Create new AMI Set
-Create an AMI Set. An AMI Set is a collection of AMIs with a single name.
-
-
-
-Takes the following arguments:
-
-  * `id`
-
-Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#)
-
-```python
-# Sync calls
-awsProvisioner.createAmiSet(id, payload) # -> None`
-awsProvisioner.createAmiSet(payload, id='value') # -> None
-# Async call
-await asyncAwsProvisioner.createAmiSet(id, payload) # -> None
-await asyncAwsProvisioner.createAmiSet(payload, id='value') # -> None
-```
-
-#### Get AMI Set
-Retreive a copy of the requested AMI set.
-
-
-
-Takes the following arguments:
-
-  * `id`
-
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#)
-
-```python
-# Sync calls
-awsProvisioner.amiSet(id) # -> result`
-awsProvisioner.amiSet(id='value') # -> result
-# Async call
-await asyncAwsProvisioner.amiSet(id) # -> result
-await asyncAwsProvisioner.amiSet(id='value') # -> result
-```
-
-#### Update AMI Set
-Provide a new copy of an AMI Set to replace the existing one.
-This will overwrite the existing AMI Set if there
-is already an AMI Set of that name. This method will return a
-200 response along with a copy of the AMI Set created.
-Note that if you are using the result of a GET on the ami-set
-end point that you will need to delete the lastModified and amiSet
-keys from the object returned, since those fields are not allowed
-the request body for this method.
-
-Otherwise, all input requirements and actions are the same as the
-create method.
-
-
-
-Takes the following arguments:
-
-  * `id`
-
-Required [input schema](http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#)
-
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#)
-
-```python
-# Sync calls
-awsProvisioner.updateAmiSet(id, payload) # -> result`
-awsProvisioner.updateAmiSet(payload, id='value') # -> result
-# Async call
-await asyncAwsProvisioner.updateAmiSet(id, payload) # -> result
-await asyncAwsProvisioner.updateAmiSet(payload, id='value') # -> result
-```
-
-#### List AMI sets
-Return a list of AMI sets names.
-
-
-Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#)
-
-```python
-# Sync calls
-awsProvisioner.listAmiSets() # -> result`
-# Async call
-await asyncAwsProvisioner.listAmiSets() # -> result
-```
-
-#### Delete AMI Set
-Delete an AMI Set.
-
-
-
-Takes the following arguments:
-
-  * `id`
-
-```python
-# Sync calls
-awsProvisioner.removeAmiSet(id) # -> None`
-awsProvisioner.removeAmiSet(id='value') # -> None
-# Async call
-await asyncAwsProvisioner.removeAmiSet(id) # -> None
-await asyncAwsProvisioner.removeAmiSet(id='value') # -> None
 ```
 
 #### Create new Secret
@@ -1341,17 +1272,25 @@ await asyncAwsProvisioner.state(workerType) # -> None
 await asyncAwsProvisioner.state(workerType='value') # -> None
 ```
 
-#### Ping Server
-Documented later...
+#### Get AWS State for a worker type
+Return the state of a given workertype as stored by the provisioner. 
+This state is stored as three lists: 1 for running instances, 1 for
+pending requests.  The `summary` property contains an updated summary
+similar to that returned from `listWorkerTypeSummaries`.
 
-**Warning** this api end-point is **not stable**.
 
+
+Takes the following arguments:
+
+  * `workerType`
 
 ```python
 # Sync calls
-awsProvisioner.ping() # -> None`
+awsProvisioner.newState(workerType) # -> None`
+awsProvisioner.newState(workerType='value') # -> None
 # Async call
-await asyncAwsProvisioner.ping() # -> None
+await asyncAwsProvisioner.newState(workerType) # -> None
+await asyncAwsProvisioner.newState(workerType='value') # -> None
 ```
 
 #### Backend Status
@@ -1412,6 +1351,18 @@ to claim you didn't know what this method does!
 awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() # -> None`
 # Async call
 await asyncAwsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() # -> None
+```
+
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+awsProvisioner.ping() # -> None`
+# Async call
+await asyncAwsProvisioner.ping() # -> None
 ```
 
 
@@ -1491,9 +1442,30 @@ github.builds() # -> result`
 await asyncGithub.builds() # -> result
 ```
 
-#### Check if Repository has Integration
-Checks if the integration has been installed for
-a given repository of a given organization or user.
+#### Latest Build Status Badge
+Checks the status of the latest build of a given branch
+and returns corresponding badge svg.
+
+
+
+Takes the following arguments:
+
+  * `owner`
+  * `repo`
+  * `branch`
+
+```python
+# Sync calls
+github.badge(owner, repo, branch) # -> None`
+github.badge(owner='value', repo='value', branch='value') # -> None
+# Async call
+await asyncGithub.badge(owner, repo, branch) # -> None
+await asyncGithub.badge(owner='value', repo='value', branch='value') # -> None
+```
+
+#### Get Repository Info
+Returns any repository metadata that is
+useful within Taskcluster related services.
 
 
 
@@ -1502,15 +1474,39 @@ Takes the following arguments:
   * `owner`
   * `repo`
 
-Required [output schema](http://schemas.taskcluster.net/github/v1/is-installed-for.json)
+Required [output schema](http://schemas.taskcluster.net/github/v1/repository.json)
 
 ```python
 # Sync calls
-github.isInstalledFor(owner, repo) # -> result`
-github.isInstalledFor(owner='value', repo='value') # -> result
+github.repository(owner, repo) # -> result`
+github.repository(owner='value', repo='value') # -> result
 # Async call
-await asyncGithub.isInstalledFor(owner, repo) # -> result
-await asyncGithub.isInstalledFor(owner='value', repo='value') # -> result
+await asyncGithub.repository(owner, repo) # -> result
+await asyncGithub.repository(owner='value', repo='value') # -> result
+```
+
+#### Latest Status for Branch
+For a given branch of a repository, this will always point
+to a status page for the most recent task triggered by that
+branch.
+
+Note: This is a redirect rather than a direct link.
+
+
+
+Takes the following arguments:
+
+  * `owner`
+  * `repo`
+  * `branch`
+
+```python
+# Sync calls
+github.latest(owner, repo, branch) # -> None`
+github.latest(owner='value', repo='value', branch='value') # -> None
+# Async call
+await asyncGithub.latest(owner, repo, branch) # -> None
+await asyncGithub.latest(owner='value', repo='value', branch='value') # -> None
 ```
 
 #### Ping Server
@@ -1881,54 +1877,57 @@ session = taskcluster.async.createSession(loop=loop)
 asyncIndex = taskcluster.async.Index(options, session=session)
 ```
 The task index, typically available at `index.taskcluster.net`, is
-responsible for indexing tasks. In order to ensure that tasks can be
-located by recency and/or arbitrary strings. Common use-cases includes
+responsible for indexing tasks. The service ensures that tasks can be
+located by recency and/or arbitrary strings. Common use-cases include:
 
  * Locate tasks by git or mercurial `<revision>`, or
  * Locate latest task from given `<branch>`, such as a release.
 
-**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy
-called a namespace. For example a task could be indexed in
-`<revision>.linux-64.release-build`. In this case the following
+**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy
+called a namespace. For example a task could be indexed with the index path
+`some-app.<revision>.linux-64.release-build`. In this case the following
 namespaces is created.
 
- 1. `<revision>`, and,
- 2. `<revision>.linux-64`
+ 1. `some-app`,
+ 1. `some-app.<revision>`, and,
+ 2. `some-app.<revision>.linux-64`
 
-The inside the namespace `<revision>` you can find the namespace
-`<revision>.linux-64` inside which you can find the indexed task
-`<revision>.linux-64.release-build`. In this example you'll be able to
-find build for a given revision.
+Inside the namespace `some-app.<revision>` you can find the namespace
+`some-app.<revision>.linux-64` inside which you can find the indexed task
+`some-app.<revision>.linux-64.release-build`. This is an example of indexing
+builds for a given platform and revision.
 
 **Task Rank**, when a task is indexed, it is assigned a `rank` (defaults
 to `0`). If another task is already indexed in the same namespace with
-the same lower or equal `rank`, the task will be overwritten. For example
-consider a task indexed as `mozilla-central.linux-64.release-build`, in
-this case on might choose to use a unix timestamp or mercurial revision
+lower or equal `rank`, the index for that task will be overwritten. For example
+consider index path `mozilla-central.linux-64.release-build`. In
+this case one might choose to use a UNIX timestamp or mercurial revision
 number as `rank`. This way the latest completed linux 64 bit release
 build is always available at `mozilla-central.linux-64.release-build`.
 
-**Indexed Data**, when a task is located in the index you will get the
-`taskId` and an additional user-defined JSON blob that was indexed with
-task. You can use this to store additional information you would like to
-get additional from the index.
+Note that this does mean index paths are not immutable: the same path may
+point to a different task now than it did a moment ago.
+
+**Indexed Data**, when a task is retrieved from the index the result includes
+a `taskId` and an additional user-defined JSON blob that was indexed with
+the task.
 
 **Entry Expiration**, all indexed entries must have an expiration date.
 Typically this defaults to one year, if not specified. If you are
 indexing tasks to make it easy to find artifacts, consider using the
-expiration date that the artifacts is assigned.
+artifact's expiration date.
 
 **Valid Characters**, all keys in a namespace `<key1>.<key2>` must be
 in the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and
 that if you strictly want to put another character you can URL encode it.
 
 **Indexing Routes**, tasks can be indexed using the API below, but the
-most common way to index tasks is adding a custom route on the following
-form `index.<namespace>`. In-order to add this route to a task you'll
-need the following scope `queue:route:index.<namespace>`. When a task has
-this route, it'll be indexed when the task is **completed successfully**.
+most common way to index tasks is adding a custom route to `task.routes` of the
+form `index.<namespace>`. In order to add this route to a task you'll
+need the scope `queue:route:index.<namespace>`. When a task has
+this route, it will be indexed when the task is **completed successfully**.
 The task will be indexed with `rank`, `data` and `expires` as specified
-in `task.extra.index`, see example below:
+in `task.extra.index`. See the example below:
 
 ```js
 {
@@ -1946,7 +1945,7 @@ in `task.extra.index`, see example below:
       // rank <= 4000 (defaults to zero)
       rank:       4000,
 
-      // Specify when the entries expires (Defaults to 1 year)
+      // Specify when the entries expire (Defaults to 1 year)
       expires:          new Date().toJSON(),
 
       // A little informal data to store along with taskId
@@ -1964,41 +1963,40 @@ in `task.extra.index`, see example below:
 ```
 
 **Remark**, when indexing tasks using custom routes, it's also possible
-to listen for messages about these tasks. Which is quite convenient, for
-example one could bind to `route.index.mozilla-central.*.release-build`,
+to listen for messages about these tasks. For
+example one could bind to `route.index.some-app.*.release-build`,
 and pick up all messages about release builds. Hence, it is a
 good idea to document task index hierarchies, as these make up extension
 points in their own.
 #### Find Indexed Task
-Find task by namespace, if no task existing for the given namespace, this
-API end-point respond `404`.
+Find a task by index path, returning the highest-rank task with that path. If no
+task exists for the given path, this API end-point will respond with a 404 status.
 
 
 
 Takes the following arguments:
 
-  * `namespace`
+  * `indexPath`
 
 Required [output schema](http://schemas.taskcluster.net/index/v1/indexed-task-response.json#)
 
 ```python
 # Sync calls
-index.findTask(namespace) # -> result`
-index.findTask(namespace='value') # -> result
+index.findTask(indexPath) # -> result`
+index.findTask(indexPath='value') # -> result
 # Async call
-await asyncIndex.findTask(namespace) # -> result
-await asyncIndex.findTask(namespace='value') # -> result
+await asyncIndex.findTask(indexPath) # -> result
+await asyncIndex.findTask(indexPath='value') # -> result
 ```
 
 #### List Namespaces
-List the namespaces immediately under a given namespace. This end-point
-list up to 1000 namespaces. If more namespaces are present a
+List the namespaces immediately under a given namespace.
+
+This endpoint
+lists up to 1000 namespaces. If more namespaces are present, a
 `continuationToken` will be returned, which can be given in the next
 request. For the initial request, the payload should be an empty JSON
 object.
-
-**Remark**, this end-point is designed for humans browsing for tasks, not
-services, as that makes little sense.
 
 
 
@@ -2020,8 +2018,10 @@ await asyncIndex.listNamespaces(payload, namespace='value') # -> result
 ```
 
 #### List Tasks
-List the tasks immediately under a given namespace. This end-point
-list up to 1000 tasks. If more tasks are present a
+List the tasks immediately under a given namespace.
+
+This endpoint
+lists up to 1000 tasks. If more tasks are present, a
 `continuationToken` will be returned, which can be given in the next
 request. For the initial request, the payload should be an empty JSON
 object.
@@ -2049,8 +2049,11 @@ await asyncIndex.listTasks(payload, namespace='value') # -> result
 ```
 
 #### Insert Task into Index
-Insert a task into the index. Please see the introduction above, for how
-to index successfully completed tasks automatically, using custom routes.
+Insert a task into the index.  If the new rank is less than the existing rank
+at the given index path, the task is not indexed but the response is still 200 OK.
+
+Please see the introduction above for information
+about indexing successfully completed tasks automatically using custom routes.
 
 
 
@@ -2072,24 +2075,35 @@ await asyncIndex.insertTask(payload, namespace='value') # -> result
 ```
 
 #### Get Artifact From Indexed Task
-Find task by namespace and redirect to artifact with given `name`,
-if no task existing for the given namespace, this API end-point respond
-`404`.
+Find a task by index path and redirect to the artifact on the most recent
+run with the given `name`.
+
+Note that multiple calls to this endpoint may return artifacts from differen tasks
+if a new task is inserted into the index between calls. Avoid using this method as
+a stable link to multiple, connected files if the index path does not contain a
+unique identifier.  For example, the following two links may return unrelated files:
+* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
+* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
+
+This problem be remedied by including the revision in the index path or by bundling both
+installer and debug symbols into a single artifact.
+
+If no task exists for the given index path, this API end-point responds with 404.
 
 
 
 Takes the following arguments:
 
-  * `namespace`
+  * `indexPath`
   * `name`
 
 ```python
 # Sync calls
-index.findArtifactFromTask(namespace, name) # -> None`
-index.findArtifactFromTask(namespace='value', name='value') # -> None
+index.findArtifactFromTask(indexPath, name) # -> None`
+index.findArtifactFromTask(indexPath='value', name='value') # -> None
 # Async call
-await asyncIndex.findArtifactFromTask(namespace, name) # -> None
-await asyncIndex.findArtifactFromTask(namespace='value', name='value') # -> None
+await asyncIndex.findArtifactFromTask(indexPath, name) # -> None
+await asyncIndex.findArtifactFromTask(indexPath='value', name='value') # -> None
 ```
 
 #### Ping Server
@@ -2259,10 +2273,10 @@ The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
 manages pulse credentials for taskcluster users.
 
 A service to manage Pulse credentials for anything using
-Taskcluster credentials. This allows us self-service and
-greater control within the Taskcluster project.
+Taskcluster credentials. This allows for self-service pulse
+access and greater control within the Taskcluster project.
 #### Rabbit Overview
-An overview of the Rabbit cluster
+Get an overview of the Rabbit cluster.
 
 
 Required [output schema](http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json)
@@ -2274,21 +2288,53 @@ pulse.overview() # -> result`
 await asyncPulse.overview() # -> result
 ```
 
-#### Rabbit Exchanges
-A list of exchanges in the rabbit cluster
+#### List Namespaces
+List the namespaces managed by this service.
+
+This will list up to 1000 namespaces. If more namespaces are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, do not provide continuation.
 
 
-Required [output schema](http://schemas.taskcluster.net/pulse/v1/exchanges-response.json)
+Required [output schema](http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json)
 
 ```python
 # Sync calls
-pulse.exchanges() # -> result`
+pulse.listNamespaces() # -> result`
 # Async call
-await asyncPulse.exchanges() # -> result
+await asyncPulse.listNamespaces() # -> result
 ```
 
-#### Create a namespace
-Creates a namespace, given the taskcluster credentials with scopes.
+#### Get a namespace
+Get public information about a single namespace. This is the same information
+as returned by `listNamespaces`.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [output schema](http://schemas.taskcluster.net/pulse/v1/namespace.json)
+
+```python
+# Sync calls
+pulse.namespace(namespace) # -> result`
+pulse.namespace(namespace='value') # -> result
+# Async call
+await asyncPulse.namespace(namespace) # -> result
+await asyncPulse.namespace(namespace='value') # -> result
+```
+
+#### Claim a namespace
+Claim a namespace, returning a username and password with access to that
+namespace good for a short time.  Clients should call this endpoint again
+at the re-claim time given in the response, as the password will be rotated
+soon after that time.  The namespace will expire, and any associated queues
+and exchanges will be deleted, at the given expiration time.
+
+The `expires` and `contact` properties can be updated at any time in a reclaim
+operation.
 
 
 
@@ -2302,15 +2348,16 @@ Required [output schema](http://schemas.taskcluster.net/pulse/v1/namespace-respo
 
 ```python
 # Sync calls
-pulse.createNamespace(namespace, payload) # -> result`
-pulse.createNamespace(payload, namespace='value') # -> result
+pulse.claimNamespace(namespace, payload) # -> result`
+pulse.claimNamespace(payload, namespace='value') # -> result
 # Async call
-await asyncPulse.createNamespace(namespace, payload) # -> result
-await asyncPulse.createNamespace(payload, namespace='value') # -> result
+await asyncPulse.claimNamespace(namespace, payload) # -> result
+await asyncPulse.claimNamespace(payload, namespace='value') # -> result
 ```
 
-#### Get namespace information
-Gets a namespace, given the taskcluster credentials with scopes.
+#### Delete a namespace
+Immediately delete the given namespace.  This will delete all exchanges and queues which the
+namespace had configure access to, as if it had just expired.
 
 
 
@@ -2320,11 +2367,11 @@ Takes the following arguments:
 
 ```python
 # Sync calls
-pulse.namespace(namespace) # -> None`
-pulse.namespace(namespace='value') # -> None
+pulse.deleteNamespace(namespace) # -> None`
+pulse.deleteNamespace(namespace='value') # -> None
 # Async call
-await asyncPulse.namespace(namespace) # -> None
-await asyncPulse.namespace(namespace='value') # -> None
+await asyncPulse.deleteNamespace(namespace) # -> None
+await asyncPulse.deleteNamespace(namespace='value') # -> None
 ```
 
 #### Ping Server
@@ -2827,7 +2874,27 @@ await asyncQueue.claimTask(payload, taskId='value', runId='value') # -> result
 ```
 
 #### Reclaim task
-reclaim a task more to be added later...
+Refresh the claim for a specific `runId` for given `taskId`. This updates
+the `takenUntil` property and returns a new set of temporary credentials
+for performing requests on behalf of the task. These credentials should
+be used in-place of the credentials returned by `claimWork`.
+
+The `reclaimTask` requests serves to:
+ * Postpone `takenUntil` preventing the queue from resolving
+   `claim-expired`,
+ * Refresh temporary credentials used for processing the task, and
+ * Abort execution if the task/run have been resolved.
+
+If the `takenUntil` timestamp is exceeded the queue will resolve the run
+as _exception_ with reason `claim-expired`, and proceeded to retry to the
+task. This ensures that tasks are retried, even if workers disappear
+without warning.
+
+If the task is resolved, this end-point will return `409` reporting
+`RequestConflict`. This typically happens if the task have been canceled
+or the `task.deadline` have been exceeded. If reclaiming fails, workers
+should abort the task and forget about the given `runId`. There is no
+need to resolve the run or upload artifacts.
 
 
 

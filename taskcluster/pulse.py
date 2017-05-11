@@ -17,8 +17,8 @@ class Pulse(BaseClient):
     manages pulse credentials for taskcluster users.
 
     A service to manage Pulse credentials for anything using
-    Taskcluster credentials. This allows us self-service and
-    greater control within the Taskcluster project.
+    Taskcluster credentials. This allows for self-service pulse
+    access and greater control within the Taskcluster project.
     """
 
     classOptions = {
@@ -29,7 +29,7 @@ class Pulse(BaseClient):
         """
         Rabbit Overview
 
-        An overview of the Rabbit cluster
+        Get an overview of the Rabbit cluster.
 
         This method takes output: ``http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json``
 
@@ -38,24 +38,49 @@ class Pulse(BaseClient):
 
         return self._makeApiCall(self.funcinfo["overview"], *args, **kwargs)
 
-    def exchanges(self, *args, **kwargs):
+    def listNamespaces(self, *args, **kwargs):
         """
-        Rabbit Exchanges
+        List Namespaces
 
-        A list of exchanges in the rabbit cluster
+        List the namespaces managed by this service.
 
-        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/exchanges-response.json``
+        This will list up to 1000 namespaces. If more namespaces are present a
+        `continuationToken` will be returned, which can be given in the next
+        request. For the initial request, do not provide continuation.
+
+        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json``
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["exchanges"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["listNamespaces"], *args, **kwargs)
 
-    def createNamespace(self, *args, **kwargs):
+    def namespace(self, *args, **kwargs):
         """
-        Create a namespace
+        Get a namespace
 
-        Creates a namespace, given the taskcluster credentials with scopes.
+        Get public information about a single namespace. This is the same information
+        as returned by `listNamespaces`.
+
+        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/namespace.json``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["namespace"], *args, **kwargs)
+
+    def claimNamespace(self, *args, **kwargs):
+        """
+        Claim a namespace
+
+        Claim a namespace, returning a username and password with access to that
+        namespace good for a short time.  Clients should call this endpoint again
+        at the re-claim time given in the response, as the password will be rotated
+        soon after that time.  The namespace will expire, and any associated queues
+        and exchanges will be deleted, at the given expiration time.
+
+        The `expires` and `contact` properties can be updated at any time in a reclaim
+        operation.
 
         This method takes input: ``http://schemas.taskcluster.net/pulse/v1/namespace-request.json``
 
@@ -64,18 +89,19 @@ class Pulse(BaseClient):
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["createNamespace"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["claimNamespace"], *args, **kwargs)
 
-    def namespace(self, *args, **kwargs):
+    def deleteNamespace(self, *args, **kwargs):
         """
-        Get namespace information
+        Delete a namespace
 
-        Gets a namespace, given the taskcluster credentials with scopes.
+        Immediately delete the given namespace.  This will delete all exchanges and queues which the
+        namespace had configure access to, as if it had just expired.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["namespace"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["deleteNamespace"], *args, **kwargs)
 
     def ping(self, *args, **kwargs):
         """
@@ -90,22 +116,29 @@ class Pulse(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "createNamespace": {           'args': ['namespace'],
+        "claimNamespace": {           'args': ['namespace'],
             'input': 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json',
             'method': 'post',
-            'name': 'createNamespace',
+            'name': 'claimNamespace',
             'output': 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json',
             'route': '/namespace/<namespace>',
             'stability': 'experimental'},
-        "exchanges": {           'args': [],
+        "deleteNamespace": {           'args': ['namespace'],
+            'method': 'delete',
+            'name': 'deleteNamespace',
+            'route': '/namespace/<namespace>',
+            'stability': 'experimental'},
+        "listNamespaces": {           'args': [],
             'method': 'get',
-            'name': 'exchanges',
-            'output': 'http://schemas.taskcluster.net/pulse/v1/exchanges-response.json',
-            'route': '/exchanges',
+            'name': 'listNamespaces',
+            'output': 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json',
+            'query': ['limit', 'continuation'],
+            'route': '/namespaces',
             'stability': 'experimental'},
         "namespace": {           'args': ['namespace'],
             'method': 'get',
             'name': 'namespace',
+            'output': 'http://schemas.taskcluster.net/pulse/v1/namespace.json',
             'route': '/namespace/<namespace>',
             'stability': 'experimental'},
         "overview": {           'args': [],

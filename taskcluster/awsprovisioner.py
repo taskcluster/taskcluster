@@ -146,7 +146,7 @@ class AwsProvisioner(BaseClient):
         """
         Get Worker Type
 
-        Retreive a copy of the requested worker type definition.
+        Retrieve a copy of the requested worker type definition.
         This copy contains a lastModified field as well as the worker
         type name.  As such, it will require manipulation to be able to
         use the results of this method to submit date to the update
@@ -194,81 +194,6 @@ class AwsProvisioner(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["listWorkerTypes"], *args, **kwargs)
-
-    def createAmiSet(self, *args, **kwargs):
-        """
-        Create new AMI Set
-
-        Create an AMI Set. An AMI Set is a collection of AMIs with a single name.
-
-        This method takes input: ``http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#``
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["createAmiSet"], *args, **kwargs)
-
-    def amiSet(self, *args, **kwargs):
-        """
-        Get AMI Set
-
-        Retreive a copy of the requested AMI set.
-
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#``
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["amiSet"], *args, **kwargs)
-
-    def updateAmiSet(self, *args, **kwargs):
-        """
-        Update AMI Set
-
-        Provide a new copy of an AMI Set to replace the existing one.
-        This will overwrite the existing AMI Set if there
-        is already an AMI Set of that name. This method will return a
-        200 response along with a copy of the AMI Set created.
-        Note that if you are using the result of a GET on the ami-set
-        end point that you will need to delete the lastModified and amiSet
-        keys from the object returned, since those fields are not allowed
-        the request body for this method.
-
-        Otherwise, all input requirements and actions are the same as the
-        create method.
-
-        This method takes input: ``http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#``
-
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#``
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["updateAmiSet"], *args, **kwargs)
-
-    def listAmiSets(self, *args, **kwargs):
-        """
-        List AMI sets
-
-        Return a list of AMI sets names.
-
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#``
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["listAmiSets"], *args, **kwargs)
-
-    def removeAmiSet(self, *args, **kwargs):
-        """
-        Delete AMI Set
-
-        Delete an AMI Set.
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["removeAmiSet"], *args, **kwargs)
 
     def createSecret(self, *args, **kwargs):
         """
@@ -369,18 +294,19 @@ class AwsProvisioner(BaseClient):
 
         return self._makeApiCall(self.funcinfo["state"], *args, **kwargs)
 
-    def ping(self, *args, **kwargs):
+    def newState(self, *args, **kwargs):
         """
-        Ping Server
+        Get AWS State for a worker type
 
-        Documented later...
+        Return the state of a given workertype as stored by the provisioner.
+        This state is stored as three lists: 1 for running instances, 1 for
+        pending requests.  The `summary` property contains an updated summary
+        similar to that returned from `listWorkerTypeSummaries`.
 
-        **Warning** this api end-point is **not stable**.
-
-        This method is ``experimental``
+        This method is ``stable``
         """
 
-        return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["newState"], *args, **kwargs)
 
     def backendStatus(self, *args, **kwargs):
         """
@@ -435,25 +361,25 @@ class AwsProvisioner(BaseClient):
 
         return self._makeApiCall(self.funcinfo["shutdownEverySingleEc2InstanceManagedByThisProvisioner"], *args, **kwargs)
 
+    def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
+
     funcinfo = {
-        "amiSet": {           'args': ['id'],
-            'method': 'get',
-            'name': 'amiSet',
-            'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#',
-            'route': '/ami-set/<id>',
-            'stability': 'stable'},
         "backendStatus": {           'args': [],
             'method': 'get',
             'name': 'backendStatus',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#',
             'route': '/backend-status',
             'stability': 'experimental'},
-        "createAmiSet": {           'args': ['id'],
-            'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#',
-            'method': 'put',
-            'name': 'createAmiSet',
-            'route': '/ami-set/<id>',
-            'stability': 'stable'},
         "createSecret": {           'args': ['token'],
             'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#',
             'method': 'put',
@@ -484,12 +410,6 @@ class AwsProvisioner(BaseClient):
             'name': 'instanceStarted',
             'route': '/instance-started/<instanceId>/<token>',
             'stability': 'stable'},
-        "listAmiSets": {           'args': [],
-            'method': 'get',
-            'name': 'listAmiSets',
-            'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#',
-            'route': '/list-ami-sets',
-            'stability': 'stable'},
         "listWorkerTypeSummaries": {           'args': [],
             'method': 'get',
             'name': 'listWorkerTypeSummaries',
@@ -502,15 +422,15 @@ class AwsProvisioner(BaseClient):
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#',
             'route': '/list-worker-types',
             'stability': 'stable'},
+        "newState": {           'args': ['workerType'],
+            'method': 'get',
+            'name': 'newState',
+            'route': '/new-state/<workerType>',
+            'stability': 'stable'},
         "ping": {           'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'experimental'},
-        "removeAmiSet": {           'args': ['id'],
-            'method': 'delete',
-            'name': 'removeAmiSet',
-            'route': '/ami-set/<id>',
             'stability': 'stable'},
         "removeSecret": {           'args': ['token'],
             'method': 'delete',
@@ -537,13 +457,6 @@ class AwsProvisioner(BaseClient):
             'name': 'terminateAllInstancesOfWorkerType',
             'route': '/worker-type/<workerType>/terminate-all-instances',
             'stability': 'experimental'},
-        "updateAmiSet": {           'args': ['id'],
-            'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#',
-            'method': 'post',
-            'name': 'updateAmiSet',
-            'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#',
-            'route': '/ami-set/<id>/update',
-            'stability': 'stable'},
         "updateWorkerType": {           'args': ['workerType'],
             'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',
             'method': 'post',

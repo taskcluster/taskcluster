@@ -289,7 +289,27 @@ class Queue(AsyncBaseClient):
         """
         Reclaim task
 
-        reclaim a task more to be added later...
+        Refresh the claim for a specific `runId` for given `taskId`. This updates
+        the `takenUntil` property and returns a new set of temporary credentials
+        for performing requests on behalf of the task. These credentials should
+        be used in-place of the credentials returned by `claimWork`.
+
+        The `reclaimTask` requests serves to:
+         * Postpone `takenUntil` preventing the queue from resolving
+           `claim-expired`,
+         * Refresh temporary credentials used for processing the task, and
+         * Abort execution if the task/run have been resolved.
+
+        If the `takenUntil` timestamp is exceeded the queue will resolve the run
+        as _exception_ with reason `claim-expired`, and proceeded to retry to the
+        task. This ensures that tasks are retried, even if workers disappear
+        without warning.
+
+        If the task is resolved, this end-point will return `409` reporting
+        `RequestConflict`. This typically happens if the task have been canceled
+        or the `task.deadline` have been exceeded. If reclaiming fails, workers
+        should abort the task and forget about the given `runId`. There is no
+        need to resolve the run or upload artifacts.
 
         This method takes output: ``http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#``
 

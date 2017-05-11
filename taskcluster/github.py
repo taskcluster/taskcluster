@@ -52,19 +52,46 @@ class Github(BaseClient):
 
         return self._makeApiCall(self.funcinfo["builds"], *args, **kwargs)
 
-    def isInstalledFor(self, *args, **kwargs):
+    def badge(self, *args, **kwargs):
         """
-        Check if Repository has Integration
+        Latest Build Status Badge
 
-        Checks if the integration has been installed for
-        a given repository of a given organization or user.
-
-        This method takes output: ``http://schemas.taskcluster.net/github/v1/is-installed-for.json``
+        Checks the status of the latest build of a given branch
+        and returns corresponding badge svg.
 
         This method is ``experimental``
         """
 
-        return self._makeApiCall(self.funcinfo["isInstalledFor"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["badge"], *args, **kwargs)
+
+    def repository(self, *args, **kwargs):
+        """
+        Get Repository Info
+
+        Returns any repository metadata that is
+        useful within Taskcluster related services.
+
+        This method takes output: ``http://schemas.taskcluster.net/github/v1/repository.json``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["repository"], *args, **kwargs)
+
+    def latest(self, *args, **kwargs):
+        """
+        Latest Status for Branch
+
+        For a given branch of a repository, this will always point
+        to a status page for the most recent task triggered by that
+        branch.
+
+        Note: This is a redirect rather than a direct link.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["latest"], *args, **kwargs)
 
     def ping(self, *args, **kwargs):
         """
@@ -79,6 +106,11 @@ class Github(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
+        "badge": {           'args': ['owner', 'repo', 'branch'],
+            'method': 'get',
+            'name': 'badge',
+            'route': '/repository/<owner>/<repo>/<branch>/badge.svg',
+            'stability': 'experimental'},
         "builds": {           'args': [],
             'method': 'get',
             'name': 'builds',
@@ -95,17 +127,22 @@ class Github(BaseClient):
             'name': 'githubWebHookConsumer',
             'route': '/github',
             'stability': 'experimental'},
-        "isInstalledFor": {           'args': ['owner', 'repo'],
+        "latest": {           'args': ['owner', 'repo', 'branch'],
             'method': 'get',
-            'name': 'isInstalledFor',
-            'output': 'http://schemas.taskcluster.net/github/v1/is-installed-for.json',
-            'route': '/repository/<owner>/<repo>',
+            'name': 'latest',
+            'route': '/repository/<owner>/<repo>/<branch>/latest',
             'stability': 'experimental'},
         "ping": {           'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
             'stability': 'stable'},
+        "repository": {           'args': ['owner', 'repo'],
+            'method': 'get',
+            'name': 'repository',
+            'output': 'http://schemas.taskcluster.net/github/v1/repository.json',
+            'route': '/repository/<owner>/<repo>',
+            'stability': 'experimental'},
     }
 
 
