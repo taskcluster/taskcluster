@@ -21,7 +21,7 @@ func TestEcho(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{})
+	session := Client(conn, Config{Log: genLogger("echo-test")})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	if err != nil {
@@ -42,7 +42,7 @@ func TestEcho(t *testing.T) {
 }
 
 func TestEchoLarge(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, echoConn), ":9999")
+	server := genServer(genWebSocketHandler(t, echoLargeConn), ":9999")
 	go func() {
 		_ = server.ListenAndServe()
 	}()
@@ -59,10 +59,14 @@ func TestEchoLarge(t *testing.T) {
 	}
 	final := make([]byte, 0)
 
-	session := Client(conn, Config{})
+	session := Client(conn, Config{Log: genLogger("echo-large-test")})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	written, err := stream.Write(buf)
+	err = stream.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
 	read := 0
 	for read != written {
 		catch := make([]byte, 100)

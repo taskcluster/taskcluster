@@ -52,7 +52,7 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 // functions for session test
 
 func echoConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{Log: genLogger("echo-test")})
+	session := Server(conn, Config{Log: genLogger("echo-server-test")})
 	stream, err := session.Accept()
 	if err != nil {
 		t.Fatal(err)
@@ -68,6 +68,33 @@ func echoConn(t *testing.T, conn *websocket.Conn) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func echoLargeConn(t *testing.T, conn *websocket.Conn) {
+	session := Server(conn, Config{Log: genLogger("echo-large-server-test")})
+	stream, err := session.Accept()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	final := make([]byte, 0)
+	for {
+		catch := make([]byte, 100)
+		size, err := stream.Read(catch)
+		if err != nil && err != io.EOF {
+			t.Fatal(err)
+		}
+		catch = catch[:size]
+		final = append(final, catch...)
+		if err == io.EOF {
+			break
+		}
+	}
+	session.logger.Printf("test: received all bytes")
+	_, err = stream.Write(final)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

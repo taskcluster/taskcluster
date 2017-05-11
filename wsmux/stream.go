@@ -9,7 +9,7 @@ import (
 )
 
 // DefaultCapacity is the maximum length the read buffer will accept
-const DefaultCapacity = 1024
+const DefaultCapacity = 256
 
 type stream struct {
 	id      uint32
@@ -42,7 +42,7 @@ func newStream(id uint32, s *Session) *stream {
 	str := &stream{
 		id:             id,
 		b:              make([]byte, 0),
-		rc:             DefaultCapacity,
+		rc:             0,
 		readAvailable:  make(chan struct{}, 1),
 		writeAvailable: make(chan struct{}, 1),
 		session:        s,
@@ -111,7 +111,12 @@ func (s *stream) Read(buf []byte) (int, error) {
 	default:
 	}
 
-	s.session.logger.Printf("read attempted")
+	select {
+	case <-s.readAvailable:
+	default:
+	}
+
+	s.session.logger.Printf("read attempted on stream %d", s.id)
 
 	//lock the read
 	s.readLock.Lock()
@@ -119,10 +124,13 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 	// if empty wait
 	s.bufLock.Lock()
+	s.session.logger.Printf("read on stream %d acquired bufLock", s.id)
 	l := len(s.b)
+	s.session.logger.Printf("read on stream %d read buffer capacity: %d bytes", s.id, l)
 	s.bufLock.Unlock()
 	if l == 0 {
 		// wait
+		s.session.logger.Printf("read on stream %d waiting", s.id)
 		var timeout <-chan time.Time
 		var timer *time.Timer
 		if rd := s.readDeadline.Load().(time.Time); !rd.IsZero() {
@@ -133,11 +141,13 @@ func (s *stream) Read(buf []byte) (int, error) {
 		case <-timeout:
 			return 0, ErrReadTimeout
 		case <-s.readAvailable:
+			s.session.logger.Printf("read on stream %d can read", s.id)
 			if timer != nil {
 				_ = timer.Stop()
 			}
 		// Remote will not send any more data
 		case <-s.remoteClosed:
+			s.session.logger.Printf("stream %d remote closed connection", s.id)
 			return 0, io.EOF
 		}
 	}
@@ -147,11 +157,11 @@ func (s *stream) Read(buf []byte) (int, error) {
 	m := copy(buf, s.b)
 	s.b = s.b[m:]
 	s.bufLock.Unlock()
-	select {
-	case s.session.writes <- newAckFrame(s.id, uint32(m)):
-	default:
+	fr := newAckFrame(s.id, uint32(m))
+	if err := s.session.send(fr); err != nil {
 		return m, ErrBrokenPipe
 	}
+	s.session.logger.Printf("read on stream %d wrote ack frame: %d bytes read", s.id, m)
 	return m, nil
 }
 
@@ -174,9 +184,15 @@ func (s *stream) Write(buf []byte) (int, error) {
 	s.writeLock.Lock()
 	defer s.writeLock.Unlock()
 	l, w := len(buf), 0
+	s.session.logger.Printf("write on stream %d acquired lock", s.id)
 	for w < l {
+		select {
+		case <-s.writeAvailable:
+		default:
+		}
 		s.remLock.Lock()
 		rc := s.rc
+		s.session.logger.Printf("write on stream %d read remote capacity: %d bytes", s.id, rc)
 		s.remLock.Unlock()
 		if rc == 0 {
 			// wait
@@ -186,10 +202,13 @@ func (s *stream) Write(buf []byte) (int, error) {
 				timer = time.NewTimer(rd.Sub(time.Now()))
 				timeout = timer.C
 			}
+			s.session.logger.Printf("write on stream %d waiting", s.id)
+
 			select {
 			case <-timeout:
 				return w, ErrWriteTimeout
 			case <-s.writeAvailable:
+				s.session.logger.Printf("write on stream %d can write", s.id)
 				if timer != nil {
 					timer.Stop()
 				}
@@ -199,8 +218,16 @@ func (s *stream) Write(buf []byte) (int, error) {
 		}
 		// write
 		s.remLock.Lock()
+		s.session.logger.Printf("write on stream %d acquired remLock", s.id)
 		cap := min(len(buf), int(s.rc))
-		s.session.writes <- newDataFrame(s.id, buf[:cap])
+
+		fr := newDataFrame(s.id, buf[:cap])
+		if err := s.session.send(fr); err != nil {
+			s.remLock.Unlock()
+			return w, ErrBrokenPipe
+		}
+		s.session.logger.Printf("write on stream %d wrote frame", s.id)
+
 		buf = buf[cap:]
 		s.rc -= uint32(cap)
 		w += cap
@@ -222,11 +249,10 @@ func (s *stream) Close() error {
 	}
 
 	// write fin frame and close
-	select {
-	case s.session.writes <- newFinFrame(s.id):
-	default:
-	}
 	close(s.closed)
+	if err := s.session.send(newFinFrame(s.id)); err != nil {
+		return err
+	}
 
 	select {
 	case <-s.remoteClosed:
@@ -244,12 +270,14 @@ func (s *stream) updateRemoteCapacity(read uint32) {
 	}
 	s.remLock.Unlock()
 	s.session.logger.Printf("updated capacity by %d bytes", read)
+	s.notifyWrite()
 }
 
 func (s *stream) addToBuffer(buf []byte) {
 	s.bufLock.Lock()
 	defer s.bufLock.Unlock()
 	s.b = append(s.b, buf...)
+	s.notifyRead()
 }
 
 func (s *stream) notifyRead() {
@@ -287,4 +315,12 @@ func (s *stream) setRemoteClosed() error {
 	default:
 	}
 	return nil
+}
+
+func (s *stream) accept(read uint32) {
+	s.remLock.Lock()
+	defer s.remLock.Unlock()
+	s.rc = read
+	close(s.accepted)
+	s.notifyWrite()
 }

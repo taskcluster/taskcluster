@@ -27,8 +27,9 @@ type Session struct {
 	mu       sync.Mutex
 	streams  map[uint32]*stream
 	streamCh chan *stream
-	writes   chan frame
 	conn     *websocket.Conn
+
+	sendLock sync.Mutex
 
 	keepAliveInterval    time.Duration
 	streamAcceptDeadline time.Duration
@@ -44,12 +45,26 @@ type Session struct {
 	remoteCloseCallback func()
 }
 
+func (s *Session) send(f frame) error {
+	select {
+	case <-s.closed:
+		return ErrSessionClosed
+	default:
+	}
+	s.sendLock.Lock()
+	defer s.sendLock.Unlock()
+	err := s.conn.WriteMessage(websocket.BinaryMessage, f.Write())
+	if err != nil {
+		s.logger.Printf("wrote %v", f)
+	}
+	return err
+}
+
 func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s := &Session{}
 	s.conn = conn
 	s.streams = make(map[uint32]*stream)
 	s.streamCh = make(chan *stream, defaultStreamQueueSize)
-	s.writes = make(chan frame, defaultQueueSize)
 
 	s.closed = make(chan struct{})
 	s.closeConn = true
@@ -82,7 +97,6 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 
 	s.conn.SetCloseHandler(s.closeHandler)
 
-	go s.sendLoop()
 	go s.recvLoop()
 	return s
 }
@@ -117,14 +131,11 @@ func (s *Session) Open() (net.Conn, error) {
 	}
 
 	str := newStream(id, s)
+	s.streams[id] = str
 
-	select {
-	case s.writes <- newSynFrame(id):
-		s.streams[id] = str
-	default:
-		// decrement nextID so it can be used by a different stream
+	if err := s.send(newSynFrame(id)); err != nil {
 		s.nextID -= 2
-		return nil, ErrBrokenPipe
+		return nil, err
 	}
 	// unlock mutex and wait
 	s.mu.Unlock()
@@ -168,6 +179,7 @@ func (s *Session) Close() error {
 	for _, v := range s.streams {
 		_ = v.Close()
 	}
+	s.streams = nil
 
 	return nil
 }
@@ -183,26 +195,6 @@ func (s *Session) closeHandler(code int, text string) error {
 	defer s.mu.Unlock()
 	s.closeConn = false
 	return s.Close()
-}
-
-func (s *Session) sendLoop() {
-	for {
-		select {
-		case <-s.closed:
-			return
-
-		case fr, ok := <-s.writes:
-			if !ok {
-				s.logger.Print("write channel closed")
-				return
-			}
-			err := s.conn.WriteMessage(websocket.BinaryMessage, fr.Write())
-			s.logger.Printf("wrote message: %v", fr)
-			if err != nil {
-				s.logger.Print(err)
-			}
-		}
-	}
 }
 
 func (s *Session) recvLoop() {
@@ -237,15 +229,12 @@ func (s *Session) recvLoop() {
 
 			str := newStream(id, s)
 			// no point in locking here
-			close(str.accepted)
+			str.accept(DefaultCapacity)
 
 			s.streams[id] = str
-			select {
-			case s.writes <- newAckFrame(id, uint32(DefaultCapacity)):
-				s.logger.Printf("sent ack frame")
-			default:
-				s.logger.Printf("Error accepting stream")
-				s.mu.Unlock()
+			if err := s.send(newAckFrame(id, uint32(DefaultCapacity))); err != nil {
+				s.logger.Printf("error accepting stream %d", id)
+				_ = s.Close()
 				return
 			}
 			s.asyncPushStream(str)
@@ -266,7 +255,6 @@ func (s *Session) recvLoop() {
 				break
 			}
 			str.addToBuffer(b)
-			str.notifyRead()
 			s.logger.Printf("received DAT frame on stream %d: %v", id, bytes.NewBuffer(b))
 
 		//received ack frame
@@ -289,14 +277,14 @@ func (s *Session) recvLoop() {
 			read := binary.LittleEndian.Uint32(b)
 			select {
 			case <-str.accepted:
+				s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
+				str.updateRemoteCapacity(read)
 			default:
 				// close str.accepted to accept stream
 				s.logger.Printf("accepting stream")
-				close(str.accepted)
+				str.accept(read)
+				break
 			}
-			s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
-			str.updateRemoteCapacity(read)
-			str.notifyWrite()
 
 		// received fin frame
 		case msgFIN:
@@ -309,10 +297,9 @@ func (s *Session) recvLoop() {
 			}
 
 			err := str.setRemoteClosed()
-			if str != nil {
+			if err != nil {
 				s.logger.Print(err)
 			}
-			s.logger.Printf("remote stream %d closed connection", id)
 		}
 
 	}
