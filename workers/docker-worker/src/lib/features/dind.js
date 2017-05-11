@@ -6,7 +6,6 @@
  * box for common docker flows.
  */
 
-import _ from 'lodash';
 import waitForSocket from '../wait_for_socket';
 import slugid from 'slugid';
 import rmrf from 'rimraf';
