@@ -9,7 +9,7 @@ import (
 )
 
 // DefaultCapacity is the maximum length the read buffer will accept
-const DefaultCapacity = 256
+const DefaultCapacity = 1024
 
 type stream struct {
 	id      uint32

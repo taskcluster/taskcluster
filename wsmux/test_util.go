@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/gorilla/websocket"
@@ -140,4 +141,53 @@ func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
 		}
 	}
 	return handler
+}
+
+// functions for stream test
+
+const (
+	maxTestStreams = 50
+)
+
+func manyEchoConn(t *testing.T, conn *websocket.Conn) {
+	session := Server(conn, Config{Log: genLogger("many-echo-server-test")})
+
+	var wg sync.WaitGroup
+	acceptor := func() {
+		defer wg.Done()
+
+		str, err := session.Accept()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		final := make([]byte, 0)
+		for {
+			catch := make([]byte, 100)
+			size, err := str.Read(catch)
+			if err != nil && err != io.EOF {
+				t.Fatal(err)
+			}
+			catch = catch[:size]
+			final = append(final, catch...)
+			if err == io.EOF {
+				break
+			}
+		}
+		_, err = str.Write(final)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = str.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for i := 0; i < maxTestStreams; i++ {
+		wg.Add(1)
+		go acceptor()
+	}
+
+	wg.Wait()
 }

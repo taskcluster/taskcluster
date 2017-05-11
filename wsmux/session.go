@@ -3,7 +3,6 @@ package wsmux
 import (
 	"bytes"
 	"encoding/binary"
-	"io/ioutil"
 	"net"
 	"sync"
 	"time"
@@ -212,16 +211,24 @@ func (s *Session) recvLoop() {
 		default:
 		}
 
-		t, msgReader, err := s.conn.NextReader()
+		t, msg, err := s.conn.ReadMessage()
 		if err != nil {
 			_ = s.abort(err)
 			break
 		}
 		if t != websocket.BinaryMessage {
+			s.logger.Print("did not receive binary message")
 			continue
 		}
 
-		h, err := getHeader(msgReader)
+		if len(msg) < 5 {
+			s.logger.Print(errMalformedHeader)
+			_ = s.abort(errMalformedHeader)
+		}
+
+		h := header(msg[:5])
+		msg = msg[5:]
+
 		id, msgType := h.id(), h.msg()
 
 		switch msgType {
@@ -256,13 +263,8 @@ func (s *Session) recvLoop() {
 				s.logger.Printf("received data frame for unknown stream %d", id)
 				break
 			}
-			b, err := ioutil.ReadAll(msgReader)
-			if err != nil {
-				s.logger.Print(err)
-				break
-			}
-			str.addToBuffer(b)
-			s.logger.Printf("received DAT frame on stream %d: %v", id, bytes.NewBuffer(b))
+			str.addToBuffer(msg)
+			s.logger.Printf("received DAT frame on stream %d: %v", id, bytes.NewBuffer(msg))
 
 		//received ack frame
 		case msgACK:
@@ -275,13 +277,7 @@ func (s *Session) recvLoop() {
 				break
 			}
 
-			b := make([]byte, 4)
-			_, err := msgReader.Read(b)
-			if err != nil {
-				s.logger.Print(err)
-				break
-			}
-			read := binary.LittleEndian.Uint32(b)
+			read := binary.LittleEndian.Uint32(msg)
 			select {
 			case <-str.accepted:
 				s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
