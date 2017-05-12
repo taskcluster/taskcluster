@@ -112,6 +112,38 @@ function resolve(res, status, message) {
   return res.status(status).send(message);
 }
 
+/***
+ Helper function to look up repo owner in the Azure table to get installation ID,
+ and authenticate with GitHub using that ID.
+
+ Receives owner's name, the Azure table, and github object.
+ Returns either authenticated github object or null
+***/
+async function installationAuthenticate(owner, OwnersDirectory, github) {
+  // Look up the installation ID in Azure. If no such owner in the table, no error thrown
+  let ownerInfo = await OwnersDirectory.load({owner}, true);
+  if (ownerInfo) {
+    let instGithub = await github.getInstallationGithub(ownerInfo.installationId);
+    return instGithub;
+  } else {
+    return null;
+  }
+}
+
+/***
+ Helper function to find the most fresh status set by our bot.
+ Gets the bot's ID, gets statuses for the repo/branch, finds there the status by the bot's ID
+ 
+ Receives authenticated github object; names of owner, repo and branch; and configuration object
+ Returns either status object or undefined (if not found).
+***/
+async function findTCStatus(github, owner, repo, branch, configuration) {
+  let taskclusterBot = await github.users.getForUser({user: configuration.app.botName});
+  // Statuses is an array of status objects, where we find the relevant status
+  let statuses = await github.repos.getStatuses({owner, repo, sha: branch});
+  return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
+}
+
 /** API end-point for version v1/
  */
 let api = new API({
@@ -294,9 +326,6 @@ api.declare({
   // Extract owner, repo and branch from request into variables
   let {owner, repo, branch} = req.params;
 
-  // Look up the installation ID in Azure. If no such owner in the table, no error thrown
-  let ownerInfo = await this.OwnersDirectory.load({owner}, true);
-
   // This has nothing to do with user input, so we should be safe
   let fileConfig = {
     root : __dirname + '/../assets/',
@@ -305,14 +334,11 @@ api.declare({
     },
   };
 
-  if (ownerInfo) {
-    try {
-      let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
+  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
 
-      let taskclusterBot = await instGithub.users.getForUser({user: this.cfg.app.botName});
-      // Statuses is an array of status objects, where we find the relevant status
-      let statuses = await instGithub.repos.getStatuses({owner, repo, sha: branch});
-      let status = statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
+  if (instGithub) {
+    try {
+      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
 
       if (status) {
         // If we got a status, send a corresponding image.
@@ -347,12 +373,10 @@ api.declare({
   // Extract owner and repo from request into variables
   let {owner, repo} = req.params;
 
-  // Look up the installation ID in Azure. If no such owner in the table, no error thrown
-  let ownerInfo = await this.OwnersDirectory.load({owner}, true);
+  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
 
-  if (ownerInfo) {
+  if (instGithub) {
     try {
-      let instGithub = await this.github.getInstallationGithub(ownerInfo.installationId);
       let reposList = await instGithub.integrations.getInstallationRepositories({});
 
       while (true) {
@@ -399,7 +423,7 @@ api.declare({
   // Get task group ID
   if (instGithub) {
     try {
-      let status = await findTCstatus(instGithub, owner, repo, branch, this.cfg);
+      let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
 
       return res.redirect(status.target_url);
     } catch (e) {
@@ -409,26 +433,3 @@ api.declare({
   }
   return res.status(404).send();
 });
-
-// Helper function to look up repo owner in the Azure table to get installation ID,
-// authenticate with GitHub using that ID. Returns either authenticated GitHub object or null
-async function installationAuthenticate(owner, directory, github) {
-  // Look up the installation ID in Azure. If no such owner in the table, no error thrown
-  let ownerInfo = await directory.load({owner}, true);
-  if (ownerInfo) {
-    let instGithub = await github.getInstallationGithub(ownerInfo.installationId);
-    return instGithub;
-  } else {
-    return null;
-  }
-}
-
-// Helper function to find the most fresh status set by our bot.
-// Get's the bot's ID, gets statuses for the repo/branch, finds there the status by the bot's ID
-// Returns either status object or undefined (if not found).
-async function findTCstatus(github, owner, repo, branch, configuration) {
-  let taskclusterBot = await github.users.getForUser({user: configuration.app.botName});
-  // Statuses is an array of status objects, where we find the relevant status
-  let statuses = await github.repos.getStatuses({owner, repo, sha: branch});
-  return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
-}
