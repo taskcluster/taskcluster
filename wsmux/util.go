@@ -3,6 +3,7 @@ package wsmux
 import (
 	"fmt"
 	"io"
+	"time"
 )
 
 var (
@@ -29,6 +30,16 @@ func getHeader(reader io.Reader) (header, error) {
 	}
 
 	return hdr, nil
+}
+
+func getTimeoutAndTimer(d time.Time) (<-chan time.Time, *time.Timer) {
+	var timeout <-chan time.Time
+	if d.IsZero() {
+		return timeout, nil
+	}
+	timer := time.NewTimer(d.Sub(time.Now()))
+	timeout = timer.C
+	return timeout, timer
 }
 
 // Logger is used by Session to write logs
