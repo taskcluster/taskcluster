@@ -56,11 +56,6 @@ class AsyncBaseClient(BaseClient):
         """
         return createSession()
 
-    def __del__(self):
-        """ Make sure self.session is closed, to avoid `Unclosed client session`
-        warnings. """
-        self.session.close()
-
     async def _makeApiCall(self, entry, *args, **kwargs):
         """ This function is used to dispatch calls to other functions
         for a given API Reference entry"""
@@ -156,7 +151,7 @@ class AsyncBaseClient(BaseClient):
             # Catch retryable errors and go to the beginning of the loop
             # to do the retry
             if 500 <= status and status < 600 and retry < retries:
-                log.warn('Retrying because of: %s' % rerr)
+                log.warn('Retrying because of a %s status code' % status)
                 continue
 
             # Throw errors for non-retryable errors
@@ -182,14 +177,14 @@ class AsyncBaseClient(BaseClient):
                         message,
                         status_code=status,
                         body=data,
-                        superExc=rerr
+                        superExc=None
                     )
                 # Raise TaskclusterRestFailure for all other issues
                 raise exceptions.TaskclusterRestFailure(
                     message,
                     status_code=status,
                     body=data,
-                    superExc=rerr
+                    superExc=None
                 )
 
             # Try to load JSON
