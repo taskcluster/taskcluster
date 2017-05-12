@@ -146,7 +146,7 @@ func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
 // functions for stream test
 
 const (
-	maxTestStreams = 50
+	maxTestStreams = 100
 )
 
 func manyEchoConn(t *testing.T, conn *websocket.Conn) {

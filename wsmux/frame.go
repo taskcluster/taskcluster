@@ -60,18 +60,17 @@ func (f frame) String() string {
 	str += " "
 	switch f.msg {
 	case msgDAT:
-		str += "DAT"
+		str += "DAT " + bytes.NewBuffer(f.payload).String()
 	case msgSYN:
 		str += "SYN"
 	case msgACK:
-		str += "ACK"
+		str += "ACK "
+		str += strconv.Itoa(int(binary.LittleEndian.Uint32(f.payload)))
 	case msgFIN:
 		str += "FIN"
 	case msgCLS:
 		str += "CLS"
 	}
-	str += " "
-	str += bytes.NewBuffer(f.payload).String()
 	return str
 }
 

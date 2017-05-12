@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DefaultCapacity = 128
+	DefaultCapacity = 1024
 )
 
 type stream struct {
@@ -21,8 +21,8 @@ type stream struct {
 
 	endErr error
 
-	closed       chan struct{}
-	remoteClosed chan struct{}
+	closed       bool
+	remoteClosed bool
 	accepted     chan struct{}
 
 	session *Session
@@ -40,8 +40,8 @@ func newStream(id uint32, session *Session) *stream {
 
 		endErr: nil,
 
-		closed:       make(chan struct{}),
-		remoteClosed: make(chan struct{}),
+		closed:       false,
+		remoteClosed: false,
 		accepted:     make(chan struct{}),
 
 		session: session,
@@ -55,17 +55,17 @@ func (s *stream) unblock(read uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
+	defer s.session.logger.Printf("unblock broadcasted : stream %d", s.id)
 	s.unblocked += read
-	s.session.logger.Printf("unblock broadcasted : stream %d", s.id)
 }
 
 func (s *stream) push(buf []byte) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
+	defer s.session.logger.Printf("push broadcasted : stream %d", s.id)
 	_, err := s.b.Write(buf)
 	s.endErr = err
-	s.session.logger.Printf("push broadcasted : stream %d", s.id)
 }
 
 func (s *stream) accept(read uint32) {
@@ -91,29 +91,19 @@ func (s *stream) setRemoteClosed() {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
-	select {
-	case <-s.remoteClosed:
-	default:
-		close(s.remoteClosed)
-	}
+	s.remoteClosed = true
 }
 
 func (s *stream) isClosed() bool {
-	select {
-	case <-s.closed:
-		return true
-	default:
-	}
-	return false
+	s.m.Lock()
+	defer s.m.Unlock()
+	return s.closed
 }
 
 func (s *stream) isRemoteClosed() bool {
-	select {
-	case <-s.remoteClosed:
-		return true
-	default:
-	}
-	return false
+	s.m.Lock()
+	defer s.m.Unlock()
+	return s.remoteClosed
 }
 
 func (s *stream) LocalAddr() net.Addr {
@@ -154,14 +144,7 @@ func (s *stream) Close() error {
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
 
-	select {
-	case <-s.closed:
-		return nil
-	default:
-	}
-
-	defer close(s.closed)
-
+	s.closed = true
 	if err := s.session.send(newFinFrame(s.id)); err != nil {
 		return err
 	}
@@ -174,17 +157,25 @@ func (s *stream) Read(buf []byte) (int, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
+	s.session.logger.Printf("stread %d: read requested", s.id)
+
 	timeout, timer := getTimeoutAndTimer(s.readDeadline)
 	for s.b.Len() == 0 && s.endErr == nil {
-		select {
-		case <-s.remoteClosed:
+		if s.remoteClosed {
 			return 0, io.EOF
+		}
+
+		select {
 		case <-timeout:
 			return 0, ErrReadTimeout
 		default:
 		}
+
+		s.session.logger.Printf("stream %d: read waiting", s.id)
+		s.session.logger.Printf("stread %d : s.b.s: %d s.b.e: %d", s.id, s.b.s, s.b.e)
 		s.c.Wait()
 	}
+
 	if timer != nil {
 		_ = timer.Stop()
 	}
@@ -194,9 +185,13 @@ func (s *stream) Read(buf []byte) (int, error) {
 	}
 
 	n, _ := s.b.Read(buf)
+	s.session.logger.Printf("read bytes %d: %s", n, bytes.NewBuffer(buf).String())
+	buf = buf[:n]
 	if err := s.session.send(newAckFrame(s.id, uint32(n))); err != nil {
 		return n, err
 	}
+
+	s.session.logger.Printf("stream %d: read completed", s.id)
 
 	return n, nil
 }
@@ -206,18 +201,21 @@ func (s *stream) Write(buf []byte) (int, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	l, w := len(buf), 0
-	for w < l {
+	w := 0
+	for len(buf) > 0 {
 		timeout, timer := getTimeoutAndTimer(s.writeDeadline)
 		for s.unblocked == 0 && s.endErr == nil {
-			select {
-			case <-s.closed:
+			if s.closed {
 				return w, ErrBrokenPipe
+			}
+
+			select {
 			case <-timeout:
 				return w, ErrWriteTimeout
 			default:
 			}
-			s.session.logger.Printf("stream %d: write waiting")
+
+			s.session.logger.Printf("stream %d: write waiting", s.id)
 			s.c.Wait()
 		}
 
@@ -233,7 +231,6 @@ func (s *stream) Write(buf []byte) (int, error) {
 		if err := s.session.send(newDataFrame(s.id, buf[:cap])); err != nil {
 			return w, err
 		}
-		s.session.logger.Printf("stream %d: wrote %s", s.id, bytes.NewBuffer(buf[:cap]))
 		buf = buf[cap:]
 		s.unblocked -= uint32(cap)
 		w += cap

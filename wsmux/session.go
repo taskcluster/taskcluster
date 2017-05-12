@@ -55,9 +55,7 @@ func (s *Session) send(f frame) error {
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()
 	err := s.conn.WriteMessage(websocket.BinaryMessage, f.Write())
-	if err != nil {
-		s.logger.Printf("wrote %v", f)
-	}
+	s.logger.Printf("wrote %s", f)
 	return err
 }
 
