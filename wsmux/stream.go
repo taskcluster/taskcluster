@@ -248,16 +248,11 @@ func (s *stream) Close() error {
 	default:
 	}
 
+	defer close(s.closed)
+
 	// write fin frame and close
-	close(s.closed)
 	if err := s.session.send(newFinFrame(s.id)); err != nil {
 		return err
-	}
-
-	select {
-	case <-s.remoteClosed:
-		defer s.session.removeStream(s.id)
-	default:
 	}
 
 	return nil
@@ -309,11 +304,6 @@ func (s *stream) setRemoteClosed() error {
 
 	close(s.remoteClosed)
 
-	select {
-	case <-s.closed:
-		defer s.session.removeStream(s.id)
-	default:
-	}
 	return nil
 }
 
@@ -323,4 +313,28 @@ func (s *stream) accept(read uint32) {
 	s.rc = read
 	close(s.accepted)
 	s.notifyWrite()
+}
+
+func (s *stream) isClosed() bool {
+	select {
+	case <-s.closed:
+		return true
+	default:
+	}
+	return false
+}
+
+func (s *stream) isRemoteClosed() bool {
+	select {
+	case <-s.remoteClosed:
+		return true
+	default:
+	}
+	return false
+}
+
+func (s *stream) getBufLen() int {
+	s.bufLock.Lock()
+	defer s.bufLock.Unlock()
+	return len(s.b)
 }

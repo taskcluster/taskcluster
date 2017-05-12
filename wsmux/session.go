@@ -19,6 +19,7 @@ const (
 	defaultStreamQueueSize      = 20
 	defaultKeepAliveInterval    = 30 * time.Second
 	defaultStreamAcceptDeadline = 30 * time.Second
+	deadCheckDuration           = 30 * time.Second
 )
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
@@ -95,6 +96,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s.conn.SetCloseHandler(s.closeHandler)
 
 	go s.recvLoop()
+	go s.removeDeadStreams()
 	return s
 }
 
@@ -333,4 +335,22 @@ func (s *Session) abort(e error) error {
 	}
 
 	return s.Close()
+}
+
+func (s *Session) removeDeadStreams() {
+	for {
+		select {
+		case <-s.closed:
+			return
+		case <-time.After(deadCheckDuration):
+		}
+
+		s.mu.Lock()
+		for _, str := range s.streams {
+			if str.isClosed() && str.isRemoteClosed() && str.getBufLen() == 0 {
+				s.removeStream(str.id)
+			}
+		}
+		s.mu.Unlock()
+	}
 }

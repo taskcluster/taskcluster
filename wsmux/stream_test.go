@@ -29,7 +29,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	sender := func() {
+	sender := func(i int) {
 		defer wg.Done()
 		str, err := session.Open()
 		if err != nil {
@@ -61,13 +61,14 @@ func TestManyStreamEchoLarge(t *testing.T) {
 		}
 
 		if !bytes.Equal(buf, final) {
-			t.Fatal("bad message")
+			t.Log(len(buf), len(final))
+			t.Fatalf("bad message on stream %d", i)
 		}
 	}
 
 	for i := 0; i < maxTestStreams; i++ {
 		wg.Add(1)
-		go sender()
+		go sender(i)
 	}
 
 	wg.Wait()
