@@ -136,6 +136,8 @@ func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
 			} else {
 				_, _ = io.WriteString(w, getSuccess)
 			}
+		case http.MethodPost:
+			_, _ = io.Copy(w, r.Body)
 		default:
 			t.Fatal("unsupported header")
 		}

@@ -1,7 +1,6 @@
 package wsmux
 
 import (
-	"bytes"
 	"io"
 	"net"
 	"sync"
@@ -185,8 +184,6 @@ func (s *stream) Read(buf []byte) (int, error) {
 	}
 
 	n, _ := s.b.Read(buf)
-	s.session.logger.Printf("read bytes %d: %s", n, bytes.NewBuffer(buf).String())
-	buf = buf[:n]
 	if err := s.session.send(newAckFrame(s.id, uint32(n))); err != nil {
 		return n, err
 	}

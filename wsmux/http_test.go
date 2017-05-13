@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	// "runtime"
+	"os"
+	"sync"
 	"testing"
-	// "time"
 
 	"github.com/gorilla/websocket"
 )
@@ -49,6 +49,118 @@ func TestGet(t *testing.T) {
 		t.Log(bytes.NewBuffer(b).String())
 		t.Fatal("message inconsistent")
 	}
+}
+
+func TestPost(t *testing.T) {
+	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	defer func() {
+		_ = server.Close()
+	}()
+	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	session := Client(conn, Config{Log: genLogger("post-test")})
+	// session.readDeadline = time.Now().Add(10 * time.Second)
+	file, err := os.Open("post-test-data")
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, err := http.NewRequest(http.MethodPost, "", file)
+	stream, err := session.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = req.Write(stream)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = file.Close()
+	file, err = os.Open("post-test-data")
+	if err != nil {
+		t.Fatal(err)
+	}
+	buf, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader := bufio.NewReader(stream)
+	resp, err := http.ReadResponse(reader, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(b, buf) {
+		t.Log(bytes.NewBuffer(b).String())
+		t.Fatal("message inconsistent")
+	}
+}
+
+func TestMultiplePost(t *testing.T) {
+	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	defer func() {
+		_ = server.Close()
+	}()
+	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	session := Client(conn, Config{Log: genLogger("post-test")})
+
+	var wg sync.WaitGroup
+	sendAndWait := func() {
+		defer wg.Done()
+		file, err := os.Open("post-test-data")
+		if err != nil {
+			t.Fatal(err)
+		}
+		req, err := http.NewRequest(http.MethodPost, "", file)
+		stream, err := session.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = req.Write(stream)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = file.Close()
+		file, err = os.Open("post-test-data")
+		if err != nil {
+			t.Fatal(err)
+		}
+		buf, err := ioutil.ReadAll(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		reader := bufio.NewReader(stream)
+		resp, err := http.ReadResponse(reader, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(b, buf) {
+			t.Log(bytes.NewBuffer(b).String())
+			t.Fatal("message inconsistent")
+		}
+	}
+
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go sendAndWait()
+	}
+	wg.Wait()
 }
 
 func TestWebSocket(t *testing.T) {
