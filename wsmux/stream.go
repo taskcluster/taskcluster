@@ -9,6 +9,7 @@ import (
 
 const (
 	DefaultCapacity = 1024
+	veryLongTime    = time.Hour * 10 // a long time period...treated as infinite
 )
 
 type stream struct {
@@ -26,9 +27,11 @@ type stream struct {
 
 	session *Session
 
-	//deadlines
-	writeDeadline time.Time
-	readDeadline  time.Time
+	timeLock              sync.Mutex
+	readTimer             *time.Timer
+	writeTimer            *time.Timer
+	readDeadlineExceeded  bool
+	writeDeadlineExceeded bool
 }
 
 func newStream(id uint32, session *Session) *stream {
@@ -43,13 +46,95 @@ func newStream(id uint32, session *Session) *stream {
 		remoteClosed: false,
 		accepted:     make(chan struct{}),
 
+		readTimer:             time.NewTimer(veryLongTime),
+		writeTimer:            time.NewTimer(veryLongTime),
+		readDeadlineExceeded:  false,
+		writeDeadlineExceeded: false,
+
 		session: session,
 	}
 
 	str.c = sync.NewCond(&str.m)
+	go str.checkTimers()
+
 	return str
 }
 
+// SetReadDeadline sets the read timer
+func (s *stream) SetReadDeadline(t time.Time) error {
+	s.timeLock.Lock()
+	defer s.timeLock.Unlock()
+
+	// clear deadline exceeded
+	s.m.Lock()
+	s.readDeadlineExceeded = false
+	s.m.Unlock()
+
+	if !s.readTimer.Stop() {
+		select {
+		// drain the channel
+		case <-s.readTimer.C:
+		default:
+		}
+	}
+
+	if t.IsZero() {
+		_ = s.writeTimer.Reset(veryLongTime)
+		return nil
+	}
+
+	delay := t.Sub(time.Now())
+	_ = s.readTimer.Reset(delay)
+	return nil
+}
+
+// SetWriteDeadline sets the write timer
+func (s *stream) SetWriteDeadline(t time.Time) error {
+	s.timeLock.Lock()
+	defer s.timeLock.Unlock()
+
+	s.m.Lock()
+	s.writeDeadlineExceeded = false
+	s.m.Unlock()
+	// drain timer if it fired
+	if !s.writeTimer.Stop() {
+		select {
+		case <-s.writeTimer.C:
+		default:
+		}
+	}
+
+	if t.IsZero() {
+		_ = s.writeTimer.Reset(veryLongTime)
+		return nil
+	}
+
+	delay := t.Sub(time.Now())
+	_ = s.writeTimer.Reset(delay)
+	return nil
+}
+
+func (s *stream) checkTimers() {
+	for {
+		s.timeLock.Lock()
+		select {
+		case <-s.readTimer.C:
+			s.m.Lock()
+			s.readDeadlineExceeded = true
+			s.m.Unlock()
+			s.c.Broadcast()
+		case <-s.writeTimer.C:
+			s.m.Lock()
+			s.writeDeadlineExceeded = true
+			s.m.Unlock()
+			s.c.Broadcast()
+		default:
+		}
+		s.timeLock.Unlock()
+	}
+}
+
+// unblock bytes for the remote connection
 func (s *stream) unblock(read uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -58,6 +143,7 @@ func (s *stream) unblock(read uint32) {
 	s.unblocked += read
 }
 
+// push bytes to the buffer
 func (s *stream) push(buf []byte) {
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -67,6 +153,7 @@ func (s *stream) push(buf []byte) {
 	s.endErr = err
 }
 
+// accept stream by closing channel
 func (s *stream) accept(read uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -80,10 +167,20 @@ func (s *stream) accept(read uint32) {
 	}
 }
 
-func (s *stream) getBufLen() int {
+func (s *stream) SetDeadline(t time.Time) error {
+	if err := s.SetReadDeadline(t); err != nil {
+		return err
+	}
+	if err := s.SetWriteDeadline(t); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *stream) IsRemovable() bool {
 	s.m.Lock()
 	defer s.m.Unlock()
-	return s.b.Len()
+	return s.b.Len() == 0 && s.closed && s.remoteClosed
 }
 
 func (s *stream) setRemoteClosed() {
@@ -113,35 +210,15 @@ func (s *stream) RemoteAddr() net.Addr {
 	return s.session.conn.RemoteAddr()
 }
 
-func (s *stream) SetReadDeadline(t time.Time) error {
-	s.m.Lock()
-	defer s.m.Unlock()
-	s.readDeadline = t
-	return nil
-}
-
-func (s *stream) SetWriteDeadline(t time.Time) error {
-	s.m.Lock()
-	defer s.m.Unlock()
-	s.writeDeadline = t
-	return nil
-}
-
-func (s *stream) SetDeadline(t time.Time) error {
-	if err := s.SetReadDeadline(t); err != nil {
-		return err
-	}
-	if err := s.SetWriteDeadline(t); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Close closes the stream
 func (s *stream) Close() error {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
+
+	if s.closed {
+		return nil
+	}
 
 	s.closed = true
 	if err := s.session.send(newFinFrame(s.id)); err != nil {
@@ -158,25 +235,17 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 	s.session.logger.Printf("stread %d: read requested", s.id)
 
-	timeout, timer := getTimeoutAndTimer(s.readDeadline)
 	for s.b.Len() == 0 && s.endErr == nil {
 		if s.remoteClosed {
 			return 0, io.EOF
 		}
 
-		select {
-		case <-timeout:
+		if s.readDeadlineExceeded {
 			return 0, ErrReadTimeout
-		default:
 		}
 
 		s.session.logger.Printf("stream %d: read waiting", s.id)
-		s.session.logger.Printf("stread %d : s.b.s: %d s.b.e: %d", s.id, s.b.s, s.b.e)
 		s.c.Wait()
-	}
-
-	if timer != nil {
-		_ = timer.Stop()
 	}
 
 	if s.endErr != nil {
@@ -200,24 +269,17 @@ func (s *stream) Write(buf []byte) (int, error) {
 
 	w := 0
 	for len(buf) > 0 {
-		timeout, timer := getTimeoutAndTimer(s.writeDeadline)
 		for s.unblocked == 0 && s.endErr == nil {
 			if s.closed {
 				return w, ErrBrokenPipe
 			}
 
-			select {
-			case <-timeout:
+			if s.writeDeadlineExceeded {
 				return w, ErrWriteTimeout
-			default:
 			}
 
 			s.session.logger.Printf("stream %d: write waiting", s.id)
 			s.c.Wait()
-		}
-
-		if timer != nil {
-			_ = timer.Stop()
 		}
 
 		if s.endErr != nil {

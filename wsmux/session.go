@@ -332,6 +332,9 @@ func (s *Session) abort(e error) error {
 	return s.Close()
 }
 
+// loops over streams and removes any streams that are dead
+// dead streams are those which are closed, remote side is closed,
+// and there is no data in the read buffer
 func (s *Session) removeDeadStreams() {
 	for {
 		select {
@@ -342,7 +345,7 @@ func (s *Session) removeDeadStreams() {
 
 		s.mu.Lock()
 		for _, str := range s.streams {
-			if str.isClosed() && str.isRemoteClosed() && str.getBufLen() == 0 {
+			if str.IsRemovable() {
 				s.removeStream(str.id)
 			}
 		}
