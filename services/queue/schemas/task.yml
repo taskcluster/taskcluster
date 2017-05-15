@@ -89,13 +89,18 @@ properties:
   priority:
     title:          "Task Priority"
     description: |
-      Priority of task, this defaults to `normal` and the scope
-      `queue:task-priority:high` is required to define a task with `priority`
-      set to `high`. Additional priority levels may be added later.
+      Priority of task, this defaults to `lowest` and the scope
+      `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+      to define a task with `<priority>`.
     type:           string
     enum:
+      - highest
+      - very-high
       - high
-      - normal
+      - medium
+      - low
+      - very-low
+      - lowest
   retries:
     title:          "Retries"
     description: |

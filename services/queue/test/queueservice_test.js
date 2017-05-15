@@ -130,14 +130,14 @@ suite('queue/QueueService', function() {
     });
   });
 
-  test('put, get, delete (priority: normal)', async () => {
+  test('put, get, delete (priority: lowest)', async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
     var task    = {
       taskId:             taskId,
       provisionerId:      provisionerId,
       workerType:         workerType,
-      priority:           'normal',
+      priority:           'lowest',
       deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
     };
 
@@ -193,14 +193,14 @@ suite('queue/QueueService', function() {
     assert(res.ok, 'Message failed to delete');
   });
 
-  test('put, poll, release, poll, delete (priority: normal)', async () => {
+  test('put, poll, release, poll, delete (priority: lowest)', async () => {
     var taskId  = slugid.v4();
     var runId   = 0;
     var task    = {
       taskId:             taskId,
       provisionerId:      provisionerId,
       workerType:         workerType,
-      priority:           'normal',
+      priority:           'lowest',
       deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
     };
 

@@ -10,6 +10,17 @@ let Promise     = require('promise');
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
 
+// Priority levels in order from high to low
+const PRIORITY_LEVELS = [
+  'highest',
+  'very-high',
+  'high',
+  'medium',
+  'low',
+  'very-low',
+  'lowest',
+];
+
 /**
  * **Azure Queue Invariants**
  *
@@ -431,6 +442,11 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   taskDef.deadline  = new Date(taskDef.deadline).toJSON();
   taskDef.expires   = new Date(taskDef.expires).toJSON();
 
+  // Migrate normal -> lowest, as it is the new default
+  if (taskDef.priority === 'normal') {
+    taskDef.priority = 'lowest';
+  }
+
   return null;
 };
 
@@ -530,6 +546,9 @@ api.declare({
       'queue:define-task:<provisionerId>/<workerType>',
       'queue:task-group-id:<schedulerId>/<taskGroupId>',
       'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+    ], [
+      'queue:create-task:<priority>:<provisionerId>/<workerType>',
+      'queue:scheduler-id:<schedulerId>',
     ],
   ],
   deferAuth:  true,
@@ -572,29 +591,35 @@ api.declare({
     return res.reportError(detail.code, detail.message, detail.details);
   }
 
-  // Extra scopes required
-  let scopes = _.flatten([
+  // Authenticate with legacy scopes first
+  let {provisionerId, workerType, schedulerId, taskGroupId} = taskDef;
+  let legacyAuthorized = req.satisfies([[
+    `queue:create-task:${provisionerId}/${workerType}`,
+  ], [
+    `queue:define-task:${provisionerId}/${workerType}`,
+    `queue:task-group-id:${schedulerId}/${taskGroupId}`,
+    `queue:schedule-task:${schedulerId}/${taskGroupId}/${taskId}`,
+  ]], true);
+
+  // Require 'queue:create-task:<priority>:<provisionerId>/<workerType>' for
+  // given priority or higher...
+  let priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(taskDef.priority) + 1);
+  assert(priorities.length > 0, 'must have a non-empty list of priorities');
+  // If not authorized by legacy, we require most recent scopes
+  if (!legacyAuthorized && !req.satisfies(priorities.map(priority => [
+    `queue:create-task:${priority}:${provisionerId}/${workerType}`,
+    `queue:scheduler-id:${schedulerId}`,
+  ]))) {
+    return;
+  }
+
+  // Always require extra scopes
+  if (!req.satisfies([[
     // task.scopes
-    taskDef.scopes,
-
+    ...taskDef.scopes,
     // Find scopes required for task specific routes
-    taskDef.routes.map(route => 'queue:route:' + route),
-
-    // Add scope for priority if any
-    taskDef.priority !== 'normal' ? [
-      'queue:task-priority:' + taskDef.priority,
-    ] : [],
-  ]);
-
-  // Authenticate request by providing parameters, and then validate that the
-  // requester satisfies all the scopes assigned to the task
-  if (!req.satisfies({
-    taskId,
-    provisionerId:  taskDef.provisionerId,
-    workerType:     taskDef.workerType,
-    schedulerId:    taskDef.schedulerId,
-    taskGroupId:    taskDef.taskGroupId,
-  }) || !req.satisfies([scopes])) {
+    ...taskDef.routes.map(route => 'queue:route:' + route),
+  ]])) {
     return;
   }
 
@@ -752,28 +777,36 @@ api.declare({
     return res.reportError(detail.code, detail.message, detail.details);
   }
 
-  // Extra scopes required
-  let scopes = _.flatten([
+  // Authenticate with legacy scopes first
+  let {provisionerId, workerType, schedulerId, taskGroupId} = taskDef;
+  let legacyAuthorized = req.satisfies([[
+    `queue:define-task:${provisionerId}/${workerType}`,
+  ], [
+    `queue:create-task:${provisionerId}/${workerType}`,
+  ], [
+    `queue:define-task:${provisionerId}/${workerType}`,
+    `queue:task-group-id:${schedulerId}/${taskGroupId}`,
+  ]], true);
+
+  // Require 'queue:create-task:<priority>:<provisionerId>/<workerType>' for
+  // given priority or higher...
+  let priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(taskDef.priority) + 1);
+  assert(priorities.length > 0, 'must have a non-empty list of priorities');
+  // If not authorized by legacy, we require most recent scopes
+  if (!legacyAuthorized && !req.satisfies(priorities.map(priority => [
+    `queue:create-task:${priority}:${provisionerId}/${workerType}`,
+    `queue:scheduler-id:${schedulerId}`,
+  ]))) {
+    return;
+  }
+
+  // Always require extra scopes
+  if (!req.satisfies([[
     // task.scopes
-    taskDef.scopes,
-
+    ...taskDef.scopes,
     // Find scopes required for task specific routes
-    taskDef.routes.map(route => 'queue:route:' + route),
-
-    // Add scope for priority if any
-    taskDef.priority !== 'normal' ? [
-      'queue:task-priority:' + taskDef.priority,
-    ] : [],
-  ]);
-
-  // Authenticate request by providing parameters, and then validate that the
-  // requester satisfies all the scopes assigned to the task
-  if (!req.satisfies({
-    provisionerId:  taskDef.provisionerId,
-    workerType:     taskDef.workerType,
-    schedulerId:    taskDef.schedulerId,
-    taskGroupId:    taskDef.taskGroupId,
-  }) || !req.satisfies([scopes])) {
+    ...taskDef.routes.map(route => 'queue:route:' + route),
+  ]])) {
     return;
   }
 
