@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	DefaultCapacity = 128
+	DefaultCapacity = 1024
 )
 
 // stream states
@@ -19,7 +19,6 @@ const (
 	accepted
 	closed
 	remoteClosed
-	deadOnEmpty
 	dead
 )
 
@@ -155,9 +154,11 @@ func (s *stream) AcceptStream(read uint32) {
 // SetDeadline sets the read and write deadlines for the stream
 func (s *stream) SetDeadline(t time.Time) error {
 	if err := s.SetReadDeadline(t); err != nil {
+		s.endErr = err
 		return err
 	}
 	if err := s.SetWriteDeadline(t); err != nil {
+		s.endErr = err
 		return err
 	}
 	return nil
@@ -166,7 +167,7 @@ func (s *stream) SetDeadline(t time.Time) error {
 func (s *stream) IsRemovable() bool {
 	s.m.Lock()
 	defer s.m.Unlock()
-	return s.state == dead
+	return s.state == dead && s.b.Len() == 0
 }
 
 // setRemoteClosed sets the value of stream.remoteClosed. This indicates that the remote has sent a fin packet
@@ -176,10 +177,7 @@ func (s *stream) setRemoteClosed() {
 	defer s.c.Broadcast()
 	switch s.state {
 	case closed:
-		s.state = deadOnEmpty
-		if s.b.Len() == 0 {
-			s.state = dead
-		}
+		s.state = dead
 	default:
 		s.state = remoteClosed
 	}
@@ -206,10 +204,7 @@ func (s *stream) Close() error {
 	case closed:
 		return nil
 	case remoteClosed:
-		s.state = deadOnEmpty
-		if s.b.Len() == 0 {
-			s.state = dead
-		}
+		s.state = dead
 	default:
 		s.state = closed
 	}
@@ -229,8 +224,8 @@ func (s *stream) Read(buf []byte) (int, error) {
 	s.session.logger.Printf("stread %d: read requested", s.id)
 
 	for s.b.Len() == 0 && s.endErr == nil {
-		if s.state == remoteClosed || s.state == deadOnEmpty {
-			s.state = dead
+		// return EOF if remoteClosed (remoteClosed + deadOnEmpty + dead)
+		if s.state == remoteClosed || s.state == dead {
 			return 0, io.EOF
 		}
 
@@ -252,11 +247,6 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 	s.session.logger.Printf("stream %d: read completed", s.id)
 
-	// dead state transistion
-	if s.b.Len() == 0 && s.state == deadOnEmpty {
-		s.state = dead
-	}
-
 	return n, nil
 }
 
@@ -269,13 +259,13 @@ func (s *stream) Write(buf []byte) (int, error) {
 	w := 0
 	for len(buf) > 0 {
 		// if stream is closed or waiting to be empty then abort
-		if s.state == closed || s.state == deadOnEmpty {
+		if s.state == closed || s.state == dead {
 			return w, ErrBrokenPipe
 		}
 
 		for s.unblocked == 0 && s.endErr == nil {
 			// if closed or waiting to be empty then abort
-			if s.state == closed || s.state == deadOnEmpty {
+			if s.state == closed || s.state == dead {
 				return w, ErrBrokenPipe
 			}
 
