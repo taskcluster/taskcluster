@@ -243,7 +243,7 @@ func (s *Session) recvLoop() {
 
 			str := newStream(id, s)
 			// no point in locking here
-			str.accept(DefaultCapacity)
+			str.AcceptStream(DefaultCapacity)
 
 			s.streams[id] = str
 			if err := s.send(newAckFrame(id, uint32(DefaultCapacity))); err != nil {
@@ -263,7 +263,7 @@ func (s *Session) recvLoop() {
 				s.logger.Printf("received data frame for unknown stream %d", id)
 				break
 			}
-			str.push(msg)
+			str.PushAndBroadcast(msg)
 			s.logger.Printf("received DAT frame on stream %d: %v", id, bytes.NewBuffer(msg))
 
 		//received ack frame
@@ -271,7 +271,6 @@ func (s *Session) recvLoop() {
 			s.mu.Lock()
 			str, ok := s.streams[id]
 			s.mu.Unlock()
-			s.logger.Printf("received ack frame")
 			if !ok {
 				s.logger.Printf("received ack frame for unknown stream %d", id)
 				break
@@ -281,11 +280,11 @@ func (s *Session) recvLoop() {
 			select {
 			case <-str.accepted:
 				s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
-				str.unblock(read)
+				str.UnblockAndBroadcast(read)
 			default:
 				// close str.accepted to accept stream
 				s.logger.Printf("accepting stream")
-				str.accept(read)
+				str.AcceptStream(read)
 				break
 			}
 

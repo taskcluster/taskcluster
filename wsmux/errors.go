@@ -5,9 +5,6 @@ import (
 )
 
 var (
-	// ErrRemoteClosed is returned when the remote session sends a CLS frame. No new connections
-	// will be accepted by the remote connection
-	ErrRemoteClosed = fmt.Errorf("remote session is no longer accepting connections")
 
 	// ErrAcceptTimeout is returned when the Accept operation times out
 	ErrAcceptTimeout = fmt.Errorf("accept timed out")
@@ -30,4 +27,7 @@ var (
 
 	//ErrSessionClosed is returned when a closed session tries to create a new stream
 	ErrSessionClosed = fmt.Errorf("session closed")
+
+	//ErrInvalidDeadline is returned when the time is before the current time
+	ErrInvalidDeadline = fmt.Errorf("invalid deadline")
 )
