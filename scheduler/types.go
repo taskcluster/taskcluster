@@ -293,16 +293,22 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
 
-		// Priority of task, this defaults to `normal`. Additional levels may be
-		// added later.
+		// Priority of task, this defaults to `lowest`, equivalent to the
+		// _deprecated_ `normal`.
 		// **Task submitter required scopes** `queue:task-priority:high` for high
 		// priority tasks.
 		//
 		// Possible values:
+		//   * "highest"
+		//   * "very-high"
 		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
 		//   * "normal"
 		//
-		// Default:    "normal"
+		// Default:    "lowest"
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
 		Priority string `json:"priority,omitempty"`

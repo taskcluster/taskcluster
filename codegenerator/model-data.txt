@@ -1,4 +1,4 @@
-Generated: 1494858177
+Generated: 1494883382
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6313,7 +6313,7 @@ Entry 4     =
     Entry Query        = '[]'
     Entry Name        = 'createTask'
     Entry Stability   = 'stable'
-    Entry Scopes      = '[[queue:create-task:<provisionerId>/<workerType>] [queue:define-task:<provisionerId>/<workerType> queue:task-group-id:<schedulerId>/<taskGroupId> queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>]]'
+    Entry Scopes      = '[[queue:create-task:<provisionerId>/<workerType>] [queue:define-task:<provisionerId>/<workerType> queue:task-group-id:<schedulerId>/<taskGroupId> queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>] [queue:create-task:<priority>:<provisionerId>/<workerType> queue:scheduler-id:<schedulerId>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Create New Task'
@@ -7051,13 +7051,13 @@ Properties
     TypeName               = 'TaskPayload'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload'
   Property 'priority' =
-    Default                = 'normal'
-    Description            = 'Priority of task, this defaults to `normal`. Additional levels may be
-    added later.
+    Default                = 'lowest'
+    Description            = 'Priority of task, this defaults to `lowest`, equivalent to the
+    _deprecated_ `normal`.
     **Task submitter required scopes** `queue:task-priority:high` for high
     priority tasks.
     '
-    Enum                   = '[high normal]'
+    Enum                   = '[highest very-high high medium low very-low lowest normal]'
     Title                  = 'Task Priority'
     Type                   = 'string'
     TypeName               = 'TaskPriority'
@@ -8836,11 +8836,11 @@ Properties
     TypeName               = 'TaskPayload'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/payload'
   Property 'priority' =
-    Description            = 'Priority of task, this defaults to `normal` and the scope
-    `queue:task-priority:high` is required to define a task with `priority`
-    set to `high`. Additional priority levels may be added later.
+    Description            = 'Priority of task, this defaults to `lowest` and the scope
+    `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+    to define a task with `<priority>`.
     '
-    Enum                   = '[high normal]'
+    Enum                   = '[highest very-high high medium low very-low lowest]'
     Title                  = 'Task Priority'
     Type                   = 'string'
     TypeName               = 'TaskPriority'
@@ -10564,13 +10564,13 @@ Properties
     TypeName               = 'TaskPayload'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload'
   Property 'priority' =
-    Default                = 'normal'
-    Description            = 'Priority of task, this defaults to `normal`. Additional levels may be
-    added later.
+    Default                = 'lowest'
+    Description            = 'Priority of task, this defaults to `lowest`, equivalent to the
+    _deprecated_ `normal`.
     **Task submitter required scopes** `queue:task-priority:high` for high
     priority tasks.
     '
-    Enum                   = '[high normal]'
+    Enum                   = '[highest very-high high medium low very-low lowest normal]'
     Title                  = 'Task Priority'
     Type                   = 'string'
     TypeName               = 'TaskPriority'
