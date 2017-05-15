@@ -16,7 +16,7 @@ suite('Get task', function() {
     dependencies:     [],
     requires:         'all-completed',
     routes:           [],
-    priority:         'normal',
+    priority:         'lowest',
     retries:          5,
     created:          taskcluster.fromNowJSON(),
     deadline:         taskcluster.fromNowJSON('3 days'),
