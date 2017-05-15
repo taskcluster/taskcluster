@@ -407,7 +407,9 @@ type (
 			// Reason that run was resolved, this is mainly
 			// useful for runs resolved as `exception`.
 			// Note, **more reasons may be added in the future**, also this
-			// property is only available after the run is resolved.
+			// property is only available after the run is resolved. Some of these
+			// reasons, notably `intermittent-task`, `worker-shutdown`, and
+			// `claim-expired`, will trigger an automatic retry of the task.
 			//
 			// Possible values:
 			//   * "completed"

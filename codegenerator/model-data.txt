@@ -1,4 +1,4 @@
-Generated: 1494440809
+Generated: 1494858177
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -8553,7 +8553,9 @@ Properties
           Description            = 'Reason that run was resolved, this is mainly
           useful for runs resolved as `exception`.
           Note, **more reasons may be added in the future**, also this
-          property is only available after the run is resolved.
+          property is only available after the run is resolved. Some of these
+          reasons, notably `intermittent-task`, `worker-shutdown`, and
+          `claim-expired`, will trigger an automatic retry of the task.
           '
           Enum                   = '[completed failed deadline-exceeded canceled superseded claim-expired worker-shutdown malformed-payload resource-unavailable internal-error intermittent-task]'
           Title                  = 'Reason Resolved'
@@ -10062,7 +10064,9 @@ Properties
           Description            = 'Reason that run was resolved, this is mainly
           useful for runs resolved as `exception`.
           Note, **more reasons may be added in the future**, also this
-          property is only available after the run is resolved.
+          property is only available after the run is resolved. Some of these
+          reasons, notably `intermittent-task`, `worker-shutdown`, and
+          `claim-expired`, will trigger an automatic retry of the task.
           '
           Enum                   = '[completed failed deadline-exceeded canceled superseded claim-expired worker-shutdown malformed-payload resource-unavailable internal-error intermittent-task]'
           Title                  = 'Reason Resolved'
