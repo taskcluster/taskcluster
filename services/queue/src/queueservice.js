@@ -42,15 +42,25 @@ let validateTask = task => {
 
 /** Priority to constant for use in queue name (should be a string) */
 const PRIORITY_TO_CONSTANT = {
-  high:   '5',
-  normal: '1',
+  highest:      '7',
+  'very-high':  '6',
+  high:         '5',
+  medium:       '4',
+  low:          '3',
+  'very-low':   '2',
+  lowest:       '1',
 };
 _.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'string'));
 
 /** Priority in order of priority from high to low */
 const PRIORITIES = [
+  'highest',
+  'very-high',
   'high',
-  'normal',
+  'medium',
+  'low',
+  'very-low',
+  'lowest',
 ];
 assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
 
@@ -410,7 +420,7 @@ class QueueService {
       this.prefix,            // prefix all queues
       hashId(provisionerId),  // hash of provisionerId
       hashId(workerType),     // hash of workerType
-      '',                     // priority, add 1 = normal, 5 = high
+      '',                     // priority, add PRIORITY_TO_CONSTANT
     ].join('-');
 
     // Mapping from priority to queue name
