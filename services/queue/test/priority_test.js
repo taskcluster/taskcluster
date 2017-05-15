@@ -19,6 +19,7 @@ suite('task.priority', () => {
       provisionerId:    'no-provisioner',
       workerType:       workerType,
       priority:         priority,
+      schedulerId:      'test-run',
       created:          taskcluster.fromNowJSON(),
       deadline:         taskcluster.fromNowJSON('30 min'),
       payload:          {},
@@ -31,17 +32,26 @@ suite('task.priority', () => {
     };
   };
 
-  test('Can create "high" w. queue:task-priority:high', async () => {
+  test('Can create "high" w. queue:create-task:high:<provisionerId>/<workerType>', async () => {
     helper.scopes(
-      'queue:create-task:no-provisioner/' + workerType,
-      'queue:task-priority:high',
+      'queue:create-task:high:no-provisioner/' + workerType,
+      'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makeTask('high'));
   });
 
-  test('Can\'t create "high" without queue:task-priority:high', async () => {
+  test('Can create "high" w. queue:create-task:highest:<provisionerId>/<workerType>', async () => {
     helper.scopes(
-      'queue:create-task:no-provisioner/' + workerType,
+      'queue:create-task:highest:no-provisioner/' + workerType,
+      'queue:scheduler-id:test-run',
+    );
+    await helper.queue.createTask(slugid.v4(), makeTask('high'));
+  });
+
+  test('Can\'t create "high" with queue:create-task:low:<provisionerId>/<workerType>', async () => {
+    helper.scopes(
+      'queue:create-task:low:no-provisioner/' + workerType,
+      'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makeTask('high')).then(() => {
       assert(false, 'Expected 400 error!');
@@ -50,6 +60,7 @@ suite('task.priority', () => {
     });
   });
 
+  // Test for compatibility only
   test('Can create "normal" without queue:task-priority:high', async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/' + workerType,
@@ -57,41 +68,15 @@ suite('task.priority', () => {
     await helper.queue.createTask(slugid.v4(), makeTask('normal'));
   });
 
-  test('Can define "high" w. queue:task-priority:high', async () => {
-    helper.scopes(
-      'queue:define-task:no-provisioner/' + workerType,
-      'queue:task-priority:high',
-    );
-    await helper.queue.defineTask(slugid.v4(), makeTask('high'));
-  });
-
-  test('Can\'t define "high" without queue:task-priority:high', async () => {
-    helper.scopes(
-      'queue:define-task:no-provisioner/' + workerType,
-    );
-    await helper.queue.defineTask(slugid.v4(), makeTask('high')).then(() => {
-      assert(false, 'Expected 400 error!');
-    }, err => {
-      debug('Got error as expected');
-    });
-  });
-
-  test('Can define "normal" without queue:task-priority:high', async () => {
-    helper.scopes(
-      'queue:define-task:no-provisioner/' + workerType,
-    );
-    await helper.queue.defineTask(slugid.v4(), makeTask('normal'));
-  });
-
   test('poll "high" before "low"', async () => {
     var highTaskId    = slugid.v4();
-    var normalTaskId  = slugid.v4();
+    var lowTaskId  = slugid.v4();
 
-    debug('### Creating normal: %s and high: %s tasks',
-          normalTaskId, highTaskId);
+    debug('### Creating low: %s and high: %s tasks',
+          lowTaskId, highTaskId);
     await Promise.all([
       helper.queue.createTask(highTaskId, makeTask('high')),
-      helper.queue.createTask(normalTaskId, makeTask('normal')),
+      helper.queue.createTask(lowTaskId, makeTask('low')),
     ]);
 
     debug('### Get signed poll urls');
@@ -100,8 +85,8 @@ suite('task.priority', () => {
     );
     assume(queues).is.not.empty();
 
-    // Index of queue from which we got the high and normal task, respectively.
-    var highIndex, normalIndex;
+    // Index of queue from which we got the high and low task, respectively.
+    var highIndex, lowIndex;
 
     // To test priority, we poll the queues alternating between all signed queue
     // urls until we find both messages... When we find the message for one of
@@ -134,8 +119,8 @@ suite('task.priority', () => {
           var data = msg.MessageText[0];
           var payload = JSON.parse(new Buffer(data, 'base64').toString());
           debug('payload: %j', payload);
-          if (payload.taskId === normalTaskId) {
-            normalIndex = index;
+          if (payload.taskId === lowTaskId) {
+            lowIndex = index;
           }
           if (payload.taskId === highTaskId) {
             highIndex = index;
@@ -147,17 +132,17 @@ suite('task.priority', () => {
         }
       }
 
-      if (normalIndex === undefined || highIndex === undefined) {
+      if (lowIndex === undefined || highIndex === undefined) {
         throw new Error('Try again, we\'re missing a taskId');
       }
     });
 
     // Check that we found the index of the queue (from queues) that
-    // contains high and normal task... And validate that normal has higher
+    // contains high and low task... And validate that low has higher
     // index (ie. comes later in the list)
     assume(highIndex).is.a('number');
-    assume(normalIndex).is.a('number');
-    assume(normalIndex).is.greaterThan(highIndex);
+    assume(lowIndex).is.a('number');
+    assume(lowIndex).is.greaterThan(highIndex);
   });
 
 });

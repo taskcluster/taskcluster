@@ -165,6 +165,64 @@ let Task = Entity.configure({
     item.requires = 'all-completed';
     return item;
   },
+}).configure({
+  version:              4,
+  properties: {
+    taskId:             Entity.types.SlugId,
+    provisionerId:      Entity.types.String,
+    workerType:         Entity.types.String,
+    schedulerId:        Entity.types.String,
+    taskGroupId:        Entity.types.SlugId,
+    dependencies:       Entity.types.JSON,
+    requires:           Entity.types.String,
+    /** List of custom routes as strings */
+    routes:             Entity.types.JSON,
+    priority:           Entity.types.String,
+    retries:            Entity.types.Number,
+    retriesLeft:        Entity.types.Number,
+    created:            Entity.types.Date,
+    deadline:           Entity.types.Date,
+    expires:            Entity.types.Date,
+    /** List of scopes as strings */
+    scopes:             Entity.types.JSON,
+    payload:            Entity.types.JSON,
+    /**
+     * Meta-data object with properties:
+     * - name
+     * - description
+     * - owner
+     * - source
+     * See JSON schema for documentation.
+     */
+    metadata:           Entity.types.JSON,
+    /** Tags as mapping from tag-key to tag-value as string */
+    tags:               Entity.types.JSON,
+    extra:              Entity.types.JSON,
+    /**
+     * List of run objects with the following keys:
+     * - state          (required)
+     * - reasonCreated  (required)
+     * - reasonResolved (required)
+     * - workerGroup
+     * - workerId
+     * - hintId         (optional)
+     * - takenUntil
+     * - scheduled
+     * - started
+     * - resolved
+     * See schema for task status structure for details.
+     * Remark that `runId` always match the index in the array.
+     */
+    runs:               Entity.types.JSON,
+    /** Time at which claim to latest run expires, new Date(0) if none */
+    takenUntil:         Entity.types.Date,
+  },
+  migrate(item) {
+    if (item.priority === 'normal') {
+      item.priority = 'lowest';
+    }
+    return item;
+  },
 });
 
 /** Return promise for the task definition */

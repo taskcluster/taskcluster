@@ -161,8 +161,8 @@ test:
     publicArtifactBucket:         'test-bucket-for-any-garbage'
     privateArtifactBucket:        'test-bucket-for-any-garbage2'
     artifactContainer:            'artifacts'
-    queuePrefix:                  'hacks'
-    queuePrefix2:                 'hacks2' # For testing deletion of queues
+    queuePrefix:                  'hacks3'
+    queuePrefix2:                 'hacks4' # For testing deletion of queues
     claimQueue:                   'test-claim-queue'
     deadlineQueue:                'test-deadline-queue'
     deadlineDelay:                1000

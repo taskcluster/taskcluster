@@ -96,15 +96,21 @@ properties:
   priority:
     title:          "Task Priority"
     description: |
-      Priority of task, this defaults to `normal`. Additional levels may be
-      added later.
+      Priority of task, this defaults to `lowest`, equivalent to the
+      _deprecated_ `normal`.
       **Task submitter required scopes** `queue:task-priority:high` for high
       priority tasks.
     type:           string
     enum:
+      - highest
+      - very-high
       - high
-      - normal
-    default:        normal
+      - medium
+      - low
+      - very-low
+      - lowest
+      - normal  # deprecated, maybe we should remove it
+    default:        lowest
   retries:
     title:          "Retries"
     description: |
