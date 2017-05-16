@@ -159,7 +159,7 @@ class AsyncBaseClient(BaseClient):
                 # Parse messages from errors
                 data = {}
                 try:
-                    data = response.json()
+                    data = await response.json()
                 except:
                     pass  # Ignore JSON errors in error messages
                 # Find error message
@@ -171,6 +171,8 @@ class AsyncBaseClient(BaseClient):
                         message = "Authentication Error"
                     elif status == 500:
                         message = "Internal Server Error"
+                    else:
+                        message = "Unknown Server Error %s\n%s" % (str(status), data)
                 # Raise TaskclusterAuthFailure if this is an auth issue
                 if status == 401:
                     raise exceptions.TaskclusterAuthFailure(
