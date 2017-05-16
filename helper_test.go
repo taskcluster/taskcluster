@@ -181,7 +181,7 @@ func testTask() *queue.TaskDefinitionRequest {
 		SchedulerID:   "test-scheduler",
 		Scopes:        []string{},
 		Tags:          json.RawMessage(`{"createdForUser":"pmoore@mozilla.com"}`),
-		Priority:      "normal",
+		Priority:      "lowest",
 		TaskGroupID:   taskGroupID,
 		WorkerType:    config.WorkerType,
 	}
