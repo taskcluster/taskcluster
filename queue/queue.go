@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 15 May 2017 at 21:23:00 UTC. The code was generated
+// Tue, 16 May 2017 at 17:06:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -187,9 +187,8 @@ func (myQueue *Queue) ListDependentTasks(taskId, continuationToken, limit string
 // the task. Please see the Request Payload (Task Definition) for details.
 //
 // Required scopes:
-//   * queue:create-task:<provisionerId>/<workerType>, or
-//   * (queue:define-task:<provisionerId>/<workerType> and queue:task-group-id:<schedulerId>/<taskGroupId> and queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>), or
-//   * (queue:create-task:<priority>:<provisionerId>/<workerType> and queue:scheduler-id:<schedulerId>)
+//   * queue:create-task:<priority>:<provisionerId>/<workerType>, and
+//   * queue:scheduler-id:<schedulerId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#createTask
 func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
@@ -204,9 +203,8 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 // This is only present for legacy.
 //
 // Required scopes:
-//   * queue:define-task:<provisionerId>/<workerType>, or
-//   * queue:create-task:<provisionerId>/<workerType>, or
-//   * (queue:define-task:<provisionerId>/<workerType> and queue:task-group-id:<schedulerId>/<taskGroupId>)
+//   * queue:create-task:<priority>:<provisionerId>/<workerType>, and
+//   * queue:scheduler-id:<schedulerId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#defineTask
 func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
