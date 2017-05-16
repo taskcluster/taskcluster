@@ -539,14 +539,15 @@ api.declare({
   stability:  API.stability.stable,
   idempotent: true,
   scopes:     [
+    // Legacy scope options to be removed, hence, no-longer documented
+    // [
+    //   'queue:create-task:<provisionerId>/<workerType>',
+    // ], [
+    //   'queue:define-task:<provisionerId>/<workerType>',
+    //   'queue:task-group-id:<schedulerId>/<taskGroupId>',
+    //   'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+    // ],
     [
-      // Legacy scope option to be removed
-      'queue:create-task:<provisionerId>/<workerType>',
-    ], [
-      'queue:define-task:<provisionerId>/<workerType>',
-      'queue:task-group-id:<schedulerId>/<taskGroupId>',
-      'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
-    ], [
       'queue:create-task:<priority>:<provisionerId>/<workerType>',
       'queue:scheduler-id:<schedulerId>',
     ],
@@ -591,9 +592,9 @@ api.declare({
     return res.reportError(detail.code, detail.message, detail.details);
   }
 
-  // Authenticate with legacy scopes first
+  // Authenticate with legacy scopes first, but only if priority is lowest
   let {provisionerId, workerType, schedulerId, taskGroupId} = taskDef;
-  let legacyAuthorized = req.satisfies([[
+  let legacyAuthorized = taskDef.priority == 'lowest' && req.satisfies([[
     `queue:create-task:${provisionerId}/${workerType}`,
   ], [
     `queue:define-task:${provisionerId}/${workerType}`,
@@ -750,13 +751,16 @@ api.declare({
   name:       'defineTask',
   stability:  API.stability.deprecated,
   scopes:     [
-    // Legacy scopes
-    ['queue:define-task:<provisionerId>/<workerType>'],
-    ['queue:create-task:<provisionerId>/<workerType>'],
+    // Legacy scope options to be removed, hence, no-longer documented
+    // ['queue:define-task:<provisionerId>/<workerType>'],
+    // ['queue:create-task:<provisionerId>/<workerType>'],
+    // [
+    //   'queue:define-task:<provisionerId>/<workerType>',
+    //   'queue:task-group-id:<schedulerId>/<taskGroupId>',
+    // ],
     [
-    // Future scope
-      'queue:define-task:<provisionerId>/<workerType>',
-      'queue:task-group-id:<schedulerId>/<taskGroupId>',
+      'queue:create-task:<priority>:<provisionerId>/<workerType>',
+      'queue:scheduler-id:<schedulerId>',
     ],
   ],
   deferAuth:  true,
@@ -777,9 +781,9 @@ api.declare({
     return res.reportError(detail.code, detail.message, detail.details);
   }
 
-  // Authenticate with legacy scopes first
+  // Authenticate with legacy scopes first, but only if priority is lowest
   let {provisionerId, workerType, schedulerId, taskGroupId} = taskDef;
-  let legacyAuthorized = req.satisfies([[
+  let legacyAuthorized = taskDef.priority == 'lowest' && req.satisfies([[
     `queue:define-task:${provisionerId}/${workerType}`,
   ], [
     `queue:create-task:${provisionerId}/${workerType}`,
