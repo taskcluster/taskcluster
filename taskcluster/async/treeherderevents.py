@@ -42,7 +42,7 @@ class TreeherderEvents(AsyncBaseClient):
     """
 
     def jobs(self, *args, **kwargs):
-        return self._makeTopicExchange({'routingKey': [{'required': True, 'multipleWords': False, 'summary': 'destination', 'name': 'destination'}, {'required': True, 'multipleWords': False, 'summary': 'project', 'name': 'project'}, {'required': False, 'multipleWords': True, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'name': 'reserved'}], 'name': 'jobs', 'schema': 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#', 'exchange': 'jobs'}, *args, **kwargs)
+        return self._makeTopicExchange({'exchange': 'jobs', 'routingKey': [{'required': True, 'summary': 'destination', 'multipleWords': False, 'name': 'destination'}, {'required': True, 'summary': 'project', 'multipleWords': False, 'name': 'project'}, {'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.', 'multipleWords': True, 'name': 'reserved'}], 'name': 'jobs', 'schema': 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'}, *args, **kwargs)
 
     funcinfo = {
     }

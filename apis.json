@@ -1930,6 +1930,10 @@
               "queue:define-task:<provisionerId>/<workerType>",
               "queue:task-group-id:<schedulerId>/<taskGroupId>",
               "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
+            ],
+            [
+              "queue:create-task:<priority>:<provisionerId>/<workerType>",
+              "queue:scheduler-id:<schedulerId>"
             ]
           ],
           "stability": "stable",
