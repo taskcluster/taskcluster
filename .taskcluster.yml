@@ -83,7 +83,7 @@ tasks:
         - 'git reset --hard "{{ event.head.sha }}"'
         - 'git clean -fdx'
         - 'git checkout -B tmp -t "%TASK_ID%"'
-        - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
         - cd ..
@@ -159,7 +159,7 @@ tasks:
         - 'git reset --hard "{{ event.head.sha }}"'
         - 'git clean -fdx'
         - 'git checkout -B tmp -t "%TASK_ID%"'
-        - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
         - cd ..
@@ -235,7 +235,7 @@ tasks:
         - 'git reset --hard "{{ event.head.sha }}"'
         - 'git clean -fdx'
         - 'git checkout -B tmp -t "%TASK_ID%"'
-        - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
         - cd ..
@@ -316,7 +316,7 @@ tasks:
             git reset --hard '{{ event.head.sha }}'
             git clean -fdx
             git checkout -B tmp -t "${TASK_ID}"
-            go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+            go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
             cd gw-codegen
             go get -v -u
             cd ..
@@ -381,7 +381,7 @@ tasks:
             git reset --hard '{{ event.head.sha }}'
             git clean -fdx
             git checkout -B tmp -t "${TASK_ID}"
-            go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+            go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
             cd gw-codegen
             go get -v -u
             cd ..
@@ -446,7 +446,7 @@ tasks:
           git reset --hard '{{ event.head.sha }}'
           git clean -fdx
           git checkout -B tmp -t "${TASK_ID}"
-          go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+          go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
           cd gw-codegen
           go get -v -u
           cd ..
