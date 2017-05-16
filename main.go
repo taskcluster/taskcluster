@@ -452,7 +452,29 @@ func RunWorker() {
 		// make sure at least 5 seconds passes between iterations
 		wait5Seconds := time.NewTimer(time.Second * 5)
 		taskFound := FindAndRunTask()
-		if !taskFound {
+		if taskFound {
+			err := taskCleanup()
+			if err != nil {
+				log.Printf("Error cleaning up after task!\n%v", err)
+			}
+			tasksResolved++
+			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
+			remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
+			remainingTaskCountText := ""
+			if remainingTasks > 0 {
+				remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
+			}
+			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
+			if remainingTasks == 0 {
+				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
+				if configureForAws {
+					shutdownIfNewDeploymentID()
+				}
+				break
+			}
+			lastActive = time.Now()
+			PrepareTaskEnvironment()
+		} else {
 			idleTime := time.Now().Sub(lastActive)
 			remainingIdleTimeText := ""
 			if config.IdleTimeoutSecs > 0 {
@@ -476,28 +498,6 @@ func RunWorker() {
 				}
 				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
 			}
-		} else {
-			err := taskCleanup()
-			if err != nil {
-				log.Printf("Error cleaning up after task!\n%v", err)
-			}
-			tasksResolved++
-			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
-			remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
-			remainingTaskCountText := ""
-			if remainingTasks > 0 {
-				remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
-			}
-			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
-			if remainingTasks == 0 {
-				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if configureForAws {
-					shutdownIfNewDeploymentID()
-				}
-				break
-			}
-			lastActive = time.Now()
-			PrepareTaskEnvironment()
 		}
 		// To avoid hammering queue, make sure there is at least 5 seconds
 		// between consecutive requests. Note we do this even if a task ran,
@@ -1020,7 +1020,7 @@ func convertNilToEmptyString(val interface{}) string {
 }
 
 func PrepareTaskEnvironment() {
-	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
+	taskDirName := chooseTaskDirName()
 	taskContext = &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
 	}
@@ -1041,6 +1041,7 @@ func PrepareTaskEnvironment() {
 }
 
 func deleteTaskDirs() {
+	activeTaskUser := AutoLogonUser()
 	taskDirsParent, err := os.Open(config.TasksDir)
 	if err != nil {
 		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
@@ -1058,7 +1059,7 @@ func deleteTaskDirs() {
 		fileName := file.Name()
 		path := filepath.Join(config.TasksDir, fileName)
 		if file.IsDir() {
-			if strings.HasPrefix(fileName, "task_") {
+			if strings.HasPrefix(fileName, "task_") && fileName != activeTaskUser {
 				// ignore any error occuring here, not a lot we can do about it...
 				deleteTaskDir(path)
 			}

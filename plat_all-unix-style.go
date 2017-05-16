@@ -10,7 +10,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/shell"
@@ -148,4 +150,13 @@ func defaultTasksDir() string {
 	// assume all user home directories are all in same folder, i.e. the parent
 	// folder of the current user's home folder
 	return filepath.Dir(os.Getenv("HOME"))
+}
+
+// N/A for unix - just a windows thing
+func AutoLogonUser() string {
+	return ""
+}
+
+func chooseTaskDirName() string {
+	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
 }

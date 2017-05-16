@@ -10,6 +10,7 @@ import (
 	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/runlib/platform"
 	"github.com/taskcluster/runlib/subprocess"
+	"github.com/taskcluster/runlib/win32"
 )
 
 type Verdict int
@@ -163,17 +164,18 @@ func NewDesktopSession(username, password string) (loginInfo *subprocess.LoginIn
 	return
 }
 
-func NewCommand(commandLine string, workingDirectory *string, env *[]string, deadline time.Time, desktopSession *DesktopSession) (*Command, error) {
+func NewCommand(commandLine string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {
 	if deadline.IsZero() {
 		log.Print("No deadline!")
 	} else {
 		log.Printf("Deadline: %v", deadline)
 	}
-	var desktopName string
-	var loginInfo *subprocess.LoginInfo
-	if desktopSession != nil {
-		desktopName = desktopSession.Desktop.DesktopName
-		loginInfo = desktopSession.LoginInfo
+	hToken, err := win32.InteractiveUserToken()
+	if err != nil {
+		return nil, err
+	}
+	loginInfo := &subprocess.LoginInfo{
+		HUser: hToken,
 	}
 	command := &Command{
 		Subprocess: &subprocess.Subprocess{
@@ -199,7 +201,7 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 			StdErr:        nil,
 			JoinStdOutErr: true,
 			Options: &subprocess.PlatformOptions{
-				Desktop: desktopName,
+				Desktop: "",
 			},
 			Login: loginInfo,
 		},

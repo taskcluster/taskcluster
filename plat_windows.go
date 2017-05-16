@@ -29,10 +29,20 @@ type TaskContext struct {
 	DesktopSession *process.DesktopSession
 }
 
+func immediateReboot() {
+	log.Println("Immediate reboot being issued...")
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/r", "/t", "3", "/c", "generic-worker requested reboot")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Exit(0)
+}
+
 func immediateShutdown(cause string) {
 	log.Println("Immediate shutdown being issued...")
 	log.Println(cause)
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "60", "/c", cause)
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "3", "/c", cause)
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
@@ -86,6 +96,9 @@ func deleteTaskDir(path string) error {
 }
 
 func prepareTaskUser(userName string) {
+	if userName == AutoLogonUser() {
+		return
+	}
 	// create user
 	user := &runtime.OSUser{
 		Name:     userName,
@@ -96,40 +109,46 @@ func prepareTaskUser(userName string) {
 		panic(err)
 	}
 	// create desktop and login
-	loginInfo, origDesktop, newDesktop, err := process.NewDesktopSession(user.Name, user.Password)
-	if err != nil {
-		panic(err)
-	}
-	taskContext.DesktopSession = &process.DesktopSession{
-		User:        user,
-		LoginInfo:   loginInfo,
-		Desktop:     newDesktop,
-		OrigDesktop: origDesktop,
-	}
+	// loginInfo, origDesktop, newDesktop, err := process.NewDesktopSession(user.Name, user.Password)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// taskContext.DesktopSession = &process.DesktopSession{
+	// 	User:        user,
+	// 	LoginInfo:   loginInfo,
+	// 	Desktop:     newDesktop,
+	// 	OrigDesktop: origDesktop,
+	// }
 	err = os.MkdirAll(taskContext.TaskDir, 0777)
 	if err != nil {
 		panic(err)
 	}
-	err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
+	// err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// if script := config.RunAfterUserCreation; script != "" {
+	// 	var noDeadline time.Time
+	// 	command, err := process.NewCommand(script, &taskContext.TaskDir, nil, noDeadline, taskContext.DesktopSession)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	command.DirectOutput(os.Stdout)
+	// 	result := command.Execute()
+	// 	log.Printf("%v", result)
+	// 	switch {
+	// 	case result.Failed():
+	// 		panic(result.FailureCause())
+	// 	case result.Crashed():
+	// 		panic(result.CrashCause())
+	// 	}
+	// }
+	// configure worker to auto-login to this newly generated user account
+	err = SetAutoLogin(user)
 	if err != nil {
 		panic(err)
 	}
-	if script := config.RunAfterUserCreation; script != "" {
-		var noDeadline time.Time
-		command, err := process.NewCommand(script, &taskContext.TaskDir, nil, noDeadline, taskContext.DesktopSession)
-		if err != nil {
-			panic(err)
-		}
-		command.DirectOutput(os.Stdout)
-		result := command.Execute()
-		log.Printf("%v", result)
-		switch {
-		case result.Failed():
-			panic(result.FailureCause())
-		case result.Crashed():
-			panic(result.CrashCause())
-		}
-	}
+	immediateReboot()
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -170,7 +189,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline, taskContext.DesktopSession)
+	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline)
 	if err != nil {
 		return err
 	}
@@ -320,7 +339,6 @@ func taskCleanup() error {
 	if !config.RunTasksAsCurrentUser {
 		deleteExistingOSUsers()
 	}
-	// this needs to succeed, so return an error if it doesn't
 	return nil
 }
 
@@ -427,6 +445,29 @@ func deployStartup(user *runtime.OSUser, configFile string, exePath string) erro
 	if err != nil {
 		return fmt.Errorf("Not able to schedule task \"Run Generic Worker on login\" using schtasks command, due to error: %s\n\nAlso see stderr/stdout logs for output of the command that failed.", err)
 	}
+
+	err = SetAutoLogin(user)
+	if err != nil {
+		return err
+	}
+
+	batScriptFilePath := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
+	batScriptContents := []byte(strings.Join([]string{
+		`:: run the generic worker`,
+		``,
+		`:: cd to folder containing this script`,
+		`pushd %~dp0`,
+		``,
+		`.\generic-worker.exe run --configure-for-aws > .\generic-worker.log 2>&1`,
+	}, "\r\n"))
+	err = ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
+	if err != nil {
+		return fmt.Errorf("Was not able to create file %q with access permissions 0755 due to %s", batScriptFilePath, err)
+	}
+	return nil
+}
+
+func SetAutoLogin(user *runtime.OSUser) error {
 	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.WRITE)
 	if err != nil {
 		return fmt.Errorf(`Was not able to create registry key 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' due to %s`, err)
@@ -443,20 +484,6 @@ func deployStartup(user *runtime.OSUser, configFile string, exePath string) erro
 	err = k.SetStringValue("DefaultPassword", user.Password)
 	if err != nil {
 		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword' to %q due to %s`, user.Password, err)
-	}
-
-	batScriptFilePath := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
-	batScriptContents := []byte(strings.Join([]string{
-		`:: run the generic worker`,
-		``,
-		`:: cd to folder containing this script`,
-		`pushd %~dp0`,
-		``,
-		`.\generic-worker.exe run --configure-for-aws > .\generic-worker.log 2>&1`,
-	}, "\r\n"))
-	err = ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
-	if err != nil {
-		return fmt.Errorf("Was not able to create file %q with access permissions 0755 due to %s", batScriptFilePath, err)
 	}
 	return nil
 }
@@ -476,7 +503,9 @@ func deployService(user *runtime.OSUser, configFile, nssm, serviceName, exePath,
 		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
 		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
 		[]string{nssm, "set", serviceName, "Start", "SERVICE_AUTO_START"},
-		[]string{nssm, "set", serviceName, "ObjectName", ".\\" + user.Name, user.Password},
+		// By default, NSSM installs as LocalSystem, which we need since we call WTSQueryUserToken.
+		// So let's not set it.
+		// []string{nssm, "set", serviceName, "ObjectName", ".\\" + user.Name, user.Password},
 		[]string{nssm, "set", serviceName, "Type", "SERVICE_WIN32_OWN_PROCESS"},
 		[]string{nssm, "set", serviceName, "AppPriority", "NORMAL_PRIORITY_CLASS"},
 		[]string{nssm, "set", serviceName, "AppNoConsole", "1"},
@@ -592,4 +621,25 @@ func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
 func defaultTasksDir() string {
 	// all user directories are peers of the current USERPROFILE env var
 	return filepath.Dir(os.Getenv("USERPROFILE"))
+}
+
+func AutoLogonUser() string {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
+	if err != nil {
+		return ""
+	}
+	defer k.Close()
+	s, _, err := k.GetStringValue("DefaultUserName")
+	if err != nil {
+		return ""
+	}
+	return s
+}
+
+func chooseTaskDirName() string {
+	taskDirName := AutoLogonUser()
+	if taskDirName == "" {
+		return "task_" + strconv.Itoa(int(time.Now().Unix()))
+	}
+	return taskDirName
 }
