@@ -284,7 +284,7 @@ class WorkClaimer extends events.EventEmitter {
       'on',
       workerGroup,
       workerId,
-      'until'
+      'until',
       '${takenUntil.getTime() / 1000}',
     ].join('/');
     let credentials = taskcluster.createTemporaryCredentials({
