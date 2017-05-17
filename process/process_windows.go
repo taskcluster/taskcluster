@@ -138,6 +138,7 @@ func (c *Command) Execute() (r *Result) {
 		}
 	}
 	result, err := c.Subprocess.Execute()
+	defer win32.CloseHandle(c.Subprocess.Login.HUser)
 	return &Result{
 		SubprocessResult: result,
 		SystemError:      err,
@@ -174,9 +175,6 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 	if err != nil {
 		return nil, err
 	}
-	loginInfo := &subprocess.LoginInfo{
-		HUser: hToken,
-	}
 	command := &Command{
 		Subprocess: &subprocess.Subprocess{
 			TimeQuantum: time.Second / 4,
@@ -203,7 +201,9 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 			Options: &subprocess.PlatformOptions{
 				Desktop: "",
 			},
-			Login: loginInfo,
+			Login: &subprocess.LoginInfo{
+				HUser: hToken,
+			},
 		},
 		Deadline: deadline,
 	}
