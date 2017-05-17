@@ -174,7 +174,7 @@ func deleteExistingOSUsers() {
 }
 
 func deleteOSUserAccount(line string) {
-	if strings.HasPrefix(line, "task_") {
+	if strings.HasPrefix(line, "task_") && line != AutoLogonUser() {
 		user := line
 		log.Print("Attempting to remove Windows user " + user + "...")
 		err := runtime.RunCommands(false, []string{"net", "user", user, "/delete"})
