@@ -643,3 +643,12 @@ func chooseTaskDirName() string {
 	}
 	return taskDirName
 }
+
+func unsetAutoLogon() {
+	err := SetAutoLogin(
+		&runtime.OSUser{},
+	)
+	if err != nil {
+		panic(err)
+	}
+}

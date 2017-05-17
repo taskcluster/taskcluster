@@ -158,5 +158,8 @@ func AutoLogonUser() string {
 }
 
 func chooseTaskDirName() string {
-	taskDirName := "task_" + strconv.Itoa(int(time.Now().Unix()))
+	return "task_" + strconv.Itoa(int(time.Now().Unix()))
+}
+
+func unsetAutoLogon() {
 }

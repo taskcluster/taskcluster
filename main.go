@@ -473,6 +473,7 @@ func RunWorker() {
 				break
 			}
 			lastActive = time.Now()
+			unsetAutoLogon()
 			PrepareTaskEnvironment()
 		} else {
 			idleTime := time.Now().Sub(lastActive)
