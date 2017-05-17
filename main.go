@@ -1042,8 +1042,17 @@ func PrepareTaskEnvironment() {
 }
 
 func deleteTaskDirs() {
+	// TODO: need to find a cleaner, less-hardcoded way to do this
+	removeTaskDirs("C:\\Users")
+	removeTaskDirs("C:\\Documents and Settings")
+
+	// this is ok
+	removeTaskDirs(config.TasksDir)
+}
+
+func removeTaskDirs(parentDir string) {
 	activeTaskUser := AutoLogonUser()
-	taskDirsParent, err := os.Open(config.TasksDir)
+	taskDirsParent, err := os.Open(parentDir)
 	if err != nil {
 		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
 		log.Printf("%v", err)
@@ -1066,7 +1075,6 @@ func deleteTaskDirs() {
 			}
 		}
 	}
-
 }
 
 func exitOrShutdown(shutdown bool, cause string, exitCode int) {

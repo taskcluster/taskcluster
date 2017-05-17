@@ -1,0 +1,74 @@
+  ##########################################################
+  #################### Windows 10 Build ####################
+  ##########################################################
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: gecko-t-win10-64
+    metadata:
+      name: "Build/test 64 bit generic-worker on Windows 10"
+      description: "This builds and tests the 32 bit Windows version of generic-worker on Windows 10"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.*
+          - push
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+    payload:
+      maxRunTime: 3600
+      command:
+        - set GOPATH=%CD%\gopath
+        - set GOROOT=%CD%\go
+        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
+        - git config --global core.autocrlf false
+        - go version
+        - go env
+        - 'if not exist "%GOPATH%\src\github.com\taskcluster" mkdir "%GOPATH%\src\github.com\taskcluster"'
+        - 'cd "%GOPATH%\src\github.com\taskcluster"'
+        - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
+        - 'cd generic-worker'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/%TASK_ID%"'
+        - 'git checkout -f "%TASK_ID%"'
+        - 'git reset --hard "{{ event.head.sha }}"'
+        - 'git clean -fdx'
+        - 'git checkout -B tmp -t "%TASK_ID%"'
+        - go get -v -u github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+        - cd gw-codegen
+        - go get -v -u
+        - cd ..
+        - go generate
+        - go get -v -u -t ./...
+        - |
+          :: this counts the number of lines returned by git status
+          :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
+          git status --porcelain | C:\Windows\System32\find.exe /v /c "" > ..\tmp1.txt
+          set /P lines=<..\tmp1.txt
+          :: this checks that if more than 0 lines are returned, we fail
+          if %lines% gtr 0 exit /b 64
+          :: find.exe will have exited with exit code 1, so need to explicitly exit with 0
+          exit /b 0
+        - set GORACE=history_size=7
+        - C:\generic-worker\generic-worker-test-creds.cmd
+        - go test -v -race ./...
+        - set GW_TESTS_GENERATE_USERS=true
+        - go test -v -race
+        - ineffassign .
+      artifacts:
+        - name: public/build/generic-worker-windows-amd64.exe
+          path: gopath\bin\generic-worker.exe
+          expires: "{{ '2 weeks' | $fromNow }}"
+          type: file
+      mounts:
+        - cacheName: generic-worker-checkout
+          directory: gopath\src
+        - content:
+            url: https://storage.googleapis.com/golang/go1.7.5.windows-amd64.zip
+          directory: .
+          format: zip
+        - content:
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/MinGit-2.11.0.3-64-bit.zip
+          directory: git
+          format: zip
