@@ -246,17 +246,19 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 	s.session.logger.Printf("stream %d: read requested", s.id)
 
-	for s.b.Len() == 0 && s.endErr == nil {
-		// return EOF if remoteClosed (remoteClosed + deadOnEmpty + dead)
-		if s.state == remoteClosed || s.state == dead {
-			return 0, io.EOF
-		}
+	for s.b.Len() == 0 && s.endErr == nil && !s.readDeadlineExceeded && s.state != remoteClosed && s.state != dead {
 
-		if s.readDeadlineExceeded {
-			return 0, ErrReadTimeout
-		}
 		s.session.logger.Printf("stream %d: read waiting", s.id)
 		s.c.Wait()
+	}
+
+	// return EOF if remoteClosed (remoteClosed + deadOnEmpty + dead)
+	if s.b.Len() == 0 && (s.state == remoteClosed || s.state == dead) {
+		return 0, io.EOF
+	}
+
+	if s.readDeadlineExceeded {
+		return 0, ErrReadTimeout
 	}
 
 	if s.endErr != nil {
@@ -279,26 +281,23 @@ func (s *stream) Write(buf []byte) (int, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	w := 0
-	for len(buf) > 0 {
+	l, w := len(buf), 0
+	for w < l {
+
+		for s.unblocked == 0 && s.endErr == nil && !s.writeDeadlineExceeded && s.state != closed && s.state != dead {
+			s.session.logger.Printf("stream %d: write waiting", s.id)
+			// wait for signal
+			s.c.Wait()
+		}
+
 		// if stream is closed or waiting to be empty then abort
+		// unblocked not checked as stream can be closed, but bytes may be unblocked by remote
 		if s.state == closed || s.state == dead {
 			return w, ErrBrokenPipe
 		}
 
-		for s.unblocked == 0 && s.endErr == nil {
-			// if closed or waiting to be empty then abort
-			if s.state == closed || s.state == dead {
-				return w, ErrBrokenPipe
-			}
-
-			// if deadline has been exceeded then abort
-			if s.writeDeadlineExceeded {
-				return w, ErrWriteTimeout
-			}
-			s.session.logger.Printf("stream %d: write waiting", s.id)
-			// wait for signal
-			s.c.Wait()
+		if s.writeDeadlineExceeded {
+			return w, ErrWriteTimeout
 		}
 
 		if s.endErr != nil {
