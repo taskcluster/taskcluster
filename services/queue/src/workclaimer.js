@@ -277,7 +277,18 @@ class WorkClaimer extends events.EventEmitter {
     }, task.routes);
 
     // Create temporary credentials for the task
+    let clientId = [
+      'task-client',
+      taskId,
+      '${runId}',
+      'on',
+      workerGroup,
+      workerId,
+      'until'
+      '${takenUntil.getTime() / 1000}',
+    ].join('/');
     let credentials = taskcluster.createTemporaryCredentials({
+      clientId,
       start:  new Date(Date.now() - 15 * 60 * 1000),
       expiry: new Date(takenUntil.getTime() + 15 * 60 * 1000),
       scopes: [
