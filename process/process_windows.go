@@ -170,7 +170,7 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 	} else {
 		log.Printf("Deadline: %v", deadline)
 	}
-	hToken, err := win32.InteractiveUserToken()
+	hToken, err := win32.InteractiveUserToken(time.Minute)
 	if err != nil {
 		return nil, err
 	}
