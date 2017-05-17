@@ -22,28 +22,31 @@ const (
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
 type Session struct {
-	mu        sync.Mutex
-	streams   map[uint32]*stream
-	streamCh  chan *stream
-	conn      *websocket.Conn
-	acceptErr error
+	mu        sync.Mutex         // locks channels and stream map
+	streams   map[uint32]*stream // stores streams
+	streamCh  chan *stream       // channel used in accept calls
+	conn      *websocket.Conn    // underlying websocket connection
+	acceptErr error              // error caused by Accept()
 
-	sendLock sync.Mutex
+	sendLock sync.Mutex // locks send operations
 
-	keepAliveInterval    time.Duration
-	streamAcceptDeadline time.Duration
+	keepAliveInterval    time.Duration // Keep alives are sent
+	streamAcceptDeadline time.Duration // used for timing out accept calls
 
-	logger Logger
+	logger Logger // used for logging
 
+	// id of next stream opened by session. increment by 2
+	// default: 0 for server, 1 for client
 	nextID uint32
 
 	closed chan struct{} // nil channel
 
-	closeConn bool
+	closeConn bool // used by Close(). if true then conn is closed. default: true
 
-	remoteCloseCallback func()
+	remoteCloseCallback func() // callback when remote session is closed. default: nil
 }
 
+// send a frame over the websocket connection
 func (s *Session) send(f frame) error {
 	select {
 	case <-s.closed:
@@ -57,6 +60,7 @@ func (s *Session) send(f frame) error {
 	return err
 }
 
+// create a new session
 func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s := &Session{
 		conn:     conn,
@@ -193,14 +197,22 @@ func (s *Session) Addr() net.Addr {
 	return s.conn.LocalAddr()
 }
 
+// called when websocket connection is closed
 func (s *Session) closeHandler(code int, text string) error {
 	s.logger.Printf("ws conn closed: code %d : %s", code, text)
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	defer func() {
+		if s.remoteCloseCallback != nil {
+			s.remoteCloseCallback()
+		}
+	}()
+
 	s.closeConn = false
 	return s.Close()
 }
 
+// receives frames over websocket connection
 func (s *Session) recvLoop() {
 	for {
 		select {
@@ -243,7 +255,7 @@ func (s *Session) recvLoop() {
 				s.streams[id] = str
 				if err := s.send(newAckFrame(id, uint32(DefaultCapacity))); err != nil {
 					s.logger.Print(err)
-					s.abort(err)
+					_ = s.abort(err)
 					return
 				}
 				s.asyncPushStream(str)
@@ -259,6 +271,7 @@ func (s *Session) recvLoop() {
 	}
 }
 
+//removes stream with given id
 func (s *Session) removeStream(id uint32) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -267,6 +280,7 @@ func (s *Session) removeStream(id uint32) {
 	}
 }
 
+// push stream to streamCh so that it can be accepted
 func (s *Session) asyncPushStream(str *stream) {
 	select {
 	case s.streamCh <- str:
@@ -274,6 +288,7 @@ func (s *Session) asyncPushStream(str *stream) {
 	}
 }
 
+// abort session when error occurs
 func (s *Session) abort(e error) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

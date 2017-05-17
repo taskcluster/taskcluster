@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	// DefaultCapacity of read buffer of stream
 	DefaultCapacity = 1024
 )
 
@@ -30,23 +31,23 @@ const (
 )
 
 type stream struct {
-	id uint32
-	m  sync.Mutex
-	c  *sync.Cond
-	b  *buffer
+	id uint32     // id of the stream. Used for logging.
+	m  sync.Mutex // mutex for state transitions
+	c  *sync.Cond // used for broadcasting when closed, data read, or data pushed to buffer
+	b  *buffer    // read buffer
 
-	unblocked uint32
+	unblocked uint32 // number of bytes that can be sent to remote
 
-	endErr   error
-	state    streamState
-	accepted chan struct{}
+	endErr   error         // error causes stream to close
+	state    streamState   // current state of the stream
+	accepted chan struct{} // closed when stream is accepted. Used in session.Open()
 
-	session *Session
+	session *Session // assosciated session. used for sending frames and logging
 
-	readTimer             *time.Timer
-	writeTimer            *time.Timer
-	readDeadlineExceeded  bool
-	writeDeadlineExceeded bool
+	readTimer             *time.Timer // timer for read operations
+	writeTimer            *time.Timer // timer for write operations
+	readDeadlineExceeded  bool        // true when readTimer fires
+	writeDeadlineExceeded bool        // true when writeTimer fires
 }
 
 func newStream(id uint32, session *Session) *stream {
@@ -88,7 +89,7 @@ func (s *stream) HandleFrame(fr frame) {
 		s.session.logger.Printf("stream %d received DAT frame: %v", s.id, fr)
 		s.PushAndBroadcast(fr.payload)
 	case msgFIN:
-		s.session.logger.Printf("remote stream %d closed connection")
+		s.session.logger.Printf("remote stream %d closed connection", s.id)
 		s.setRemoteClosed()
 	}
 }

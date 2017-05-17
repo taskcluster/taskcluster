@@ -18,7 +18,7 @@ var (
 	// ErrReadTimeout if the read operation on a stream times out
 	ErrReadTimeout = fmt.Errorf("wsmux: read operation timed out")
 
-	// ErrBufferFull is returns if the read buffer is full and a session attempts to load
+	// ErrNoCapacity is returns if the read buffer is full and a session attempts to load
 	// more data into the buffer
 	ErrNoCapacity = fmt.Errorf("buffer does not have capacity to accomodate extra data")
 
