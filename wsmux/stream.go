@@ -1,6 +1,7 @@
 package wsmux
 
 import (
+	"encoding/binary"
 	"io"
 	"net"
 	"sync"
@@ -11,7 +12,13 @@ const (
 	DefaultCapacity = 1024
 )
 
-// stream states
+/*Stream States:
+created = stream has been created. Buffer is empty. Has not been accepted.
+accepted = stream has been accepted. read write operations permitted.
+closed = stream has been closed.
+remoteClosed = remote side has been closed.
+dead = closed & remoteClosed. Buffer may still have data.
+*/
 type streamState int
 
 const (
@@ -67,7 +74,23 @@ func newStream(id uint32, session *Session) *stream {
 
 // HandleFrame processes frames received by the stream
 func (s *stream) HandleFrame(fr frame) {
-
+	switch fr.msg {
+	case msgACK:
+		// if not accepted then close accepted channel, otherwise unblock
+		read := binary.LittleEndian.Uint32(fr.payload)
+		select {
+		case <-s.accepted:
+			s.UnblockAndBroadcast(read)
+		default:
+			s.AcceptStream(read)
+		}
+	case msgDAT:
+		s.session.logger.Printf("stream %d received DAT frame: %v", s.id, fr)
+		s.PushAndBroadcast(fr.payload)
+	case msgFIN:
+		s.session.logger.Printf("remote stream %d closed connection")
+		s.setRemoteClosed()
+	}
 }
 
 // onExpired is an internal helper method which sets val = true and broadcasts
@@ -175,10 +198,9 @@ func (s *stream) setRemoteClosed() {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
-	switch s.state {
-	case closed:
+	if s.state == closed {
 		s.state = dead
-	default:
+	} else {
 		s.state = remoteClosed
 	}
 }
@@ -221,7 +243,7 @@ func (s *stream) Read(buf []byte) (int, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
-	s.session.logger.Printf("stread %d: read requested", s.id)
+	s.session.logger.Printf("stream %d: read requested", s.id)
 
 	for s.b.Len() == 0 && s.endErr == nil {
 		// return EOF if remoteClosed (remoteClosed + deadOnEmpty + dead)

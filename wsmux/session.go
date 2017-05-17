@@ -1,8 +1,6 @@
 package wsmux
 
 import (
-	"bytes"
-	"encoding/binary"
 	"net"
 	"sync"
 	"time"
@@ -231,74 +229,31 @@ func (s *Session) recvLoop() {
 
 		id, msgType := h.id(), h.msg()
 
-		switch msgType {
-		//Used for creating a new stream
-		case msgSYN:
-			s.mu.Lock()
-			if _, ok := s.streams[id]; ok {
-				s.logger.Printf("received duplicate syn frame for stream %d", id)
+		s.mu.Lock()
+		str := s.streams[id]
+		s.mu.Unlock()
+
+		if msgType == msgSYN {
+			if str != nil {
+				s.logger.Printf("dropped duplicate SYN frame for id %d", id)
+			} else {
+				s.mu.Lock()
+				str := newStream(id, s)
+				str.AcceptStream(DefaultCapacity)
+				s.streams[id] = str
+				if err := s.send(newAckFrame(id, uint32(DefaultCapacity))); err != nil {
+					s.logger.Print(err)
+					s.abort(err)
+					return
+				}
+				s.asyncPushStream(str)
 				s.mu.Unlock()
-				break
 			}
-
-			str := newStream(id, s)
-			// no point in locking here
-			str.AcceptStream(DefaultCapacity)
-
-			s.streams[id] = str
-			if err := s.send(newAckFrame(id, uint32(DefaultCapacity))); err != nil {
-				s.logger.Printf("error accepting stream %d", id)
-				_ = s.Close()
-				return
-			}
-			s.asyncPushStream(str)
-			s.mu.Unlock()
-
-		//received data
-		case msgDAT:
-			s.mu.Lock()
-			str, ok := s.streams[id]
-			s.mu.Unlock()
-			if !ok {
-				s.logger.Printf("received data frame for unknown stream %d", id)
-				break
-			}
-			str.PushAndBroadcast(msg)
-			s.logger.Printf("received DAT frame on stream %d: %v", id, bytes.NewBuffer(msg))
-
-		//received ack frame
-		case msgACK:
-			s.mu.Lock()
-			str, ok := s.streams[id]
-			s.mu.Unlock()
-			if !ok {
-				s.logger.Printf("received ack frame for unknown stream %d", id)
-				break
-			}
-
-			read := binary.LittleEndian.Uint32(msg)
-			select {
-			case <-str.accepted:
-				s.logger.Printf("received ack frame: id %d: remote read %d bytes", id, read)
-				str.UnblockAndBroadcast(read)
-			default:
-				// close str.accepted to accept stream
-				s.logger.Printf("accepting stream")
-				str.AcceptStream(read)
-				break
-			}
-
-		// received fin frame
-		case msgFIN:
-			s.mu.Lock()
-			str, ok := s.streams[id]
-			s.mu.Unlock()
-			if !ok {
-				s.logger.Printf("received fin frame for unknown stream %d", id)
-				break
-			}
-
-			str.setRemoteClosed()
+			continue
+		}
+		if str != nil {
+			fr := frame{id: id, msg: msgType, payload: msg}
+			str.HandleFrame(fr)
 		}
 
 	}
