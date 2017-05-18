@@ -163,3 +163,7 @@ func chooseTaskDirName() string {
 
 func unsetAutoLogon() {
 }
+
+func deleteTaskDirs() {
+	removeTaskDirs(config.TasksDir)
+}

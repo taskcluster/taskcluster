@@ -619,11 +619,7 @@ func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
 }
 
 func defaultTasksDir() string {
-	// all user directories are peers of the current USERPROFILE env var
-	// return filepath.Dir(os.Getenv("USERPROFILE"))
-	// but not if running as a service under LocalSystem account!!!!
-	// hardcode for now instead
-	return `C:\Users`
+	return win32.ProfilesDirectory()
 }
 
 func AutoLogonUser() string {
@@ -654,4 +650,9 @@ func unsetAutoLogon() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func deleteTaskDirs() {
+	removeTaskDirs(win32.ProfilesDirectory())
+	removeTaskDirs(config.TasksDir)
 }

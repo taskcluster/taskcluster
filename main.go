@@ -1041,15 +1041,6 @@ func PrepareTaskEnvironment() {
 	log.Printf("Created dir: %v", logDir)
 }
 
-func deleteTaskDirs() {
-	// TODO: need to find a cleaner, less-hardcoded way to do this
-	removeTaskDirs("C:\\Users")
-	removeTaskDirs("C:\\Documents and Settings")
-
-	// this is ok
-	removeTaskDirs(config.TasksDir)
-}
-
 func removeTaskDirs(parentDir string) {
 	activeTaskUser := AutoLogonUser()
 	taskDirsParent, err := os.Open(parentDir)
