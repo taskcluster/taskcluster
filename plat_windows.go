@@ -97,6 +97,11 @@ func deleteTaskDir(path string) error {
 
 func prepareTaskUser(userName string) {
 	if userName == AutoLogonUser() {
+		// make sure user has completed logon before doing anything else
+		// timeout of 1 minute should be plenty - note, this function will
+		// return as soon as user has logged in *and* user profile directory
+		// has been created - the timeout just sets an upper cap
+		win32.InteractiveUserToken(1 * time.Minute)
 		return
 	}
 	// create user
