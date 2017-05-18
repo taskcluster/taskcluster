@@ -1033,6 +1033,10 @@ func PrepareTaskEnvironment() {
 		userName := taskDirName
 		prepareTaskUser(userName)
 	}
+	err = os.MkdirAll(taskContext.TaskDir, 0777)
+	if err != nil {
+		panic(err)
+	}
 	logDir := filepath.Join(taskContext.TaskDir, "public", "logs")
 	err := os.MkdirAll(logDir, 0777)
 	if err != nil {
