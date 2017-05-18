@@ -243,12 +243,13 @@ func (s *stream) Close() error {
 func (s *stream) Read(buf []byte) (int, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
+	defer s.c.Broadcast()
 
 	s.session.logger.Printf("stream %d: read requested", s.id)
 
 	for s.b.Len() == 0 && s.endErr == nil && !s.readDeadlineExceeded && s.state != remoteClosed && s.state != dead {
-
 		s.session.logger.Printf("stream %d: read waiting", s.id)
+		// wait
 		s.c.Wait()
 	}
 
@@ -280,6 +281,7 @@ func (s *stream) Write(buf []byte) (int, error) {
 
 	s.m.Lock()
 	defer s.m.Unlock()
+	defer s.c.Broadcast()
 
 	l, w := len(buf), 0
 	for w < l {

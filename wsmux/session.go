@@ -13,11 +13,10 @@ TODO: Add ping and pong handlers
 */
 
 const (
-	defaultQueueSize            = 20
-	defaultStreamQueueSize      = 20
-	defaultKeepAliveInterval    = 30 * time.Second
-	defaultStreamAcceptDeadline = 30 * time.Second
-	deadCheckDuration           = 30 * time.Second
+	defaultStreamQueueSize      = 20               // size of the accept stream
+	defaultKeepAliveInterval    = 30 * time.Second // keep alive interval
+	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
+	deadCheckDuration           = 30 * time.Second // check for dead streams every 30 seconds
 )
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
@@ -187,6 +186,7 @@ func (s *Session) Close() error {
 		_ = v.Close()
 	}
 	s.streams = nil
+	s.acceptErr = ErrSessionClosed
 
 	close(s.closed)
 	return err
