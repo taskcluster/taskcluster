@@ -292,8 +292,12 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
 		err = mount.Mount()
+		// An error is returned if it is a task problem, such as an invalid url
+		// to download content, or a downloaded archive cannot be extracted.
+		// If the problem is internal (e.g. can't mount a writable cache) then
+		// this is handled by a panic.
 		if err != nil {
-			panic(err)
+			return Failure(err)
 		}
 	}
 	return nil
@@ -363,15 +367,15 @@ func (w *WritableDirectoryCache) Mount() error {
 		parentDir := filepath.Dir(target)
 		err := os.MkdirAll(parentDir, 0777)
 		if err != nil {
-			return fmt.Errorf("Not able to create directory %v with permissions 0777: %v", parentDir, err)
+			panic(fmt.Errorf("Not able to create directory %v with permissions 0777: %v", parentDir, err))
 		}
 		err = RenameCrossDevice(src, target)
 		if err != nil {
-			return fmt.Errorf("Not able to rename dir %v as %v: %v", src, target, err)
+			panic(fmt.Errorf("Not able to rename dir %v as %v: %v", src, target, err))
 		}
 		err = makeDirReadable(filepath.Join(taskContext.TaskDir, w.Directory))
 		if err != nil {
-			return fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err)
+			panic(fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err))
 		}
 		return nil
 	}
@@ -400,7 +404,7 @@ func (w *WritableDirectoryCache) Mount() error {
 	// no preloaded content => just create dir in place
 	err := os.MkdirAll(filepath.Join(taskContext.TaskDir, w.Directory), 0777)
 	if err != nil {
-		return fmt.Errorf("Not able to create dir: %v", err)
+		panic(fmt.Errorf("Not able to create dir: %v", err))
 	}
 	return nil
 }
@@ -444,6 +448,8 @@ func (f *FileMount) Mount() error {
 	file := filepath.Join(taskContext.TaskDir, f.File)
 	parentDir := filepath.Dir(file)
 	err = os.MkdirAll(parentDir, 0777)
+	// this could be a user error, if someone supplies an invalid path, so let's not
+	// panic, but make this a task failure
 	if err != nil {
 		return err
 	}
@@ -452,7 +458,7 @@ func (f *FileMount) Mount() error {
 	// the user could change the rights and then modify it.
 	err = copyFileContents(cacheFile, file)
 	if err != nil {
-		return fmt.Errorf("Could not copy file %v to %v due to:\n%v", cacheFile, file, err)
+		panic(fmt.Errorf("Could not copy file %v to %v due to:\n%v", cacheFile, file, err))
 	}
 	return nil
 }
