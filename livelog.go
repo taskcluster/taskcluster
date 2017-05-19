@@ -35,8 +35,9 @@ type LiveLogTask struct {
 	// The canonical name of the log file as reported to the Queue, which
 	// is typically the relative location of the log file to the user home
 	// directory
-	liveLog *livelog.LiveLog
-	task    *TaskRun
+	liveLog   *livelog.LiveLog
+	task      *TaskRun
+	logWriter io.Writer
 }
 
 func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
@@ -58,7 +59,9 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 		return nil
 	}
 	l.liveLog = liveLog
-	l.task.logWriter = io.MultiWriter(liveLog.LogWriter, l.task.logWriter)
+	// store current writer so it can be reinstated later when stopping livelog
+	l.logWriter = l.task.logWriter
+	l.task.logWriter = io.MultiWriter(liveLog.LogWriter, l.logWriter)
 	setCommandLogWriters(l.task.Commands, l.task.logWriter)
 
 	err = l.uploadLiveLog()
@@ -73,6 +76,8 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 	if l.liveLog == nil {
 		return nil
 	}
+	// reinstate direct log
+	l.task.logWriter = l.logWriter
 	errClose := l.liveLog.LogWriter.Close()
 	if errClose != nil {
 		// no need to raise an exception
