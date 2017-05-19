@@ -266,3 +266,49 @@ func Test32BitOverflow(t *testing.T) {
 		t.Fatalf("Some kind of int overflow problem: requiredFreeSpace is %v but expected it to be 10737418240", requiredFreeSpace)
 	}
 }
+
+func TestCorruptZipDoesntCrashWorker(t *testing.T) {
+	setup(t)
+	mounts := []MountEntry{
+		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
+		&ReadOnlyDirectory{
+			Directory: filepath.Join("."),
+			Content: Content(`{
+				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"artifact": "SampleArtifacts/_/X.txt"
+			}`),
+			Format: "zip",
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask()
+	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
+
+	taskID, myQueue := submitTask(t, td, payload)
+	RunWorker()
+
+	// check task failed
+	tsr, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatalf("Problem querying status of task %v: %v", taskID, err)
+	}
+	if tsr.Status.State != "failed" || tsr.Status.Runs[0].ReasonResolved != "failed" {
+		t.Fatalf("Task %v did not complete as intended - it resolved as %v/%v but should have resolved as failed/failed", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
+	}
+
+	// check log mentions both missing scopes
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
+	if err != nil {
+		t.Fatalf("Error when trying to read log file: %v", err)
+	}
+	logtext := string(bytes)
+	if !strings.Contains(logtext, "zip: not a valid zip file") {
+		t.Fatalf("Was expecting log file to contain a zip error message, but it instead contains:\n%v", logtext)
+	}
+}
