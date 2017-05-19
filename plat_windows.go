@@ -452,7 +452,10 @@ func deployStartup(user *runtime.OSUser, configFile string, exePath string) erro
 		return err
 	}
 
-	batScriptFilePath := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
+	return CreateRunGenericWorkerBatScript(filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat"))
+}
+
+func CreateRunGenericWorkerBatScript(batScriptFilePath string) error {
 	batScriptContents := []byte(strings.Join([]string{
 		`:: run the generic worker`,
 		``,
@@ -461,7 +464,7 @@ func deployStartup(user *runtime.OSUser, configFile string, exePath string) erro
 		``,
 		`.\generic-worker.exe run --configure-for-aws > .\generic-worker.log 2>&1`,
 	}, "\r\n"))
-	err = ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
+	err := ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
 	if err != nil {
 		return fmt.Errorf("Was not able to create file %q with access permissions 0755 due to %s", batScriptFilePath, err)
 	}
@@ -496,11 +499,11 @@ func SetAutoLogin(user *runtime.OSUser) error {
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
 func deployService(user *runtime.OSUser, configFile, nssm, serviceName, exePath, dir string) error {
+	targetScript := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
 	return runtime.RunCommands(
 		false,
-		[]string{nssm, "install", serviceName, exePath},
+		[]string{nssm, "install", serviceName, targetScript},
 		[]string{nssm, "set", serviceName, "AppDirectory", dir},
-		[]string{nssm, "set", serviceName, "AppParameters", "--config", configFile, "--configure-for-aws", "run"},
 		[]string{nssm, "set", serviceName, "DisplayName", serviceName},
 		[]string{nssm, "set", serviceName, "Description", "A taskcluster worker that runs on all mainstream platforms"},
 		[]string{nssm, "set", serviceName, "Start", "SERVICE_AUTO_START"},
@@ -518,8 +521,8 @@ func deployService(user *runtime.OSUser, configFile, nssm, serviceName, exePath,
 		[]string{nssm, "set", serviceName, "AppThrottle", "1500"},
 		[]string{nssm, "set", serviceName, "AppExit", "Default", "Exit"},
 		[]string{nssm, "set", serviceName, "AppRestartDelay", "0"},
-		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(dir, "generic-worker.log")},
-		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(dir, "generic-worker.log")},
+		[]string{nssm, "set", serviceName, "AppStdout", filepath.Join(dir, "generic-worker-service.log")},
+		[]string{nssm, "set", serviceName, "AppStderr", filepath.Join(dir, "generic-worker-service.log")},
 		[]string{nssm, "set", serviceName, "AppStdoutCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppStderrCreationDisposition", "4"},
 		[]string{nssm, "set", serviceName, "AppRotateFiles", "1"},
