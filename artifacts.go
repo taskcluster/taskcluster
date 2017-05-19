@@ -146,6 +146,7 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 		return
 	}
 	// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
+	// with .7z added (useful for NSS)
 	SKIP_COMPRESS_EXTENSIONS := map[string]bool{
 		// Images
 		".jpg":  true,
@@ -154,6 +155,7 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 		".gif":  true,
 		".webp": true,
 		// Compressed files
+		".7z":  true,
 		".zip": true,
 		".gz":  true,
 		".tgz": true,
