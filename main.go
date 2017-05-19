@@ -821,6 +821,7 @@ func (task *TaskRun) logHeader() {
 	}
 	task.Log("Worker Type (" + config.WorkerType + ") settings:")
 	task.Log("  " + string(jsonBytes))
+	task.Log("Task ID: " + task.TaskID)
 	task.Log("=== Task Starting ===")
 }
 
@@ -877,6 +878,8 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		task.closeLog(logHandle)
 		err.add(task.uploadLog("public/logs/live_backing.log"))
 	}()
+
+	task.logHeader()
 
 	err.add(task.validatePayload())
 	if err.Occurred() {
@@ -946,8 +949,6 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			}
 		}
 	}()
-
-	task.logHeader()
 
 	t := task.setMaxRunTimer()
 	defer func() {
