@@ -168,8 +168,6 @@ func Unzip(b []byte, dest string) error {
 }
 
 func (c *Config) updateConfigWithAmazonSettings() error {
-	c.ShutdownMachineOnInternalError = true
-	c.ShutdownMachineOnIdle = true
 	userData, err := queryUserData()
 	if err != nil {
 		return err
@@ -246,29 +244,30 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	return nil
 }
 
-func shutdownIfNewDeploymentID() {
+func deploymentIDUpdated() bool {
 	log.Print("Checking if there is a new deploymentId...")
 	wtr, err := Provisioner.WorkerType(config.WorkerType)
 	if err != nil {
 		// can't reach provisioner - let's assume the best, and just return
 		log.Printf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)
-		return
+		return false
 	}
 	secrets := new(Secrets)
 	err = json.Unmarshal(wtr.Secrets, secrets)
 	if err != nil {
 		log.Printf("**** Can't unmarshal worker type secrets - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
-		return
+		return false
 	}
 	c := new(Config)
 	err = json.Unmarshal(secrets.GenericWorker.Config, c)
 	if err != nil {
 		log.Printf("**** Can't unmarshal config - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
-		return
+		return false
 	}
-	if c.DeploymentID != config.DeploymentID {
-		cause := fmt.Sprintf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
-		immediateShutdown(cause)
+	if c.DeploymentID == config.DeploymentID {
+		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, c.DeploymentID)
+		return false
 	}
-	log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, c.DeploymentID)
+	log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
+	return true
 }

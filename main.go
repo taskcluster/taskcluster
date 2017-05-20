@@ -203,18 +203,6 @@ and reports back results to the queue.
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
                                             be used in production! [default: false]
-          shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
-                                            error (such as not being able to write to a
-                                            required file) it will shutdown the host
-                                            computer. Note this is generally only desired
-                                            for machines running in production, such as on AWS
-                                            EC2 spot instances. Use with caution!
-                                            [default: false]
-          shutdownMachineOnIdle             If true, when the worker is deemed to have been
-                                            idle for enough time (see idleTimeoutSecs) the
-                                            worker will issue an OS shutdown command. If false,
-                                            the worker process will simply terminate, but the
-                                            machine will not be shut down. [default: false]
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
@@ -274,8 +262,9 @@ func main() {
 			log.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		RunWorker()
-		log.Print("Exiting worker")
+		exitCode := RunWorker()
+		log.Printf("Exiting worker with exit code %v", exitCode)
+		os.Exit(int(exitCode))
 	case arguments["install"]:
 		// platform specific...
 		err := install(arguments)
@@ -323,8 +312,6 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		RequiredDiskSpaceMegabytes:     10240,
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          false,
-		ShutdownMachineOnInternalError: false,
-		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
 		TasksDir:                       defaultTasksDir(),
 		WorkerGroup:                    "test-worker-group",
@@ -396,7 +383,17 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	return c, nil
 }
 
-func RunWorker() {
+type ExitCode int
+
+const (
+	TASKS_COMPLETE           ExitCode = 0
+	REBOOT_REQUIRED          ExitCode = 67
+	IDLE_TIMEOUT             ExitCode = 68
+	INTERNAL_ERROR           ExitCode = 69
+	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
+)
+
+func RunWorker() (exitCode ExitCode) {
 	log.Printf("Detected %s platform", runtime.GOOS)
 	err := taskCleanup()
 	// any errors are fatal
@@ -413,9 +410,9 @@ func RunWorker() {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Print(string(debug.Stack()))
-			cause := fmt.Sprintf("%v", r)
 			log.Print(" *********** PANIC occurred! *********** ")
-			exitOrShutdown(config.ShutdownMachineOnInternalError, cause, 64)
+			log.Printf("%v", r)
+			exitCode = INTERNAL_ERROR
 		}
 	}()
 	// Queue is the object we will use for accessing queue api
@@ -440,14 +437,19 @@ func RunWorker() {
 	lastQueriedProvisioner := time.Time{}
 	lastReportedNoTasks := time.Now()
 	tasksResolved := uint(0)
-	PrepareTaskEnvironment()
+	reboot := PrepareTaskEnvironment()
+	if reboot {
+		return REBOOT_REQUIRED
+	}
 	for {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
 		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
 			lastQueriedProvisioner = time.Now()
-			shutdownIfNewDeploymentID()
+			if deploymentIDUpdated() {
+				return NONCURRENT_DEPLOYMENT_ID
+			}
 		}
 		// make sure at least 5 seconds passes between iterations
 		wait5Seconds := time.NewTimer(time.Second * 5)
@@ -467,14 +469,16 @@ func RunWorker() {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if configureForAws {
-					shutdownIfNewDeploymentID()
+				if configureForAws && deploymentIDUpdated() {
+					return NONCURRENT_DEPLOYMENT_ID
 				}
-				break
 			}
 			lastActive = time.Now()
 			unsetAutoLogon()
-			PrepareTaskEnvironment()
+			reboot := PrepareTaskEnvironment()
+			if reboot {
+				return REBOOT_REQUIRED
+			}
 		} else {
 			idleTime := time.Now().Sub(lastActive)
 			remainingIdleTimeText := ""
@@ -482,8 +486,9 @@ func RunWorker() {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
 					taskCleanup()
-					exitOrShutdown(config.ShutdownMachineOnIdle, fmt.Sprintf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime), 0)
-					break
+					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
+					exitCode = IDLE_TIMEOUT
+					return
 				}
 			}
 			// let's not be over-verbose in logs - has cost implications
@@ -1021,7 +1026,7 @@ func convertNilToEmptyString(val interface{}) string {
 	return val.(string)
 }
 
-func PrepareTaskEnvironment() {
+func PrepareTaskEnvironment() (reboot bool) {
 	taskDirName := chooseTaskDirName()
 	taskContext = &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
@@ -1032,7 +1037,10 @@ func PrepareTaskEnvironment() {
 		// as current user, we don't want a task_* subdirectory, we want to run
 		// from same directory every time. Also important for tests.
 		userName := taskDirName
-		prepareTaskUser(userName)
+		reboot := prepareTaskUser(userName)
+		if reboot {
+			return true
+		}
 	}
 	err := os.MkdirAll(taskContext.TaskDir, 0777)
 	if err != nil {
@@ -1044,6 +1052,7 @@ func PrepareTaskEnvironment() {
 		panic(err)
 	}
 	log.Printf("Created dir: %v", logDir)
+	return false
 }
 
 func removeTaskDirs(parentDir string) {
@@ -1071,17 +1080,4 @@ func removeTaskDirs(parentDir string) {
 			}
 		}
 	}
-}
-
-func exitOrShutdown(shutdown bool, cause string, exitCode int) {
-	if shutdown {
-		log.Println("Exiting worker and shutting down computer...")
-		log.Println(cause)
-		immediateShutdown(cause)
-		return
-	}
-	log.Println("Exiting worker (but not shutting down computer)...")
-	log.Println(cause)
-	// don't os.Exit(0) here because that will prevent subsequent tests from
-	// running and will not cause a test failure
 }

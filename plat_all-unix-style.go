@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -27,17 +26,6 @@ type OSUser struct {
 type TaskContext struct {
 	TaskDir string
 	User    *OSUser
-}
-
-func immediateShutdown(cause string) {
-	log.Println("Immediate shutdown being issued...")
-	log.Println(cause)
-	cmd := exec.Command("shutdown", "now", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(64)
 }
 
 // we put this in init() instead of startup() as we want tests to be able to change
@@ -132,7 +120,8 @@ func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func prepareTaskUser(username string) {
+func prepareTaskUser(username string) bool {
+	return false
 }
 
 func deleteTaskDir(path string) error {

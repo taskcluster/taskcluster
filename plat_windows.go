@@ -29,27 +29,6 @@ type TaskContext struct {
 	DesktopSession *process.DesktopSession
 }
 
-func immediateReboot() {
-	log.Println("Immediate reboot being issued...")
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/r", "/t", "3", "/c", "generic-worker requested reboot")
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(0)
-}
-
-func immediateShutdown(cause string) {
-	log.Println("Immediate shutdown being issued...")
-	log.Println(cause)
-	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "3", "/c", cause)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(64)
-}
-
 func exceptionOrFailure(errCommand error) *CommandExecutionError {
 	switch errCommand.(type) {
 	case *exec.ExitError:
@@ -95,14 +74,14 @@ func deleteTaskDir(path string) error {
 	return err
 }
 
-func prepareTaskUser(userName string) {
+func prepareTaskUser(userName string) (reboot bool) {
 	if userName == AutoLogonUser() {
 		// make sure user has completed logon before doing anything else
 		// timeout of 1 minute should be plenty - note, this function will
 		// return as soon as user has logged in *and* user profile directory
 		// has been created - the timeout just sets an upper cap
 		win32.InteractiveUserToken(1 * time.Minute)
-		return
+		return false
 	}
 	// create user
 	user := &runtime.OSUser{
@@ -149,7 +128,8 @@ func prepareTaskUser(userName string) {
 	if err != nil {
 		panic(err)
 	}
-	immediateReboot()
+	log.Print("Exiting worker so it can reboot...")
+	return true
 }
 
 // Uses [A-Za-z0-9] characters (default set) to avoid strange escaping problems
@@ -463,6 +443,24 @@ func CreateRunGenericWorkerBatScript(batScriptFilePath string) error {
 		`pushd %~dp0`,
 		``,
 		`.\generic-worker.exe run --configure-for-aws > .\generic-worker.log 2>&1`,
+		``,
+		`:: Possible exit codes:`,
+		`::    0: all tasks completed - only occurs when running a limited number of tasks`,
+		`::   67: reboot required`,
+		`::   68: idle timeout`,
+		`::   69: internal error`,
+		`::   70: deployment ID changed`,
+		``,
+		`if %errorlevel% equ 67 goto reboot`,
+		``,
+		`:: in all other cases, just shut down`,
+		`shutdown /s /t 0 /f /c "Killing worker, as generic worker had exit code %errorlevel%"`,
+		`goto end`,
+		``,
+		`:reboot`,
+		`shutdown /r /t 0 /f /c "Rebooting as generic worker ran successfully"`,
+		``,
+		`:end`,
 	}, "\r\n"))
 	err := ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
 	if err != nil {
