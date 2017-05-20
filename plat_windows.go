@@ -500,6 +500,10 @@ func SetAutoLogin(user *runtime.OSUser) error {
 // service already exists, it is simply updated.
 func deployService(user *runtime.OSUser, configFile, nssm, serviceName, exePath, dir string) error {
 	targetScript := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
+	err := CreateRunGenericWorkerBatScript(targetScript)
+	if err != nil {
+		return err
+	}
 	return runtime.RunCommands(
 		false,
 		[]string{nssm, "install", serviceName, targetScript},
