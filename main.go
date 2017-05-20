@@ -48,7 +48,7 @@ var (
 		&MountsFeature{},
 	}
 
-	version = "9.1.1"
+	version = "9.1.2"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
