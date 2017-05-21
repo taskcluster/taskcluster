@@ -144,17 +144,17 @@ class QueueService {
 
   _putMessage(queue, message, {visibility, ttl}) {
     var text = new Buffer(JSON.stringify(message)).toString('base64');
-    return this.client.putMessage(queue, text, {
+    return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
       visibilityTimeout:    visibility,
       messageTTL:           ttl,
-    });
+    }));
   }
 
   async _getMessages(queue, {visibility, count}) {
-    var messages = await this.client.getMessages(queue, {
+    var messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
       visibilityTimeout:    visibility,
       numberOfMessages:     count,
-    });
+    }));
     return messages.map(msg => {
       return {
         payload:  JSON.parse(new Buffer(msg.messageText, 'base64')),
