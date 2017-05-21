@@ -168,9 +168,9 @@ class WorkClaimer extends events.EventEmitter {
       claims = await Promise.all(hints.map(async(hint) => {
         try {
           // Try to claim task from hint
-          let result = await this.claimTask(
+          let result = await this._monitor.timer('claimTask', this.claimTask(
             hint.taskId, hint.runId, workerGroup, workerId, null, hint.hintId,
-          );
+          ));
           // Remove hint, if successfully used (don't block)
           hint.remove().catch(err => {
             this._monitor.reportError(err, 'warning', {
