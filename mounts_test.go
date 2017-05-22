@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -269,18 +268,6 @@ func Test32BitOverflow(t *testing.T) {
 }
 
 func TestCorruptZipDoesntCrashWorker(t *testing.T) {
-	// TODO
-	// TODO
-	// TODO
-	// TODO
-	// TODO  FIND OUT WHY THIS ISN'T WORKING ON LINUX
-	// TODO
-	// TODO
-	// TODO
-	// TODO
-	if runtime.GOOS == "linux" {
-		t.Skip()
-	}
 	setup(t)
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
@@ -315,7 +302,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 		t.Fatalf("Task %v did not complete as intended - it resolved as %v/%v but should have resolved as failed/failed", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
 	}
 
-	// check log mentions both missing scopes
+	// check log mentions zip file is invalid
 	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
