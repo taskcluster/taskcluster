@@ -466,30 +466,20 @@ func deployStartup(user *runtime.OSUser, configFile string, exePath string) erro
 
 func CreateRunGenericWorkerBatScript(batScriptFilePath string) error {
 	batScriptContents := []byte(strings.Join([]string{
-		`:: run the generic worker`,
+		`:: Run generic-worker`,
 		``,
-		`:: cd to folder containing this script`,
+		`:: step inside folder containing this script`,
 		`pushd %~dp0`,
 		``,
 		`.\generic-worker.exe run --configure-for-aws > .\generic-worker.log 2>&1`,
 		``,
 		`:: Possible exit codes:`,
-		`::    0: all tasks completed - only occurs when running a limited number of tasks`,
-		`::   67: reboot required`,
-		`::   68: idle timeout`,
-		`::   69: internal error`,
-		`::   70: deployment ID changed`,
+		`::    0: all tasks completed   - only occurs when numberOfTasksToRun > 0`,
+		`::   67: rebooting             - system reboot has been triggered`,
+		`::   68: idle timeout          - system shutdown has been triggered if shutdownMachineOnIdle=true`,
+		`::   69: internal error        - system shutdown has been triggered if shutdownMachineOnInternalError=true`,
+		`::   70: deployment ID changed - system shutdown has been triggered`,
 		``,
-		`if %errorlevel% equ 67 goto reboot`,
-		``,
-		`:: in all other cases, just shut down`,
-		`shutdown /s /t 0 /f /c "Killing worker, as generic worker had exit code %errorlevel%"`,
-		`goto end`,
-		``,
-		`:reboot`,
-		`shutdown /r /t 0 /f /c "Rebooting as generic worker ran successfully"`,
-		``,
-		`:end`,
 	}, "\r\n"))
 	err := ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
 	if err != nil {
