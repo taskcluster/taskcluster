@@ -165,15 +165,11 @@ func NewDesktopSession(username, password string) (loginInfo *subprocess.LoginIn
 	return
 }
 
-func NewCommand(commandLine string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {
+func NewCommand(loginInfo *subprocess.LoginInfo, commandLine string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {
 	if deadline.IsZero() {
 		log.Print("No deadline!")
 	} else {
 		log.Printf("Deadline: %v", deadline)
-	}
-	hToken, err := win32.InteractiveUserToken(time.Minute)
-	if err != nil {
-		return nil, err
 	}
 	command := &Command{
 		Subprocess: &subprocess.Subprocess{
@@ -201,9 +197,7 @@ func NewCommand(commandLine string, workingDirectory *string, env *[]string, dea
 			Options: &subprocess.PlatformOptions{
 				Desktop: "",
 			},
-			Login: &subprocess.LoginInfo{
-				HUser: hToken,
-			},
+			Login: loginInfo,
 		},
 		Deadline: deadline,
 	}

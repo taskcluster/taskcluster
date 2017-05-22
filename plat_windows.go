@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/ntr"
+	"github.com/taskcluster/runlib/subprocess"
 	"github.com/taskcluster/runlib/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
@@ -170,7 +171,16 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	command, err := process.NewCommand(wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline)
+	loginInfo := &subprocess.LoginInfo{}
+	if !config.RunTasksAsCurrentUser {
+		hToken, err := win32.InteractiveUserToken(time.Minute)
+		if err != nil {
+			task.Log("Cannot get handle of interactive user")
+			return err
+		}
+		loginInfo.HUser = hToken
+	}
+	command, err := process.NewCommand(loginInfo, wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline)
 	if err != nil {
 		return err
 	}
