@@ -28,14 +28,14 @@ var (
 	// downloaded from. The map values are the paths of the downloaded files
 	// relative to the downloads directory specified in the global config file
 	// on the worker.
-	fileCaches CacheMap = CacheMap{}
+	fileCaches CacheMap
 	// writable directory caches that may be preloaded or initially empty. Note
 	// a preloaded cache will have an associated file cache for the archive it
 	// was created from. The key is the cache name.
-	directoryCaches CacheMap = CacheMap{}
+	directoryCaches CacheMap
 	// service to call to see if any caches need to be purged. See
 	// https://docs.taskcluster.net/reference/core/purge-cache
-	pc *purgecache.PurgeCache = purgecache.New(&tcclient.Credentials{})
+	pc *purgecache.PurgeCache
 	// we track this in order to reduce number of results we get back from
 	// purge cache service
 	lastQueriedPurgeCacheService time.Time
@@ -106,6 +106,10 @@ func (feature *MountsFeature) Initialise() error {
 	if err != nil {
 		return fmt.Errorf("Could not empty downloads dir %v when initialising mounts feature - error: %v", config.DownloadsDir, err)
 	}
+	// TODO: should persist state between runs, e.g. since we reboot between tasks on windows
+	fileCaches = CacheMap{}
+	directoryCaches = CacheMap{}
+	pc = purgecache.New(&tcclient.Credentials{})
 	return nil
 }
 
