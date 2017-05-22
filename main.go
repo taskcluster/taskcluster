@@ -472,6 +472,7 @@ func RunWorker() (exitCode ExitCode) {
 				if configureForAws && deploymentIDUpdated() {
 					return NONCURRENT_DEPLOYMENT_ID
 				}
+				return TASKS_COMPLETE
 			}
 			lastActive = time.Now()
 			unsetAutoLogon()
@@ -487,8 +488,7 @@ func RunWorker() (exitCode ExitCode) {
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
 					taskCleanup()
 					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
-					exitCode = IDLE_TIMEOUT
-					return
+					return IDLE_TIMEOUT
 				}
 			}
 			// let's not be over-verbose in logs - has cost implications
