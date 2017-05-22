@@ -168,6 +168,10 @@ func Unzip(b []byte, dest string) error {
 }
 
 func (c *Config) updateConfigWithAmazonSettings() error {
+	// these are just default values, will be overwritten if set in worker type config
+	c.ShutdownMachineOnInternalError = true
+	c.ShutdownMachineOnIdle = true
+
 	userData, err := queryUserData()
 	if err != nil {
 		return err

@@ -203,6 +203,18 @@ and reports back results to the queue.
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
                                             be used in production! [default: false]
+          shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
+                                            error (such as not being able to write to a
+                                            required file) it will shutdown the host
+                                            computer. Note this is generally only desired
+                                            for machines running in production, such as on AWS
+                                            EC2 spot instances. Use with caution!
+                                            [default: false]
+          shutdownMachineOnIdle             If true, when the worker is deemed to have been
+                                            idle for enough time (see idleTimeoutSecs) the
+                                            worker will issue an OS shutdown command. If false,
+                                            the worker process will simply terminate, but the
+                                            machine will not be shut down. [default: false]
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
@@ -237,6 +249,16 @@ and reports back results to the queue.
 `
 )
 
+type ExitCode int
+
+const (
+	TASKS_COMPLETE           ExitCode = 0
+	REBOOT_REQUIRED          ExitCode = 67
+	IDLE_TIMEOUT             ExitCode = 68
+	INTERNAL_ERROR           ExitCode = 69
+	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
+)
+
 // Entry point into the generic worker...
 func main() {
 	arguments, err := docopt.Parse(usage, nil, true, "generic-worker "+version, false, true)
@@ -264,6 +286,20 @@ func main() {
 		}
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
+		switch exitCode {
+		case REBOOT_REQUIRED:
+			immediateReboot()
+		case IDLE_TIMEOUT:
+			if config.ShutdownMachineOnIdle {
+				immediateShutdown("generic-worker idle timeout")
+			}
+		case INTERNAL_ERROR:
+			if config.ShutdownMachineOnInternalError {
+				immediateShutdown("generic-worker internal error")
+			}
+		case NONCURRENT_DEPLOYMENT_ID:
+			immediateShutdown("generic-worker deploymentId is not latest")
+		}
 		os.Exit(int(exitCode))
 	case arguments["install"]:
 		// platform specific...
@@ -312,6 +348,8 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		RequiredDiskSpaceMegabytes:     10240,
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          false,
+		ShutdownMachineOnInternalError: false,
+		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
 		TasksDir:                       defaultTasksDir(),
 		WorkerGroup:                    "test-worker-group",
@@ -382,16 +420,6 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	// all required config set!
 	return c, nil
 }
-
-type ExitCode int
-
-const (
-	TASKS_COMPLETE           ExitCode = 0
-	REBOOT_REQUIRED          ExitCode = 67
-	IDLE_TIMEOUT             ExitCode = 68
-	INTERNAL_ERROR           ExitCode = 69
-	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
-)
 
 func RunWorker() (exitCode ExitCode) {
 	log.Printf("Detected %s platform", runtime.GOOS)

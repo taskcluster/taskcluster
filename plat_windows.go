@@ -30,6 +30,25 @@ type TaskContext struct {
 	DesktopSession *process.DesktopSession
 }
 
+func immediateReboot() {
+	log.Println("Immediate reboot being issued...")
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/r", "/t", "3", "/c", "generic-worker requested reboot")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func immediateShutdown(cause string) {
+	log.Println("Immediate shutdown being issued...")
+	log.Println(cause)
+	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/s", "/t", "3", "/c", cause)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func exceptionOrFailure(errCommand error) *CommandExecutionError {
 	switch errCommand.(type) {
 	case *exec.ExitError:
