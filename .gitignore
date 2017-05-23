@@ -41,5 +41,7 @@ coverage.report
 /target/
 worker_type_definitions
 
-# Files created by generic-worker when run for the first time
+# Files created by generic-worker
 generic-worker.config
+directory-caches.json
+file-caches.json
