@@ -1068,9 +1068,9 @@ func PrepareTaskEnvironment() (reboot bool) {
 	// as current user, we don't want a task_* subdirectory, we want to run
 	// from same directory every time. Also important for tests.
 	userName := taskDirName
-	reboot := prepareTaskUser(userName)
+	reboot = prepareTaskUser(userName)
 	if reboot {
-		return true
+		return
 	}
 	err := os.MkdirAll(taskContext.TaskDir, 0777)
 	if err != nil {
@@ -1082,7 +1082,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 		panic(err)
 	}
 	log.Printf("Created dir: %v", logDir)
-	return false
+	return
 }
 
 func removeTaskDirs(parentDir string) {
