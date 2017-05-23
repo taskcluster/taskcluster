@@ -338,7 +338,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 	td := testTask()
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 	status, err := myQueue.Status(taskID)
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
@@ -387,7 +387,7 @@ func TestUpload(t *testing.T) {
 	td := testTask()
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 
 	// some required substrings - not all, just a selection
 	expectedArtifacts := map[string]struct {

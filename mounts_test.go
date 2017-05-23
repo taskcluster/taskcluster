@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -119,7 +120,7 @@ func TestMounts(t *testing.T) {
 	}
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 
 	// check task succeeded
 	tsr, err := myQueue.Status(taskID)
@@ -197,7 +198,7 @@ func TestMissingScopes(t *testing.T) {
 	// don't set any scopes
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 
 	// check task had exception/malformed-payload
 	tsr, err := myQueue.Status(taskID)
@@ -226,7 +227,6 @@ func TestCachesCanBeModified(t *testing.T) {
 	// be `1`. The next task will overwrite this file with the number `2`. The
 	// third task will overwrite the file with the number `3`. Then we check
 	// the file `counter` has the number `3` as its contents.
-	config.NumberOfTasksToRun = 3
 
 	mounts := []MountEntry{
 		&WritableDirectoryCache{
@@ -241,20 +241,38 @@ func TestCachesCanBeModified(t *testing.T) {
 		MaxRunTime: 20,
 	}
 
-	for i := 0; i < 3; i++ {
+	submit := func() {
 		td := testTask()
 		td.Scopes = []string{"generic-worker:cache:test-modifications"}
 		submitTask(t, td, payload)
 	}
-	RunUntilTasksComplete()
 
-	counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
-	bytes, err := ioutil.ReadFile(counterFile)
-	if err != nil {
-		t.Fatalf("Error when trying to read cache file: %v", err)
+	getCounter := func() int {
+		counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
+		bytes, err := ioutil.ReadFile(counterFile)
+		if err != nil {
+			t.Fatalf("Error when trying to read cache file: %v", err)
+		}
+		val, err := strconv.Atoi(string(bytes))
+		if err != nil {
+			t.Fatalf("Error reading int value from counter file")
+		}
+		return val
 	}
-	if string(bytes) != "3" {
-		t.Fatalf("Was expecting file %v to have content %q but had %q", counterFile, "3", string(bytes))
+
+	config.NumberOfTasksToRun = 1
+	submit()
+	RunUntilTasksComplete(t)
+	startCounter := getCounter()
+
+	config.NumberOfTasksToRun = 2
+	submit()
+	submit()
+	RunUntilTasksComplete(t)
+	endCounter := getCounter()
+
+	if endCounter != startCounter+2 {
+		t.Fatalf("Was expecting counter to have value %v but had %v", startCounter+2, endCounter)
 	}
 }
 
@@ -291,7 +309,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 
 	// check task failed
 	tsr, err := myQueue.Status(taskID)

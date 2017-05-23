@@ -1062,7 +1062,7 @@ func loadFromJSONFile(obj interface{}, filename string) (err error) {
 		return
 	}
 	defer func() {
-		err2 = f.Close()
+		err2 := f.Close()
 		if err == nil {
 			err = err2
 		}

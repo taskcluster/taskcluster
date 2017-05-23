@@ -49,7 +49,7 @@ func TestAppDataNotShared(t *testing.T) {
 	taskID2, _ := submitTask(t, td2, payload2)
 
 	config.NumberOfTasksToRun = 2
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 
 	// make sure both tasks resolved successfully
 	for _, taskID := range []string{taskID1, taskID2} {
@@ -91,7 +91,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	td := testTask()
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete()
+	RunUntilTasksComplete(t)
 
 	// make sure task resolved successfully
 	tsr, err := myQueue.Status(taskID)

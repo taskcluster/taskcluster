@@ -55,16 +55,18 @@ func (cm CacheMap) SortedResources() Resources {
 }
 
 type Cache struct {
-	Created time.Time
+	Created time.Time `json:"created"`
 	// the full path to the cache on disk (could be file or directory)
-	Location string
+	Location string `json:"location"`
 	// the number of times this cache has been included in a MountEntry on a
 	// task run on this worker
-	Hits int
+	Hits int `json:"hits"`
 	// The map that tracks the cache, needed for expunging the cache
-	Owner CacheMap
+	// Don't store in json, otherwise we'll have circular structure and create
+	// an infinite file!
+	Owner CacheMap `json:"-"`
 	// The key used in the CacheMap
-	Key string
+	Key string `json:"key"`
 	// the size of the file in bytes (cached for performance, as it is
 	// immutable file)
 	// Size int64
@@ -99,33 +101,38 @@ func (feature *MountsFeature) Name() string {
 }
 
 func (feature *MountsFeature) PersistState() (err error) {
-	err = writeToFileAsJSON(fileCaches, "file-caches.json")
+	err = writeToFileAsJSON(&fileCaches, "file-caches.json")
 	if err != nil {
 		return
 	}
-	err = writeToFileAsJSON(directoryCaches, "directory-caches.json")
+	err = writeToFileAsJSON(&directoryCaches, "directory-caches.json")
+	return
+}
+
+func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) (err error) {
+	_, err = os.Stat(stateFile)
+	if err != nil {
+		log.Printf("No %v file found, creating empty CacheMap", stateFile)
+		*cm = CacheMap{}
+		err = os.MkdirAll(cacheDir, 0777)
+		if err != nil {
+			return
+		}
+	} else {
+		err = loadFromJSONFile(cm, stateFile)
+		if err != nil {
+			return
+		}
+		for i, _ := range *cm {
+			(*cm)[i].Owner = *cm
+		}
+	}
 	return
 }
 
 func (feature *MountsFeature) Initialise() error {
-	_, err := os.Stat("file-caches.json")
-	if err != nil {
-		fileCaches = CacheMap{}
-	} else {
-		err := loadFromJSONFile(&fileCaches, "file-caches.json")
-		if err != nil {
-			return err
-		}
-	}
-	_, err := os.Stat("directory-caches.json")
-	if err != nil {
-		directoryCaches = CacheMap{}
-	} else {
-		err := loadFromJSONFile(&directoryCaches, "directory-caches.json")
-		if err != nil {
-			return err
-		}
-	}
+	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
+	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
 	// TODO: delete empty cache dirs and downloads that are not in list
 
 	// err := ensureEmptyDir(config.CachesDir)
