@@ -171,6 +171,15 @@ and reports back results to the queue.
                                             different to the worker's current deploymentId, the
                                             worker will shut itself down. See
                                             https://bugzil.la/1298010
+          disableReboots                    If true, no system reboot will be initiated by
+                                            generic-worker program, but it will still return
+                                            with exit code 67 if the system needs rebooting.
+                                            This allows custom logic to be executed before
+                                            rebooting, by patching run-generic-worker.bat
+                                            script to check for exit code 67, perform steps
+                                            (such as formatting a hard drive) and then
+                                            rebooting in the run-generic-worker.bat script.
+                                            [default: false]
           downloadsDir                      The location where resources are downloaded for
                                             populating preloaded caches and readonly mounts.
                                             [default: C:\generic-worker\downloads]
@@ -290,7 +299,9 @@ func main() {
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
-			immediateReboot()
+			if !config.DisableReboots {
+				immediateReboot()
+			}
 		case IDLE_TIMEOUT:
 			if config.ShutdownMachineOnIdle {
 				immediateShutdown("generic-worker idle timeout")
@@ -339,6 +350,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		CachesDir:                      "C:\\generic-worker\\caches",
 		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
+		DisableReboots:                 false,
 		DownloadsDir:                   "C:\\generic-worker\\downloads",
 		IdleTimeoutSecs:                0,
 		LiveLogExecutable:              "livelog",
