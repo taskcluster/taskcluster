@@ -5,6 +5,7 @@ import "github.com/taskcluster/taskcluster-base-go/scopes"
 type (
 	Feature interface {
 		Initialise() error
+		PersistState() error
 		IsEnabled(fl EnabledFeatures) bool
 		NewTaskFeature(task *TaskRun) TaskFeature
 		Name() string

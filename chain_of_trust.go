@@ -50,6 +50,10 @@ func (feature *ChainOfTrustFeature) Name() string {
 	return "Chain of Trust"
 }
 
+func (feature *ChainOfTrustFeature) PersistState() error {
+	return nil
+}
+
 func (feature *ChainOfTrustFeature) Initialise() error {
 	return nil
 }

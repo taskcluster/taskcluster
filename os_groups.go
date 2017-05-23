@@ -19,6 +19,10 @@ func (feature *OSGroupsFeature) Initialise() error {
 	return nil
 }
 
+func (feature *OSGroupsFeature) PersistState() error {
+	return nil
+}
+
 func (feature *OSGroupsFeature) IsEnabled(fl EnabledFeatures) bool {
 	// always enabled, since scopes protect usage at a group level
 	return true

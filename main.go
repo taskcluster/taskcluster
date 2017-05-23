@@ -270,6 +270,16 @@ const (
 	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
 )
 
+func persistFeaturesState() (err error) {
+	for _, feature := range Features {
+		err := feature.PersistState()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func initialiseFeatures() (err error) {
 	for _, feature := range Features {
 		err := feature.Initialise()
@@ -454,8 +464,6 @@ func RunWorker() (exitCode ExitCode) {
 		panic(err)
 	}
 
-	initialiseFeatures()
-
 	defer func() {
 		if r := recover(); r != nil {
 			log.Print(string(debug.Stack()))
@@ -479,6 +487,18 @@ func RunWorker() (exitCode ExitCode) {
 			Certificate: config.Certificate,
 		},
 	)
+
+	err = initialiseFeatures()
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err := persistFeaturesState()
+		if err != nil {
+			log.Printf("Could not persist features: %v", err)
+			exitCode = INTERNAL_ERROR
+		}
+	}()
 
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
@@ -1035,12 +1055,34 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	return
 }
 
+func loadFromJSONFile(obj interface{}, filename string) (err error) {
+	var f *os.File
+	f, err = os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err2 = f.Close()
+		if err == nil {
+			err = err2
+		}
+	}()
+	d := json.NewDecoder(f)
+	err = d.Decode(obj)
+	if err == nil {
+		log.Printf("Loaded file %v into object:\n%#v\n", filename, obj)
+	} else {
+		log.Printf("Could not load file %v into object %T - is it json?", filename, obj)
+	}
+	return
+}
+
 func writeToFileAsJSON(obj interface{}, filename string) error {
 	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
 		return err
 	}
-	log.Printf("Saving generic worker config in file %v with content:\n%v\n", filename, string(jsonBytes))
+	log.Printf("Saving file %v with content:\n%v\n", filename, string(jsonBytes))
 	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
 }
 

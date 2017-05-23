@@ -27,6 +27,10 @@ func (feature *LiveLogFeature) Initialise() error {
 	return nil
 }
 
+func (feature *LiveLogFeature) PersistState() error {
+	return nil
+}
+
 // livelog is always enabled
 func (feature *LiveLogFeature) IsEnabled(fl EnabledFeatures) bool {
 	return true

@@ -97,18 +97,45 @@ type MountsFeature struct {
 func (feature *MountsFeature) Name() string {
 	return "Mounts/Caches"
 }
+
+func (feature *MountsFeature) PersistState() (err error) {
+	err = writeToFileAsJSON(fileCaches, "file-caches.json")
+	if err != nil {
+		return
+	}
+	err = writeToFileAsJSON(directoryCaches, "directory-caches.json")
+	return
+}
+
 func (feature *MountsFeature) Initialise() error {
-	err := ensureEmptyDir(config.CachesDir)
+	_, err := os.Stat("file-caches.json")
 	if err != nil {
-		return fmt.Errorf("Could not empty caches dir %v when initialising mounts feature - error: %v", config.CachesDir, err)
+		fileCaches = CacheMap{}
+	} else {
+		err := loadFromJSONFile(&fileCaches, "file-caches.json")
+		if err != nil {
+			return err
+		}
 	}
-	err = ensureEmptyDir(config.DownloadsDir)
+	_, err := os.Stat("directory-caches.json")
 	if err != nil {
-		return fmt.Errorf("Could not empty downloads dir %v when initialising mounts feature - error: %v", config.DownloadsDir, err)
+		directoryCaches = CacheMap{}
+	} else {
+		err := loadFromJSONFile(&directoryCaches, "directory-caches.json")
+		if err != nil {
+			return err
+		}
 	}
-	// TODO: should persist state between runs, e.g. since we reboot between tasks on windows
-	fileCaches = CacheMap{}
-	directoryCaches = CacheMap{}
+	// TODO: delete empty cache dirs and downloads that are not in list
+
+	// err := ensureEmptyDir(config.CachesDir)
+	// if err != nil {
+	// 	return fmt.Errorf("Could not empty caches dir %v when initialising mounts feature - error: %v", config.CachesDir, err)
+	// }
+	// err = ensureEmptyDir(config.DownloadsDir)
+	// if err != nil {
+	// 	return fmt.Errorf("Could not empty downloads dir %v when initialising mounts feature - error: %v", config.DownloadsDir, err)
+	// }
 	pc = purgecache.New(&tcclient.Credentials{})
 	return nil
 }
