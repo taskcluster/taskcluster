@@ -69,10 +69,24 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	setup(t)
 
 	payload := GenericWorkerPayload{
+		// run several bash commands, as running one is horribly slow, but
+		// let's make sure if you run a lot of them, they are not all slow -
+		// hopefully just the first one is the problem
 		Command: []string{
 			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
+			`c:\mozilla-build\msys\bin\bash.exe -c "echo hello"`,
 		},
-		MaxRunTime: 10,
+		MaxRunTime: 120,
 	}
 	td := testTask()
 
