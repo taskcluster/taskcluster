@@ -172,7 +172,7 @@ class AsyncBaseClient(BaseClient):
                     elif status == 500:
                         message = "Internal Server Error"
                     else:
-                        message = "Unknown Server Error %s\n%s" % (str(status), data)
+                        message = "Unknown Server Error %s\n%s" % (str(status), str(data)[:1024])
                 # Raise TaskclusterAuthFailure if this is an auth issue
                 if status == 401:
                     raise exceptions.TaskclusterAuthFailure(
