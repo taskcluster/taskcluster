@@ -270,6 +270,16 @@ const (
 	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
 )
 
+func initialiseFeatures() (err error) {
+	for _, feature := range Features {
+		err := feature.Initialise()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Entry point into the generic worker...
 func main() {
 	arguments, err := docopt.Parse(usage, nil, true, "generic-worker "+version, false, true)
@@ -295,7 +305,13 @@ func main() {
 			log.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		exitCode := RunWorker()
+		var exitCode ExitCode
+		err := initialiseFeatures()
+		if err != nil {
+			exitCode = INTERNAL_ERROR
+		} else {
+			exitCode = RunWorker()
+		}
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
@@ -442,11 +458,6 @@ func RunWorker() (exitCode ExitCode) {
 	if err != nil {
 		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
-	}
-
-	// initialise features
-	for _, feature := range Features {
-		feature.Initialise()
 	}
 
 	defer func() {

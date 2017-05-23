@@ -37,6 +37,10 @@ func setup(t *testing.T) {
 	}
 	testdataDir = filepath.Join(cwd, "testdata")
 	tasksResolved = 0
+	err = initialiseFeatures()
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 
 	// configure the worker
 	config = &Config{
