@@ -75,8 +75,11 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
-	RunUntilTasksComplete()
+	exitCode := RunWorker()
 	end := time.Now()
+	if exitCode != IDLE_TIMEOUT {
+		t.Fatalf("Was expecting exit code %v, but got exit code %v", IDLE_TIMEOUT, exitCode)
+	}
 	if secsAlive := end.Sub(start).Seconds(); secsAlive < 7 {
 		t.Fatalf("Worker died early - lasted for %v seconds", secsAlive)
 	}
