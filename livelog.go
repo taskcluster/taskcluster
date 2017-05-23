@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/url"
+	"os"
 	"strconv"
 	"time"
 
@@ -35,9 +36,9 @@ type LiveLogTask struct {
 	// The canonical name of the log file as reported to the Queue, which
 	// is typically the relative location of the log file to the user home
 	// directory
-	liveLog   *livelog.LiveLog
-	task      *TaskRun
-	logWriter io.Writer
+	liveLog        *livelog.LiveLog
+	task           *TaskRun
+	backingLogFile *os.File
 }
 
 func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
@@ -60,8 +61,26 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 	}
 	l.liveLog = liveLog
 	// store current writer so it can be reinstated later when stopping livelog
-	l.logWriter = l.task.logWriter
-	l.task.logWriter = io.MultiWriter(liveLog.LogWriter, l.logWriter)
+	l.backingLogFile = l.task.logWriter.(*os.File)
+	// write logs written so far to livelog
+	// first rewind to beginning of backing log...
+	_, err = l.backingLogFile.Seek(0, 0)
+	if err != nil {
+		log.Printf("Could not seek to start of backing log file: %s", err)
+		// then run without livelog, is only a "best effort" service
+		return nil
+	}
+	// now copy from backing log into livelog
+	_, err = io.Copy(liveLog.LogWriter, l.backingLogFile)
+	if err != nil {
+		log.Printf("Could not copy from backing log to livelog: %s", err)
+		// then run without livelog, is only a "best effort" service
+		return nil
+	}
+	// from now on, all output should go to both the backing log and the livelog...
+	l.task.logWriter = io.MultiWriter(liveLog.LogWriter, l.backingLogFile)
+
+	// make sure task also logs to the new multiwriter
 	setCommandLogWriters(l.task.Commands, l.task.logWriter)
 
 	err = l.uploadLiveLog()
@@ -77,7 +96,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 		return nil
 	}
 	// reinstate direct log
-	l.task.logWriter = l.logWriter
+	l.task.logWriter = l.backingLogFile
 	errClose := l.liveLog.LogWriter.Close()
 	if errClose != nil {
 		// no need to raise an exception

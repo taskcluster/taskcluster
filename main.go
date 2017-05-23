@@ -837,7 +837,7 @@ func (task *TaskRun) kill() {
 	}
 }
 
-func (task *TaskRun) createLogFile() io.WriteCloser {
+func (task *TaskRun) createLogFile() *os.File {
 	absLogFile := filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log")
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
