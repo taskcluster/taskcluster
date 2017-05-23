@@ -39,7 +39,7 @@ script:
   - "export GOARCH=${MY_GOARCH}"
   - "test $(git status --porcelain | wc -l) == 0"
   - "go get -v -t ./..."
-  - "if test $GOOS.$GOARCH = linux.amd64; then GORACE=history_size=7 ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report -race -timeout 1h ./... && go tool cover -func=coverage.report; fi"
+  - "if test $GOOS.$GOARCH = linux.amd64; then GORACE=history_size=7 travis_wait 30 ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report -race -timeout 1h ./... && go tool cover -func=coverage.report; fi"
   - "test $GOOS.$GOARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 
 after_script:
