@@ -305,13 +305,7 @@ func main() {
 			log.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		var exitCode ExitCode
-		err := initialiseFeatures()
-		if err != nil {
-			exitCode = INTERNAL_ERROR
-		} else {
-			exitCode = RunWorker()
-		}
+		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
@@ -459,6 +453,8 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
 	}
+
+	initialiseFeatures()
 
 	defer func() {
 		if r := recover(); r != nil {
