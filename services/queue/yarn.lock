@@ -2526,9 +2526,9 @@ pruddy-error@1.0.x:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pruddy-error/-/pruddy-error-1.0.2.tgz#b37ec1a38bf9107c0cdc5bc663d3d4e80354ae80"
 
-pulse-publisher@^1.1.4:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-1.3.0.tgz#4ced00a581e6072066f698ce2f2acde7e240d137"
+pulse-publisher@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-1.3.1.tgz#3e896ae3107944245b2f05951ef0221e0eb6a051"
   dependencies:
     ajv "^4.8.2"
     amqplib "^0.5.1"
