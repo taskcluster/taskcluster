@@ -35,6 +35,8 @@ var (
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext *TaskContext = &TaskContext{}
+	// number of tasks resolved in this session
+	tasksResolved uint
 	// Queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue       *queue.Queue
@@ -464,7 +466,6 @@ func RunWorker() (exitCode ExitCode) {
 	// use zero value, to be sure that a check is made before first task runs
 	lastQueriedProvisioner := time.Time{}
 	lastReportedNoTasks := time.Now()
-	tasksResolved := uint(0)
 	reboot := PrepareTaskEnvironment()
 	if reboot {
 		return REBOOT_REQUIRED

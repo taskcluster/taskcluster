@@ -18,7 +18,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 	}
 	td := testTask()
 	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	RunUntilTasksComplete()
 
 	tsr, err := myQueue.Status(taskID)
 	if err != nil {
@@ -37,7 +37,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	td := testTask()
 	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	RunUntilTasksComplete()
 
 	tsr, err := myQueue.Status(taskID)
 	if err != nil {
@@ -75,7 +75,7 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
-	RunWorker()
+	RunUntilTasksComplete()
 	end := time.Now()
 	if secsAlive := end.Sub(start).Seconds(); secsAlive < 7 {
 		t.Fatalf("Worker died early - lasted for %v seconds", secsAlive)

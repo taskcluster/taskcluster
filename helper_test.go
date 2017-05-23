@@ -36,6 +36,7 @@ func setup(t *testing.T) {
 		t.Fatalf("Test failed during setup phase!")
 	}
 	testdataDir = filepath.Join(cwd, "testdata")
+	tasksResolved = 0
 
 	// configure the worker
 	config = &Config{
@@ -199,5 +200,10 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 	}
 	if actualSHA256Hex := hex.EncodeToString(hasher.Sum(nil)); actualSHA256Hex != sha256Hex {
 		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
+	}
+}
+
+func RunUntilTasksComplete() {
+	for RunWorker() != TASKS_COMPLETE {
 	}
 }
