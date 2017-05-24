@@ -58,42 +58,16 @@ func echoConn(t *testing.T, conn *websocket.Conn) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for {
-		b := make([]byte, 2048)
-		size, err := stream.Read(b)
-		if err != nil {
-			t.Fatal(err)
-		}
-		b = b[:size]
-		_, err = stream.Write(b)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func echoLargeConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{Log: genLogger("echo-large-server-test")})
-	stream, err := session.Accept()
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, stream)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	final := make([]byte, 0)
-	for {
-		catch := make([]byte, 100)
-		size, err := stream.Read(catch)
-		if err != nil && err != io.EOF {
-			t.Fatal(err)
-		}
-		catch = catch[:size]
-		final = append(final, catch...)
-		if err == io.EOF {
-			break
-		}
+	_, err = io.Copy(stream, buf)
+	if err != nil {
+		t.Fatal(err)
 	}
-	session.logger.Printf("test: received all bytes")
-	_, err = stream.Write(final)
+	err = stream.Close()
 	if err != nil {
 		t.Fatal(err)
 	}

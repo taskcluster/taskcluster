@@ -32,6 +32,10 @@ func TestEcho(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = stream.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
 	_, err = stream.Read(buf)
 	if err != nil && err != io.EOF {
 		t.Fatal(err)
@@ -42,7 +46,7 @@ func TestEcho(t *testing.T) {
 }
 
 func TestEchoLarge(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, echoLargeConn), ":9999")
+	server := genServer(genWebSocketHandler(t, echoConn), ":9999")
 	go func() {
 		_ = server.ListenAndServe()
 	}()
@@ -57,29 +61,25 @@ func TestEchoLarge(t *testing.T) {
 	for i := 0; i < 1500; i++ {
 		buf = append(buf, byte(i%127))
 	}
-	final := make([]byte, 0)
 
 	session := Client(conn, Config{Log: genLogger("echo-large-test")})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
-	written, err := stream.Write(buf)
+	_, err = stream.Write(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = stream.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
-	read := 0
-	for read != written {
-		catch := make([]byte, 100)
-		size, err := stream.Read(catch)
-		if err != io.EOF && err != nil {
-			t.Fatal(err)
-		}
-		catch = catch[:size]
-		final = append(final, catch...)
-		read += size
+	final := new(bytes.Buffer)
+	_, err = io.Copy(final, stream)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	if !bytes.Equal(buf, final) {
+	if !bytes.Equal(buf, final.Bytes()) {
 		t.Fatal("message not consistent")
 	}
 }

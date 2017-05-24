@@ -224,6 +224,8 @@ func (s *stream) Close() error {
 
 	switch s.state {
 	// return nil if already closed
+	case dead:
+		return nil
 	case closed:
 		return nil
 	case remoteClosed:
