@@ -13,8 +13,8 @@ import (
 
 // utils
 var upgrader websocket.Upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  64 * 1024,
+	WriteBufferSize: 64 * 1024,
 }
 
 func genTransferHandler(b *testing.B) http.Handler {
@@ -28,7 +28,7 @@ func genTransferHandler(b *testing.B) http.Handler {
 			b.Fatal(err)
 		}
 
-		server := Server(conn, Config{Log: genLogger("transfer-bench-test")})
+		server := Server(conn, Config{Log: genLogger("transfer-bench-test"), StreamBufferSize: 64 * 1024})
 		hash := sha256.New()
 
 		str, err := server.Accept()
@@ -68,7 +68,7 @@ func BenchmarkTransfer(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	client := Client(conn, Config{Log: genLogger("transfer-client-bench-test")})
+	client := Client(conn, Config{Log: genLogger("transfer-client-bench-test"), StreamBufferSize: 64 * 1024})
 	str, err := client.Open()
 	if err != nil {
 		b.Fatal(err)

@@ -53,7 +53,7 @@ type stream struct {
 func newStream(id uint32, session *Session) *stream {
 	str := &stream{
 		id:        id,
-		b:         newBuffer(DefaultCapacity),
+		b:         newBuffer(session.streamBufferSize),
 		unblocked: 0,
 		state:     created,
 		accepted:  make(chan struct{}),

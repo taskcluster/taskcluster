@@ -43,6 +43,8 @@ type Session struct {
 	closeConn bool // used by Close(). if true then conn is closed. default: true
 
 	remoteCloseCallback func() // callback when remote session is closed. default: nil
+
+	streamBufferSize int // buffer size of each stream
 }
 
 // send a frame over the websocket connection
@@ -74,6 +76,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 		keepAliveInterval:    defaultKeepAliveInterval,
 		streamAcceptDeadline: defaultStreamAcceptDeadline,
 		logger:               &nilLogger{},
+		streamBufferSize:     DefaultCapacity,
 	}
 
 	// streams opened by server are even numbered
@@ -90,6 +93,10 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	}
 	if conf.Log != nil {
 		s.logger = conf.Log
+	}
+
+	if conf.StreamBufferSize != 0 {
+		s.streamBufferSize = conf.StreamBufferSize
 	}
 
 	s.conn.SetCloseHandler(s.closeHandler)
@@ -251,9 +258,9 @@ func (s *Session) recvLoop() {
 			} else {
 				s.mu.Lock()
 				str := newStream(id, s)
-				str.AcceptStream(DefaultCapacity)
+				str.AcceptStream(uint32(s.streamBufferSize))
 				s.streams[id] = str
-				if err := s.send(newAckFrame(id, uint32(DefaultCapacity))); err != nil {
+				if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
 					s.logger.Print(err)
 					_ = s.abort(err)
 					return

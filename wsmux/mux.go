@@ -12,6 +12,7 @@ type Config struct {
 	StreamAcceptDeadline time.Duration
 	RemoteCloseCallback  func()
 	Log                  Logger
+	StreamBufferSize     int
 }
 
 // Server (NOTE: set server field to 0 for server connection)
