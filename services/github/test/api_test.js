@@ -201,4 +201,52 @@ suite('api', () => {
     }
     assert.equal(res.body, 'Found. Redirecting to Wonderland');
   });
+
+  test('simple status creation', async function() {
+    await helper.github.createStatus('abc123', 'awesomeRepo', 'master', {
+      state: 'error',
+    });
+
+    let status = github.inst(9090).getStatuses({
+      owner: 'abc123',
+      repo: 'awesomeRepo',
+      sha: 'master',
+    }).pop();
+    assert.equal(status.state, 'error');
+    assert.equal(status.target_url, undefined);
+    assert.equal(status.description, undefined);
+    assert.equal(status.context, 'default');
+  });
+
+  test('advanced status creation', async function() {
+    await helper.github.createStatus('abc123', 'awesomeRepo', 'master', {
+      state: 'failure',
+      target_url: 'http://test.com',
+      description: 'Status title',
+      context: 'customContext',
+    });
+
+    let status = github.inst(9090).getStatuses({
+      owner: 'abc123',
+      repo: 'awesomeRepo',
+      sha: 'master',
+    }).pop();
+    assert.equal(status.state, 'failure');
+    assert.equal(status.target_url, 'http://test.com');
+    assert.equal(status.description, 'Status title');
+    assert.equal(status.context, 'customContext');
+  });
+
+  test('pull request comment', async function() {
+    await helper.github.createComment('abc123', 'awesomeRepo', 1, {
+      body: 'Task failed here',
+    });
+
+    let comment = github.inst(9090).getComments({
+      owner: 'abc123',
+      repo: 'awesomeRepo',
+      number: 1,
+    }).pop();
+    assert.equal(comment.body, 'Task failed here');
+  });
 });
