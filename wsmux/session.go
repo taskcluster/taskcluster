@@ -226,7 +226,7 @@ func (s *Session) Close() error {
 	}
 
 	for _, v := range s.streams {
-		_ = v.Close()
+		v.Kill()
 	}
 	s.streams = nil
 	s.acceptErr = ErrSessionClosed
@@ -334,14 +334,13 @@ func (s *Session) asyncPushStream(str *stream) {
 // abort session when error occurs
 func (s *Session) abort(e error) error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.logger.Print(e)
 	s.acceptErr = e
 
 	if s.IsClosed() {
 		return nil
 	}
-
+	s.mu.Unlock()
 	return s.Close()
 }
 

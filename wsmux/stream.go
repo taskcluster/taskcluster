@@ -319,3 +319,12 @@ func (s *stream) Write(buf []byte) (int, error) {
 
 	return w, nil
 }
+
+// Kill forces the stream into the dead state
+func (s *stream) Kill() {
+	s.m.Lock()
+	defer s.m.Unlock()
+	defer s.c.Broadcast()
+	s.session.logger.Printf("stream %d killed", s.id)
+	s.state = dead
+}
