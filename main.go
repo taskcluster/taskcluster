@@ -47,6 +47,7 @@ var (
 		&ChainOfTrustFeature{},
 		&MountsFeature{},
 	}
+	monitor *Monitor
 
 	version = "10.0.5"
 	usage   = `
@@ -195,6 +196,8 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          project                           The project name used in [sentry](https://sentry.io/welcome/).
+                                            [default: "test-monitor"]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
@@ -203,6 +206,12 @@ and reports back results to the queue.
                                             when each task starts. If it cannot free enough
                                             disk space, the worker will shut itself down.
                                             [default: 10240]
+          runAfterUserCreation              A string, that if non-empty, will be treated as a
+                                            command to be executed as the newly generated task
+                                            user, each time a task user is created. This is a
+                                            way to provide generic user initialisation logic
+                                            that should apply to all generated users (and thus
+                                            all tasks).
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
@@ -236,12 +245,6 @@ and reports back results to the queue.
                                             the worker type will have more information about how
                                             it was set up (for example what has been installed on
                                             the machine).
-          runAfterUserCreation              A string, that if non-empty, will be treated as a
-                                            command to be executed as the newly generated task
-                                            user, each time a task user is created. This is a
-                                            way to provide generic user initialisation logic
-                                            that should apply to all generated users (and thus
-                                            all tasks).
 
     If an optional config setting is not provided in the json configuration file, the
     default will be taken (defaults documented above).
@@ -324,7 +327,21 @@ func main() {
 			log.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		exitCode := RunWorker()
+		monitor = NewMonitor(
+			config.Project,
+			auth.New(&tcclient.Credentials{
+				ClientID:    config.ClientID,
+				AccessToken: config.AccessToken,
+				Certificate: config.Certificate,
+			}),
+			"debug",
+			nil,
+		)
+
+		exitCode := INTERNAL_ERROR
+		incidentID := monitor.CapturePanic(func() {
+			exitCode = doRunWorker()
+		})
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
@@ -337,7 +354,7 @@ func main() {
 			}
 		case INTERNAL_ERROR:
 			if config.ShutdownMachineOnInternalError {
-				immediateShutdown("generic-worker internal error")
+				immediateShutdown("generic-worker internal error, incident ID: " + incidentID)
 			}
 		case NONCURRENT_DEPLOYMENT_ID:
 			immediateShutdown("generic-worker deploymentId is not latest")
@@ -386,6 +403,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogPUTPort:                 60022,
 		LiveLogGETPort:                 60023,
 		NumberOfTasksToRun:             0,
+		Project:                        "test-monitor",
 		ProvisionerID:                  "test-provisioner",
 		RefreshUrlsPrematurelySecs:     310,
 		RequiredDiskSpaceMegabytes:     10240,
@@ -453,6 +471,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
 		{value: c.WorkerID, name: "workerId", disallowed: ""},
 		{value: c.WorkerType, name: "workerType", disallowed: ""},
+		{value: c.Project, name: "project", disallowed: ""},
 	}
 
 	for _, f := range fields {
@@ -492,6 +511,11 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}()
 
+	exitCode = doRunWorker()
+	return
+}
+
+func doRunWorker() (exitCode ExitCode) {
 	log.Printf("Detected %s platform", runtime.GOOS)
 	// number of tasks resolved since worker first ran
 	// stored in a json file, since we may reboot between tasks etc
@@ -509,6 +533,7 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
 	}
+
 	// Queue is the object we will use for accessing queue api
 	Queue = queue.New(
 		&tcclient.Credentials{

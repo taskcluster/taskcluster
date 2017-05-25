@@ -202,6 +202,8 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          project                           The project name used in [sentry](https://sentry.io/welcome/).
+                                            [default: "test-monitor"]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
@@ -210,6 +212,12 @@ and reports back results to the queue.
                                             when each task starts. If it cannot free enough
                                             disk space, the worker will shut itself down.
                                             [default: 10240]
+          runAfterUserCreation              A string, that if non-empty, will be treated as a
+                                            command to be executed as the newly generated task
+                                            user, each time a task user is created. This is a
+                                            way to provide generic user initialisation logic
+                                            that should apply to all generated users (and thus
+                                            all tasks).
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
@@ -243,12 +251,6 @@ and reports back results to the queue.
                                             the worker type will have more information about how
                                             it was set up (for example what has been installed on
                                             the machine).
-          runAfterUserCreation              A string, that if non-empty, will be treated as a
-                                            command to be executed as the newly generated task
-                                            user, each time a task user is created. This is a
-                                            way to provide generic user initialisation logic
-                                            that should apply to all generated users (and thus
-                                            all tasks).
 
     If an optional config setting is not provided in the json configuration file, the
     default will be taken (defaults documented above).
