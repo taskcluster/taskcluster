@@ -1,0 +1,13 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Create comment"
+description: |
+  Write a new comment on a GitHub Issue or Pull Request.
+  Full specification on [GitHub docs](https://developer.github.com/v3/issues/comments/#create-a-comment)
+type:         object
+properties:
+  body:
+    type: string
+    description: The contents of the comment.
+additionalProperties: false
+required:
+  - body 

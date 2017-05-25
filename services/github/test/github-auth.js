@@ -13,6 +13,7 @@ class FakeGithub {
     this.repo_info = {};
     this.repositories = {};
     this.statuses = {};
+    this.comments = {};
 
     const throwError = code => {
       let err = new Error();
@@ -21,7 +22,29 @@ class FakeGithub {
     };
 
     const stubs = {
-      'repos.createStatus': () => {},
+      'repos.createStatus': ({owner, repo, sha, state, target_url, description, context}) => {
+        const key = `${owner}/${repo}@${sha}`;
+        const info = {
+          state,
+          target_url,
+          description,
+          context,
+        };
+        if (!this.statuses[key]) {
+          this.statuses[key] = [];
+        }
+        this.statuses[key].push(info);
+      },
+      'repos.createComment': ({owner, repo, number, body}) => {
+        const key = `${owner}/${repo}@${number}`;
+        const info = {
+          body,
+        };
+        if (!this.comments[key]) {
+          this.comments[key] = [];
+        }
+        this.comments[key].push(info);
+      },
       'repos.createCommitComment': () => {},
       'orgs.checkMembership': async ({org, owner}) => {
         if (this.org_membership[org] && this.org_membership[org].has(owner)) {
@@ -150,6 +173,16 @@ class FakeGithub {
   setStatuses({owner, repo, sha, info}) {
     const key = `${owner}/${repo}@${sha}`;
     this.statuses[key] = info;
+  }
+
+  getStatuses({owner, repo, sha}) {
+    const key = `${owner}/${repo}@${sha}`;
+    return this.statuses[key];
+  }
+
+  getComments({owner, repo, number}) {
+    const key = `${owner}/${repo}@${number}`;
+    return this.comments[key];
   }
 
   hasNextPage() {

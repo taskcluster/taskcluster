@@ -433,3 +433,90 @@ api.declare({
   }
   return res.status(404).send();
 });
+
+api.declare({
+  name: 'createStatus',
+  title: 'Post a status against a given changeset',
+  description: [
+    'For a given changeset (SHA) of a repository, this will attach a "commit status"',
+    'on github. These statuses are links displayed next to each revision.',
+    'The status is either OK (green check) or FAILURE (red cross), ',
+    'made of a custom title and link.',
+  ].join('\n'),
+  stability: 'experimental',
+  method: 'post',
+  // route and input (schema) matches github API
+  // https://developer.github.com/v3/repos/statuses/#create-a-status
+  route: '/repository/:owner/:repo/statuses/:sha',
+  input: 'create-status.json',
+  scopes: [['github:create-status:${owner}/${repo}']],
+}, async function(req, res) {
+  // Extract owner, repo and sha from request into variables
+  let {owner, repo, sha} = req.params;
+  // Extract other attributes from POST attributes
+  let {state, target_url, description, context} = req.body;
+
+  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+
+  if (instGithub) {
+    try {
+      await instGithub.repos.createStatus({
+        owner,
+        repo,
+        sha,
+        state,
+        target_url,
+        description,
+        context: context || 'default',
+      });
+
+      return resolve(res, 200, 'Status created!');
+    } catch (e) {
+      debug(`Error creating status: ${JSON.stringify(e)}`);
+      return res.status(500).send();
+    }
+  }
+
+  return res.status(404).send();
+});
+
+api.declare({
+  name: 'createComment',
+  title: 'Post a comment on a given GitHub Issue or Pull Request',
+  description: [
+    'For a given Issue or Pull Request of a repository, this will write a new message.',
+  ].join('\n'),
+  stability: 'experimental',
+  method: 'post',
+  // route and input (schema) matches github API
+  // https://developer.github.com/v3/issues/comments/#create-a-comment
+  // number is a Issue or Pull request ID. Both share the same IDs set.
+  route: '/repository/:owner/:repo/issues/:number/comments',
+  input: 'create-comment.json',
+  scopes: [['github:create-comment:${owner}/${repo}']],
+}, async function(req, res) {
+  // Extract owner, repo and number from request into variables
+  let {owner, repo, number} = req.params;
+  // Extract body from POST attributes
+  let {body} = req.body;
+
+  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+
+  if (instGithub) {
+    try {
+      await instGithub.repos.createComment({
+        owner,
+        repo,
+        number,
+        body,
+      });
+
+      return resolve(res, 200, 'Comment created!');
+    } catch (e) {
+      debug(`Error creating status: ${JSON.stringify(e)}`);
+      return res.status(500).send();
+    }
+  }
+
+  return res.status(404).send();
+});
