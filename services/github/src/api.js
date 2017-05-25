@@ -449,7 +449,7 @@ api.declare({
   // https://developer.github.com/v3/repos/statuses/#create-a-status
   route: '/repository/:owner/:repo/statuses/:sha',
   input: 'create-status.json',
-  scopes: [['github:create-status:${owner}/${repo}']],
+  scopes: [['github:create-status:<owner>/<repo>']],
 }, async function(req, res) {
   // Extract owner, repo and sha from request into variables
   let {owner, repo, sha} = req.params;
@@ -493,7 +493,7 @@ api.declare({
   // number is a Issue or Pull request ID. Both share the same IDs set.
   route: '/repository/:owner/:repo/issues/:number/comments',
   input: 'create-comment.json',
-  scopes: [['github:create-comment:${owner}/${repo}']],
+  scopes: [['github:create-comment:<owner>/<repo>']],
 }, async function(req, res) {
   // Extract owner, repo and number from request into variables
   let {owner, repo, number} = req.params;
