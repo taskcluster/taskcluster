@@ -127,6 +127,14 @@ api.declare({
   var workerGroup = run.workerGroup;
   var workerId    = run.workerId;
 
+  // It is possible for these to be null if the task was
+  // cancelled or otherwise never claimed
+  if (!workerGroup || !workerId) {
+    return res.reportError('InputError',
+      'Run was not claimed by a worker and so no artifacts can exist',
+      {});
+  }
+
   // Authenticate request by providing parameters
   if (!req.satisfies({
     taskId,
