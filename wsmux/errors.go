@@ -30,4 +30,7 @@ var (
 
 	//ErrInvalidDeadline is returned when the time is before the current time
 	ErrInvalidDeadline = fmt.Errorf("invalid deadline")
+
+	//ErrKeepAliveExpired is returned when the keep alive timer expired
+	ErrKeepAliveExpired = fmt.Errorf("keep alive timer expired")
 )

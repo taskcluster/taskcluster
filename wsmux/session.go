@@ -14,9 +14,10 @@ TODO: Add ping and pong handlers
 
 const (
 	defaultStreamQueueSize      = 20               // size of the accept stream
-	defaultKeepAliveInterval    = 30 * time.Second // keep alive interval
+	defaultKeepAliveInterval    = 10 * time.Second // keep alive interval
 	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
 	deadCheckDuration           = 30 * time.Second // check for dead streams every 30 seconds
+	defaultKeepAliveWait        = 30 * time.Second // ensure KeepAliveWait > keepAliveInterval
 )
 
 // Session implements net.Listener. Allows creating and acception multiplexed streams over ws
@@ -45,6 +46,35 @@ type Session struct {
 	remoteCloseCallback func() // callback when remote session is closed. default: nil
 
 	streamBufferSize int // buffer size of each stream
+
+	keepAliveTimer *time.Timer
+}
+
+// pong handler
+func (s *Session) pongHandler(data string) error {
+	s.keepAliveTimer.Reset(defaultKeepAliveWait)
+	s.logger.Printf("received pong")
+	return nil
+}
+
+//send keepalives
+func (s *Session) sendKeepAlives() {
+	ticker := time.Tick(s.keepAliveInterval)
+	for {
+		s.sendLock.Lock()
+		err := s.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(2*time.Second))
+		if err != nil {
+			s.abort(err)
+			return
+		}
+		s.sendLock.Unlock()
+		s.logger.Printf("wrote ping")
+		select {
+		case <-ticker:
+		case <-s.closed:
+			return
+		}
+	}
 }
 
 // send a frame over the websocket connection
@@ -100,9 +130,15 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	}
 
 	s.conn.SetCloseHandler(s.closeHandler)
+	s.conn.SetPongHandler(s.pongHandler)
+
+	s.keepAliveTimer = time.AfterFunc(s.keepAliveInterval, func() {
+		s.abort(ErrKeepAliveExpired)
+	})
 
 	go s.recvLoop()
 	go s.removeDeadStreams()
+	go s.sendKeepAlives()
 	return s
 }
 
@@ -299,6 +335,7 @@ func (s *Session) asyncPushStream(str *stream) {
 func (s *Session) abort(e error) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.logger.Print(e)
 	s.acceptErr = e
 
 	if s.IsClosed() {
