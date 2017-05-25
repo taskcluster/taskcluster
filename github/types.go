@@ -91,6 +91,51 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 	}
 
+	// Write a new comment on a GitHub Issue or Pull Request.
+	// Full specification on [GitHub docs](https://developer.github.com/v3/issues/comments/#create-a-comment)
+	//
+	// See http://schemas.taskcluster.net/github/v1/create-comment.json#
+	CreateComment1 struct {
+
+		// The contents of the comment.
+		//
+		// See http://schemas.taskcluster.net/github/v1/create-comment.json#/properties/body
+		Body string `json:"body"`
+	}
+
+	// Create a commit status on GitHub.
+	// Full specification on [GitHub docs](https://developer.github.com/v3/repos/statuses/#create-a-status)
+	//
+	// See http://schemas.taskcluster.net/github/v1/create-status.json#
+	CreateStatus1 struct {
+
+		// A string label to differentiate this status from the status of other systems.
+		//
+		// See http://schemas.taskcluster.net/github/v1/create-status.json#/properties/context
+		Context string `json:"context,omitempty"`
+
+		// A short description of the status.
+		//
+		// See http://schemas.taskcluster.net/github/v1/create-status.json#/properties/description
+		Description string `json:"description,omitempty"`
+
+		// The state of the status.
+		//
+		// Possible values:
+		//   * "pending"
+		//   * "success"
+		//   * "error"
+		//   * "failure"
+		//
+		// See http://schemas.taskcluster.net/github/v1/create-status.json#/properties/state
+		State string `json:"state"`
+
+		// The target URL to associate with this status. This URL will be linked from the GitHub UI to allow users to easily see the 'source' of the Status.
+		//
+		// See http://schemas.taskcluster.net/github/v1/create-status.json#/properties/target_url
+		Target_URL string `json:"target_url,omitempty"`
+	}
+
 	// Any Taskcluster-specific Github repository information.
 	//
 	// See http://schemas.taskcluster.net/github/v1/repository.json#

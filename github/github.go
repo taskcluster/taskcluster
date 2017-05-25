@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 25 May 2017 at 19:24:00 UTC. The code was generated
+// Thu, 25 May 2017 at 23:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -152,6 +152,37 @@ func (myGithub *Github) Repository(owner, repo string) (*Repository1, error) {
 func (myGithub *Github) Latest(owner, repo, branch string) error {
 	cd := tcclient.Client(*myGithub)
 	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// For a given changeset (SHA) of a repository, this will attach a "commit status"
+// on github. These statuses are links displayed next to each revision.
+// The status is either OK (green check) or FAILURE (red cross),
+// made of a custom title and link.
+//
+// Required scopes:
+//   * github:create-status:<owner>/<repo>
+//
+// See https://docs.taskcluster.net/reference/core/github/api-docs#createStatus
+func (myGithub *Github) CreateStatus(owner, repo, sha string, payload *CreateStatus1) error {
+	cd := tcclient.Client(*myGithub)
+	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/statuses/"+url.QueryEscape(sha), nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// For a given Issue or Pull Request of a repository, this will write a new message.
+//
+// Required scopes:
+//   * github:create-comment:<owner>/<repo>
+//
+// See https://docs.taskcluster.net/reference/core/github/api-docs#createComment
+func (myGithub *Github) CreateComment(owner, repo, number string, payload *CreateComment1) error {
+	cd := tcclient.Client(*myGithub)
+	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
 	return err
 }
 

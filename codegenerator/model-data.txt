@@ -1,4 +1,4 @@
-Generated: 1495740279
+Generated: 1495754592
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3079,6 +3079,35 @@ branch.
 Note: This is a redirect rather than a direct link.'
 Entry 5     =
     Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/repository/<owner>/<repo>/statuses/<sha>'
+    Entry Args        = '[owner repo sha]'
+    Entry Query        = '[]'
+    Entry Name        = 'createStatus'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[github:create-status:<owner>/<repo>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/github/v1/create-status.json'
+    Entry Output      = ''
+    Entry Title       = 'Post a status against a given changeset'
+    Entry Description = 'For a given changeset (SHA) of a repository, this will attach a "commit status"
+on github. These statuses are links displayed next to each revision.
+The status is either OK (green check) or FAILURE (red cross), 
+made of a custom title and link.'
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/repository/<owner>/<repo>/issues/<number>/comments'
+    Entry Args        = '[owner repo number]'
+    Entry Query        = '[]'
+    Entry Name        = 'createComment'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[github:create-comment:<owner>/<repo>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/github/v1/create-comment.json'
+    Entry Output      = ''
+    Entry Title       = 'Post a comment on a given GitHub Issue or Pull Request'
+    Entry Description = 'For a given Issue or Pull Request of a repository, this will write a new message.'
+Entry 7     =
+    Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
@@ -3211,6 +3240,64 @@ Pattern                = 'Unknown'
 Type HAS NOT BEEN SET!!!
 TypeName               = 'Var1'
 SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]'
+
+
+http://schemas.taskcluster.net/github/v1/create-comment.json#
+=============================================================
+Additional Properties  = 'false'
+Description            = 'Write a new comment on a GitHub Issue or Pull Request.
+Full specification on [GitHub docs](https://developer.github.com/v3/issues/comments/#create-a-comment)
+'
+ID                     = 'http://schemas.taskcluster.net/github/v1/create-comment.json#'
+Properties
+  Property 'body' =
+    Description            = 'The contents of the comment.'
+    Type                   = 'string'
+    TypeName               = 'Body'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-comment.json#/properties/body'
+Required               = '[body]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Create comment'
+Type                   = 'object'
+TypeName               = 'CreateComment1'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-comment.json#'
+
+
+http://schemas.taskcluster.net/github/v1/create-status.json#
+============================================================
+Additional Properties  = 'false'
+Description            = 'Create a commit status on GitHub.
+Full specification on [GitHub docs](https://developer.github.com/v3/repos/statuses/#create-a-status)
+'
+ID                     = 'http://schemas.taskcluster.net/github/v1/create-status.json#'
+Properties
+  Property 'context' =
+    Description            = 'A string label to differentiate this status from the status of other systems.'
+    Type                   = 'string'
+    TypeName               = 'Context'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-status.json#/properties/context'
+  Property 'description' =
+    Description            = 'A short description of the status.'
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-status.json#/properties/description'
+  Property 'state' =
+    Description            = 'The state of the status.'
+    Enum                   = '[pending success error failure]'
+    Type                   = 'string'
+    TypeName               = 'State'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-status.json#/properties/state'
+  Property 'target_url' =
+    Description            = 'The target URL to associate with this status. This URL will be linked from the GitHub UI to allow users to easily see the 'source' of the Status.'
+    Type                   = 'string'
+    TypeName               = 'Target_URL'
+    SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-status.json#/properties/target_url'
+Required               = '[state]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Create status'
+Type                   = 'object'
+TypeName               = 'CreateStatus1'
+SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-status.json#'
 
 
 http://schemas.taskcluster.net/github/v1/repository.json#
