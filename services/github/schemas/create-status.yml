@@ -1,0 +1,23 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:        "Create status"
+description: |
+  Create a commit status on GitHub.
+  Full specification on [GitHub docs](https://developer.github.com/v3/repos/statuses/#create-a-status)
+type:         object
+properties:
+  state:
+    type: string
+    enum: ['pending', 'success', 'error', 'failure']
+    description: The state of the status.
+  target_url:
+    type: string
+    description: The target URL to associate with this status. This URL will be linked from the GitHub UI to allow users to easily see the 'source' of the Status.
+  description:
+    type: string
+    description: A short description of the status.
+  context:
+    type: string
+    description: A string label to differentiate this status from the status of other systems.
+additionalProperties: false
+required:
+  - state
