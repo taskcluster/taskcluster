@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/gorilla/websocket"
@@ -17,64 +18,39 @@ var upgrader websocket.Upgrader = websocket.Upgrader{
 	WriteBufferSize: 64 * 1024,
 }
 
-func genTransferHandler(b *testing.B) http.Handler {
-	tr := func(w http.ResponseWriter, r *http.Request) {
-		if !websocket.IsWebSocketUpgrade(r) {
-			http.NotFound(w, r)
-			return
-		}
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		server := Server(conn, Config{StreamBufferSize: 64 * 1024})
-		hash := sha256.New()
-
-		str, err := server.Accept()
-		if err != nil {
-			b.Fatal(err)
-		}
-		// copy does not report EOF as error
-		_, err = io.Copy(hash, str)
-		if err != nil {
-			b.Fatal(err)
-		}
-		_, err = str.Write(hash.Sum(nil))
-		if err != nil {
-			b.Fatal(err)
-		}
-		err = str.Close()
-		if err != nil {
-			b.Fatal(err)
-		}
+func echoFunc(b *testing.B, server *Session, wg *sync.WaitGroup) {
+	if wg != nil {
+		defer wg.Done()
 	}
-	return http.HandlerFunc(tr)
-}
-
-// test large transfer
-func BenchmarkTransfer(b *testing.B) {
-	server := &http.Server{
-		Addr:    ":9999",
-		Handler: genTransferHandler(b),
-	}
-	defer func() {
-		_ = server.Close()
-	}()
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	hash := sha256.New()
+	str, err := server.Accept()
 	if err != nil {
 		b.Fatal(err)
 	}
-	client := Client(conn, Config{StreamBufferSize: 64 * 1024})
+	// copy does not report EOF as error
+	_, err = io.Copy(hash, str)
+	if err != nil {
+		b.Fatal(err)
+	}
+	_, err = str.Write(hash.Sum(nil))
+	if err != nil {
+		b.Fatal(err)
+	}
+	err = str.Close()
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
+	if wg != nil {
+		defer wg.Done()
+	}
+	hash := sha256.New()
 	str, err := client.Open()
 	if err != nil {
 		b.Fatal(err)
 	}
-
-	hash := sha256.New()
 
 	// write 64MB of data
 	size := 64 * 1024 * 1024
@@ -103,4 +79,66 @@ func BenchmarkTransfer(b *testing.B) {
 	if !bytes.Equal(hash.Sum(nil), buf) {
 		b.Fatalf("bad message")
 	}
+}
+
+func genTransferHandler(b *testing.B) http.Handler {
+	tr := func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			http.NotFound(w, r)
+			return
+		}
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		server := Server(conn, Config{StreamBufferSize: 64 * 1024})
+		echoFunc(b, server, nil)
+
+	}
+	return http.HandlerFunc(tr)
+}
+
+const maxTransferStreams = 100
+
+func genMultiTransferHandler(b *testing.B) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			http.NotFound(w, r)
+			return
+		}
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		server := Server(conn, Config{StreamBufferSize: 64 * 1024})
+
+		wg := new(sync.WaitGroup)
+		for i := 0; i < maxTransferStreams; i++ {
+			wg.Add(1)
+			go echoFunc(b, server, wg)
+		}
+		wg.Wait()
+	})
+}
+
+// test large transfer
+func BenchmarkTransfer(b *testing.B) {
+	server := &http.Server{
+		Addr:    ":9999",
+		Handler: genTransferHandler(b),
+	}
+	defer func() {
+		_ = server.Close()
+	}()
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	if err != nil {
+		b.Fatal(err)
+	}
+	client := Client(conn, Config{StreamBufferSize: 64 * 1024})
+	echoClientFunc(b, client, nil)
 }
