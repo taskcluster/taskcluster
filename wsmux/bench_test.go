@@ -52,8 +52,8 @@ func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
 		b.Fatal(err)
 	}
 
-	// write 64MB of data
-	size := 64 * 1024 * 1024
+	// write 4MB of data
+	size := 4 * 1024 * 1024
 	buf := make([]byte, size)
 	for i := 0; i < size; i++ {
 		buf[i] = byte(i % 127)
@@ -92,7 +92,7 @@ func genTransferHandler(b *testing.B) http.Handler {
 			b.Fatal(err)
 		}
 
-		server := Server(conn, Config{StreamBufferSize: 64 * 1024})
+		server := Server(conn, Config{StreamBufferSize: 4 * 1024})
 		echoFunc(b, server, nil)
 
 	}
@@ -112,7 +112,7 @@ func genMultiTransferHandler(b *testing.B) http.Handler {
 			b.Fatal(err)
 		}
 
-		server := Server(conn, Config{StreamBufferSize: 64 * 1024})
+		server := Server(conn, Config{StreamBufferSize: 4 * 1024})
 
 		wg := new(sync.WaitGroup)
 		for i := 0; i < maxTransferStreams; i++ {
@@ -139,6 +139,31 @@ func BenchmarkTransfer(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	client := Client(conn, Config{StreamBufferSize: 64 * 1024})
+	client := Client(conn, Config{StreamBufferSize: 4 * 1024})
 	echoClientFunc(b, client, nil)
+}
+
+// test transfer over multiple streams
+func BenchmarkMultiTransfer(b *testing.B) {
+	server := &http.Server{
+		Addr:    ":9999",
+		Handler: genMultiTransferHandler(b),
+	}
+	defer func() {
+		_ = server.Close()
+	}()
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:9999", nil)
+	if err != nil {
+		b.Fatal(err)
+	}
+	client := Client(conn, Config{StreamBufferSize: 4 * 1024})
+	wg := new(sync.WaitGroup)
+	for i := 0; i < maxTransferStreams; i++ {
+		wg.Add(1)
+		go echoClientFunc(b, client, wg)
+	}
+	wg.Wait()
 }
