@@ -225,6 +225,13 @@ func (s *Session) Close() error {
 		err = s.conn.Close()
 	}
 
+	// invoke callback
+	defer func() {
+		if s.remoteCloseCallback != nil {
+			s.remoteCloseCallback()
+		}
+	}()
+
 	for _, v := range s.streams {
 		v.Kill()
 	}
@@ -244,14 +251,8 @@ func (s *Session) Addr() net.Addr {
 func (s *Session) closeHandler(code int, text string) error {
 	s.logger.Printf("ws conn closed: code %d : %s", code, text)
 	s.mu.Lock()
-	defer s.mu.Unlock()
-	defer func() {
-		if s.remoteCloseCallback != nil {
-			s.remoteCloseCallback()
-		}
-	}()
-
 	s.closeConn = false
+	s.mu.Unlock()
 	return s.Close()
 }
 
