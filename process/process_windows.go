@@ -195,7 +195,7 @@ func NewCommand(loginInfo *subprocess.LoginInfo, commandLine string, workingDire
 			StdErr:        nil,
 			JoinStdOutErr: true,
 			Options: &subprocess.PlatformOptions{
-				Desktop: "",
+				Desktop: `winsta0\default`,
 			},
 			Login: loginInfo,
 		},
