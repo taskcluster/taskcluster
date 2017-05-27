@@ -14,33 +14,33 @@ const (
 )
 
 /*Stream States:
-created = stream has been created. Buffer is empty. Has not been accepted.
-accepted = stream has been accepted. read write operations permitted.
-closed = stream has been closed.
-remoteClosed = remote side has been closed.
-dead = closed & remoteClosed. Buffer may still have data.
+streamCreated = stream has been streamCreated. Buffer is empty. Has not been streamAccepted.
+streamAccepted = stream has been streamAccepted. read write operations permitted.
+streamClosed = stream has been streamClosed.
+streamRemoteClosed = remote side has been streamClosed.
+streamDead = streamClosed & streamRemoteClosed. Buffer may still have data.
 */
 type streamState int
 
 const (
-	created streamState = iota
-	accepted
-	closed
-	remoteClosed
-	dead
+	streamCreated streamState = iota
+	streamAccepted
+	streamClosed
+	streamRemoteClosed
+	streamDead
 )
 
 type stream struct {
 	id uint32     // id of the stream. Used for logging.
 	m  sync.Mutex // mutex for state transitions
-	c  *sync.Cond // used for broadcasting when closed, data read, or data pushed to buffer
+	c  *sync.Cond // used for broadcasting when streamClosed, data read, or data pushed to buffer
 	b  *buffer    // read buffer
 
 	unblocked uint32 // number of bytes that can be sent to remote
 
 	endErr   error         // error causes stream to close
 	state    streamState   // current state of the stream
-	accepted chan struct{} // closed when stream is accepted. Used in session.Open()
+	accepted chan struct{} // streamClosed when stream is streamAccepted. Used in session.Open()
 
 	session *Session // assosciated session. used for sending frames and logging
 
@@ -55,7 +55,7 @@ func newStream(id uint32, session *Session) *stream {
 		id:        id,
 		b:         newBuffer(session.streamBufferSize),
 		unblocked: 0,
-		state:     created,
+		state:     streamCreated,
 		accepted:  make(chan struct{}),
 
 		endErr: nil,
@@ -77,7 +77,7 @@ func newStream(id uint32, session *Session) *stream {
 func (s *stream) HandleFrame(fr frame) {
 	switch fr.msg {
 	case msgACK:
-		// if not accepted then close accepted channel, otherwise unblock
+		// if not streamAccepted then close streamAccepted channel, otherwise unblock
 		read := binary.LittleEndian.Uint32(fr.payload)
 		select {
 		case <-s.accepted:
@@ -89,7 +89,7 @@ func (s *stream) HandleFrame(fr frame) {
 		s.session.logger.Printf("stream %d received DAT frame: %v", s.id, fr)
 		s.PushAndBroadcast(fr.payload)
 	case msgFIN:
-		s.session.logger.Printf("remote stream %d closed connection", s.id)
+		s.session.logger.Printf("remote stream %d streamClosed connection", s.id)
 		s.setRemoteClosed()
 	}
 }
@@ -114,7 +114,7 @@ func (s *stream) SetReadDeadline(t time.Time) error {
 		_ = s.readTimer.Stop()
 		s.readTimer = nil
 	}
-	// clear deadline exceeded
+	// clear streamDeadline exceeded
 	s.readDeadlineExceeded = false
 	if !t.IsZero() {
 		delay := t.Sub(time.Now())
@@ -133,7 +133,7 @@ func (s *stream) SetWriteDeadline(t time.Time) error {
 		_ = s.writeTimer.Stop()
 		s.writeTimer = nil
 	}
-	// clear deadline exceeded
+	// clear streamDeadline exceeded
 	s.writeDeadlineExceeded = false
 	if !t.IsZero() {
 		delay := t.Sub(time.Now())
@@ -164,18 +164,18 @@ func (s *stream) PushAndBroadcast(buf []byte) {
 	s.endErr = err
 }
 
-// AcceptStream accepts the current stream by closing the accepted channel
+// AcceptStream accepts the current stream by closing the streamAccepted channel
 func (s *stream) AcceptStream(read uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
 	s.unblocked += read
-	s.state = accepted
+	s.state = streamAccepted
 	close(s.accepted)
 
 }
 
-// SetDeadline sets the read and write deadlines for the stream
+// SetDeadline sets the read and write streamDeadlines for the stream
 func (s *stream) SetDeadline(t time.Time) error {
 	if err := s.SetReadDeadline(t); err != nil {
 		s.endErr = err
@@ -191,18 +191,18 @@ func (s *stream) SetDeadline(t time.Time) error {
 func (s *stream) IsRemovable() bool {
 	s.m.Lock()
 	defer s.m.Unlock()
-	return s.state == dead && s.b.Len() == 0
+	return s.state == streamDead && s.b.Len() == 0
 }
 
-// setRemoteClosed sets the value of stream.remoteClosed. This indicates that the remote has sent a fin packet
+// setRemoteClosed sets the value of stream.streamRemoteClosed. This indicates that the remote has sent a fin packet
 func (s *stream) setRemoteClosed() {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
-	if s.state == closed {
-		s.state = dead
+	if s.state == streamClosed {
+		s.state = streamDead
 	} else {
-		s.state = remoteClosed
+		s.state = streamRemoteClosed
 	}
 }
 
@@ -223,15 +223,15 @@ func (s *stream) Close() error {
 	defer s.c.Broadcast()
 
 	switch s.state {
-	// return nil if already closed
-	case dead:
+	// return nil if already streamClosed
+	case streamDead:
 		return nil
-	case closed:
+	case streamClosed:
 		return nil
-	case remoteClosed:
-		s.state = dead
+	case streamRemoteClosed:
+		s.state = streamDead
 	default:
-		s.state = closed
+		s.state = streamClosed
 	}
 
 	if err := s.session.send(newFinFrame(s.id)); err != nil {
@@ -249,14 +249,14 @@ func (s *stream) Read(buf []byte) (int, error) {
 
 	s.session.logger.Printf("stream %d: read requested", s.id)
 
-	for s.b.Len() == 0 && s.endErr == nil && !s.readDeadlineExceeded && s.state != remoteClosed && s.state != dead {
+	for s.b.Len() == 0 && s.endErr == nil && !s.readDeadlineExceeded && s.state != streamRemoteClosed && s.state != streamDead {
 		s.session.logger.Printf("stream %d: read waiting", s.id)
 		// wait
 		s.c.Wait()
 	}
 
-	// return EOF if remoteClosed (remoteClosed + deadOnEmpty + dead)
-	if s.b.Len() == 0 && (s.state == remoteClosed || s.state == dead) {
+	// return EOF if streamRemoteClosed (streamRemoteClosed + streamDeadOnEmpty + streamDead)
+	if s.b.Len() == 0 && (s.state == streamRemoteClosed || s.state == streamDead) {
 		return 0, io.EOF
 	}
 
@@ -288,15 +288,15 @@ func (s *stream) Write(buf []byte) (int, error) {
 	l, w := len(buf), 0
 	for w < l {
 
-		for s.unblocked == 0 && s.endErr == nil && !s.writeDeadlineExceeded && s.state != closed && s.state != dead {
+		for s.unblocked == 0 && s.endErr == nil && !s.writeDeadlineExceeded && s.state != streamClosed && s.state != streamDead {
 			s.session.logger.Printf("stream %d: write waiting", s.id)
 			// wait for signal
 			s.c.Wait()
 		}
 
-		// if stream is closed or waiting to be empty then abort
-		// unblocked not checked as stream can be closed, but bytes may be unblocked by remote
-		if s.state == closed || s.state == dead {
+		// if stream is streamClosed or waiting to be empty then abort
+		// unblocked not checked as stream can be streamClosed, but bytes may be unblocked by remote
+		if s.state == streamClosed || s.state == streamDead {
 			return w, ErrBrokenPipe
 		}
 
@@ -320,11 +320,11 @@ func (s *stream) Write(buf []byte) (int, error) {
 	return w, nil
 }
 
-// Kill forces the stream into the dead state
+// Kill forces the stream into the streamDead state
 func (s *stream) Kill() {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
 	s.session.logger.Printf("stream %d killed", s.id)
-	s.state = dead
+	s.state = streamDead
 }
