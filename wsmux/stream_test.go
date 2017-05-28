@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestManyStreamEchoLarge(t *testing.T) {
@@ -71,4 +72,81 @@ func TestManyStreamEchoLarge(t *testing.T) {
 
 	wg.Wait()
 
+}
+
+func TestReadDeadlineExpires(t *testing.T) {
+	server := httptest.NewServer(genWebSocketHandler(t, readTimeoutConn))
+	url := server.URL
+	defer server.Close()
+	// Open a stream and check if read expires within given time
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	client := Client(conn, Config{})
+	errChan := make(chan error, 1)
+	str, err := client.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	str.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+	// startTime := time.Now()
+	timer := time.NewTimer(800 * time.Millisecond)
+	go func() {
+		b := make([]byte, 1)
+		_, err := str.Read(b)
+		if err == nil {
+			t.Fatal("test should timeout")
+		}
+		errChan <- err
+	}()
+
+	select {
+	case err := <-errChan:
+		if err != ErrReadTimeout {
+			t.Fatal("err should be ErrReadTimeout")
+		}
+	case <-timer.C:
+		t.Fatal("read did not timeout")
+	}
+}
+
+func TestReadDeadlineReset(t *testing.T) {
+	server := httptest.NewServer(genWebSocketHandler(t, readTimeoutConn))
+	url := server.URL
+	defer server.Close()
+	// Open a stream and check if read expires within given time
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	client := Client(conn, Config{})
+	errChan := make(chan error, 1)
+	str, err := client.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// if read times out before short timer then fail
+	short := time.NewTimer(1200 * time.Millisecond)
+	// if long timer triggers before read times out then fail
+	long := time.NewTimer(2500 * time.Millisecond)
+	start := time.Now()
+	str.SetReadDeadline(start.Add(500 * time.Millisecond))
+	go func() {
+		b := make([]byte, 1)
+		_, err := str.Read(b)
+		if err == nil {
+			t.Fatal(err)
+		}
+		errChan <- err
+	}()
+	time.Sleep(100 * time.Millisecond)
+	str.SetReadDeadline(start.Add(1500 * time.Millisecond))
+	select {
+	case <-short.C:
+	case <-errChan:
+		t.Fatal("deadline did not reset")
+	}
+	select {
+	case err := <-errChan:
+		if err != ErrReadTimeout {
+			t.Fatal("wrong error")
+		}
+	case <-long.C:
+		t.Fatal("read did not time out")
+	}
 }

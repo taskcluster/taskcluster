@@ -170,3 +170,11 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 
 	wg.Wait()
 }
+
+func readTimeoutConn(t *testing.T, conn *websocket.Conn) {
+	session := Server(conn, Config{})
+	_, err := session.Accept()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
