@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 
@@ -125,17 +126,10 @@ func genMultiTransferHandler(b *testing.B) http.Handler {
 
 // test large transfer
 func BenchmarkTransfer(b *testing.B) {
-	server := &http.Server{
-		Addr:    ":9999",
-		Handler: genTransferHandler(b),
-	}
-	defer func() {
-		_ = server.Close()
-	}()
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genTransferHandler(b))
+	url := server.URL
+	defer server.Close()
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -145,17 +139,10 @@ func BenchmarkTransfer(b *testing.B) {
 
 // test transfer over multiple streams
 func BenchmarkMultiTransfer(b *testing.B) {
-	server := &http.Server{
-		Addr:    ":9999",
-		Handler: genMultiTransferHandler(b),
-	}
-	defer func() {
-		_ = server.Close()
-	}()
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genMultiTransferHandler(b))
+	url := server.URL
+	defer server.Close()
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
 	if err != nil {
 		b.Fatal(err)
 	}
