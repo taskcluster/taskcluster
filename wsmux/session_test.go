@@ -7,17 +7,14 @@ import (
 	// "time"
 
 	"github.com/gorilla/websocket"
+	"net/http/httptest"
 )
 
 func TestEcho(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, echoConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, echoConn))
+	url := server.URL
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,14 +43,10 @@ func TestEcho(t *testing.T) {
 }
 
 func TestEchoLarge(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, echoConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, echoConn))
+	url := server.URL
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}

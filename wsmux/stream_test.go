@@ -4,20 +4,17 @@ import (
 	"bytes"
 	"github.com/gorilla/websocket"
 	"io"
+	"net/http/httptest"
 	"sync"
 	"testing"
 )
 
 func TestManyStreamEchoLarge(t *testing.T) {
 	// t.Skip("skipped until deadlock is solved")
-	server := genServer(genWebSocketHandler(t, manyEchoConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, manyEchoConn))
+	url := server.URL
+	defer server.Close()
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}

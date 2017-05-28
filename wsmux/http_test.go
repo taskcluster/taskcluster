@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"sync"
@@ -14,14 +15,10 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
+	serv_url := server.URL
+	defer server.Close()
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(serv_url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,14 +49,10 @@ func TestGet(t *testing.T) {
 }
 
 func TestPost(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
+	serv_url := server.URL
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(serv_url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,14 +96,10 @@ func TestPost(t *testing.T) {
 }
 
 func TestMultiplePost(t *testing.T) {
-	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
+	serv_url := server.URL
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(serv_url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,14 +154,10 @@ func TestMultiplePost(t *testing.T) {
 
 func TestWebSocket(t *testing.T) {
 	// t.Skip("No idea why this is failing")
-	server := genServer(genWebSocketHandler(t, wsConn), ":9999")
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-	defer func() {
-		_ = server.Close()
-	}()
-	conn, _, err := (&websocket.Dialer{}).Dial("ws://127.0.0.1:9999", nil)
+	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
+	serv_url := server.URL
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(serv_url), nil)
 	//runtime.Breakpoint()
 	if err != nil {
 		t.Fatal(err)
@@ -180,13 +165,13 @@ func TestWebSocket(t *testing.T) {
 	session := Client(conn, Config{Log: genLogger("ws-test")})
 	//runtime.Breakpoint()
 	// session.readDeadline = time.Now().Add(10 * time.Second)
-	url := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
+	ws_url := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
 	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
 	//runtime.Breakpoint()
-	ws, _, err := websocket.NewClient(stream, url, nil, 1024, 1024)
+	ws, _, err := websocket.NewClient(stream, ws_url, nil, 1024, 1024)
 	if err != nil {
 		t.Fatal(err)
 	}
