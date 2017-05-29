@@ -61,11 +61,11 @@ and reports back results to the queue.
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--configure-for-aws]
-    generic-worker install (startup|service [--nssm           NSSM-EXE]
-                                            [--service-name   SERVICE-NAME])
+    generic-worker install service          [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
-                                            [--username       USERNAME]
+    generic-worker install startup          [--username       USERNAME]
                                             [--password       PASSWORD]
+                                            [--config         CONFIG-FILE]
     generic-worker show-payload-schema
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker --help
@@ -79,11 +79,15 @@ and reports back results to the queue.
                                             into the release. This option outputs the json
                                             schema used in this version of the generic
                                             worker.
-    install                                 This will install the generic worker as a
-                                            Windows service. If the Windows user USERNAME
-                                            does not already exist on the system, the user
-                                            will be created. This user will be used to run
-                                            the service.
+    install service                         This will install the generic worker as a
+                                            Windows service running under the Local System
+                                            account. This is the preferred way to run the
+                                            worker under Windows.
+    install startup                         This will install the generic worker as a
+                                            Scheduled Task which runs when the given user
+                                            logs on. This method is no longer recommended
+                                            and is likely to be removed from future
+                                            releases.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
@@ -100,9 +104,6 @@ and reports back results to the queue.
     --configure-for-aws                     This will create the CONFIG-FILE for an AWS
                                             installation by querying the AWS environment
                                             and setting appropriate values.
-    --nssm NSSM-EXE                         The full path to nssm.exe to use for
-                                            installing the service.
-                                            [default: C:\nssm-2.24\win64\nssm.exe]
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
     --username USERNAME                     The Windows user to run the generic worker
@@ -257,6 +258,23 @@ and reports back results to the queue.
     If no value can be determined for a required config setting, the generic-worker will
     exit with a failure message.
 
+  Exit Codes:
+
+    0      Tasks completed successfully; no more tasks to run (see config setting
+           numberOfTasksToRun).
+    67     A task user has been created, and the generic-worker needs to reboot in order
+           to log on as the new task user. Note, the reboot happens automatically unless
+           config setting disableReboots is set to true - in either code this exit code will
+           be issued.
+    68     The generic-worker hit its idle timeout limit (see config settings idleTimeoutSecs
+           and shutdownMachineOnIdle).
+    69     Worker panic - either a worker bug, or the environment is not suitable for running
+           a task, e.g. a file cannot be written to the file system, or something else did
+           not work that was required in order to execute a task. See config setting
+           shutdownMachineOnInternalError.
+    70     A new deploymentId has been issued in the AWS worker type configuration, meaning
+           this worker environment is no longer up-to-date. Typcially workers should
+           terminate.
 `
 )
 
