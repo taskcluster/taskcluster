@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/secrets"
 )
@@ -94,6 +95,15 @@ func main() {
 			}
 		}
 	}
+
+	secretsMap := wt["secrets"].(map[string]interface{})
+	genericWorker := secretsMap["generic-worker"].(map[string]interface{})
+	config := genericWorker["config"].(map[string]interface{})
+	oldDeploymentID := config["deploymentId"].(string)
+	newDeploymentID := slugid.Nice()
+	config["deploymentId"] = newDeploymentID
+	log.Print("Old deployment ID: " + oldDeploymentID)
+	log.Print("New deployment ID: " + newDeploymentID)
 
 	if newAMICount != len(regions) {
 		log.Printf("WARNING: not updating all AMIs for worker type %v - only %v of %v", workerType, newAMICount, len(regions))
