@@ -17,12 +17,10 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
-	"github.com/taskcluster/ntr"
 	"github.com/taskcluster/runlib/subprocess"
 	"github.com/taskcluster/runlib/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
-	"golang.org/x/text/encoding/unicode"
 )
 
 type TaskContext struct {
@@ -358,7 +356,7 @@ func install(arguments map[string]interface{}) (err error) {
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
 		dir := filepath.Dir(exePath)
-		return deployService(user, configFile, nssm, serviceName, exePath, dir)
+		return deployService(configFile, nssm, serviceName, exePath, dir)
 	}
 	log.Fatal("Unknown install target - only 'service' is allowed")
 	return nil
@@ -415,7 +413,7 @@ func SetAutoLogin(user *runtime.OSUser) error {
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(user *runtime.OSUser, configFile, nssm, serviceName, exePath, dir string) error {
+func deployService(configFile, nssm, serviceName, exePath, dir string) error {
 	targetScript := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
 	err := CreateRunGenericWorkerBatScript(targetScript)
 	if err != nil {
