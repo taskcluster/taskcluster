@@ -612,16 +612,62 @@ func makeDirUnreadable(dir string) error {
 // additionally sets the flag windows.MOVEFILE_COPY_ALLOWED in order to cater
 // for oldpath and newpath being on different drives. See:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240(v=vs.85).aspx
-func RenameCrossDevice(oldpath, newpath string) error {
-	from, err := syscall.UTF16PtrFromString(oldpath)
+func RenameCrossDevice(oldpath, newpath string) (err error) {
+	var to, from *uint16
+	from, err = syscall.UTF16PtrFromString(oldpath)
 	if err != nil {
-		return err
+		return
 	}
-	to, err := syscall.UTF16PtrFromString(newpath)
+	to, err = syscall.UTF16PtrFromString(newpath)
 	if err != nil {
-		return err
+		return
 	}
-	return windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
+	// this will work for files and directories on same drive, and even for
+	// files on different drives, but not for directories on different drives
+	err = windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
+
+	// if we fail, could be a folder that needs to be moved to a different
+	// drive - however, check it really is a folder, since otherwise we could
+	// end up infinitely recursing between RenameCrossDevice and
+	// RenameFolderCrossDevice, since they both call into each other
+	if err != nil {
+		var fi os.FileInfo
+		fi, err = os.Stat(oldpath)
+		if err != nil {
+			return
+		}
+		if fi.IsDir() {
+			err = RenameFolderCrossDevice(oldpath, newpath)
+		}
+	}
+	return
+}
+
+func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
+	// recursively move files
+	moveFile := func(path string, info os.FileInfo, inErr error) (outErr error) {
+		if inErr != nil {
+			return inErr
+		}
+		relPath := ""
+		relPath, outErr = filepath.Rel(oldpath, path)
+		if outErr != nil {
+			return
+		}
+		targetPath := filepath.Join(newpath, relPath)
+		if info.IsDir() {
+			outErr = os.Mkdir(targetPath, info.Mode())
+		} else {
+			outErr = RenameCrossDevice(path, targetPath)
+		}
+		return
+	}
+	err = filepath.Walk(oldpath, moveFile)
+	if err != nil {
+		return
+	}
+	err = os.RemoveAll(oldpath)
+	return
 }
 
 func (task *TaskRun) addGroupsToUser(groups []string) error {
