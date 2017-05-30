@@ -353,110 +353,15 @@ func install(arguments map[string]interface{}) (err error) {
 		return err
 	}
 	configFile := convertNilToEmptyString(arguments["--config"])
-	username := convertNilToEmptyString(arguments["--username"])
-	password := convertNilToEmptyString(arguments["--password"])
-	if password == "" {
-		password = generatePassword()
-	}
-	user := &runtime.OSUser{
-		Name:     username,
-		Password: password,
-	}
-	fmt.Println("User: " + user.Name + ", Password: " + user.Password)
-
-	err = user.EnsureCreated()
-	if err != nil {
-		return err
-	}
-	err = user.MakeAdmin()
-	if err != nil {
-		return err
-	}
-	err = ntr.AddPrivilegesToUser(username, ntr.SE_ASSIGNPRIMARYTOKEN_NAME)
-	// err = ntr.AddPrivilegesToUser(username, ntr.SE_ASSIGNPRIMARYTOKEN_NAME, ntr.SE_INCREASE_QUOTA_NAME)
-	if err != nil {
-		return err
-	}
 	switch {
 	case arguments["service"]:
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
 		dir := filepath.Dir(exePath)
 		return deployService(user, configFile, nssm, serviceName, exePath, dir)
-	case arguments["startup"]:
-		return deployStartup(user, configFile, exePath)
 	}
-	log.Fatal("Unknown install target - neither 'service' nor 'startup' have been specified")
+	log.Fatal("Unknown install target - only 'service' is allowed")
 	return nil
-}
-
-func deployStartup(user *runtime.OSUser, configFile string, exePath string) error {
-	scheduledTaskUTF8 := []byte(strings.Replace(`<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <RegistrationInfo>
-    <Date>2016-04-28T17:25:08.4654422</Date>
-    <Author>GenericWorker</Author>
-    <Description>Runs the generic worker.</Description>
-  </RegistrationInfo>
-  <Triggers>
-    <LogonTrigger>
-      <Enabled>true</Enabled>
-      <UserId>GenericWorker</UserId>
-    </LogonTrigger>
-  </Triggers>
-  <Principals>
-    <Principal id="Author">
-      <UserId>GenericWorker</UserId>
-      <LogonType>InteractiveToken</LogonType>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
-  </Principals>
-  <Settings>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
-    <AllowHardTerminate>true</AllowHardTerminate>
-    <StartWhenAvailable>false</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <IdleSettings>
-      <StopOnIdleEnd>true</StopOnIdleEnd>
-      <RestartOnIdle>false</RestartOnIdle>
-    </IdleSettings>
-    <AllowStartOnDemand>true</AllowStartOnDemand>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <RunOnlyIfIdle>false</RunOnlyIfIdle>
-    <WakeToRun>false</WakeToRun>
-    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-    <Priority>3</Priority>
-  </Settings>
-  <Actions Context="Author">
-    <Exec>
-      <Command>C:\generic-worker\run-generic-worker.bat</Command>
-    </Exec>
-  </Actions>
-</Task>`, "\n", "\r\n", -1))
-	utf16Encoder := unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewEncoder()
-	scheduledTaskUTF16, err := utf16Encoder.Bytes(scheduledTaskUTF8)
-	if err != nil {
-		return fmt.Errorf("INTERNAL ERROR: Could not UTF16-encode (static) scheduled task: %s\n\nError received: %s", scheduledTaskUTF8, err)
-	}
-	xmlFilePath := filepath.Join(filepath.Dir(exePath), "Run Generic Worker.xml")
-	err = ioutil.WriteFile(xmlFilePath, scheduledTaskUTF16, 0644)
-	if err != nil {
-		return fmt.Errorf("I was not able to write the file \"Run Generic Worker.xml\" to file location %q with 0644 permissions, due to: %s", xmlFilePath, err)
-	}
-	err = runtime.RunCommands(false, []string{"schtasks", "/create", "/tn", "Run Generic Worker on login", "/xml", xmlFilePath})
-	if err != nil {
-		return fmt.Errorf("Not able to schedule task \"Run Generic Worker on login\" using schtasks command, due to error: %s\n\nAlso see stderr/stdout logs for output of the command that failed.", err)
-	}
-
-	err = SetAutoLogin(user)
-	if err != nil {
-		return err
-	}
-
-	return CreateRunGenericWorkerBatScript(filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat"))
 }
 
 func CreateRunGenericWorkerBatScript(batScriptFilePath string) error {
