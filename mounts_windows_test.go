@@ -34,7 +34,7 @@ func TestRenameCrossDevice(t *testing.T) {
 	}
 	sourceDir := "Z:\\a"
 	targetDir := filepath.Join(cwd, "a")
-	err = RenameFolderCrossDevice(sourceDir, targetDir)
+	err = RenameCrossDevice(sourceDir, targetDir)
 	if err != nil {
 		t.Fatalf("Hit error renaming folder %v as %v:\n%v", sourceDir, targetDir, err)
 	}
