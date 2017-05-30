@@ -506,7 +506,7 @@ api.declare({
 
   if (instGithub) {
     try {
-      await instGithub.repos.createComment({
+      await instGithub.issues.createComment({
         owner,
         repo,
         number,
