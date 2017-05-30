@@ -68,6 +68,10 @@ func TestAppDataNotShared(t *testing.T) {
 func TestNoCreateFileMappingError(t *testing.T) {
 	setup(t)
 
+	if config.RunTasksAsCurrentUser {
+		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
+	}
+
 	payload := GenericWorkerPayload{
 		// run several bash commands, as running one is horribly slow, but
 		// let's make sure if you run a lot of them, they are not all slow -
