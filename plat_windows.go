@@ -95,12 +95,41 @@ func deleteTaskDir(path string) error {
 }
 
 func prepareTaskUser(userName string) (reboot bool) {
+	taskContext.DesktopSession = &process.DesktopSession{
+		User: &runtime.OSUser{
+			Name: userName,
+		},
+	}
 	if userName == AutoLogonUser() {
 		// make sure user has completed logon before doing anything else
 		// timeout of 1 minute should be plenty - note, this function will
 		// return as soon as user has logged in *and* user profile directory
 		// has been created - the timeout just sets an upper cap
-		win32.InteractiveUserToken(1 * time.Minute)
+		hToken, err := win32.InteractiveUserToken(1 * time.Minute)
+		if err != nil {
+			panic(err)
+		}
+		// at this point, we know we have already booted into the new task user, and the user
+		// is logged in
+		loginInfo := &subprocess.LoginInfo{
+			HUser: hToken,
+		}
+		if script := config.RunAfterUserCreation; script != "" {
+			var noDeadline time.Time
+			command, err := process.NewCommand(loginInfo, script, &taskContext.TaskDir, nil, noDeadline)
+			if err != nil {
+				panic(err)
+			}
+			command.DirectOutput(os.Stdout)
+			result := command.Execute()
+			log.Printf("%v", result)
+			switch {
+			case result.Failed():
+				panic(result.FailureCause())
+			case result.Crashed():
+				panic(result.CrashCause())
+			}
+		}
 		return false
 	}
 	// create user
@@ -126,22 +155,6 @@ func prepareTaskUser(userName string) (reboot bool) {
 	// err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
 	// if err != nil {
 	// 	panic(err)
-	// }
-	// if script := config.RunAfterUserCreation; script != "" {
-	// 	var noDeadline time.Time
-	// 	command, err := process.NewCommand(script, &taskContext.TaskDir, nil, noDeadline, taskContext.DesktopSession)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	command.DirectOutput(os.Stdout)
-	// 	result := command.Execute()
-	// 	log.Printf("%v", result)
-	// 	switch {
-	// 	case result.Failed():
-	// 		panic(result.FailureCause())
-	// 	case result.Crashed():
-	// 		panic(result.CrashCause())
-	// 	}
 	// }
 	// configure worker to auto-login to this newly generated user account
 	err = SetAutoLogin(user)
@@ -585,7 +598,7 @@ func (task *TaskRun) formatCommand(index int) string {
 }
 
 // see http://ss64.com/nt/icacls.html
-func makeDirReadable(dir string) error {
+func makeDirReadableForTaskUser(dir string) error {
 	if config.RunTasksAsCurrentUser {
 		return nil
 	}

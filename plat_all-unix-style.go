@@ -115,7 +115,7 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func makeDirReadable(dir string) error {
+func makeDirReadableForTaskUser(dir string) error {
 	return os.Chmod(dir, 0777)
 }
 
@@ -143,6 +143,9 @@ func (task *TaskRun) formatCommand(index int) string {
 }
 
 func prepareTaskUser(username string) bool {
+	taskContext.User = &OSUser{
+		Name: username,
+	}
 	return false
 }
 

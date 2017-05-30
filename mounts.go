@@ -411,7 +411,7 @@ func (w *WritableDirectoryCache) Mount() error {
 		if err != nil {
 			panic(fmt.Errorf("Not able to rename dir %v as %v: %v", src, target, err))
 		}
-		err = makeDirReadable(filepath.Join(taskContext.TaskDir, w.Directory))
+		err = makeDirReadableForTaskUser(filepath.Join(taskContext.TaskDir, w.Directory))
 		if err != nil {
 			panic(fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err))
 		}
