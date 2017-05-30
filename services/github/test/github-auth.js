@@ -35,7 +35,7 @@ class FakeGithub {
         }
         this.statuses[key].push(info);
       },
-      'repos.createComment': ({owner, repo, number, body}) => {
+      'issues.createComment': ({owner, repo, number, body}) => {
         const key = `${owner}/${repo}@${number}`;
         const info = {
           body,
