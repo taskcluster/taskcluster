@@ -322,13 +322,13 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		0755,
 	)
 
-	log.Printf("Script %q:", script)
-	log.Print("Contents:")
-	log.Print(string(fileContents))
+	// log.Printf("Script %q:", script)
+	// log.Print("Contents:")
+	// log.Print(string(fileContents))
 
-	log.Printf("Wrapper script %q:", wrapper)
-	log.Print("Contents:")
-	log.Print(contents)
+	// log.Printf("Wrapper script %q:", wrapper)
+	// log.Print("Contents:")
+	// log.Print(contents)
 
 	if err != nil {
 		panic(err)
