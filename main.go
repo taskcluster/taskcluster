@@ -35,8 +35,6 @@ var (
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext *TaskContext = &TaskContext{}
-	// number of tasks resolved in this session
-	tasksResolved uint
 	// Queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue       *queue.Queue
@@ -473,15 +471,25 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	return c, nil
 }
 
-func RunWorker() (exitCode ExitCode) {
-	log.Printf("Detected %s platform", runtime.GOOS)
-	err := taskCleanup()
-	// any errors are fatal
+func ReadTasksResolvedFile() uint {
+	b, err := ioutil.ReadFile("tasks-resolved-count.txt")
 	if err != nil {
-		log.Printf("OH NO!!!\n\n%#v", err)
+		return 0
+	}
+	i, err := strconv.Atoi(string(b))
+	if err != nil {
 		panic(err)
 	}
+	return uint(i)
+}
 
+// Also called from tests, so avoid panic in this function since this could
+// cause tests to silently pass - instead require error handling.
+func UpdateTasksResolvedFile(t uint) error {
+	return ioutil.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
+}
+
+func RunWorker() (exitCode ExitCode) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Print(string(debug.Stack()))
@@ -490,6 +498,24 @@ func RunWorker() (exitCode ExitCode) {
 			exitCode = INTERNAL_ERROR
 		}
 	}()
+
+	log.Printf("Detected %s platform", runtime.GOOS)
+	// number of tasks resolved since worker first ran
+	// stored in a json file, since we may reboot between tasks etc
+	tasksResolved := ReadTasksResolvedFile()
+	// use a pointer to the value, to make sure it is resolved at defer-time, not now
+	defer func(t *uint) {
+		err := UpdateTasksResolvedFile(*t)
+		if err != nil {
+			panic(err)
+		}
+	}(&tasksResolved)
+	err := taskCleanup()
+	// any errors are fatal
+	if err != nil {
+		log.Printf("OH NO!!!\n\n%#v", err)
+		panic(err)
+	}
 	// Queue is the object we will use for accessing queue api
 	Queue = queue.New(
 		&tcclient.Credentials{

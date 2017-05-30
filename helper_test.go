@@ -36,7 +36,10 @@ func setup(t *testing.T) {
 		t.Fatalf("Test failed during setup phase!")
 	}
 	testdataDir = filepath.Join(cwd, "testdata")
-	tasksResolved = 0
+	err = UpdateTasksResolvedFile(0)
+	if err != nil {
+		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
+	}
 
 	// configure the worker
 	config = &Config{
