@@ -649,7 +649,7 @@ func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
 		if inErr != nil {
 			return inErr
 		}
-		relPath := ""
+		var relPath string
 		relPath, outErr = filepath.Rel(oldpath, path)
 		if outErr != nil {
 			return
