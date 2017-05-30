@@ -141,21 +141,16 @@ func prepareTaskUser(userName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	// create desktop and login
-	// loginInfo, origDesktop, newDesktop, err := process.NewDesktopSession(user.Name, user.Password)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// taskContext.DesktopSession = &process.DesktopSession{
-	// 	User:        user,
-	// 	LoginInfo:   loginInfo,
-	// 	Desktop:     newDesktop,
-	// 	OrigDesktop: origDesktop,
-	// }
-	// err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
-	// if err != nil {
-	// 	panic(err)
-	// }
+	// set APPDATA
+	var loginInfo *subprocess.LoginInfo
+	loginInfo, err = subprocess.NewLoginInfo(user.Name, user.Password)
+	if err != nil {
+		panic(err)
+	}
+	err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
+	if err != nil {
+		panic(err)
+	}
 	// configure worker to auto-login to this newly generated user account
 	err = SetAutoLogin(user)
 	if err != nil {
