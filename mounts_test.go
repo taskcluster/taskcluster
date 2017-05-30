@@ -120,7 +120,7 @@ func TestMounts(t *testing.T) {
 	}
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete(t)
+	RunWorker()
 
 	// check task succeeded
 	tsr, err := myQueue.Status(taskID)
@@ -198,7 +198,7 @@ func TestMissingScopes(t *testing.T) {
 	// don't set any scopes
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete(t)
+	RunWorker()
 
 	// check task had exception/malformed-payload
 	tsr, err := myQueue.Status(taskID)
@@ -260,15 +260,14 @@ func TestCachesCanBeModified(t *testing.T) {
 		return val
 	}
 
-	config.NumberOfTasksToRun = 1
 	submit()
-	RunUntilTasksComplete(t)
+	RunWorker()
 	startCounter := getCounter()
 
-	config.NumberOfTasksToRun = 2
 	submit()
 	submit()
-	RunUntilTasksComplete(t)
+	RunWorker()
+	RunWorker()
 	endCounter := getCounter()
 
 	if endCounter != startCounter+2 {
@@ -309,7 +308,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
 	taskID, myQueue := submitTask(t, td, payload)
-	RunUntilTasksComplete(t)
+	RunWorker()
 
 	// check task failed
 	tsr, err := myQueue.Status(taskID)

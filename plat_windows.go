@@ -691,11 +691,13 @@ func defaultTasksDir() string {
 func AutoLogonUser() string {
 	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
 	if err != nil {
+		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
 		return ""
 	}
 	defer k.Close()
 	s, _, err := k.GetStringValue("DefaultUserName")
 	if err != nil {
+		log.Printf("Hit error reading winlogon DefaultUserName registry value - assume no autologon set: %v", err)
 		return ""
 	}
 	return s

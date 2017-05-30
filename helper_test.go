@@ -202,22 +202,3 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
 	}
 }
-
-func RunUntilTasksComplete(t *testing.T) {
-	// reset task count
-	tasksResolved = 0
-	for {
-		switch RunWorker() {
-		case TASKS_COMPLETE:
-			return
-		case IDLE_TIMEOUT:
-			t.Fatalf("Timed out")
-		case INTERNAL_ERROR:
-			t.Fatalf("Internal error")
-		case NONCURRENT_DEPLOYMENT_ID:
-			t.Fatalf("I've no idea how this is even possible")
-		case REBOOT_REQUIRED:
-			// loop again
-		}
-	}
-}

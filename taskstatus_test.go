@@ -58,5 +58,5 @@ func TestResolveResolvedTask(t *testing.T) {
 	payload.Env = envRawMessage
 
 	_, _ = submitTask(t, td, payload)
-	RunUntilTasksComplete(t)
+	RunWorker()
 }
