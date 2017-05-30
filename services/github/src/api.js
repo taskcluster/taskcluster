@@ -428,6 +428,7 @@ api.declare({
       return res.redirect(status.target_url);
     } catch (e) {
       debug(`Error creating link: ${JSON.stringify(e)}`);
+      await this.monitor.reportError(err);
       return res.status(500).send();
     }
   }
@@ -470,9 +471,10 @@ api.declare({
         context: context || 'default',
       });
 
-      return resolve(res, 200, 'Status created!');
+      return res.reply({});
     } catch (e) {
       debug(`Error creating status: ${JSON.stringify(e)}`);
+      await this.monitor.reportError(err);
       return res.status(500).send();
     }
   }
@@ -511,9 +513,10 @@ api.declare({
         body,
       });
 
-      return resolve(res, 200, 'Comment created!');
+      return res.reply({});
     } catch (e) {
-      debug(`Error creating status: ${JSON.stringify(e)}`);
+      debug(`Error creating comment: ${JSON.stringify(e)}`);
+      await this.monitor.reportError(err);
       return res.status(500).send();
     }
   }
