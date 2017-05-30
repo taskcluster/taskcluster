@@ -612,6 +612,7 @@ func makeDirUnreadable(dir string) error {
 // additionally sets the flag windows.MOVEFILE_COPY_ALLOWED in order to cater
 // for oldpath and newpath being on different drives. See:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240(v=vs.85).aspx
+// Note: this only works for files, not directories.
 func RenameCrossDevice(oldpath, newpath string) error {
 	from, err := syscall.UTF16PtrFromString(oldpath)
 	if err != nil {
@@ -622,6 +623,33 @@ func RenameCrossDevice(oldpath, newpath string) error {
 		return err
 	}
 	return windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
+}
+
+func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
+	// recursively move files
+	moveFile := func(path string, info os.FileInfo, inErr error) (outErr error) {
+		if inErr != nil {
+			return inErr
+		}
+		relPath := ""
+		relPath, outErr = filepath.Rel(oldpath, path)
+		if outErr != nil {
+			return
+		}
+		targetPath := filepath.Join(newpath, relPath)
+		if info.IsDir() {
+			outErr = os.Mkdir(targetPath, info.Mode())
+		} else {
+			outErr = RenameCrossDevice(path, targetPath)
+		}
+		return
+	}
+	err = filepath.Walk(oldpath, moveFile)
+	if err != nil {
+		return
+	}
+	err = os.Remove(oldpath)
+	return
 }
 
 func (task *TaskRun) addGroupsToUser(groups []string) error {
