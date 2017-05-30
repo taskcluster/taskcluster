@@ -230,21 +230,17 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.workerType(workerType) : result`
  * `awsProvisioner.removeWorkerType(workerType) : void`
  * `awsProvisioner.listWorkerTypes() : result`
- * `awsProvisioner.createAmiSet(id, payload) : void`
- * `awsProvisioner.amiSet(id) : result`
- * `awsProvisioner.updateAmiSet(id, payload) : result`
- * `awsProvisioner.listAmiSets() : result`
- * `awsProvisioner.removeAmiSet(id) : void`
  * `awsProvisioner.createSecret(token, payload) : void`
  * `awsProvisioner.getSecret(token) : result`
  * `awsProvisioner.instanceStarted(instanceId, token) : void`
  * `awsProvisioner.removeSecret(token) : void`
  * `awsProvisioner.getLaunchSpecs(workerType) : result`
  * `awsProvisioner.state(workerType) : void`
- * `awsProvisioner.ping() : void`
+ * `awsProvisioner.newState(workerType) : void`
  * `awsProvisioner.backendStatus() : result`
  * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) : void`
  * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() : void`
+ * `awsProvisioner.ping() : void`
 
 ### Methods in `taskcluster.Github`
 ```js
@@ -255,7 +251,10 @@ var github = new taskcluster.Github(options);
  * `github.githubWebHookConsumer() : void`
  * `github.builds([options]) : result`
  * `github.badge(owner, repo, branch) : void`
- * `github.isInstalledFor(owner, repo) : result`
+ * `github.repository(owner, repo) : result`
+ * `github.latest(owner, repo, branch) : void`
+ * `github.createStatus(owner, repo, sha, payload) : void`
+ * `github.createComment(owner, repo, number, payload) : void`
  * `github.ping() : void`
 
 ### Methods in `taskcluster.Hooks`
@@ -284,11 +283,11 @@ var hooks = new taskcluster.Hooks(options);
 //  - https://index.taskcluster.net/v1
 var index = new taskcluster.Index(options);
 ```
- * `index.findTask(namespace) : result`
+ * `index.findTask(indexPath) : result`
  * `index.listNamespaces(namespace, payload) : result`
  * `index.listTasks(namespace, payload) : result`
  * `index.insertTask(namespace, payload) : result`
- * `index.findArtifactFromTask(namespace, name) : void`
+ * `index.findArtifactFromTask(indexPath, name) : void`
  * `index.ping() : void`
 
 ### Methods in `taskcluster.Login`
@@ -297,7 +296,6 @@ var index = new taskcluster.Index(options);
 //  - https://login.taskcluster.net/v1
 var login = new taskcluster.Login(options);
 ```
- * `login.credentialsFromPersonaAssertion(payload) : result`
  * `login.ping() : void`
 
 ### Methods in `taskcluster.Notify`
@@ -318,10 +316,10 @@ var notify = new taskcluster.Notify(options);
 var pulse = new taskcluster.Pulse(options);
 ```
  * `pulse.overview() : result`
- * `pulse.exchanges() : result`
  * `pulse.listNamespaces([options]) : result`
  * `pulse.namespace(namespace) : result`
  * `pulse.claimNamespace(namespace, payload) : result`
+ * `pulse.deleteNamespace(namespace) : void`
  * `pulse.ping() : void`
 
 ### Methods in `taskcluster.PurgeCache`

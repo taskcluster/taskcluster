@@ -3,7 +3,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://auth.taskcluster.net/v1",
-      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authenticate request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
+      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
       "entries": [
         {
           "args": [
@@ -344,7 +344,7 @@ module.exports = {
             "table",
             "level"
           ],
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table. By not specifying a level as in azureTableSASLevel,\nyou will get read-write permissions. If you get read-write from this, it will create the\ntable if it doesn't already exist.",
+          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
           "method": "get",
           "name": "azureTableSAS",
           "output": "http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#",
@@ -366,7 +366,7 @@ module.exports = {
             "container",
             "level"
           ],
-          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container. If the level is read-write, the container will be created, if it doesn't already exists.",
+          "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
           "method": "get",
           "name": "azureBlobSAS",
           "output": "http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#",
@@ -674,7 +674,7 @@ module.exports = {
           "args": [
             "workerType"
           ],
-          "description": "Retreive a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.",
+          "description": "Retrieve a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.",
           "method": "get",
           "name": "workerType",
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
@@ -724,95 +724,6 @@ module.exports = {
           "route": "/list-worker-types",
           "stability": "stable",
           "title": "List Worker Types",
-          "type": "function"
-        },
-        {
-          "args": [
-            "id"
-          ],
-          "description": "Create an AMI Set. An AMI Set is a collection of AMIs with a single name.",
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#",
-          "method": "put",
-          "name": "createAmiSet",
-          "query": [
-          ],
-          "route": "/ami-set/<id>",
-          "scopes": [
-            [
-              "aws-provisioner:manage-ami-set:<amiSetId>"
-            ]
-          ],
-          "stability": "stable",
-          "title": "Create new AMI Set",
-          "type": "function"
-        },
-        {
-          "args": [
-            "id"
-          ],
-          "description": "Retreive a copy of the requested AMI set.",
-          "method": "get",
-          "name": "amiSet",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#",
-          "query": [
-          ],
-          "route": "/ami-set/<id>",
-          "stability": "stable",
-          "title": "Get AMI Set",
-          "type": "function"
-        },
-        {
-          "args": [
-            "id"
-          ],
-          "description": "Provide a new copy of an AMI Set to replace the existing one.\nThis will overwrite the existing AMI Set if there\nis already an AMI Set of that name. This method will return a\n200 response along with a copy of the AMI Set created.\nNote that if you are using the result of a GET on the ami-set\nend point that you will need to delete the lastModified and amiSet\nkeys from the object returned, since those fields are not allowed\nthe request body for this method.\n\nOtherwise, all input requirements and actions are the same as the\ncreate method.",
-          "input": "http://schemas.taskcluster.net/aws-provisioner/v1/create-ami-set-request.json#",
-          "method": "post",
-          "name": "updateAmiSet",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-ami-set-response.json#",
-          "query": [
-          ],
-          "route": "/ami-set/<id>/update",
-          "scopes": [
-            [
-              "aws-provisioner:manage-ami-set:<amiSetId>"
-            ]
-          ],
-          "stability": "stable",
-          "title": "Update AMI Set",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Return a list of AMI sets names.",
-          "method": "get",
-          "name": "listAmiSets",
-          "output": "http://schemas.taskcluster.net/aws-provisioner/v1/list-ami-sets-response.json#",
-          "query": [
-          ],
-          "route": "/list-ami-sets",
-          "stability": "stable",
-          "title": "List AMI sets",
-          "type": "function"
-        },
-        {
-          "args": [
-            "id"
-          ],
-          "description": "Delete an AMI Set.",
-          "method": "delete",
-          "name": "removeAmiSet",
-          "query": [
-          ],
-          "route": "/ami-set/<id>",
-          "scopes": [
-            [
-              "aws-provisioner:manage-ami-set:<amiSetId>"
-            ]
-          ],
-          "stability": "stable",
-          "title": "Delete AMI Set",
           "type": "function"
         },
         {
@@ -926,15 +837,24 @@ module.exports = {
         },
         {
           "args": [
+            "workerType"
           ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
+          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
           "method": "get",
-          "name": "ping",
+          "name": "newState",
           "query": [
           ],
-          "route": "/ping",
-          "stability": "experimental",
-          "title": "Ping Server",
+          "route": "/new-state/<workerType>",
+          "scopes": [
+            [
+              "aws-provisioner:view-worker-type:<workerType>"
+            ],
+            [
+              "aws-provisioner:manage-worker-type:<workerType>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Get AWS State for a worker type",
           "type": "function"
         },
         {
@@ -986,6 +906,19 @@ module.exports = {
           ],
           "stability": "experimental",
           "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
           "type": "function"
         }
       ],
@@ -1137,12 +1070,12 @@ module.exports = {
             "repo",
             "branch"
           ],
-          "description": "Checks the status of the latest build of a given branch \nand returns corresponding badge image.",
+          "description": "Checks the status of the latest build of a given branch\nand returns corresponding badge svg.",
           "method": "get",
           "name": "badge",
           "query": [
           ],
-          "route": "/badge/<owner>/<repo>/<branch>",
+          "route": "/repository/<owner>/<repo>/<branch>/badge.svg",
           "stability": "experimental",
           "title": "Latest Build Status Badge",
           "type": "function"
@@ -1152,15 +1085,75 @@ module.exports = {
             "owner",
             "repo"
           ],
-          "description": "Checks if the integration has been installed for\na given repository of a given organization or user.",
+          "description": "Returns any repository metadata that is\nuseful within Taskcluster related services.",
           "method": "get",
-          "name": "isInstalledFor",
-          "output": "http://schemas.taskcluster.net/github/v1/is-installed-for.json",
+          "name": "repository",
+          "output": "http://schemas.taskcluster.net/github/v1/repository.json",
           "query": [
           ],
           "route": "/repository/<owner>/<repo>",
           "stability": "experimental",
-          "title": "Check if Repository has Integration",
+          "title": "Get Repository Info",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo",
+            "branch"
+          ],
+          "description": "For a given branch of a repository, this will always point\nto a status page for the most recent task triggered by that\nbranch.\n\nNote: This is a redirect rather than a direct link.",
+          "method": "get",
+          "name": "latest",
+          "query": [
+          ],
+          "route": "/repository/<owner>/<repo>/<branch>/latest",
+          "stability": "experimental",
+          "title": "Latest Status for Branch",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo",
+            "sha"
+          ],
+          "description": "For a given changeset (SHA) of a repository, this will attach a \"commit status\"\non github. These statuses are links displayed next to each revision.\nThe status is either OK (green check) or FAILURE (red cross), \nmade of a custom title and link.",
+          "input": "http://schemas.taskcluster.net/github/v1/create-status.json",
+          "method": "post",
+          "name": "createStatus",
+          "query": [
+          ],
+          "route": "/repository/<owner>/<repo>/statuses/<sha>",
+          "scopes": [
+            [
+              "github:create-status:<owner>/<repo>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Post a status against a given changeset",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo",
+            "number"
+          ],
+          "description": "For a given Issue or Pull Request of a repository, this will write a new message.",
+          "input": "http://schemas.taskcluster.net/github/v1/create-comment.json",
+          "method": "post",
+          "name": "createComment",
+          "query": [
+          ],
+          "route": "/repository/<owner>/<repo>/issues/<number>/comments",
+          "scopes": [
+            [
+              "github:create-comment:<owner>/<repo>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Post a comment on a given GitHub Issue or Pull Request",
           "type": "function"
         },
         {
@@ -1541,19 +1534,19 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://index.taskcluster.net/v1",
-      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. In order to ensure that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases includes\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot `.` separated hierarchy\ncalled a namespace. For example a task could be indexed in\n`<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `<revision>`, and,\n 2. `<revision>.linux-64`\n\nThe inside the namespace `<revision>` you can find the namespace\n`<revision>.linux-64` inside which you can find the indexed task\n`<revision>.linux-64.release-build`. In this example you'll be able to\nfind build for a given revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nthe same lower or equal `rank`, the task will be overwritten. For example\nconsider a task indexed as `mozilla-central.linux-64.release-build`, in\nthis case on might choose to use a unix timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\n**Indexed Data**, when a task is located in the index you will get the\n`taskId` and an additional user-defined JSON blob that was indexed with\ntask. You can use this to store additional information you would like to\nget additional from the index.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nexpiration date that the artifacts is assigned.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route on the following\nform `index.<namespace>`. In-order to add this route to a task you'll\nneed the following scope `queue:route:index.<namespace>`. When a task has\nthis route, it'll be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`, see example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expires (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. Which is quite convenient, for\nexample one could bind to `route.index.mozilla-central.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
+      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. The service ensures that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases include:\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy\ncalled a namespace. For example a task could be indexed with the index path\n`some-app.<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `some-app`,\n 1. `some-app.<revision>`, and,\n 2. `some-app.<revision>.linux-64`\n\nInside the namespace `some-app.<revision>` you can find the namespace\n`some-app.<revision>.linux-64` inside which you can find the indexed task\n`some-app.<revision>.linux-64.release-build`. This is an example of indexing\nbuilds for a given platform and revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nlower or equal `rank`, the index for that task will be overwritten. For example\nconsider index path `mozilla-central.linux-64.release-build`. In\nthis case one might choose to use a UNIX timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\nNote that this does mean index paths are not immutable: the same path may\npoint to a different task now than it did a moment ago.\n\n**Indexed Data**, when a task is retrieved from the index the result includes\na `taskId` and an additional user-defined JSON blob that was indexed with\nthe task.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nartifact's expiration date.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route to `task.routes` of the\nform `index.<namespace>`. In order to add this route to a task you'll\nneed the scope `queue:route:index.<namespace>`. When a task has\nthis route, it will be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`. See the example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expire (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. For\nexample one could bind to `route.index.some-app.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
       "entries": [
         {
           "args": [
-            "namespace"
+            "indexPath"
           ],
-          "description": "Find task by namespace, if no task existing for the given namespace, this\nAPI end-point respond `404`.",
+          "description": "Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status.",
           "method": "get",
           "name": "findTask",
           "output": "http://schemas.taskcluster.net/index/v1/indexed-task-response.json#",
           "query": [
           ],
-          "route": "/task/<namespace>",
+          "route": "/task/<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
           "type": "function"
@@ -1562,7 +1555,7 @@ module.exports = {
           "args": [
             "namespace"
           ],
-          "description": "List the namespaces immediately under a given namespace. This end-point\nlist up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
+          "description": "List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.",
           "input": "http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#",
           "method": "post",
           "name": "listNamespaces",
@@ -1578,7 +1571,7 @@ module.exports = {
           "args": [
             "namespace"
           ],
-          "description": "List the tasks immediately under a given namespace. This end-point\nlist up to 1000 tasks. If more tasks are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
+          "description": "List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
           "input": "http://schemas.taskcluster.net/index/v1/list-tasks-request.json#",
           "method": "post",
           "name": "listTasks",
@@ -1594,7 +1587,7 @@ module.exports = {
           "args": [
             "namespace"
           ],
-          "description": "Insert a task into the index. Please see the introduction above, for how\nto index successfully completed tasks automatically, using custom routes.",
+          "description": "Insert a task into the index.  If the new rank is less than the existing rank\nat the given index path, the task is not indexed but the response is still 200 OK.\n\nPlease see the introduction above for information\nabout indexing successfully completed tasks automatically using custom routes.",
           "input": "http://schemas.taskcluster.net/index/v1/insert-task-request.json#",
           "method": "put",
           "name": "insertTask",
@@ -1613,15 +1606,15 @@ module.exports = {
         },
         {
           "args": [
-            "namespace",
+            "indexPath",
             "name"
           ],
-          "description": "Find task by namespace and redirect to artifact with given `name`,\nif no task existing for the given namespace, this API end-point respond\n`404`.",
+          "description": "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",
           "method": "get",
           "name": "findArtifactFromTask",
           "query": [
           ],
-          "route": "/task/<namespace>/artifacts/<name>",
+          "route": "/task/<indexPath>/artifacts/<name>",
           "scopes": [
             [
               "queue:get-artifact:<name>"
@@ -1656,21 +1649,6 @@ module.exports = {
       "baseUrl": "https://login.taskcluster.net/v1",
       "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.",
       "entries": [
-        {
-          "args": [
-          ],
-          "description": "Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.\n\nThe supplied audience must be on a whitelist of TaskCluster-related\nsites configured in the login service.  This is not a general-purpose\nassertion-verification service!",
-          "input": "http://schemas.taskcluster.net/login/v1/persona-request.json",
-          "method": "post",
-          "name": "credentialsFromPersonaAssertion",
-          "output": "http://schemas.taskcluster.net/login/v1/credentials-response.json",
-          "query": [
-          ],
-          "route": "/persona",
-          "stability": "experimental",
-          "title": "Get TaskCluster credentials given a Persona assertion",
-          "type": "function"
-        },
         {
           "args": [
           ],
@@ -1796,20 +1774,6 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Get a list of all exchanges in the rabbit cluster.  This will include exchanges\nnot managed by this service, if any exist.",
-          "method": "get",
-          "name": "exchanges",
-          "output": "http://schemas.taskcluster.net/pulse/v1/exchanges-response.json",
-          "query": [
-          ],
-          "route": "/exchanges",
-          "stability": "experimental",
-          "title": "Rabbit Exchanges",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
           "description": "List the namespaces managed by this service.\n\nThis will list up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, do not provide continuation.",
           "method": "get",
           "name": "listNamespaces",
@@ -1857,6 +1821,25 @@ module.exports = {
           ],
           "stability": "experimental",
           "title": "Claim a namespace",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Immediately delete the given namespace.  This will delete all exchanges and queues which the\nnamespace had configure access to, as if it had just expired.",
+          "method": "delete",
+          "name": "deleteNamespace",
+          "query": [
+          ],
+          "route": "/namespace/<namespace>",
+          "scopes": [
+            [
+              "pulse:namespace:<namespace>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Delete a namespace",
           "type": "function"
         },
         {
@@ -2082,12 +2065,8 @@ module.exports = {
           "route": "/task/<taskId>",
           "scopes": [
             [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:define-task:<provisionerId>/<workerType>",
-              "queue:task-group-id:<schedulerId>/<taskGroupId>",
-              "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
+              "queue:create-task:<priority>:<provisionerId>/<workerType>",
+              "queue:scheduler-id:<schedulerId>"
             ]
           ],
           "stability": "stable",
@@ -2108,14 +2087,8 @@ module.exports = {
           "route": "/task/<taskId>/define",
           "scopes": [
             [
-              "queue:define-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:define-task:<provisionerId>/<workerType>",
-              "queue:task-group-id:<schedulerId>/<taskGroupId>"
+              "queue:create-task:<priority>:<provisionerId>/<workerType>",
+              "queue:scheduler-id:<schedulerId>"
             ]
           ],
           "stability": "deprecated",
