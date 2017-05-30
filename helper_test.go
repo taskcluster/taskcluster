@@ -172,9 +172,9 @@ func testTask() *queue.TaskDefinitionRequest {
 			Source      string `json:"source"`
 		}{
 			Description: "Test task",
-			Name:        "[TC] TestUpload",
-			Owner:       "pmoore@mozilla.com",
-			Source:      "https://github.com/taskcluster/generic-worker/blob/master/artifacts_test.go",
+			Name:        "[TC] Generic Worker CI",
+			Owner:       "generic-worker-ci@mozilla.com",
+			Source:      "https://github.com/taskcluster/generic-worker",
 		},
 		Payload:       json.RawMessage(``),
 		ProvisionerID: config.ProvisionerID,
@@ -182,7 +182,7 @@ func testTask() *queue.TaskDefinitionRequest {
 		Routes:        []string{},
 		SchedulerID:   "test-scheduler",
 		Scopes:        []string{},
-		Tags:          json.RawMessage(`{"createdForUser":"pmoore@mozilla.com"}`),
+		Tags:          json.RawMessage(`{"CI":"generic-worker"}`),
 		Priority:      "lowest",
 		TaskGroupID:   taskGroupID,
 		WorkerType:    config.WorkerType,
