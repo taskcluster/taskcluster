@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/runtime"
-	"github.com/taskcluster/runlib/platform"
 	"github.com/taskcluster/runlib/subprocess"
 	"github.com/taskcluster/runlib/win32"
 )
@@ -74,7 +73,7 @@ type Result struct {
 	SystemError error
 }
 
-type DesktopSession struct {
+type LogonSession struct {
 	User      *runtime.OSUser
 	LoginInfo *subprocess.LoginInfo
 }
@@ -141,26 +140,6 @@ func (c *Command) Execute() (r *Result) {
 		SubprocessResult: result,
 		SystemError:      err,
 	}
-}
-
-func NewDesktopSession(username, password string) (loginInfo *subprocess.LoginInfo, origDesktop, newDesktop *platform.Desktop, err error) {
-	// if running as current user, no login nor desktop required
-	if username == "" {
-		return
-	}
-	origDesktop, newDesktop, err = platform.CreateDesktop()
-	if err != nil {
-		return
-	}
-	loginInfo, err = subprocess.NewLoginInfo(username, password)
-	if err != nil {
-		return
-	}
-	err = newDesktop.Display()
-	if err != nil {
-		log.Printf("Could not display the newly created desktop, despite successfully logging in:\n%v", err)
-	}
-	return
 }
 
 func NewCommand(loginInfo *subprocess.LoginInfo, commandLine string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {

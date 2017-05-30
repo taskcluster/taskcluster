@@ -26,8 +26,8 @@ import (
 )
 
 type TaskContext struct {
-	TaskDir        string
-	DesktopSession *process.DesktopSession
+	TaskDir      string
+	LogonSession *process.LogonSession
 }
 
 func immediateReboot() {
@@ -95,7 +95,7 @@ func deleteTaskDir(path string) error {
 }
 
 func prepareTaskUser(userName string) (reboot bool) {
-	taskContext.DesktopSession = &process.DesktopSession{
+	taskContext.LogonSession = &process.LogonSession{
 		User: &runtime.OSUser{
 			Name: userName,
 		},
@@ -586,18 +586,18 @@ func makeDirReadableForTaskUser(dir string) error {
 	}
 	return runtime.RunCommands(
 		false,
-		[]string{"icacls", dir, "/grant:r", taskContext.DesktopSession.User.Name + ":(OI)(CI)F"},
+		[]string{"icacls", dir, "/grant:r", taskContext.LogonSession.User.Name + ":(OI)(CI)F"},
 	)
 }
 
 // see http://ss64.com/nt/icacls.html
 func makeDirUnreadable(dir string) error {
-	if taskContext.DesktopSession == nil {
+	if taskContext.LogonSession == nil {
 		return nil
 	}
 	return runtime.RunCommands(
 		false,
-		[]string{"icacls", dir, "/remove:g", taskContext.DesktopSession.User.Name},
+		[]string{"icacls", dir, "/remove:g", taskContext.LogonSession.User.Name},
 	)
 }
 
@@ -671,7 +671,7 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 	}
 	commands := make([][]string, len(groups), len(groups))
 	for i, group := range groups {
-		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.DesktopSession.User.Name}
+		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.LogonSession.User.Name}
 	}
 	return runtime.RunCommands(false, commands...)
 }
