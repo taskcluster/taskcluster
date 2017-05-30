@@ -75,10 +75,8 @@ type Result struct {
 }
 
 type DesktopSession struct {
-	User        *runtime.OSUser
-	LoginInfo   *subprocess.LoginInfo
-	Desktop     *platform.Desktop
-	OrigDesktop *platform.Desktop
+	User      *runtime.OSUser
+	LoginInfo *subprocess.LoginInfo
 }
 
 func (r *Result) Succeeded() bool {
