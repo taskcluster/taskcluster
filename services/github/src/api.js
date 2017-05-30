@@ -428,7 +428,7 @@ api.declare({
       return res.redirect(status.target_url);
     } catch (e) {
       debug(`Error creating link: ${JSON.stringify(e)}`);
-      await this.monitor.reportError(err);
+      await this.monitor.reportError(e);
       return res.status(500).send();
     }
   }
@@ -474,7 +474,7 @@ api.declare({
       return res.reply({});
     } catch (e) {
       debug(`Error creating status: ${JSON.stringify(e)}`);
-      await this.monitor.reportError(err);
+      await this.monitor.reportError(e);
       return res.status(500).send();
     }
   }
@@ -516,7 +516,7 @@ api.declare({
       return res.reply({});
     } catch (e) {
       debug(`Error creating comment: ${JSON.stringify(e)}`);
-      await this.monitor.reportError(err);
+      await this.monitor.reportError(e);
       return res.status(500).send();
     }
   }
