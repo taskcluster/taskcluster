@@ -337,19 +337,6 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 }
 
 func taskCleanup() error {
-	// clean desktop resources before killing user...
-	if taskContext.DesktopSession != nil {
-		err := taskContext.DesktopSession.OrigDesktop.Display()
-		if err != nil {
-			return fmt.Errorf("Could not display original desktop: %v", err)
-		}
-		err = taskContext.DesktopSession.Desktop.Close()
-		if err != nil {
-			return fmt.Errorf("Could not create new task user because previous task user's desktop could not be closed:\n%v", err)
-		}
-	} else {
-		log.Print("No previous task user desktop, so no need to close any open desktops")
-	}
 	if config.CleanUpTaskDirs {
 		deleteTaskDirs()
 	}
