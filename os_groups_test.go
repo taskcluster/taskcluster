@@ -17,8 +17,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 	}
 	td := testTask()
 	// don't set any scopes
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	// check task had exception/malformed-payload
 	tsr, err := myQueue.Status(taskID)
@@ -49,8 +48,7 @@ func TestOSGroupsRespected(t *testing.T) {
 	}
 	td := testTask()
 	td.Scopes = []string{"generic-worker:os-group:abc", "generic-worker:os-group:def"}
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	if config.RunTasksAsCurrentUser {
 		// check task resolved successfully

@@ -17,8 +17,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 		MaxRunTime: 10,
 	}
 	td := testTask()
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	tsr, err := myQueue.Status(taskID)
 	if err != nil {
@@ -36,8 +35,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 		MaxRunTime: 3,
 	}
 	td := testTask()
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	tsr, err := myQueue.Status(taskID)
 	if err != nil {

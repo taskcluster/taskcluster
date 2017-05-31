@@ -31,7 +31,7 @@ func TestAppDataNotShared(t *testing.T) {
 	}
 	td1 := testTask()
 
-	taskID1, myQueue := submitTask(t, td1, payload1)
+	taskID1, myQueue := executeTask(t, td1, payload1)
 
 	// Second task:
 	payload2 := GenericWorkerPayload{
@@ -49,10 +49,7 @@ func TestAppDataNotShared(t *testing.T) {
 	}
 	td2 := testTask()
 
-	taskID2, _ := submitTask(t, td2, payload2)
-
-	RunWorker()
-	RunWorker()
+	taskID2, _ := executeTask(t, td2, payload2)
 
 	// make sure both tasks resolved successfully
 	for _, taskID := range []string{taskID1, taskID2} {
@@ -97,8 +94,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	}
 	td := testTask()
 
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	// make sure task resolved successfully
 	tsr, err := myQueue.Status(taskID)

@@ -119,8 +119,7 @@ func TestMounts(t *testing.T) {
 		"generic-worker:cache:devtools-app",
 	}
 
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	// check task succeeded
 	tsr, err := myQueue.Status(taskID)
@@ -197,8 +196,7 @@ func TestMissingScopes(t *testing.T) {
 	td := testTask()
 	// don't set any scopes
 
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	// check task had exception/malformed-payload
 	tsr, err := myQueue.Status(taskID)
@@ -241,10 +239,10 @@ func TestCachesCanBeModified(t *testing.T) {
 		MaxRunTime: 20,
 	}
 
-	submit := func() {
+	execute := func() {
 		td := testTask()
 		td.Scopes = []string{"generic-worker:cache:test-modifications"}
-		submitTask(t, td, payload)
+		executeTask(t, td, payload)
 	}
 
 	getCounter := func() int {
@@ -260,14 +258,11 @@ func TestCachesCanBeModified(t *testing.T) {
 		return val
 	}
 
-	submit()
-	RunWorker()
+	execute()
 	startCounter := getCounter()
 
-	submit()
-	submit()
-	RunWorker()
-	RunWorker()
+	execute()
+	execute()
 	endCounter := getCounter()
 
 	if endCounter != startCounter+2 {
@@ -307,8 +302,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	td := testTask()
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
-	taskID, myQueue := submitTask(t, td, payload)
-	RunWorker()
+	taskID, myQueue := executeTask(t, td, payload)
 
 	// check task failed
 	tsr, err := myQueue.Status(taskID)

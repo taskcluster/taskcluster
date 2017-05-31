@@ -36,10 +36,6 @@ func setup(t *testing.T) {
 		t.Fatalf("Test failed during setup phase!")
 	}
 	testdataDir = filepath.Join(cwd, "testdata")
-	err = UpdateTasksResolvedFile(0)
-	if err != nil {
-		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
-	}
 
 	// configure the worker
 	config = &Config{
@@ -113,7 +109,7 @@ func setup(t *testing.T) {
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
 }
 
-func submitTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
+func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
 	// check we have all the env vars we need to run this test
 	if config.ClientID == "" || config.AccessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
@@ -143,6 +139,15 @@ func submitTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWo
 	_, err = myQueue.CreateTask(taskID, td)
 	if err != nil {
 		t.Fatalf("Could not submit task: %v", err)
+	}
+
+	err = UpdateTasksResolvedFile(0)
+	if err != nil {
+		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
+	}
+	exitCode := RunWorker()
+	if exitCode != TASKS_COMPLETE {
+		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, TASKS_COMPLETE)
 	}
 
 	// run the worker for one task only - note, the function will also return
