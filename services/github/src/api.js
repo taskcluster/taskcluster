@@ -154,10 +154,16 @@ let api = new API({
     'messages in response to GitHub events.',
     '',
     'This document describes the API end-point for consuming GitHub',
-    'web hooks',
+    'web hooks, as well as some useful consumer APIs.',
+    '',
+    'When Github forbids an action, this service returns an HTTP 403',
+    'with code ForbiddenByGithub.',
   ].join('\n'),
   schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
   context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg'],
+  errorCodes: {
+    ForbiddenByGithub: 403,
+  },
 });
 
 // Export API
@@ -473,6 +479,13 @@ api.declare({
 
       return res.reply({});
     } catch (e) {
+      // 403 from Github indicates this integration doesn't have permission to post this status,
+      // so return that on to the user
+      if (e.code == 403) {
+        return res.reportError('ForbiddenByGithub',
+            'Operation was forbidden by Github. The Github App may not be set up for this repo.',
+            {});
+      }
       debug(`Error creating status: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
       return res.status(500).send();
@@ -515,6 +528,13 @@ api.declare({
 
       return res.reply({});
     } catch (e) {
+      // 403 from Github indicates this integration doesn't have permission to post this comment,
+      // so return that on to the user
+      if (e.code == 403) {
+        return res.reportError('ForbiddenByGithub',
+            'Operation was forbidden by Github. The Github App may not be set up for this repo.',
+            {});
+      }
       debug(`Error creating comment: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
       return res.status(500).send();
