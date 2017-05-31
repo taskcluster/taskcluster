@@ -23,6 +23,9 @@ class FakeGithub {
 
     const stubs = {
       'repos.createStatus': ({owner, repo, sha, state, target_url, description, context}) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
         const key = `${owner}/${repo}@${sha}`;
         const info = {
           state,
@@ -36,6 +39,9 @@ class FakeGithub {
         this.statuses[key].push(info);
       },
       'issues.createComment': ({owner, repo, number, body}) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
         const key = `${owner}/${repo}@${number}`;
         const info = {
           body,
