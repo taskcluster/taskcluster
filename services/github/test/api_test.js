@@ -237,6 +237,20 @@ suite('api', () => {
     assert.equal(status.context, 'customContext');
   });
 
+  test('status creation where integraiton lacks permission', async function() {
+    try {
+      await helper.github.createStatus('abc123', 'no-permission', 'master', {
+        state: 'failure',
+        target_url: 'http://test.com',
+        description: 'Status title',
+        context: 'customContext',
+      });
+    } catch (e) {
+      assert.equal(e.statusCode, 403);
+      return; // passed
+    }
+    throw new Error('endpoint should have failed');
+  });
   test('pull request comment', async function() {
     await helper.github.createComment('abc123', 'awesomeRepo', 1, {
       body: 'Task failed here',
@@ -248,5 +262,15 @@ suite('api', () => {
       number: 1,
     }).pop();
     assert.equal(comment.body, 'Task failed here');
+  });
+
+  test('pull request comment where integraiton lacks permission', async function() {
+    try {
+      await helper.github.createComment('abc123', 'no-permission', 1, {body: 'x'});
+    } catch (e) {
+      assert.equal(e.statusCode, 403);
+      return; // passed
+    }
+    throw new Error('endpoint should have failed');
   });
 });
