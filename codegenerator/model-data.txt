@@ -1,4 +1,4 @@
-Generated: 1495754592
+Generated: 1496258749
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3001,7 +3001,10 @@ Description = 'The github service, typically available at
 messages in response to GitHub events.
 
 This document describes the API end-point for consuming GitHub
-web hooks'
+web hooks, as well as some useful consumer APIs.
+
+When Github forbids an action, this service returns an HTTP 403
+with code ForbiddenByGithub.'
 Base URL    = 'https://github.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'

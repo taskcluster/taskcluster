@@ -13,7 +13,10 @@
 // messages in response to GitHub events.
 //
 // This document describes the API end-point for consuming GitHub
-// web hooks
+// web hooks, as well as some useful consumer APIs.
+//
+// When Github forbids an action, this service returns an HTTP 403
+// with code ForbiddenByGithub.
 //
 // See: https://docs.taskcluster.net/reference/core/github/api-docs
 //
@@ -35,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 25 May 2017 at 23:23:00 UTC. The code was generated
+// Wed, 31 May 2017 at 19:25:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
