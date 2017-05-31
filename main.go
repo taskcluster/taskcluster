@@ -1172,7 +1172,9 @@ func PrepareTaskEnvironment() (reboot bool) {
 	if reboot {
 		return
 	}
-	err := os.MkdirAll(taskContext.TaskDir, 0777)
+	// useful for tests, but also in general, if there is anything there, we should
+	// get rid of it
+	err := ensureEmptyDir(taskContext.TaskDir)
 	if err != nil {
 		panic(err)
 	}
