@@ -107,10 +107,17 @@ func prepareTaskUser(userName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		// at this point, we know we have already booted into the new task user, and the user
-		// is logged in
 		loginInfo := &subprocess.LoginInfo{
 			HUser: hToken,
+		}
+		// At this point, we know we have already booted into the new task user, and the user
+		// is logged in.
+		// Note we don't create task directory before logging in, since
+		// if the task directory is also the user profile home, this
+		// would mess up the windows logon process.
+		err = os.MkdirAll(taskContext.TaskDir, 0777)
+		if err != nil {
+			panic(err)
 		}
 		if script := config.RunAfterUserCreation; script != "" {
 			var noDeadline time.Time

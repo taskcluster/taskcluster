@@ -146,6 +146,10 @@ func prepareTaskUser(username string) bool {
 	taskContext.User = &OSUser{
 		Name: username,
 	}
+	err := os.MkdirAll(taskContext.TaskDir, 0777)
+	if err != nil {
+		panic(err)
+	}
 	return false
 }
 
