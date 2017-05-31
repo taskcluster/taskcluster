@@ -1159,22 +1159,25 @@ func PrepareTaskEnvironment() (reboot bool) {
 	taskContext = &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
 	}
-	// Regardless of whether we run tasks as current user or not, we should create
-	// one - since runTasksAsCurrentUser is now only something for CI so on Windows
-	// a generic worker test can execute in the context of a Windows Service running
-	// under LocalSystem account.
-	// username can only be 20 chars, uuids are too long, therefore use
-	// prefix (5 chars) plus seconds since epoch (10 chars) note, if we run
-	// as current user, we don't want a task_* subdirectory, we want to run
-	// from same directory every time. Also important for tests.
+	// Get rid of task directory, if it already exists. Note, this is most
+	// useful in tests, but does no harm in production, and makes cleanup
+	// implementation for tests much simpler.
+	err := os.RemoveAll(taskContext.TaskDir)
+	if err != nil {
+		panic(err)
+	}
+	// Regardless of whether we run tasks as current user or not, we should
+	// make sure there is a task user created - since runTasksAsCurrentUser is
+	// now only something for CI so on Windows a generic-worker test can
+	// execute in the context of a Windows Service running under LocalSystem
+	// account. Username can only be 20 chars, uuids are too long, therefore
+	// use prefix (5 chars) plus seconds since epoch (10 chars).
 	userName := taskDirName
 	reboot = prepareTaskUser(userName)
 	if reboot {
 		return
 	}
-	// useful for tests, but also in general, if there is anything there, we should
-	// get rid of it
-	err := ensureEmptyDir(taskContext.TaskDir)
+	err = os.MkdirAll(taskContext.TaskDir, 0777)
 	if err != nil {
 		panic(err)
 	}
