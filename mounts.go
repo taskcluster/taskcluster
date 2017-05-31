@@ -452,11 +452,11 @@ func (w *WritableDirectoryCache) Unmount() error {
 	log.Printf("Moving %q to %q", filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
 	err := RenameCrossDevice(filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	err = makeDirUnreadable(cacheDir)
 	if err != nil {
-		return fmt.Errorf("Not able to make cache %v unreadable and unwritable to all task users when unmounting it: %v", w.CacheName, err)
+		panic(fmt.Errorf("Not able to make cache %v unreadable and unwritable to all task users when unmounting it: %v", w.CacheName, err))
 	}
 	return nil
 }
@@ -523,6 +523,13 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 			Key:      cacheKey,
 		}
 	} else {
+		// Sanity check - if file is in file map, but not on file system,
+		// something is seriously wrong, so should be a worker exception
+		// (panic), not a task failure
+		_, err := os.Stat(fileCaches[cacheKey].Location)
+		if err != nil {
+			panic(fmt.Errorf("File in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
+		}
 		fileCaches[cacheKey].Hits += 1
 	}
 	return fileCaches[cacheKey].Location, nil
