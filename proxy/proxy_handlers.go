@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"bufio"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -44,6 +46,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request) {
 	p.addWorker(id, conn, wsmux.Config{StreamBufferSize: 64 * 1024})
 }
 
+// serve endpoints to viewers
 func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 	// extract worker id from path
 	wid := extractID(r.URL.Path)
@@ -59,29 +62,42 @@ func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not connect to the worker", 500)
 		return
 	}
-	// remove workerID from request path
-	r.URL.Path = replaceID(r.URL.Path)
-	r.URL.Host = "ignored"
-	log.Printf("rewritten path: %s", r.URL.Path)
-	err = r.Write(reqStream)
-	if err != nil {
-		http.Error(w, "internal server error", 500)
+
+	// check for a websocket request
+	if websocket.IsWebSocketUpgrade(r) {
+		_ = websocketProxy(w, r, reqStream, p.upgrader)
 		return
 	}
 
-	// cannot set headers in response, so hijack the connection
-	// and write the raw response
-	hj, ok := w.(http.Hijacker)
-	if !ok {
-		http.Error(w, "unable to send response", 500)
-		return
-	}
-	rawConn, _, err := hj.Hijack()
+	r.URL.Path = replaceID(r.URL.Path)
+	err = r.Write(reqStream)
+
 	if err != nil {
-		http.Error(w, "unable to send response", 500)
+		http.Error(w, "error sending request to worker", 500)
 		return
 	}
-	// setup a two way stream, in case a websocket connection was established
-	go log.Printf("write closed with error: %v", copyAndClose(rawConn, reqStream))
-	go log.Printf("read closed with error: %v", copyAndClose(reqStream, rawConn))
+
+	// read response from worker
+	bufReader := bufio.NewReader(reqStream)
+	resp, err := http.ReadResponse(bufReader, r)
+	if err != nil {
+		http.Error(w, "error sending response", 500)
+		return
+	}
+
+	// manually proxy response
+	// clear responseWriter headers and write response headers instead
+	for k, _ := range w.Header() {
+		w.Header().Del(k)
+	}
+	for k, v := range resp.Header {
+		w.Header()[k] = v
+	}
+	w.WriteHeader(resp.StatusCode)
+	if resp.Body != nil {
+		_, err := io.Copy(w, resp.Body)
+		if err != nil {
+			return
+		}
+	}
 }

@@ -1,5 +1,5 @@
 #wsmux
-wsmux/log_session_*
 wsmux/test_log
 wsmux/*-test
 webhooktunnel
+main
