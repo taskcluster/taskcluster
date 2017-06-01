@@ -68,7 +68,7 @@ func setup(t *testing.T) {
 		ShutdownMachineOnInternalError: false,
 		SigningKeyLocation:             filepath.Join("testdata", "private-opengpg-key"),
 		Subdomain:                      "taskcluster-worker.net",
-		TasksDir:                       testdataDir,
+		TasksDir:                       filepath.Join(testdataDir, t.Name()),
 		WorkerGroup:                    "test-worker-group",
 		WorkerID:                       "test-worker-id",
 		WorkerType:                     slugid.Nice(),
@@ -146,16 +146,21 @@ func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericW
 		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
 	}
 	exitCode := RunWorker()
+
+	// now clean up, (since taskdir can get reused when test is called more than once)
+	err = os.RemoveAll(taskContext.TaskDir)
+	if err != nil {
+		t.Fatalf("Not able to clean up after test: %v", err)
+	}
+
 	if exitCode != TASKS_COMPLETE {
 		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, TASKS_COMPLETE)
 	}
 
-	// run the worker for one task only - note, the function will also return
-	// if there is a minute of idle time (see config above)
 	return
 }
 
-func testTask() *queue.TaskDefinitionRequest {
+func testTask(t *testing.T) *queue.TaskDefinitionRequest {
 	created := time.Now().UTC()
 	// reset nanoseconds
 	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
@@ -177,7 +182,7 @@ func testTask() *queue.TaskDefinitionRequest {
 			Source      string `json:"source"`
 		}{
 			Description: "Test task",
-			Name:        "[TC] Generic Worker CI",
+			Name:        "[TC] Generic Worker CI - " + t.Name(),
 			Owner:       "generic-worker-ci@mozilla.com",
 			Source:      "https://github.com/taskcluster/generic-worker",
 		},

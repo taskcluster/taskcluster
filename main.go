@@ -1159,13 +1159,6 @@ func PrepareTaskEnvironment() (reboot bool) {
 	taskContext = &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
 	}
-	// Get rid of task directory, if it already exists. Note, this is most
-	// useful in tests, but does no harm in production, and makes cleanup
-	// implementation for tests much simpler.
-	err := os.RemoveAll(taskContext.TaskDir)
-	if err != nil {
-		panic(err)
-	}
 	// Regardless of whether we run tasks as current user or not, we should
 	// make sure there is a task user created - since runTasksAsCurrentUser is
 	// now only something for CI so on Windows a generic-worker test can
@@ -1178,7 +1171,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 		return
 	}
 	logDir := filepath.Join(taskContext.TaskDir, "public", "logs")
-	err = os.MkdirAll(logDir, 0777)
+	err := os.MkdirAll(logDir, 0777)
 	if err != nil {
 		panic(err)
 	}
