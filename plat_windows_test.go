@@ -8,6 +8,7 @@ func TestAppDataNotShared(t *testing.T) {
 	t.Skip("It isn't possible to test this without rebooting, which we can't do in the middle of a test, so disabling")
 
 	setup(t)
+	defer teardown(t)
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since APPDATA does not change when running as current user")
@@ -67,6 +68,7 @@ func TestAppDataNotShared(t *testing.T) {
 //  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")

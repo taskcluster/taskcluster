@@ -109,6 +109,13 @@ func setup(t *testing.T) {
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
 }
 
+func teardown(t *testing.T) {
+	err := os.RemoveAll(taskContext.TaskDir)
+	if err != nil {
+		t.Fatalf("Not able to clean up after test: %v", err)
+	}
+}
+
 func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
 	// check we have all the env vars we need to run this test
 	if config.ClientID == "" || config.AccessToken == "" {
@@ -146,12 +153,6 @@ func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericW
 		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
 	}
 	exitCode := RunWorker()
-
-	// now clean up, (since taskdir can get reused when test is called more than once)
-	err = os.RemoveAll(taskContext.TaskDir)
-	if err != nil {
-		t.Fatalf("Not able to clean up after test: %v", err)
-	}
 
 	if exitCode != TASKS_COMPLETE {
 		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, TASKS_COMPLETE)

@@ -8,6 +8,7 @@ import (
 
 func TestRunAfterUserCreation(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}

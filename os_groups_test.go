@@ -10,6 +10,7 @@ import (
 
 func TestMissingScopesOSGroups(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 1,
@@ -41,6 +42,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 
 func TestOSGroupsRespected(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 30,

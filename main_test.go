@@ -12,6 +12,7 @@ import (
 // Test failure should resolve as "failed"
 func TestFailureResolvesAsFailure(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    failCommand(),
 		MaxRunTime: 10,
@@ -30,6 +31,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    sleep(4),
 		MaxRunTime: 3,
@@ -68,6 +70,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 
 func TestIdleWithoutCrash(t *testing.T) {
 	setup(t)
+	defer teardown(t)
 	if config.ClientID == "" || config.AccessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}

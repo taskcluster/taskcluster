@@ -63,6 +63,7 @@ func validateArtifacts(
 func TestFileArtifactWithNames(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -91,6 +92,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 func TestDirectoryArtifactWithNames(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -139,6 +141,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 func TestDirectoryArtifacts(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -181,6 +184,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 func TestMissingFileArtifact(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -208,6 +212,7 @@ func TestMissingFileArtifact(t *testing.T) {
 func TestMissingDirectoryArtifact(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -235,6 +240,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 func TestFileArtifactIsDirectory(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -262,6 +268,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 func TestDefaultArtifactExpiry(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -288,6 +295,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 func TestDirectoryArtifactIsFile(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -315,6 +323,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 func TestMissingArtifactFailsTest(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -350,6 +359,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 func TestUpload(t *testing.T) {
 
 	setup(t)
+	defer teardown(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
