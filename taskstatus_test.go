@@ -10,7 +10,7 @@ import (
 
 // Makes sure that if a running task gets cancelled externally, the worker does not shut down
 func TestResolveResolvedTask(t *testing.T) {
-	setup(t)
+	setup(t, "TestResolveResolvedTask")
 	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    goRun("resolvetask.go"),

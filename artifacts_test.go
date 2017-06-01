@@ -62,7 +62,7 @@ func validateArtifacts(
 
 func TestFileArtifactWithNames(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestFileArtifactWithNames")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -91,7 +91,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 func TestDirectoryArtifactWithNames(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestDirectoryArtifactWithNames")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -140,7 +140,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 // artifacts.
 func TestDirectoryArtifacts(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestDirectoryArtifacts")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -183,7 +183,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 // Task payload specifies a file artifact which doesn't exist on worker
 func TestMissingFileArtifact(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestMissingFileArtifact")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -211,7 +211,7 @@ func TestMissingFileArtifact(t *testing.T) {
 // Task payload specifies a directory artifact which doesn't exist on worker
 func TestMissingDirectoryArtifact(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestMissingDirectoryArtifact")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -239,7 +239,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 // Task payload specifies a file artifact which is actually a directory on worker
 func TestFileArtifactIsDirectory(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestFileArtifactIsDirectory")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -267,7 +267,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 // TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
 func TestDefaultArtifactExpiry(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestDefaultArtifactExpiry")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -294,7 +294,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 // Task payload specifies a directory artifact which is a regular file on worker
 func TestDirectoryArtifactIsFile(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestDirectoryArtifactIsFile")
 	defer teardown(t)
 	validateArtifacts(t,
 
@@ -322,7 +322,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestMissingArtifactFailsTest(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestMissingArtifactFailsTest")
 	defer teardown(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
@@ -358,7 +358,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 
 func TestUpload(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestUpload")
 	defer teardown(t)
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))

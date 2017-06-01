@@ -25,7 +25,7 @@ func toMountArray(t *testing.T, x interface{}) []Mount {
 
 func TestMounts(t *testing.T) {
 
-	setup(t)
+	setup(t, "TestMounts")
 	defer teardown(t)
 
 	mounts := []MountEntry{
@@ -171,7 +171,7 @@ func TestMounts(t *testing.T) {
 }
 
 func TestMissingScopes(t *testing.T) {
-	setup(t)
+	setup(t, "TestMissingScopes")
 	defer teardown(t)
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
@@ -221,7 +221,7 @@ func TestMissingScopes(t *testing.T) {
 }
 
 func TestCachesCanBeModified(t *testing.T) {
-	setup(t)
+	setup(t, "TestCachesCanBeModified")
 	defer teardown(t)
 	// We're going to run three consecutive tasks here. The first will create
 	// a file called `counter` in the cache and the contents of the file will
@@ -283,7 +283,7 @@ func Test32BitOverflow(t *testing.T) {
 }
 
 func TestCorruptZipDoesntCrashWorker(t *testing.T) {
-	setup(t)
+	setup(t, "TestCorruptZipDoesntCrashWorker")
 	defer teardown(t)
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"

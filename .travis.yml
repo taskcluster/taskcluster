@@ -1,7 +1,12 @@
 language: go
 
 go:
-  - 1.8
+  # this is a lie - we will use 1.7 which isn't supported yet
+  # by downloading it later in "before_install" section
+  # we use 1.7 due to https://github.com/contester/runlib/issues/5#issuecomment-241419381
+  # which could have also been achieved via vendoring an older version, but for let's
+  # keep up-to-date with latest version
+  - 1.6
 
 env:
   - "MY_GOOS=linux MY_GOARCH=amd64"
@@ -10,7 +15,16 @@ env:
   - "MY_GOOS=windows MY_GOARCH=386"
 
 before_install:
-  - "test $MY_GOOS.$MY_GOARCH != linux.amd64 || go get github.com/axw/gocov/gocov github.com/mattn/goveralls github.com/pierrre/gotestcover"
+  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz
+  - tar -C $HOME -xf go.tar.gz
+  - rm go.tar.gz
+  - export GOROOT="${HOME}/go"
+  - export PATH="${GOROOT}/bin:${PATH}"
+  - export GOOS="${MY_GOOS}"
+  - export GOARCH="${MY_GOARCH}"
+  - go version
+  - go env
+  - "test $GOOS.$GOARCH != linux.amd64 || go get github.com/axw/gocov/gocov github.com/mattn/goveralls github.com/pierrre/gotestcover"
 
 install:
   - "go get github.com/taskcluster/livelog"
@@ -25,11 +39,11 @@ script:
   - "export GOARCH=${MY_GOARCH}"
   - "test $(git status --porcelain | wc -l) == 0"
   - "go get -v -t ./..."
-  - "if test $GOOS.$GOARCH = linux.amd64; then GORACE=history_size=7 ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report -race -timeout 1h ./... && go tool cover -func=coverage.report; fi"
+  - "if test $GOOS.$GOARCH = linux.amd64; then GORACE=history_size=7 travis_wait 30 ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report -race -timeout 1h ./... && go tool cover -func=coverage.report; fi"
   - "test $GOOS.$GOARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 
 after_script:
-  - "test $MY_GOOS.$MY_GOARCH != linux.amd64 || ${GOPATH}/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
+  - "test $GOOS.$GOARCH != linux.amd64 || ${GOPATH}/bin/goveralls -coverprofile=coverage.report -service=travis-ci"
 
 before_deploy:
   - "source .travis_rename_releases.sh"

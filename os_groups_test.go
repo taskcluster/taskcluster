@@ -9,7 +9,7 @@ import (
 )
 
 func TestMissingScopesOSGroups(t *testing.T) {
-	setup(t)
+	setup(t, "TestMissingScopesOSGroups")
 	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
@@ -41,7 +41,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 }
 
 func TestOSGroupsRespected(t *testing.T) {
-	setup(t)
+	setup(t, "TestOSGroupsRespected")
 	defer teardown(t)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),

@@ -7,7 +7,7 @@ func TestAppDataNotShared(t *testing.T) {
 
 	t.Skip("It isn't possible to test this without rebooting, which we can't do in the middle of a test, so disabling")
 
-	setup(t)
+	setup(t, "TestAppDataNotShared")
 	defer teardown(t)
 
 	if config.RunTasksAsCurrentUser {
@@ -67,7 +67,7 @@ func TestAppDataNotShared(t *testing.T) {
 // Test we don't get weird error:
 //  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
-	setup(t)
+	setup(t, "TestNoCreateFileMappingError")
 	defer teardown(t)
 
 	if config.RunTasksAsCurrentUser {

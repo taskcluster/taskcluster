@@ -25,11 +25,12 @@ type PayloadArtifact struct {
 }
 
 var (
-	inAnHour    tcclient.Time
-	testdataDir string
+	inAnHour       tcclient.Time
+	testdataDir    string
+	globalTestName string
 )
 
-func setup(t *testing.T) {
+func setup(t *testing.T, testName string) {
 	// some basic setup...
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -68,7 +69,7 @@ func setup(t *testing.T) {
 		ShutdownMachineOnInternalError: false,
 		SigningKeyLocation:             filepath.Join("testdata", "private-opengpg-key"),
 		Subdomain:                      "taskcluster-worker.net",
-		TasksDir:                       filepath.Join(testdataDir, t.Name()),
+		TasksDir:                       filepath.Join(testdataDir, testName),
 		WorkerGroup:                    "test-worker-group",
 		WorkerID:                       "test-worker-id",
 		WorkerType:                     slugid.Nice(),
@@ -107,6 +108,7 @@ func setup(t *testing.T) {
 
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
+	globalTestName = testName
 }
 
 func teardown(t *testing.T) {
@@ -183,7 +185,7 @@ func testTask(t *testing.T) *queue.TaskDefinitionRequest {
 			Source      string `json:"source"`
 		}{
 			Description: "Test task",
-			Name:        "[TC] Generic Worker CI - " + t.Name(),
+			Name:        "[TC] Generic Worker CI - " + globalTestName,
 			Owner:       "generic-worker-ci@mozilla.com",
 			Source:      "https://github.com/taskcluster/generic-worker",
 		},
