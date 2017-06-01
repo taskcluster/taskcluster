@@ -16,9 +16,9 @@ import (
 
 func TestGet(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
-	serv_url := server.URL
+	servURL := server.URL
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(serv_url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(servURL), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,9 +50,9 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
-	serv_url := server.URL
+	servURL := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(serv_url), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(servURL), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,9 +97,9 @@ func TestPost(t *testing.T) {
 
 func TestMultiplePost(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
-	serv_url := server.URL
+	servURL := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(serv_url), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(servURL), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,9 +155,9 @@ func TestMultiplePost(t *testing.T) {
 func TestWebSocket(t *testing.T) {
 	// t.Skip("No idea why this is failing")
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
-	serv_url := server.URL
+	servURL := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(serv_url), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(servURL), nil)
 	//runtime.Breakpoint()
 	if err != nil {
 		t.Fatal(err)
@@ -165,13 +165,13 @@ func TestWebSocket(t *testing.T) {
 	session := Client(conn, Config{Log: genLogger("ws-test")})
 	//runtime.Breakpoint()
 	// session.readDeadline = time.Now().Add(10 * time.Second)
-	ws_url := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
+	wsURL := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
 	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
 	//runtime.Breakpoint()
-	ws, _, err := websocket.NewClient(stream, ws_url, nil, 1024, 1024)
+	ws, _, err := websocket.NewClient(stream, wsURL, nil, 1024, 1024)
 	if err != nil {
 		t.Fatal(err)
 	}

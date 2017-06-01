@@ -14,7 +14,7 @@ import (
 )
 
 // utils
-var upgrader websocket.Upgrader = websocket.Upgrader{
+var upgrader = websocket.Upgrader{
 	ReadBufferSize:  64 * 1024,
 	WriteBufferSize: 64 * 1024,
 }

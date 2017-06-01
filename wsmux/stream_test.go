@@ -86,7 +86,7 @@ func TestReadDeadlineExpires(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	str.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+	_ = str.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
 	// startTime := time.Now()
 	timer := time.NewTimer(800 * time.Millisecond)
 	go func() {
@@ -125,7 +125,7 @@ func TestReadDeadlineReset(t *testing.T) {
 	// if long timer triggers before read times out then fail
 	long := time.NewTimer(2500 * time.Millisecond)
 	start := time.Now()
-	str.SetReadDeadline(start.Add(500 * time.Millisecond))
+	_ = str.SetReadDeadline(start.Add(500 * time.Millisecond))
 	go func() {
 		b := make([]byte, 1)
 		_, err := str.Read(b)
@@ -135,7 +135,7 @@ func TestReadDeadlineReset(t *testing.T) {
 		errChan <- err
 	}()
 	time.Sleep(100 * time.Millisecond)
-	str.SetReadDeadline(start.Add(1500 * time.Millisecond))
+	_ = str.SetReadDeadline(start.Add(1500 * time.Millisecond))
 	select {
 	case <-short.C:
 	case <-errChan:
@@ -166,7 +166,7 @@ func TestWriteDeadline(t *testing.T) {
 	// remote buffer size is 12 bytes, so any message larger than 12 bytes
 	// will cause write to block. Check for deadline
 	message := make([]byte, 24)
-	str.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
+	_ = str.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
 	timer := time.NewTimer(800 * time.Millisecond)
 	go func() {
 		_, err := str.Write(message)
@@ -201,7 +201,7 @@ func TestWriteDeadlineReset(t *testing.T) {
 	start := time.Now()
 	short := time.NewTimer(800 * time.Millisecond)
 	long := time.NewTimer(1800 * time.Millisecond)
-	str.SetWriteDeadline(start.Add(500 * time.Millisecond))
+	_ = str.SetWriteDeadline(start.Add(500 * time.Millisecond))
 	go func() {
 		_, err := str.Write(message)
 		if err == nil {
@@ -210,7 +210,7 @@ func TestWriteDeadlineReset(t *testing.T) {
 		errChan <- err
 	}()
 	time.Sleep(100 * time.Millisecond)
-	str.SetWriteDeadline(start.Add(1500 * time.Millisecond))
+	_ = str.SetWriteDeadline(start.Add(1500 * time.Millisecond))
 	select {
 	case <-short.C:
 	case <-errChan:

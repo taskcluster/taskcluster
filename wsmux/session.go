@@ -64,7 +64,7 @@ func (s *Session) sendKeepAlives() {
 		s.sendLock.Lock()
 		err := s.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(2*time.Second))
 		if err != nil {
-			s.abort(err)
+			_ = s.abort(err)
 			return
 		}
 		s.sendLock.Unlock()
@@ -133,7 +133,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s.conn.SetPongHandler(s.pongHandler)
 
 	s.keepAliveTimer = time.AfterFunc(s.keepAliveInterval, func() {
-		s.abort(ErrKeepAliveExpired)
+		_ = s.abort(ErrKeepAliveExpired)
 	})
 
 	go s.recvLoop()
