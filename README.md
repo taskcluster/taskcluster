@@ -2,8 +2,8 @@
 
 [![logo](https://tools.taskcluster.net/lib/assets/taskcluster-120.png)](https://tools.taskcluster.net/lib/assets/taskcluster-120.png)
 
+[![Taskcluster CI Status](https://github.taskcluster.net/v1/badge/taskcluster/generic-worker/master)](https://github.com/generic-worker/commits/master)
 [![Linux Build Status](https://img.shields.io/travis/taskcluster/generic-worker.svg?style=flat-square&label=linux+build)](https://travis-ci.org/taskcluster/generic-worker)
-[![Windows Build Status](https://img.shields.io/appveyor/ci/petemoore/generic-worker.svg?style=flat-square&label=windows+build)](https://ci.appveyor.com/project/petemoore/generic-worker)
 [![GoDoc](https://godoc.org/github.com/taskcluster/generic-worker?status.svg)](https://godoc.org/github.com/taskcluster/generic-worker)
 [![Coverage Status](https://coveralls.io/repos/taskcluster/generic-worker/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/generic-worker?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
