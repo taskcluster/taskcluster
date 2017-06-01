@@ -18,7 +18,6 @@ func (p *proxy) handler(w http.ResponseWriter, r *http.Request) {
 		p.register(w, r)
 		return
 	}
-	log.Printf("serving content:")
 	p.serve(w, r)
 }
 
@@ -32,8 +31,15 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
 	if err := p.validateRequest(r); err != nil {
 		http.Error(w, "invalid request", 401)
+		return
+	}
+
+	id := strings.TrimPrefix(strings.TrimSuffix(r.URL.Path, "/"), "/register/")
+	if _, ok := p.getWorkerSession(id); ok {
+		http.Error(w, "duplicate worker", 401)
 		return
 	}
 
@@ -41,8 +47,8 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	id := r.Header.Get("x-worker-id")
-	log.Printf("connection request for id: %s", id)
+
+	// add worker after connection is established
 	p.addWorker(id, conn, wsmux.Config{StreamBufferSize: 64 * 1024})
 }
 
@@ -50,7 +56,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request) {
 func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 	// extract worker id from path
 	wid := extractID(r.URL.Path)
-	log.Printf("request for worker %s", wid)
+
 	session, ok := p.getWorkerSession(wid)
 	if !ok {
 		// DHT code will be added here
@@ -64,6 +70,7 @@ func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check for a websocket request
+	r.Header.Set("x-webhooktunnel-original-path", r.URL.Path)
 	if websocket.IsWebSocketUpgrade(r) {
 		_ = websocketProxy(w, r, reqStream, p.upgrader)
 		return
@@ -93,7 +100,9 @@ func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 	for k, v := range resp.Header {
 		w.Header()[k] = v
 	}
+
 	w.WriteHeader(resp.StatusCode)
+
 	if resp.Body != nil {
 		_, err := io.Copy(w, resp.Body)
 		if err != nil {

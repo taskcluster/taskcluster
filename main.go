@@ -50,14 +50,14 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = c.ServeOnProxy("ws://127.0.0.1:9999/register")
+		_ = c.ServeOnProxy("ws://127.0.0.1:9999")
 	}()
 
 	// make a websocket request
 	time.Sleep(200 * time.Millisecond)
 	conn, _, err := websocket.DefaultDialer.Dial("ws://127.0.0.1:9999/workerID/", nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("cannot establish ws connection: %v", err)
 	}
 	_ = conn.WriteMessage(websocket.BinaryMessage, []byte("sending ws data to worker workerID"))
 	_, buf, err := conn.ReadMessage()

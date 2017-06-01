@@ -29,7 +29,7 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upg
 		reqHeader[k] = v
 	}
 
-	uri := "ws://" + replaceID(r.URL.Path)
+	uri := "ws://" + r.URL.Host + replaceID(r.URL.Path)
 	workerConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
 		return err
