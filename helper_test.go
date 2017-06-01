@@ -115,7 +115,7 @@ func teardown(t *testing.T) {
 	// note for tests that don't submit a task, they will have
 	// taskContext.TasksDir set to the testdata subfolder, and we don't
 	// want to delete that, which is why we delete the TasksDir
-	err := os.RemoveAll(Config.TasksDir)
+	err := os.RemoveAll(config.TasksDir)
 	if err != nil {
 		t.Fatalf("Not able to clean up after test: %v", err)
 	}
