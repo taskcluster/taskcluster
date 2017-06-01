@@ -15,7 +15,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 		MaxRunTime: 1,
 		OSGroups:   []string{"abc", "def"},
 	}
-	td := testTask()
+	td := testTask(t)
 	// don't set any scopes
 	taskID, myQueue := executeTask(t, td, payload)
 
@@ -46,7 +46,7 @@ func TestOSGroupsRespected(t *testing.T) {
 		MaxRunTime: 30,
 		OSGroups:   []string{"abc", "def"},
 	}
-	td := testTask()
+	td := testTask(t)
 	td.Scopes = []string{"generic-worker:os-group:abc", "generic-worker:os-group:def"}
 	taskID, myQueue := executeTask(t, td, payload)
 

@@ -36,7 +36,7 @@ func TestResolveResolvedTask(t *testing.T) {
 	if fullCreds.AccessToken == "" || fullCreds.ClientID == "" || fullCreds.Certificate != "" {
 		t.Skip("Skipping TestResolveResolvedTask since I need permanent TC credentials for this test")
 	}
-	td := testTask()
+	td := testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/TestResolveResolvedTask", time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
 	if err != nil {
 		t.Fatalf("%v", err)

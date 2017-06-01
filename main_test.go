@@ -16,7 +16,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 		Command:    failCommand(),
 		MaxRunTime: 10,
 	}
-	td := testTask()
+	td := testTask(t)
 	taskID, myQueue := executeTask(t, td, payload)
 
 	tsr, err := myQueue.Status(taskID)
@@ -34,7 +34,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 		Command:    sleep(4),
 		MaxRunTime: 3,
 	}
-	td := testTask()
+	td := testTask(t)
 	taskID, myQueue := executeTask(t, td, payload)
 
 	tsr, err := myQueue.Status(taskID)

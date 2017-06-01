@@ -111,7 +111,7 @@ func TestMounts(t *testing.T) {
 		MaxRunTime: 180,
 	}
 
-	td := testTask()
+	td := testTask(t)
 	td.Scopes = []string{
 		"queue:get-artifact:SampleArtifacts/_/X.txt",
 		"generic-worker:cache:banana-cache",
@@ -193,7 +193,7 @@ func TestMissingScopes(t *testing.T) {
 		MaxRunTime: 180,
 	}
 
-	td := testTask()
+	td := testTask(t)
 	// don't set any scopes
 
 	taskID, myQueue := executeTask(t, td, payload)
@@ -240,7 +240,7 @@ func TestCachesCanBeModified(t *testing.T) {
 	}
 
 	execute := func() {
-		td := testTask()
+		td := testTask(t)
 		td.Scopes = []string{"generic-worker:cache:test-modifications"}
 		executeTask(t, td, payload)
 	}
@@ -299,7 +299,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 		MaxRunTime: 180,
 	}
 
-	td := testTask()
+	td := testTask(t)
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
 	taskID, myQueue := executeTask(t, td, payload)

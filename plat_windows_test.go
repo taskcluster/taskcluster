@@ -29,7 +29,7 @@ func TestAppDataNotShared(t *testing.T) {
 		},
 		MaxRunTime: 10,
 	}
-	td1 := testTask()
+	td1 := testTask(t)
 
 	taskID1, myQueue := executeTask(t, td1, payload1)
 
@@ -47,7 +47,7 @@ func TestAppDataNotShared(t *testing.T) {
 		},
 		MaxRunTime: 10,
 	}
-	td2 := testTask()
+	td2 := testTask(t)
 
 	taskID2, _ := executeTask(t, td2, payload2)
 
@@ -92,7 +92,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 		},
 		MaxRunTime: 120,
 	}
-	td := testTask()
+	td := testTask(t)
 
 	taskID, myQueue := executeTask(t, td, payload)
 

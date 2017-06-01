@@ -335,7 +335,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 		},
 	}
 
-	td := testTask()
+	td := testTask(t)
 
 	taskID, myQueue := executeTask(t, td, payload)
 	status, err := myQueue.Status(taskID)
@@ -383,7 +383,7 @@ func TestUpload(t *testing.T) {
 			ChainOfTrust: true,
 		},
 	}
-	td := testTask()
+	td := testTask(t)
 
 	taskID, myQueue := executeTask(t, td, payload)
 
