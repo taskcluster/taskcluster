@@ -2,12 +2,15 @@ package wsmux
 
 import (
 	"bytes"
-	"github.com/gorilla/websocket"
 	"io"
 	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/gorilla/websocket"
+
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 func TestManyStreamEchoLarge(t *testing.T) {
@@ -15,7 +18,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, manyEchoConn))
 	url := server.URL
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +82,7 @@ func TestReadDeadlineExpires(t *testing.T) {
 	url := server.URL
 	defer server.Close()
 	// Open a stream and check if read expires within given time
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, err := client.Open()
@@ -113,7 +116,7 @@ func TestReadDeadlineReset(t *testing.T) {
 	url := server.URL
 	defer server.Close()
 	// Open a stream and check if read expires within given time
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, err := client.Open()
@@ -156,7 +159,7 @@ func TestWriteDeadline(t *testing.T) {
 	url := server.URL
 	defer server.Close()
 	// Open a stream and check if write expires within given time
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, err := client.Open()
@@ -190,7 +193,7 @@ func TestWriteDeadlineReset(t *testing.T) {
 	url := server.URL
 	defer server.Close()
 	// Open a stream and check if write expires within given time
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, err := client.Open()

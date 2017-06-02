@@ -22,14 +22,6 @@ func genLogger(fname string) *log.Logger {
 	return logger
 }
 
-// make ws url
-// converts http:// to ws://
-func makeWsURL(url string) string {
-	url = url[4:]
-	url = "ws" + url
-	return url
-}
-
 func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Conn)) http.Handler {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,

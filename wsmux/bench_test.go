@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 // utils
@@ -129,7 +130,7 @@ func BenchmarkTransfer(b *testing.B) {
 	server := httptest.NewServer(genTransferHandler(b))
 	url := server.URL
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -142,7 +143,7 @@ func BenchmarkMultiTransfer(b *testing.B) {
 	server := httptest.NewServer(genMultiTransferHandler(b))
 	url := server.URL
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(url), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	if err != nil {
 		b.Fatal(err)
 	}

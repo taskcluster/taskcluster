@@ -12,13 +12,14 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 func TestGet(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
 	servURL := server.URL
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(makeWsURL(servURL), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(servURL), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +53,7 @@ func TestPost(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
 	servURL := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(servURL), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(servURL), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +100,7 @@ func TestMultiplePost(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
 	servURL := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(servURL), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(servURL), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +158,7 @@ func TestWebSocket(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
 	servURL := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(servURL), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(servURL), nil)
 	//runtime.Breakpoint()
 	if err != nil {
 		t.Fatal(err)

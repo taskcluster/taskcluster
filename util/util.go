@@ -43,3 +43,11 @@ func ExtractID(path string) string {
 	}
 	return path[:index]
 }
+
+// make ws url
+// converts http:// to ws://
+func MakeWsURL(url string) string {
+	url = url[4:]
+	url = "ws" + url
+	return url
+}

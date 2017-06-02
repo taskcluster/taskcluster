@@ -4,17 +4,18 @@ import (
 	"bytes"
 	"io"
 	"testing"
-	// "time"
+
+	"net/http/httptest"
 
 	"github.com/gorilla/websocket"
-	"net/http/httptest"
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 func TestEcho(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, echoConn))
 	url := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(url), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +47,7 @@ func TestEchoLarge(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, echoConn))
 	url := server.URL
 	defer server.Close()
-	conn, _, err := (&websocket.Dialer{}).Dial(makeWsURL(url), nil)
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(url), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
