@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upgrader websocket.Upgrader) error {
@@ -29,7 +30,7 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upg
 		reqHeader[k] = v
 	}
 
-	uri := "ws://" + r.URL.Host + replaceID(r.URL.Path)
+	uri := "ws://" + r.URL.Host + util.ReplaceID(r.URL.Path)
 	workerConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
 		return err

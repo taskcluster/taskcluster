@@ -3,6 +3,7 @@ package wsmux
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"strconv"
 )
 
@@ -20,6 +21,10 @@ const (
 	msgCLS byte = 4
 
 	maxBufferCapacity int = 0xffff
+)
+
+var (
+	errMalformedHeader = errors.New("malformed header")
 )
 
 // SPEC |STREAM ID (32 bits)|MSG (8 bits)|DATA|

@@ -15,6 +15,14 @@ type proxy struct {
 	upgrader websocket.Upgrader
 }
 
+func (p *proxy) GetHandler() http.Handler {
+	return http.HandlerFunc(p.handler)
+}
+
+func (p *proxy) validateRequest(r *http.Request) error {
+	return nil
+}
+
 func NewProxy(upgrader websocket.Upgrader) *proxy {
 	p := &proxy{
 		pool:     make(map[string]*wsmux.Session),

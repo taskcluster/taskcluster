@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 /*
@@ -33,7 +34,7 @@ type Session struct {
 	keepAliveInterval    time.Duration // Keep alives are sent
 	streamAcceptDeadline time.Duration // used for timing out accept calls
 
-	logger Logger // used for logging
+	logger util.Logger // used for logging
 
 	// id of next stream opened by session. increment by 2
 	// default: 0 for server, 1 for client
@@ -105,7 +106,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 
 		keepAliveInterval:    defaultKeepAliveInterval,
 		streamAcceptDeadline: defaultStreamAcceptDeadline,
-		logger:               &nilLogger{},
+		logger:               &util.NilLogger{},
 		streamBufferSize:     DefaultCapacity,
 	}
 

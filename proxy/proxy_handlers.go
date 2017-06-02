@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
@@ -55,7 +56,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request) {
 // serve endpoints to viewers
 func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 	// extract worker id from path
-	wid := extractID(r.URL.Path)
+	wid := util.ExtractID(r.URL.Path)
 
 	session, ok := p.getWorkerSession(wid)
 	if !ok {
@@ -76,7 +77,7 @@ func (p *proxy) serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.URL.Path = replaceID(r.URL.Path)
+	r.URL.Path = util.ReplaceID(r.URL.Path)
 	err = r.Write(reqStream)
 
 	if err != nil {

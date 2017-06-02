@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"github.com/taskcluster/webhooktunnel/util"
 )
 
 const (
@@ -308,7 +310,7 @@ func (s *stream) Write(buf []byte) (int, error) {
 			return w, s.endErr
 		}
 
-		cap := min(len(buf), int(s.unblocked))
+		cap := util.Min(len(buf), int(s.unblocked))
 		if err := s.session.send(newDataFrame(s.id, buf[:cap])); err != nil {
 			return w, err
 		}

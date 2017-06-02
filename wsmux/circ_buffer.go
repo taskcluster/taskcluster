@@ -1,5 +1,9 @@
 package wsmux
 
+import (
+	"github.com/taskcluster/webhooktunnel/util"
+)
+
 type buffer struct {
 	buf   []byte
 	s     int  // start: points to first byte containing data
@@ -36,7 +40,7 @@ func (b *buffer) Read(buf []byte) (int, error) {
 		return 0, nil
 	}
 
-	c := min(len(buf), b.Len())
+	c := util.Min(len(buf), b.Len())
 	m := 0
 
 	if b.s < b.e {
