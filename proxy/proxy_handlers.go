@@ -3,7 +3,6 @@ package proxy
 import (
 	"bufio"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -14,7 +13,7 @@ import (
 
 func (p *proxy) handler(w http.ResponseWriter, r *http.Request) {
 	// register a worker
-	log.Printf("new request: %s", r.URL.Path)
+	p.logger.Printf("new request: %s, Method: %s", r.URL.Path, r.Method)
 	if strings.HasPrefix(r.URL.Path, "/register") {
 		p.register(w, r)
 		return

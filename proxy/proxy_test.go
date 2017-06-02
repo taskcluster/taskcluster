@@ -20,7 +20,7 @@ var upgrader = websocket.Upgrader{
 
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
-	proxy := NewProxy(upgrader)
+	proxy := NewProxy(Config{Upgrader: upgrader})
 	server := httptest.NewServer(proxy.GetHandler())
 	defer server.Close()
 
@@ -52,7 +52,7 @@ func TestProxyRegister(t *testing.T) {
 
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
-	proxy := NewProxy(upgrader)
+	proxy := NewProxy(Config{Upgrader: upgrader})
 	server := httptest.NewServer(proxy.GetHandler())
 	defer server.Close()
 

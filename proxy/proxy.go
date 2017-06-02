@@ -1,18 +1,24 @@
 package proxy
 
 import (
-	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
+
+type Config struct {
+	Upgrader websocket.Upgrader
+	Logger   util.Logger
+}
 
 type proxy struct {
 	m        sync.RWMutex
 	pool     map[string]*wsmux.Session
 	upgrader websocket.Upgrader
+	logger   util.Logger
 }
 
 func (p *proxy) GetHandler() http.Handler {
@@ -23,10 +29,14 @@ func (p *proxy) validateRequest(r *http.Request) error {
 	return nil
 }
 
-func NewProxy(upgrader websocket.Upgrader) *proxy {
+func NewProxy(conf Config) *proxy {
 	p := &proxy{
 		pool:     make(map[string]*wsmux.Session),
-		upgrader: upgrader,
+		upgrader: conf.Upgrader,
+		logger:   conf.Logger,
+	}
+	if p.logger == nil {
+		p.logger = &util.NilLogger{}
 	}
 	return p
 }
@@ -36,7 +46,7 @@ func (p *proxy) ListenAndServe(addr string) error {
 		Addr:    addr,
 		Handler: http.HandlerFunc(p.handler),
 	}
-	log.Printf("proxy listening on address %s", addr)
+	p.logger.Printf("proxy listening on address %s", addr)
 	return server.ListenAndServe()
 }
 
@@ -56,6 +66,6 @@ func (p *proxy) addWorker(id string, conn *websocket.Conn, config wsmux.Config) 
 		return ErrDuplicateWorker
 	}
 	p.pool[id] = wsmux.Server(conn, config)
-	log.Printf("worker with id %s registered on proxy", id)
+	p.logger.Printf("worker with id %s registered on proxy", id)
 	return nil
 }
