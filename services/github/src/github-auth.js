@@ -40,6 +40,7 @@ module.exports = async ({cfg}) => {
       try {
         gh.authenticate({type: 'token', token: instaToken.token});
         debug(`Authenticated as installation: ${inst_id}`);
+        console.log(`token: ${instaToken.token}`);
       } catch (e) {
         debug('Authentication as integration failed!');
         throw e;
