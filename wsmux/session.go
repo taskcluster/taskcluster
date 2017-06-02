@@ -158,6 +158,8 @@ func (s *Session) Accept() (net.Conn, error) {
 
 	select {
 	case <-s.closed:
+		s.mu.Lock()
+		defer s.mu.Unlock()
 		return nil, s.acceptErr
 	case str := <-s.streamCh:
 		return str, nil

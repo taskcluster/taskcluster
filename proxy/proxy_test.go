@@ -127,3 +127,70 @@ func TestProxyRequest(t *testing.T) {
 		t.Fatalf("request should fail with 404")
 	}
 }
+
+func TestProxyWebsocket(t *testing.T) {
+	proxy := NewProxy(Config{Upgrader: upgrader})
+	server := httptest.NewServer(proxy.GetHandler())
+	wsURL := util.MakeWsURL(server.URL)
+	defer server.Close()
+
+	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			http.NotFound(w, r)
+		}
+
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		mt, buf, err := conn.ReadMessage()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = conn.WriteMessage(mt, buf)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	// register worker and serve http
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientServer := &http.Server{Handler: clientHandler}
+	go func() {
+		_ = clientServer.Serve(wsmux.Client(clientWs, wsmux.Config{}))
+	}()
+	defer func() {
+		_ = clientServer.Close()
+	}()
+
+	// create websocket connection
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	// Generate 4M message
+	message := make([]byte, 0)
+	for i := 0; i < 1024*1024*4; i++ {
+		message = append(message, byte(i%127))
+	}
+
+	err = conn.WriteMessage(websocket.BinaryMessage, message)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, buf, err := conn.ReadMessage()
+	if !bytes.Equal(buf, message) {
+		t.Fatalf("websocket test failed. Bad message")
+	}
+}
