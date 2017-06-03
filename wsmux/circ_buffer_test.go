@@ -13,8 +13,8 @@ func TestCircularBuffer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if n != 5 && b.e != 5 {
-		t.Logf("n: %d s: %d e: %d", n, b.s, b.e)
+	if n != 5 && b.end != 5 {
+		t.Logf("n: %d s: %d e: %d", n, b.start, b.end)
 		t.Logf("b.buf: %v", b.buf)
 		t.Fatalf("incorrect number of bytes written")
 	}
@@ -28,7 +28,7 @@ func TestCircularBuffer(t *testing.T) {
 	}
 
 	if b.Len() != 2 {
-		t.Logf("n: %d s: %d e: %d", n, b.s, b.e)
+		t.Logf("n: %d s: %d e: %d", n, b.start, b.end)
 		t.Logf("b.buf: %v", b.buf)
 		t.Fatal("incorrect buffer length")
 	}
@@ -40,7 +40,7 @@ func TestCircularBuffer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if b.Len() != 7 {
-		t.Logf("n: %d s: %d e: %d", n, b.s, b.e)
+		t.Logf("n: %d s: %d e: %d", n, b.start, b.end)
 		t.Logf("b.buf: %v", b.buf)
 		t.Fatal("incorrect buffer length")
 	}
@@ -52,7 +52,7 @@ func TestCircularBuffer(t *testing.T) {
 		t.Fatal("incorrect number of bytes read")
 	}
 	if b.Len() != 0 {
-		t.Logf("n: %d s: %d e: %d", n, b.s, b.e)
+		t.Logf("n: %d s: %d e: %d", n, b.start, b.end)
 		t.Logf("b.buf: %v", b.buf)
 		t.Fatal("buffer should be empty")
 	}
