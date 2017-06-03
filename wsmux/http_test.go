@@ -7,13 +7,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"sync"
 	"testing"
 
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
 )
+
+type wrapStream struct {
+	*bytes.Buffer
+}
 
 func TestGet(t *testing.T) {
 	server := httptest.NewServer(genWebSocketHandler(t, wsConn))
@@ -59,11 +62,10 @@ func TestPost(t *testing.T) {
 	}
 	session := Client(conn, Config{Log: genLogger("post-test")})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
-	file, err := os.Open("post-test-data")
-	if err != nil {
-		t.Fatal(err)
-	}
-	req, err := http.NewRequest(http.MethodPost, "", file)
+	msg := []byte("message to be sent in a post request")
+	buffer := new(bytes.Buffer)
+	_, _ = buffer.Write(msg)
+	req, err := http.NewRequest(http.MethodPost, "", wrapStream{buffer})
 	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -72,15 +74,7 @@ func TestPost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = file.Close()
-	file, err = os.Open("post-test-data")
-	if err != nil {
-		t.Fatal(err)
-	}
-	buf, err := ioutil.ReadAll(file)
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	reader := bufio.NewReader(stream)
 	resp, err := http.ReadResponse(reader, nil)
 	if err != nil {
@@ -90,7 +84,7 @@ func TestPost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(b, buf) {
+	if !bytes.Equal(b, msg) {
 		t.Log(bytes.NewBuffer(b).String())
 		t.Fatal("message inconsistent")
 	}
@@ -108,12 +102,12 @@ func TestMultiplePost(t *testing.T) {
 
 	var wg sync.WaitGroup
 	sendAndWait := func() {
+		msg := []byte("message to be sent in a post request")
+		buffer := new(bytes.Buffer)
+		_, _ = buffer.Write(msg)
 		defer wg.Done()
-		file, err := os.Open("post-test-data")
-		if err != nil {
-			t.Fatal(err)
-		}
-		req, err := http.NewRequest(http.MethodPost, "", file)
+
+		req, err := http.NewRequest(http.MethodPost, "", wrapStream{buffer})
 		stream, err := session.Open()
 		if err != nil {
 			t.Fatal(err)
@@ -122,15 +116,7 @@ func TestMultiplePost(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		_ = file.Close()
-		file, err = os.Open("post-test-data")
-		if err != nil {
-			t.Fatal(err)
-		}
-		buf, err := ioutil.ReadAll(file)
-		if err != nil {
-			t.Fatal(err)
-		}
+
 		reader := bufio.NewReader(stream)
 		resp, err := http.ReadResponse(reader, nil)
 		if err != nil {
@@ -140,7 +126,7 @@ func TestMultiplePost(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !bytes.Equal(b, buf) {
+		if !bytes.Equal(b, msg) {
 			t.Log(bytes.NewBuffer(b).String())
 			t.Fatal("message inconsistent")
 		}
