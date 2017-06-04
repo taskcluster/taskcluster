@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	registerRe = regexp.MustCompile("^/register/(?P<id>[\\w]+)/?$")
-	serveRe    = regexp.MustCompile("^/(?P<id>[\\w]+)/?(?P<path>.*)$")
+	registerRe = regexp.MustCompile("^/register/(\\w+)/?$")
+	serveRe    = regexp.MustCompile("^/(\\w+)/?(.*)$")
 )
 
 type Config struct {
@@ -48,14 +48,14 @@ func New(conf Config) *Proxy {
 
 	p.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// register will be matched first
-		if registerRe.MatchString(r.URL.Path) {
+		if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
 			id := registerRe.FindStringSubmatch(r.URL.Path)[1]
 			p.register(w, r, id)
-		} else if serveRe.MatchString(r.URL.Path) {
+		} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
 			matches := serveRe.FindStringSubmatch(r.URL.Path)
 			id, path := matches[1], matches[2]
 			p.serveRequest(w, r, id, path)
-		} else {
+		} else { // if not register request or worker request, not found
 			http.NotFound(w, r)
 		}
 	})
@@ -89,7 +89,7 @@ func (p *Proxy) addWorker(id string, conn *websocket.Conn, config wsmux.Config) 
 }
 
 // register is used to connect a worker to the proxy so that it can start serving API endpoints.
-// The request must be a websocket upgrade request with a header field containing x-worker-id.
+// The request must contain the worker ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 	if !websocket.IsWebSocketUpgrade(r) {
@@ -119,27 +119,33 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 // serveRequest serves worker endpoints to viewers
 func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
 	session, ok := p.getWorkerSession(id)
+
+	// 404 if worker is not registered on this proxy
 	if !ok {
 		// DHT code will be added here
 		http.Error(w, "worker not found", 404)
 		return
 	}
+
+	// Open a stream to the worker session
 	reqStream, err := session.Open()
 	if err != nil {
 		http.Error(w, "could not connect to the worker", 500)
 		return
 	}
 
-	// check for a websocket request
+	// set original path as header
 	r.Header.Set("x-webhooktunnel-original-path", r.URL.Path)
+
+	// check for a websocket request
 	if websocket.IsWebSocketUpgrade(r) {
 		_ = websocketProxy(w, r, reqStream, p.upgrader)
 		return
 	}
 
+	// rewrite path for worker and write request
 	r.URL.Path = "/" + path
 	err = r.Write(reqStream)
-
 	if err != nil {
 		http.Error(w, "error sending request to worker", 500)
 		return
@@ -162,8 +168,10 @@ func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 		w.Header()[k] = v
 	}
 
+	// dump headers
 	w.WriteHeader(resp.StatusCode)
 
+	// stream body to viewer
 	if resp.Body != nil {
 		_, err := io.Copy(w, resp.Body)
 		if err != nil {
