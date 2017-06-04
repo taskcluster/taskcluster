@@ -16,7 +16,7 @@ func main() {
 
 	port := os.Getenv("TASKCLUSTER_PROXY_PORT")
 	if port == "" {
-		port = ":9999"
+		port = "9999"
 	}
 	// TODO: Read TLS config
 	server := &http.Server{Addr: ":" + port, Handler: proxy.GetHandler()}
