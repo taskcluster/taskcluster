@@ -1,4 +1,4 @@
-package client
+package whclient
 
 import (
 	"net/http"
@@ -13,16 +13,18 @@ import (
 type Client struct {
 	Id string
 	// handler should be a mux to handle different end points
-	Handler http.Handler
-	Config  wsmux.Config
+	Handler   http.Handler
+	Config    wsmux.Config
+	ProxyAddr string // Address of proxy server for connection
 }
 
 // ServeOnProxy serves endpoints registered on handler on the proxy
-func (c *Client) ServeOnProxy(proxyAddr string) error {
-	addr := strings.TrimSuffix(proxyAddr, "/") + "/register/" + c.Id + "/"
+func (c *Client) ServeOnProxy() error {
+	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.Id
 
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
+		// TODO: Reconnect logic
 		return err
 	}
 

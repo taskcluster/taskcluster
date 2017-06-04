@@ -14,7 +14,12 @@ func main() {
 		Logger: log.New(os.Stdout, "proxy", log.Lshortfile),
 	})
 
-	server := &http.Server{Addr: ":9999", Handler: proxy.GetHandler()}
+	port := os.Getenv("TASKCLUSTER_PROXY_PORT")
+	if port == "" {
+		port = ":9999"
+	}
+	// TODO: Read TLS config
+	server := &http.Server{Addr: ":" + port, Handler: proxy.GetHandler()}
 	defer func() {
 		_ = server.Close()
 	}()
