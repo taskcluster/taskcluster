@@ -12,12 +12,15 @@ import (
 
 func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upgrader websocket.Upgrader) error {
 	// at this point, we are sure that r is a http websocket upgrade request
+	// connClosure returns the wsmux stream to Dial
 	connClosure := func(network, addr string) (net.Conn, error) {
 		return stream, nil
 	}
 	dialer := &websocket.Dialer{NetDial: connClosure}
 
 	// create new header
+	// copy request headers to new header. Avoid websocket headers
+	// as these will be added by Dial
 	reqHeader := make(http.Header)
 	for k, v := range r.Header {
 		if k == "Upgrade" ||
