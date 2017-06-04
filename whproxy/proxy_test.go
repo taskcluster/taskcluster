@@ -79,9 +79,9 @@ func TestProxyRequest(t *testing.T) {
 	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			w.Write([]byte("GET successful"))
+			_, _ = w.Write([]byte("GET successful"))
 		case http.MethodPost:
-			io.Copy(w, r.Body)
+			_, _ = io.Copy(w, r.Body)
 		default:
 			http.NotFound(w, r)
 		}

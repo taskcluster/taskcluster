@@ -1,5 +1,6 @@
 #wsmux
 wsmux/test_log
 wsmux/*-test
+whproxy/*-test
 webhooktunnel
 main

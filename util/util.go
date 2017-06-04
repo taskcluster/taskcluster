@@ -2,7 +2,6 @@ package util
 
 import (
 	"regexp"
-	"strings"
 )
 
 // Logger is used by Session to write logs
@@ -11,11 +10,16 @@ type Logger interface {
 	Print(a ...interface{})
 }
 
+// NilLogger implements Logger and discards all writes
 type NilLogger struct{}
 
+// Printf discards writes
 func (n *NilLogger) Printf(format string, a ...interface{}) {}
-func (n *NilLogger) Print(a ...interface{})                 {}
 
+// Print discards writes
+func (n *NilLogger) Print(a ...interface{}) {}
+
+// Min returns minimum of two ints
 func Min(a, b int) int {
 	if a < b {
 		return a
@@ -25,21 +29,12 @@ func Min(a, b int) int {
 
 var (
 	replaceHTTPSRe = regexp.MustCompile("^(http)(s?)")
-	idRe           = regexp.MustCompile("^/(\\w+)(/?)")
+	idReplaceRe    = regexp.MustCompile("^/(\\w+)(/?)")
 )
 
 // ReplaceID replaces id in "/{id}/path" with "/path"
 func ReplaceID(path string) string {
-	return idRe.ReplaceAllString(path, "/")
-}
-
-func ExtractID(path string) string {
-	path = strings.TrimPrefix(path, "/")
-	index := strings.Index(path, "/")
-	if index < 0 {
-		return path
-	}
-	return path[:index]
+	return idReplaceRe.ReplaceAllString(path, "/")
 }
 
 // MakeWsURL converts http:// to ws://

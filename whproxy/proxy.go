@@ -17,11 +17,16 @@ var (
 	serveRe    = regexp.MustCompile("^/(\\w+)/?(.*)$")
 )
 
+// Config for Proxy. Accepts a websocket.Upgrader and a Logger.
+// Default value for Upgrade ReadBufferSize and WriteBufferSize is 1024 bytes.
+// Default Logger is NilLogger.
 type Config struct {
 	Upgrader websocket.Upgrader
 	Logger   util.Logger
 }
 
+// Proxy is used to send http and ws requests to workers.
+// New proxy can be created by using whproxy.New()
 type Proxy struct {
 	m        sync.RWMutex
 	pool     map[string]*wsmux.Session
@@ -113,7 +118,7 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 	}
 
 	// add worker after connection is established
-	p.addWorker(id, conn, wsmux.Config{StreamBufferSize: 64 * 1024})
+	_ = p.addWorker(id, conn, wsmux.Config{StreamBufferSize: 64 * 1024})
 }
 
 // serveRequest serves worker endpoints to viewers
@@ -161,7 +166,7 @@ func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	// manually proxy response
 	// clear responseWriter headers and write response headers instead
-	for k, _ := range w.Header() {
+	for k := range w.Header() {
 		w.Header().Del(k)
 	}
 	for k, v := range resp.Header {

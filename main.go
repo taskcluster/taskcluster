@@ -24,5 +24,5 @@ func main() {
 		_ = server.Close()
 	}()
 	log.Printf("starting server on %s", server.Addr)
-	server.ListenAndServe()
+	_ = server.ListenAndServe()
 }

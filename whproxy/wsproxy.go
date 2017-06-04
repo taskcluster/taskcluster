@@ -94,7 +94,6 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn) error {
 			}
 		}
 	}
-	return nil
 }
 
 func forwardControl(messageType int, dest *websocket.Conn) func(string) error {
