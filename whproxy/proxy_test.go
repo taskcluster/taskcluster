@@ -1,11 +1,13 @@
-package proxy
+package whproxy
 
 import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gorilla/websocket"
@@ -18,9 +20,18 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 64 * 1024,
 }
 
+func genLogger(fname string) *log.Logger {
+	file, err := os.Create(fname)
+	if err != nil {
+		panic(err)
+	}
+	logger := log.New(file, "session: ", log.Lshortfile)
+	return logger
+}
+
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
-	proxy := NewProxy(Config{Upgrader: upgrader})
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("register-test")})
 	server := httptest.NewServer(proxy.GetHandler())
 	defer server.Close()
 
@@ -52,7 +63,7 @@ func TestProxyRegister(t *testing.T) {
 
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
-	proxy := NewProxy(Config{Upgrader: upgrader})
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("request-test")})
 	server := httptest.NewServer(proxy.GetHandler())
 	defer server.Close()
 
@@ -95,6 +106,7 @@ func TestProxyRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 	if resp.StatusCode != 200 {
+		t.Log(resp)
 		t.Fatalf("bad status code on get request")
 	}
 	reply, err := ioutil.ReadAll(resp.Body)
@@ -129,7 +141,7 @@ func TestProxyRequest(t *testing.T) {
 }
 
 func TestProxyWebsocket(t *testing.T) {
-	proxy := NewProxy(Config{Upgrader: upgrader})
+	proxy := New(Config{Upgrader: upgrader})
 	server := httptest.NewServer(proxy.GetHandler())
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
