@@ -44,7 +44,7 @@ type Session struct {
 
 	closeConn bool // used by Close(). if true then conn is closed. default: true
 
-	remoteCloseCallback func() // callback when remote session is closed. default: nil
+	closeCallback func() // callback when remote session is closed. default: nil
 
 	streamBufferSize int // buffer size of each stream
 
@@ -108,7 +108,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 		streamAcceptDeadline: defaultStreamAcceptDeadline,
 		logger:               &util.NilLogger{},
 		streamBufferSize:     DefaultCapacity,
-		remoteCloseCallback:  conf.RemoteCloseCallback,
+		closeCallback:        conf.CloseCallback,
 	}
 
 	// streams opened by server are even numbered
@@ -234,9 +234,9 @@ func (s *Session) Close() error {
 
 	// invoke callback
 	defer func() {
-		if s.remoteCloseCallback != nil {
+		if s.closeCallback != nil {
 			s.logger.Printf("invoking close callback")
-			s.remoteCloseCallback()
+			s.closeCallback()
 		}
 	}()
 

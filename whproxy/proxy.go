@@ -137,7 +137,7 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 	// generate config
 	conf := wsmux.Config{
 		StreamBufferSize: 64 * 1024,
-		RemoteCloseCallback: func() {
+		CloseCallback: func() {
 			p.removeWorker(id)
 			if p.onSessionRemove != nil {
 				p.onSessionRemove(id)

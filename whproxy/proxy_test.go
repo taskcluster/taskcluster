@@ -396,9 +396,10 @@ func TestWebSocketClosure(t *testing.T) {
 
 }
 
+// Ensures that session is removed once websocket connection is closed
 func TestProxySessionRemoved(t *testing.T) {
 	done := make(chan bool, 1)
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("session-remove-test")})
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test")})
 	proxy.SetSessionRemoveHandler(func(id string) {
 		close(done)
 	})
