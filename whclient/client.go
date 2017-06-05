@@ -41,6 +41,12 @@ type RetryConfig struct {
 
 // NextInterval calculates the next interval based on the current interval
 func (r RetryConfig) NextInterval(currentInterval time.Duration) time.Duration {
+	// check if current interval is max interval
+	// avoid calculation
+	if currentInterval == r.MaxInterval {
+		return currentInterval
+	}
+
 	delta := r.RandomizationFactor * float64(currentInterval)
 	minInterval := float64(currentInterval) - delta
 	maxInterval := float64(currentInterval) + delta
