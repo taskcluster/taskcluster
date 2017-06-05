@@ -331,16 +331,7 @@ func TestWebSocketClosure(t *testing.T) {
 	defer server.Close()
 
 	// mechanism to know test has completed
-	var wg sync.WaitGroup
-	wg.Add(1)
-	done := func() chan bool {
-		tdone := make(chan bool, 1)
-		go func() {
-			wg.Wait()
-			close(tdone)
-		}()
-		return tdone
-	}
+	done := make(chan bool, 1)
 
 	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !websocket.IsWebSocketUpgrade(r) {
@@ -356,7 +347,7 @@ func TestWebSocketClosure(t *testing.T) {
 			_, _, err = conn.NextReader()
 			if err != nil && websocket.IsCloseError(err, websocket.CloseAbnormalClosure) {
 				logger.Printf("closed")
-				wg.Done()
+				close(done)
 				break
 			}
 			if err != nil {
@@ -400,7 +391,7 @@ func TestWebSocketClosure(t *testing.T) {
 	select {
 	case <-timer.C:
 		t.Fatalf("test failed: timeout")
-	case <-done():
+	case <-done:
 	}
 
 }
