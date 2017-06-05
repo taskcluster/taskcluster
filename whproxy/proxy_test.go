@@ -39,7 +39,7 @@ func genLogger(fname string) *log.Logger {
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
 	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("register-test")})
-	server := httptest.NewServer(proxy.GetHandler())
+	server := httptest.NewServer(proxy)
 	defer server.Close()
 
 	// get url
@@ -71,7 +71,7 @@ func TestProxyRegister(t *testing.T) {
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
 	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("request-test")})
-	server := httptest.NewServer(proxy.GetHandler())
+	server := httptest.NewServer(proxy)
 	defer server.Close()
 
 	// get url
@@ -149,7 +149,7 @@ func TestProxyRequest(t *testing.T) {
 
 func TestProxyWebsocket(t *testing.T) {
 	proxy := New(Config{Upgrader: upgrader})
-	server := httptest.NewServer(proxy.GetHandler())
+	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
 
@@ -219,7 +219,7 @@ func TestWebsocketProxyControl(t *testing.T) {
 	logger := genLogger("ws-control-test")
 	proxy := New(Config{Upgrader: upgrader})
 	//serve proxy
-	server := httptest.NewServer(proxy.GetHandler())
+	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
 
@@ -341,7 +341,7 @@ func TestWebSocketClosure(t *testing.T) {
 	logger := genLogger("ws-closure-test")
 	proxy := New(Config{Upgrader: upgrader})
 	//serve proxy
-	server := httptest.NewServer(proxy.GetHandler())
+	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
 
@@ -419,7 +419,8 @@ func TestProxySessionRemoved(t *testing.T) {
 		close(done)
 	})
 
-	server := httptest.NewServer(proxy.GetHandler())
+	server := httptest.NewServer(proxy)
+
 	defer server.Close()
 
 	wsURL := util.MakeWsURL(server.URL)

@@ -69,15 +69,16 @@ func New(conf Config) *Proxy {
 	return p
 }
 
+// SetSessionRemoveHandler which is set when a wsmux Session is removed from the proxy.
 func (p *Proxy) SetSessionRemoveHandler(h func(string)) {
 	p.m.Lock()
 	defer p.m.Unlock()
 	p.onSessionRemove = h
 }
 
-// GetHandler returns the router assosciated with the proxy
-func (p *Proxy) GetHandler() http.Handler {
-	return p.handler
+// ServeHTTP implements http.Handler
+func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	p.handler.ServeHTTP(w, r)
 }
 
 // getWorkerSession returns true if a session with the given id is present
@@ -86,19 +87,6 @@ func (p *Proxy) getWorkerSession(id string) (*wsmux.Session, bool) {
 	defer p.m.RUnlock()
 	s, ok := p.pool[id]
 	return s, ok
-}
-
-// addWorker adds a new worker to the pool
-func (p *Proxy) addWorker(id string, conn *websocket.Conn, config wsmux.Config) error {
-	p.m.Lock()
-	defer p.m.Unlock()
-	if _, ok := p.pool[id]; ok {
-		return ErrDuplicateWorker
-	}
-
-	p.logger.Printf("worker with id %s registered on proxy", id)
-	p.pool[id] = wsmux.Server(conn, config)
-	return nil
 }
 
 // removeWorker is an idempotent operation which deletes a worker from the proxy's
@@ -120,14 +108,19 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 	}
 
 	if err := p.validateRequest(r); err != nil {
-		http.Error(w, "invalid request", 401)
+		http.Error(w, http.StatusText(400), 400)
 		return
 	}
 
-	if _, ok := p.getWorkerSession(id); ok {
-		http.Error(w, "duplicate worker", 401)
+	p.m.Lock()
+	if _, ok := p.pool[id]; ok {
+		p.m.Unlock()
+		http.Error(w, http.StatusText(400), 400)
 		return
 	}
+	// add sentinel value
+	p.pool[id] = &wsmux.Session{}
+	p.m.Unlock()
 
 	conn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -145,8 +138,10 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 		},
 		Log: p.logger,
 	}
-	// add worker after connection is established
-	_ = p.addWorker(id, conn, conf)
+
+	p.m.Lock()
+	defer p.m.Unlock()
+	p.pool[id] = wsmux.Server(conn, conf)
 }
 
 // serveRequest serves worker endpoints to viewers
