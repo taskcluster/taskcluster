@@ -1,18 +1,22 @@
 package main
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 
 	"github.com/taskcluster/webhooktunnel/whproxy"
 )
 
+var logger = &log.Logger{
+	Out:       os.Stdout,
+	Formatter: new(log.TextFormatter),
+	Level:     log.DebugLevel,
+}
+
 // starts proxy on a random port on the system
 func main() {
-	proxy := whproxy.New(whproxy.Config{
-		Logger: log.New(os.Stdout, "proxy", log.Lshortfile),
-	})
+	proxy := whproxy.New(whproxy.Config{Logger: logger})
 
 	port := os.Getenv("TASKCLUSTER_PROXY_PORT")
 	if port == "" {
@@ -23,6 +27,6 @@ func main() {
 	defer func() {
 		_ = server.Close()
 	}()
-	log.Printf("starting server on %s", server.Addr)
+	logger.Printf("starting server on %s", server.Addr)
 	_ = server.ListenAndServe()
 }

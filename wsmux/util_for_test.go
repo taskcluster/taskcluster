@@ -3,11 +3,12 @@ package wsmux
 import (
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"sync"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 )
@@ -18,7 +19,11 @@ func genLogger(fname string) *log.Logger {
 	if err != nil {
 		panic(err)
 	}
-	logger := log.New(file, "session: ", log.Lshortfile)
+	logger := &log.Logger{
+		Out:       file,
+		Formatter: new(log.TextFormatter),
+		Level:     log.DebugLevel,
+	}
 	return logger
 }
 

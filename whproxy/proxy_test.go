@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
@@ -25,7 +25,11 @@ func genLogger(fname string) *log.Logger {
 	if err != nil {
 		panic(err)
 	}
-	logger := log.New(file, "session: ", log.Lshortfile)
+	logger := &log.Logger{
+		Out:       file,
+		Formatter: new(log.TextFormatter),
+		Level:     log.DebugLevel,
+	}
 	return logger
 }
 
