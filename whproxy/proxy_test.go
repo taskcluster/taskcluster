@@ -404,3 +404,32 @@ func TestWebSocketClosure(t *testing.T) {
 	}
 
 }
+
+func TestProxySessionRemoved(t *testing.T) {
+	done := make(chan bool, 1)
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("session-remove-test")})
+	proxy.SetSessionRemoveHandler(func(id string) {
+		close(done)
+	})
+
+	server := httptest.NewServer(proxy.GetHandler())
+	defer server.Close()
+
+	wsURL := util.MakeWsURL(server.URL)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timeout := time.NewTimer(4 * time.Second)
+	err = conn.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case <-done:
+	case <-timeout.C:
+		t.Fatalf("test timed out")
+	}
+}

@@ -95,8 +95,9 @@ func (p *Proxy) addWorker(id string, conn *websocket.Conn, config wsmux.Config) 
 	if _, ok := p.pool[id]; ok {
 		return ErrDuplicateWorker
 	}
-	p.pool[id] = wsmux.Server(conn, config)
+
 	p.logger.Printf("worker with id %s registered on proxy", id)
+	p.pool[id] = wsmux.Server(conn, config)
 	return nil
 }
 
@@ -142,6 +143,7 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 				p.onSessionRemove(id)
 			}
 		},
+		Log: p.logger,
 	}
 	// add worker after connection is established
 	_ = p.addWorker(id, conn, conf)

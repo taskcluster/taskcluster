@@ -108,6 +108,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 		streamAcceptDeadline: defaultStreamAcceptDeadline,
 		logger:               &util.NilLogger{},
 		streamBufferSize:     DefaultCapacity,
+		remoteCloseCallback:  conf.RemoteCloseCallback,
 	}
 
 	// streams opened by server are even numbered
@@ -218,11 +219,14 @@ func (s *Session) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Check if channel has been closed
-	if s.IsClosed() {
+	select {
+	case <-s.closed:
+		s.logger.Printf("session already closed")
 		return nil
+	default:
 	}
 
+	// Check if channel has been closed
 	var err error
 	if s.closeConn {
 		err = s.conn.Close()
@@ -231,6 +235,7 @@ func (s *Session) Close() error {
 	// invoke callback
 	defer func() {
 		if s.remoteCloseCallback != nil {
+			s.logger.Printf("invoking close callback")
 			s.remoteCloseCallback()
 		}
 	}()
@@ -241,6 +246,7 @@ func (s *Session) Close() error {
 	s.streams = nil
 	s.acceptErr = ErrSessionClosed
 
+	s.logger.Printf("closing session: ")
 	close(s.closed)
 	return err
 }
@@ -337,13 +343,12 @@ func (s *Session) asyncPushStream(str *stream) {
 
 // abort session when error occurs
 func (s *Session) abort(e error) error {
-	s.mu.Lock()
-	s.logger.Print(e)
-	s.acceptErr = e
-
 	if s.IsClosed() {
-		return nil
+		return e
 	}
+	s.mu.Lock()
+	s.logger.Printf("session aborting: %v", e)
+	s.acceptErr = e
 	s.mu.Unlock()
 	return s.Close()
 }
