@@ -90,6 +90,8 @@ func (c *Client) Reconnect() (*websocket.Conn, error) {
 	}
 }
 
+// initializeRetryValues sets the RetryConfig parameteres to their
+// default value
 func (c *Client) initializeRetryValues() {
 	if c.Retry.InitialInterval == 0 {
 		c.Retry.InitialInterval = defaultInitialInterval

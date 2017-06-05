@@ -42,6 +42,8 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upg
 	if err != nil {
 		return err
 	}
+
+	// bridge both websocket connections
 	return bridgeConn(workerConn, viewerConn)
 }
 
@@ -55,6 +57,14 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	conn1.SetPongHandler(forwardControl(websocket.PongMessage, conn2))
 	conn2.SetPongHandler(forwardControl(websocket.PongMessage, conn1))
 
+	// set close handlers
+	conn1.SetCloseHandler(func(code int, text string) error {
+		return conn2.Close()
+	})
+	conn2.SetCloseHandler(func(code int, text string) error {
+		return conn1.Close()
+	})
+
 	var err1, err2 error
 	wg.Add(2)
 	go func() {
@@ -67,6 +77,7 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	}()
 
 	wg.Wait()
+
 	if err1 != nil {
 		return err1
 	}
@@ -77,21 +88,22 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 }
 
 func copyWsData(dest *websocket.Conn, src *websocket.Conn) error {
-	defer func() {
-		_ = dest.Close()
-	}()
 	for {
 		mtype, buf, err := src.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err) {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure,
+				websocket.CloseGoingAway) {
 				return err
 			}
+			return nil
 		}
 		err = dest.WriteMessage(mtype, buf)
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err) {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure,
+				websocket.CloseGoingAway) {
 				return err
 			}
+			return nil
 		}
 	}
 }

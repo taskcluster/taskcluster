@@ -8,6 +8,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
+
+	"sync"
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -194,9 +197,9 @@ func TestProxyWebsocket(t *testing.T) {
 		_ = conn.Close()
 	}()
 
-	// Generate 4M message
+	// Generate 1M message
 	message := make([]byte, 0)
-	for i := 0; i < 1024*1024*4; i++ {
+	for i := 0; i < 1024*1024; i++ {
 		message = append(message, byte(i%127))
 	}
 
@@ -209,4 +212,111 @@ func TestProxyWebsocket(t *testing.T) {
 	if !bytes.Equal(buf, message) {
 		t.Fatalf("websocket test failed. Bad message")
 	}
+}
+
+// ensure control messages are proxied
+func TestWebsocketProxyControl(t *testing.T) {
+	logger := genLogger("ws-closure-test")
+	proxy := New(Config{Upgrader: upgrader})
+	//serve proxy
+	server := httptest.NewServer(proxy.GetHandler())
+	wsURL := util.MakeWsURL(server.URL)
+	defer server.Close()
+
+	// mechanism to know test has completed
+	var wg sync.WaitGroup
+	wg.Add(2)
+	done := func() chan bool {
+		tdone := make(chan bool, 1)
+		go func() {
+			wg.Wait()
+			close(tdone)
+		}()
+		return tdone
+	}
+
+	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			http.NotFound(w, r)
+		}
+
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// set ping handler. Decrement wg to ensure ping frame was received
+		conn.SetPingHandler(func(appData string) error {
+			defer wg.Done()
+			return conn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(500*time.Millisecond))
+		})
+
+		// Read message to make sure ping was received
+		for {
+			_, _, err = conn.NextReader()
+			if err != nil {
+				break
+			}
+		}
+	})
+
+	// register worker and serve http
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientServer := &http.Server{Handler: clientHandler}
+	go func() {
+		_ = clientServer.Serve(wsmux.Client(clientWs, wsmux.Config{}))
+	}()
+	defer func() {
+		_ = clientServer.Close()
+	}()
+
+	// create websocket connection
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	// ****************************
+	// Set Pong Handler. Decrement wg when pong handler fires to ensure that
+	// pong is called
+	conn.SetPongHandler(func(appData string) error {
+		defer wg.Done()
+		logger.Printf("received pong: %s", appData)
+		if appData != "ping" {
+			t.Fatal("bad pong")
+		}
+		return nil
+	})
+
+	// set timer for timing out test
+	timer := time.NewTimer(3 * time.Second)
+
+	// start reading messages to ensure pong is received
+	go func() {
+		for {
+			_, _, err = conn.NextReader()
+			if err != nil {
+				break
+			}
+		}
+	}()
+
+	err = conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(1*time.Second))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case <-timer.C:
+		t.Fatalf("test failed: timeout")
+	case <-done():
+	}
+
 }
