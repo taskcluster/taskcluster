@@ -31,7 +31,7 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 	defer server.Close()
 
 	client := &Client{
-		Id:        "workerID",
+		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
 	_, err := client.GetSession(true)
@@ -49,7 +49,7 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	defer server.Close()
 
 	client := &Client{
-		Id:        "workerID",
+		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
 
@@ -65,6 +65,12 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	}
 
 	if end.Sub(start) < client.Retry.MaxElapsedTime {
-		t.Fatalf("should run for atleast %s seconds", client.Retry.MaxElapsedTime)
+		t.Fatalf("should run for atleast %d milliseconds", client.Retry.MaxElapsedTime)
+	}
+
+	// maximum time accounting for jitter
+	maxTime := client.Retry.MaxElapsedTime + 200*time.Millisecond
+	if end.Sub(start) > maxTime {
+		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
 }

@@ -12,7 +12,7 @@ import (
 // Client is used to connect to a proxy and serve endpoints
 // defined in Handler
 type Client struct {
-	Id string
+	ID string
 	// handler should be a mux to handle different end points
 	Handler   http.Handler
 	Config    wsmux.Config
@@ -27,6 +27,7 @@ const (
 	defaultMultiplier      = 1.5
 )
 
+// RetryConfig contains exponential backoff parameters for retrying connections
 type RetryConfig struct {
 	// Retry values
 	InitialInterval time.Duration // Default = 500 * time.Millisecond
@@ -39,7 +40,7 @@ type RetryConfig struct {
 // The session can be used as a listener to serve HTTP requests
 // eg http.Serve(client)
 func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
-	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.Id
+	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil && retry {
@@ -58,7 +59,7 @@ func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
 // using an exponential backoff algorithm
 // TODO: Add randomization if required
 func (c *Client) Reconnect() (*websocket.Conn, error) {
-	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.Id
+	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
 	c.initializeRetryValues()
 
