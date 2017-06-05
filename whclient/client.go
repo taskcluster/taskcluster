@@ -1,6 +1,7 @@
 package whclient
 
 import (
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -21,19 +22,34 @@ type Client struct {
 }
 
 const (
-	defaultInitialInterval = 500 * time.Millisecond
-	defaultMaxInterval     = 60 * time.Second
-	defaultMaxElapsedTime  = 3 * time.Minute
-	defaultMultiplier      = 1.5
+	defaultInitialInterval     = 500 * time.Millisecond
+	defaultMaxInterval         = 60 * time.Second
+	defaultMaxElapsedTime      = 3 * time.Minute
+	defaultMultiplier          = 1.5
+	defaultRandomizationFactor = 0.5
 )
 
 // RetryConfig contains exponential backoff parameters for retrying connections
 type RetryConfig struct {
 	// Retry values
-	InitialInterval time.Duration // Default = 500 * time.Millisecond
-	MaxInterval     time.Duration // Default = 60 * time.Second
-	MaxElapsedTime  time.Duration // Default = 3 * time.Minute
-	Multiplier      float64       // Default = 1.5
+	InitialInterval     time.Duration // Default = 500 * time.Millisecond
+	MaxInterval         time.Duration // Default = 60 * time.Second
+	MaxElapsedTime      time.Duration // Default = 3 * time.Minute
+	Multiplier          float64       // Default = 1.5
+	RandomizationFactor float64       // Default = 0.5
+}
+
+// NextInterval calculates the next interval based on the current interval
+func (r RetryConfig) NextInterval(currentInterval time.Duration) time.Duration {
+	delta := r.RandomizationFactor * float64(currentInterval)
+	minInterval := float64(currentInterval) - delta
+	maxInterval := float64(currentInterval) + delta
+	nextInterval := minInterval + (rand.Float64() * (maxInterval - minInterval + 1))
+	interval := time.Duration(nextInterval)
+	if interval > r.MaxInterval {
+		interval = r.MaxInterval
+	}
+	return interval
 }
 
 // GetSession connects to the proxy and establishes a wsmux Client session
@@ -57,7 +73,6 @@ func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
 
 // Reconnect attempts to establish a connection to the server
 // using an exponential backoff algorithm
-// TODO: Add randomization if required
 func (c *Client) Reconnect() (*websocket.Conn, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
@@ -80,11 +95,7 @@ func (c *Client) Reconnect() (*websocket.Conn, error) {
 				return conn, err
 			}
 			// increment backoff
-			nextInterval := time.Duration(float64(currentInterval) * c.Retry.Multiplier)
-			if nextInterval > c.Retry.MaxInterval {
-				nextInterval = c.Retry.MaxInterval
-			}
-			currentInterval = nextInterval
+			currentInterval = c.Retry.NextInterval(currentInterval)
 			_ = backoffTimer.Reset(currentInterval)
 		}
 	}
@@ -105,5 +116,9 @@ func (c *Client) initializeRetryValues() {
 
 	if c.Retry.Multiplier < 1.0 {
 		c.Retry.Multiplier = defaultMultiplier
+	}
+
+	if c.Retry.RandomizationFactor == 0 {
+		c.Retry.RandomizationFactor = defaultRandomizationFactor
 	}
 }
