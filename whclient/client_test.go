@@ -1,14 +1,33 @@
 package whclient
 
 import (
+	"bufio"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
+	"github.com/taskcluster/webhooktunnel/wsmux"
 )
+
+func genLogger(fname string) *log.Logger {
+	file, err := os.Create(fname)
+	if err != nil {
+		panic(err)
+	}
+	logger := &log.Logger{
+		Out:       file,
+		Formatter: new(log.TextFormatter),
+		Level:     log.DebugLevel,
+	}
+	return logger
+}
 
 var upgrader = websocket.Upgrader{}
 
@@ -73,4 +92,97 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	if end.Sub(start) > maxTime {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
+}
+
+// Check if client session can handle simple http
+func TestClientCanServeHTTP(t *testing.T) {
+	// Create a handler for the client
+	clientMux := mux.NewRouter()
+	clientMux.Handle("/valid", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte("valid"))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+
+	logger := genLogger("client-http-test")
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if websocket.IsWebSocketUpgrade(r) {
+			conn, err := upgrader.Upgrade(w, r, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			session := wsmux.Server(conn, wsmux.Config{Log: genLogger("client-http-session-test")})
+
+			// make request to supported endpoint
+			reqStream, err := session.Open()
+			if err != nil {
+				t.Fatal(err)
+			}
+			req, err := http.NewRequest(http.MethodGet, "/valid", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = req.Write(reqStream)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_ = reqStream.Close()
+
+			reader := bufio.NewReader(reqStream)
+			response, err := http.ReadResponse(reader, req)
+			if response == nil {
+				t.Fatal("response must not be nil")
+			}
+			logger.Print(response)
+			if response.StatusCode != 200 {
+				t.Fatal("request unsuccessful")
+			}
+
+			// make request to unsupported endpoint
+			// should fail
+			reqStream, err = session.Open()
+			if err != nil {
+				t.Fatal(err)
+			}
+			req, err = http.NewRequest(http.MethodGet, "/", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = req.Write(reqStream)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_ = reqStream.Close()
+
+			reader = bufio.NewReader(reqStream)
+			response, err = http.ReadResponse(reader, req)
+			if response == nil {
+				t.Fatal("response must not be nil")
+			}
+			logger.Print(response)
+			if response.StatusCode != 404 {
+				t.Fatalf("response code was %d. must be : 404", response.StatusCode)
+			}
+			_ = conn.Close()
+			return
+		}
+		http.Error(w, "unauthorised", 401)
+	}))
+
+	defer server.Close()
+
+	clServer := &http.Server{Handler: clientMux}
+	client := &Client{
+		ID:        "workerID",
+		ProxyAddr: util.MakeWsURL(server.URL),
+	}
+
+	clientSession, err := client.GetSession(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_ = clServer.Serve(clientSession)
 }
