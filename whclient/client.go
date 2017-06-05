@@ -56,6 +56,7 @@ func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
 
 // Reconnect attempts to establish a connection to the server
 // using an exponential backoff algorithm
+// TODO: Add randomization if required
 func (c *Client) Reconnect() (*websocket.Conn, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.Id
 
