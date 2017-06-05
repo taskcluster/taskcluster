@@ -28,11 +28,12 @@ type Config struct {
 // Proxy is used to send http and ws requests to workers.
 // New proxy can be created by using whproxy.New()
 type Proxy struct {
-	m        sync.RWMutex
-	pool     map[string]*wsmux.Session
-	upgrader websocket.Upgrader
-	logger   util.Logger
-	handler  http.Handler
+	m               sync.RWMutex
+	pool            map[string]*wsmux.Session
+	upgrader        websocket.Upgrader
+	logger          util.Logger
+	handler         http.Handler
+	onSessionRemove func(string)
 }
 
 func (p *Proxy) validateRequest(r *http.Request) error {
@@ -68,6 +69,12 @@ func New(conf Config) *Proxy {
 	return p
 }
 
+func (p *Proxy) SetSessionRemoveHandler(h func(string)) {
+	p.m.Lock()
+	defer p.m.Unlock()
+	p.onSessionRemove = h
+}
+
 // GetHandler returns the router assosciated with the proxy
 func (p *Proxy) GetHandler() http.Handler {
 	return p.handler
@@ -91,6 +98,15 @@ func (p *Proxy) addWorker(id string, conn *websocket.Conn, config wsmux.Config) 
 	p.pool[id] = wsmux.Server(conn, config)
 	p.logger.Printf("worker with id %s registered on proxy", id)
 	return nil
+}
+
+// removeWorker is an idempotent operation which deletes a worker from the proxy's
+// worker pool
+func (p *Proxy) removeWorker(id string) {
+	p.m.Lock()
+	defer p.m.Unlock()
+	delete(p.pool, id)
+	p.logger.Printf("worker with id %s removed from proxy", id)
 }
 
 // register is used to connect a worker to the proxy so that it can start serving API endpoints.
@@ -117,8 +133,18 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id string) {
 		panic(err)
 	}
 
+	// generate config
+	conf := wsmux.Config{
+		StreamBufferSize: 64 * 1024,
+		RemoteCloseCallback: func() {
+			p.removeWorker(id)
+			if p.onSessionRemove != nil {
+				p.onSessionRemove(id)
+			}
+		},
+	}
 	// add worker after connection is established
-	_ = p.addWorker(id, conn, wsmux.Config{StreamBufferSize: 64 * 1024})
+	_ = p.addWorker(id, conn, conf)
 }
 
 // serveRequest serves worker endpoints to viewers
