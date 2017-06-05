@@ -225,7 +225,7 @@ func TestWebsocketProxyControl(t *testing.T) {
 
 	// mechanism to know test has completed
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(4)
 	done := func() chan bool {
 		tdone := make(chan bool, 1)
 		go func() {
@@ -251,6 +251,17 @@ func TestWebsocketProxyControl(t *testing.T) {
 			return conn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(500*time.Millisecond))
 		})
 
+		// set pong handler. Decrement wg when called.
+		conn.SetPongHandler(func(appData string) error {
+			defer wg.Done()
+			logger.Printf("received pong: %s", appData)
+			if appData != "ping" {
+				t.Fatal("bad pong")
+			}
+			return nil
+		})
+
+		err = conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(1*time.Second))
 		// Read message to make sure ping was received
 		for {
 			_, _, err = conn.NextReader()
@@ -283,7 +294,6 @@ func TestWebsocketProxyControl(t *testing.T) {
 		_ = conn.Close()
 	}()
 
-	// ****************************
 	// Set Pong Handler. Decrement wg when pong handler fires to ensure that
 	// pong is called
 	conn.SetPongHandler(func(appData string) error {
@@ -293,6 +303,11 @@ func TestWebsocketProxyControl(t *testing.T) {
 			t.Fatal("bad pong")
 		}
 		return nil
+	})
+
+	conn.SetPingHandler(func(appData string) error {
+		defer wg.Done()
+		return conn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(500*time.Millisecond))
 	})
 
 	// set timer for timing out test
