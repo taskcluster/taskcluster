@@ -216,7 +216,7 @@ func TestProxyWebsocket(t *testing.T) {
 
 // ensure control messages are proxied
 func TestWebsocketProxyControl(t *testing.T) {
-	logger := genLogger("ws-closure-test")
+	logger := genLogger("ws-control-test")
 	proxy := New(Config{Upgrader: upgrader})
 	//serve proxy
 	server := httptest.NewServer(proxy.GetHandler())
@@ -309,6 +309,90 @@ func TestWebsocketProxyControl(t *testing.T) {
 	}()
 
 	err = conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(1*time.Second))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case <-timer.C:
+		t.Fatalf("test failed: timeout")
+	case <-done():
+	}
+
+}
+
+// Ensure websocket close is proxied
+func TestWebSocketClosure(t *testing.T) {
+	logger := genLogger("ws-closure-test")
+	proxy := New(Config{Upgrader: upgrader})
+	//serve proxy
+	server := httptest.NewServer(proxy.GetHandler())
+	wsURL := util.MakeWsURL(server.URL)
+	defer server.Close()
+
+	// mechanism to know test has completed
+	var wg sync.WaitGroup
+	wg.Add(1)
+	done := func() chan bool {
+		tdone := make(chan bool, 1)
+		go func() {
+			wg.Wait()
+			close(tdone)
+		}()
+		return tdone
+	}
+
+	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			http.NotFound(w, r)
+		}
+
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for {
+			_, _, err = conn.NextReader()
+			if err != nil && websocket.IsCloseError(err, websocket.CloseAbnormalClosure) {
+				logger.Printf("closed")
+				wg.Done()
+				break
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+	})
+
+	// register worker and serve http
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clientServer := &http.Server{Handler: clientHandler}
+	go func() {
+		_ = clientServer.Serve(wsmux.Client(clientWs, wsmux.Config{}))
+	}()
+	defer func() {
+		_ = clientServer.Close()
+	}()
+
+	// create websocket connection
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// set timer for timing out test
+	timer := time.NewTimer(4 * time.Second)
+
+	// Close connection
+	// will cause abnormal closure as Close will cause the underlying connection
+	// to close without sending any close frame
+	err = conn.Close()
 	if err != nil {
 		t.Fatal(err)
 	}

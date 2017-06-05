@@ -3,7 +3,6 @@ package whproxy
 import (
 	"net"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -48,8 +47,6 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upg
 }
 
 func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
-	var wg sync.WaitGroup
-
 	// set ping and pong handlers
 	conn1.SetPingHandler(forwardControl(websocket.PingMessage, conn2))
 	conn2.SetPingHandler(forwardControl(websocket.PingMessage, conn1))
@@ -65,18 +62,32 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 		return conn1.Close()
 	})
 
-	var err1, err2 error
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		err1 = copyWsData(conn1, conn2)
-	}()
-	go func() {
-		defer wg.Done()
-		err2 = copyWsData(conn2, conn1)
+	// ensure connections are closed after bridge exits
+	defer func() {
+		_ = conn1.Close()
+		_ = conn2.Close()
 	}()
 
-	wg.Wait()
+	var err1, err2 error
+	done := make(chan bool, 1)
+	go func() {
+		err1 = copyWsData(conn1, conn2)
+		select {
+		case <-done:
+		default:
+			close(done)
+		}
+	}()
+	go func() {
+		err2 = copyWsData(conn2, conn1)
+		select {
+		case <-done:
+		default:
+			close(done)
+		}
+	}()
+
+	<-done
 
 	if err1 != nil {
 		return err1
