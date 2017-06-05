@@ -3,6 +3,7 @@ package whclient
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/wsmux"
@@ -16,19 +17,89 @@ type Client struct {
 	Handler   http.Handler
 	Config    wsmux.Config
 	ProxyAddr string // Address of proxy server for connection
+	Retry     RetryConfig
 }
 
-// ServeOnProxy serves endpoints registered on handler on the proxy
-func (c *Client) ServeOnProxy() error {
+const (
+	defaultInitialInterval = 500 * time.Millisecond
+	defaultMaxInterval     = 60 * time.Second
+	defaultMaxElapsedTime  = 3 * time.Minute
+	defaultMultiplier      = 1.5
+)
+
+type RetryConfig struct {
+	// Retry values
+	InitialInterval time.Duration // Default = 500 * time.Millisecond
+	MaxInterval     time.Duration // Default = 60 * time.Second
+	MaxElapsedTime  time.Duration // Default = 3 * time.Minute
+	Multiplier      float64       // Default = 1.5
+}
+
+// GetSession connects to the proxy and establishes a wsmux Client session
+// The session can be used as a listener to serve HTTP requests
+// eg http.Serve(client)
+func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.Id
 
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
-	if err != nil {
+	if err != nil && retry {
 		// TODO: Reconnect logic
-		return err
+		conn, err = c.Reconnect()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	client := wsmux.Client(conn, c.Config)
-	server := &http.Server{Handler: c.Handler}
-	return server.Serve(client)
+	return client, nil
+}
+
+// Reconnect attempts to establish a connection to the server
+// using an exponential backoff algorithm
+func (c *Client) Reconnect() (*websocket.Conn, error) {
+	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.Id
+
+	c.initializeRetryValues()
+
+	// planned on supporting MaxElapsedTime == 0, but no apparent use case.
+	// please advise
+	maxTimer := time.NewTimer(c.Retry.MaxElapsedTime)
+
+	currentInterval := c.Retry.InitialInterval
+	backoffTimer := time.NewTimer(currentInterval)
+
+	for {
+		select {
+		case <-maxTimer.C:
+			return nil, ErrRetryTimedOut
+		case <-backoffTimer.C:
+			conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
+			if err == nil {
+				return conn, err
+			}
+			// increment backoff
+			nextInterval := time.Duration(float64(currentInterval) * c.Retry.Multiplier)
+			if nextInterval > c.Retry.MaxInterval {
+				nextInterval = c.Retry.MaxInterval
+			}
+			currentInterval = nextInterval
+			_ = backoffTimer.Reset(currentInterval)
+		}
+	}
+}
+
+func (c *Client) initializeRetryValues() {
+	if c.Retry.InitialInterval == 0 {
+		c.Retry.InitialInterval = defaultInitialInterval
+	}
+	if c.Retry.MaxInterval == 0 {
+		c.Retry.MaxInterval = defaultMaxInterval
+	}
+	if c.Retry.MaxElapsedTime == 0 {
+		c.Retry.MaxElapsedTime = defaultMaxElapsedTime
+	}
+
+	if c.Retry.Multiplier < 1.0 {
+		c.Retry.Multiplier = defaultMultiplier
+	}
 }
