@@ -2,7 +2,7 @@ package whclient
 
 import (
 	"math/rand"
-	"net/http"
+	"net"
 	"strings"
 	"time"
 
@@ -15,15 +15,14 @@ import (
 type Client struct {
 	ID string
 	// handler should be a mux to handle different end points
-	Handler   http.Handler
 	Config    wsmux.Config
 	ProxyAddr string // Address of proxy server for connection
 	Retry     RetryConfig
 }
 
 const (
-	defaultInitialInterval     = 500 * time.Millisecond
-	defaultMaxInterval         = 60 * time.Second
+	defaultInitialDelay        = 500 * time.Millisecond
+	defaultMaxDelay            = 60 * time.Second
 	defaultMaxElapsedTime      = 3 * time.Minute
 	defaultMultiplier          = 1.5
 	defaultRandomizationFactor = 0.5
@@ -32,42 +31,41 @@ const (
 // RetryConfig contains exponential backoff parameters for retrying connections
 type RetryConfig struct {
 	// Retry values
-	InitialInterval     time.Duration // Default = 500 * time.Millisecond
-	MaxInterval         time.Duration // Default = 60 * time.Second
+	InitialDelay        time.Duration // Default = 500 * time.Millisecond
+	MaxDelay            time.Duration // Default = 60 * time.Second
 	MaxElapsedTime      time.Duration // Default = 3 * time.Minute
 	Multiplier          float64       // Default = 1.5
 	RandomizationFactor float64       // Default = 0.5
 }
 
-// NextInterval calculates the next interval based on the current interval
-func (r RetryConfig) NextInterval(currentInterval time.Duration) time.Duration {
+// NextDelay calculates the next interval based on the current interval
+func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
 	// check if current interval is max interval
 	// avoid calculation
-	if currentInterval == r.MaxInterval {
-		return currentInterval
+	if currentDelay == r.MaxDelay {
+		return currentDelay
 	}
 
-	delta := r.RandomizationFactor * float64(currentInterval)
-	minInterval := float64(currentInterval) - delta
-	maxInterval := float64(currentInterval) + delta
-	nextInterval := minInterval + (rand.Float64() * (maxInterval - minInterval + 1))
-	interval := time.Duration(nextInterval)
-	if interval > r.MaxInterval {
-		interval = r.MaxInterval
+	delta := r.RandomizationFactor * float64(currentDelay)
+	minDelay := float64(currentDelay) - delta
+	maxDelay := float64(currentDelay) + delta
+	nextDelay := minDelay + (rand.Float64() * (maxDelay - minDelay + 1))
+	Delay := time.Duration(nextDelay)
+	if Delay > r.MaxDelay {
+		Delay = r.MaxDelay
 	}
-	return interval
+	return Delay
 }
 
-// GetSession connects to the proxy and establishes a wsmux Client session
+// GetListener connects to the proxy and returns a net.Listener instance
 // The session can be used as a listener to serve HTTP requests
 // eg http.Serve(client)
-func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
+func (c *Client) GetListener(retry bool) (net.Listener, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil && retry {
-		// TODO: Reconnect logic
-		conn, err = c.Reconnect()
+		conn, err = c.reconnect()
 		if err != nil {
 			return nil, err
 		}
@@ -77,23 +75,23 @@ func (c *Client) GetSession(retry bool) (*wsmux.Session, error) {
 	return client, nil
 }
 
-// Reconnect attempts to establish a connection to the server
+// reconnect attempts to establish a connection to the server
 // using an exponential backoff algorithm
-func (c *Client) Reconnect() (*websocket.Conn, error) {
+func (c *Client) reconnect() (*websocket.Conn, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
 	c.initializeRetryValues()
 
 	// planned on supporting MaxElapsedTime == 0, but no apparent use case.
 	// please advise
-	maxTimer := time.NewTimer(c.Retry.MaxElapsedTime)
+	maxTimer := time.After(c.Retry.MaxElapsedTime)
 
-	currentInterval := c.Retry.InitialInterval
-	backoffTimer := time.NewTimer(currentInterval)
+	currentDelay := c.Retry.InitialDelay
+	backoffTimer := time.NewTimer(currentDelay)
 
 	for {
 		select {
-		case <-maxTimer.C:
+		case <-maxTimer:
 			return nil, ErrRetryTimedOut
 		case <-backoffTimer.C:
 			conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
@@ -101,8 +99,8 @@ func (c *Client) Reconnect() (*websocket.Conn, error) {
 				return conn, err
 			}
 			// increment backoff
-			currentInterval = c.Retry.NextInterval(currentInterval)
-			_ = backoffTimer.Reset(currentInterval)
+			currentDelay = c.Retry.NextDelay(currentDelay)
+			_ = backoffTimer.Reset(currentDelay)
 		}
 	}
 }
@@ -110,11 +108,11 @@ func (c *Client) Reconnect() (*websocket.Conn, error) {
 // initializeRetryValues sets the RetryConfig parameteres to their
 // default value
 func (c *Client) initializeRetryValues() {
-	if c.Retry.InitialInterval == 0 {
-		c.Retry.InitialInterval = defaultInitialInterval
+	if c.Retry.InitialDelay == 0 {
+		c.Retry.InitialDelay = defaultInitialDelay
 	}
-	if c.Retry.MaxInterval == 0 {
-		c.Retry.MaxInterval = defaultMaxInterval
+	if c.Retry.MaxDelay == 0 {
+		c.Retry.MaxDelay = defaultMaxDelay
 	}
 	if c.Retry.MaxElapsedTime == 0 {
 		c.Retry.MaxElapsedTime = defaultMaxElapsedTime

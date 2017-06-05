@@ -53,7 +53,7 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
-	_, err := client.GetSession(true)
+	_, err := client.GetListener(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,11 +72,11 @@ func TestExponentialBackoffFailure(t *testing.T) {
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
 
-	client.Retry.InitialInterval = 200 * time.Millisecond
+	client.Retry.InitialDelay = 200 * time.Millisecond
 	client.Retry.MaxElapsedTime = 2 * time.Second
 
 	start := time.Now()
-	_, err := client.GetSession(true)
+	_, err := client.GetListener(true)
 	end := time.Now()
 
 	if err == nil {
@@ -179,7 +179,7 @@ func TestClientCanServeHTTP(t *testing.T) {
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
 
-	clientSession, err := client.GetSession(true)
+	clientSession, err := client.GetListener(true)
 	if err != nil {
 		t.Fatal(err)
 	}
