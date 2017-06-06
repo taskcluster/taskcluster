@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 6 Jun 2017 at 12:24:00 UTC. The code was generated
+// Tue, 6 Jun 2017 at 22:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -401,6 +401,46 @@ func (awsProvisioner *AwsProvisioner) BackendStatus() (*BackendStatusResponse, e
 	cd := tcclient.Client(*awsProvisioner)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/backend-status", new(BackendStatusResponse), nil)
 	return responseObject.(*BackendStatusResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
+// Shut down every single EC2 instance associated with this workerType.
+// This means every single last one.  You probably don't want to use
+// this method, which is why it has an obnoxious name.  Don't even try
+// to claim you didn't know what this method does!
+//
+// **This API end-point is experimental and may be subject to change without warning.**
+//
+// Required scopes:
+//   * aws-provisioner:terminate-all-worker-type:<workerType>
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#terminateAllInstancesOfWorkerType
+func (awsProvisioner *AwsProvisioner) TerminateAllInstancesOfWorkerType(workerType string) error {
+	cd := tcclient.Client(*awsProvisioner)
+	_, _, err := (&cd).APICall(nil, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/terminate-all-instances", nil, nil)
+	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
+// Shut down every single EC2 instance managed by this provisioner.
+// This means every single last one.  You probably don't want to use
+// this method, which is why it has an obnoxious name.  Don't even try
+// to claim you didn't know what this method does!
+//
+// **This API end-point is experimental and may be subject to change without warning.**
+//
+// Required scopes:
+//   * aws-provisioner:terminate-all-worker-type:*
+//
+// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#shutdownEverySingleEc2InstanceManagedByThisProvisioner
+func (awsProvisioner *AwsProvisioner) ShutdownEverySingleEc2InstanceManagedByThisProvisioner() error {
+	cd := tcclient.Client(*awsProvisioner)
+	_, _, err := (&cd).APICall(nil, "POST", "/shutdown/every/single/ec2/instance/managed/by/this/provisioner", nil, nil)
+	return err
 }
 
 // Respond without doing anything.
