@@ -69,25 +69,20 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	}()
 
 	var err1, err2 error
-	done := make(chan bool, 1)
+	done1, done2 := make(chan bool, 1), make(chan bool, 1)
 	go func() {
 		err1 = copyWsData(conn1, conn2)
-		select {
-		case <-done:
-		default:
-			close(done)
-		}
+		close(done1)
 	}()
 	go func() {
 		err2 = copyWsData(conn2, conn1)
-		select {
-		case <-done:
-		default:
-			close(done)
-		}
+		close(done2)
 	}()
 
-	<-done
+	select {
+	case <-done1:
+	case <-done2:
+	}
 
 	if err1 != nil {
 		return err1
