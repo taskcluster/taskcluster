@@ -17,4 +17,7 @@ var (
 
 	// ErrAuthFailed is returned when jwt parsing fails with an error
 	ErrAuthFailed = errors.New("auth failed")
+
+	// ErrMissingSecret is returned when the proxy does not load both required secrets
+	ErrMissingSecret = errors.New("both secrets must be loaded")
 )

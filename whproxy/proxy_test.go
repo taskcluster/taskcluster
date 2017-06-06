@@ -39,13 +39,20 @@ func genLogger(fname string) *log.Logger {
 
 // hardcoded jwts for testing
 const (
-	workerIDjwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ0Yy1wcm94eSIsImlhdCI6MTQ5NjczMzI5OCwiZXhwIjoxNTI4MjY5MzA0LCJhdWQiOiJ3b3JrZXIiLCJzdWIiOiJ3b3JrZXJJRCJ9.UTbzKUrXQ9Mu-CAhkqH06bzeZ5okVAa0HYP12FTr9Mc"
-	wsWorkerjwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ0Yy1wcm94eSIsImlhdCI6MTQ5NjczMzI5OCwiZXhwIjoxNTI4MjY5MzA0LCJhdWQiOiJ3b3JrZXIiLCJzdWIiOiJ3c1dvcmtlciJ9.JV2oWBjxV3wgAEmerEdLJvf54Rm8fM9lhuf_tilo1lI"
+	workerIDjwt       = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0YXNrY2x1c3Rlci1hdXRoIiwic3ViIjoidGMtYXV0aC1jbGllbnRJZCIsIm5iZiI6MTQ5Njc3NTQ5OSwiZXhwIjoxNDk5MzY3NDk5LCJpYXQiOjE0OTY3NzU0OTksImp0aSI6ImlkMTIzNDU2IiwidHlwIjoidGMtcHJveHkubmV0L3JlZ2lzdGVyIiwidGlkIjoid29ya2VySUQifQ.23RIXRXNcFH7rSjiOS_jB_JAYu8060exZxorZTIEFuk"
+	workerIDBackupjwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0YXNrY2x1c3Rlci1hdXRoIiwic3ViIjoidGMtYXV0aC1jbGllbnRJZCIsIm5iZiI6MTQ5Njc3NTQ5OSwiZXhwIjoxNDk5MzY3NDk5LCJpYXQiOjE0OTY3NzU0OTksImp0aSI6ImlkMTIzNDU2IiwidHlwIjoidGMtcHJveHkubmV0L3JlZ2lzdGVyIiwidGlkIjoid29ya2VySUQifQ.KDjFGmo_wEfSxn4zMq6BM3D4wXndZduSDzGh1JaqkDs"
+	wsWorkerjwt       = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0YXNrY2x1c3Rlci1hdXRoIiwic3ViIjoidGMtYXV0aC1jbGllbnRJZCIsIm5iZiI6MTQ5Njc3NTQ5OSwiZXhwIjoxNDk5MzY3NDk5LCJpYXQiOjE0OTY3NzU0OTksImp0aSI6ImlkMTIzNDU2IiwidHlwIjoidGMtcHJveHkubmV0L3JlZ2lzdGVyIiwidGlkIjoid3NXb3JrZXIifQ.6xuree00XAk4_7857af14RBW7QAarb9161zRZl1euQM"
 )
 
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("register-test"), JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger("register-test"),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -77,7 +84,13 @@ func TestProxyRegister(t *testing.T) {
 
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("request-test"), JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger("request-test"),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -158,7 +171,12 @@ func TestProxyRequest(t *testing.T) {
 }
 
 func TestProxyWebsocket(t *testing.T) {
-	proxy := New(Config{Upgrader: upgrader, JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
@@ -229,7 +247,13 @@ func TestProxyWebsocket(t *testing.T) {
 // ensure control messages are proxied
 func TestWebsocketProxyControl(t *testing.T) {
 	logger := genLogger("ws-control-test")
-	proxy := New(Config{Upgrader: upgrader, JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger("request-test"),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	//serve proxy
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
@@ -353,7 +377,12 @@ func TestWebsocketProxyControl(t *testing.T) {
 // Ensure websocket close is proxied
 func TestWebSocketClosure(t *testing.T) {
 	logger := genLogger("ws-closure-test")
-	proxy := New(Config{Upgrader: upgrader, JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	//serve proxy
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
@@ -430,7 +459,12 @@ func TestWebSocketClosure(t *testing.T) {
 // Ensures that session is removed once websocket connection is closed
 func TestProxySessionRemoved(t *testing.T) {
 	done := make(chan bool, 1)
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test"), JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	proxy.SetSessionRemoveHandler(func(id string) {
 		close(done)
 	})
@@ -462,7 +496,12 @@ func TestProxySessionRemoved(t *testing.T) {
 
 // Simple test to ensure that proxy authenticates valid jwt and rejects other jwt
 func TestProxyAuth(t *testing.T) {
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test"), JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -485,7 +524,12 @@ func TestProxyAuth(t *testing.T) {
 
 // Check that only 1 connection is active even if multiple connections are made
 func TestProxyMultiAuth(t *testing.T) {
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test"), JWTSecret: []byte("test-secret")})
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -540,5 +584,35 @@ func TestProxyMultiAuth(t *testing.T) {
 		if atomic.LoadInt32(&activeStreams) != 1 {
 			t.Fatal("only 1 stream should be active")
 		}
+	}
+}
+
+// Ensure authentication with both secrets works
+func TestProxySecrets(t *testing.T) {
+	proxy_config := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy := New(proxy_config)
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+	wsURL := util.MakeWsURL(server.URL)
+
+	// try connecting wsWorker with secret A
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+
+	_, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	header.Set("Authorization", "Bearer "+workerIDBackupjwt)
+
+	_, _, err = websocket.DefaultDialer.Dial(wsURL+"/register/workerID", header)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

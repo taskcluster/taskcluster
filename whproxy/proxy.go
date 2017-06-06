@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"io"
 	"net/http"
+	"os"
 	"regexp"
 	"sync"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
@@ -18,13 +20,18 @@ var (
 	serveRe    = regexp.MustCompile("^/(\\w+)/?(.*)$")
 )
 
+const (
+	monthUnix = 31 * 24 * time.Hour
+)
+
 // Config for Proxy. Accepts a websocket.Upgrader and a Logger.
 // Default value for Upgrade ReadBufferSize and WriteBufferSize is 1024 bytes.
 // Default Logger is NilLogger.
 type Config struct {
-	Upgrader  websocket.Upgrader
-	Logger    util.Logger
-	JWTSecret []byte
+	Upgrader   websocket.Upgrader
+	Logger     util.Logger
+	JWTSecretA []byte
+	JWTSecretB []byte
 }
 
 // Proxy is used to send http and ws requests to workers.
@@ -36,7 +43,29 @@ type Proxy struct {
 	logger          util.Logger
 	handler         http.Handler
 	onSessionRemove func(string)
-	jwtSecret       []byte
+	jwtSecretA      []byte
+	jwtSecretB      []byte
+}
+
+// LoadSecretsFromEnv loads jwt secrets from env variables
+// Environment variables must be:
+// TASKCLUSTER_PROXY_SECRET_A="a secret"
+// TASKCLUSTER_PROXY_SECRET_B="another secret"
+func (p *Proxy) LoadSecretsFromEnv() error {
+	p.m.Lock()
+	defer p.m.Unlock()
+
+	secretA := os.Getenv("TASKCLUSTER_PROXY_SECRET_A")
+	secretB := os.Getenv("TASKCLUSTER_PROXY_SECRET_B")
+
+	if secretA == "" || secretB == "" {
+		return ErrMissingSecret
+	}
+
+	p.jwtSecretA = []byte(secretA)
+	p.jwtSecretB = []byte(secretB)
+
+	return nil
 }
 
 // validate jwt
@@ -47,20 +76,44 @@ func (p *Proxy) validateJWT(id string, tokenString string) error {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrUnexpectedSigningMethod
 		}
-		return p.jwtSecret, nil
+		return p.jwtSecretA, nil
 	})
+
+	if err != nil {
+		token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, ErrUnexpectedSigningMethod
+			}
+			return p.jwtSecretB, nil
+		})
+	}
 
 	if err != nil {
 		return ErrAuthFailed
 	}
 
 	// check claims
+	now := time.Now().Unix()
 	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
+	if !ok {
 		return ErrTokenNotValid
 	}
-	if claims["sub"] != id {
-		return ErrTokenNotValid
+
+	if !claims.VerifyExpiresAt(now, true) {
+		return ErrAuthFailed
+	}
+	if !claims.VerifyIssuedAt(now, true) {
+		return ErrAuthFailed
+	}
+	if !claims.VerifyNotBefore(now, true) {
+		return ErrAuthFailed
+	}
+	if claims["tid"] != id {
+		return ErrAuthFailed
+	}
+
+	if claims["exp"].(float64)-claims["nbf"].(float64) > float64(monthUnix) {
+		return ErrAuthFailed
 	}
 
 	// TODO: Other validation checks
@@ -70,14 +123,15 @@ func (p *Proxy) validateJWT(id string, tokenString string) error {
 // New returns a pointer to a new proxy instance
 func New(conf Config) *Proxy {
 	p := &Proxy{
-		pool:      make(map[string]*wsmux.Session),
-		upgrader:  conf.Upgrader,
-		logger:    conf.Logger,
-		jwtSecret: conf.JWTSecret,
+		pool:       make(map[string]*wsmux.Session),
+		upgrader:   conf.Upgrader,
+		logger:     conf.Logger,
+		jwtSecretA: conf.JWTSecretA,
+		jwtSecretB: conf.JWTSecretB,
 	}
 
-	if p.jwtSecret == nil {
-		panic("no secret loaded")
+	if p.jwtSecretA == nil || p.jwtSecretB == nil {
+		panic("both secrets must be loaded")
 	}
 
 	if p.logger == nil {
