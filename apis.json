@@ -975,7 +975,7 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://github.taskcluster.net/v1",
-      "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks",
+      "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
       "entries": [
         {
           "args": [],
@@ -1049,6 +1049,48 @@
           "route": "/repository/<owner>/<repo>/<branch>/latest",
           "stability": "experimental",
           "title": "Latest Status for Branch",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo",
+            "sha"
+          ],
+          "description": "For a given changeset (SHA) of a repository, this will attach a \"commit status\"\non github. These statuses are links displayed next to each revision.\nThe status is either OK (green check) or FAILURE (red cross), \nmade of a custom title and link.",
+          "input": "http://schemas.taskcluster.net/github/v1/create-status.json",
+          "method": "post",
+          "name": "createStatus",
+          "query": [],
+          "route": "/repository/<owner>/<repo>/statuses/<sha>",
+          "scopes": [
+            [
+              "github:create-status:<owner>/<repo>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Post a status against a given changeset",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo",
+            "number"
+          ],
+          "description": "For a given Issue or Pull Request of a repository, this will write a new message.",
+          "input": "http://schemas.taskcluster.net/github/v1/create-comment.json",
+          "method": "post",
+          "name": "createComment",
+          "query": [],
+          "route": "/repository/<owner>/<repo>/issues/<number>/comments",
+          "scopes": [
+            [
+              "github:create-comment:<owner>/<repo>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Post a comment on a given GitHub Issue or Pull Request",
           "type": "function"
         },
         {
@@ -1522,19 +1564,6 @@
       "entries": [
         {
           "args": [],
-          "description": "Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.\n\nThe supplied audience must be on a whitelist of TaskCluster-related\nsites configured in the login service.  This is not a general-purpose\nassertion-verification service!",
-          "input": "http://schemas.taskcluster.net/login/v1/persona-request.json",
-          "method": "post",
-          "name": "credentialsFromPersonaAssertion",
-          "output": "http://schemas.taskcluster.net/login/v1/credentials-response.json",
-          "query": [],
-          "route": "/persona",
-          "stability": "experimental",
-          "title": "Get TaskCluster credentials given a Persona assertion",
-          "type": "function"
-        },
-        {
-          "args": [],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
           "name": "ping",
@@ -1924,14 +1953,6 @@
           "route": "/task/<taskId>",
           "scopes": [
             [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:define-task:<provisionerId>/<workerType>",
-              "queue:task-group-id:<schedulerId>/<taskGroupId>",
-              "queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>"
-            ],
-            [
               "queue:create-task:<priority>:<provisionerId>/<workerType>",
               "queue:scheduler-id:<schedulerId>"
             ]
@@ -1953,14 +1974,8 @@
           "route": "/task/<taskId>/define",
           "scopes": [
             [
-              "queue:define-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:create-task:<provisionerId>/<workerType>"
-            ],
-            [
-              "queue:define-task:<provisionerId>/<workerType>",
-              "queue:task-group-id:<schedulerId>/<taskGroupId>"
+              "queue:create-task:<priority>:<provisionerId>/<workerType>",
+              "queue:scheduler-id:<schedulerId>"
             ]
           ],
           "stability": "deprecated",

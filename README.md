@@ -1414,7 +1414,10 @@ The github service, typically available at
 messages in response to GitHub events.
 
 This document describes the API end-point for consuming GitHub
-web hooks
+web hooks, as well as some useful consumer APIs.
+
+When Github forbids an action, this service returns an HTTP 403
+with code ForbiddenByGithub.
 #### Consume GitHub WebHook
 Capture a GitHub event and publish it via pulse, if it's a push,
 release or pull request.
@@ -1507,6 +1510,53 @@ github.latest(owner='value', repo='value', branch='value') # -> None
 # Async call
 await asyncGithub.latest(owner, repo, branch) # -> None
 await asyncGithub.latest(owner='value', repo='value', branch='value') # -> None
+```
+
+#### Post a status against a given changeset
+For a given changeset (SHA) of a repository, this will attach a "commit status"
+on github. These statuses are links displayed next to each revision.
+The status is either OK (green check) or FAILURE (red cross), 
+made of a custom title and link.
+
+
+
+Takes the following arguments:
+
+  * `owner`
+  * `repo`
+  * `sha`
+
+Required [input schema](http://schemas.taskcluster.net/github/v1/create-status.json)
+
+```python
+# Sync calls
+github.createStatus(owner, repo, sha, payload) # -> None`
+github.createStatus(payload, owner='value', repo='value', sha='value') # -> None
+# Async call
+await asyncGithub.createStatus(owner, repo, sha, payload) # -> None
+await asyncGithub.createStatus(payload, owner='value', repo='value', sha='value') # -> None
+```
+
+#### Post a comment on a given GitHub Issue or Pull Request
+For a given Issue or Pull Request of a repository, this will write a new message.
+
+
+
+Takes the following arguments:
+
+  * `owner`
+  * `repo`
+  * `number`
+
+Required [input schema](http://schemas.taskcluster.net/github/v1/create-comment.json)
+
+```python
+# Sync calls
+github.createComment(owner, repo, number, payload) # -> None`
+github.createComment(payload, owner='value', repo='value', number='value') # -> None
+# Async call
+await asyncGithub.createComment(owner, repo, number, payload) # -> None
+await asyncGithub.createComment(payload, owner='value', repo='value', number='value') # -> None
 ```
 
 #### Ping Server
@@ -2139,25 +2189,6 @@ systems and TaskCluster credentials.  It acts as the server side of
 https://tools.taskcluster.net.  If you are working on federating logins
 with TaskCluster, this is probably *not* the service you are looking for.
 Instead, use the federated login support in the tools site.
-#### Get TaskCluster credentials given a Persona assertion
-Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.
-
-The supplied audience must be on a whitelist of TaskCluster-related
-sites configured in the login service.  This is not a general-purpose
-assertion-verification service!
-
-
-Required [input schema](http://schemas.taskcluster.net/login/v1/persona-request.json)
-
-Required [output schema](http://schemas.taskcluster.net/login/v1/credentials-response.json)
-
-```python
-# Sync calls
-login.credentialsFromPersonaAssertion(payload) # -> result`
-# Async call
-await asyncLogin.credentialsFromPersonaAssertion(payload) # -> result
-```
-
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.

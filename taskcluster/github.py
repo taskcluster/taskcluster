@@ -18,7 +18,10 @@ class Github(BaseClient):
     messages in response to GitHub events.
 
     This document describes the API end-point for consuming GitHub
-    web hooks
+    web hooks, as well as some useful consumer APIs.
+
+    When Github forbids an action, this service returns an HTTP 403
+    with code ForbiddenByGithub.
     """
 
     classOptions = {
@@ -93,6 +96,35 @@ class Github(BaseClient):
 
         return self._makeApiCall(self.funcinfo["latest"], *args, **kwargs)
 
+    def createStatus(self, *args, **kwargs):
+        """
+        Post a status against a given changeset
+
+        For a given changeset (SHA) of a repository, this will attach a "commit status"
+        on github. These statuses are links displayed next to each revision.
+        The status is either OK (green check) or FAILURE (red cross),
+        made of a custom title and link.
+
+        This method takes input: ``http://schemas.taskcluster.net/github/v1/create-status.json``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["createStatus"], *args, **kwargs)
+
+    def createComment(self, *args, **kwargs):
+        """
+        Post a comment on a given GitHub Issue or Pull Request
+
+        For a given Issue or Pull Request of a repository, this will write a new message.
+
+        This method takes input: ``http://schemas.taskcluster.net/github/v1/create-comment.json``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["createComment"], *args, **kwargs)
+
     def ping(self, *args, **kwargs):
         """
         Ping Server
@@ -121,6 +153,18 @@ class Github(BaseClient):
                                  'repository',
                                  'sha'],
             'route': '/builds',
+            'stability': 'experimental'},
+        "createComment": {           'args': ['owner', 'repo', 'number'],
+            'input': 'http://schemas.taskcluster.net/github/v1/create-comment.json',
+            'method': 'post',
+            'name': 'createComment',
+            'route': '/repository/<owner>/<repo>/issues/<number>/comments',
+            'stability': 'experimental'},
+        "createStatus": {           'args': ['owner', 'repo', 'sha'],
+            'input': 'http://schemas.taskcluster.net/github/v1/create-status.json',
+            'method': 'post',
+            'name': 'createStatus',
+            'route': '/repository/<owner>/<repo>/statuses/<sha>',
             'stability': 'experimental'},
         "githubWebHookConsumer": {           'args': [],
             'method': 'post',

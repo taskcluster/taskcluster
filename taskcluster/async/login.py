@@ -24,25 +24,6 @@ class Login(AsyncBaseClient):
         "baseUrl": "https://login.taskcluster.net/v1"
     }
 
-    async def credentialsFromPersonaAssertion(self, *args, **kwargs):
-        """
-        Get TaskCluster credentials given a Persona assertion
-
-        Given an [assertion](https://developer.mozilla.org/en-US/Persona/Quick_setup), return an appropriate set of temporary credentials.
-
-        The supplied audience must be on a whitelist of TaskCluster-related
-        sites configured in the login service.  This is not a general-purpose
-        assertion-verification service!
-
-        This method takes input: ``http://schemas.taskcluster.net/login/v1/persona-request.json``
-
-        This method takes output: ``http://schemas.taskcluster.net/login/v1/credentials-response.json``
-
-        This method is ``experimental``
-        """
-
-        return await self._makeApiCall(self.funcinfo["credentialsFromPersonaAssertion"], *args, **kwargs)
-
     async def ping(self, *args, **kwargs):
         """
         Ping Server
@@ -56,13 +37,6 @@ class Login(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "credentialsFromPersonaAssertion": {           'args': [],
-            'input': 'http://schemas.taskcluster.net/login/v1/persona-request.json',
-            'method': 'post',
-            'name': 'credentialsFromPersonaAssertion',
-            'output': 'http://schemas.taskcluster.net/login/v1/credentials-response.json',
-            'route': '/persona',
-            'stability': 'experimental'},
         "ping": {           'args': [],
             'method': 'get',
             'name': 'ping',
