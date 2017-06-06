@@ -16,14 +16,19 @@ var logger = &log.Logger{
 
 // starts proxy on a random port on the system
 func main() {
-	proxy := whproxy.New(whproxy.Config{Logger: logger})
-
-	port := os.Getenv("TASKCLUSTER_PROXY_PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "9999"
 	}
+	signingSecret := os.Getenv("TASKCLUSTER_PROXY_SECRET")
+	if signingSecret == "" {
+		panic("no secret loaded. abort!")
+	}
+
+	proxy := whproxy.New(whproxy.Config{Logger: logger, JWTSecret: []byte(signingSecret)})
+
 	// TODO: Read TLS config
-	server := &http.Server{Addr: ":" + port, Handler: proxy.GetHandler()}
+	server := &http.Server{Addr: ":" + port, Handler: proxy}
 	defer func() {
 		_ = server.Close()
 	}()
