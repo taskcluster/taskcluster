@@ -1,4 +1,4 @@
-Generated: 1496258749
+Generated: 1496751842
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2096,44 +2096,6 @@ running.
 
 **Warning** this api end-point is **not stable**.'
 Entry 15    =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/worker-type/<workerType>/terminate-all-instances'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'terminateAllInstancesOfWorkerType'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[[aws-provisioner:terminate-all-worker-type:<workerType>]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Shutdown Every Ec2 Instance of this Worker Type'
-    Entry Description = 'WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
-Shut down every single EC2 instance associated with this workerType. 
-This means every single last one.  You probably don't want to use 
-this method, which is why it has an obnoxious name.  Don't even try 
-to claim you didn't know what this method does!
-
-**This API end-point is experimental and may be subject to change without warning.**'
-Entry 16    =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/shutdown/every/single/ec2/instance/managed/by/this/provisioner'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'shutdownEverySingleEc2InstanceManagedByThisProvisioner'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[[aws-provisioner:terminate-all-worker-type:*]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Shutdown Every Single Ec2 Instance Managed By This Provisioner'
-    Entry Description = 'WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
-Shut down every single EC2 instance managed by this provisioner. 
-This means every single last one.  You probably don't want to use 
-this method, which is why it has an obnoxious name.  Don't even try 
-to claim you didn't know what this method does!
-
-**This API end-point is experimental and may be subject to change without warning.**'
-Entry 17    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
