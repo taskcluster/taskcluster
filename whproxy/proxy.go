@@ -198,14 +198,14 @@ func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// 404 if worker is not registered on this proxy
 	if !ok {
 		// DHT code will be added here
-		http.Error(w, "worker not found", 404)
+		http.Error(w, http.StatusText(404), 404)
 		return
 	}
 
 	// Open a stream to the worker session
 	reqStream, err := session.Open()
 	if err != nil {
-		http.Error(w, "could not connect to the worker", 500)
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
@@ -222,7 +222,7 @@ func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	r.URL.Path = "/" + path
 	err = r.Write(reqStream)
 	if err != nil {
-		http.Error(w, "error sending request to worker", 500)
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
@@ -230,7 +230,7 @@ func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	bufReader := bufio.NewReader(reqStream)
 	resp, err := http.ReadResponse(bufReader, r)
 	if err != nil {
-		http.Error(w, "error sending response", 500)
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
