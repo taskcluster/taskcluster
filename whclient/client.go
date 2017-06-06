@@ -18,6 +18,7 @@ type Client struct {
 	Config    wsmux.Config
 	ProxyAddr string // Address of proxy server for connection
 	Retry     RetryConfig
+	JWT       string // JWT for proxy auth
 }
 
 const (
@@ -63,7 +64,10 @@ func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
 func (c *Client) GetListener(retry bool) (net.Listener, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
-	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
+	conn, res, err := websocket.DefaultDialer.Dial(addr, nil)
+	if res.StatusCode/100 == 4 {
+		return nil, err
+	}
 	if err != nil && retry {
 		conn, err = c.reconnect()
 		if err != nil {
@@ -77,6 +81,7 @@ func (c *Client) GetListener(retry bool) (net.Listener, error) {
 
 // reconnect attempts to establish a connection to the server
 // using an exponential backoff algorithm
+// do not retry if response status code is 4xx
 func (c *Client) reconnect() (*websocket.Conn, error) {
 	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
 
@@ -94,7 +99,10 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 		case <-maxTimer:
 			return nil, ErrRetryTimedOut
 		case <-backoffTimer.C:
-			conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
+			conn, res, err := websocket.DefaultDialer.Dial(addr, nil)
+			if res.StatusCode/100 == 4 {
+				return nil, err
+			}
 			if err == nil {
 				return conn, err
 			}

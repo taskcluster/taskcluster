@@ -40,7 +40,7 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 		if websocket.IsWebSocketUpgrade(r) {
 			if count < failCount {
 				count++
-				http.NotFound(w, r)
+				http.Error(w, http.StatusText(500), 500)
 				return
 			}
 			_, _ = upgrader.Upgrade(w, r, nil)
@@ -64,7 +64,9 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 
 // Checks if reconnect runs for MaxElapsedTime and then fails
 func TestExponentialBackoffFailure(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(http.NotFound))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, http.StatusText(500), 500)
+	}))
 	defer server.Close()
 
 	client := &Client{
@@ -185,4 +187,28 @@ func TestClientCanServeHTTP(t *testing.T) {
 	}
 
 	_ = clServer.Serve(clientSession)
+}
+
+// Ensure that client does not retry if error is 4xx
+func TestRetryStops4xx(t *testing.T) {
+	tryCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tryCount++
+		if websocket.IsWebSocketUpgrade(r) && tryCount == 1 {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+		http.Error(w, http.StatusText(400), 400)
+	}))
+	defer server.Close()
+
+	client := &Client{ID: "workerID", ProxyAddr: util.MakeWsURL(server.URL)}
+	// attempt to connect with retry
+	_, err := client.GetListener(true)
+	if err == nil {
+		t.Fatal("connection should fail")
+	}
+	if tryCount != 2 {
+		t.Fatal("only 2 connection attempts should occur")
+	}
 }
