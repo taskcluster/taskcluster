@@ -91,7 +91,7 @@ properties:
       type:         string
       maxLength:    249
       minLength:    1
-    maxItems:       10 # 4kb frame limit, 10 * 255 = 2550 that leaves a few bytes for other fields
+    maxItems:       64
     uniqueItems:    true
   priority:
     title:          "Task Priority"
