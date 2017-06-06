@@ -97,16 +97,18 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn) error {
 	for {
 		mtype, buf, err := src.ReadMessage()
 		if err != nil {
+			// Abnormal closure occurs if the websocket is over a wsmux stream
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure,
-				websocket.CloseGoingAway) {
+				websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				return err
 			}
 			return nil
 		}
 		err = dest.WriteMessage(mtype, buf)
 		if err != nil {
+			// Abnormal closure occurs if the websocket is over a wsmux stream
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure,
-				websocket.CloseGoingAway) {
+				websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				return err
 			}
 			return nil

@@ -497,12 +497,12 @@ func TestProxyMultiAuth(t *testing.T) {
 	getConn := func() *websocket.Conn {
 		header := make(http.Header)
 		header.Set("Authorization", "Bearer "+wsWorkerjwt)
-		conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+		conn, resp, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
 		if err != nil {
 			logger.Printf("error connecting to proxy")
 			t.Fatal(err)
 		}
-		logger.Printf("connected to proxy")
+		logger.Printf("connected to proxy %v", resp)
 		return conn
 	}
 
