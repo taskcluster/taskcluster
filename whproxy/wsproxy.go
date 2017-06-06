@@ -81,15 +81,15 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 
 	select {
 	case <-done1:
+		if err1 != nil {
+			return err1
+		}
 	case <-done2:
+		if err2 != nil {
+			return err2
+		}
 	}
 
-	if err1 != nil {
-		return err1
-	}
-	if err2 != nil {
-		return err2
-	}
 	return nil
 }
 

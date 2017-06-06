@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"sync"
+	"sync/atomic"
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -480,4 +481,64 @@ func TestProxyAuth(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = conn.Close()
+}
+
+// Check that only 1 connection is active even if multiple connections are made
+func TestProxyMultiAuth(t *testing.T) {
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test"), JWTSecret: []byte("test-secret")})
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	streamCount := 4
+	wsURL := util.MakeWsURL(server.URL)
+	activeStreams := int32(streamCount)
+	logger := genLogger("multi-auth-test")
+
+	getConn := func() *websocket.Conn {
+		header := make(http.Header)
+		header.Set("Authorization", "Bearer "+wsWorkerjwt)
+		conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+		if err != nil {
+			logger.Printf("error connecting to proxy")
+			t.Fatal(err)
+		}
+		logger.Printf("connected to proxy")
+		return conn
+	}
+
+	testConn := func() {
+		conn := getConn()
+		session := wsmux.Client(conn, wsmux.Config{})
+		session.SetCloseCallback(func() {
+			logger.Printf("session closed")
+			atomic.AddInt32(&activeStreams, -1)
+		})
+	}
+
+	for i := 0; i < streamCount; i++ {
+		go testConn()
+	}
+
+	timeout := time.After(5 * time.Second)
+	done := func() chan bool {
+		d := make(chan bool, 1)
+		go func() {
+			// add 2 when connecting and subtract 1 when disconnecting
+			// total = 2*x - (x-1)
+			// total = x + 1
+			for atomic.LoadInt32(&activeStreams) != 1 {
+			}
+			close(d)
+		}()
+		return d
+	}
+
+	select {
+	case <-timeout:
+		t.Fatalf("test timed out")
+	case <-done():
+		if atomic.LoadInt32(&activeStreams) != 1 {
+			t.Fatal("only 1 stream should be active")
+		}
+	}
 }
