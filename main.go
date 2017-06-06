@@ -20,12 +20,17 @@ func main() {
 	if port == "" {
 		port = "9999"
 	}
-	signingSecret := os.Getenv("TASKCLUSTER_PROXY_SECRET")
-	if signingSecret == "" {
-		panic("no secret loaded. abort!")
+	signingSecretA := os.Getenv("TASKCLUSTER_PROXY_SECRET_A")
+	signingSecretB := os.Getenv("TASKCLUSTER_PROXY_SECRET_B")
+	if signingSecretA == "" || signingSecretB == "" {
+		panic(whproxy.ErrMissingSecret)
 	}
 
-	proxy := whproxy.New(whproxy.Config{Logger: logger, JWTSecret: []byte(signingSecret)})
+	proxy := whproxy.New(whproxy.Config{
+		Logger:     logger,
+		JWTSecretA: []byte(signingSecretA),
+		JWTSecretB: []byte(signingSecretB),
+	})
 
 	// TODO: Read TLS config
 	server := &http.Server{Addr: ":" + port, Handler: proxy}
