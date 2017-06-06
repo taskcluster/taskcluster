@@ -36,9 +36,15 @@ func genLogger(fname string) *log.Logger {
 	return logger
 }
 
+// hardcoded jwts for testing
+const (
+	workerIDjwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ0Yy1wcm94eSIsImlhdCI6MTQ5NjczMzI5OCwiZXhwIjoxNTI4MjY5MzA0LCJhdWQiOiJ3b3JrZXIiLCJzdWIiOiJ3b3JrZXJJRCJ9.UTbzKUrXQ9Mu-CAhkqH06bzeZ5okVAa0HYP12FTr9Mc"
+	wsWorkerjwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ0Yy1wcm94eSIsImlhdCI6MTQ5NjczMzI5OCwiZXhwIjoxNTI4MjY5MzA0LCJhdWQiOiJ3b3JrZXIiLCJzdWIiOiJ3c1dvcmtlciJ9.JV2oWBjxV3wgAEmerEdLJvf54Rm8fM9lhuf_tilo1lI"
+)
+
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("register-test")})
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("register-test"), JWTSecret: []byte("test-secret")})
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -46,11 +52,13 @@ func TestProxyRegister(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 
 	// create address to dial
-	workerID := "validWorkerID"
+	workerID := "workerID"
 	dialAddr := wsURL + "/register/" + workerID
 
-	// dial connection to proxy
-	conn1, _, err := websocket.DefaultDialer.Dial(dialAddr, nil)
+	// set auth header dial connection to proxy
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+workerIDjwt)
+	conn1, _, err := websocket.DefaultDialer.Dial(dialAddr, header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,26 +66,27 @@ func TestProxyRegister(t *testing.T) {
 	defer func() {
 		_ = conn1.Close()
 	}()
-	// second connection should fail
-	conn2, _, err := websocket.DefaultDialer.Dial(dialAddr, nil)
-	if err == nil {
-		defer func() {
-			_ = conn2.Close()
-		}()
-		t.Fatalf("bad status code: connection should fail")
+	// second connection should succeed
+	conn2, _, err := websocket.DefaultDialer.Dial(dialAddr, header)
+	if err != nil {
+		t.Fatalf("bad status code: connection should be established")
 	}
+	_ = conn2.Close()
 }
 
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("request-test")})
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("request-test"), JWTSecret: []byte("test-secret")})
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
 	// get url
 	wsURL := util.MakeWsURL(server.URL)
 	// makeshift client
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerID", nil)
+
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+workerIDjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerID", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +157,7 @@ func TestProxyRequest(t *testing.T) {
 }
 
 func TestProxyWebsocket(t *testing.T) {
-	proxy := New(Config{Upgrader: upgrader})
+	proxy := New(Config{Upgrader: upgrader, JWTSecret: []byte("test-secret")})
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
@@ -175,7 +184,9 @@ func TestProxyWebsocket(t *testing.T) {
 	})
 
 	// register worker and serve http
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", nil)
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -217,7 +228,7 @@ func TestProxyWebsocket(t *testing.T) {
 // ensure control messages are proxied
 func TestWebsocketProxyControl(t *testing.T) {
 	logger := genLogger("ws-control-test")
-	proxy := New(Config{Upgrader: upgrader})
+	proxy := New(Config{Upgrader: upgrader, JWTSecret: []byte("test-secret")})
 	//serve proxy
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
@@ -272,7 +283,9 @@ func TestWebsocketProxyControl(t *testing.T) {
 	})
 
 	// register worker and serve http
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", nil)
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -339,7 +352,7 @@ func TestWebsocketProxyControl(t *testing.T) {
 // Ensure websocket close is proxied
 func TestWebSocketClosure(t *testing.T) {
 	logger := genLogger("ws-closure-test")
-	proxy := New(Config{Upgrader: upgrader})
+	proxy := New(Config{Upgrader: upgrader, JWTSecret: []byte("test-secret")})
 	//serve proxy
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
@@ -373,7 +386,9 @@ func TestWebSocketClosure(t *testing.T) {
 	})
 
 	// register worker and serve http
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", nil)
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -387,7 +402,7 @@ func TestWebSocketClosure(t *testing.T) {
 	}()
 
 	// create websocket connection
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -414,7 +429,7 @@ func TestWebSocketClosure(t *testing.T) {
 // Ensures that session is removed once websocket connection is closed
 func TestProxySessionRemoved(t *testing.T) {
 	done := make(chan bool, 1)
-	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test")})
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test"), JWTSecret: []byte("test-secret")})
 	proxy.SetSessionRemoveHandler(func(id string) {
 		close(done)
 	})
@@ -424,7 +439,9 @@ func TestProxySessionRemoved(t *testing.T) {
 	defer server.Close()
 
 	wsURL := util.MakeWsURL(server.URL)
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", nil)
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -440,4 +457,27 @@ func TestProxySessionRemoved(t *testing.T) {
 	case <-timeout.C:
 		t.Fatalf("test timed out")
 	}
+}
+
+// Simple test to ensure that proxy authenticates valid jwt and rejects other jwt
+func TestProxyAuth(t *testing.T) {
+	proxy := New(Config{Upgrader: upgrader, Logger: genLogger("proxy-session-remove-test"), JWTSecret: []byte("test-secret")})
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	wsURL := util.MakeWsURL(server.URL)
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+
+	conn, res, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerID", header)
+	if res == nil || res.StatusCode != 400 {
+		_ = conn.Close()
+		t.Fatalf("connection should fail")
+	}
+
+	conn, res, err = websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = conn.Close()
 }

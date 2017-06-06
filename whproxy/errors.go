@@ -1,11 +1,20 @@
 package whproxy
 
 import (
-	"fmt"
+	"errors"
 )
 
 var (
-	// ErrDuplicateWorker is sent when a request attempts to add a worker to the pool with an id
+	// ErrDuplicateWorker is returned when a request attempts to add a worker to the pool with an id
 	// which is present in the pool
-	ErrDuplicateWorker = fmt.Errorf("duplicate worker")
+	ErrDuplicateWorker = errors.New("duplicate worker")
+
+	// ErrUnexpectedSigningMethod is returned when the signing method used by the JWT is not HMAC
+	ErrUnexpectedSigningMethod = errors.New("unexpected signing method on jwt")
+
+	// ErrTokenNotValid is returned when the jwt is not valid
+	ErrTokenNotValid = errors.New("token not valid")
+
+	// ErrAuthFailed is returned when jwt parsing fails with an error
+	ErrAuthFailed = errors.New("auth failed")
 )

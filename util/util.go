@@ -30,6 +30,7 @@ func Min(a, b int) int {
 var (
 	replaceHTTPSRe = regexp.MustCompile("^(http)(s?)")
 	idReplaceRe    = regexp.MustCompile("^/(\\w+)(/?)")
+	jwtRe          = regexp.MustCompile("^Bearer ([\\w\\W]+)$")
 )
 
 // ReplaceID replaces id in "/{id}/path" with "/path"
@@ -40,4 +41,12 @@ func ReplaceID(path string) string {
 // MakeWsURL converts http:// to ws://
 func MakeWsURL(url string) string {
 	return replaceHTTPSRe.ReplaceAllString(url, "ws$2")
+}
+
+func ExtractJWT(authHeader string) string {
+	c := jwtRe.FindStringSubmatch(authHeader)
+	if len(c) != 2 {
+		return ""
+	}
+	return c[1]
 }

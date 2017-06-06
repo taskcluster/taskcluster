@@ -78,6 +78,13 @@ func (s *Session) sendKeepAlives() {
 	}
 }
 
+// SetCloseCallback sets the function which is called when the session is closed
+func (s *Session) SetCloseCallback(h func()) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.closeCallback = h
+}
+
 // send a frame over the websocket connection
 func (s *Session) send(f frame) error {
 	select {
