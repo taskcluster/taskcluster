@@ -139,13 +139,15 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 	currentDelay := c.retry.InitialDelay
 	backoffTimer := time.NewTimer(currentDelay)
 
+	// create header for connection requests
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+c.token)
+
 	for {
 		select {
 		case <-maxTimer:
 			return nil, ErrRetryTimedOut
 		case <-backoffTimer.C:
-			header := make(http.Header)
-			header.Set("Authorization ", "Bearer "+c.token)
 
 			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
 

@@ -95,6 +95,9 @@ func (p *Proxy) validateJWT(id string, tokenString string) error {
 	// check claims
 	now := time.Now().Unix()
 	claims, ok := token.Claims.(jwt.MapClaims)
+
+	p.logger.Printf("token with claims: %v", claims)
+
 	if !ok {
 		return ErrTokenNotValid
 	}
