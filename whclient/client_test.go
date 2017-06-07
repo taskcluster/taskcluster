@@ -2,6 +2,7 @@ package whclient
 
 import (
 	"bufio"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
@@ -49,11 +51,16 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client := &Client{
+	config := Config{
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
-	_, err := client.GetListener(true)
+	client, err := New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = client.GetListener(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,28 +76,34 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := &Client{
+	config := Config{
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
+		Retry: RetryConfig{
+			InitialDelay:   200 * time.Millisecond,
+			MaxElapsedTime: 2 * time.Second,
+		},
 	}
 
-	client.Retry.InitialDelay = 200 * time.Millisecond
-	client.Retry.MaxElapsedTime = 2 * time.Second
+	client, err := New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	start := time.Now()
-	_, err := client.GetListener(true)
+	_, err = client.GetListener(true)
 	end := time.Now()
 
 	if err == nil {
 		t.Fatalf("should fail")
 	}
 
-	if end.Sub(start) < client.Retry.MaxElapsedTime {
-		t.Fatalf("should run for atleast %d milliseconds", client.Retry.MaxElapsedTime)
+	if end.Sub(start) < client.retry.MaxElapsedTime {
+		t.Fatalf("should run for atleast %d milliseconds", client.retry.MaxElapsedTime)
 	}
 
 	// maximum time accounting for jitter
-	maxTime := client.Retry.MaxElapsedTime + 200*time.Millisecond
+	maxTime := client.retry.MaxElapsedTime + 200*time.Millisecond
 	if end.Sub(start) > maxTime {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
@@ -176,9 +189,14 @@ func TestClientCanServeHTTP(t *testing.T) {
 	defer server.Close()
 
 	clServer := &http.Server{Handler: clientMux}
-	client := &Client{
+
+	config := Config{
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
+	}
+	client, err := New(config)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	clientSession, err := client.GetListener(true)
@@ -201,14 +219,89 @@ func TestRetryStops4xx(t *testing.T) {
 		http.Error(w, http.StatusText(400), 400)
 	}))
 	defer server.Close()
+	config := Config{
+		ID:        "workerID",
+		ProxyAddr: util.MakeWsURL(server.URL),
+	}
+	client, err := New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	client := &Client{ID: "workerID", ProxyAddr: util.MakeWsURL(server.URL)}
 	// attempt to connect with retry
-	_, err := client.GetListener(true)
+	_, err = client.GetListener(true)
 	if err == nil {
 		t.Fatal("connection should fail")
 	}
 	if tryCount != 2 {
 		t.Fatal("only 2 connection attempts should occur")
+	}
+}
+
+// Ensure token gets generated
+func TestTokenGeneration(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		now := time.Now().Unix()
+
+		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
+		if tokenString == "" {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, errors.New("unexpected signing method")
+			}
+			return []byte("test-secret"), nil
+		})
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		if claims["tid"] != "workerID" {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		if !claims.VerifyExpiresAt(now, true) {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		if !claims.VerifyIssuedAt(now, true) {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		if !claims.VerifyNotBefore(now, true) {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		_, _ = upgrader.Upgrade(w, r, nil)
+	}))
+	defer server.Close()
+
+	config := Config{
+		ID:        "workerID",
+		ProxyAddr: util.MakeWsURL(server.URL),
+	}
+
+	client, err := New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = client.GetListener(true)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

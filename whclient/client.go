@@ -1,68 +1,114 @@
 package whclient
 
 import (
-	"math/rand"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
+
+// TokenGenerator can be used to generate new jwts for a given ID
+type TokenGenerator func(id string) (string, time.Time, error)
+
+func TestTokenGenerator(id string) (string, time.Time, error) {
+	now := time.Now()
+	expires := now.Add(30 * 24 * time.Hour)
+
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	token.Claims.(jwt.MapClaims)["iat"] = now.Unix()
+	token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
+	token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
+	token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
+	token.Claims.(jwt.MapClaims)["tid"] = id
+
+	tokString, err := token.SignedString([]byte("test-secret"))
+	if err != nil {
+		return "", time.Time{}, err
+	}
+	return tokString, expires, nil
+}
+
+type Config struct {
+	ID               string
+	ProxyAddr        string
+	SessionLogger    util.Logger
+	StreamBufferSize int
+	Token            string
+	Expires          time.Time
+	Tokenator        TokenGenerator
+	Retry            RetryConfig
+}
 
 // Client is used to connect to a proxy and serve endpoints
 // defined in Handler
 type Client struct {
-	ID string
-	// handler should be a mux to handle different end points
-	Config    wsmux.Config
-	ProxyAddr string // Address of proxy server for connection
-	Retry     RetryConfig
-	JWT       string // JWT for proxy auth
+	// id is the worker ID in the jwt
+	id string
+	// proxyAddr contains the address of the proxy server
+	proxyAddr string
+	// retry consists of parameters for reconneting to the proxy in case of a broken
+	// connection
+	retry RetryConfig
+	// session logger can be used to log the created session
+	sessionLogger util.Logger
+	// bufSize sets the stream buffer size for the session
+	bufSize int
+	// jwt used for authentication
+	token string
+	// jwt expiry time
+	expires time.Time
+	// configurer used for loading jwt if not available or expired
+	tokenator TokenGenerator
 }
 
-const (
-	defaultInitialDelay        = 500 * time.Millisecond
-	defaultMaxDelay            = 60 * time.Second
-	defaultMaxElapsedTime      = 3 * time.Minute
-	defaultMultiplier          = 1.5
-	defaultRandomizationFactor = 0.5
-)
-
-// RetryConfig contains exponential backoff parameters for retrying connections
-type RetryConfig struct {
-	// Retry values
-	InitialDelay        time.Duration // Default = 500 * time.Millisecond
-	MaxDelay            time.Duration // Default = 60 * time.Second
-	MaxElapsedTime      time.Duration // Default = 3 * time.Minute
-	Multiplier          float64       // Default = 1.5
-	RandomizationFactor float64       // Default = 0.5
-}
-
-// NextDelay calculates the next interval based on the current interval
-func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
-	// check if current interval is max interval
-	// avoid calculation
-	if currentDelay == r.MaxDelay {
-		return currentDelay
+// New creates a new client instance
+func New(conf Config) (*Client, error) {
+	client := &Client{
+		id:            conf.ID,
+		proxyAddr:     conf.ProxyAddr,
+		sessionLogger: conf.SessionLogger,
+		bufSize:       conf.StreamBufferSize,
+		token:         conf.Token,
+		expires:       conf.Expires,
+		tokenator:     conf.Tokenator,
+		retry:         conf.Retry,
 	}
 
-	delta := r.RandomizationFactor * float64(currentDelay)
-	minDelay := float64(currentDelay) - delta
-	maxDelay := float64(currentDelay) + delta
-	nextDelay := minDelay + (rand.Float64() * (maxDelay - minDelay + 1))
-	Delay := time.Duration(nextDelay)
-	if Delay > r.MaxDelay {
-		Delay = r.MaxDelay
+	client.retry = client.retry.initializeRetryValues()
+	if client.sessionLogger == nil {
+		client.sessionLogger = &util.NilLogger{}
 	}
-	return Delay
+	if client.bufSize == 0 {
+		client.bufSize = 4 * 1024 // Default 4k buffer
+	}
+	if client.tokenator == nil {
+		client.tokenator = TestTokenGenerator
+	}
+	return client, nil
 }
 
 // GetListener connects to the proxy and returns a net.Listener instance
 // The session can be used as a listener to serve HTTP requests
 // eg http.Serve(client)
 func (c *Client) GetListener(retry bool) (net.Listener, error) {
-	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
+	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
+
+	if !c.tokenUsable() {
+		token, expires, err := c.tokenator(c.id)
+		c.token, c.expires = token, expires
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+c.token)
 
 	conn, res, err := websocket.DefaultDialer.Dial(addr, nil)
 	if res.StatusCode/100 == 4 {
@@ -75,7 +121,8 @@ func (c *Client) GetListener(retry bool) (net.Listener, error) {
 		}
 	}
 
-	client := wsmux.Client(conn, c.Config)
+	config := wsmux.Config{Log: c.sessionLogger, StreamBufferSize: c.bufSize}
+	client := wsmux.Client(conn, config)
 	return client, nil
 }
 
@@ -83,15 +130,13 @@ func (c *Client) GetListener(retry bool) (net.Listener, error) {
 // using an exponential backoff algorithm
 // do not retry if response status code is 4xx
 func (c *Client) reconnect() (*websocket.Conn, error) {
-	addr := strings.TrimSuffix(c.ProxyAddr, "/") + "/register/" + c.ID
-
-	c.initializeRetryValues()
+	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
 
 	// planned on supporting MaxElapsedTime == 0, but no apparent use case.
 	// please advise
-	maxTimer := time.After(c.Retry.MaxElapsedTime)
+	maxTimer := time.After(c.retry.MaxElapsedTime)
 
-	currentDelay := c.Retry.InitialDelay
+	currentDelay := c.retry.InitialDelay
 	backoffTimer := time.NewTimer(currentDelay)
 
 	for {
@@ -99,7 +144,11 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 		case <-maxTimer:
 			return nil, ErrRetryTimedOut
 		case <-backoffTimer.C:
-			conn, res, err := websocket.DefaultDialer.Dial(addr, nil)
+			header := make(http.Header)
+			header.Set("Authorization ", "Bearer "+c.token)
+
+			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
+
 			if res.StatusCode/100 == 4 {
 				return nil, err
 			}
@@ -107,30 +156,22 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 				return conn, err
 			}
 			// increment backoff
-			currentDelay = c.Retry.NextDelay(currentDelay)
+			currentDelay = c.retry.NextDelay(currentDelay)
 			_ = backoffTimer.Reset(currentDelay)
 		}
 	}
 }
 
-// initializeRetryValues sets the RetryConfig parameteres to their
-// default value
-func (c *Client) initializeRetryValues() {
-	if c.Retry.InitialDelay == 0 {
-		c.Retry.InitialDelay = defaultInitialDelay
-	}
-	if c.Retry.MaxDelay == 0 {
-		c.Retry.MaxDelay = defaultMaxDelay
-	}
-	if c.Retry.MaxElapsedTime == 0 {
-		c.Retry.MaxElapsedTime = defaultMaxElapsedTime
+// Check if token is empty or expired
+func (c *Client) tokenUsable() bool {
+	if c.token == "" {
+		return false
 	}
 
-	if c.Retry.Multiplier < 1.0 {
-		c.Retry.Multiplier = defaultMultiplier
+	now := time.Now().Unix()
+	if now > c.expires.Unix() {
+		return false
 	}
 
-	if c.Retry.RandomizationFactor == 0 {
-		c.Retry.RandomizationFactor = defaultRandomizationFactor
-	}
+	return true
 }
