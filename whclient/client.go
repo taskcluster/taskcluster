@@ -161,7 +161,6 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 			}
 			// increment backoff
 			currentDelay = c.retry.NextDelay(currentDelay)
-			c.sessionLogger.Print(currentDelay)
 			_ = backoff.Reset(currentDelay)
 		}
 	}
