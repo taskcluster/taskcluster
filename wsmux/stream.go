@@ -11,17 +11,17 @@ import (
 )
 
 const (
-	// DefaultCapacity of read buffer of stream
+	// DefaultCapacity of read buffer.
 	DefaultCapacity = 1024
 )
 
-/*Stream States:
-streamCreated = stream has been streamCreated. Buffer is empty. Has not been streamAccepted.
-streamAccepted = stream has been streamAccepted. read write operations permitted.
-streamClosed = stream has been streamClosed.
-streamRemoteClosed = remote side has been streamClosed.
-streamDead = streamClosed & streamRemoteClosed. Buffer may still have data.
-*/
+// Stream States:
+// streamCreated = stream has been streamCreated. Buffer is empty. Has not been streamAccepted.
+// streamAccepted = stream has been streamAccepted. read write operations permitted.
+// streamClosed = stream has been streamClosed.
+// streamRemoteClosed = remote side has been streamClosed.
+// streamDead = streamClosed & streamRemoteClosed. Buffer may still have data.
+
 type streamState int
 
 const (

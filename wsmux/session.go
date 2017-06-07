@@ -9,10 +9,6 @@ import (
 	"github.com/taskcluster/webhooktunnel/util"
 )
 
-/*
-TODO: Add ping and pong handlers
-*/
-
 const (
 	defaultStreamQueueSize      = 20               // size of the accept stream
 	defaultKeepAliveInterval    = 10 * time.Second // keep alive interval
@@ -21,7 +17,8 @@ const (
 	defaultKeepAliveWait        = 30 * time.Second // ensure KeepAliveWait > keepAliveInterval
 )
 
-// Session implements net.Listener. Allows creating and acception multiplexed streams over ws
+// Session allows creating and accepting wsmux streams over a websocket connection.
+// Session implements net.Listener
 type Session struct {
 	mu        sync.Mutex         // locks channels and stream map
 	streams   map[uint32]*stream // stores streams
@@ -151,7 +148,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	return s
 }
 
-// IsClosed returns true if the session is closed
+// IsClosed returns true if the session is closed.
 func (s *Session) IsClosed() bool {
 	select {
 	case <-s.closed:
@@ -161,7 +158,7 @@ func (s *Session) IsClosed() bool {
 	return false
 }
 
-// Accept is used to accept an incoming stream
+// Accept is used to accept an incoming stream.
 func (s *Session) Accept() (net.Conn, error) {
 
 	select {
@@ -174,7 +171,7 @@ func (s *Session) Accept() (net.Conn, error) {
 	}
 }
 
-// Open creates a new stream
+// Open creates a new stream to the remote session.
 func (s *Session) Open() (net.Conn, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -221,7 +218,7 @@ func (s *Session) Open() (net.Conn, error) {
 
 }
 
-// Close closes the current session and underlying connection
+// Close closes the current session and underlying connection.
 func (s *Session) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
