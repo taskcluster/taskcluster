@@ -24,12 +24,15 @@ const (
 	monthUnix = 31 * 24 * time.Hour
 )
 
-// Config for Proxy. Accepts a websocket.Upgrader and a Logger.
-// Default value for Upgrade ReadBufferSize and WriteBufferSize is 1024 bytes.
-// Default Logger is NilLogger.
 type Config struct {
-	Upgrader   websocket.Upgrader
-	Logger     util.Logger
+	// Upgrader is a websocket.Upgrader instance which is used to upgrade incoming
+	// websocket connections from Clients.
+	Upgrader websocket.Upgrader
+
+	// Logger is used to log proxy events. Refer util.Logger.
+	Logger util.Logger
+
+	// JWTSecretA and JWTSecretB are used by the proxy to verify JWTs from Clients.
 	JWTSecretA []byte
 	JWTSecretB []byte
 }
@@ -47,7 +50,8 @@ type Proxy struct {
 	jwtSecretB      []byte
 }
 
-// LoadSecretsFromEnv loads jwt secrets from env variables
+// LoadSecretsFromEnv loads jwt secrets from environment
+// variables.
 // Environment variables must be:
 // TASKCLUSTER_PROXY_SECRET_A="a secret"
 // TASKCLUSTER_PROXY_SECRET_B="another secret"
@@ -123,7 +127,7 @@ func (p *Proxy) validateJWT(id string, tokenString string) error {
 	return nil
 }
 
-// New returns a pointer to a new proxy instance
+// New creates a new proxy instance using the provided configuration.
 func New(conf Config) *Proxy {
 	p := &Proxy{
 		pool:       make(map[string]*wsmux.Session),
@@ -161,14 +165,15 @@ func New(conf Config) *Proxy {
 	return p
 }
 
-// SetSessionRemoveHandler which is set when a wsmux Session is removed from the proxy.
+// SetSessionRemoveHandler sets a function which is called when a wsmux Session is removed from
+// the proxy due to closure or error.
 func (p *Proxy) SetSessionRemoveHandler(h func(string)) {
 	p.m.Lock()
 	defer p.m.Unlock()
 	p.onSessionRemove = h
 }
 
-// ServeHTTP implements http.Handler
+// ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.handler.ServeHTTP(w, r)
 }

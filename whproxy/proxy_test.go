@@ -13,6 +13,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/webhooktunnel/util"
@@ -37,12 +38,27 @@ func genLogger(fname string) *log.Logger {
 	return logger
 }
 
-// hardcoded jwts for testing
-const (
-	workerIDjwt       = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0YXNrY2x1c3Rlci1hdXRoIiwic3ViIjoidGMtYXV0aC1jbGllbnRJZCIsIm5iZiI6MTQ5Njc3NTQ5OSwiZXhwIjoxNDk5MzY3NDk5LCJpYXQiOjE0OTY3NzU0OTksImp0aSI6ImlkMTIzNDU2IiwidHlwIjoidGMtcHJveHkubmV0L3JlZ2lzdGVyIiwidGlkIjoid29ya2VySUQifQ.23RIXRXNcFH7rSjiOS_jB_JAYu8060exZxorZTIEFuk"
-	workerIDBackupjwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0YXNrY2x1c3Rlci1hdXRoIiwic3ViIjoidGMtYXV0aC1jbGllbnRJZCIsIm5iZiI6MTQ5Njc3NTQ5OSwiZXhwIjoxNDk5MzY3NDk5LCJpYXQiOjE0OTY3NzU0OTksImp0aSI6ImlkMTIzNDU2IiwidHlwIjoidGMtcHJveHkubmV0L3JlZ2lzdGVyIiwidGlkIjoid29ya2VySUQifQ.KDjFGmo_wEfSxn4zMq6BM3D4wXndZduSDzGh1JaqkDs"
-	wsWorkerjwt       = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0YXNrY2x1c3Rlci1hdXRoIiwic3ViIjoidGMtYXV0aC1jbGllbnRJZCIsIm5iZiI6MTQ5Njc3NTQ5OSwiZXhwIjoxNDk5MzY3NDk5LCJpYXQiOjE0OTY3NzU0OTksImp0aSI6ImlkMTIzNDU2IiwidHlwIjoidGMtcHJveHkubmV0L3JlZ2lzdGVyIiwidGlkIjoid3NXb3JrZXIifQ.6xuree00XAk4_7857af14RBW7QAarb9161zRZl1euQM"
+var (
+	workerIDjwt       = tokenGenerator("workerID", []byte("test-secret"))
+	workerIDBackupjwt = tokenGenerator("workerID", []byte("another-secret"))
+	wsWorkerjwt       = tokenGenerator("wsWorker", []byte("test-secret"))
 )
+
+func tokenGenerator(id string, secret []byte) string {
+	now := time.Now()
+	expires := now.Add(30 * 24 * time.Hour)
+
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	token.Claims.(jwt.MapClaims)["iat"] = now.Unix()
+	token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
+	token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
+	token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
+	token.Claims.(jwt.MapClaims)["tid"] = id
+
+	tokString, _ := token.SignedString(secret)
+	return tokString
+}
 
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
