@@ -55,12 +55,9 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
-	client, err := New(config)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := New(config)
 
-	_, err = client.GetListener(true)
+	_, err := client.GetListener(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,22 +76,18 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	defer server.Close()
 
 	config := Config{
-		ID:            "workerID",
-		ProxyAddr:     util.MakeWsURL(server.URL),
-		SessionLogger: genLogger("exp-backoff-test"),
+		ID:        "workerID",
+		ProxyAddr: util.MakeWsURL(server.URL),
 		Retry: RetryConfig{
 			InitialDelay:   200 * time.Millisecond,
 			MaxElapsedTime: 2 * time.Second,
 		},
 	}
 
-	client, err := New(config)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := New(config)
 
 	start := time.Now()
-	_, err = client.GetListener(true)
+	_, err := client.GetListener(true)
 	end := time.Now()
 
 	if err == nil {
@@ -201,10 +194,7 @@ func TestClientCanServeHTTP(t *testing.T) {
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
-	client, err := New(config)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := New(config)
 
 	clientSession, err := client.GetListener(true)
 	if err != nil {
@@ -230,13 +220,10 @@ func TestRetryStops4xx(t *testing.T) {
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
-	client, err := New(config)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := New(config)
 
 	// attempt to connect with retry
-	_, err = client.GetListener(true)
+	_, err := client.GetListener(true)
 	if err == nil {
 		t.Fatal("connection should fail")
 	}
@@ -303,11 +290,9 @@ func TestTokenGeneration(t *testing.T) {
 		ProxyAddr: util.MakeWsURL(server.URL),
 	}
 
-	client, err := New(config)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = client.GetListener(true)
+	client := New(config)
+
+	_, err := client.GetListener(true)
 	if err != nil {
 		t.Fatal(err)
 	}

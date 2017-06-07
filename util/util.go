@@ -1,7 +1,11 @@
 package util
 
 import (
+	"encoding/json"
 	"regexp"
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Logger is used by Session to write logs
@@ -49,4 +53,30 @@ func ExtractJWT(authHeader string) string {
 		return ""
 	}
 	return c[1]
+}
+
+func GetTokenExp(tokenString string) time.Time {
+	token, err := jwt.Parse(tokenString, nil)
+	if err.(*jwt.ValidationError).Errors == jwt.ValidationErrorMalformed {
+		return time.Time{}
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return time.Time{}
+	}
+
+	exp, ok := claims["exp"]
+	if !ok {
+		return time.Time{}
+	}
+	switch exp.(type) {
+	case float64:
+		e := exp.(float64)
+		return time.Unix(int64(e), 0)
+	case json.Number:
+		v, _ := exp.(json.Number).Int64()
+		return time.Unix(v, 0)
+	}
+	return time.Time{}
+
 }

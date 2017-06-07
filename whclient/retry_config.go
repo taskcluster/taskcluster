@@ -15,15 +15,30 @@ const (
 
 // RetryConfig contains exponential backoff parameters for retrying connections
 type RetryConfig struct {
-	// Retry values
-	InitialDelay        time.Duration // Default = 500 * time.Millisecond
-	MaxDelay            time.Duration // Default = 60 * time.Second
-	MaxElapsedTime      time.Duration // Default = 3 * time.Minute
-	Multiplier          float64       // Default = 1.5
-	RandomizationFactor float64       // Default = 0.5
+	// InitialDelay is the delay after which the first reconnect
+	// attempt takes place.
+	// Default = 500 * time.Millisecond
+	InitialDelay time.Duration
+
+	// MaxDelay is the maximum possible delay between two consecutive
+	// reconnect attempts.
+	// Default = 60 * time.Second
+	MaxDelay time.Duration
+
+	// MaxElapsedTime is the time after which reconnect will time out
+	// Default = 3 * time.Minute
+	MaxElapsedTime time.Duration
+
+	// Multplier is the rate at which the delay will increase
+	//Default = 1.5
+	Multiplier float64
+
+	// RandomizationFactor is the extent to which the delay values will be randomized
+	// Default = 0.5
+	RandomizationFactor float64
 }
 
-// NextDelay calculates the next interval based on the current interval
+// NextDelay calculates the new retry delay based on the current delay.
 func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
 	// check if current interval is max interval
 	// avoid calculation

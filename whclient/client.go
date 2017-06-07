@@ -12,10 +12,16 @@ import (
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-// TokenGenerator can be used to generate new jwts for a given ID
-type TokenGenerator func(id string) (string, time.Time, error)
+// TokenGenerator is a function which accepts a string `id` and returns a
+// signed JWT (JSON Web Token). If an error occurs, the
+// return values must be ("", ErrorGenerated).
+type TokenGenerator func(id string) (string, error)
 
-func TestTokenGenerator(id string) (string, time.Time, error) {
+// TestTokenGenerator is the default TokenGenerator. It creates a new JWT and sets
+// claim "tid" to the given id (proxy convention). "nbf" is set to 5 minutes before the
+// creation of the JWT and "exp" is set to 30 days after creation of JWT. The jwt is
+// signed using HS256 with the secret "test-secret".
+func TestTokenGenerator(id string) (string, error) {
 	now := time.Now()
 	expires := now.Add(30 * 24 * time.Hour)
 
@@ -29,24 +35,39 @@ func TestTokenGenerator(id string) (string, time.Time, error) {
 
 	tokString, err := token.SignedString([]byte("test-secret"))
 	if err != nil {
-		return "", time.Time{}, err
+		return "", err
 	}
-	return tokString, expires, nil
+	return tokString, nil
 }
 
+// Config is used for creating a new client.
 type Config struct {
-	ID               string
-	ProxyAddr        string
-	SessionLogger    util.Logger
-	StreamBufferSize int
-	Token            string
-	Expires          time.Time
-	Tokenator        TokenGenerator
-	Retry            RetryConfig
+	// ID is the worker-id of the client. This field must match the "tid" claim of the
+	// JWT.
+	ID string
+
+	// ProxyAddr is the websocket address of the proxy to which the client should connect.
+	ProxyAddr string
+
+	// SessionLogger is an optional field. This logger is passed to the session created by
+	// the GetListener method. This defaults to `&util.NilLogger{}`.
+	SessionLogger util.Logger
+
+	// Token is the signed JWT used for authentication.
+	Token string
+
+	// Tokenator is the TokenGenerator used by the client to generate a new JWT when needed.
+	// The client may sign it's own JWT or request one from an external source. This defaults
+	// to TestTokenGenerator.
+	Tokenator TokenGenerator
+
+	// Retry contains the retry parameters to use in case of reconnects.
+	// The default values are specified in RetryConfig.
+	Retry RetryConfig
 }
 
-// Client is used to connect to a proxy and serve endpoints
-// defined in Handler
+// Client is used to connect to a Webhook Proxy instance and create a listener for
+// serving API endpoints.
 type Client struct {
 	// id is the worker ID in the jwt
 	id string
@@ -57,8 +78,6 @@ type Client struct {
 	retry RetryConfig
 	// session logger can be used to log the created session
 	sessionLogger util.Logger
-	// bufSize sets the stream buffer size for the session
-	bufSize int
 	// jwt used for authentication
 	token string
 	// jwt expiry time
@@ -67,15 +86,14 @@ type Client struct {
 	tokenator TokenGenerator
 }
 
-// New creates a new client instance
-func New(conf Config) (*Client, error) {
+// New creates a new Client instance
+func New(conf Config) *Client {
 	client := &Client{
 		id:            conf.ID,
 		proxyAddr:     conf.ProxyAddr,
 		sessionLogger: conf.SessionLogger,
-		bufSize:       conf.StreamBufferSize,
 		token:         conf.Token,
-		expires:       conf.Expires,
+		expires:       util.GetTokenExp(conf.Token),
 		tokenator:     conf.Tokenator,
 	}
 
@@ -84,29 +102,27 @@ func New(conf Config) (*Client, error) {
 	if client.sessionLogger == nil {
 		client.sessionLogger = &util.NilLogger{}
 	}
-	if client.bufSize == 0 {
-		client.bufSize = 4 * 1024 // Default 4k buffer
-	}
 	if client.tokenator == nil {
 		client.tokenator = TestTokenGenerator
 	}
-	return client, nil
+
+	return client
 }
 
 // GetListener connects to the proxy and returns a net.Listener instance
-// The session can be used as a listener to serve HTTP requests
-// eg http.Serve(client)
+// by connecting to the proxy and setting up a wsmux Session.
 func (c *Client) GetListener(retry bool) (net.Listener, error) {
 	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
 
 	if !c.tokenUsable() {
-		token, expires, err := c.tokenator(c.id)
-		c.token, c.expires = token, expires
+		token, err := c.tokenator(c.id)
+		c.token, c.expires = token, util.GetTokenExp(token)
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	c.sessionLogger.Printf("token: %s, exp: %v", c.token, c.expires)
 	header := make(http.Header)
 	header.Set("Authorization ", "Bearer "+c.token)
 
@@ -121,7 +137,7 @@ func (c *Client) GetListener(retry bool) (net.Listener, error) {
 		}
 	}
 
-	config := wsmux.Config{Log: c.sessionLogger, StreamBufferSize: c.bufSize}
+	config := wsmux.Config{Log: c.sessionLogger, StreamBufferSize: 4 * 1024}
 	client := wsmux.Client(conn, config)
 	return client, nil
 }
