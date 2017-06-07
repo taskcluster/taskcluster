@@ -32,8 +32,8 @@ func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
 	}
 
 	delta := r.RandomizationFactor * float64(currentDelay)
-	minDelay := float64(currentDelay) - delta
-	maxDelay := float64(currentDelay) + delta
+	minDelay := r.Multiplier*float64(currentDelay) - delta
+	maxDelay := r.Multiplier*float64(currentDelay) + delta
 	nextDelay := minDelay + (rand.Float64() * (maxDelay - minDelay + 1))
 	Delay := time.Duration(nextDelay)
 	if Delay > r.MaxDelay {
@@ -44,24 +44,32 @@ func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
 
 // initializeRetryValues sets the RetryConfig parameteres to their
 // default value
-func (r RetryConfig) initializeRetryValues() RetryConfig {
-	newConf := RetryConfig{}
+func (r RetryConfig) defaultValues() RetryConfig {
+	conf := RetryConfig{
+		InitialDelay:        r.InitialDelay,
+		MaxDelay:            r.MaxDelay,
+		MaxElapsedTime:      r.MaxElapsedTime,
+		Multiplier:          r.Multiplier,
+		RandomizationFactor: r.RandomizationFactor,
+	}
+
 	if r.InitialDelay == 0 {
-		newConf.InitialDelay = defaultInitialDelay
+		conf.InitialDelay = defaultInitialDelay
 	}
 	if r.MaxDelay == 0 {
-		newConf.MaxDelay = defaultMaxDelay
+		conf.MaxDelay = defaultMaxDelay
 	}
 	if r.MaxElapsedTime == 0 {
-		newConf.MaxElapsedTime = defaultMaxElapsedTime
+		conf.MaxElapsedTime = defaultMaxElapsedTime
 	}
 
 	if r.Multiplier < 1.0 {
-		newConf.Multiplier = defaultMultiplier
+		conf.Multiplier = defaultMultiplier
 	}
 
 	if r.RandomizationFactor == 0 {
-		newConf.RandomizationFactor = defaultRandomizationFactor
+		conf.RandomizationFactor = defaultRandomizationFactor
 	}
-	return newConf
+
+	return conf
 }

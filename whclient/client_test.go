@@ -77,8 +77,9 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	defer server.Close()
 
 	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
+		ID:            "workerID",
+		ProxyAddr:     util.MakeWsURL(server.URL),
+		SessionLogger: genLogger("exp-backoff-test"),
 		Retry: RetryConfig{
 			InitialDelay:   200 * time.Millisecond,
 			MaxElapsedTime: 2 * time.Second,
@@ -98,7 +99,7 @@ func TestExponentialBackoffFailure(t *testing.T) {
 		t.Fatalf("should fail")
 	}
 
-	if end.Sub(start) < client.retry.MaxElapsedTime {
+	if end.Sub(start) < 2*time.Second {
 		t.Fatalf("should run for atleast %d milliseconds", client.retry.MaxElapsedTime)
 	}
 

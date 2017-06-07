@@ -77,10 +77,10 @@ func New(conf Config) (*Client, error) {
 		token:         conf.Token,
 		expires:       conf.Expires,
 		tokenator:     conf.Tokenator,
-		retry:         conf.Retry,
 	}
 
-	client.retry = client.retry.initializeRetryValues()
+	client.retry = conf.Retry.defaultValues()
+
 	if client.sessionLogger == nil {
 		client.sessionLogger = &util.NilLogger{}
 	}
@@ -137,7 +137,10 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 	maxTimer := time.After(c.retry.MaxElapsedTime)
 
 	currentDelay := c.retry.InitialDelay
-	backoffTimer := time.NewTimer(currentDelay)
+	if c.retry.InitialDelay == 0 {
+		panic("")
+	}
+	backoff := time.NewTimer(currentDelay)
 
 	// create header for connection requests
 	header := make(http.Header)
@@ -147,8 +150,7 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 		select {
 		case <-maxTimer:
 			return nil, ErrRetryTimedOut
-		case <-backoffTimer.C:
-
+		case <-backoff.C:
 			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
 
 			if res.StatusCode/100 == 4 {
@@ -159,7 +161,8 @@ func (c *Client) reconnect() (*websocket.Conn, error) {
 			}
 			// increment backoff
 			currentDelay = c.retry.NextDelay(currentDelay)
-			_ = backoffTimer.Reset(currentDelay)
+			c.sessionLogger.Print(currentDelay)
+			_ = backoff.Reset(currentDelay)
 		}
 	}
 }
