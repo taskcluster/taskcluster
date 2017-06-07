@@ -71,8 +71,10 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 
 // Checks if reconnect runs for MaxElapsedTime and then fails
 func TestExponentialBackoffFailure(t *testing.T) {
+	count := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
+		count++
 	}))
 	defer server.Close()
 
@@ -107,6 +109,10 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	maxTime := client.retry.MaxElapsedTime + 200*time.Millisecond
 	if end.Sub(start) > maxTime {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
+	}
+
+	if count > 10 || count < 4 {
+		t.Fatalf("wrong number of retries: %d", count)
 	}
 }
 
