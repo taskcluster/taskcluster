@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	sysruntime "runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -153,6 +154,8 @@ func prepareTaskUser(userName string) (reboot bool) {
 		panic(err)
 	}
 	err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
+	// KeepAlive needed so that user isn't logged out before redirect completes
+	sysruntime.KeepAlive(loginInfo)
 	if err != nil {
 		panic(err)
 	}
