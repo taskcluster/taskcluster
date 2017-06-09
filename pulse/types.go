@@ -26,10 +26,10 @@ type (
 
 			// E-mail address that will reach people who can address problems with runaway queue length.
 			// The service will send warning notifications to this address before forcibly deleting the
-			// queue.
+			// queue.  If omitted, no warnings will be given.
 			//
 			// See http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/contact
-			Contact string `json:"contact"`
+			Contact string `json:"contact,omitempty"`
 
 			// Date-time at which this namespace was first claimed.
 			//
@@ -85,17 +85,19 @@ type (
 
 		// E-mail address that will reach people who can address problems with runaway queue length.
 		// The service will send warning notifications to this address before forcibly deleting the
-		// queue.
+		// queue.  If omitted, no warnings will be given.
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/contact
-		Contact string `json:"contact"`
+		Contact string `json:"contact,omitempty"`
 
 		// Date-time after which the username, and all associated queues and
 		// exchanges, should be deleted. This can be updated on every claim, with no
-		// limit. In most cases it should be set to several days in the future.
+		// limit.  This should be set to a very short time for temporary credentials
+		// (such as for tests), and for a long time (days) for production credentials.
+		// It defaults to four hours.
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/expires
-		Expires tcclient.Time `json:"expires"`
+		Expires tcclient.Time `json:"expires,omitempty"`
 	}
 
 	// Namespace creation response
@@ -111,10 +113,10 @@ type (
 
 		// E-mail address that will reach people who can address problems with runaway queue length.
 		// The service will send warning notifications to this address before forcibly deleting the
-		// queue.
+		// queue.  If omitted, no warnings will be given.
 		//
 		// See http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/contact
-		Contact string `json:"contact"`
+		Contact string `json:"contact,omitempty"`
 
 		// Date-time at which this namespace was first claimed.
 		//

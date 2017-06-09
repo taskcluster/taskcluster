@@ -1,4 +1,4 @@
-Generated: 1496787803
+Generated: 1497004298
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5654,20 +5654,6 @@ The `expires` and `contact` properties can be updated at any time in a reclaim
 operation.'
 Entry 4     =
     Entry Type        = 'function'
-    Entry Method      = 'delete'
-    Entry Route       = '/namespace/<namespace>'
-    Entry Args        = '[namespace]'
-    Entry Query        = '[]'
-    Entry Name        = 'deleteNamespace'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = '[[pulse:namespace:<namespace>]]'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Delete a namespace'
-    Entry Description = 'Immediately delete the given namespace.  This will delete all exchanges and queues which the
-namespace had configure access to, as if it had just expired.'
-Entry 5     =
-    Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
@@ -5709,7 +5695,7 @@ Properties
         Property 'contact' =
           Description            = 'E-mail address that will reach people who can address problems with runaway queue length.
           The service will send warning notifications to this address before forcibly deleting the
-          queue.
+          queue.  If omitted, no warnings will be given.
           '
           Format                 = 'email'
           Type                   = 'string'
@@ -5736,7 +5722,7 @@ Properties
           Type                   = 'string'
           TypeName               = 'Name'
           SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace'
-      Required               = '[namespace created expires contact]'
+      Required               = '[namespace created expires]'
       Title                  = 'Namespace'
       Type                   = 'object'
       TypeName               = 'Namespace'
@@ -5763,7 +5749,7 @@ Properties
   Property 'contact' =
     Description            = 'E-mail address that will reach people who can address problems with runaway queue length.
     The service will send warning notifications to this address before forcibly deleting the
-    queue.
+    queue.  If omitted, no warnings will be given.
     '
     Format                 = 'email'
     Type                   = 'string'
@@ -5772,13 +5758,14 @@ Properties
   Property 'expires' =
     Description            = 'Date-time after which the username, and all associated queues and
     exchanges, should be deleted. This can be updated on every claim, with no
-    limit. In most cases it should be set to several days in the future.
+    limit.  This should be set to a very short time for temporary credentials
+    (such as for tests), and for a long time (days) for production credentials.
+    It defaults to four hours.
     '
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json#/properties/expires'
-Required               = '[contact expires]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Namespace Creation Request'
 Type                   = 'object'
@@ -5804,7 +5791,7 @@ Properties
   Property 'contact' =
     Description            = 'E-mail address that will reach people who can address problems with runaway queue length.
     The service will send warning notifications to this address before forcibly deleting the
-    queue.
+    queue.  If omitted, no warnings will be given.
     '
     Format                 = 'email'
     Type                   = 'string'
@@ -5838,7 +5825,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'ReclaimAt'
     SourceURL              = 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json#/properties/reclaimAt'
-Required               = '[namespace contact connectionString]'
+Required               = '[namespace connectionString]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Namespace Creation Response'
 Type                   = 'object'
