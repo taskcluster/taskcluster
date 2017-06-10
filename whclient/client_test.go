@@ -228,12 +228,13 @@ func TestClientReconnect(t *testing.T) {
 			http.Error(w, http.StatusText(400), 400)
 			return
 		}
+
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(800 * time.Millisecond)
 		atomic.AddInt32(&tryCount, -1)
 
 		conn.Close()
