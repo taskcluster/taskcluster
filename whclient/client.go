@@ -46,7 +46,9 @@ const (
 	stateClosed
 )
 
-type Client struct {
+// Client implements net.Listener. Client connects to the specified proxy and
+// provides a net.Listener interface.
+type client struct {
 	// read only values
 	// these are never changed. Will not cause data races.
 	id        string
@@ -72,8 +74,8 @@ type Client struct {
 	// token can be accessed only through connectWithRetry
 }
 
-func New(config Config) (*Client, error) {
-	client := &Client{
+func New(config Config) (net.Listener, error) {
+	cl := &client{
 		// read only values
 		id:        config.ID,
 		proxyAddr: config.ProxyAddr,
@@ -86,32 +88,32 @@ func New(config Config) (*Client, error) {
 		state:   stateInit,
 	}
 
-	if client.authorize == nil {
+	if cl.authorize == nil {
 		return nil, ErrAuthorizerNotProvided
 	}
 
-	if client.logger == nil {
-		client.logger = &util.NilLogger{}
+	if cl.logger == nil {
+		cl.logger = &util.NilLogger{}
 	}
 
-	client.m.Lock()
-	defer client.m.Unlock()
-	conn, err := client.connectWithRetry()
+	cl.m.Lock()
+	defer cl.m.Unlock()
+	conn, err := cl.connectWithRetry()
 	if err != nil {
 		return nil, err
 	}
 
 	sessionConfig := wsmux.Config{
-		Log:              client.logger,
+		Log:              cl.logger,
 		StreamBufferSize: 4 * 1024,
 	}
 
-	client.session = wsmux.Client(conn, sessionConfig)
-	client.state = stateRunning
-	return client, nil
+	cl.session = wsmux.Client(conn, sessionConfig)
+	cl.state = stateRunning
+	return cl, nil
 }
 
-func (c *Client) Accept() (net.Conn, error) {
+func (c *client) Accept() (net.Conn, error) {
 	c.m.Lock()
 	if c.state == stateClosed || c.state == stateBroken {
 		defer c.m.Unlock()
@@ -137,7 +139,7 @@ func (c *Client) Accept() (net.Conn, error) {
 	return stream, nil
 }
 
-func (c *Client) Close() error {
+func (c *client) Close() error {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -152,7 +154,7 @@ func (c *Client) Close() error {
 	return nil
 }
 
-func (c *Client) Addr() net.Addr {
+func (c *client) Addr() net.Addr {
 	c.m.Lock()
 	defer c.m.Unlock()
 	if c.session != nil {
@@ -161,7 +163,7 @@ func (c *Client) Addr() net.Addr {
 	return nil
 }
 
-func (c *Client) connectWithRetry() (*websocket.Conn, error) {
+func (c *client) connectWithRetry() (*websocket.Conn, error) {
 	// if token is expired or not usable, get a new token from the authorizer
 	if !util.IsTokenUsable(c.token) {
 		token, err := c.authorize(c.id)
@@ -190,7 +192,7 @@ func (c *Client) connectWithRetry() (*websocket.Conn, error) {
 	return conn, err
 }
 
-func (c *Client) retryConn() (*websocket.Conn, error) {
+func (c *client) retryConn() (*websocket.Conn, error) {
 	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
@@ -219,7 +221,7 @@ func (c *Client) retryConn() (*websocket.Conn, error) {
 
 }
 
-func (c *Client) reconnect() {
+func (c *client) reconnect() {
 	c.m.Lock()
 	defer c.m.Unlock()
 	conn, err := c.connectWithRetry()
