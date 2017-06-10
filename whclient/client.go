@@ -182,6 +182,7 @@ func (c *client) connectWithRetry() (*websocket.Conn, error) {
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
 	// initial attempt
+	c.logger.Printf("trying to connect to %s", c.proxyAddr)
 	conn, res, err := websocket.DefaultDialer.Dial(addr, header)
 	if err != nil {
 		if shouldRetry(res) {
@@ -207,13 +208,16 @@ func (c *client) retryConn() (*websocket.Conn, error) {
 		case <-maxTimer:
 			return nil, ErrRetryTimedOut
 		case <-backoff:
+			c.logger.Printf("trying to connect to %s", c.proxyAddr)
 			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
 			if err == nil {
 				return conn, nil
 			}
 			if !shouldRetry(res) {
+				c.logger.Printf("connection to %s failed. could not connect", c.proxyAddr)
 				return nil, ErrRetryFailed
 			}
+			c.logger.Printf("connection to %s failed. will retry", c.proxyAddr)
 
 			currentDelay = c.retry.nextDelay(currentDelay)
 			backoff = time.After(currentDelay)
