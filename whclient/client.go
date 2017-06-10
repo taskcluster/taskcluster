@@ -46,7 +46,7 @@ const (
 	stateClosed
 )
 
-// Client implements net.Listener. Client connects to the specified proxy and
+//client connects to the specified proxy and
 // provides a net.Listener interface.
 type client struct {
 	// read only values
@@ -74,6 +74,7 @@ type client struct {
 	// token can be accessed only through connectWithRetry
 }
 
+// New returns a new net.Listener instance using the provided Config object.
 func New(config Config) (net.Listener, error) {
 	cl := &client{
 		// read only values
@@ -214,7 +215,7 @@ func (c *client) retryConn() (*websocket.Conn, error) {
 				return nil, ErrRetryFailed
 			}
 
-			currentDelay = c.retry.NextDelay(currentDelay)
+			currentDelay = c.retry.nextDelay(currentDelay)
 			backoff = time.After(currentDelay)
 		}
 	}

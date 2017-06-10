@@ -39,7 +39,7 @@ type RetryConfig struct {
 }
 
 // NextDelay calculates the new retry delay based on the current delay.
-func (r RetryConfig) NextDelay(currentDelay time.Duration) time.Duration {
+func (r RetryConfig) nextDelay(currentDelay time.Duration) time.Duration {
 	// check if current interval is max interval
 	// avoid calculation
 	if currentDelay == r.MaxDelay {

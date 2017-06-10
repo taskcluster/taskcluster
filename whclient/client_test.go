@@ -148,7 +148,7 @@ func TestRetryStops4xx(t *testing.T) {
 
 	// attempt to connect with retry
 	if err.(clientError) != ErrRetryFailed {
-		t.Fatal("should fail with error: %v . Instead failed with error: %v", ErrRetryFailed, err)
+		t.Fatalf("should fail with error: %v\nInstead failed with error: %v", ErrRetryFailed, err)
 	}
 	if tryCount != 2 {
 		t.Fatal("only 2 connection attempts should occur")
@@ -237,7 +237,7 @@ func TestClientReconnect(t *testing.T) {
 		time.Sleep(800 * time.Millisecond)
 		atomic.AddInt32(&tryCount, -1)
 
-		conn.Close()
+		_ = conn.Close()
 	}))
 
 	config := Config{
@@ -263,7 +263,7 @@ func TestClientReconnect(t *testing.T) {
 	select {
 	case <-done:
 		if err.(clientError) != ErrRetryFailed {
-			t.Fatal("error should be: %v \nInstead found: %v", ErrRetryFailed, err)
+			t.Fatalf("error should be: %v\nInstead found: %v", ErrRetryFailed, err)
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("test timed out")
