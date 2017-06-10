@@ -62,13 +62,18 @@ func tokenGenerator(id string, secret []byte) string {
 
 func TestProxyRegister(t *testing.T) {
 	//  start proxy server
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		Logger:     genLogger("register-test"),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -100,13 +105,18 @@ func TestProxyRegister(t *testing.T) {
 
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		Logger:     genLogger("request-test"),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -187,12 +197,17 @@ func TestProxyRequest(t *testing.T) {
 }
 
 func TestProxyWebsocket(t *testing.T) {
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
 	defer server.Close()
@@ -263,13 +278,16 @@ func TestProxyWebsocket(t *testing.T) {
 // ensure control messages are proxied
 func TestWebsocketProxyControl(t *testing.T) {
 	logger := genLogger("ws-control-test")
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		Logger:     genLogger("request-test"),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
 	//serve proxy
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
@@ -393,12 +411,17 @@ func TestWebsocketProxyControl(t *testing.T) {
 // Ensure websocket close is proxied
 func TestWebSocketClosure(t *testing.T) {
 	logger := genLogger("ws-closure-test")
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	//serve proxy
 	server := httptest.NewServer(proxy)
 	wsURL := util.MakeWsURL(server.URL)
@@ -475,13 +498,18 @@ func TestWebSocketClosure(t *testing.T) {
 // Ensures that session is removed once websocket connection is closed
 func TestProxySessionRemoved(t *testing.T) {
 	done := make(chan bool, 1)
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
-	proxy.SetSessionRemoveHandler(func(id string) {
+
+	proxy, err := newProxy(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	proxy.setSessionRemoveHandler(func(id string) {
 		close(done)
 	})
 
@@ -497,7 +525,6 @@ func TestProxySessionRemoved(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	timeout := time.NewTimer(4 * time.Second)
 	err = conn.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -505,19 +532,24 @@ func TestProxySessionRemoved(t *testing.T) {
 
 	select {
 	case <-done:
-	case <-timeout.C:
+	case <-time.After(4 * time.Second):
 		t.Fatalf("test timed out")
 	}
 }
 
 // Simple test to ensure that proxy authenticates valid jwt and rejects other jwt
 func TestProxyAuth(t *testing.T) {
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -540,12 +572,15 @@ func TestProxyAuth(t *testing.T) {
 
 // Check that only 1 connection is active even if multiple connections are made
 func TestProxyMultiAuth(t *testing.T) {
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
@@ -605,12 +640,16 @@ func TestProxyMultiAuth(t *testing.T) {
 
 // Ensure authentication with both secrets works
 func TestProxySecrets(t *testing.T) {
-	proxy_config := Config{
+	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
-	proxy := New(proxy_config)
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	server := httptest.NewServer(proxy)
 	defer server.Close()
@@ -618,16 +657,18 @@ func TestProxySecrets(t *testing.T) {
 
 	// try connecting wsWorker with secret A
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+	jwt := tokenGenerator("test-worker", []byte("test-secret"))
+	header.Set("Authorization", "Bearer "+jwt)
 
-	_, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+	_, _, err = websocket.DefaultDialer.Dial(wsURL+"/register/test-worker", header)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	header.Set("Authorization", "Bearer "+workerIDBackupjwt)
+	jwt = tokenGenerator("test-worker-2", []byte("another-secret"))
+	header.Set("Authorization", "Bearer "+jwt)
 
-	_, _, err = websocket.DefaultDialer.Dial(wsURL+"/register/workerID", header)
+	_, _, err = websocket.DefaultDialer.Dial(wsURL+"/register/test-worker-2", header)
 	if err != nil {
 		t.Fatal(err)
 	}

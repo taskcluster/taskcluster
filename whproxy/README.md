@@ -2,6 +2,13 @@
 --
     import "github.com/taskcluster/webhooktunnel/whproxy"
 
+whproxy is a Layer-7 proxy implementation. It uses WebSockets to communicate
+with clients. Incoming http and websocket requests are multiplexed as separate
+streams over a WS connection. It uses JWT for auth.
+
+browser ----> [ proxy ] <--- websocket --- client
+
+proxy serves endpoints exposed by client to browsers.
 
 ## Usage
 
@@ -21,6 +28,13 @@ var (
 )
 ```
 
+#### func  New
+
+```go
+func New(conf Config) (http.Handler, error)
+```
+New creates a new proxy instance and wraps it as an http.Handler.
+
 #### type Config
 
 ```go
@@ -38,45 +52,4 @@ type Config struct {
 }
 ```
 
-
-#### type Proxy
-
-```go
-type Proxy struct {
-}
-```
-
-Proxy is used to send http and ws requests to workers. New proxy can be created
-by using whproxy.New()
-
-#### func  New
-
-```go
-func New(conf Config) *Proxy
-```
-New creates a new proxy instance using the provided configuration.
-
-#### func (*Proxy) LoadSecretsFromEnv
-
-```go
-func (p *Proxy) LoadSecretsFromEnv() error
-```
-LoadSecretsFromEnv loads jwt secrets from environment variables. Environment
-variables must be: TASKCLUSTER_PROXY_SECRET_A="a secret"
-TASKCLUSTER_PROXY_SECRET_B="another secret"
-
-#### func (*Proxy) ServeHTTP
-
-```go
-func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request)
-```
-ServeHTTP implements http.Handler so that the proxy may be used as a handler in
-a Mux or http.Server
-
-#### func (*Proxy) SetSessionRemoveHandler
-
-```go
-func (p *Proxy) SetSessionRemoveHandler(h func(string))
-```
-SetSessionRemoveHandler sets a function which is called when a wsmux Session is
-removed from the proxy due to closure or error.
+Config contains the run time parameters for the proxy

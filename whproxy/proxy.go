@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 	"sync"
 	"time"
@@ -15,15 +14,11 @@ import (
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-var (
-	registerRe = regexp.MustCompile("^/register/(\\w+)/?$")
-	serveRe    = regexp.MustCompile("^/(\\w+)/?(.*)$")
-)
-
 const (
 	monthUnix = 31 * 24 * time.Hour
 )
 
+// Config contains the run time parameters for the proxy
 type Config struct {
 	// Upgrader is a websocket.Upgrader instance which is used to upgrade incoming
 	// websocket connections from Clients.
@@ -37,44 +32,32 @@ type Config struct {
 	JWTSecretB []byte
 }
 
-// Proxy is used to send http and ws requests to workers.
+// proxy is used to send http and ws requests to workers.
 // New proxy can be created by using whproxy.New()
-type Proxy struct {
+type proxy struct {
 	m               sync.RWMutex
 	pool            map[string]*wsmux.Session
 	upgrader        websocket.Upgrader
 	logger          util.Logger
-	handler         http.Handler
 	onSessionRemove func(string)
 	jwtSecretA      []byte
 	jwtSecretB      []byte
 }
 
-// LoadSecretsFromEnv loads jwt secrets from environment
-// variables.
-// Environment variables must be:
-// TASKCLUSTER_PROXY_SECRET_A="a secret"
-// TASKCLUSTER_PROXY_SECRET_B="another secret"
-func (p *Proxy) LoadSecretsFromEnv() error {
-	p.m.Lock()
-	defer p.m.Unlock()
-
-	secretA := os.Getenv("TASKCLUSTER_PROXY_SECRET_A")
-	secretB := os.Getenv("TASKCLUSTER_PROXY_SECRET_B")
-
-	if secretA == "" || secretB == "" {
-		return ErrMissingSecret
-	}
-
-	p.jwtSecretA = []byte(secretA)
-	p.jwtSecretB = []byte(secretB)
-
-	return nil
+// New creates a new proxy instance and wraps it as an http.Handler.
+func New(conf Config) (http.Handler, error) {
+	return newProxy(conf)
 }
+
+// regex for parsing requests
+var (
+	registerRe = regexp.MustCompile("^/register/([\\w-]+)/?$")
+	serveRe    = regexp.MustCompile("^/([\\w-]+)/(.*)$")
+)
 
 // validate jwt
 // jwt signing and verification algorithm must be HMAC
-func (p *Proxy) validateJWT(id string, tokenString string) error {
+func (p *proxy) validateJWT(id string, tokenString string) error {
 	// parse jwt token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -127,9 +110,8 @@ func (p *Proxy) validateJWT(id string, tokenString string) error {
 	return nil
 }
 
-// New creates a new proxy instance using the provided configuration.
-func New(conf Config) *Proxy {
-	p := &Proxy{
+func newProxy(conf Config) (*proxy, error) {
+	p := &proxy{
 		pool:       make(map[string]*wsmux.Session),
 		upgrader:   conf.Upgrader,
 		logger:     conf.Logger,
@@ -138,48 +120,49 @@ func New(conf Config) *Proxy {
 	}
 
 	if p.jwtSecretA == nil || p.jwtSecretB == nil {
-		panic("both secrets must be loaded")
+		return nil, ErrMissingSecret
 	}
 
 	if p.logger == nil {
 		p.logger = &util.NilLogger{}
 	}
 
-	p.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// register will be matched first
-		if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
-			id := registerRe.FindStringSubmatch(r.URL.Path)[1]
-			tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
-			p.register(w, r, id, tokenString)
+	return p, nil
 
-		} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
-			matches := serveRe.FindStringSubmatch(r.URL.Path)
-			id, path := matches[1], matches[2]
-			p.serveRequest(w, r, id, path)
-
-		} else { // if not register request or worker request, not found
-			http.NotFound(w, r)
-		}
-	})
-
-	return p
 }
 
-// SetSessionRemoveHandler sets a function which is called when a wsmux Session is removed from
+func (p *proxy) handler(w http.ResponseWriter, r *http.Request) {
+	// register will be matched first
+	if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
+		id := registerRe.FindStringSubmatch(r.URL.Path)[1]
+		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
+		p.register(w, r, id, tokenString)
+
+	} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
+		matches := serveRe.FindStringSubmatch(r.URL.Path)
+		id, path := matches[1], matches[2]
+		p.serveRequest(w, r, id, path)
+
+	} else { // if not register request or worker request, not found
+		http.NotFound(w, r)
+	}
+}
+
+// setSessionRemoveHandler sets a function which is called when a wsmux Session is removed from
 // the proxy due to closure or error.
-func (p *Proxy) SetSessionRemoveHandler(h func(string)) {
+func (p *proxy) setSessionRemoveHandler(h func(string)) {
 	p.m.Lock()
 	defer p.m.Unlock()
 	p.onSessionRemove = h
 }
 
 // ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
-func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p.handler.ServeHTTP(w, r)
+func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	p.handler(w, r)
 }
 
 // getWorkerSession returns true if a session with the given id is present
-func (p *Proxy) getWorkerSession(id string) (*wsmux.Session, bool) {
+func (p *proxy) getWorkerSession(id string) (*wsmux.Session, bool) {
 	p.m.RLock()
 	defer p.m.RUnlock()
 	s, ok := p.pool[id]
@@ -188,7 +171,7 @@ func (p *Proxy) getWorkerSession(id string) (*wsmux.Session, bool) {
 
 // removeWorker is an idempotent operation which deletes a worker from the proxy's
 // worker pool
-func (p *Proxy) removeWorker(id string) {
+func (p *proxy) removeWorker(id string) {
 	p.m.Lock()
 	defer p.m.Unlock()
 	delete(p.pool, id)
@@ -198,7 +181,7 @@ func (p *Proxy) removeWorker(id string) {
 // register is used to connect a worker to the proxy so that it can start serving API endpoints.
 // The request must contain the worker ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
-func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
+func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
 	if !websocket.IsWebSocketUpgrade(r) {
 		http.NotFound(w, r)
 		return
@@ -221,6 +204,7 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	}
 	// remove old session and allow new connection
 	session := p.pool[id]
+	delete(p.pool, id)
 	// remove the close callback so that functions are not accidentally called
 	if session != nil {
 		session.SetCloseCallback(nil)
@@ -250,11 +234,12 @@ func (p *Proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 		},
 		Log: p.logger,
 	}
+
 	p.pool[id] = wsmux.Server(conn, conf)
 }
 
 // serveRequest serves worker endpoints to viewers
-func (p *Proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
+func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
 	session, ok := p.getWorkerSession(id)
 
 	// 404 if worker is not registered on this proxy
