@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -218,4 +219,53 @@ func TestAuthorizer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestClientReconnect(t *testing.T) {
+	tryCount := int32(3)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if atomic.LoadInt32(&tryCount) == 0 {
+			http.Error(w, http.StatusText(400), 400)
+			return
+		}
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		time.Sleep(200 * time.Millisecond)
+		atomic.AddInt32(&tryCount, -1)
+
+		conn.Close()
+	}))
+
+	config := Config{
+		ID:        "workerID",
+		ProxyAddr: util.MakeWsURL(server.URL),
+		Authorize: testAuthorize,
+	}
+
+	client, err := New(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// nil server
+	srv := &http.Server{}
+	done := make(chan bool, 1)
+
+	go func() {
+		err = srv.Serve(client)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		if err.(clientError) != ErrRetryFailed {
+			t.Fatal("error should be: %v \nInstead found: %v", ErrRetryFailed, err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("test timed out")
+	}
+
 }
