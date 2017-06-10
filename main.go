@@ -26,7 +26,7 @@ func main() {
 		panic(whproxy.ErrMissingSecret)
 	}
 
-	proxy := whproxy.New(whproxy.Config{
+	proxy, _ := whproxy.New(whproxy.Config{
 		Logger:     logger,
 		JWTSecretA: []byte(signingSecretA),
 		JWTSecretB: []byte(signingSecretB),
