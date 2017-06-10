@@ -105,7 +105,7 @@ func New(config Config) (net.Listener, error) {
 	}
 
 	sessionConfig := wsmux.Config{
-		Log:              cl.logger,
+		// Log:              cl.logger,
 		StreamBufferSize: 4 * 1024,
 	}
 
@@ -119,15 +119,20 @@ func (c *client) Accept() (net.Conn, error) {
 	if c.state == stateClosed || c.state == stateBroken {
 		defer c.m.Unlock()
 		// acceptErr must be non nil when state is {stateClosed, stateBroken}
+		c.logger.Printf("accept failed with error %v", c.acceptErr)
 		return nil, c.acceptErr
 	}
 
 	stream, err := c.session.Accept()
 	if err != nil {
+		c.logger.Printf("accept failed: attempting reconnect")
 		// problem with session
 		// close session and attempt reconnect
 		// set client error to reconnecting
 		c.acceptErr = ErrClientReconnecting
+
+		c.logger.Printf("state: broken")
+
 		c.state = stateBroken
 		// reconnect after mutex release
 		defer c.reconnect()
@@ -144,12 +149,14 @@ func (c *client) Close() error {
 	c.m.Lock()
 	defer c.m.Unlock()
 
+	c.logger.Printf("closing...")
 	if c.session != nil {
 		_ = c.session.Close()
 		c.session = nil
 	}
 
 	c.acceptErr = ErrClientClosed
+	c.logger.Printf("state: closed")
 	c.state = stateClosed
 
 	return nil
@@ -191,6 +198,7 @@ func (c *client) connectWithRetry() (*websocket.Conn, error) {
 		}
 		return nil, ErrRetryFailed
 	}
+	c.logger.Printf("connected to %s ", c.proxyAddr)
 	return conn, err
 }
 
@@ -232,6 +240,7 @@ func (c *client) reconnect() {
 	conn, err := c.connectWithRetry()
 	if err != nil {
 		// set error and return
+		c.logger.Printf("unable to reconnect to %s", c.proxyAddr)
 		c.acceptErr = ErrRetryFailed
 		return
 	}
@@ -247,6 +256,7 @@ func (c *client) reconnect() {
 	}
 	c.session = wsmux.Client(conn, sessionConfig)
 	c.state = stateRunning
+	c.logger.Printf("state: running")
 	c.acceptErr = nil
 }
 

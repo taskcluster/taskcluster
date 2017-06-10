@@ -182,6 +182,7 @@ func (p *proxy) removeWorker(id string) {
 // The request must contain the worker ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
+	p.logger.Printf("register request: id: %s", id)
 	if !websocket.IsWebSocketUpgrade(r) {
 		http.NotFound(w, r)
 		return
@@ -232,7 +233,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 				p.onSessionRemove(id)
 			}
 		},
-		Log: p.logger,
+		// Log: p.logger,
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)
@@ -240,7 +241,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 // serveRequest serves worker endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
-	p.logger.Printf("request for id: %s, path: %s", id, path)
+	p.logger.Printf("%s request: id: %s, path: %s", r.Method, id, path)
 	session, ok := p.getWorkerSession(id)
 
 	// 404 if worker is not registered on this proxy
@@ -255,6 +256,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	// check for a websocket request
 	if websocket.IsWebSocketUpgrade(r) {
+		p.logger.Printf("creating websocket bridge: id: %s, path:%s", id, path)
 		_ = p.websocketProxy(w, r, session)
 		return
 	}
@@ -262,6 +264,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// Open a stream to the worker session
 	reqStream, _, err := session.Open()
 	if err != nil {
+		p.logger.Printf("%s request failed: id: %s, path: %s", r.Method, id, path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
@@ -270,6 +273,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	r.URL.Path = "/" + path
 	err = r.Write(reqStream)
 	if err != nil {
+		p.logger.Printf("%s request failed: id: %s, path: %s", r.Method, id, path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
@@ -278,6 +282,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	bufReader := bufio.NewReader(reqStream)
 	resp, err := http.ReadResponse(bufReader, r)
 	if err != nil {
+		p.logger.Printf("%s request failed: id: %s, path: %s", r.Method, id, path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
