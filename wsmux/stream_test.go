@@ -33,7 +33,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 
 	sender := func(i int) {
 		defer wg.Done()
-		str, err := session.Open()
+		str, _, err := session.Open()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -85,7 +85,7 @@ func TestReadDeadlineExpires(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, err := client.Open()
+	str, _, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestReadDeadlineReset(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, err := client.Open()
+	str, _, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -162,7 +162,7 @@ func TestWriteDeadline(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, err := client.Open()
+	str, _, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,7 +196,7 @@ func TestWriteDeadlineReset(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, err := client.Open()
+	str, _, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}

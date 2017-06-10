@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/whproxy"
 )
 
@@ -26,8 +27,15 @@ func main() {
 		panic(whproxy.ErrMissingSecret)
 	}
 
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
 	proxy, _ := whproxy.New(whproxy.Config{
 		Logger:     logger,
+		Upgrader:   upgrader,
 		JWTSecretA: []byte(signingSecretA),
 		JWTSecretB: []byte(signingSecretB),
 	})

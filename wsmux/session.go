@@ -13,7 +13,7 @@ const (
 	defaultStreamQueueSize      = 20               // size of the accept stream
 	defaultKeepAliveInterval    = 10 * time.Second // keep alive interval
 	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
-	deadCheckDuration           = 30 * time.Second // check for dead streams every 30 seconds
+	deadCheckDuration           = 2 * time.Second  // check for dead streams every 2 seconds
 	defaultKeepAliveWait        = 30 * time.Second // ensure KeepAliveWait > keepAliveInterval
 )
 
@@ -172,13 +172,13 @@ func (s *Session) Accept() (net.Conn, error) {
 }
 
 // Open creates a new stream to the remote session.
-func (s *Session) Open() (net.Conn, error) {
+func (s *Session) Open() (net.Conn, uint32, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	select {
 	case <-s.closed:
-		return nil, ErrSessionClosed
+		return nil, 0, ErrSessionClosed
 	default:
 	}
 
@@ -186,7 +186,7 @@ func (s *Session) Open() (net.Conn, error) {
 	// increment here so that we can wait safely
 	s.nextID += 2
 	if _, ok := s.streams[id]; ok {
-		return nil, ErrDuplicateStream
+		return nil, 0, ErrDuplicateStream
 	}
 
 	str := newStream(id, s)
@@ -194,7 +194,7 @@ func (s *Session) Open() (net.Conn, error) {
 
 	if err := s.send(newSynFrame(id)); err != nil {
 		s.nextID -= 2
-		return nil, err
+		return nil, 0, err
 	}
 	// unlock mutex and wait
 	s.mu.Unlock()
@@ -202,18 +202,18 @@ func (s *Session) Open() (net.Conn, error) {
 	select {
 	case <-str.accepted:
 		s.mu.Lock()
-		return str, nil
+		return str, id, nil
 	case <-s.closed:
 		s.mu.Lock()
 		// state of s.nextID doesn't matter here
 		delete(s.streams, id)
-		return nil, ErrSessionClosed
+		return nil, 0, ErrSessionClosed
 	case <-time.After(s.streamAcceptDeadline):
 		s.mu.Lock()
 		// nextID can be cyclically reused, and previous instance
 		// may be in use by a different stream
 		delete(s.streams, id)
-		return nil, ErrAcceptTimeout
+		return nil, 0, ErrAcceptTimeout
 	}
 
 }
@@ -328,8 +328,8 @@ func (s *Session) recvLoop() {
 	}
 }
 
-//removes stream with given id
-func (s *Session) removeStream(id uint32) {
+//RemoveStream removes stream with given id
+func (s *Session) RemoveStream(id uint32) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, ok := s.streams[id]; ok {
@@ -371,7 +371,7 @@ func (s *Session) removeDeadStreams() {
 		s.mu.Lock()
 		for _, str := range s.streams {
 			if str.IsRemovable() {
-				s.removeStream(str.id)
+				s.RemoveStream(str.id)
 			}
 		}
 		s.mu.Unlock()

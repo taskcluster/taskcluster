@@ -7,11 +7,16 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
+	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upgrader websocket.Upgrader) error {
+func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session) error {
 	// at this point, we are sure that r is a http websocket upgrade request
 	// connClosure returns the wsmux stream to Dial
+	stream, id, err := session.Open()
+	if err != nil {
+		return err
+	}
 	connClosure := func(network, addr string) (net.Conn, error) {
 		return stream, nil
 	}
@@ -37,16 +42,17 @@ func websocketProxy(w http.ResponseWriter, r *http.Request, stream net.Conn, upg
 	if err != nil {
 		return err
 	}
-	viewerConn, err := upgrader.Upgrade(w, r, nil)
+	viewerConn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
 	}
 
+	defer session.RemoveStream(id)
 	// bridge both websocket connections
-	return bridgeConn(workerConn, viewerConn)
+	return p.bridgeConn(workerConn, viewerConn)
 }
 
-func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
+func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	// set ping and pong handlers
 	conn1.SetPingHandler(forwardControl(websocket.PingMessage, conn2))
 	conn2.SetPingHandler(forwardControl(websocket.PingMessage, conn1))
@@ -65,35 +71,34 @@ func bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	// ensure connections are closed after bridge exits
 	defer func() {
 		_ = conn1.Close()
+		p.logger.Printf("PROXY: WS: closed source connection")
 		_ = conn2.Close()
+		p.logger.Printf("PROXT: WS: closed dest connection")
 	}()
 
-	var err1, err2 error
-	done1, done2 := make(chan bool, 1), make(chan bool, 1)
+	kill := make(chan bool, 1)
 	go func() {
-		err1 = copyWsData(conn1, conn2)
-		close(done1)
+		_ = copyWsData(conn1, conn2, kill)
+		select {
+		case <-kill:
+		default:
+			close(kill)
+		}
 	}()
 	go func() {
-		err2 = copyWsData(conn2, conn1)
-		close(done2)
+		_ = copyWsData(conn2, conn1, kill)
+		select {
+		case <-kill:
+		default:
+			close(kill)
+		}
 	}()
 
-	select {
-	case <-done1:
-		if err1 != nil {
-			return err1
-		}
-	case <-done2:
-		if err2 != nil {
-			return err2
-		}
-	}
-
+	<-kill
 	return nil
 }
 
-func copyWsData(dest *websocket.Conn, src *websocket.Conn) error {
+func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error {
 	for {
 		mtype, buf, err := src.ReadMessage()
 		if err != nil {
@@ -112,6 +117,11 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn) error {
 				return err
 			}
 			return nil
+		}
+		select {
+		case <-kill:
+			return nil
+		default:
 		}
 	}
 }

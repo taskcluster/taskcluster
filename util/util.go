@@ -34,7 +34,7 @@ func Min(a, b int) int {
 var (
 	replaceHTTPSRe = regexp.MustCompile("^(http)(s?)")
 	idReplaceRe    = regexp.MustCompile("^/(\\w+)(/?)")
-	jwtRe          = regexp.MustCompile("^Bearer ([\\w\\W]+)$")
+	jwtRe          = regexp.MustCompile("^Bearer ([\\w-\\.]+)$")
 )
 
 // ReplaceID replaces id in "/{id}/path" with "/path"

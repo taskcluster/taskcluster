@@ -240,6 +240,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 // serveRequest serves worker endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
+	p.logger.Printf("request for id: %s, path: %s", id, path)
 	session, ok := p.getWorkerSession(id)
 
 	// 404 if worker is not registered on this proxy
@@ -249,19 +250,19 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 		return
 	}
 
-	// Open a stream to the worker session
-	reqStream, err := session.Open()
-	if err != nil {
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
-
 	// set original path as header
 	r.Header.Set("x-webhooktunnel-original-path", r.URL.Path)
 
 	// check for a websocket request
 	if websocket.IsWebSocketUpgrade(r) {
-		_ = websocketProxy(w, r, reqStream, p.upgrader)
+		_ = p.websocketProxy(w, r, session)
+		return
+	}
+
+	// Open a stream to the worker session
+	reqStream, _, err := session.Open()
+	if err != nil {
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
