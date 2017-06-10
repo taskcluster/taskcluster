@@ -1,7 +1,6 @@
 package whclient
 
 import (
-	"bufio"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,11 +11,28 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
-	"github.com/taskcluster/webhooktunnel/wsmux"
 )
+
+func testAuthorize(id string) (string, error) {
+	now := time.Now()
+	expires := now.Add(30 * 24 * time.Hour)
+
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	token.Claims.(jwt.MapClaims)["iat"] = now.Unix()
+	token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
+	token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
+	token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
+	token.Claims.(jwt.MapClaims)["tid"] = id
+
+	tokString, err := token.SignedString([]byte("test-secret"))
+	if err != nil {
+		return "", err
+	}
+	return tokString, nil
+}
 
 func genLogger(fname string) *log.Logger {
 	file, err := os.Create(fname)
@@ -54,10 +70,10 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 	config := Config{
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
+		Authorize: testAuthorize,
 	}
-	client := New(config)
 
-	_, err := client.GetListener(true)
+	_, err := New(config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,24 +98,23 @@ func TestExponentialBackoffFailure(t *testing.T) {
 			InitialDelay:   200 * time.Millisecond,
 			MaxElapsedTime: 2 * time.Second,
 		},
+		Authorize: testAuthorize,
 	}
 
-	client := New(config)
-
 	start := time.Now()
-	_, err := client.GetListener(true)
+	_, err := New(config)
 	end := time.Now()
 
-	if err == nil {
-		t.Fatalf("should fail")
+	if err.(clientError) != ErrRetryTimedOut {
+		t.Fatalf("should fail with %v. Instead failed with %v", ErrRetryTimedOut, err)
 	}
 
 	if end.Sub(start) < 2*time.Second {
-		t.Fatalf("should run for atleast %d milliseconds", client.retry.MaxElapsedTime)
+		t.Fatalf("should run for atleast %d milliseconds", config.Retry.MaxElapsedTime)
 	}
 
 	// maximum time accounting for jitter
-	maxTime := client.retry.MaxElapsedTime + 200*time.Millisecond
+	maxTime := config.Retry.MaxElapsedTime + 200*time.Millisecond
 	if end.Sub(start) > maxTime {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
@@ -107,101 +122,6 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	if count > 10 || count < 4 {
 		t.Fatalf("wrong number of retries: %d", count)
 	}
-}
-
-// Check if client session can handle simple http
-func TestClientCanServeHTTP(t *testing.T) {
-	// Create a handler for the client
-	clientMux := mux.NewRouter()
-	clientMux.Handle("/valid", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte("valid"))
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
-
-	logger := genLogger("client-http-test")
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if websocket.IsWebSocketUpgrade(r) {
-			conn, err := upgrader.Upgrade(w, r, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			session := wsmux.Server(conn, wsmux.Config{Log: genLogger("client-http-session-test")})
-
-			// make request to supported endpoint
-			reqStream, err := session.Open()
-			if err != nil {
-				t.Fatal(err)
-			}
-			req, err := http.NewRequest(http.MethodGet, "/valid", nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			err = req.Write(reqStream)
-			if err != nil {
-				t.Fatal(err)
-			}
-			_ = reqStream.Close()
-
-			reader := bufio.NewReader(reqStream)
-			response, err := http.ReadResponse(reader, req)
-			if response == nil {
-				t.Fatal("response must not be nil")
-			}
-			logger.Print(response)
-			if response.StatusCode != 200 {
-				t.Fatal("request unsuccessful")
-			}
-
-			// make request to unsupported endpoint
-			// should fail
-			reqStream, err = session.Open()
-			if err != nil {
-				t.Fatal(err)
-			}
-			req, err = http.NewRequest(http.MethodGet, "/", nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			err = req.Write(reqStream)
-			if err != nil {
-				t.Fatal(err)
-			}
-			_ = reqStream.Close()
-
-			reader = bufio.NewReader(reqStream)
-			response, err = http.ReadResponse(reader, req)
-			if response == nil {
-				t.Fatal("response must not be nil")
-			}
-			logger.Print(response)
-			if response.StatusCode != 404 {
-				t.Fatalf("response code was %d. must be : 404", response.StatusCode)
-			}
-			_ = conn.Close()
-			return
-		}
-		http.Error(w, "unauthorised", 401)
-	}))
-
-	defer server.Close()
-
-	clServer := &http.Server{Handler: clientMux}
-
-	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
-	}
-	client := New(config)
-
-	clientSession, err := client.GetListener(true)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_ = clServer.Serve(clientSession)
 }
 
 // Ensure that client does not retry if error is 4xx
@@ -216,16 +136,18 @@ func TestRetryStops4xx(t *testing.T) {
 		http.Error(w, http.StatusText(400), 400)
 	}))
 	defer server.Close()
+
 	config := Config{
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
+		Authorize: testAuthorize,
 	}
-	client := New(config)
+
+	_, err := New(config)
 
 	// attempt to connect with retry
-	_, err := client.GetListener(true)
-	if err == nil {
-		t.Fatal("connection should fail")
+	if err.(clientError) != ErrRetryFailed {
+		t.Fatal("should fail with error: %v . Instead failed with error: %v", ErrRetryFailed, err)
 	}
 	if tryCount != 2 {
 		t.Fatal("only 2 connection attempts should occur")
@@ -233,7 +155,7 @@ func TestRetryStops4xx(t *testing.T) {
 }
 
 // Ensure token gets generated
-func TestTokenGeneration(t *testing.T) {
+func TestAuthorizer(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now().Unix()
 
@@ -288,11 +210,11 @@ func TestTokenGeneration(t *testing.T) {
 	config := Config{
 		ID:        "workerID",
 		ProxyAddr: util.MakeWsURL(server.URL),
+		Authorize: testAuthorize,
 	}
 
-	client := New(config)
+	_, err := New(config)
 
-	_, err := client.GetListener(true)
 	if err != nil {
 		t.Fatal(err)
 	}

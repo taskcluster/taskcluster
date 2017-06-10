@@ -4,41 +4,18 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-// TokenGenerator is a function which accepts a string `id` and returns a
+// Authorizer is a function which accepts a string `id` and returns a
 // signed JWT (JSON Web Token). If an error occurs, the
 // return values must be ("", ErrorGenerated).
-type TokenGenerator func(id string) (string, error)
-
-// TestTokenGenerator is the default TokenGenerator. It creates a new JWT and sets
-// claim "tid" to the given id (proxy convention). "nbf" is set to 5 minutes before the
-// creation of the JWT and "exp" is set to 30 days after creation of JWT. The jwt is
-// signed using HS256 with the secret "test-secret".
-func TestTokenGenerator(id string) (string, error) {
-	now := time.Now()
-	expires := now.Add(30 * 24 * time.Hour)
-
-	token := jwt.New(jwt.SigningMethodHS256)
-
-	token.Claims.(jwt.MapClaims)["iat"] = now.Unix()
-	token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
-	token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
-	token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
-	token.Claims.(jwt.MapClaims)["tid"] = id
-
-	tokString, err := token.SignedString([]byte("test-secret"))
-	if err != nil {
-		return "", err
-	}
-	return tokString, nil
-}
+type Authorizer func(id string) (string, error)
 
 // Config is used for creating a new client.
 type Config struct {
@@ -49,149 +26,231 @@ type Config struct {
 	// ProxyAddr is the websocket address of the proxy to which the client should connect.
 	ProxyAddr string
 
-	// SessionLogger is an optional field. This logger is passed to the session created by
+	// Logger is an optional field. This logger is passed to the session created by
 	// the GetListener method. This defaults to `&util.NilLogger{}`.
-	SessionLogger util.Logger
+	Logger util.Logger
 
-	// Token is the signed JWT used for authentication.
-	Token string
-
-	// Tokenator is the TokenGenerator used by the client to generate a new JWT when needed.
-	// The client may sign it's own JWT or request one from an external source. This defaults
-	// to TestTokenGenerator.
-	Tokenator TokenGenerator
+	Authorize Authorizer
 
 	// Retry contains the retry parameters to use in case of reconnects.
 	// The default values are specified in RetryConfig.
 	Retry RetryConfig
 }
 
-// Client is used to connect to a Webhook Proxy instance and create a listener for
-// serving API endpoints.
+type clientState int
+
+const (
+	stateInit clientState = iota
+	stateRunning
+	stateBroken
+	stateClosed
+)
+
 type Client struct {
-	// id is the worker ID in the jwt
-	id string
-	// proxyAddr contains the address of the proxy server
+	// read only values
+	// these are never changed. Will not cause data races.
+	id        string
 	proxyAddr string
-	// retry consists of parameters for reconneting to the proxy in case of a broken
-	// connection
-	retry RetryConfig
-	// session logger can be used to log the created session
-	sessionLogger util.Logger
-	// jwt used for authentication
-	token string
-	// jwt expiry time
-	expires time.Time
-	// configurer used for loading jwt if not available or expired
-	tokenator TokenGenerator
+	authorize Authorizer
+	logger    util.Logger
+	retry     RetryConfig
+
+	// hold lock to modify invariants
+	m sync.Mutex
+
+	// invariants
+	acceptErr error
+	token     string
+	session   *wsmux.Session
+	state     clientState
+
+	// session will be non-nil only if state is stateRunning.
+	// if state is {stateBroken, stateClosed}, then session will not be accessed.
+	// Accept is the only function which may set the state to stateBroken.
+	// reconnect is the only function which may set the state to stateRunning.
+
+	// token can be accessed only through connectWithRetry
 }
 
-// New creates a new Client instance
-func New(conf Config) *Client {
+func New(config Config) (*Client, error) {
 	client := &Client{
-		id:            conf.ID,
-		proxyAddr:     conf.ProxyAddr,
-		sessionLogger: conf.SessionLogger,
-		token:         conf.Token,
-		expires:       util.GetTokenExp(conf.Token),
-		tokenator:     conf.Tokenator,
+		// read only values
+		id:        config.ID,
+		proxyAddr: config.ProxyAddr,
+		logger:    config.Logger,
+		authorize: config.Authorize,
+		retry:     config.Retry.defaultValues(),
+
+		token:   "",
+		session: nil,
+		state:   stateInit,
 	}
 
-	client.retry = conf.Retry.defaultValues()
-
-	if client.sessionLogger == nil {
-		client.sessionLogger = &util.NilLogger{}
-	}
-	if client.tokenator == nil {
-		client.tokenator = TestTokenGenerator
+	if client.authorize == nil {
+		return nil, ErrAuthorizerNotProvided
 	}
 
-	return client
-}
-
-// GetListener connects to the proxy and returns a net.Listener instance
-// by connecting to the proxy and setting up a wsmux Session.
-func (c *Client) GetListener(retry bool) (net.Listener, error) {
-	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
-
-	if !c.tokenUsable() {
-		token, err := c.tokenator(c.id)
-		c.token, c.expires = token, util.GetTokenExp(token)
-		if err != nil {
-			return nil, err
-		}
+	if client.logger == nil {
+		client.logger = &util.NilLogger{}
 	}
 
-	c.sessionLogger.Printf("token: %s, exp: %v", c.token, c.expires)
-	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+c.token)
-
-	conn, res, err := websocket.DefaultDialer.Dial(addr, nil)
-	if res.StatusCode/100 == 4 {
+	client.m.Lock()
+	defer client.m.Unlock()
+	conn, err := client.connectWithRetry()
+	if err != nil {
 		return nil, err
 	}
-	if err != nil && retry {
-		conn, err = c.reconnect()
-		if err != nil {
-			return nil, err
-		}
+
+	sessionConfig := wsmux.Config{
+		Log:              client.logger,
+		StreamBufferSize: 4 * 1024,
 	}
 
-	config := wsmux.Config{Log: c.sessionLogger, StreamBufferSize: 4 * 1024}
-	client := wsmux.Client(conn, config)
+	client.session = wsmux.Client(conn, sessionConfig)
+	client.state = stateRunning
 	return client, nil
 }
 
-// reconnect attempts to establish a connection to the server
-// using an exponential backoff algorithm
-// do not retry if response status code is 4xx
-func (c *Client) reconnect() (*websocket.Conn, error) {
-	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
+func (c *Client) Accept() (net.Conn, error) {
+	c.m.Lock()
+	if c.state == stateClosed || c.state == stateBroken {
+		defer c.m.Unlock()
+		// acceptErr must be non nil when state is {stateClosed, stateBroken}
+		return nil, c.acceptErr
+	}
 
-	// planned on supporting MaxElapsedTime == 0, but no apparent use case.
-	// please advise
-	maxTimer := time.After(c.retry.MaxElapsedTime)
+	stream, err := c.session.Accept()
+	if err != nil {
+		// problem with session
+		// close session and attempt reconnect
+		// set client error to reconnecting
+		c.acceptErr = ErrClientReconnecting
+		c.state = stateBroken
+		// reconnect after mutex release
+		defer c.reconnect()
+		// next call to accept cannot enter critical section until reconnect finishes executing
+		defer c.m.Unlock()
+		return nil, c.acceptErr
+	}
+
+	c.m.Unlock()
+	return stream, nil
+}
+
+func (c *Client) Close() error {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	if c.session != nil {
+		_ = c.session.Close()
+		c.session = nil
+	}
+
+	c.acceptErr = ErrClientClosed
+	c.state = stateClosed
+
+	return nil
+}
+
+func (c *Client) Addr() net.Addr {
+	c.m.Lock()
+	defer c.m.Unlock()
+	if c.session != nil {
+		return c.session.Addr()
+	}
+	return nil
+}
+
+func (c *Client) connectWithRetry() (*websocket.Conn, error) {
+	// if token is expired or not usable, get a new token from the authorizer
+	if !util.IsTokenUsable(c.token) {
+		token, err := c.authorize(c.id)
+		if err != nil {
+			return nil, err
+		}
+		if !util.IsTokenUsable(token) {
+			return nil, ErrBadToken
+		}
+		c.token = token
+	}
+
+	// initial connection
+	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+c.token)
+	// initial attempt
+	conn, res, err := websocket.DefaultDialer.Dial(addr, header)
+	if err != nil {
+		if shouldRetry(res) {
+			// retry connection and return result
+			return c.retryConn()
+		}
+		return nil, ErrRetryFailed
+	}
+	return conn, err
+}
+
+func (c *Client) retryConn() (*websocket.Conn, error) {
+	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+c.token)
 
 	currentDelay := c.retry.InitialDelay
-	if c.retry.InitialDelay == 0 {
-		panic("")
-	}
-	backoff := time.NewTimer(currentDelay)
-
-	// create header for connection requests
-	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+c.token)
+	maxTimer := time.After(c.retry.MaxElapsedTime)
+	backoff := time.After(currentDelay)
 
 	for {
 		select {
 		case <-maxTimer:
 			return nil, ErrRetryTimedOut
-		case <-backoff.C:
+		case <-backoff:
 			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
-
-			if res.StatusCode/100 == 4 {
-				return nil, err
-			}
 			if err == nil {
-				return conn, err
+				return conn, nil
 			}
-			// increment backoff
+			if !shouldRetry(res) {
+				return nil, ErrRetryFailed
+			}
+
 			currentDelay = c.retry.NextDelay(currentDelay)
-			_ = backoff.Reset(currentDelay)
+			backoff = time.After(currentDelay)
 		}
 	}
+
 }
 
-// Check if token is empty or expired
-func (c *Client) tokenUsable() bool {
-	if c.token == "" {
-		return false
+func (c *Client) reconnect() {
+	c.m.Lock()
+	defer c.m.Unlock()
+	conn, err := c.connectWithRetry()
+	if err != nil {
+		// set error and return
+		c.acceptErr = ErrRetryFailed
+		return
 	}
 
-	now := time.Now().Unix()
-	if now > c.expires.Unix() {
-		return false
+	if c.session != nil {
+		_ = c.session.Close()
+		c.session = nil
 	}
 
+	sessionConfig := wsmux.Config{
+		Log:              c.logger,
+		StreamBufferSize: 4 * 1024,
+	}
+	c.session = wsmux.Client(conn, sessionConfig)
+	c.state = stateRunning
+	c.acceptErr = nil
+}
+
+// simple utility
+func shouldRetry(r *http.Response) bool {
+	// not sure if !(r == nil || r.StatusCode == 4xx) would cause dereferencing error
+	if r == nil {
+		return false
+	}
+	if r.StatusCode/100 == 4 || r.StatusCode/100 == 2 {
+		return false
+	}
 	return true
 }

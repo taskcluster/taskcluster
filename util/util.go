@@ -80,3 +80,19 @@ func GetTokenExp(tokenString string) time.Time {
 	return time.Time{}
 
 }
+
+// verify token is valid, and also exp and nbf on token
+func IsTokenUsable(tokenString string) bool {
+	token, err := jwt.Parse(tokenString, nil)
+	if err.(*jwt.ValidationError).Errors == jwt.ValidationErrorMalformed {
+		return false
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return false
+	}
+
+	now := time.Now().Unix()
+	return claims.VerifyExpiresAt(now, true) && claims.VerifyNotBefore(now, true)
+}
