@@ -182,7 +182,7 @@ func (p *proxy) removeWorker(id string) {
 // The request must contain the worker ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
-	p.logger.Printf("register request: id: %s", id)
+	p.logger.Printf("register request: id: %s\ntoken:%s", id, tokenString)
 	if !websocket.IsWebSocketUpgrade(r) {
 		http.NotFound(w, r)
 		return
@@ -190,6 +190,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	if tokenString == "" {
 		// No jwt. Connection not authorized
+		p.logger.Printf("could not accept connection: %s. No auth token found.", id)
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
@@ -200,10 +201,12 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	defer p.m.Unlock()
 
 	if err := p.validateJWT(id, tokenString); err != nil {
+		p.logger.Printf("could not accept connection: %s. Could not validate token.", id)
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
 	// remove old session and allow new connection
+	p.logger.Printf("adding worker: %s", id)
 	session := p.pool[id]
 	delete(p.pool, id)
 	// remove the close callback so that functions are not accidentally called
@@ -212,11 +215,9 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	}
 
 	// unlock and close old session while upgrading
-	go func() {
-		if session != nil {
-			_ = session.Close()
-		}
-	}()
+	if session != nil {
+		_ = session.Close()
+	}
 
 	conn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -233,10 +234,10 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 				p.onSessionRemove(id)
 			}
 		},
-		// Log: p.logger,
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)
+	p.logger.Printf("added worker: %s", id)
 }
 
 // serveRequest serves worker endpoints to viewers
@@ -247,6 +248,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// 404 if worker is not registered on this proxy
 	if !ok {
 		// DHT code will be added here
+		p.logger.Printf("request: id: %s failed. worker not found")
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
