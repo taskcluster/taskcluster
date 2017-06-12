@@ -84,10 +84,10 @@ properties:
         type: boolean
         title: Enable generation of a openpgp signed Chain of Trust artifact
         description: |-
-          An artifact named chainOfTrust.json.asc should be generated
-          which will include information for downstream tasks to build
-          a level of trust for the artifacts produced by the task and
-          the environment it ran in.
+          An artifact named `public/chainOfTrust.json.asc` should be generated
+          which will include information for downstream tasks to build a level
+          of trust for the artifacts produced by the task and the environment
+          it ran in.
   mounts:
     type: array
     description: Directories and/or files to be mounted

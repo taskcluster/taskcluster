@@ -69,10 +69,10 @@ type (
 		// Feature flags enable additional functionality.
 		Features struct {
 
-			// An artifact named chainOfTrust.json.asc should be generated
-			// which will include information for downstream tasks to build
-			// a level of trust for the artifacts produced by the task and
-			// the environment it ran in.
+			// An artifact named `public/chainOfTrust.json.asc` should be generated
+			// which will include information for downstream tasks to build a level
+			// of trust for the artifacts produced by the task and the environment
+			// it ran in.
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 		} `json:"features,omitempty"`
 
@@ -413,7 +413,7 @@ func taskPayloadSchema() string {
       "description": "Feature flags enable additional functionality.",
       "properties": {
         "chainOfTrust": {
-          "description": "An artifact named chainOfTrust.json.asc should be generated\nwhich will include information for downstream tasks to build\na level of trust for the artifacts produced by the task and\nthe environment it ran in.",
+          "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.",
           "title": "Enable generation of a openpgp signed Chain of Trust artifact",
           "type": "boolean"
         }
