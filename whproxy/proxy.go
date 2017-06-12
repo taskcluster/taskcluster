@@ -67,6 +67,9 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 	})
 
 	if err != nil {
+		// log first error
+		util.ProxyAuthLog(p.logger, id, true, "%v : attempting to verify with second secret", err)
+
 		token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, ErrUnexpectedSigningMethod
@@ -76,6 +79,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 	}
 
 	if err != nil {
+		util.ProxyAuthLog(p.logger, id, true, "%v", err)
 		return ErrAuthFailed
 	}
 
@@ -83,30 +87,34 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 	now := time.Now().Unix()
 	claims, ok := token.Claims.(jwt.MapClaims)
 
-	p.logger.Printf("token with claims: %v", claims)
-
 	if !ok {
+		util.ProxyAuthLog(p.logger, id, true, "%v", err)
 		return ErrTokenNotValid
 	}
+	util.ProxyAuthLog(p.logger, id, false, "claims: %v", claims)
 
 	if !claims.VerifyExpiresAt(now, true) {
+		util.ProxyAuthLog(p.logger, id, true, "%v", err)
 		return ErrAuthFailed
 	}
 	if !claims.VerifyIssuedAt(now, true) {
+		util.ProxyAuthLog(p.logger, id, true, "%v", err)
 		return ErrAuthFailed
 	}
 	if !claims.VerifyNotBefore(now, true) {
+		util.ProxyAuthLog(p.logger, id, true, "%v", err)
 		return ErrAuthFailed
 	}
 	if claims["tid"] != id {
+		util.ProxyAuthLog(p.logger, id, true, "tid incorrect. expected %s found %s", id, claims["tid"])
 		return ErrAuthFailed
 	}
 
 	if claims["exp"].(float64)-claims["nbf"].(float64) > float64(monthUnix) {
+		util.ProxyAuthLog(p.logger, id, true, "jwt should not be valid for more than 1 month")
 		return ErrAuthFailed
 	}
 
-	// TODO: Other validation checks
 	return nil
 }
 
@@ -120,6 +128,7 @@ func newProxy(conf Config) (*proxy, error) {
 	}
 
 	if p.jwtSecretA == nil || p.jwtSecretB == nil {
+		util.ProxyLog(p.logger, "none", true, "could not load secrets")
 		return nil, ErrMissingSecret
 	}
 
@@ -141,6 +150,8 @@ func (p *proxy) handler(w http.ResponseWriter, r *http.Request) {
 	} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
 		matches := serveRe.FindStringSubmatch(r.URL.Path)
 		id, path := matches[1], matches[2]
+		// regex does not include leading slash
+		path = "/" + path
 		p.serveRequest(w, r, id, path)
 
 	} else { // if not register request or worker request, not found
@@ -182,16 +193,19 @@ func (p *proxy) removeWorker(id string) {
 // The request must contain the worker ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
-	p.logger.Printf("register request: id: %s\ntoken:%s", id, tokenString)
-	if !websocket.IsWebSocketUpgrade(r) {
-		http.NotFound(w, r)
-		return
-	}
+
+	util.ProxyLog(p.logger, id, false, "register request with token: %s", tokenString)
 
 	if tokenString == "" {
 		// No jwt. Connection not authorized
-		p.logger.Printf("could not accept connection: %s. No auth token found.", id)
+		util.ProxyLog(p.logger, id, true, "no token provided")
 		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+
+	if !websocket.IsWebSocketUpgrade(r) {
+		util.ProxyLog(p.logger, id, true, "must upgrade to WebSocket")
+		http.NotFound(w, r)
 		return
 	}
 
@@ -201,12 +215,11 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	defer p.m.Unlock()
 
 	if err := p.validateJWT(id, tokenString); err != nil {
-		p.logger.Printf("could not accept connection: %s. Could not validate token.", id)
+		util.ProxyLog(p.logger, id, true, "unable to validate token")
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
 	// remove old session and allow new connection
-	p.logger.Printf("adding worker: %s", id)
 	session := p.pool[id]
 	delete(p.pool, id)
 	// remove the close callback so that functions are not accidentally called
@@ -237,18 +250,18 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)
-	p.logger.Printf("added worker: %s", id)
+	util.ProxyLog(p.logger, id, false, "added worker")
 }
 
 // serveRequest serves worker endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
-	p.logger.Printf("%s request: id: %s, path: %s", r.Method, id, path)
+	util.ProxyLog(p.logger, id, false, "new request: path=%s", path)
 	session, ok := p.getWorkerSession(id)
 
 	// 404 if worker is not registered on this proxy
 	if !ok {
 		// DHT code will be added here
-		p.logger.Printf("request: id: %s failed. worker not found")
+		util.ProxyLog(p.logger, id, true, "session not found")
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
@@ -258,24 +271,22 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	// check for a websocket request
 	if websocket.IsWebSocketUpgrade(r) {
-		p.logger.Printf("creating websocket bridge: id: %s, path:%s", id, path)
-		_ = p.websocketProxy(w, r, session)
+		_ = p.websocketProxy(w, r, session, id)
 		return
 	}
 
 	// Open a stream to the worker session
 	reqStream, _, err := session.Open()
 	if err != nil {
-		p.logger.Printf("%s request failed: id: %s, path: %s", r.Method, id, path)
+		util.ProxyLog(p.logger, id, true, "could not open stream: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
 	// rewrite path for worker and write request
-	r.URL.Path = "/" + path
 	err = r.Write(reqStream)
 	if err != nil {
-		p.logger.Printf("%s request failed: id: %s, path: %s", r.Method, id, path)
+		util.ProxyLog(p.logger, id, true, "could not write request: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
@@ -284,7 +295,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	bufReader := bufio.NewReader(reqStream)
 	resp, err := http.ReadResponse(bufReader, r)
 	if err != nil {
-		p.logger.Printf("%s request failed: id: %s, path: %s", r.Method, id, path)
+		util.ProxyLog(p.logger, id, true, "could not read response: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}

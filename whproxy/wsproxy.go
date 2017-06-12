@@ -10,11 +10,13 @@ import (
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session) error {
+func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, workerID string) error {
 	// at this point, we are sure that r is a http websocket upgrade request
 	// connClosure returns the wsmux stream to Dial
+	util.ProxyBridgeLog(p.logger, workerID, false, "creating WS bridge: path=%s", r.URL.Path)
 	stream, id, err := session.Open()
 	if err != nil {
+		util.ProxyBridgeLog(p.logger, workerID, true, "could not open stream: path=%s", r.URL.Path)
 		return err
 	}
 	connClosure := func(network, addr string) (net.Conn, error) {
@@ -40,14 +42,19 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	uri := "ws://" + r.URL.Host + util.ReplaceID(r.URL.Path)
 	workerConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
+		util.ProxyBridgeLog(p.logger, workerID, true, "could not create WS connection to worker: path=%s", r.URL.Path)
 		return err
 	}
 	viewerConn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		util.ProxyBridgeLog(p.logger, workerID, true, "could not upgrade client connection: path=%s", r.URL.Path)
 		return err
 	}
 
-	defer session.RemoveStream(id)
+	defer func() {
+		session.RemoveStream(id)
+		util.ProxyBridgeLog(p.logger, workerID, false, "closed WS underlying stream: path=%s", r.URL.Path)
+	}()
 	// bridge both websocket connections
 	return p.bridgeConn(workerConn, viewerConn)
 }
@@ -71,9 +78,7 @@ func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	// ensure connections are closed after bridge exits
 	defer func() {
 		_ = conn1.Close()
-		p.logger.Printf("PROXY: WS: closed source connection")
 		_ = conn2.Close()
-		p.logger.Printf("PROXT: WS: closed dest connection")
 	}()
 
 	kill := make(chan bool, 1)
