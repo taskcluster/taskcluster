@@ -28,8 +28,8 @@ Example:
 ## Feature: `chainOfTrust`
 
 Enabling this feature will mean that the generic worker will publish an
-additional task artifact `public/logs/chainOfTrust.json.asc`. This will be a
-clear text openpgp-signed json object, storing the SHA 256 hashes of the task
+additional task artifact `public/chainOfTrust.json.asc`. This will be a clear
+text openpgp-signed json object, storing the SHA 256 hashes of the task
 artifacts, plus some information about the worker. This is signed by a openpgp
 private key, both generated and stored on the worker. This private key is never
 transmitted across the network. In future you will be able to verify the

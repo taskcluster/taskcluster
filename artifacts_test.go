@@ -436,7 +436,7 @@ func TestUpload(t *testing.T) {
 			contentEncoding: "gzip",
 			expires:         td.Expires,
 		},
-		"public/logs/chainOfTrust.json.asc": {
+		"public/chainOfTrust.json.asc": {
 			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
 			// 8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f  ./_/X.txt
 			// a0ed21ab50992121f08da55365da0336062205fd6e7953dbff781a7de0d625b7  ./b/c/d.jpg
@@ -495,7 +495,7 @@ func TestUpload(t *testing.T) {
 
 	// now check content was uploaded to Amazon, and is correct
 
-	// signer of public/logs/chainOfTrust.json.asc
+	// signer of public/chainOfTrust.json.asc
 	signer := &openpgp.Entity{}
 	cotCert := &ChainOfTrustData{}
 
@@ -533,7 +533,7 @@ func TestUpload(t *testing.T) {
 			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, content.contentType)
 		}
 		// check openpgp signature is valid
-		if artifact == "public/logs/chainOfTrust.json.asc" {
+		if artifact == "public/chainOfTrust.json.asc" {
 			pubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
 			if err != nil {
 				t.Fatalf("Error opening public key file")
@@ -546,19 +546,19 @@ func TestUpload(t *testing.T) {
 			block, _ := clearsign.Decode(b)
 			signer, err = openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
 			if err != nil {
-				t.Fatalf("Not able to validate openpgp signature of public/logs/chainOfTrust.json.asc")
+				t.Fatalf("Not able to validate openpgp signature of public/chainOfTrust.json.asc")
 			}
 			err = json.Unmarshal(block.Plaintext, cotCert)
 			if err != nil {
-				t.Fatalf("Could not interpret public/logs/chainOfTrust.json as json")
+				t.Fatalf("Could not interpret public/chainOfTrust.json as json")
 			}
 		}
 	}
 	if signer == nil {
-		t.Fatalf("Signer of public/logs/chainOfTrust.json.asc could not be established (is nil)")
+		t.Fatalf("Signer of public/chainOfTrust.json.asc could not be established (is nil)")
 	}
 	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
-		t.Fatalf("Did not get correct signer identity in public/logs/chainOfTrust.json.asc - %#v", signer.Identities)
+		t.Fatalf("Did not get correct signer identity in public/chainOfTrust.json.asc - %#v", signer.Identities)
 	}
 
 	// This trickery is to convert a TaskDefinitionResponse into a

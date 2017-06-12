@@ -80,7 +80,7 @@ func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	logFile := filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log")
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, "public", "logs", "certified.log")
-	signedCert := filepath.Join(taskContext.TaskDir, "public", "logs", "chainOfTrust.json.asc")
+	signedCert := filepath.Join(taskContext.TaskDir, "public", "chainOfTrust.json.asc")
 	e := copyFileContents(logFile, certifiedLogFile)
 	if e != nil {
 		panic(e)
@@ -156,7 +156,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	w.Close()
 	out.Write([]byte{'\n'})
 	out.Close()
-	err = cot.task.uploadLog("public/logs/chainOfTrust.json.asc")
+	err = cot.task.uploadLog("public/chainOfTrust.json.asc")
 	if err != nil {
 		return err
 	}
