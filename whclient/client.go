@@ -40,10 +40,8 @@ type Config struct {
 type clientState int
 
 const (
-	stateInit clientState = iota
-	stateRunning
+	stateRunning = iota
 	stateBroken
-	stateClosed
 )
 
 //client connects to the specified proxy and
@@ -65,9 +63,10 @@ type client struct {
 	token     string
 	session   *wsmux.Session
 	state     clientState
+	closed    chan struct{}
 
 	// session will be non-nil only if state is stateRunning.
-	// if state is {stateBroken, stateClosed}, then session will not be accessed.
+	// if client.closed is closed then session will not be accessed.
 	// Accept is the only function which may set the state to stateBroken.
 	// reconnect is the only function which may set the state to stateRunning.
 
@@ -86,7 +85,8 @@ func New(config Config) (net.Listener, error) {
 
 		token:   "",
 		session: nil,
-		state:   stateInit,
+		state:   stateRunning,
+		closed:  make(chan struct{}),
 	}
 
 	if cl.authorize == nil {
@@ -115,8 +115,14 @@ func New(config Config) (net.Listener, error) {
 }
 
 func (c *client) Accept() (net.Conn, error) {
+	select {
+	case <-c.closed:
+		return nil, ErrClientClosed
+	default:
+	}
+
 	c.m.Lock()
-	if c.state == stateClosed || c.state == stateBroken {
+	if c.state == stateBroken {
 		defer c.m.Unlock()
 		// acceptErr must be non nil when state is {stateClosed, stateBroken}
 		c.logger.Printf("accept failed with error %v", c.acceptErr)
@@ -141,24 +147,24 @@ func (c *client) Accept() (net.Conn, error) {
 		return nil, c.acceptErr
 	}
 
-	c.m.Unlock()
+	defer c.m.Unlock()
 	return stream, nil
 }
 
+// close is not thread safe
 func (c *client) Close() error {
-	c.m.Lock()
-	defer c.m.Unlock()
-
-	c.logger.Printf("closing...")
-	if c.session != nil {
-		_ = c.session.Close()
-		c.session = nil
+	select {
+	case <-c.closed:
+	default:
+		close(c.closed)
+		// lock and close session when possible
+		go func() {
+			c.m.Lock()
+			if c.session != nil {
+				_ = c.session.Close()
+			}
+		}()
 	}
-
-	c.acceptErr = ErrClientClosed
-	c.logger.Printf("state: closed")
-	c.state = stateClosed
-
 	return nil
 }
 

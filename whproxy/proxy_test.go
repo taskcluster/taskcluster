@@ -17,6 +17,7 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/webhooktunnel/util"
+	"github.com/taskcluster/webhooktunnel/whclient"
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
@@ -671,5 +672,166 @@ func TestProxySecrets(t *testing.T) {
 	_, _, err = websocket.DefaultDialer.Dial(wsURL+"/register/test-worker-2", header)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+// Ensure that readind over a slow stream works
+func TestResponseStream(t *testing.T) {
+	logger := genLogger("response-stream-test")
+	proxyLogger := genLogger("response-stream-proxy-test")
+	clientLogger := genLogger("response-stream-client-test")
+
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Logger:     proxyLogger,
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	wsURL := util.MakeWsURL(server.URL)
+
+	// create client
+	client, err := whclient.New(whclient.Config{
+		ID:        "test-worker",
+		ProxyAddr: wsURL,
+		Authorize: func(id string) (string, error) {
+			return tokenGenerator(id, []byte("test-secret")), nil
+		},
+		Logger: clientLogger,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	done := make(chan struct{})
+	clientFn := func(writer http.ResponseWriter, r *http.Request) {
+		_, err := writer.Write([]byte("Hello"))
+		if err != nil {
+			logger.Print(err)
+			t.Fatal(err)
+		}
+		flusher, ok := writer.(http.Flusher)
+		if !ok {
+			t.Fatal(err)
+		}
+		flusher.Flush()
+		<-done
+		_, err = writer.Write([]byte("world"))
+	}
+
+	srv := &http.Server{Handler: http.HandlerFunc(clientFn)}
+	go func() {
+		_ = srv.Serve(client)
+	}()
+	defer func() {
+		_ = srv.Close()
+	}()
+
+	req, err := http.NewRequest(http.MethodGet, server.URL+"/test-worker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	d := []byte{0}
+	buf := make([]byte, 0)
+	for string(buf) != "Hello" {
+		n, err := res.Body.Read(d)
+		if n == 1 {
+			buf = append(buf, d...)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	close(done)
+	buf, err = ioutil.ReadAll(res.Body)
+	if string(buf) != "world" {
+		t.Fatal("bad message")
+	}
+	logger.Printf(string(buf))
+}
+
+func TestWebSocketStreamClient(t *testing.T) {
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+	wsURL := util.MakeWsURL(server.URL)
+
+	client, err := whclient.New(whclient.Config{
+		ID:        "test-worker",
+		ProxyAddr: wsURL,
+		Authorize: func(id string) (string, error) {
+			return tokenGenerator(id, []byte("test-secret")), nil
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	done := make(chan struct{})
+	clientFn := func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = conn.WriteMessage(websocket.BinaryMessage, []byte("Hello"))
+		<-done
+		err = conn.WriteMessage(websocket.BinaryMessage, []byte("World"))
+		_ = conn.Close()
+	}
+
+	srv := &http.Server{Handler: http.HandlerFunc(clientFn)}
+	go func() {
+		_ = srv.Serve(client)
+	}()
+	defer func() {
+		_ = srv.Close()
+	}()
+
+	// make websocket request
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/test-worker/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, buf, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(buf) != "Hello" {
+		t.Fatal("bad message")
+	}
+	close(done)
+	_, buf, err = conn.ReadMessage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(buf) != "World" {
+		t.Fatal("bad message")
 	}
 }

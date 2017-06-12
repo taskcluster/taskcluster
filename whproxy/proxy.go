@@ -247,6 +247,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 				p.onSessionRemove(id)
 			}
 		},
+		// Log: p.logger,
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)
@@ -276,6 +277,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	}
 
 	// Open a stream to the worker session
+	r.URL.Path = path
 	reqStream, _, err := session.Open()
 	if err != nil {
 		util.ProxyLog(p.logger, id, true, "could not open stream: path=%s", path)
@@ -294,6 +296,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// read response from worker
 	bufReader := bufio.NewReader(reqStream)
 	resp, err := http.ReadResponse(bufReader, r)
+	util.ProxyLog(p.logger, id, false, "response: %v", resp)
 	if err != nil {
 		util.ProxyLog(p.logger, id, true, "could not read response: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
@@ -311,12 +314,62 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	// dump headers
 	w.WriteHeader(resp.StatusCode)
+	if resp.Body == nil {
+		return
+	}
 
 	// stream body to viewer
-	if resp.Body != nil {
-		_, err := io.Copy(w, resp.Body)
-		if err != nil {
-			return
+	flusher, _ := w.(http.Flusher)
+	wf := &threadSafeWriteFlusher{w: w, f: flusher}
+	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for {
+			select {
+			case <-time.After(100 * time.Millisecond):
+				util.ProxyLog(p.logger, id, false, "flushed writer")
+				wf.Flush()
+			case <-done:
+				util.ProxyLog(p.logger, id, false, "completed response streaming")
+				wg.Done()
+				return
+			}
+		}
+	}()
+	_, _ = io.Copy(wf, resp.Body)
+	close(done)
+	wg.Wait()
+	wf.Flush()
+
+	_ = reqStream.Close()
+}
+
+// stream utils
+type threadSafeWriteFlusher struct {
+	m sync.Mutex
+	w io.Writer
+	f http.Flusher
+}
+
+func (w *threadSafeWriteFlusher) Write(p []byte) (int, error) {
+	w.m.Lock()
+	defer w.m.Unlock()
+	return w.w.Write(p)
+}
+
+func (w *threadSafeWriteFlusher) Flush() {
+	w.m.Lock()
+	defer w.m.Unlock()
+	w.f.Flush()
+}
+
+// check transfer encoding
+func isChunkedResponse(res *http.Response) bool {
+	for _, v := range res.TransferEncoding {
+		if v == "chunked" {
+			return true
 		}
 	}
+	return false
 }
