@@ -255,7 +255,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 // serveRequest serves worker endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
-	util.ProxyLog(p.logger, id, false, "new request: path=%s", path)
+	util.ProxyLog(p.logger, id, false, "new request: path=%s, remote=%s", path, r.RemoteAddr)
 	session, ok := p.getWorkerSession(id)
 
 	// 404 if worker is not registered on this proxy

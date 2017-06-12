@@ -44,24 +44,24 @@ func getFmtSring(prefix string, e bool) string {
 }
 
 func ProxyAuthLog(logger Logger, id string, e bool, format string, v ...interface{}) {
-	if len(v) != 0 {
-		logger.Printf(getFmtSring(prefixProxyAuth, e)+format, append([]interface{}{id}, v)...)
+	if len(v) > 0 {
+		logger.Printf(getFmtSring(prefixProxyAuth, e)+format, append([]interface{}{id}, v...)...)
 	} else {
 		logger.Printf(getFmtSring(prefixProxyAuth, e)+format, id)
 	}
 }
 
 func ProxyLog(logger Logger, id string, e bool, format string, v ...interface{}) {
-	if len(v) != 0 {
-		logger.Printf(getFmtSring(prefixProxy, e)+format, append([]interface{}{id}, v)...)
+	if len(v) > 0 {
+		logger.Printf(getFmtSring(prefixProxy, e)+format, append([]interface{}{id}, v...)...)
 	} else {
 		logger.Printf(getFmtSring(prefixProxy, e)+format, id)
 	}
 }
 
 func ProxyBridgeLog(logger Logger, id string, e bool, format string, v ...interface{}) {
-	if len(v) != 0 {
-		logger.Printf(getFmtSring(prefixProxyBridge, e)+format, append([]interface{}{id}, v)...)
+	if len(v) > 0 {
+		logger.Printf(getFmtSring(prefixProxyBridge, e)+format, append([]interface{}{id}, v...)...)
 	} else {
 		logger.Printf(getFmtSring(prefixProxyBridge, e)+format, id)
 	}
