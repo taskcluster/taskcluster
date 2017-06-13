@@ -114,6 +114,9 @@ func New(config Config) (net.Listener, error) {
 	return cl, nil
 }
 
+// Accept returns a new net.Conn from the proxy. Accept will return a
+// temporary net.Error if the connection breaks or it is attempting
+// reconnection.
 func (c *client) Accept() (net.Conn, error) {
 	select {
 	case <-c.closed:
@@ -151,7 +154,7 @@ func (c *client) Accept() (net.Conn, error) {
 	return stream, nil
 }
 
-// close is not thread safe
+// Close is used to close the listener.
 func (c *client) Close() error {
 	select {
 	case <-c.closed:
@@ -168,6 +171,7 @@ func (c *client) Close() error {
 	return nil
 }
 
+// Addr returns the local Addr of the listener
 func (c *client) Addr() net.Addr {
 	c.m.Lock()
 	defer c.m.Unlock()
@@ -177,6 +181,7 @@ func (c *client) Addr() net.Addr {
 	return nil
 }
 
+// connectWithRetry returns a websocket connection to the proxy
 func (c *client) connectWithRetry() (*websocket.Conn, error) {
 	// if token is expired or not usable, get a new token from the authorizer
 	if !util.IsTokenUsable(c.token) {
@@ -208,6 +213,8 @@ func (c *client) connectWithRetry() (*websocket.Conn, error) {
 	return conn, err
 }
 
+// retryConn is a utility function used by connectWithRetry to use exponential
+// backoff to attempt reconnection
 func (c *client) retryConn() (*websocket.Conn, error) {
 	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
 	header := make(http.Header)
@@ -240,6 +247,7 @@ func (c *client) retryConn() (*websocket.Conn, error) {
 
 }
 
+// reconnect is used to repair broken connections
 func (c *client) reconnect() {
 	c.m.Lock()
 	defer c.m.Unlock()
@@ -257,7 +265,7 @@ func (c *client) reconnect() {
 	}
 
 	sessionConfig := wsmux.Config{
-		Log:              c.logger,
+		// Log:              c.logger,
 		StreamBufferSize: 4 * 1024,
 	}
 	c.session = wsmux.Client(conn, sessionConfig)
