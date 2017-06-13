@@ -318,58 +318,22 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 		return
 	}
 
-	// stream body to viewer
-	flusher, _ := w.(http.Flusher)
-	wf := &threadSafeWriteFlusher{w: w, f: flusher}
-	done := make(chan struct{})
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for {
-			select {
-			case <-time.After(100 * time.Millisecond):
-				util.ProxyLog(p.logger, id, false, "flushed writer")
-				wf.Flush()
-			case <-done:
-				util.ProxyLog(p.logger, id, false, "completed response streaming")
-				wg.Done()
-				return
-			}
-		}
+	// stream body to viewer and close wsmux stream
+	defer func() {
+		_ = reqStream.Close()
 	}()
-	_, _ = io.Copy(wf, resp.Body)
-	close(done)
-	wg.Wait()
-	wf.Flush()
 
-	_ = reqStream.Close()
-}
-
-// stream utils
-type threadSafeWriteFlusher struct {
-	m sync.Mutex
-	w io.Writer
-	f http.Flusher
-}
-
-func (w *threadSafeWriteFlusher) Write(p []byte) (int, error) {
-	w.m.Lock()
-	defer w.m.Unlock()
-	return w.w.Write(p)
-}
-
-func (w *threadSafeWriteFlusher) Flush() {
-	w.m.Lock()
-	defer w.m.Unlock()
-	w.f.Flush()
-}
-
-// check transfer encoding
-func isChunkedResponse(res *http.Response) bool {
-	for _, v := range res.TransferEncoding {
-		if v == "chunked" {
-			return true
-		}
+	flusher, ok := w.(http.Flusher)
+	// flusher may not be implemented by a ResponseWriter wrapper
+	// simple copy
+	if !ok {
+		n, err := io.Copy(w, resp.Body)
+		util.ProxyLog(p.logger, id, false, "data transfered over request: %d bytes, error: %v", n, err)
+		// log here
+		return
 	}
-	return false
+
+	wf := &threadSafeWriteFlusher{w: w, f: flusher}
+	n, err := copyAndFlush(wf, resp.Body, 100*time.Millisecond)
+	util.ProxyLog(p.logger, id, false, "data transfered over request: %d bytes, error: %v", n, err)
 }
