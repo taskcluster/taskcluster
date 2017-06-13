@@ -28,7 +28,8 @@ let message = `
     },
     "productName": "b2g",
     "jobInfo": {
-        "summary": "Dummy Task Description"
+        "summary": "Dummy Task Description",
+        "links": []
     },
     "buildMachine": {
         "architecture": "-",
