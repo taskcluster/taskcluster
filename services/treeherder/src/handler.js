@@ -225,6 +225,7 @@ export class Handler {
       jobKind: treeherderConfig.jobKind ? treeherderConfig.jobKind : 'other',
       reason: treeherderConfig.reason || "scheduled",
       jobInfo: {
+        links: [],
         summary: task.metadata.description
       }
     };
