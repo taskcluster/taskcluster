@@ -387,7 +387,7 @@ PulseListener.prototype.resume = function() {
 PulseListener.prototype.fakeMessage = function(message) {
   assert(this._fake, "fakeMessage can only be called on a fake PulseListener");
   assert(this._fakeListening, "fakeMessage must be called on a resume'd listener");
-  let msg = {
+  var msg = {
     content: new Buffer(JSON.stringify(message.payload), "utf-8"),
     fields: {
       exchange: message.exchange,
