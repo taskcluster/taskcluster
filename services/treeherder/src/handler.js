@@ -225,19 +225,7 @@ export class Handler {
       jobKind: treeherderConfig.jobKind ? treeherderConfig.jobKind : 'other',
       reason: treeherderConfig.reason || "scheduled",
       jobInfo: {
-        summary: task.metadata.description,
-        links: [
-          {
-            label: 'Inspect Task',
-            linkText: 'Inspect Task',
-            url: `https:\/\/tools.taskcluster.net/task-inspector/#${taskId}/${runId}`
-          },
-          {
-            label: 'One Click Loaner',
-            linkText: 'One Click Loaner',
-            url: `https:\/\/tools.taskcluster.net/one-click-loaner/#${taskId}`
-          }
-        ]
+        summary: task.metadata.description
       }
     };
 
