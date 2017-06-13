@@ -44,6 +44,12 @@ type proxy struct {
 	jwtSecretB      []byte
 }
 
+// regex for parsing requests
+var (
+	registerRe = regexp.MustCompile("^/register/([\\w-]+)/?$")
+	serveRe    = regexp.MustCompile("^/([\\w-]+)/(.*)$")
+)
+
 // New creates a new proxy instance and wraps it as an http.Handler.
 func New(conf Config) (http.Handler, error) {
 	return newProxy(conf)
@@ -51,78 +57,23 @@ func New(conf Config) (http.Handler, error) {
 
 // ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
 func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p.handler(w, r)
+	// register will be matched first
+	if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
+		id := registerRe.FindStringSubmatch(r.URL.Path)[1]
+		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
+		p.register(w, r, id, tokenString)
+
+	} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
+		matches := serveRe.FindStringSubmatch(r.URL.Path)
+		id, path := matches[1], matches[2]
+		// regex does not include leading slash
+		path = "/" + path
+		p.serveRequest(w, r, id, path)
+
+	} else { // if not register request or worker request, not found
+		http.NotFound(w, r)
+	}
 }
-
-// regex for parsing requests
-var (
-	registerRe = regexp.MustCompile("^/register/([\\w-]+)/?$")
-	serveRe    = regexp.MustCompile("^/([\\w-]+)/(.*)$")
-)
-
-// validate jwt
-// jwt signing and verification algorithm must be HMAC
-func (p *proxy) validateJWT(id string, tokenString string) error {
-	// parse jwt token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, ErrUnexpectedSigningMethod
-		}
-		return p.jwtSecretA, nil
-	})
-
-	if err != nil {
-		// log first error
-		p.logerrorf(id, "", "%v: trying with second secret", err)
-
-		token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, ErrUnexpectedSigningMethod
-			}
-			return p.jwtSecretB, nil
-		})
-	}
-
-	if err != nil {
-		p.logerrorf(id, "", "%v: auth failed", err)
-		return ErrAuthFailed
-	}
-
-	// check claims
-	now := time.Now().Unix()
-	claims, ok := token.Claims.(jwt.MapClaims)
-
-	if !ok {
-		p.logerrorf(id, "", "%v: could not parse claims", err)
-		return ErrTokenNotValid
-	}
-	p.logf(id, "", "claims: %v", claims)
-
-	if !claims.VerifyExpiresAt(now, true) {
-		p.logerrorf(id, "", "%v", err)
-		return ErrAuthFailed
-	}
-	if !claims.VerifyIssuedAt(now, true) {
-		p.logerrorf(id, "", "%v", err)
-		return ErrAuthFailed
-	}
-	if !claims.VerifyNotBefore(now, true) {
-		p.logerrorf(id, "", "%v", err)
-		return ErrAuthFailed
-	}
-	if claims["tid"] != id {
-		p.logerrorf(id, "", "%v", err)
-		return ErrAuthFailed
-	}
-
-	if claims["exp"].(float64)-claims["nbf"].(float64) > float64(monthUnix) {
-		p.logerrorf(id, "", "jwt should not be valid for more than 31 days")
-		return ErrAuthFailed
-	}
-
-	return nil
-}
-
 func newProxy(conf Config) (*proxy, error) {
 	p := &proxy{
 		pool:       make(map[string]*wsmux.Session),
@@ -143,25 +94,6 @@ func newProxy(conf Config) (*proxy, error) {
 
 	return p, nil
 
-}
-
-func (p *proxy) handler(w http.ResponseWriter, r *http.Request) {
-	// register will be matched first
-	if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
-		id := registerRe.FindStringSubmatch(r.URL.Path)[1]
-		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
-		p.register(w, r, id, tokenString)
-
-	} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
-		matches := serveRe.FindStringSubmatch(r.URL.Path)
-		id, path := matches[1], matches[2]
-		// regex does not include leading slash
-		path = "/" + path
-		p.serveRequest(w, r, id, path)
-
-	} else { // if not register request or worker request, not found
-		http.NotFound(w, r)
-	}
 }
 
 // setSessionRemoveHandler sets a function which is called when a wsmux Session is removed from
@@ -341,12 +273,75 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	p.logf(id, r.RemoteAddr, "data transfered over request: %d bytes, error: %v", n, err)
 }
 
+// validate jwt
+// jwt signing and verification algorithm must be HMAC
+func (p *proxy) validateJWT(id string, tokenString string) error {
+	// parse jwt token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, ErrUnexpectedSigningMethod
+		}
+		return p.jwtSecretA, nil
+	})
+
+	if err != nil {
+		// log first error
+		p.logerrorf(id, "", "%v: trying with second secret", err)
+
+		token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, ErrUnexpectedSigningMethod
+			}
+			return p.jwtSecretB, nil
+		})
+	}
+
+	if err != nil {
+		p.logerrorf(id, "", "%v: auth failed", err)
+		return ErrAuthFailed
+	}
+
+	// check claims
+	now := time.Now().Unix()
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok {
+		p.logerrorf(id, "", "%v: could not parse claims", err)
+		return ErrTokenNotValid
+	}
+	p.logf(id, "", "claims: %v", claims)
+
+	if !claims.VerifyExpiresAt(now, true) {
+		p.logerrorf(id, "", "%v", err)
+		return ErrAuthFailed
+	}
+	if !claims.VerifyIssuedAt(now, true) {
+		p.logerrorf(id, "", "%v", err)
+		return ErrAuthFailed
+	}
+	if !claims.VerifyNotBefore(now, true) {
+		p.logerrorf(id, "", "%v", err)
+		return ErrAuthFailed
+	}
+	if claims["tid"] != id {
+		p.logerrorf(id, "", "%v", err)
+		return ErrAuthFailed
+	}
+
+	if claims["exp"].(float64)-claims["nbf"].(float64) > float64(monthUnix) {
+		p.logerrorf(id, "", "jwt should not be valid for more than 31 days")
+		return ErrAuthFailed
+	}
+
+	return nil
+}
+
+// proxy logging utilities
 const (
 	fmtString      = "[PROXY] INFO: id=%s remote_ip=%s "
 	fmtErrorString = "[PROXY] ERROR: id=%s remote_ip=%s "
 )
 
-// proxy logging utilities
 // NOTE: cannot use logrus methods
 func (p *proxy) logf(id string, remoteAddr string, format string, v ...interface{}) {
 	args := []interface{}{id, remoteAddr}
