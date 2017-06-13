@@ -1,4 +1,3 @@
-// Utilities specific to whproxy
 package whproxy
 
 import (
