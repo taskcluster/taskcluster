@@ -13,10 +13,12 @@ import (
 func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, workerID string) error {
 	// at this point, we are sure that r is a http websocket upgrade request
 	// connClosure returns the wsmux stream to Dial
-	util.ProxyBridgeLog(p.logger, workerID, false, "creating WS bridge: path=%s", r.URL.Path)
+	p.logf(workerID, r.RemoteAddr, "creating WS bridge: path=%s", r.URL.Path)
 	stream, id, err := session.Open()
+	p.logf(workerID, r.RemoteAddr, "opened new stream for ws: path=%s, streamID=%d", r.URL.Path, id)
+
 	if err != nil {
-		util.ProxyBridgeLog(p.logger, workerID, true, "could not open stream: path=%s", r.URL.Path)
+		p.logerrorf(workerID, r.RemoteAddr, "could not create stream: path=%s", r.URL.Path)
 		return err
 	}
 	connClosure := func(network, addr string) (net.Conn, error) {
@@ -42,18 +44,20 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	uri := "ws://" + r.URL.Host + util.ReplaceID(r.URL.Path)
 	workerConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
-		util.ProxyBridgeLog(p.logger, workerID, true, "could not create WS connection to worker: path=%s", r.URL.Path)
+		p.logerrorf(workerID, r.RemoteAddr, "could not dial worker: path=%s", r.URL.Path)
 		return err
 	}
 	viewerConn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		util.ProxyBridgeLog(p.logger, workerID, true, "could not upgrade client connection: path=%s", r.URL.Path)
+		p.logerrorf(workerID, r.RemoteAddr, "could not upgrade client connection: path=%s", r.URL.Path)
+		// close worker connection
+		_ = workerConn.Close()
 		return err
 	}
 
 	defer func() {
 		session.RemoveStream(id)
-		util.ProxyBridgeLog(p.logger, workerID, false, "closed WS underlying stream: path=%s", r.URL.Path)
+		p.logf(workerID, r.RemoteAddr, "WS: closed underlying wsmux stream: path= %s, streamID=%d", r.URL.Path, id)
 	}()
 	// bridge both websocket connections
 	return p.bridgeConn(workerConn, viewerConn)

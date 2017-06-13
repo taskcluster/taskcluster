@@ -49,6 +49,11 @@ func New(conf Config) (http.Handler, error) {
 	return newProxy(conf)
 }
 
+// ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
+func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	p.handler(w, r)
+}
+
 // regex for parsing requests
 var (
 	registerRe = regexp.MustCompile("^/register/([\\w-]+)/?$")
@@ -68,7 +73,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 
 	if err != nil {
 		// log first error
-		util.ProxyAuthLog(p.logger, id, true, "%v : attempting to verify with second secret", err)
+		p.logerrorf(id, "", "%v: trying with second secret", err)
 
 		token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -79,7 +84,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 	}
 
 	if err != nil {
-		util.ProxyAuthLog(p.logger, id, true, "%v", err)
+		p.logerrorf(id, "", "%v: auth failed", err)
 		return ErrAuthFailed
 	}
 
@@ -88,30 +93,30 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok {
-		util.ProxyAuthLog(p.logger, id, true, "%v", err)
+		p.logerrorf(id, "", "%v: could not parse claims", err)
 		return ErrTokenNotValid
 	}
-	util.ProxyAuthLog(p.logger, id, false, "claims: %v", claims)
+	p.logf(id, "", "claims: %v", claims)
 
 	if !claims.VerifyExpiresAt(now, true) {
-		util.ProxyAuthLog(p.logger, id, true, "%v", err)
+		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
 	if !claims.VerifyIssuedAt(now, true) {
-		util.ProxyAuthLog(p.logger, id, true, "%v", err)
+		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
 	if !claims.VerifyNotBefore(now, true) {
-		util.ProxyAuthLog(p.logger, id, true, "%v", err)
+		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
 	if claims["tid"] != id {
-		util.ProxyAuthLog(p.logger, id, true, "tid incorrect. expected %s found %s", id, claims["tid"])
+		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
 
 	if claims["exp"].(float64)-claims["nbf"].(float64) > float64(monthUnix) {
-		util.ProxyAuthLog(p.logger, id, true, "jwt should not be valid for more than 1 month")
+		p.logerrorf(id, "", "jwt should not be valid for more than 31 days")
 		return ErrAuthFailed
 	}
 
@@ -128,7 +133,7 @@ func newProxy(conf Config) (*proxy, error) {
 	}
 
 	if p.jwtSecretA == nil || p.jwtSecretB == nil {
-		util.ProxyLog(p.logger, "none", true, "could not load secrets")
+		p.logerrorf("", "", "could not load secrets")
 		return nil, ErrMissingSecret
 	}
 
@@ -167,11 +172,6 @@ func (p *proxy) setSessionRemoveHandler(h func(string)) {
 	p.onSessionRemove = h
 }
 
-// ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
-func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p.handler(w, r)
-}
-
 // getWorkerSession returns true if a session with the given id is present
 func (p *proxy) getWorkerSession(id string) (*wsmux.Session, bool) {
 	p.m.RLock()
@@ -186,7 +186,7 @@ func (p *proxy) removeWorker(id string) {
 	p.m.Lock()
 	defer p.m.Unlock()
 	delete(p.pool, id)
-	p.logger.Printf("worker with id %s removed from proxy", id)
+	p.logf(id, "", "session removed")
 }
 
 // register is used to connect a worker to the proxy so that it can start serving API endpoints.
@@ -194,17 +194,16 @@ func (p *proxy) removeWorker(id string) {
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
 
-	util.ProxyLog(p.logger, id, false, "register request with token: %s", tokenString)
-
+	p.logf(id, r.RemoteAddr, "requesting client registration")
 	if tokenString == "" {
 		// No jwt. Connection not authorized
-		util.ProxyLog(p.logger, id, true, "no token provided")
+		p.logerrorf(id, r.RemoteAddr, "could not retreive auth token")
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
 
 	if !websocket.IsWebSocketUpgrade(r) {
-		util.ProxyLog(p.logger, id, true, "must upgrade to WebSocket")
+		p.logerrorf(id, r.RemoteAddr, "request must be websocket upgrade")
 		http.NotFound(w, r)
 		return
 	}
@@ -215,7 +214,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	defer p.m.Unlock()
 
 	if err := p.validateJWT(id, tokenString); err != nil {
-		util.ProxyLog(p.logger, id, true, "unable to validate token")
+		p.logerrorf(id, r.RemoteAddr, "unable to validate token: %v", err)
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
@@ -240,7 +239,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	// generate config
 	conf := wsmux.Config{
-		StreamBufferSize: 64 * 1024,
+		StreamBufferSize: 4 * 1024,
 		CloseCallback: func() {
 			p.removeWorker(id)
 			if p.onSessionRemove != nil {
@@ -251,18 +250,20 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)
-	util.ProxyLog(p.logger, id, false, "added worker")
+	p.logf(id, r.RemoteAddr, "added new session for worker")
 }
 
 // serveRequest serves worker endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
-	util.ProxyLog(p.logger, id, false, "new request: path=%s, remote=%s", path, r.RemoteAddr)
+	// log new request arrival
+	p.logf(id, r.RemoteAddr, "request: path=%s", path)
+
 	session, ok := p.getWorkerSession(id)
 
 	// 404 if worker is not registered on this proxy
 	if !ok {
 		// DHT code will be added here
-		util.ProxyLog(p.logger, id, true, "session not found")
+		p.logerrorf(id, r.RemoteAddr, "could not find requested worker")
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
@@ -278,17 +279,19 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	// Open a stream to the worker session
 	r.URL.Path = path
-	reqStream, _, err := session.Open()
+	p.logf(id, r.RemoteAddr, "attempting to open new stream")
+	reqStream, streamID, err := session.Open()
 	if err != nil {
-		util.ProxyLog(p.logger, id, true, "could not open stream: path=%s", path)
+		p.logerrorf(id, r.RemoteAddr, "could not open stream: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	p.logf(id, r.RemoteAddr, "opened new stream: ID=%d", streamID)
 
 	// rewrite path for worker and write request
 	err = r.Write(reqStream)
 	if err != nil {
-		util.ProxyLog(p.logger, id, true, "could not write request: path=%s", path)
+		p.logerrorf(id, r.RemoteAddr, "could not write request: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
@@ -296,9 +299,8 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// read response from worker
 	bufReader := bufio.NewReader(reqStream)
 	resp, err := http.ReadResponse(bufReader, r)
-	util.ProxyLog(p.logger, id, false, "response: %v", resp)
 	if err != nil {
-		util.ProxyLog(p.logger, id, true, "could not read response: path=%s", path)
+		p.logerrorf(id, r.RemoteAddr, "could not read response: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
@@ -328,12 +330,32 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// simple copy
 	if !ok {
 		n, err := io.Copy(w, resp.Body)
-		util.ProxyLog(p.logger, id, false, "data transfered over request: %d bytes, error: %v", n, err)
+		p.logf(id, r.RemoteAddr, "data transfered over request: %d bytes, error: %v", n, err)
 		// log here
 		return
 	}
 
+	p.logf(id, r.RemoteAddr, "streaming http")
 	wf := &threadSafeWriteFlusher{w: w, f: flusher}
 	n, err := copyAndFlush(wf, resp.Body, 100*time.Millisecond)
-	util.ProxyLog(p.logger, id, false, "data transfered over request: %d bytes, error: %v", n, err)
+	p.logf(id, r.RemoteAddr, "data transfered over request: %d bytes, error: %v", n, err)
+}
+
+const (
+	fmtString      = "[PROXY] INFO: id=%s remote_ip=%s "
+	fmtErrorString = "[PROXY] ERROR: id=%s remote_ip=%s "
+)
+
+// proxy logging utilities
+// NOTE: cannot use logrus methods
+func (p *proxy) logf(id string, remoteAddr string, format string, v ...interface{}) {
+	args := []interface{}{id, remoteAddr}
+	args = append(args, v...)
+	p.logger.Printf(fmtString+format, args...)
+}
+
+func (p *proxy) logerrorf(id string, remoteAddr string, format string, v ...interface{}) {
+	args := []interface{}{id, remoteAddr}
+	args = append(args, v...)
+	p.logger.Printf(fmtErrorString+format, args...)
 }

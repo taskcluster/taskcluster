@@ -51,7 +51,6 @@ type Session struct {
 // pong handler
 func (s *Session) pongHandler(data string) error {
 	s.keepAliveTimer.Reset(defaultKeepAliveWait)
-	s.logger.Printf("received pong")
 	return nil
 }
 
@@ -66,7 +65,6 @@ func (s *Session) sendKeepAlives() {
 			return
 		}
 		s.sendLock.Unlock()
-		s.logger.Printf("wrote ping")
 		select {
 		case <-ticker:
 		case <-s.closed:
@@ -163,8 +161,6 @@ func (s *Session) Accept() (net.Conn, error) {
 
 	select {
 	case <-s.closed:
-		s.mu.Lock()
-		defer s.mu.Unlock()
 		return nil, s.acceptErr
 	case str := <-s.streamCh:
 		return str, nil
@@ -173,14 +169,14 @@ func (s *Session) Accept() (net.Conn, error) {
 
 // Open creates a new stream to the remote session.
 func (s *Session) Open() (net.Conn, uint32, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	select {
 	case <-s.closed:
 		return nil, 0, ErrSessionClosed
 	default:
 	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	id := s.nextID
 	// increment here so that we can wait safely
@@ -196,9 +192,11 @@ func (s *Session) Open() (net.Conn, uint32, error) {
 		s.nextID -= 2
 		return nil, 0, err
 	}
+
 	// unlock mutex and wait
 	s.mu.Unlock()
 
+	// locks released by earlier defer call
 	select {
 	case <-str.accepted:
 		s.mu.Lock()
@@ -221,11 +219,12 @@ func (s *Session) Open() (net.Conn, uint32, error) {
 // Close closes the current session and underlying connection.
 func (s *Session) Close() error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	defer func() {
+		s.mu.Unlock()
+	}()
 
 	select {
 	case <-s.closed:
-		s.logger.Printf("session already closed")
 		return nil
 	default:
 	}
@@ -280,6 +279,7 @@ func (s *Session) recvLoop() {
 
 		t, msg, err := s.conn.ReadMessage()
 		if err != nil {
+			s.logger.Printf("error while reading from WS: %v", err)
 			_ = s.abort(err)
 			break
 		}
@@ -306,15 +306,19 @@ func (s *Session) recvLoop() {
 			if str != nil {
 				s.logger.Printf("dropped duplicate SYN frame for id %d", id)
 			} else {
-				s.mu.Lock()
+				s.logger.Printf("received SYN frame: id=%d", id)
 				str := newStream(id, s)
 				str.AcceptStream(uint32(s.streamBufferSize))
+				s.mu.Lock()
 				s.streams[id] = str
 				if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
 					s.logger.Print(err)
+					s.mu.Unlock()
+					s.logger.Printf("recvLoop: error writing ack frame: %v", err)
 					_ = s.abort(err)
 					return
 				}
+				s.logger.Printf("accepted connection: id=%d", id)
 				s.asyncPushStream(str)
 				s.mu.Unlock()
 			}
@@ -350,6 +354,7 @@ func (s *Session) abort(e error) error {
 	if s.IsClosed() {
 		return e
 	}
+
 	s.mu.Lock()
 	s.logger.Printf("session aborting: %v", e)
 	s.acceptErr = e
@@ -370,8 +375,10 @@ func (s *Session) removeDeadStreams() {
 
 		s.mu.Lock()
 		for _, str := range s.streams {
+
 			if str.IsRemovable() {
-				s.RemoveStream(str.id)
+				s.logger.Printf("stream is removable")
+				delete(s.streams, str.id)
 			}
 		}
 		s.mu.Unlock()
