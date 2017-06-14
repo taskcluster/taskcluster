@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,6 +31,8 @@ type Config struct {
 	// JWTSecretA and JWTSecretB are used by the proxy to verify JWTs from Clients.
 	JWTSecretA []byte
 	JWTSecretB []byte
+	// Domain where proxy will be hosted
+	Domain string
 }
 
 // proxy is used to send http and ws requests to workers.
@@ -42,6 +45,7 @@ type proxy struct {
 	onSessionRemove func(string)
 	jwtSecretA      []byte
 	jwtSecretB      []byte
+	domain          string
 }
 
 // regex for parsing requests
@@ -57,23 +61,59 @@ func New(conf Config) (http.Handler, error) {
 
 // ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
 func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// register will be matched first
-	if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
-		id := registerRe.FindStringSubmatch(r.URL.Path)[1]
-		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
-		p.register(w, r, id, tokenString)
 
-	} else if serveRe.MatchString(r.URL.Path) { // matches "/{id}/{path}"
-		matches := serveRe.FindStringSubmatch(r.URL.Path)
-		id, path := matches[1], matches[2]
-		// regex does not include leading slash
-		path = "/" + path
+	// check for path style
+	// eg. domain = "tcproxy.net", req url = "https://tcproxy.net/.../"
+	// host may be of the form "host:port"
+	// register requests can only be path style
+	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
+	if strings.HasPrefix(r.Host, p.domain) {
+		// register will be matched first
+		if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
+			id := registerRe.FindStringSubmatch(r.URL.Path)[1]
+			tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
+			p.register(w, r, id, tokenString)
+			return
+		}
+
+		s := strings.TrimPrefix(r.URL.Path, "/")
+		index := strings.Index(s, "/")
+		id, path := "", "/"
+		if index < 0 {
+			id = s
+		} else {
+			id = s[:index]
+			path = s[index:]
+		}
+		if id == "" {
+			http.NotFound(w, r)
+			return
+		}
 		p.serveRequest(w, r, id, path)
-
-	} else { // if not register request or worker request, not found
-		http.NotFound(w, r)
+		return
 	}
+
+	// if address has port, strip port
+	host := r.Host
+	index := strings.Index(host, ":")
+	if index > 0 {
+		host = host[:index]
+	}
+	if strings.HasSuffix(host, "."+p.domain) {
+		index := strings.Index(r.Host, ".")
+		id := r.Host[:index]
+		path := r.URL.Path
+		if id == "" {
+			http.NotFound(w, r)
+			return
+		}
+		p.serveRequest(w, r, id, path)
+		return
+	}
+
+	http.NotFound(w, r)
 }
+
 func newProxy(conf Config) (*proxy, error) {
 	p := &proxy{
 		pool:       make(map[string]*wsmux.Session),
@@ -81,6 +121,7 @@ func newProxy(conf Config) (*proxy, error) {
 		logger:     conf.Logger,
 		jwtSecretA: conf.JWTSecretA,
 		jwtSecretB: conf.JWTSecretB,
+		domain:     conf.Domain,
 	}
 
 	if p.jwtSecretA == nil || p.jwtSecretB == nil {
@@ -140,28 +181,32 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 		return
 	}
 
-	// we should lock while upgrading
-	// otherwise there could be a possible race condition
-	p.m.Lock()
-	defer p.m.Unlock()
-
+	// validation does not require lock
 	if err := p.validateJWT(id, tokenString); err != nil {
 		p.logerrorf(id, r.RemoteAddr, "unable to validate token: %v", err)
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
+
+	// we should lock while upgrading
+	// otherwise there could be a possible race condition
+	p.m.Lock()
+	defer p.m.Unlock()
+
 	// remove old session and allow new connection
 	session := p.pool[id]
-	delete(p.pool, id)
+
 	// remove the close callback so that functions are not accidentally called
 	if session != nil {
+		p.logf(id, r.RemoteAddr, "removed previous session")
 		session.SetCloseCallback(nil)
 	}
-
 	// unlock and close old session while upgrading
 	if session != nil {
 		_ = session.Close()
 	}
+
+	delete(p.pool, id)
 
 	conn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -188,7 +233,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 // serveRequest serves worker endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
 	// log new request arrival
-	p.logf(id, r.RemoteAddr, "request: path=%s", path)
+	p.logf(id, r.RemoteAddr, "request: host=%s path=%s", r.Host, path)
 
 	session, ok := p.getWorkerSession(id)
 

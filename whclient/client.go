@@ -207,6 +207,7 @@ func (c *client) connectWithRetry() (*websocket.Conn, error) {
 			// retry connection and return result
 			return c.retryConn()
 		}
+		c.logger.Printf("connection failed with error:%v, response:%v", err, res)
 		return nil, ErrRetryFailed
 	}
 	c.logger.Printf("connected to %s ", c.proxyAddr)

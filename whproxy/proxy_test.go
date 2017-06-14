@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"regexp"
 	"testing"
 	"time"
 
 	"sync"
-	"sync/atomic"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
@@ -577,6 +577,7 @@ func TestProxyMultiAuth(t *testing.T) {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
+		Logger:     genLogger("multi-auth-proxy-test"),
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -585,20 +586,19 @@ func TestProxyMultiAuth(t *testing.T) {
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
-	streamCount := 4
+	var wg sync.WaitGroup
+	wg.Add(3)
 	wsURL := util.MakeWsURL(server.URL)
-	activeStreams := int32(streamCount)
 	logger := genLogger("multi-auth-test")
 
 	getConn := func() *websocket.Conn {
 		header := make(http.Header)
 		header.Set("Authorization", "Bearer "+wsWorkerjwt)
-		conn, resp, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+		conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
 		if err != nil {
 			logger.Printf("error connecting to proxy")
 			t.Fatal(err)
 		}
-		logger.Printf("connected to proxy %v", resp)
 		return conn
 	}
 
@@ -607,11 +607,11 @@ func TestProxyMultiAuth(t *testing.T) {
 		session := wsmux.Client(conn, wsmux.Config{})
 		session.SetCloseCallback(func() {
 			logger.Printf("session closed")
-			atomic.AddInt32(&activeStreams, -1)
+			wg.Done()
 		})
 	}
 
-	for i := 0; i < streamCount; i++ {
+	for i := 0; i < 4; i++ {
 		go testConn()
 	}
 
@@ -619,11 +619,7 @@ func TestProxyMultiAuth(t *testing.T) {
 	done := func() chan bool {
 		d := make(chan bool, 1)
 		go func() {
-			// add 2 when connecting and subtract 1 when disconnecting
-			// total = 2*x - (x-1)
-			// total = x + 1
-			for atomic.LoadInt32(&activeStreams) != 1 {
-			}
+			wg.Wait()
 			close(d)
 		}()
 		return d
@@ -633,9 +629,6 @@ func TestProxyMultiAuth(t *testing.T) {
 	case <-timeout:
 		t.Fatalf("test timed out")
 	case <-done():
-		if atomic.LoadInt32(&activeStreams) != 1 {
-			t.Fatal("only 1 stream should be active")
-		}
 	}
 }
 
@@ -832,6 +825,106 @@ func TestWebSocketStreamClient(t *testing.T) {
 		t.Fatal(err)
 	}
 	if string(buf) != "World" {
+		t.Fatal("bad message")
+	}
+}
+
+// only run if dns can resolver *.tcproxy.dev to 127.0.0.1
+func getPort(servURL string) string {
+	re := regexp.MustCompile(":(\\d+)$")
+	return re.FindStringSubmatch(servURL)[1]
+}
+
+func TestDomainResolve(t *testing.T) {
+	if os.Getenv("TEST_DNS_SET") != "yes" {
+		t.Skip("dns not set")
+	}
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Domain:     "tcproxy.dev",
+		Logger:     genLogger("domain-resolve-proxy-test"),
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// attempt hosting on port 80
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+tokenGenerator("workerID", []byte("test-secret")))
+
+	// make connection
+	clientConfig := whclient.Config{
+		ID:        "workerID",
+		ProxyAddr: "ws://tcproxy.dev:" + getPort(server.URL),
+		Authorize: func(id string) (string, error) {
+			return tokenGenerator(id, []byte("test-secret")), nil
+		},
+		Logger: genLogger("domain-resolve-client-test"),
+	}
+
+	client, err := whclient.New(clientConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// test if can resolve worker using domain
+	var wg sync.WaitGroup
+	clientHandler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/some/path" {
+			http.NotFound(w, r)
+			return
+		}
+		flusher, _ := w.(http.Flusher)
+		w.Write([]byte("Hello"))
+		flusher.Flush()
+		wg.Wait()
+		w.Write([]byte("World"))
+	}
+
+	srv := &http.Server{Handler: http.HandlerFunc(clientHandler)}
+	defer func() {
+		_ = srv.Close()
+	}()
+	go func() {
+		_ = srv.Serve(client)
+	}()
+
+	req, err := http.NewRequest(http.MethodGet, "http://workerID.tcproxy.dev:"+getPort(server.URL)+"/some/path", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil || res.StatusCode == 404 {
+		t.Fatal(err)
+	}
+
+	// read streaming request
+	d := []byte{0}
+	data := []byte{}
+	for {
+		n, err := res.Body.Read(d)
+		if n > 0 {
+			data = append(data, d...)
+		}
+		if string(data) == "Hello" {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	data, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != "World" {
 		t.Fatal("bad message")
 	}
 }

@@ -5,3 +5,4 @@ whproxy/*-test
 whclient/*-test
 webhooktunnel
 main
+certs/
