@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/tls"
+	"encoding/base64"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -17,14 +19,41 @@ var logger = &log.Logger{
 
 // starts proxy on a random port on the system
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "9999"
+	// Load required env variables
+	// Load Hostname
+	hostname := os.Getenv("HOSTNAME")
+	if hostname == "" {
+		panic("hostname required")
 	}
+
+	// Load secrets
 	signingSecretA := os.Getenv("TASKCLUSTER_PROXY_SECRET_A")
 	signingSecretB := os.Getenv("TASKCLUSTER_PROXY_SECRET_B")
 	if signingSecretA == "" || signingSecretB == "" {
 		panic(whproxy.ErrMissingSecret)
+	}
+
+	// Load TLS certificates
+	useTLS := true
+	tlsKeyEnc := os.Getenv("TLS_KEY")
+	tlsCertEnc := os.Getenv("TLS_CERTIFICATE")
+
+	tlsKey, _ := base64.StdEncoding.DecodeString(tlsKeyEnc)
+	tlsCert, _ := base64.StdEncoding.DecodeString(tlsCertEnc)
+	cert, err := tls.X509KeyPair([]byte(tlsCert), []byte(tlsKey))
+	if err != nil {
+		logger.Printf("tls error: %v", err)
+		useTLS = false
+	}
+
+	//load port
+	port := os.Getenv("PORT")
+	if port == "" {
+		if useTLS {
+			port = "443"
+		} else {
+			port = "80"
+		}
 	}
 
 	upgrader := websocket.Upgrader{
@@ -38,6 +67,7 @@ func main() {
 		Upgrader:   upgrader,
 		JWTSecretA: []byte(signingSecretA),
 		JWTSecretB: []byte(signingSecretB),
+		Domain:     hostname,
 	})
 
 	// TODO: Read TLS config
@@ -46,5 +76,19 @@ func main() {
 		_ = server.Close()
 	}()
 	logger.Printf("starting server on %s", server.Addr)
-	_ = server.ListenAndServe()
+
+	// create tls config and serve
+	if useTLS {
+		config := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
+		config.BuildNameToCertificate()
+		listener, err := tls.Listen("tcp", ":"+port, config)
+		if err != nil {
+			panic(err)
+		}
+		_ = server.Serve(listener)
+	} else {
+		_ = server.ListenAndServe()
+	}
 }

@@ -38,4 +38,7 @@ var (
 
 	// ErrAuthorizerNotProvided is returned from New when an Authorizer is not provided.
 	ErrAuthorizerNotProvided = clientError{errString: "authorizer function was not provided to client"}
+
+	// ErrTLSConfigRequired is returned when the client attepmts to use a wss:// url without a TLS config
+	ErrTLSConfigRequired = clientError{errString: "tls config must be provided to use secure connections"}
 )

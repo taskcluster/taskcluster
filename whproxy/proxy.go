@@ -99,6 +99,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if index > 0 {
 		host = host[:index]
 	}
+	p.logf("", r.RemoteAddr, "rewritten host=%s", host)
 	if strings.HasSuffix(host, "."+p.domain) {
 		index := strings.Index(r.Host, ".")
 		id := r.Host[:index]

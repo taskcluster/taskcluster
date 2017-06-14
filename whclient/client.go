@@ -1,6 +1,7 @@
 package whclient
 
 import (
+	"crypto/tls"
 	"net"
 	"net/http"
 	"strings"
@@ -35,6 +36,9 @@ type Config struct {
 	// Retry contains the retry parameters to use in case of reconnects.
 	// The default values are specified in RetryConfig.
 	Retry RetryConfig
+
+	// TLSConfig to use for authentication
+	TLSConfig *tls.Config
 }
 
 type clientState int
@@ -54,6 +58,7 @@ type client struct {
 	authorize Authorizer
 	logger    util.Logger
 	retry     RetryConfig
+	dialer    *websocket.Dialer
 
 	// hold lock to modify invariants
 	m sync.Mutex
@@ -82,11 +87,23 @@ func New(config Config) (net.Listener, error) {
 		logger:    config.Logger,
 		authorize: config.Authorize,
 		retry:     config.Retry.defaultValues(),
+		dialer:    websocket.DefaultDialer,
 
 		token:   "",
 		session: nil,
 		state:   stateRunning,
 		closed:  make(chan struct{}),
+	}
+
+	// if secure connection required
+	if cl.proxyAddr[:3] == "wss" {
+		tlsConfig := config.TLSConfig
+		if tlsConfig == nil {
+			return nil, ErrTLSConfigRequired
+		}
+		cl.dialer = &websocket.Dialer{
+			TLSClientConfig: tlsConfig.Clone(),
+		}
 	}
 
 	if cl.authorize == nil {
@@ -201,7 +218,7 @@ func (c *client) connectWithRetry() (*websocket.Conn, error) {
 	header.Set("Authorization", "Bearer "+c.token)
 	// initial attempt
 	c.logger.Printf("trying to connect to %s", c.proxyAddr)
-	conn, res, err := websocket.DefaultDialer.Dial(addr, header)
+	conn, res, err := c.dialer.Dial(addr, header)
 	if err != nil {
 		if shouldRetry(res) {
 			// retry connection and return result
@@ -231,7 +248,7 @@ func (c *client) retryConn() (*websocket.Conn, error) {
 			return nil, ErrRetryTimedOut
 		case <-backoff:
 			c.logger.Printf("trying to connect to %s", c.proxyAddr)
-			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
+			conn, res, err := c.dialer.Dial(addr, header)
 			if err == nil {
 				return conn, nil
 			}

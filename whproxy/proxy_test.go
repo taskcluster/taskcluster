@@ -2,16 +2,16 @@ package whproxy
 
 import (
 	"bytes"
+	"crypto/tls"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"regexp"
+	"sync"
 	"testing"
 	"time"
-
-	"sync"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
@@ -829,7 +829,7 @@ func TestWebSocketStreamClient(t *testing.T) {
 	}
 }
 
-// only run if dns can resolver *.tcproxy.dev to 127.0.0.1
+// only run these tests if dns can resolver *.tcproxy.dev to 127.0.0.1
 func getPort(servURL string) string {
 	re := regexp.MustCompile(":(\\d+)$")
 	return re.FindStringSubmatch(servURL)[1]
@@ -881,10 +881,16 @@ func TestDomainResolve(t *testing.T) {
 			return
 		}
 		flusher, _ := w.(http.Flusher)
-		w.Write([]byte("Hello"))
+		_, err := w.Write([]byte("Hello"))
+		if err != nil {
+			t.Fatal(err)
+		}
 		flusher.Flush()
 		wg.Wait()
-		w.Write([]byte("World"))
+		_, err = w.Write([]byte("World"))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	srv := &http.Server{Handler: http.HandlerFunc(clientHandler)}
@@ -926,5 +932,51 @@ func TestDomainResolve(t *testing.T) {
 	}
 	if string(data) != "World" {
 		t.Fatal("bad message")
+	}
+}
+
+func TestProxyTLS(t *testing.T) {
+	if os.Getenv("TEST_DNS_SET") != "yes" {
+		t.Skip("dns not set")
+	}
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Domain:     "tcproxy.dev",
+		Logger:     genLogger("domain-resolve-proxy-test"),
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// attempt hosting on port 80
+	server := httptest.NewTLSServer(proxy)
+	defer server.Close()
+
+	header := make(http.Header)
+	header.Set("Authorization", "Bearer "+tokenGenerator("workerID", []byte("test-secret")))
+
+	// make connection
+	clientConfig := whclient.Config{
+		ID:        "workerID",
+		ProxyAddr: "wss://tcproxy.dev:" + getPort(server.URL),
+		Authorize: func(id string) (string, error) {
+			return tokenGenerator(id, []byte("test-secret")), nil
+		},
+		Logger: genLogger("domain-resolve-client-test"),
+		// Do not use otherwise
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	_, err = whclient.New(clientConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err != nil {
+		t.Fatal(err)
 	}
 }
