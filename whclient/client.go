@@ -276,9 +276,9 @@ func (c *client) reconnect() {
 
 // simple utility
 func shouldRetry(r *http.Response) bool {
-	// not sure if !(r == nil || r.StatusCode == 4xx) would cause dereferencing error
+	// may be that proxy is down for changing secrets and therefore unreachable
 	if r == nil {
-		return false
+		return true
 	}
 	if r.StatusCode/100 == 4 || r.StatusCode/100 == 2 {
 		return false
