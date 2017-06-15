@@ -965,11 +965,8 @@ func TestProxyTLS(t *testing.T) {
 		Authorize: func(id string) (string, error) {
 			return tokenGenerator(id, []byte("test-secret")), nil
 		},
-		Logger: genLogger("domain-resolve-client-test"),
-		// Do not use otherwise
-		TLSConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
+		Logger:    genLogger("domain-resolve-client-test"),
+		TLSConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	_, err = whclient.New(clientConfig)

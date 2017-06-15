@@ -97,12 +97,8 @@ func New(config Config) (net.Listener, error) {
 
 	// if secure connection required
 	if cl.proxyAddr[:3] == "wss" {
-		tlsConfig := config.TLSConfig
-		if tlsConfig == nil {
-			return nil, ErrTLSConfigRequired
-		}
 		cl.dialer = &websocket.Dialer{
-			TLSClientConfig: tlsConfig.Clone(),
+			TLSClientConfig: config.TLSConfig,
 		}
 	}
 
