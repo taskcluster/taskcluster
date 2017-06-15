@@ -126,8 +126,7 @@ func newProxy(conf Config) (*proxy, error) {
 	}
 
 	if p.jwtSecretA == nil || p.jwtSecretB == nil {
-		p.logerrorf("", "", "could not load secrets")
-		return nil, ErrMissingSecret
+		panic("whproxy: missing secrets")
 	}
 
 	if p.logger == nil {

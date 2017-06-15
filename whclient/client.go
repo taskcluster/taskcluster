@@ -96,14 +96,12 @@ func New(config Config) (net.Listener, error) {
 	}
 
 	// if secure connection required
-	if cl.proxyAddr[:3] == "wss" {
-		cl.dialer = &websocket.Dialer{
-			TLSClientConfig: config.TLSConfig,
-		}
+	cl.dialer = &websocket.Dialer{
+		TLSClientConfig: config.TLSConfig,
 	}
 
 	if cl.authorize == nil {
-		return nil, ErrAuthorizerNotProvided
+		panic("whclient: authorizer not provided")
 	}
 
 	if cl.logger == nil {

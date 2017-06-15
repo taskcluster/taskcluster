@@ -29,9 +29,6 @@ func main() {
 	// Load secrets
 	signingSecretA := os.Getenv("TASKCLUSTER_PROXY_SECRET_A")
 	signingSecretB := os.Getenv("TASKCLUSTER_PROXY_SECRET_B")
-	if signingSecretA == "" || signingSecretB == "" {
-		panic(whproxy.ErrMissingSecret)
-	}
 
 	// Load TLS certificates
 	useTLS := true
