@@ -30,10 +30,11 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
+	logger := genLogger("many-echo-log-test")
 
 	sender := func(i int) {
 		defer wg.Done()
-		str, _, err := session.Open()
+		str, id, err := session.Open()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -48,23 +49,17 @@ func TestManyStreamEchoLarge(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		final := make([]byte, 0)
-		for {
-			catch := make([]byte, 100)
-			size, err := str.Read(catch)
-			if err != nil && err != io.EOF {
-				t.Fatal(err)
-			}
-			catch = catch[:size]
-			final = append(final, catch...)
-			if err == io.EOF {
-				break
-			}
+		final := new(bytes.Buffer)
+		_, err = io.Copy(final, str)
+		if err != nil {
+			t.Fatal(err)
 		}
 
-		if !bytes.Equal(buf, final) {
-			t.Log(len(buf), len(final))
-			t.Fatalf("bad message on stream %d", i)
+		logger.Printf("id: stream %d finished read. msgLen: %d, recvLen: %d", id, len(buf), final.Len())
+
+		if !bytes.Equal(buf, final.Bytes()) {
+			t.Log(len(buf), final.Len())
+			t.Fatalf("bad message on stream %d", id)
 		}
 	}
 

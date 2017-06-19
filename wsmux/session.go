@@ -11,7 +11,7 @@ import (
 
 const (
 	defaultStreamQueueSize      = 200              // size of the accept stream
-	defaultKeepAliveInterval    = 10 * time.Second // keep alive interval
+	defaultKeepAliveInterval    = 20 * time.Second // keep alive interval
 	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
 	deadCheckDuration           = 2 * time.Second  // check for dead streams every 2 seconds
 	defaultKeepAliveWait        = 30 * time.Second // ensure KeepAliveWait > keepAliveInterval
@@ -251,6 +251,7 @@ func (s *Session) Close() error {
 
 	s.logger.Printf("closing session: ")
 	close(s.closed)
+	close(s.streamCh)
 	return err
 }
 
@@ -297,39 +298,50 @@ func (s *Session) recvLoop() {
 		msg = msg[5:]
 
 		id, msgType := h.id(), h.msg()
+		fr := frame{id: id, msg: msgType, payload: msg}
 
-		s.mu.Lock()
-		str := s.streams[id]
-		s.mu.Unlock()
+		if fr.msg == msgSYN {
+			go s.handleSyn(id)
+		} else {
+			s.mu.Lock()
+			str := s.streams[id]
+			s.mu.Unlock()
 
-		if msgType == msgSYN {
 			if str != nil {
-				s.logger.Printf("dropped duplicate SYN frame for id %d", id)
-			} else {
-				s.logger.Printf("received SYN frame: id=%d", id)
-				str := newStream(id, s)
-				str.AcceptStream(uint32(s.streamBufferSize))
-				s.mu.Lock()
-				s.streams[id] = str
-				if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
-					s.logger.Print(err)
-					s.mu.Unlock()
-					s.logger.Printf("recvLoop: error writing ack frame: %v", err)
-					_ = s.abort(err)
-					return
-				}
-				s.logger.Printf("accepted connection: id=%d", id)
-				s.asyncPushStream(str)
-				s.mu.Unlock()
+				str.HandleFrame(fr)
 			}
-			continue
 		}
-		if str != nil {
-			fr := frame{id: id, msg: msgType, payload: msg}
-			str.HandleFrame(fr)
-		}
-
 	}
+}
+
+// handleSyn creates a new stream in a separate goroutine
+func (s *Session) handleSyn(id uint32) {
+	s.mu.Lock()
+
+	// check if stream exists
+	_, ok := s.streams[id]
+	if ok {
+		s.logger.Printf("duplicate SYN frame fot stream: %d", id)
+		s.mu.Unlock()
+		return
+	}
+
+	s.logger.Printf("received SYN frame: id=%d", id)
+	str := newStream(id, s)
+	str.AcceptStream(uint32(s.streamBufferSize))
+	s.streams[id] = str
+
+	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
+		s.logger.Print(err)
+		s.logger.Printf("recvLoop: error writing ack frame: %v", err)
+		s.mu.Unlock()
+		_ = s.abort(err)
+		return
+	}
+
+	defer s.mu.Unlock()
+	s.logger.Printf("accepted connection: id=%d", id)
+	s.asyncPushStream(str)
 }
 
 //RemoveStream removes stream with given id
