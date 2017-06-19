@@ -3,6 +3,7 @@ package wsmux
 import (
 	"bytes"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"sync"
 	"testing"
@@ -222,4 +223,64 @@ func TestWriteDeadlineReset(t *testing.T) {
 	case <-long.C:
 		t.Fatal("write should time out")
 	}
+}
+
+func TestConcurrentReadAndWrite(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		conn, err := (&websocket.Upgrader{}).Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		session := Server(conn, Config{Log: genLogger("concurrent-server-test")})
+		str, err := session.Accept()
+		_, _ = io.Copy(str, str)
+		_ = str.Close()
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(handler))
+	defer server.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(server.URL), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	session := Client(conn, Config{Log: genLogger("concurrent-client-test")})
+	str, _, err := session.Open()
+
+	buf := make([]byte, 0)
+	for i := 0; i < 1500; i++ {
+		buf = append(buf, byte(i%127))
+	}
+
+	final := new(bytes.Buffer)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		_, err := str.Write(buf)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = str.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		_, err := io.Copy(final, str)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	wg.Wait()
+
+	if !bytes.Equal(final.Bytes(), buf) {
+		t.Fatal("bad message")
+	}
+
 }
