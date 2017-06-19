@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultStreamQueueSize      = 20               // size of the accept stream
+	defaultStreamQueueSize      = 200              // size of the accept stream
 	defaultKeepAliveInterval    = 10 * time.Second // keep alive interval
 	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
 	deadCheckDuration           = 2 * time.Second  // check for dead streams every 2 seconds
@@ -59,9 +59,11 @@ func (s *Session) sendKeepAlives() {
 	ticker := time.Tick(s.keepAliveInterval)
 	for {
 		s.sendLock.Lock()
-		err := s.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(2*time.Second))
+		err := s.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(20*time.Second))
 		if err != nil {
+			s.logger.Printf("KEEPALIVE ERROR")
 			_ = s.abort(err)
+			s.sendLock.Unlock()
 			return
 		}
 		s.sendLock.Unlock()
@@ -219,9 +221,7 @@ func (s *Session) Open() (net.Conn, uint32, error) {
 // Close closes the current session and underlying connection.
 func (s *Session) Close() error {
 	s.mu.Lock()
-	defer func() {
-		s.mu.Unlock()
-	}()
+	defer s.mu.Unlock()
 
 	select {
 	case <-s.closed:

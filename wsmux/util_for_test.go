@@ -135,21 +135,13 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 			t.Fatal(err)
 		}
 
-		final := make([]byte, 0)
-		for {
-			catch := make([]byte, 100)
-			size, err := str.Read(catch)
-			if err != nil && err != io.EOF {
-				t.Fatal(err)
-			}
-			catch = catch[:size]
-			final = append(final, catch...)
-			if err == io.EOF {
-				break
-			}
+		b := new(bytes.Buffer)
+		_, err = io.Copy(b, str)
+		if err != nil {
+			t.Fatal(err)
 		}
 
-		_, err = str.Write(final)
+		_, err = io.Copy(str, b)
 		if err != nil {
 			t.Fatal(err)
 		}

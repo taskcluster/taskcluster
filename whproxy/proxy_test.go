@@ -571,67 +571,6 @@ func TestProxyAuth(t *testing.T) {
 	_ = conn.Close()
 }
 
-// Check that only 1 connection is active even if multiple connections are made
-func TestProxyMultiAuth(t *testing.T) {
-	proxyConfig := Config{
-		Upgrader:   upgrader,
-		JWTSecretA: []byte("test-secret"),
-		JWTSecretB: []byte("another-secret"),
-		Logger:     genLogger("multi-auth-proxy-test"),
-	}
-	proxy, err := New(proxyConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
-	server := httptest.NewServer(proxy)
-	defer server.Close()
-
-	var wg sync.WaitGroup
-	wg.Add(3)
-	wsURL := util.MakeWsURL(server.URL)
-	logger := genLogger("multi-auth-test")
-
-	getConn := func() *websocket.Conn {
-		header := make(http.Header)
-		header.Set("Authorization", "Bearer "+wsWorkerjwt)
-		conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
-		if err != nil {
-			logger.Printf("error connecting to proxy")
-			t.Fatal(err)
-		}
-		return conn
-	}
-
-	testConn := func() {
-		conn := getConn()
-		session := wsmux.Client(conn, wsmux.Config{})
-		session.SetCloseCallback(func() {
-			logger.Printf("session closed")
-			wg.Done()
-		})
-	}
-
-	for i := 0; i < 4; i++ {
-		go testConn()
-	}
-
-	timeout := time.After(5 * time.Second)
-	done := func() chan bool {
-		d := make(chan bool, 1)
-		go func() {
-			wg.Wait()
-			close(d)
-		}()
-		return d
-	}
-
-	select {
-	case <-timeout:
-		t.Fatalf("test timed out")
-	case <-done():
-	}
-}
-
 // Ensure authentication with both secrets works
 func TestProxySecrets(t *testing.T) {
 	proxyConfig := Config{
