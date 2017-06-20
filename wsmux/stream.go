@@ -53,6 +53,9 @@ type stream struct {
 }
 
 func newStream(id uint32, session *Session) *stream {
+	if session == nil {
+		panic("session must not be nil")
+	}
 	str := &stream{
 		id:        id,
 		b:         newBuffer(session.streamBufferSize),

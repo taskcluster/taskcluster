@@ -165,6 +165,9 @@ func (s *Session) Accept() (net.Conn, error) {
 	case <-s.closed:
 		return nil, s.acceptErr
 	case str := <-s.streamCh:
+		if str == nil {
+			return nil, ErrSessionClosed
+		}
 		return str, nil
 	}
 }
@@ -328,8 +331,8 @@ func (s *Session) handleSyn(id uint32) {
 
 	s.logger.Printf("received SYN frame: id=%d", id)
 	str := newStream(id, s)
-	str.AcceptStream(uint32(s.streamBufferSize))
 	s.streams[id] = str
+	str.AcceptStream(uint32(s.streamBufferSize))
 
 	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
 		s.logger.Print(err)
