@@ -19,7 +19,6 @@ tasks:
       image: golang
       command:
         - /bin/bash
-        - '--login'
         - '-c'
         - >-
           mkdir -p /go/src/github.com/taskcluster/webhooktunnel && cd
