@@ -1,0 +1,34 @@
+version: 0
+metadata:
+  name: webhooktunnel
+  description: Runs tests for webhooktunnel
+  owner: '{{ event.head.user.email }}'
+  source: '{{ event.head.repo.url }}'
+tasks:
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.closed
+          - pull_request.synchronize
+          - push
+    payload:
+      maxRunTime: 3600
+      image: golang
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          mkdir -p /go/src/github.com/taskcluster/webhooktunnel && cd
+          /go/src/github.com/taskcluster/webhooktunnel && git init && git fetch
+          {{ event.head.repo.url }} {{ event.head.ref }} && git config
+          advice.detachedHead false && git checkout {{ event.head.sha }} && go
+          install && go test ./wsmux ./whproxy ./whclient
+    metadata:
+      name: webhooktunnel
+      description: runs tests for webhooktunnel components
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
