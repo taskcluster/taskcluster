@@ -12,7 +12,7 @@ See: https://docs.taskcluster.net/manual/vcs/github
 
 ### Adding status badges to your project's readme:
 Insert the following string (replacing the words in caps with your organization or user name, repository name and the branch name) to the readme file in your project's repository:
-`![Task Status](https://github.taskcluster.net/v1/badge/USERNAME/REPONAME/BRANCHNAME)`
+`![Task Status](https://github.taskcluster.net/v1/repository/USERNAME/REPONAME/BRANCHNAME/badge.svg)`
 
 
 ## Components
