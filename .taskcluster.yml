@@ -25,8 +25,8 @@ tasks:
           mkdir -p /go/src/github.com/taskcluster/webhooktunnel && cd
           /go/src/github.com/taskcluster/webhooktunnel && git init && git fetch
           {{ event.head.repo.url }} {{ event.head.ref }} && git config
-          advice.detachedHead false && git checkout {{ event.head.sha }} && go
-          install && go test -v -race ./wsmux ./whproxy ./whclient
+          advice.detachedHead false && git checkout {{ event.head.sha }} && go get -v 
+          && go test -v -race ./wsmux ./whproxy ./whclient
     metadata:
       name: webhooktunnel
       description: runs tests for webhooktunnel components
