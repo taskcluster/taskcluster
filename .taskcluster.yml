@@ -26,7 +26,7 @@ tasks:
           /go/src/github.com/taskcluster/webhooktunnel && git init && git fetch
           {{ event.head.repo.url }} {{ event.head.ref }} && git config
           advice.detachedHead false && git checkout {{ event.head.sha }} && go
-          install && go test ./wsmux ./whproxy ./whclient
+          install && go test -v -race ./wsmux ./whproxy ./whclient
     metadata:
       name: webhooktunnel
       description: runs tests for webhooktunnel components
