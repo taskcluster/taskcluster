@@ -69,9 +69,6 @@ and reports back results to the queue.
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
-    generic-worker install startup          [--username       USERNAME]
-                                            [--password       PASSWORD]
-                                            [--config         CONFIG-FILE]
     generic-worker show-payload-schema
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker --help
@@ -115,13 +112,6 @@ and reports back results to the queue.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
-    --username USERNAME                     The Windows user to run the generic worker
-                                            Windows service as. If the user does not
-                                            already exist on the system, it will be
-                                            created. [default: GenericWorker]
-    --password PASSWORD                     The password for the username specified
-                                            with -u|--username option. If not specified
-                                            a random password will be generated.
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
@@ -246,14 +236,13 @@ and reports back results to the queue.
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
                                             [default: test-worker-group]
-          workerTypeMetaData                This arbitrary json blob will be uploaded as an
-                                            artifact called worker_type_metadata.json with each
-                                            task. Providing information here, such as a URL to
-                                            the code/config used to set up the worker type will
-                                            mean that people running tasks on the worker type
-                                            will have more information about how it was set up
-                                            (for example what has been installed on the
-                                            machine).
+          workerTypeMetaData                This arbitrary json blob will be included at the
+                                            top of each task log. Providing information here,
+                                            such as a URL to the code/config used to set up the
+                                            worker type will mean that people running tasks on
+                                            the worker type will have more information about how
+                                            it was set up (for example what has been installed on
+                                            the machine).
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
                                             user, each time a task user is created. This is a

@@ -229,14 +229,13 @@ and reports back results to the queue.
                                             identifier to uniquely identify which pool of
                                             workers this worker logically belongs to.
                                             [default: test-worker-group]
-          workerTypeMetaData                This arbitrary json blob will be uploaded as an
-                                            artifact called worker_type_metadata.json with each
-                                            task. Providing information here, such as a URL to
-                                            the code/config used to set up the worker type will
-                                            mean that people running tasks on the worker type
-                                            will have more information about how it was set up
-                                            (for example what has been installed on the
-                                            machine).
+          workerTypeMetaData                This arbitrary json blob will be included at the
+                                            top of each task log. Providing information here,
+                                            such as a URL to the code/config used to set up the
+                                            worker type will mean that people running tasks on
+                                            the worker type will have more information about how
+                                            it was set up (for example what has been installed on
+                                            the machine).
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
                                             user, each time a task user is created. This is a
