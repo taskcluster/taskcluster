@@ -125,7 +125,7 @@ func newProxy(conf Config) (*proxy, error) {
 		domain:     conf.Domain,
 	}
 
-	if p.jwtSecretA == nil || p.jwtSecretB == nil {
+	if len(p.jwtSecretA) == 0 || len(p.jwtSecretB) == 0 {
 		panic("whproxy: missing secrets")
 	}
 

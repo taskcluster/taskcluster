@@ -59,6 +59,7 @@ func main() {
 		},
 	}
 
+	// will panic if secrets are not loaded
 	proxy, _ := whproxy.New(whproxy.Config{
 		Logger:     logger,
 		Upgrader:   upgrader,
@@ -72,7 +73,7 @@ func main() {
 	defer func() {
 		_ = server.Close()
 	}()
-	logger.Printf("starting server on %s", server.Addr)
+	logger.Printf("starting server on %s, host: %s", server.Addr, hostname)
 
 	// create tls config and serve
 	if useTLS {
