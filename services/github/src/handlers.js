@@ -284,6 +284,28 @@ async function jobHandler(message) {
     throw e;
   }
 
+  let groupState = 'pending';
+  let taskGroupId = 'nonexistent';
+  let graphConfig;
+
+  // Now we can try processing the config and kicking off a task.
+  try {
+    graphConfig = this.intree({
+      config: repoconf,
+      payload: message.payload,
+      validator: context.validator,
+      schema: 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#',
+    });
+    if (graphConfig.tasks.length === 0) {
+      debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
+      return;
+    }
+  } catch (e) {
+    debug('.taskcluster.yml was not formatted correctly. Leaving comment on Github.');
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
+    return;
+  }
+
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
     debug('Checking pull request permission...');
 
@@ -332,28 +354,6 @@ async function jobHandler(message) {
       }
       throw e;
     }
-  }
-
-  let groupState = 'pending';
-  let taskGroupId = 'nonexistent';
-  let graphConfig;
-
-  // Now we can try processing the config and kicking off a task.
-  try {
-    graphConfig = this.intree({
-      config: repoconf,
-      payload: message.payload,
-      validator: context.validator,
-      schema: 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#',
-    });
-    if (graphConfig.tasks.length === 0) {
-      debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
-      return;
-    }
-  } catch (e) {
-    debug('.taskcluster.yml was not formatted correctly. Leaving comment on Github.');
-    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
-    return;
   }
 
   try {
