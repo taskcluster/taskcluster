@@ -87,6 +87,9 @@ func main() {
 		}
 		_ = server.Serve(listener)
 	} else {
-		_ = server.ListenAndServe()
+		err = server.ListenAndServe()
+		if err != nil {
+			panic(err)
+		}
 	}
 }

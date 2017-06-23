@@ -14,7 +14,7 @@ const (
 	defaultKeepAliveInterval    = 20 * time.Second // keep alive interval
 	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
 	deadCheckDuration           = 2 * time.Second  // check for dead streams every 2 seconds
-	defaultKeepAliveWait        = 30 * time.Second // ensure KeepAliveWait > keepAliveInterval
+	defaultKeepAliveWait        = 60 * time.Second // ensure KeepAliveWait > keepAliveInterval
 )
 
 // Session allows creating and accepting wsmux streams over a websocket connection.
