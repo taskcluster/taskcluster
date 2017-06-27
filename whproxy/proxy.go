@@ -50,8 +50,8 @@ type proxy struct {
 
 // regex for parsing requests
 var (
-	registerRe = regexp.MustCompile("^/register/([\\w-]+)/?$")
-	serveRe    = regexp.MustCompile("^/([\\w-]+)/(.*)$")
+	registerRe = regexp.MustCompile("^/register/([a-z0-9_-]+)/?$")
+	serveRe    = regexp.MustCompile("^/([a-z0-9_-]+)/(.*)$")
 )
 
 // New creates a new proxy instance and wraps it as an http.Handler.
