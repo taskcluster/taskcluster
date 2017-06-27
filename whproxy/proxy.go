@@ -33,6 +33,10 @@ type Config struct {
 	JWTSecretB []byte
 	// Domain where proxy will be hosted
 	Domain string
+	// set to true if serving with TLS
+	TLS bool
+
+	DomainHosted bool
 }
 
 // proxy is used to send http and ws requests to workers.
@@ -46,6 +50,8 @@ type proxy struct {
 	jwtSecretA      []byte
 	jwtSecretB      []byte
 	domain          string
+	domainHosted    bool
+	tls             bool
 }
 
 // regex for parsing requests
@@ -117,12 +123,14 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newProxy(conf Config) (*proxy, error) {
 	p := &proxy{
-		pool:       make(map[string]*wsmux.Session),
-		upgrader:   conf.Upgrader,
-		logger:     conf.Logger,
-		jwtSecretA: conf.JWTSecretA,
-		jwtSecretB: conf.JWTSecretB,
-		domain:     conf.Domain,
+		pool:         make(map[string]*wsmux.Session),
+		upgrader:     conf.Upgrader,
+		logger:       conf.Logger,
+		jwtSecretA:   conf.JWTSecretA,
+		jwtSecretB:   conf.JWTSecretB,
+		domain:       conf.Domain,
+		domainHosted: conf.DomainHosted,
+		tls:          conf.TLS,
 	}
 
 	if len(p.jwtSecretA) == 0 || len(p.jwtSecretB) == 0 {
@@ -208,7 +216,19 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	delete(p.pool, id)
 
-	conn, err := p.upgrader.Upgrade(w, r, nil)
+	header := make(http.Header)
+
+	urlScheme := "http://"
+	if p.tls {
+		urlScheme = "https://"
+	}
+
+	url := urlScheme + p.domain + "/" + id
+	if p.domainHosted {
+		url = urlScheme + id + "." + p.domain
+	}
+	header.Set("x-webhooktunnel-client-url", url)
+	conn, err := p.upgrader.Upgrade(w, r, header)
 	if err != nil {
 		p.logger.Print(err)
 		return

@@ -779,11 +779,12 @@ func TestDomainResolve(t *testing.T) {
 		t.Skip("dns not set")
 	}
 	proxyConfig := Config{
-		Upgrader:   upgrader,
-		JWTSecretA: []byte("test-secret"),
-		JWTSecretB: []byte("another-secret"),
-		Domain:     "tcproxy.dev",
-		Logger:     genLogger("domain-resolve-proxy-test"),
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte("test-secret"),
+		JWTSecretB:   []byte("another-secret"),
+		Domain:       "tcproxy.dev",
+		Logger:       genLogger("domain-resolve-proxy-test"),
+		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -793,9 +794,6 @@ func TestDomainResolve(t *testing.T) {
 	// attempt hosting on port 80
 	server := httptest.NewServer(proxy)
 	defer server.Close()
-
-	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+tokenGenerator("workerid", []byte("test-secret")))
 
 	// make connection
 	clientConfig := whclient.Config{
@@ -874,6 +872,46 @@ func TestDomainResolve(t *testing.T) {
 	}
 }
 
+func TestProxySendsURL(t *testing.T) {
+	if os.Getenv("TEST_DNS_SET") != "yes" {
+		t.Skip("dns not set")
+	}
+	proxyConfig := Config{
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte("test-secret"),
+		JWTSecretB:   []byte("another-secret"),
+		Domain:       "tcproxy.dev",
+		Logger:       genLogger("domain-resolve-proxy-test"),
+		DomainHosted: true,
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// attempt hosting on port 80
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	// make connection
+	clientConfig := whclient.Config{
+		ID:        "workerid",
+		ProxyAddr: "ws://tcproxy.dev:" + getPort(server.URL),
+		Authorize: func(id string) (string, error) {
+			return tokenGenerator(id, []byte("test-secret")), nil
+		},
+		Logger: genLogger("domain-resolve-client-test"),
+	}
+
+	client, err := whclient.New(clientConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if client.URL() != "http://workerid.tcproxy.dev" {
+		t.Fatal("bad url")
+	}
+}
+
 func TestProxyTLS(t *testing.T) {
 	if os.Getenv("TEST_DNS_SET") != "yes" {
 		t.Skip("dns not set")
@@ -884,6 +922,7 @@ func TestProxyTLS(t *testing.T) {
 		JWTSecretB: []byte("another-secret"),
 		Domain:     "tcproxy.dev",
 		Logger:     genLogger("domain-resolve-proxy-test"),
+		TLS:        true,
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -908,11 +947,15 @@ func TestProxyTLS(t *testing.T) {
 		TLSConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	_, err = whclient.New(clientConfig)
+	client, err := whclient.New(clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if client.URL() != "https://tcproxy.dev/workerid" {
+		t.Fatal("bad url")
 	}
 }
