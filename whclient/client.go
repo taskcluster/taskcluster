@@ -48,9 +48,9 @@ const (
 	stateBroken
 )
 
-//client connects to the specified proxy and
+// Client connects to the specified proxy and
 // provides a net.Listener interface.
-type client struct {
+type Client struct {
 	// read only values
 	// these are never changed. Will not cause data races.
 	id        string
@@ -59,6 +59,9 @@ type client struct {
 	logger    util.Logger
 	retry     RetryConfig
 	dialer    *websocket.Dialer
+
+	urlLock sync.Mutex
+	url     string
 
 	// hold lock to modify invariants
 	m sync.Mutex
@@ -79,8 +82,8 @@ type client struct {
 }
 
 // New returns a new net.Listener instance using the provided Config object.
-func New(config Config) (net.Listener, error) {
-	cl := &client{
+func New(config Config) (*Client, error) {
+	cl := &Client{
 		// read only values
 		id:        config.ID,
 		proxyAddr: config.ProxyAddr,
@@ -110,10 +113,14 @@ func New(config Config) (net.Listener, error) {
 
 	cl.m.Lock()
 	defer cl.m.Unlock()
-	conn, err := cl.connectWithRetry()
+	conn, url, err := cl.connectWithRetry()
 	if err != nil {
 		return nil, err
 	}
+
+	cl.urlLock.Lock()
+	cl.url = url
+	cl.urlLock.Unlock()
 
 	sessionConfig := wsmux.Config{
 		// Log:              cl.logger,
@@ -128,7 +135,7 @@ func New(config Config) (net.Listener, error) {
 // Accept returns a new net.Conn from the proxy. Accept will return a
 // temporary net.Error if the connection breaks or it is attempting
 // reconnection.
-func (c *client) Accept() (net.Conn, error) {
+func (c *Client) Accept() (net.Conn, error) {
 	select {
 	case <-c.closed:
 		return nil, ErrClientClosed
@@ -166,7 +173,7 @@ func (c *client) Accept() (net.Conn, error) {
 }
 
 // Close is used to close the listener.
-func (c *client) Close() error {
+func (c *Client) Close() error {
 	select {
 	case <-c.closed:
 	default:
@@ -183,7 +190,7 @@ func (c *client) Close() error {
 }
 
 // Addr returns the local Addr of the listener
-func (c *client) Addr() net.Addr {
+func (c *Client) Addr() net.Addr {
 	c.m.Lock()
 	defer c.m.Unlock()
 	if c.session != nil {
@@ -192,16 +199,23 @@ func (c *client) Addr() net.Addr {
 	return nil
 }
 
+// URL returns the url on which endpoints are exposed
+func (c *Client) URL() string {
+	c.urlLock.Lock()
+	defer c.urlLock.Unlock()
+	return c.url
+}
+
 // connectWithRetry returns a websocket connection to the proxy
-func (c *client) connectWithRetry() (*websocket.Conn, error) {
+func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	// if token is expired or not usable, get a new token from the authorizer
 	if !util.IsTokenUsable(c.token) {
 		token, err := c.authorize(c.id)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		if !util.IsTokenUsable(token) {
-			return nil, ErrBadToken
+			return nil, "", ErrBadToken
 		}
 		c.token = token
 	}
@@ -219,15 +233,17 @@ func (c *client) connectWithRetry() (*websocket.Conn, error) {
 			return c.retryConn()
 		}
 		c.logger.Printf("connection failed with error:%v, response:%v", err, res)
-		return nil, ErrRetryFailed
+		return nil, "", ErrRetryFailed
 	}
 	c.logger.Printf("connected to %s ", c.proxyAddr)
-	return conn, err
+
+	url := res.Header.Get("x-webhooktunnel-client-url")
+	return conn, url, err
 }
 
 // retryConn is a utility function used by connectWithRetry to use exponential
 // backoff to attempt reconnection
-func (c *client) retryConn() (*websocket.Conn, error) {
+func (c *Client) retryConn() (*websocket.Conn, string, error) {
 	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
@@ -239,16 +255,17 @@ func (c *client) retryConn() (*websocket.Conn, error) {
 	for {
 		select {
 		case <-maxTimer:
-			return nil, ErrRetryTimedOut
+			return nil, "", ErrRetryTimedOut
 		case <-backoff:
 			c.logger.Printf("trying to connect to %s", c.proxyAddr)
 			conn, res, err := c.dialer.Dial(addr, header)
 			if err == nil {
-				return conn, nil
+				url := res.Header.Get("x-webhooktunnel-client-url")
+				return conn, url, nil
 			}
 			if !shouldRetry(res) {
 				c.logger.Printf("connection to %s failed. could not connect", c.proxyAddr)
-				return nil, ErrRetryFailed
+				return nil, "", ErrRetryFailed
 			}
 			c.logger.Printf("connection to %s failed. will retry", c.proxyAddr)
 
@@ -260,10 +277,10 @@ func (c *client) retryConn() (*websocket.Conn, error) {
 }
 
 // reconnect is used to repair broken connections
-func (c *client) reconnect() {
+func (c *Client) reconnect() {
 	c.m.Lock()
 	defer c.m.Unlock()
-	conn, err := c.connectWithRetry()
+	conn, url, err := c.connectWithRetry()
 	if err != nil {
 		// set error and return
 		c.logger.Printf("unable to reconnect to %s", c.proxyAddr)
@@ -281,6 +298,7 @@ func (c *client) reconnect() {
 		StreamBufferSize: 4 * 1024,
 	}
 	c.session = wsmux.Client(conn, sessionConfig)
+	c.url = url
 	c.state = stateRunning
 	c.logger.Printf("state: running")
 	c.acceptErr = nil

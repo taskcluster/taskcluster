@@ -43,6 +43,12 @@ func main() {
 		useTLS = false
 	}
 
+	domainHosted := false
+	mode := os.Getenv("ROUTING_MODE")
+	if mode == "DOMAIN" {
+		domainHosted = true
+	}
+
 	//load port
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -61,11 +67,13 @@ func main() {
 
 	// will panic if secrets are not loaded
 	proxy, _ := whproxy.New(whproxy.Config{
-		Logger:     logger,
-		Upgrader:   upgrader,
-		JWTSecretA: []byte(signingSecretA),
-		JWTSecretB: []byte(signingSecretB),
-		Domain:     hostname,
+		Logger:       logger,
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte(signingSecretA),
+		JWTSecretB:   []byte(signingSecretB),
+		Domain:       hostname,
+		TLS:          useTLS,
+		DomainHosted: domainHosted,
 	})
 
 	// TODO: Read TLS config
