@@ -108,6 +108,15 @@ func prepareTaskUser(userName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
+		// If we get this far, we were able to log on, but since this will be
+		// the very first logon for the task user, the system may need some
+		// time to set up user environment, etc, so let's stick a 30s delay in
+		// here to allow logon process to complete. Note, this is called
+		// *prior* to claiming work, so will only increase wait time, if task
+		// is submitted prior to worker completing setup. If worker has
+		// completed the 30s wait before a task becomes available for claiming,
+		// no additional delay will have been incurred.
+		time.Sleep(30 * time.Second)
 		loginInfo := &subprocess.LoginInfo{
 			HUser: hToken,
 		}
