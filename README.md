@@ -117,11 +117,12 @@ To run the full test suites you need taskcluster credentials with at least the
 following scopes:
 
   * `auth:azure-table-access:fakeaccount/DuMmYtAbLe`
-  * `queue:define-task:win-provisioner/win2008-worker`
+  * `auth:create-client:garbage/*`
+  * `queue:create-task:highest:win-provisioner/win2008-worker`
   * `queue:get-artifact:private/build/sources.xml`
-  * `queue:route:tc-treeherder-stage.mozilla-inbound.*`
   * `queue:route:tc-treeherder.mozilla-inbound.*`
-  * `queue:task-priority:high`
+  * `queue:route:tc-treeherder-stage.mozilla-inbound.*`
+  * `queue:scheduler-id:go-test-test-scheduler`
 
 The credentials are expected to be in the `TASKCLUSTER_CLIENT_ID` and
 `TASKCLUSTER_ACCESS_TOKEN` environment variables (and optionally the

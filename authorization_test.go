@@ -75,14 +75,14 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 	skipIfNoPermCreds(t)
 	tempScopes := []string{
 		"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe",
-		"queue:define-task:win-provisioner/win2008-worker",
+		"queue:create-task:high:win-provisioner/win2008-worker",
 		"queue:get-artifact:private/build/sources.xml",
 		"queue:route:tc-treeherder.mozilla-inbound.*",
 		"queue:route:tc-treeherder-stage.mozilla-inbound.*",
-		"queue:task-priority:high",
+		"queue:scheduler-id:go-test-test-scheduler",
 	}
 
-	tempScopesJSON := `["auth:azure-table:read-write:fakeaccount/DuMmYtAbLe","queue:define-task:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:task-priority:high"]`
+	tempScopesJSON := `["auth:azure-table:read-write:fakeaccount/DuMmYtAbLe","queue:create-task:high:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:scheduler-id:go-test-test-scheduler"]`
 
 	tempCredsClientId := "garbage/" + slugid.Nice()
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
