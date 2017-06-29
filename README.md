@@ -202,8 +202,14 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
-          project                           The project name used in [sentry](https://sentry.io/welcome/).
-                                            [default: "test-monitor"]
+          project                           The project name used in https://sentry.io for
+                                            reporting worker crashes. Permission to publish
+                                            crash reports is granted via the scope
+                                            auth:sentry:<project>. If the taskcluster
+                                            client (see clientId property above) does not
+                                            posses this scope, no crash reports will be sent.
+                                            Similarly, if this property is not specified or
+                                            is the empty string, no reports will be sent.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]

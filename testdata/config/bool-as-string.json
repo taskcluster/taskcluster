@@ -7,6 +7,5 @@
   "workerType" : "some-worker-type",
   "publicIP" : "2.1.2.1",
   "signingKeyLocation": "C:\\some\\place.key",
-  "runTasksAsCurrentUser": "true",
-  "project": "dummy-project"
+  "runTasksAsCurrentUser": "true"
 }

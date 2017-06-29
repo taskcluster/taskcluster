@@ -47,7 +47,6 @@ var (
 		&ChainOfTrustFeature{},
 		&MountsFeature{},
 	}
-	monitor *Monitor
 
 	version = "10.0.5"
 	usage   = `
@@ -196,8 +195,14 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
-          project                           The project name used in [sentry](https://sentry.io/welcome/).
-                                            [default: "test-monitor"]
+          project                           The project name used in https://sentry.io for
+                                            reporting worker crashes. Permission to publish
+                                            crash reports is granted via the scope
+                                            auth:sentry:<project>. If the taskcluster
+                                            client (see clientId property above) does not
+                                            posses this scope, no crash reports will be sent.
+                                            Similarly, if this property is not specified or
+                                            is the empty string, no reports will be sent.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
@@ -327,21 +332,7 @@ func main() {
 			log.Printf("%v\n", err)
 			os.Exit(64)
 		}
-		monitor = NewMonitor(
-			config.Project,
-			auth.New(&tcclient.Credentials{
-				ClientID:    config.ClientID,
-				AccessToken: config.AccessToken,
-				Certificate: config.Certificate,
-			}),
-			"debug",
-			nil,
-		)
-
-		exitCode := INTERNAL_ERROR
-		incidentID := monitor.CapturePanic(func() {
-			exitCode = doRunWorker()
-		})
+		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
 		case REBOOT_REQUIRED:
@@ -354,7 +345,7 @@ func main() {
 			}
 		case INTERNAL_ERROR:
 			if config.ShutdownMachineOnInternalError {
-				immediateShutdown("generic-worker internal error, incident ID: " + incidentID)
+				immediateShutdown("generic-worker internal error")
 			}
 		case NONCURRENT_DEPLOYMENT_ID:
 			immediateShutdown("generic-worker deploymentId is not latest")
@@ -403,7 +394,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogPUTPort:                 60022,
 		LiveLogGETPort:                 60023,
 		NumberOfTasksToRun:             0,
-		Project:                        "test-monitor",
+		Project:                        "",
 		ProvisionerID:                  "test-provisioner",
 		RefreshUrlsPrematurelySecs:     310,
 		RequiredDiskSpaceMegabytes:     10240,
@@ -471,7 +462,6 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
 		{value: c.WorkerID, name: "workerId", disallowed: ""},
 		{value: c.WorkerType, name: "workerType", disallowed: ""},
-		{value: c.Project, name: "project", disallowed: ""},
 	}
 
 	for _, f := range fields {
@@ -501,21 +491,25 @@ func UpdateTasksResolvedFile(t uint) error {
 	return ioutil.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
 }
 
+// HandleCrash reports a crash in worker logs and reports the crash to sentry
+// if it has valid credentials and a valid sentry project. The argument r is
+// the object returned by the recover call, thrown by the panic call that
+// caused the worker crash.
+func HandleCrash(r interface{}) {
+	log.Print(string(debug.Stack()))
+	log.Print(" *********** PANIC occurred! *********** ")
+	log.Printf("%v", r)
+	ReportCrashToSentry(r)
+}
+
 func RunWorker() (exitCode ExitCode) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Print(string(debug.Stack()))
-			log.Print(" *********** PANIC occurred! *********** ")
-			log.Printf("%v", r)
+			HandleCrash(r)
 			exitCode = INTERNAL_ERROR
 		}
 	}()
 
-	exitCode = doRunWorker()
-	return
-}
-
-func doRunWorker() (exitCode ExitCode) {
 	log.Printf("Detected %s platform", runtime.GOOS)
 	// number of tasks resolved since worker first ran
 	// stored in a json file, since we may reboot between tasks etc
@@ -533,22 +527,14 @@ func doRunWorker() (exitCode ExitCode) {
 		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
 	}
-
+	creds := &tcclient.Credentials{
+		ClientID:    config.ClientID,
+		AccessToken: config.AccessToken,
+		Certificate: config.Certificate,
+	}
 	// Queue is the object we will use for accessing queue api
-	Queue = queue.New(
-		&tcclient.Credentials{
-			ClientID:    config.ClientID,
-			AccessToken: config.AccessToken,
-			Certificate: config.Certificate,
-		},
-	)
-	Provisioner = awsprovisioner.New(
-		&tcclient.Credentials{
-			ClientID:    config.ClientID,
-			AccessToken: config.AccessToken,
-			Certificate: config.Certificate,
-		},
-	)
+	Queue = queue.New(creds)
+	Provisioner = awsprovisioner.New(creds)
 
 	err = initialiseFeatures()
 	if err != nil {

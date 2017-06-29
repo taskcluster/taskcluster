@@ -121,8 +121,7 @@ func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
 	baseName := filepath.Base(rawContentFile)
 	tmpFile, err := ioutil.TempFile("", baseName)
 	if err != nil {
-		incidentID := monitor.ReportError(err, "Could not create temporary file")
-		log.Fatalf("%v, incident ID: %s", err, incidentID)
+		panic(err)
 	}
 	defer tmpFile.Close()
 	var target io.Writer = tmpFile

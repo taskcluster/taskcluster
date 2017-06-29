@@ -123,6 +123,7 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Routes:                  %#v\n", task.Definition.Routes)
 	response += fmt.Sprintf("SchedulerId:             %v\n", task.Definition.SchedulerID)
 	response += fmt.Sprintf("Scopes:                  %#v\n", task.Definition.Scopes)
+	response += fmt.Sprintf("Tags:                    %s\n", task.Definition.Tags)
 	response += fmt.Sprintf("Task Group Id:           %v\n", task.Definition.TaskGroupID)
 	response += fmt.Sprintf("Worker Type:             %v\n", task.Definition.WorkerType)
 	response += fmt.Sprintf("==========================================\n")
