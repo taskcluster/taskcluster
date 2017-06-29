@@ -57,19 +57,19 @@ func ExampleIndent_nested() {
 }
 
 func ExampleUnderline_basic() {
-	fmt.Println(text.Underline("TaskCluster Client") + "Please see https://docs.taskcluster.net/manual/tools/clients")
+	fmt.Println(text.Underline("Taskcluster Client") + "Please see https://docs.taskcluster.net/manual/tools/clients")
 
 	// Output:
-	// TaskCluster Client
+	// Taskcluster Client
 	// ==================
 	// Please see https://docs.taskcluster.net/manual/tools/clients
 }
 
 func ExampleUnderline_multiline() {
-	fmt.Println(text.Underline("TaskCluster Client\nGo (golang) Implementation\n13 Jan 2016") + "Please see http://taskcluster.github.io/taskcluster-client-go")
+	fmt.Println(text.Underline("Taskcluster Client\nGo (golang) Implementation\n13 Jan 2016") + "Please see http://taskcluster.github.io/taskcluster-client-go")
 
 	// Output:
-	// TaskCluster Client
+	// Taskcluster Client
 	// Go (golang) Implementation
 	// 13 Jan 2016
 	// ==========================
