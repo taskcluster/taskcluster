@@ -40,9 +40,9 @@ func genLogger(fname string) *log.Logger {
 }
 
 var (
-	workerIDjwt       = tokenGenerator("workerID", []byte("test-secret"))
-	workerIDBackupjwt = tokenGenerator("workerID", []byte("another-secret"))
-	wsWorkerjwt       = tokenGenerator("wsWorker", []byte("test-secret"))
+	workeridjwt       = tokenGenerator("workerid", []byte("test-secret"))
+	workeridBackupjwt = tokenGenerator("workerid", []byte("another-secret"))
+	wsworkerjwt       = tokenGenerator("wsworker", []byte("test-secret"))
 )
 
 func tokenGenerator(id string, secret []byte) string {
@@ -82,12 +82,12 @@ func TestProxyRegister(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 
 	// create address to dial
-	workerID := "workerID"
-	dialAddr := wsURL + "/register/" + workerID
+	workerid := "workerid"
+	dialAddr := wsURL + "/register/" + workerid
 
 	// set auth header dial connection to proxy
 	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workerIDjwt)
+	header.Set("Authorization ", "Bearer "+workeridjwt)
 	conn1, _, err := websocket.DefaultDialer.Dial(dialAddr, header)
 	if err != nil {
 		t.Fatal(err)
@@ -126,8 +126,8 @@ func TestProxyRequest(t *testing.T) {
 	// makeshift client
 
 	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workerIDjwt)
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerID", header)
+	header.Set("Authorization ", "Bearer "+workeridjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerid", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,7 +158,7 @@ func TestProxyRequest(t *testing.T) {
 	servURL := server.URL
 
 	// GET request
-	resp, err := viewer.Get(servURL + "/workerID/")
+	resp, err := viewer.Get(servURL + "/workerid/")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestProxyRequest(t *testing.T) {
 	}
 
 	// POST request
-	resp, err = viewer.Post(servURL+"/workerID/", "application/text", bytes.NewBuffer([]byte("message")))
+	resp, err = viewer.Post(servURL+"/workerid/", "application/text", bytes.NewBuffer([]byte("message")))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,8 +236,8 @@ func TestProxyWebsocket(t *testing.T) {
 
 	// register worker and serve http
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+wsWorkerjwt)
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", header)
+	header.Set("Authorization", "Bearer "+wsworkerjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsworker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,7 +251,7 @@ func TestProxyWebsocket(t *testing.T) {
 	}()
 
 	// create websocket connection
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -344,8 +344,8 @@ func TestWebsocketProxyControl(t *testing.T) {
 
 	// register worker and serve http
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+wsWorkerjwt)
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", header)
+	header.Set("Authorization", "Bearer "+wsworkerjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsworker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -359,7 +359,7 @@ func TestWebsocketProxyControl(t *testing.T) {
 	}()
 
 	// create websocket connection
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -457,8 +457,8 @@ func TestWebSocketClosure(t *testing.T) {
 
 	// register worker and serve http
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+wsWorkerjwt)
-	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker/", header)
+	header.Set("Authorization", "Bearer "+wsworkerjwt)
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsworker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -472,7 +472,7 @@ func TestWebSocketClosure(t *testing.T) {
 	}()
 
 	// create websocket connection
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsWorker/", header)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -520,8 +520,8 @@ func TestProxySessionRemoved(t *testing.T) {
 
 	wsURL := util.MakeWsURL(server.URL)
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+wsWorkerjwt)
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+	header.Set("Authorization", "Bearer "+wsworkerjwt)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL+"/register/wsworker", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -556,15 +556,15 @@ func TestProxyAuth(t *testing.T) {
 
 	wsURL := util.MakeWsURL(server.URL)
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+wsWorkerjwt)
+	header.Set("Authorization", "Bearer "+wsworkerjwt)
 
-	conn, res, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerID", header)
+	conn, res, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerid", header)
 	if res == nil || res.StatusCode != 400 {
 		_ = conn.Close()
 		t.Fatalf("connection should fail")
 	}
 
-	conn, res, err = websocket.DefaultDialer.Dial(wsURL+"/register/wsWorker", header)
+	conn, res, err = websocket.DefaultDialer.Dial(wsURL+"/register/wsworker", header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -588,7 +588,7 @@ func TestProxySecrets(t *testing.T) {
 	defer server.Close()
 	wsURL := util.MakeWsURL(server.URL)
 
-	// try connecting wsWorker with secret A
+	// try connecting wsworker with secret A
 	header := make(http.Header)
 	jwt := tokenGenerator("test-worker", []byte("test-secret"))
 	header.Set("Authorization", "Bearer "+jwt)
@@ -779,11 +779,12 @@ func TestDomainResolve(t *testing.T) {
 		t.Skip("dns not set")
 	}
 	proxyConfig := Config{
-		Upgrader:   upgrader,
-		JWTSecretA: []byte("test-secret"),
-		JWTSecretB: []byte("another-secret"),
-		Domain:     "tcproxy.dev",
-		Logger:     genLogger("domain-resolve-proxy-test"),
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte("test-secret"),
+		JWTSecretB:   []byte("another-secret"),
+		Domain:       "tcproxy.dev",
+		Logger:       genLogger("domain-resolve-proxy-test"),
+		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -794,12 +795,9 @@ func TestDomainResolve(t *testing.T) {
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
-	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+tokenGenerator("workerID", []byte("test-secret")))
-
 	// make connection
 	clientConfig := whclient.Config{
-		ID:        "workerID",
+		ID:        "workerid",
 		ProxyAddr: "ws://tcproxy.dev:" + getPort(server.URL),
 		Authorize: func(id string) (string, error) {
 			return tokenGenerator(id, []byte("test-secret")), nil
@@ -840,7 +838,7 @@ func TestDomainResolve(t *testing.T) {
 		_ = srv.Serve(client)
 	}()
 
-	req, err := http.NewRequest(http.MethodGet, "http://workerID.tcproxy.dev:"+getPort(server.URL)+"/some/path", nil)
+	req, err := http.NewRequest(http.MethodGet, "http://workerid.tcproxy.dev:"+getPort(server.URL)+"/some/path", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -874,6 +872,46 @@ func TestDomainResolve(t *testing.T) {
 	}
 }
 
+func TestProxySendsURL(t *testing.T) {
+	if os.Getenv("TEST_DNS_SET") != "yes" {
+		t.Skip("dns not set")
+	}
+	proxyConfig := Config{
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte("test-secret"),
+		JWTSecretB:   []byte("another-secret"),
+		Domain:       "tcproxy.dev",
+		Logger:       genLogger("domain-resolve-proxy-test"),
+		DomainHosted: true,
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// attempt hosting on port 80
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	// make connection
+	clientConfig := whclient.Config{
+		ID:        "workerid",
+		ProxyAddr: "ws://tcproxy.dev:" + getPort(server.URL),
+		Authorize: func(id string) (string, error) {
+			return tokenGenerator(id, []byte("test-secret")), nil
+		},
+		Logger: genLogger("domain-resolve-client-test"),
+	}
+
+	client, err := whclient.New(clientConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if client.URL() != "http://workerid.tcproxy.dev" {
+		t.Fatal("bad url")
+	}
+}
+
 func TestProxyTLS(t *testing.T) {
 	if os.Getenv("TEST_DNS_SET") != "yes" {
 		t.Skip("dns not set")
@@ -884,6 +922,7 @@ func TestProxyTLS(t *testing.T) {
 		JWTSecretB: []byte("another-secret"),
 		Domain:     "tcproxy.dev",
 		Logger:     genLogger("domain-resolve-proxy-test"),
+		TLS:        true,
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -895,11 +934,11 @@ func TestProxyTLS(t *testing.T) {
 	defer server.Close()
 
 	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+tokenGenerator("workerID", []byte("test-secret")))
+	header.Set("Authorization", "Bearer "+tokenGenerator("workerid", []byte("test-secret")))
 
 	// make connection
 	clientConfig := whclient.Config{
-		ID:        "workerID",
+		ID:        "workerid",
 		ProxyAddr: "wss://tcproxy.dev:" + getPort(server.URL),
 		Authorize: func(id string) (string, error) {
 			return tokenGenerator(id, []byte("test-secret")), nil
@@ -908,11 +947,15 @@ func TestProxyTLS(t *testing.T) {
 		TLSConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	_, err = whclient.New(clientConfig)
+	client, err := whclient.New(clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if client.URL() != "https://tcproxy.dev/workerid" {
+		t.Fatal("bad url")
 	}
 }
