@@ -228,6 +228,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 		url = urlScheme + id + "." + p.domain
 	}
 	header.Set("x-webhooktunnel-client-url", url)
+	p.logf(id, r.RemoteAddr, "sending url= %s", url)
 	conn, err := p.upgrader.Upgrade(w, r, header)
 	if err != nil {
 		p.logger.Print(err)
