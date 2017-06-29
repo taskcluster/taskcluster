@@ -10,7 +10,7 @@ import (
 )
 
 func ReportCrashToSentry(r interface{}) {
-	if config.Project == "" {
+	if config.SentryProject == "" {
 		log.Println("No sentry project defined, not reporting to sentry")
 		return
 	}
@@ -21,7 +21,7 @@ func ReportCrashToSentry(r interface{}) {
 			Certificate: config.Certificate,
 		},
 	)
-	res, err := Auth.SentryDSN(config.Project)
+	res, err := Auth.SentryDSN(config.SentryProject)
 	if err != nil {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)
 		return

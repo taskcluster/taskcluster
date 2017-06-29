@@ -32,7 +32,7 @@ type (
 		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
 		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
-		Project                        string                 `json:"project"`
+		SentryProject                  string                 `json:"sentryProject"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerID                  string                 `json:"provisionerId"`
 		PublicIP                       net.IP                 `json:"publicIP"`

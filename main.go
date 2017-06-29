@@ -195,10 +195,10 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
-          project                           The project name used in https://sentry.io for
+          sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
-                                            auth:sentry:<project>. If the taskcluster
+                                            auth:sentry:<sentryProject>. If the taskcluster
                                             client (see clientId property above) does not
                                             posses this scope, no crash reports will be sent.
                                             Similarly, if this property is not specified or
@@ -394,7 +394,7 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 		LiveLogPUTPort:                 60022,
 		LiveLogGETPort:                 60023,
 		NumberOfTasksToRun:             0,
-		Project:                        "",
+		SentryProject:                  "",
 		ProvisionerID:                  "test-provisioner",
 		RefreshUrlsPrematurelySecs:     310,
 		RequiredDiskSpaceMegabytes:     10240,
