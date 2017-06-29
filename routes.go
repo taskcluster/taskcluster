@@ -36,7 +36,7 @@ func (self *Routes) setHeaders(res http.ResponseWriter) {
 	if err != nil {
 		res.WriteHeader(500)
 		// Note, self.Credentials does not expose secrets when rendered as a string
-		fmt.Fprintf(res, "TaskCluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
+		fmt.Fprintf(res, "Taskcluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
 		return
 	}
 	if cert == nil {

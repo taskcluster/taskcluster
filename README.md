@@ -5,8 +5,8 @@
 [![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-proxy/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-proxy?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-taskcluster-proxy is the proxy server which is used by TaskCluster workers to
-enable individual tasks to talk to various TaskCluster services (auth, queue,
+taskcluster-proxy is the proxy server which is used by Taskcluster workers to
+enable individual tasks to talk to various Taskcluster services (auth, queue,
 scheduler, ...) without hardcoding credentials into the containers themselves.
 
 When used by docker-worker (main use case) the taskcluster-proxy runs in a
