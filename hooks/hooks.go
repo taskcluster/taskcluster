@@ -40,7 +40,7 @@
 //  	// handle error...
 //  }
 //
-// TaskCluster Schema
+// Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
