@@ -16,7 +16,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
-// Credentials represents the set of credentials required to access protected TaskCluster HTTP APIs.
+// Credentials represents the set of credentials required to access protected Taskcluster HTTP APIs.
 type Credentials struct {
 	ClientID    string `json:"clientId"`
 	AccessToken string `json:"accessToken"`

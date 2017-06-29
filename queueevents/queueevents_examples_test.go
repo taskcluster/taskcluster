@@ -8,7 +8,7 @@ import (
 	"github.com/taskcluster/pulse-go/pulse"
 )
 
-func Example_taskClusterSniffer() {
+func Example_taskclusterSniffer() {
 	// Passing all empty strings:
 	// empty user => use PULSE_USERNAME env var
 	// empty password => use PULSE_PASSWORD env var

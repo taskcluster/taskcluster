@@ -19,7 +19,7 @@ var (
 	usage   = `
 generatemodel
 generatemodel takes input from a json file describing a set of taskcluster APIs, and generates
-go source files for inclusion in the (Go) TaskCluster Client API library. It is referenced by
+go source files for inclusion in the (Go) Taskcluster Client API library. It is referenced by
 go generate commands in the model package. See go generate --help and ../build.sh to see how
 this is used by the build process for this taskcluster-client-go go project.
 

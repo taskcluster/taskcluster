@@ -14,7 +14,7 @@ import (
 //
 //////////////////////////////////////////////////////////////////
 
-// API represents the HTTP interface of a TaskCluster service
+// API represents the HTTP interface of a Taskcluster service
 type API struct {
 	BaseURL     string      `json:"baseUrl"`
 	Description string      `json:"description"`
@@ -94,7 +94,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//  	// handle error...\n"
 	comment += "//  }\n"
 	comment += "//\n"
-	comment += "// TaskCluster Schema\n"
+	comment += "// Taskcluster Schema\n"
 	comment += "//\n"
 	comment += "// The source code of this go package was auto-generated from the API definition at\n"
 	comment += "// " + api.apiDef.URL + " together with the input and output schemas it references, downloaded on\n"
@@ -195,7 +195,7 @@ func (api *API) setAPIDefinition(apiDef *APIDefinition) {
 }
 
 // APIEntry represents an individual HTTP API call
-// of a TaskCluster service
+// of a Taskcluster service
 type APIEntry struct {
 	Args        []string   `json:"args"`
 	Description string     `json:"description"`

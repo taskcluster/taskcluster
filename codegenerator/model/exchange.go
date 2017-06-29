@@ -12,7 +12,7 @@ import (
 //
 ////////////////////////////////////////////////////////////////////////
 
-// Exchange represents the set of AMQP interfaces for a TaskCluster service
+// Exchange represents the set of AMQP interfaces for a Taskcluster service
 type Exchange struct {
 	Description    string          `json:"description"`
 	Entries        []ExchangeEntry `json:"entries"`
@@ -52,7 +52,7 @@ func (exchange *Exchange) setAPIDefinition(apiDef *APIDefinition) {
 	exchange.apiDef = apiDef
 }
 
-// ExchangeEntry represents a single AMQP interface of a TaskCluster service
+// ExchangeEntry represents a single AMQP interface of a Taskcluster service
 type ExchangeEntry struct {
 	Description string         `json:"description"`
 	Exchange    string         `json:"exchange"`
