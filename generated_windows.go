@@ -32,7 +32,7 @@ type (
 	}
 
 	// This schema defines the structure of the `payload` property referred to in a
-	// TaskCluster Task definition.
+	// Taskcluster Task definition.
 	GenericWorkerPayload struct {
 
 		// Artifacts to be published. For example:
@@ -348,7 +348,7 @@ func taskPayloadSchema() string {
       "type": "object"
     }
   },
-  "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskCluster Task definition.",
+  "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskcluster Task definition.",
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {

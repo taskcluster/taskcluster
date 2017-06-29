@@ -2,7 +2,7 @@
 version: 0
 # Top level metadata is always required
 metadata:
-  name: "TaskCluster Generic Worker Tests"
+  name: "Taskcluster Generic Worker Tests"
   description: "These tests should ensure that any new commits against generic worker codebase are tested across all supported worker types in gekco."
   owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
   source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here

@@ -628,7 +628,7 @@ func RunWorker() (exitCode ExitCode) {
 	}
 }
 
-// FindAndRunTask queries the TaskCluster Queue to find a task to
+// FindAndRunTask queries the Taskcluster Queue to find a task to
 // run. If it finds one, it handles all the bookkeeping, as well as running the
 // task. Returns true if it successfully claimed a task (regardless of whether
 // the task ran successfully) otherwise false.

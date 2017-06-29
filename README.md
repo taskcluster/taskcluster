@@ -331,8 +331,8 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 Please see:
 
-* [TaskCluster Documentation](https://docs.taskcluster.net/)
+* [Taskcluster Documentation](https://docs.taskcluster.net/)
 * [Generic Worker presentations](https://docs.taskcluster.net/presentations) (focus on Windows platform)
-* [TaskCluster Web Tools](https://tools.taskcluster.net/)
+* [Taskcluster Web Tools](https://tools.taskcluster.net/)
 * [Generic Worker Open Bugs](https://bugzilla.mozilla.org/buglist.cgi?f1=product&resolution=---&o1=equals&o2=equals&query_format=advanced&f2=component&v1=Taskcluster&v2=Generic-Worker)
 

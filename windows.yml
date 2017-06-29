@@ -4,7 +4,7 @@ id: http://schemas.taskcluster.net/generic-worker/v1/payload.json#
 title: Generic worker payload
 description: |-
   This schema defines the structure of the `payload` property referred to in a
-  TaskCluster Task definition.
+  Taskcluster Task definition.
 type: object
 required:
 - command
