@@ -381,10 +381,6 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
-	if !claims.VerifyIssuedAt(now, true) {
-		p.logerrorf(id, "", "%v", err)
-		return ErrAuthFailed
-	}
 	if !claims.VerifyNotBefore(now, true) {
 		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
