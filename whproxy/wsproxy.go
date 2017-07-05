@@ -10,15 +10,15 @@ import (
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, workerID string) error {
+func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, tunnelID string) error {
 	// at this point, we are sure that r is a http websocket upgrade request
 	// connClosure returns the wsmux stream to Dial
-	p.logf(workerID, r.RemoteAddr, "creating WS bridge: path=%s", r.URL.Path)
+	p.logf(tunnelID, r.RemoteAddr, "creating WS bridge: path=%s", r.URL.Path)
 	stream, id, err := session.Open()
-	p.logf(workerID, r.RemoteAddr, "opened new stream for ws: path=%s, streamID=%d", r.URL.Path, id)
+	p.logf(tunnelID, r.RemoteAddr, "opened new stream for ws: path=%s, streamID=%d", r.URL.Path, id)
 
 	if err != nil {
-		p.logerrorf(workerID, r.RemoteAddr, "could not create stream: path=%s", r.URL.Path)
+		p.logerrorf(tunnelID, r.RemoteAddr, "could not create stream: path=%s", r.URL.Path)
 		return err
 	}
 	connClosure := func(network, addr string) (net.Conn, error) {
@@ -42,25 +42,25 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	}
 
 	uri := "ws://" + r.URL.Host + util.ReplaceID(r.URL.Path)
-	workerConn, _, err := dialer.Dial(uri, reqHeader)
+	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
-		p.logerrorf(workerID, r.RemoteAddr, "could not dial worker: path=%s", r.URL.Path)
+		p.logerrorf(tunnelID, r.RemoteAddr, "could not dial tunnel: path=%s", r.URL.Path)
 		return err
 	}
 	viewerConn, err := p.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		p.logerrorf(workerID, r.RemoteAddr, "could not upgrade client connection: path=%s", r.URL.Path)
-		// close worker connection
-		_ = workerConn.Close()
+		p.logerrorf(tunnelID, r.RemoteAddr, "could not upgrade client connection: path=%s", r.URL.Path)
+		// close tunnel connection
+		_ = tunnelConn.Close()
 		return err
 	}
 
 	defer func() {
 		session.RemoveStream(id)
-		p.logf(workerID, r.RemoteAddr, "WS: closed underlying wsmux stream: path= %s, streamID=%d", r.URL.Path, id)
+		p.logf(tunnelID, r.RemoteAddr, "WS: closed underlying wsmux stream: path= %s, streamID=%d", r.URL.Path, id)
 	}()
 	// bridge both websocket connections
-	return p.bridgeConn(workerConn, viewerConn)
+	return p.bridgeConn(tunnelConn, viewerConn)
 }
 
 func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {

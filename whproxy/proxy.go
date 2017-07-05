@@ -39,7 +39,7 @@ type Config struct {
 	DomainHosted bool
 }
 
-// proxy is used to send http and ws requests to workers.
+// proxy is used to send http and ws requests to a registered client.
 // New proxy can be created by using whproxy.New()
 type proxy struct {
 	m               sync.RWMutex
@@ -161,17 +161,17 @@ func (p *proxy) getWorkerSession(id string) (*wsmux.Session, bool) {
 	return s, ok
 }
 
-// removeWorker is an idempotent operation which deletes a worker from the proxy's
-// worker pool
-func (p *proxy) removeWorker(id string) {
+// removeTunnel is an idempotent operation which deletes a client session from the proxy's
+// pool
+func (p *proxy) removeTunnel(id string) {
 	p.m.Lock()
 	defer p.m.Unlock()
 	delete(p.pool, id)
 	p.logf(id, "", "session removed")
 }
 
-// register is used to connect a worker to the proxy so that it can start serving API endpoints.
-// The request must contain the worker ID in the url.
+// register is used to connect a client to the proxy so that it can start serving API endpoints.
+// The request must contain the tunnel ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
 
@@ -239,7 +239,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	conf := wsmux.Config{
 		StreamBufferSize: 4 * 1024,
 		CloseCallback: func() {
-			p.removeWorker(id)
+			p.removeTunnel(id)
 			if p.onSessionRemove != nil {
 				p.onSessionRemove(id)
 			}
@@ -248,20 +248,20 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)
-	p.logf(id, r.RemoteAddr, "added new session for worker")
+	p.logf(id, r.RemoteAddr, "added new tunnel")
 }
 
-// serveRequest serves worker endpoints to viewers
+// serveRequest serves tunnel endpoints to viewers
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
 	// log new request arrival
 	p.logf(id, r.RemoteAddr, "request: host=%s path=%s", r.Host, path)
 
 	session, ok := p.getWorkerSession(id)
 
-	// 404 if worker is not registered on this proxy
+	// 404 if tunnel is not registered on this proxy
 	if !ok {
 		// DHT code will be added here
-		p.logerrorf(id, r.RemoteAddr, "could not find requested worker")
+		p.logerrorf(id, r.RemoteAddr, "could not find requested tunnel")
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
@@ -275,7 +275,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 		return
 	}
 
-	// Open a stream to the worker session
+	// Open a stream to the tunnel session
 	r.URL.Path = path
 	p.logf(id, r.RemoteAddr, "attempting to open new stream")
 	reqStream, streamID, err := session.Open()
@@ -286,7 +286,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	}
 	p.logf(id, r.RemoteAddr, "opened new stream: ID=%d", streamID)
 
-	// rewrite path for worker and write request
+	// rewrite path for tunnel and write request
 	err = r.Write(reqStream)
 	if err != nil {
 		p.logerrorf(id, r.RemoteAddr, "could not write request: path=%s", path)
@@ -294,7 +294,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 		return
 	}
 
-	// read response from worker
+	// read response from tunnel
 	bufReader := bufio.NewReader(reqStream)
 	resp, err := http.ReadResponse(bufReader, r)
 	if err != nil {

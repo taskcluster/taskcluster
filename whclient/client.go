@@ -20,7 +20,7 @@ type Authorizer func(id string) (string, error)
 
 // Config is used for creating a new client.
 type Config struct {
-	// ID is the worker-id of the client. This field must match the "tid" claim of the
+	// ID is the tunnel-id of the client. This field must match the "tid" claim of the
 	// JWT.
 	ID string
 
