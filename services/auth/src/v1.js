@@ -764,6 +764,7 @@ require('./aws');
 require('./azure');
 require('./sentry');
 require('./statsum');
+require('./webhooktunnel');
 
 /** Get all client information */
 api.declare({

@@ -28,6 +28,7 @@
     "fast-azure-storage": "^1.0.0",
     "hawk": "2.3.0",
     "hoek": "^2.16.3",
+    "jsonwebtoken": "^7.4.1",
     "lodash": "^3.9.3",
     "promise": "^7.0.4",
     "pulse-publisher": "^1.1.4",

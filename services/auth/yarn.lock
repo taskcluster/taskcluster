@@ -139,7 +139,7 @@ aws-sdk-promise@^0.0.2:
   dependencies:
     promise "^6.1.0"
 
-aws-sdk@^2.2.0, aws-sdk@^2.2.28, aws-sdk@^2.2.38, aws-sdk@^2.4.9, aws-sdk@^2.5.3:
+aws-sdk@^2.2.0, aws-sdk@^2.4.9, aws-sdk@^2.5.3:
   version "2.23.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.23.0.tgz#f7739eec5d4f28cca2dedf788a36477153441fe7"
   dependencies:
@@ -153,7 +153,7 @@ aws-sdk@^2.2.0, aws-sdk@^2.2.28, aws-sdk@^2.2.38, aws-sdk@^2.4.9, aws-sdk@^2.5.3
     xml2js "0.4.15"
     xmlbuilder "2.6.2"
 
-aws-sdk@^2.30.0:
+aws-sdk@^2.2.28, aws-sdk@^2.2.38, aws-sdk@^2.30.0:
   version "2.33.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.33.0.tgz#67c101bbaad177af3e978f775800de135244814e"
   dependencies:
@@ -1516,6 +1516,10 @@ isarray@^1.0.0, isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
 
+isemail@1.x.x:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/isemail/-/isemail-1.2.0.tgz#be03df8cc3e29de4d2c5df6501263f1fa4595e9a"
+
 isstream@0.1.x, isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
@@ -1529,6 +1533,15 @@ jodid25519@^1.0.0:
   resolved "https://registry.yarnpkg.com/jodid25519/-/jodid25519-1.0.2.tgz#06d4912255093419477d425633606e0e90782967"
   dependencies:
     jsbn "~0.1.0"
+
+joi@^6.10.1:
+  version "6.10.1"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-6.10.1.tgz#4d50c318079122000fe5f16af1ff8e1917b77e06"
+  dependencies:
+    hoek "2.x.x"
+    isemail "1.x.x"
+    moment "2.x.x"
+    topo "1.x.x"
 
 js-tokens@^3.0.0:
   version "3.0.1"
@@ -1587,6 +1600,16 @@ jsonwebtoken@^5.7.0:
     ms "^0.7.1"
     xtend "^4.0.1"
 
+jsonwebtoken@^7.4.1:
+  version "7.4.1"
+  resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-7.4.1.tgz#7ca324f5215f8be039cd35a6c45bb8cb74a448fb"
+  dependencies:
+    joi "^6.10.1"
+    jws "^3.1.4"
+    lodash.once "^4.0.0"
+    ms "^2.0.0"
+    xtend "^4.0.1"
+
 jsprim@^1.2.2:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/jsprim/-/jsprim-1.3.1.tgz#2a7256f70412a29ee3670aaca625994c4dcff252"
@@ -1604,7 +1627,7 @@ jwa@^1.1.4:
     ecdsa-sig-formatter "1.0.9"
     safe-buffer "^5.0.1"
 
-jws@^3.0.0:
+jws@^3.0.0, jws@^3.1.4:
   version "3.1.4"
   resolved "https://registry.yarnpkg.com/jws/-/jws-3.1.4.tgz#f9e8b9338e8a847277d6444b1464f61880e050a2"
   dependencies:
@@ -1666,6 +1689,10 @@ lodash.keys@^3.0.0:
     lodash._getnative "^3.0.0"
     lodash.isarguments "^3.0.0"
     lodash.isarray "^3.0.0"
+
+lodash.once@^4.0.0:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
 
 lodash@2.4.1, lodash@~2.4.1:
   version "2.4.1"
@@ -1785,6 +1812,10 @@ mocha@^3.0.0:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
+moment@2.x.x:
+  version "2.18.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
+
 morgan-debug@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/morgan-debug/-/morgan-debug-1.1.0.tgz#7223d54bc9e07c88ff705272d36c84ea28b70321"
@@ -1814,6 +1845,10 @@ ms@0.7.1:
 ms@0.7.2, ms@^0.7.1:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.2.tgz#ae25cf2512b3885a1d95d7f037868d8431124765"
+
+ms@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
 
 mz@^2.4.0:
   version "2.6.0"
@@ -2806,6 +2841,12 @@ to-fast-properties@^1.0.1:
 topo-sort@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/topo-sort/-/topo-sort-1.0.0.tgz#0ca3371b0963a4c4f955b3033abb130146eaa489"
+
+topo@1.x.x:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/topo/-/topo-1.1.0.tgz#e9d751615d1bb87dc865db182fa1ca0a5ef536d5"
+  dependencies:
+    hoek "2.x.x"
 
 tough-cookie@>=0.12.0, tough-cookie@~2.3.0:
   version "2.3.2"
