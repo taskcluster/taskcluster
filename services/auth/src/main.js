@@ -182,6 +182,7 @@ let load = Loader({
           signatureValidator,
           sentryManager,
           statsum:            cfg.app.statsum,
+          webhooktunnel:      cfg.app.webhooktunnel,
           monitor,
         },
         validator,
