@@ -1,0 +1,26 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:                      "Webhooktunnel Token Response"
+description: |
+    Token for connecting a worker to webhooktunnel proxy
+type:                       object
+properties:
+  tunnelId:
+    type: string
+    title: Proxy Connection ID
+    description: |
+      id for proxy connection
+  token:
+    type: string
+    title: Auth Token
+    description: |
+      jwt token to be used as `Bearer <token>` when connecting to proxy. 
+  proxyUrl:
+    type: string
+    title: Proxy URL
+    description: |
+      websocket url at which proxy is hosted
+additionalProperties: false
+required:
+  - token
+  - tunnelId
+  - proxyUrl
