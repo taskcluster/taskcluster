@@ -651,6 +651,27 @@ type (
 
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
 	Var3 json.RawMessage
+
+	// Token for connecting a worker to webhooktunnel proxy
+	//
+	// See http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#
+	WebhooktunnelTokenResponse struct {
+
+		// websocket url at which proxy is hosted
+		//
+		// See http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#/properties/proxyUrl
+		ProxyURL string `json:"proxyUrl"`
+
+		// jwt token to be used as `Bearer <token>` when connecting to proxy.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#/properties/token
+		Token string `json:"token"`
+
+		// id for proxy connection
+		//
+		// See http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#/properties/tunnelId
+		TunnelID string `json:"tunnelId"`
+	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

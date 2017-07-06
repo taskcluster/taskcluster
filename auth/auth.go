@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 12 Jun 2017 at 10:22:00 UTC. The code was generated
+// Thu, 6 Jul 2017 at 18:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -575,6 +575,30 @@ func (myAuth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) 
 func (myAuth *Auth) StatsumToken_SignedURL(project string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
+}
+
+// Get temporary `token` and `id` for connecting to webhooktunnel
+// The token is valid for 96 hours, clients should refresh after expiration.
+//
+// Required scopes:
+//   * auth:webhooktunnel
+//
+// See https://docs.taskcluster.net/reference/platform/auth/api-docs#webhooktunnelToken
+func (myAuth *Auth) WebhooktunnelToken() (*WebhooktunnelTokenResponse, error) {
+	cd := tcclient.Client(*myAuth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/webhooktunnel", new(WebhooktunnelTokenResponse), nil)
+	return responseObject.(*WebhooktunnelTokenResponse), err
+}
+
+// Returns a signed URL for WebhooktunnelToken, valid for the specified duration.
+//
+// Required scopes:
+//   * auth:webhooktunnel
+//
+// See WebhooktunnelToken for more details.
+func (myAuth *Auth) WebhooktunnelToken_SignedURL(duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*myAuth)
+	return (&cd).SignedURL("/webhooktunnel", nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes
