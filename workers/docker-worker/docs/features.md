@@ -240,3 +240,5 @@ The Firefox crash reporter, for example, requires this functionality.
 The feature accomplishes its magic by creating a task-specific AppArmor profile that allows any process in the profile to trace any other process in the profile.
 While this should be safe, assuming that all processes in the task container are at an equal privilege level, it is a deviation from the Docker security model and thus should be used with caution.
 
+The task needs `docker-worker:feature:allowPtrace` scope to run with this feature enabled.
+
