@@ -22,6 +22,7 @@ tests_require = [
     'pgpy>=0.4.0,<0.5',
     'tox==2.3.2',
     'coverage==4.1b2',
+    'python-dateutil==2.6.0',
 ]
 
 # requests has a policy of not breaking apis between major versions

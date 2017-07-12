@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 import taskcluster.utils as subject
+import dateutil.parser
 import httmock
 import mock
 import os
@@ -259,6 +260,36 @@ class TestDecryptMessage(TestCase):
         self.assertDictEqual(expected, decrypted)
 
 
+class TestFromNow(TestCase):
+
+    examples = [
+        {"expr": '1 hour', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T17:27:20.974Z'},
+        {"expr": '3h', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T19:27:20.974Z'},
+        {"expr": '1 hours', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T17:27:20.974Z'},
+        {"expr": '-1 hour', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T15:27:20.974Z'},
+        {"expr": '1 m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:28:20.974Z'},
+        {"expr": '1m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:28:20.974Z'},
+        {"expr": '12 min', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:39:20.974Z'},
+        {"expr": '12min', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:39:20.974Z'},
+        {"expr": '11m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:38:20.974Z'},
+        {"expr": '11 m', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:38:20.974Z'},
+        {"expr": '1 day', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-20T16:27:20.974Z'},
+        {"expr": '2 days', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-21T16:27:20.974Z'},
+        {"expr": '1 second', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T16:27:21.974Z'},
+        {"expr": '1 week', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-26T16:27:20.974Z'},
+        {"expr": '1 month', "from": '2017-01-19T16:27:20.974Z', "result": '2017-02-18T16:27:20.974Z'},
+        {"expr": '30 mo', "from": '2017-01-19T16:27:20.974Z', "result": '2019-07-08T16:27:20.974Z'},
+        {"expr": '-30 mo', "from": '2017-01-19T16:27:20.974Z', "result": '2014-08-03T16:27:20.974Z'},
+        {"expr": '1 year', "from": '2017-01-19T16:27:20.974Z', "result": '2018-01-19T16:27:20.974Z'},
+    ]
+
+    def test_examples(self):
+        for example in self.examples:
+            from_ = dateutil.parser.parse(example['from'])
+            res = dateutil.parser.parse(example['result'])
+            self.assertEqual(subject.fromNow(example['expr'], from_), res)
+
+
 class TestScopeMatch(TestCase):
     def assertScopeMatch(self, assumed, requiredScopeSets, expected):
         try:
@@ -266,7 +297,7 @@ class TestScopeMatch(TestCase):
             self.assertEqual(result, expected)
         except:
             if expected != 'exception':
-                    raise
+                raise
 
     def test_single_exact_match_string_except_1(self):
         self.assertScopeMatch(["foo:bar"], "foo:bar", "exception")

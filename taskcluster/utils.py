@@ -95,17 +95,11 @@ def fromNow(offset, dateObj=None):
     minutes = 0
     seconds = 0
     if m.group('years'):
-        # The average year is 365.25 days
         years = int(m.group('years'))
         days += 365 * years
-        minutes += 15 * years
     if m.group('months'):
-        # The average month is 30.42 days
         months = int(m.group('months'))
         days += 30 * months
-        hours += 10 * months
-        minutes += 4 * months
-        seconds += 48 * months
     days += int(m.group('days') or 0)
     hours += int(m.group('hours') or 0)
     minutes += int(m.group('minutes') or 0)
