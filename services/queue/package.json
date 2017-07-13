@@ -57,7 +57,7 @@
   },
   "engine-strict": true,
   "engines": {
-    "node": "7.4.0",
-    "yarn": "0.21.3"
+    "node": "8.1.4",
+    "yarn": "0.27.5"
   }
 }
