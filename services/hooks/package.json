@@ -42,7 +42,7 @@
   },
   "engine-strict": true,
   "engines": {
-    "node": "7.4.0",
-    "yarn": "0.21.3"
+    "node": "7.10.1",
+    "yarn": "0.24.6"
   }
 }
