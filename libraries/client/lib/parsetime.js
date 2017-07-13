@@ -9,7 +9,7 @@ var timeExp = new RegExp([
   '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
   '(\\s*(\\d+)\\s*d(ays?)?)?',
   '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
-  '(\\s*(\\d+)\\s*min(utes?)?)?',
+  '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
   '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
   '\\s*$'
 ].join(''), 'i');
