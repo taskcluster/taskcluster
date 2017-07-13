@@ -108,6 +108,7 @@ suite('taskcluster utilities', function() {
     assert.equal(parseTime('45 minute').minutes, 45);
     assert.equal(parseTime('45 minutes').minutes, 45);
     assert.equal(parseTime('45minutes').minutes, 45);
+    assert.equal(parseTime('45m').minutes, 45);
     assert.equal(parseTime('45    min').minutes, 45);
     assert.equal(parseTime('  45    min   ').minutes, 45);
     assert.equal(parseTime('  45 minutes   ').minutes, 45);
@@ -148,65 +149,74 @@ suite('taskcluster utilities', function() {
     assert.equal(parseTime('-2d0h').hours, 0);
   });
 
-  test('fromNow()', function() {
-    var d1 = new Date();
-    var d2 = taskcluster.fromNow();
+  suite('fromNow .. current time', function() {
+    test('fromNow()', function() {
+      var d1 = new Date();
+      var d2 = taskcluster.fromNow();
 
-    // Allow for 10 ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+      // Allow for 10 ms margin
+      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+    });
+
+    test('fromNow(2 hours)', function() {
+      var d1 = new Date();
+      d1.setHours(d1.getHours() + 2)
+        var d2 = taskcluster.fromNow('2 hours');
+
+      // Allow for 10 ms margin
+      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+    });
+
+    test('fromNow(2 years 55 months)', function() {
+      var day = 24 * 60 * 60 * 1000;
+      var d1 = new Date(new Date().getTime() + 2 * 365 * day + 55 * 30 * day);
+      var d2 = taskcluster.fromNow('2 years 55mo');
+
+      // Allow for 10ms margin
+      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+    });
+
+    test('fromNow(240 months)', function() {
+      var d1 = new Date(new Date().getTime() + 240 * 30 * 24 * 60 * 60 * 1000);
+      var d2 = taskcluster.fromNow('240 months');
+
+      // Allow for 10ms margin
+      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+    });
+
+    test('fromNow(-240 months)', function() {
+      var d1 = new Date(new Date().getTime() - 240 * 30 * 24 * 60 * 60 * 1000);
+      var d2 = taskcluster.fromNow('-240 months');
+
+      // Allow for 10ms margin
+      assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+    });
   });
 
-  test('fromNow(2 hours)', function() {
-    var d1 = new Date();
-    d1.setHours(d1.getHours() + 2)
-    var d2 = taskcluster.fromNow('2 hours');
-
-    // Allow for 10 ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-  });
-
-  test('fromNow(2 years 15 months)', function() {
-    var d1 = new Date();
-    d1.setMonth(d1.getMonth() + 12 * 2 + 15)
-    var d2 = taskcluster.fromNow('2 years 15mo');
-
-    // Allow for 10ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-  });
-
-  test('fromNow(2 years 55 months)', function() {
-    var d1 = new Date();
-    d1.setMonth(d1.getMonth() + 12 * 2 + 55)
-    var d2 = taskcluster.fromNow('2 years 55mo');
-
-    // Allow for 10ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-  });
-
-  test('fromNow(240 months)', function() {
-    var d1 = new Date();
-    d1.setFullYear(d1.getFullYear() + 20)
-    var d2 = taskcluster.fromNow('240 months');
-
-    // Allow for 10ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-  });
-
-  test('fromNow(-240 months)', function() {
-    var d1 = new Date();
-    d1.setFullYear(d1.getFullYear() - 20)
-    var d2 = taskcluster.fromNow('-240 months');
-
-    // Allow for 10ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
-  });
-
-  test('fromNow(20 years)', function() {
-    var d1 = new Date();
-    d1.setFullYear(d1.getFullYear() + 20)
-    var d2 = taskcluster.fromNow('20 years');
-
-    // Allow for 10ms margin
-    assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
+  suite('fromNow .. from', function() {
+    [
+    {expr: '1 hour', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T17:27:20.974Z'},
+    {expr: '3h', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T19:27:20.974Z'},
+    {expr: '1 hours', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T17:27:20.974Z'},
+    {expr: '-1 hour', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T15:27:20.974Z'},
+    {expr: '1 m', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:28:20.974Z'},
+    {expr: '1m', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:28:20.974Z'},
+    {expr: '12 min', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:39:20.974Z'},
+    {expr: '12min', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:39:20.974Z'},
+    {expr: '11m', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:38:20.974Z'},
+    {expr: '11 m', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:38:20.974Z'},
+    {expr: '1 day', from: '2017-01-19T16:27:20.974Z', result: '2017-01-20T16:27:20.974Z'},
+    {expr: '2 days', from: '2017-01-19T16:27:20.974Z', result: '2017-01-21T16:27:20.974Z'},
+    {expr: '1 second', from: '2017-01-19T16:27:20.974Z', result: '2017-01-19T16:27:21.974Z'},
+    {expr: '1 week', from: '2017-01-19T16:27:20.974Z', result: '2017-01-26T16:27:20.974Z'},
+    {expr: '1 month', from: '2017-01-19T16:27:20.974Z', result: '2017-02-18T16:27:20.974Z'},
+    {expr: '30 mo', from: '2017-01-19T16:27:20.974Z', result: '2019-07-08T16:27:20.974Z'},
+    {expr: '-30 mo', from: '2017-01-19T16:27:20.974Z', result: '2014-08-03T16:27:20.974Z'},
+    {expr: '1 year', from: '2017-01-19T16:27:20.974Z', result: '2018-01-19T16:27:20.974Z'},
+    ].forEach(({expr, from, result}) => {
+      test(expr, function() {
+        assert.equal(taskcluster.fromNow(expr, new Date(from)).toJSON(), result);
+      });
+    });
   });
 });
