@@ -45,7 +45,7 @@
   },
   "engine-strict": true,
   "engines": {
-    "node": "6.7.0",
+    "node": "6.11.1",
     "yarn": "0.21.3"
   },
   "devDependencies": {
