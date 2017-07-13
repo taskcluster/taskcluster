@@ -17,20 +17,20 @@ var fromNow = function(offset, reference) {
     reference = new Date();
   }
   offset = parseTime(offset || '');
+
+  offset.days += 30 * offset.months;
+  offset.days += 365 * offset.years;
+
   var retval = new Date(
     reference.getTime()
+//    + offset.years * 365 * 24 * 60 * 60 * 1000
+ //   + offset.month  * 30 * 24 * 60 * 60 * 1000
     + offset.weeks   * 7 * 24 * 60 * 60 * 1000
     + offset.days        * 24 * 60 * 60 * 1000
     + offset.hours            * 60 * 60 * 1000
     + offset.minutes               * 60 * 1000
     + offset.seconds                    * 1000
   );
-  if (offset.months !== 0) {
-    retval.setMonth(retval.getMonth() + offset.months);
-  }
-  if (offset.years !== 0) {
-    retval.setFullYear(retval.getFullYear() + offset.years);
-  }
   return retval;
 };
 
