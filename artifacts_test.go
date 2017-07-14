@@ -380,6 +380,7 @@ func TestUpload(t *testing.T) {
 				Path:    "SampleArtifacts/_/X.txt",
 				Expires: expires,
 				Type:    "file",
+				Name:    "public/build/X.txt",
 			},
 			{
 				Path:    "SampleArtifacts/b/c/d.jpg",
@@ -447,7 +448,7 @@ func TestUpload(t *testing.T) {
 			contentEncoding: "gzip",
 			expires:         td.Expires,
 		},
-		"SampleArtifacts/_/X.txt": {
+		"public/build/X.txt": {
 			extracts: []string{
 				"test artifact",
 			},
@@ -616,6 +617,25 @@ func TestUpload(t *testing.T) {
 	if cotCert.Environment.Region != "outer-space" {
 		t.Fatalf("Expected region to be \"outer-space\" but was %v", cotCert.Environment.Region)
 	}
+
+	// Check artifact list in CoT includes the names (not paths) of all
+	// expected artifacts...
+
+	// blacklist is for artifacts that by design should not be included in
+	// chain of trust artifact list
+	blacklist := map[string]bool{
+		"public/logs/live.log":         true,
+		"public/logs/live_backing.log": true,
+		"public/chainOfTrust.json.asc": true,
+	}
+	for artifactName := range expectedArtifacts {
+		if _, inBlacklist := blacklist[artifactName]; !inBlacklist {
+			if _, inCotManifest := cotCert.Artifacts[artifactName]; !inCotManifest {
+				t.Fatalf("Artifact not listed in chain of trust manifest: %v", artifactName)
+			}
+		}
+	}
+
 	status, err := myQueue.Status(taskID)
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")

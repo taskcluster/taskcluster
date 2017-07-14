@@ -98,7 +98,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 			if err != nil {
 				panic(err)
 			}
-			artifactHashes[a.CanonicalPath] = ArtifactHash{
+			artifactHashes[a.Name] = ArtifactHash{
 				SHA256: hash,
 			}
 		}
