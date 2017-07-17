@@ -413,24 +413,26 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	)
 	if err != nil {
 		switch t := err.(type) {
-		case *os.PathError:
-			// artifact does not exist or is not readable...
-			task.Logf("Artifact could not be read: %v", err)
-			return Failure(err)
-		case httpbackoff.BadHttpResponseCode:
-			if t.HttpResponseCode/100 == 5 {
-				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", t.HttpResponseCode, artifact, string(payload)))
-			} else {
-				// if not a 5xx error, then either task cancelled, or a problem with the request == worker bug
-				task.StatusManager.UpdateStatus()
-				status := task.StatusManager.LastKnownStatus()
-				if status == deadlineExceeded || status == cancelled {
-					return nil
+		case *tcclient.APICallException:
+			log.Print(t.CallSummary.String())
+			switch rootCause := t.RootCause.(type) {
+			case httpbackoff.BadHttpResponseCode:
+				if rootCause.HttpResponseCode/100 == 5 {
+					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
+				} else {
+					// if not a 5xx error, then either task cancelled, or a problem with the request == worker bug
+					task.StatusManager.UpdateStatus()
+					status := task.StatusManager.LastKnownStatus()
+					if status == deadlineExceeded || status == cancelled {
+						return nil
+					}
+					panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
 				}
-				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", t.HttpResponseCode, artifact, string(payload)))
+			default:
+				panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", rootCause))
 			}
 		default:
-			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when uploading artifact: %#v", t))
+			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
 		}
 	}
 	// unmarshal response into object
