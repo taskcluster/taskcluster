@@ -1,4 +1,4 @@
-Generated: 1499365444
+Generated: 1500323083
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9492,7 +9492,7 @@ Entry 6     =
     Entry Exchange    = 'task-exception'
     Entry Name        = 'taskException'
     Entry Title       = 'Task Exception Messages'
-    Entry Description = 'Whenever TaskCluster fails to run a message is posted to this exchange.
+    Entry Description = 'Whenever Taskcluster fails to run a message is posted to this exchange.
 This happens if the task isn't completed before its `deadlìne`,
 all retries failed (i.e. workers stopped responding), the task was
 canceled by another entity, or the task carried a malformed payload.
@@ -9776,7 +9776,7 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-defined-m
 http://schemas.taskcluster.net/queue/v1/task-exception-message.json#
 ====================================================================
 Additional Properties  = 'false'
-Description            = 'Message reporting that TaskCluster have failed to run a task.
+Description            = 'Message reporting that Taskcluster have failed to run a task.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'
 Properties
