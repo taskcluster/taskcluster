@@ -1,7 +1,7 @@
 $schema:  http://json-schema.org/draft-04/schema#
 title:        "Task Exception Message"
 description: |
-  Message reporting that TaskCluster have failed to run a task.
+  Message reporting that Taskcluster have failed to run a task.
 type:         object
 properties:
   version:    {$const: message-version}
