@@ -8,9 +8,9 @@
 // This package was generated from the schema defined at
 // http://references.taskcluster.net/auth/v1/api.json
 
-// Authentication related API end-points for TaskCluster and related
+// Authentication related API end-points for Taskcluster and related
 // services. These API end-points are of interest if you wish to:
-//   * Authorize a request signed with TaskCluster credentials,
+//   * Authorize a request signed with Taskcluster credentials,
 //   * Manage clients and roles,
 //   * Inspect or audit clients and roles,
 //   * Gain access to various services guarded by this API.
@@ -24,9 +24,9 @@
 // The authentication service manages _clients_, at a high-level each client
 // consists of a `clientId`, an `accessToken`, scopes, and some metadata.
 // The `clientId` and `accessToken` can be used for authentication when
-// calling TaskCluster APIs.
+// calling Taskcluster APIs.
 //
-// The client's scopes control the client's access to TaskCluster resources.
+// The client's scopes control the client's access to Taskcluster resources.
 // The scopes are *expanded* by substituting roles, as defined below.
 //
 // ### Roles
@@ -45,8 +45,8 @@
 // The authentication service also has API end-points for delegating access
 // to some guarded service such as AWS S3, or Azure Table Storage.
 // Generally, we add API end-points to this server when we wish to use
-// TaskCluster credentials to grant access to a third-party service used
-// by many TaskCluster components.
+// Taskcluster credentials to grant access to a third-party service used
+// by many Taskcluster components.
 //
 // See: https://docs.taskcluster.net/reference/platform/auth/api-docs
 //
@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 17 Jul 2017 at 20:24:00 UTC. The code was generated
+// Mon, 17 Jul 2017 at 21:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -326,9 +326,9 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // not contain `.`, as recommended by Amazon.
 //
 // This method can only allow access to a whitelisted set of buckets.  To add
-// a bucket to that whitelist, contact the TaskCluster team, who will add it to
+// a bucket to that whitelist, contact the Taskcluster team, who will add it to
 // the appropriate IAM policy.  If the bucket is in a different AWS account, you
-// will also need to add a bucket policy allowing access from the TaskCluster
+// will also need to add a bucket policy allowing access from the Taskcluster
 // account.  That policy should look like this:
 //
 // ```js
@@ -604,7 +604,7 @@ func (myAuth *Auth) WebhooktunnelToken_SignedURL(duration time.Duration) (*url.U
 // Validate the request signature given on input and return list of scopes
 // that the authenticating client has.
 //
-// This method is used by other services that wish rely on TaskCluster
+// This method is used by other services that wish rely on Taskcluster
 // credentials for authentication. This way we can use Hawk without having
 // the secret credentials leave this service.
 //
@@ -615,7 +615,7 @@ func (myAuth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest
 	return responseObject.(*HawkSignatureAuthenticationResponse), err
 }
 
-// Utility method to test client implementations of TaskCluster
+// Utility method to test client implementations of Taskcluster
 // authentication.
 //
 // Rather than using real credentials, this endpoint accepts requests with
