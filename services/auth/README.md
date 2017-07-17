@@ -1,4 +1,4 @@
-TaskCluster - Authentication Server
+Taskcluster - Authentication Server
 -----------------------------------
 
 <img src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
@@ -25,7 +25,7 @@ Service Owner: jonasfj@mozilla.com
 ## Post-Deployment Verification
 
 If you deploy a copy of this application that fails to start, all of
-TaskCluster will come to a screeching halt immediately.  Don't do that.
+Taskcluster will come to a screeching halt immediately.  Don't do that.
 
 This app auto-deploys from Github to the staging environment, which uses a
 different Azure backend.
