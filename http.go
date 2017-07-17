@@ -161,6 +161,15 @@ func (c *Credentials) SignRequest(req *http.Request) (err error) {
 	return nil
 }
 
+type APICallException struct {
+	CallSummary *CallSummary
+	RootCause   error
+}
+
+func (err *APICallException) Error() string {
+	return err.RootCause.Error()
+}
+
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
@@ -170,13 +179,26 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
 		rawPayload, err = json.Marshal(payload)
 		if err != nil {
-			return result, &CallSummary{HTTPRequestObject: payload}, err
+			cs := &CallSummary{
+				HTTPRequestObject: payload,
+			}
+			return result,
+				cs,
+				&APICallException{
+					CallSummary: cs,
+					RootCause:   err,
+				}
 		}
 	}
 	callSummary, err := client.Request(rawPayload, method, route, query)
 	callSummary.HTTPRequestObject = payload
 	if err != nil {
-		return result, callSummary, err
+		return result,
+			callSummary,
+			&APICallException{
+				CallSummary: callSummary,
+				RootCause:   err,
+			}
 	}
 	// if result is passed in as nil, it means the API defines no response body
 	// json
@@ -184,7 +206,15 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 		err = json.Unmarshal([]byte(callSummary.HTTPResponseBody), &result)
 	}
 
-	return result, callSummary, err
+	if err != nil {
+		return result,
+			callSummary,
+			&APICallException{
+				CallSummary: callSummary,
+				RootCause:   err,
+			}
+	}
+	return result, callSummary, nil
 }
 
 // SignedURL creates a signed URL using the given Client, where route is the

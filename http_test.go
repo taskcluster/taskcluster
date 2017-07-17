@@ -198,7 +198,15 @@ func TestRequestWithContext(t *testing.T) {
 	// Make a call and cancel
 	time.AfterFunc(1*time.Second, cancel)
 	_, _, err = c.APICall(nil, "GET", "/whatever", &result, nil)
-	if err != context.Canceled {
-		t.Fatal("Expected canceled error")
+	if err == nil {
+		t.Fatal("Should have had a cancel error")
+	}
+	switch e := err.(type) {
+	case *APICallException:
+		if e.RootCause != context.Canceled {
+			t.Fatalf("Expected canceled error but got %T %v", e, e)
+		}
+	default:
+		t.Fatalf("Was expecting a *tcclient.APICallException but got %T %v", e, e)
 	}
 }
