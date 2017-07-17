@@ -42,6 +42,10 @@ type CallSummary struct {
 	Attempts int
 }
 
+func (cs *CallSummary) String() string {
+	return fmt.Sprintf("\nCALL SUMMARY\n============\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
+}
+
 type APICall struct {
 	Client      *Client
 	Route       string
