@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -138,6 +139,13 @@ func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericW
 	if err != nil {
 		t.Fatalf("Could not convert task payload to json")
 	}
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// horrible hack here, until we have jsonschema2go generating pointer types...
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00Z",`), []byte{}, -1)
+	b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00Z"`), []byte{}, -1)
 
 	payloadJSON := json.RawMessage{}
 	err = json.Unmarshal(b, &payloadJSON)

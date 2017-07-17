@@ -787,11 +787,15 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		return MalformedPayloadError(err)
 	}
 	for _, artifact := range task.Payload.Artifacts {
-		if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
-			return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
-		}
-		if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires)) {
-			return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
+		// The default artifact expiry is task expiry, but is only applied when the task artifacts are resolved
+		// We intentionally don't modify task.Payload otherwise it no longer reflects the real data defined in the task
+		if !time.Time(artifact.Expires).IsZero() {
+			if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
+				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
+			}
+			if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires)) {
+				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
+			}
 		}
 	}
 	return nil
