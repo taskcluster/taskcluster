@@ -243,7 +243,7 @@ func (s3Artifact *S3Artifact) ResponseObject() interface{} {
 }
 
 func (s3Artifact *S3Artifact) String() string {
-	return fmt.Sprintf("%q", *s3Artifact)
+	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'", s3Artifact.Name, s3Artifact.CanonicalPath, s3Artifact.Expires, s3Artifact.ContentEncoding, s3Artifact.MimeType)
 }
 
 // Returns the artifacts as listed in the payload of the task (note this does
@@ -419,7 +419,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 			return Failure(err)
 		case httpbackoff.BadHttpResponseCode:
 			if t.HttpResponseCode/100 == 5 {
-				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v", t.HttpResponseCode, artifact))
+				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", t.HttpResponseCode, artifact, string(payload)))
 			} else {
 				// if not a 5xx error, then either task cancelled, or a problem with the request == worker bug
 				task.StatusManager.UpdateStatus()
@@ -427,7 +427,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 				if status == deadlineExceeded || status == cancelled {
 					return nil
 				}
-				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v", t.HttpResponseCode, artifact))
+				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", t.HttpResponseCode, artifact, string(payload)))
 			}
 		default:
 			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when uploading artifact: %#v", t))
