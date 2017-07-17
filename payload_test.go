@@ -111,9 +111,20 @@ func TestValidPayload(t *testing.T) {
 }`))
 }
 
+// This little hack is to make sure we get a timestamp which is truncated to
+// the millisecond
+func NowMillis(t *testing.T) (now time.Time) {
+	var err error
+	now, err = time.Parse(time.RFC3339, tcclient.Time(time.Now()).String())
+	if err != nil {
+		t.Fatalf("Error parsing timestamp - %v", err)
+	}
+	return
+}
+
 // If an artifact expires before task deadline we should get a Malformed Payload
 func TestArtifactExpiresBeforeDeadline(t *testing.T) {
-	now := time.Now()
+	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
@@ -129,12 +140,13 @@ func TestArtifactExpiresBeforeDeadline(t *testing.T) {
   ]
 }`)
 	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
 	ensureMalformedPayload(t, task)
 }
 
-// If artifact expires after task deadline, we should not get a Malformed Payload
-func TestArtifactExpiresAfterDeadline(t *testing.T) {
-	now := time.Now()
+// If artifact expires with task deadline, we should not get a Malformed Payload
+func TestArtifactExpiresWithDeadline(t *testing.T) {
+	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {
     "XPI_NAME": "dist/example_add-on-0.0.1.zip"
@@ -149,6 +161,73 @@ func TestArtifactExpiresAfterDeadline(t *testing.T) {
     }
   ]
 }`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 5))
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
 	ensureValidPayload(t, task)
+}
+
+// If artifact expires after task deadline, but before task expiry, we should not get a Malformed Payload
+func TestArtifactExpiresBetweenDeadlineAndTaskExpiry(t *testing.T) {
+	now := NowMillis(t)
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  ` + rawHelloGoodbye() + `,
+  "artifacts": [
+    {
+      "type": "file",
+      "path": "public/some/artifact",
+      "expires": "` + tcclient.Time(now.Add(time.Minute*15)).String() + `"
+    }
+  ]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	ensureValidPayload(t, task)
+}
+
+// If artifact expires with task expiry, we should not get a Malformed Payload
+func TestArtifactExpiresWithTask(t *testing.T) {
+	now := NowMillis(t)
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  ` + rawHelloGoodbye() + `,
+  "artifacts": [
+    {
+      "type": "file",
+      "path": "public/some/artifact",
+      "expires": "` + tcclient.Time(now.Add(time.Minute*20)).String() + `"
+    }
+  ]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	ensureValidPayload(t, task)
+}
+
+// If an artifact expires after task expiry we should get a Malformed Payload
+func TestArtifactExpiresAfterTaskExpiry(t *testing.T) {
+	now := NowMillis(t)
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  ` + rawHelloGoodbye() + `,
+  "artifacts": [
+    {
+      "type": "file",
+      "path": "public/some/artifact",
+      "expires": "` + tcclient.Time(now.Add(time.Minute*25)).String() + `"
+    }
+  ]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	ensureMalformedPayload(t, task)
 }

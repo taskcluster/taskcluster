@@ -790,6 +790,9 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		if time.Time(artifact.Expires).Before(time.Time(task.Definition.Deadline)) {
 			return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
 		}
+		if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires)) {
+			return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
+		}
 	}
 	return nil
 }
