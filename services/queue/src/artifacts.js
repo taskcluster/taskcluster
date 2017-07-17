@@ -150,8 +150,8 @@ api.declare({
   if (expires.getTime() > task.expires.getTime()) {
     return res.reportError('InputError',
       'Artifact expires ({{expires}}) after the task expiration ' +
-      '{{taskExpires}} (task.expires < expires) - this is now allowed, ' +
-      'artifacts must expire before the task they belong to', {
+      '{{taskExpires}} (task.expires < expires) - this is not allowed, ' +
+      'artifacts may not expire after the task they belong to expires', {
         taskExpires:      task.expires.toJSON(),
         expires:          expires.toJSON(),
       });
