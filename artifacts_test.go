@@ -645,9 +645,9 @@ func TestUpload(t *testing.T) {
 	}
 }
 
-func TestArtifactHasNoExpiry(t *testing.T) {
+func TestFileArtifactHasNoExpiry(t *testing.T) {
 
-	setup(t, "TestArtifactHasNoExpiry")
+	setup(t, "TestFileArtifactHasNoExpiry")
 	defer teardown(t)
 
 	payload := GenericWorkerPayload{
@@ -693,4 +693,54 @@ func TestArtifactHasNoExpiry(t *testing.T) {
 		}
 	}
 	t.Fatalf("Could not find artifact public/build/firefox.exe in task run 0 of task %v", taskID)
+}
+
+func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
+
+	setup(t, "TestDirectoryArtifactHasNoExpiry")
+	defer teardown(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires,omitempty"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path: "SampleArtifacts/_",
+				Type: "directory",
+				Name: "public/build",
+			},
+		},
+	}
+
+	td := testTask(t)
+
+	taskID, myQueue := executeTask(t, td, payload)
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatalf("Error retrieving status from queue: %v", err)
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
+	// check artifact expiry matches task expiry
+	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	if err != nil {
+		t.Fatalf("Error listing artifacts of task %v: %v", taskID, err)
+	}
+	t.Logf("Task expires: %v", td.Expires.String())
+	for _, artifact := range lar.Artifacts {
+		t.Logf("Artifact name: '%v', content type: '%v', expires: %v, storage type: '%v'", artifact.Name, artifact.ContentType, artifact.Expires, artifact.StorageType)
+		if artifact.Name == "public/build/X.txt" {
+			if artifact.Expires.String() == td.Expires.String() {
+				return
+			}
+			t.Fatalf("Expiry of public/build/X.txt in task %v is %v but should be %v", taskID, artifact.Expires, td.Expires)
+		}
+	}
+	t.Fatalf("Could not find artifact public/build/X.txt in task run 0 of task %v", taskID)
 }
