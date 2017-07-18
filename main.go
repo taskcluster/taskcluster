@@ -788,16 +788,16 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 	}
 	for _, artifact := range task.Payload.Artifacts {
 		// The default artifact expiry is task expiry, but is only applied when
-		// the task artifacts are resolved We intentionally don't modify
+		// the task artifacts are resolved. We intentionally don't modify
 		// task.Payload otherwise it no longer reflects the real data defined
-		// in the task
+		// in the task.
 		if !time.Time(artifact.Expires).IsZero() {
-			// Don't be too strict: allow 1s discrepency to account for
+			// Don't be too strict: allow 1s discrepancy to account for
 			// possible timestamp rounding on upstream systems
 			if time.Time(artifact.Expires).Add(time.Second).Before(time.Time(task.Definition.Deadline)) {
 				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
 			}
-			// Don't be too strict: allow 1s discrepency to account for
+			// Don't be too strict: allow 1s discrepancy to account for
 			// possible timestamp rounding on upstream systems
 			if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires).Add(time.Second)) {
 				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
