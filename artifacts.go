@@ -290,7 +290,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 				b := &BaseArtifact{
 					CanonicalPath: canonicalPath(subPath),
 					Name:          canonicalPath(subName),
-					Expires:       artifact.Expires,
+					Expires:       base.Expires,
 				}
 				switch {
 				case info.IsDir():
