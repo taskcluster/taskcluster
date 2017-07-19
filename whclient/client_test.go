@@ -16,23 +16,30 @@ import (
 	"github.com/taskcluster/webhooktunnel/util"
 )
 
-func testAuthorize(id string) (string, error) {
+func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger) Configurer {
 	now := time.Now()
 	expires := now.Add(30 * 24 * time.Hour)
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
-	token.Claims.(jwt.MapClaims)["iat"] = now.Unix()
 	token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
 	token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
 	token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
 	token.Claims.(jwt.MapClaims)["tid"] = id
 
-	tokString, err := token.SignedString([]byte("test-secret"))
-	if err != nil {
-		return "", err
+	tokString, _ := token.SignedString([]byte("test-secret"))
+
+	return func() (Config, error) {
+		conf := Config{
+			ID:        id,
+			ProxyAddr: addr,
+			Token:     tokString,
+			Logger:    logger,
+			Retry:     retryConfig,
+		}
+		return conf, nil
 	}
-	return tokString, nil
+
 }
 
 func genLogger(fname string) *log.Logger {
@@ -68,13 +75,8 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
-		Authorize: testAuthorize,
-	}
-
-	_, err := New(config)
+	proxyAddr := util.MakeWsURL(server.URL)
+	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("exp-backoff-success-test")))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,18 +94,14 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
-		Retry: RetryConfig{
-			InitialDelay:   200 * time.Millisecond,
-			MaxElapsedTime: 2 * time.Second,
-		},
-		Authorize: testAuthorize,
+	retry := RetryConfig{
+		InitialDelay:   200 * time.Millisecond,
+		MaxElapsedTime: 2 * time.Second,
 	}
 
+	proxyAddr := util.MakeWsURL(server.URL)
 	start := time.Now()
-	_, err := New(config)
+	_, err := New(testConfigurer("workerID", proxyAddr, retry, genLogger("exp-backoff-failure-test")))
 	end := time.Now()
 
 	if err.(clientError) != ErrRetryTimedOut {
@@ -111,11 +109,11 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	}
 
 	if end.Sub(start) < 2*time.Second {
-		t.Fatalf("should run for atleast %d milliseconds", config.Retry.MaxElapsedTime)
+		t.Fatalf("should run for atleast %d milliseconds", retry.MaxElapsedTime)
 	}
 
 	// maximum time accounting for jitter
-	maxTime := config.Retry.MaxElapsedTime + 200*time.Millisecond
+	maxTime := retry.MaxElapsedTime + 200*time.Millisecond
 	if end.Sub(start) > maxTime {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
@@ -138,13 +136,8 @@ func TestRetryStops4xx(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
-		Authorize: testAuthorize,
-	}
-
-	_, err := New(config)
+	proxyAddr := util.MakeWsURL(server.URL)
+	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("retry-4xx-test")))
 
 	// attempt to connect with retry
 	if err.(clientError) != ErrRetryFailed {
@@ -189,11 +182,6 @@ func TestAuthorizer(t *testing.T) {
 			return
 		}
 
-		if !claims.VerifyIssuedAt(now, true) {
-			http.Error(w, http.StatusText(500), 500)
-			return
-		}
-
 		if !claims.VerifyNotBefore(now, true) {
 			http.Error(w, http.StatusText(500), 500)
 			return
@@ -208,13 +196,8 @@ func TestAuthorizer(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
-		Authorize: testAuthorize,
-	}
-
-	_, err := New(config)
+	proxyAddr := util.MakeWsURL(server.URL)
+	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("authorize-test")))
 
 	if err != nil {
 		t.Fatal(err)
@@ -240,13 +223,8 @@ func TestClientReconnect(t *testing.T) {
 		_ = conn.Close()
 	}))
 
-	config := Config{
-		ID:        "workerID",
-		ProxyAddr: util.MakeWsURL(server.URL),
-		Authorize: testAuthorize,
-	}
-
-	client, err := New(config)
+	proxyAddr := util.MakeWsURL(server.URL)
+	client, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("client-reconnect-test")))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -5,6 +5,7 @@ type clientError struct {
 	errString string
 	reconnect bool
 	timeout   bool
+	auth      bool
 }
 
 func (c clientError) Error() string {
@@ -36,9 +37,9 @@ var (
 	// ErrClientClosed is returned from an Accept call when the client is closed.
 	ErrClientClosed = clientError{errString: "client closed"}
 
-	// ErrAuthorizerNotProvided is returned from New when an Authorizer is not provided.
-	ErrAuthorizerNotProvided = clientError{errString: "authorizer function was not provided to client"}
+	// ErrBadConfig is returned from New when an Authorizer is not provided.
+	ErrBadConfig = clientError{errString: "config could not be generated"}
 
-	// ErrTLSConfigRequired is returned when the client attepmts to use a wss:// url without a TLS config
-	// ErrTLSConfigRequired = clientError{errString: "tls config must be provided to use secure connections"}
+	// ErrAuthFailed is returned when authentication with the proxy fails
+	ErrAuthFailed = clientError{errString: "auth failed", auth: true}
 )

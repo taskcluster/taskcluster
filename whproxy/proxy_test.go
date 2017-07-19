@@ -2,7 +2,7 @@ package whproxy
 
 import (
 	"bytes"
-	"crypto/tls"
+	// "crypto/tls"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -607,6 +607,32 @@ func TestProxySecrets(t *testing.T) {
 	}
 }
 
+// function for generating configurer objects
+func testConfigurer(id, addr string, retryConfig whclient.RetryConfig, logger *log.Logger) whclient.Configurer {
+	now := time.Now()
+	expires := now.Add(30 * 24 * time.Hour)
+
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
+	token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
+	token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
+	token.Claims.(jwt.MapClaims)["tid"] = id
+
+	tokString, _ := token.SignedString([]byte("test-secret"))
+
+	return func() (whclient.Config, error) {
+		conf := whclient.Config{
+			ID:        id,
+			ProxyAddr: addr,
+			Token:     tokString,
+			Logger:    logger,
+			Retry:     retryConfig,
+		}
+		return conf, nil
+	}
+}
+
 // Ensure that readind over a slow stream works
 func TestResponseStream(t *testing.T) {
 	logger := genLogger("response-stream-test")
@@ -631,14 +657,7 @@ func TestResponseStream(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 
 	// create client
-	client, err := whclient.New(whclient.Config{
-		ID:        "test-worker",
-		ProxyAddr: wsURL,
-		Authorize: func(id string) (string, error) {
-			return tokenGenerator(id, []byte("test-secret")), nil
-		},
-		Logger: clientLogger,
-	})
+	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, clientLogger))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -664,6 +683,7 @@ func TestResponseStream(t *testing.T) {
 		_ = srv.Serve(client)
 	}()
 	defer func() {
+		logger.Printf("closing client")
 		_ = srv.Close()
 	}()
 
@@ -715,13 +735,7 @@ func TestWebSocketStreamClient(t *testing.T) {
 	defer server.Close()
 	wsURL := util.MakeWsURL(server.URL)
 
-	client, err := whclient.New(whclient.Config{
-		ID:        "test-worker",
-		ProxyAddr: wsURL,
-		Authorize: func(id string) (string, error) {
-			return tokenGenerator(id, []byte("test-secret")), nil
-		},
-	})
+	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, genLogger("client-ws-test")))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -796,16 +810,9 @@ func TestDomainResolve(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	clientConfig := whclient.Config{
-		ID:        "workerid",
-		ProxyAddr: "ws://tcproxy.dev:" + getPort(server.URL),
-		Authorize: func(id string) (string, error) {
-			return tokenGenerator(id, []byte("test-secret")), nil
-		},
-		Logger: genLogger("domain-resolve-client-test"),
-	}
+	client, err := whclient.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), whclient.RetryConfig{},
+		genLogger("domain-resolve-client-test")))
 
-	client, err := whclient.New(clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -881,7 +888,7 @@ func TestProxySendsURL(t *testing.T) {
 		JWTSecretA:   []byte("test-secret"),
 		JWTSecretB:   []byte("another-secret"),
 		Domain:       "tcproxy.dev",
-		Logger:       genLogger("domain-resolve-proxy-test"),
+		Logger:       genLogger("proxy-url-test"),
 		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)
@@ -894,68 +901,13 @@ func TestProxySendsURL(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	clientConfig := whclient.Config{
-		ID:        "workerid",
-		ProxyAddr: "ws://tcproxy.dev:" + getPort(server.URL),
-		Authorize: func(id string) (string, error) {
-			return tokenGenerator(id, []byte("test-secret")), nil
-		},
-		Logger: genLogger("domain-resolve-client-test"),
-	}
+	client, err := whclient.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), whclient.RetryConfig{},
+		genLogger("proxy-url-test")))
 
-	client, err := whclient.New(clientConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if client.URL() != "http://workerid.tcproxy.dev" {
-		t.Fatal("bad url")
-	}
-}
-
-func TestProxyTLS(t *testing.T) {
-	if os.Getenv("TEST_DNS_SET") != "yes" {
-		t.Skip("dns not set")
-	}
-	proxyConfig := Config{
-		Upgrader:   upgrader,
-		JWTSecretA: []byte("test-secret"),
-		JWTSecretB: []byte("another-secret"),
-		Domain:     "tcproxy.dev",
-		Logger:     genLogger("domain-resolve-proxy-test"),
-		TLS:        true,
-	}
-	proxy, err := New(proxyConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// attempt hosting on port 80
-	server := httptest.NewTLSServer(proxy)
-	defer server.Close()
-
-	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+tokenGenerator("workerid", []byte("test-secret")))
-
-	// make connection
-	clientConfig := whclient.Config{
-		ID:        "workerid",
-		ProxyAddr: "wss://tcproxy.dev:" + getPort(server.URL),
-		Authorize: func(id string) (string, error) {
-			return tokenGenerator(id, []byte("test-secret")), nil
-		},
-		Logger:    genLogger("domain-resolve-client-test"),
-		TLSConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	client, err := whclient.New(clientConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if client.URL() != "https://tcproxy.dev/workerid" {
 		t.Fatal("bad url")
 	}
 }

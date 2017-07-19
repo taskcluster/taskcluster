@@ -1,11 +1,11 @@
 package whclient
 
 import (
-	"crypto/tls"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -13,128 +13,65 @@ import (
 	"github.com/taskcluster/webhooktunnel/wsmux"
 )
 
-// Authorizer is a function which accepts a string `id` and returns a
-// signed JWT (JSON Web Token). If an error occurs, the
-// return values must be ("", ErrorGenerated).
-type Authorizer func(id string) (string, error)
-
-// Config is used for creating a new client.
-type Config struct {
-	// ID is the tunnel-id of the client. This field must match the "tid" claim of the
-	// JWT.
-	ID string
-
-	// ProxyAddr is the websocket address of the proxy to which the client should connect.
-	ProxyAddr string
-
-	// Logger is an optional field. This logger is passed to the session created by
-	// the GetListener method. This defaults to `&util.NilLogger{}`.
-	Logger util.Logger
-
-	Authorize Authorizer
-
-	// Retry contains the retry parameters to use in case of reconnects.
-	// The default values are specified in RetryConfig.
-	Retry RetryConfig
-
-	// TLSConfig to use for authentication
-	TLSConfig *tls.Config
-}
-
 type clientState int
 
 const (
 	stateRunning = iota
 	stateBroken
+	stateClosed
 )
 
-// Client connects to the specified proxy and
-// provides a net.Listener interface.
-type Client struct {
-	// read only values
-	// these are never changed. Will not cause data races.
-	id        string
-	proxyAddr string
-	authorize Authorizer
-	logger    util.Logger
-	retry     RetryConfig
-	dialer    *websocket.Dialer
-
-	urlLock sync.Mutex
-	url     string
-
-	// hold lock to modify invariants
-	m sync.Mutex
-
-	// invariants
-	acceptErr error
-	token     string
-	session   *wsmux.Session
-	state     clientState
-	closed    chan struct{}
-
-	// session will be non-nil only if state is stateRunning.
-	// if client.closed is closed then session will not be accessed.
-	// Accept is the only function which may set the state to stateBroken.
-	// reconnect is the only function which may set the state to stateRunning.
-
-	// token can be accessed only through connectWithRetry
+// Config ...
+type Config struct {
+	ID        string
+	ProxyAddr string
+	Token     string
+	Retry     RetryConfig
+	Logger    util.Logger
 }
 
-// New returns a new net.Listener instance using the provided Config object.
-func New(config Config) (*Client, error) {
-	cl := &Client{
-		// read only values
-		id:        config.ID,
-		proxyAddr: config.ProxyAddr,
-		logger:    config.Logger,
-		authorize: config.Authorize,
-		retry:     config.Retry.defaultValues(),
-		dialer:    websocket.DefaultDialer,
+// Configurer is a function which can generate a Config object
+// to be used by the client
+type Configurer func() (Config, error)
 
-		token:   "",
-		session: nil,
-		state:   stateRunning,
-		closed:  make(chan struct{}),
-	}
+// Client ...
+type Client struct {
+	m          sync.Mutex
+	id         string
+	proxyAddr  string
+	token      string
+	url        atomic.Value
+	retry      RetryConfig
+	logger     util.Logger
+	configurer Configurer
+	session    *wsmux.Session
+	state      clientState
+	closed     chan struct{}
+	acceptErr  net.Error
+}
 
-	// if secure connection required
-	cl.dialer = &websocket.Dialer{
-		TLSClientConfig: config.TLSConfig,
-	}
-
-	if cl.authorize == nil {
-		panic("whclient: authorizer not provided")
-	}
-
-	if cl.logger == nil {
-		cl.logger = &util.NilLogger{}
-	}
-
-	cl.m.Lock()
-	defer cl.m.Unlock()
-	conn, url, err := cl.connectWithRetry()
+func New(configurer Configurer) (*Client, error) {
+	config, err := configurer()
 	if err != nil {
 		return nil, err
 	}
 
-	cl.urlLock.Lock()
-	cl.url = url
-	cl.urlLock.Unlock()
-
-	sessionConfig := wsmux.Config{
-		// Log:              cl.logger,
-		StreamBufferSize: 4 * 1024,
+	cl := &Client{configurer: configurer}
+	cl.setConfig(config)
+	cl.closed = make(chan struct{}, 1)
+	conn, url, err := cl.connectWithRetry()
+	if err != nil {
+		return nil, err
 	}
-
-	cl.session = wsmux.Client(conn, sessionConfig)
-	cl.state = stateRunning
+	cl.url.Store(url)
+	cl.session = wsmux.Client(conn, wsmux.Config{})
 	return cl, nil
 }
 
-// Accept returns a new net.Conn from the proxy. Accept will return a
-// temporary net.Error if the connection breaks or it is attempting
-// reconnection.
+func (c *Client) URL() string {
+	return c.url.Load().(string)
+}
+
 func (c *Client) Accept() (net.Conn, error) {
 	select {
 	case <-c.closed:
@@ -143,81 +80,63 @@ func (c *Client) Accept() (net.Conn, error) {
 	}
 
 	c.m.Lock()
-	if c.state == stateBroken {
-		defer c.m.Unlock()
-		// acceptErr must be non nil when state is {stateClosed, stateBroken}
-		c.logger.Printf("accept failed with error %v", c.acceptErr)
+	defer c.m.Unlock()
+	if c.state == stateBroken || c.state == stateClosed {
 		return nil, c.acceptErr
 	}
 
 	stream, err := c.session.Accept()
 	if err != nil {
-		c.logger.Printf("accept failed: attempting reconnect")
-		// problem with session
-		// close session and attempt reconnect
-		// set client error to reconnecting
-		c.acceptErr = ErrClientReconnecting
-
-		c.logger.Printf("state: broken")
-
 		c.state = stateBroken
-		// reconnect after mutex release
-		defer c.reconnect()
-		// next call to accept cannot enter critical section until reconnect finishes executing
-		defer c.m.Unlock()
+		c.acceptErr = ErrClientReconnecting
+		go c.reconnect()
 		return nil, c.acceptErr
 	}
-
-	defer c.m.Unlock()
 	return stream, nil
 }
 
-// Close is used to close the listener.
+func (c *Client) Addr() net.Addr {
+	return c.session.Addr()
+}
+
+// Close connection to the proxy
 func (c *Client) Close() error {
 	select {
 	case <-c.closed:
+		return nil
 	default:
 		close(c.closed)
-		// lock and close session when possible
 		go func() {
 			c.m.Lock()
-			if c.session != nil {
-				_ = c.session.Close()
-			}
+			defer c.m.Unlock()
+			c.acceptErr = ErrClientClosed
+			_ = c.session.Close()
 		}()
 	}
 	return nil
 }
 
-// Addr returns the local Addr of the listener
-func (c *Client) Addr() net.Addr {
-	c.m.Lock()
-	defer c.m.Unlock()
-	if c.session != nil {
-		return c.session.Addr()
-	}
-	return nil
-}
+func (c *Client) setConfig(config Config) {
+	c.id = config.ID
+	c.proxyAddr = config.ProxyAddr
+	c.token = config.Token
 
-// URL returns the url on which endpoints are exposed
-func (c *Client) URL() string {
-	c.urlLock.Lock()
-	defer c.urlLock.Unlock()
-	return c.url
+	c.retry = config.Retry.defaultValues()
+	c.logger = config.Logger
+	if c.logger == nil {
+		c.logger = &util.NilLogger{}
+	}
 }
 
 // connectWithRetry returns a websocket connection to the proxy
 func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	// if token is expired or not usable, get a new token from the authorizer
 	if !util.IsTokenUsable(c.token) {
-		token, err := c.authorize(c.id)
+		config, err := c.configurer()
 		if err != nil {
-			return nil, "", err
+			return nil, "", ErrRetryFailed
 		}
-		if !util.IsTokenUsable(token) {
-			return nil, "", ErrBadToken
-		}
-		c.token = token
+		c.setConfig(config)
 	}
 
 	// initial connection
@@ -226,13 +145,16 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	header.Set("Authorization", "Bearer "+c.token)
 	// initial attempt
 	c.logger.Printf("trying to connect to %s", c.proxyAddr)
-	conn, res, err := c.dialer.Dial(addr, header)
+	conn, res, err := websocket.DefaultDialer.Dial(addr, header)
 	if err != nil {
 		if shouldRetry(res) {
 			// retry connection and return result
 			return c.retryConn()
 		}
 		c.logger.Printf("connection failed with error:%v, response:%v", err, res)
+		if isAuthError(res) {
+			return nil, "", ErrAuthFailed
+		}
 		return nil, "", ErrRetryFailed
 	}
 	c.logger.Printf("connected to %s ", c.proxyAddr)
@@ -258,7 +180,7 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 			return nil, "", ErrRetryTimedOut
 		case <-backoff:
 			c.logger.Printf("trying to connect to %s", c.proxyAddr)
-			conn, res, err := c.dialer.Dial(addr, header)
+			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
 			if err == nil {
 				url := res.Header.Get("x-webhooktunnel-client-url")
 				return conn, url, nil
@@ -271,9 +193,9 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 
 			currentDelay = c.retry.nextDelay(currentDelay)
 			backoff = time.After(currentDelay)
+
 		}
 	}
-
 }
 
 // reconnect is used to repair broken connections
@@ -298,13 +220,14 @@ func (c *Client) reconnect() {
 		StreamBufferSize: 4 * 1024,
 	}
 	c.session = wsmux.Client(conn, sessionConfig)
-	c.url = url
+	c.url.Store(url)
 	c.state = stateRunning
 	c.logger.Printf("state: running")
 	c.acceptErr = nil
+
 }
 
-// simple utility
+// simple utility to check if client should retry connection
 func shouldRetry(r *http.Response) bool {
 	// may be that proxy is down for changing secrets and therefore unreachable
 	if r == nil {
@@ -314,4 +237,11 @@ func shouldRetry(r *http.Response) bool {
 		return false
 	}
 	return true
+}
+
+func isAuthError(r *http.Response) bool {
+	if r == nil {
+		return false
+	}
+	return r.StatusCode == 401
 }
