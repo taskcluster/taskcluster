@@ -192,7 +192,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	// validation does not require lock
 	if err := p.validateJWT(id, tokenString); err != nil {
 		p.logerrorf(id, r.RemoteAddr, "unable to validate token: %v", err)
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(401), 401)
 		return
 	}
 
