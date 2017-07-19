@@ -9,6 +9,7 @@ import mime from 'mime';
 import tarStream from 'tar-stream';
 import Debug from 'debug';
 import Promise from 'promise';
+import assert from 'assert';
 
 import {fmtLog, fmtErrorLog} from '../log';
 import uploadToS3 from '../upload_to_s3';
@@ -139,8 +140,29 @@ export default class Artifacts {
       };
 
       try {
-        let digest = await uploadToS3(taskHandler.queue, taskId, runId, stream,
+        let region = taskHandler.runtime.region;
+        assert.ok(region);
+
+        let monitor = taskHandler.runtime.monitor;
+        let start = process.hrtime();
+
+        let {digest, size} = await uploadToS3(taskHandler.queue, taskId, runId, stream,
                          entryName, expiry, headers);
+
+        // save the time taken to upload the artifact
+        let elapsedTime = process.hrtime(start);
+        let uploadTime = elapsedTime[0] * 1e3 + elapsedTime[1] / 1e6; // in miliseconds
+
+        // report metrics globally...
+        monitor.measure('artifacts.global.size', size);
+        monitor.measure('artifacts.global.uploadTime', uploadTime);
+        monitor.measure('artifacts.global.throughput', size * 1e3 / uploadTime); // Bytes/sec
+
+        // and by region
+        monitor.measure(`artifacts.region.${region}.size`, size);
+        monitor.measure(`artifacts.region.${region}.uploadTime`, uploadTime);
+        monitor.measure(`artifacts.region.${region}.throughput`, size * 1e3 / uploadTime); // Bytes/sec
+
         taskHandler.artifactHashes[entryName] = { sha256: digest };
 
       } catch(err) {

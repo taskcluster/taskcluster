@@ -2,7 +2,7 @@ import Debug from 'debug';
 import crypto from 'crypto';
 import https from 'https';
 import url from 'url';
-import fs from 'fs';
+import fs from 'mz/fs';
 import temporary from 'temporary';
 import promiseRetry from 'promise-retry';
 import { createLogger } from './log';
@@ -30,6 +30,7 @@ export default async function uploadToS3 (
 
   let logDetails = {taskId, runId, artifactName};
   let digest;
+  let size;
 
   try {
     // write the source out to a temporary file so that it can be
@@ -45,6 +46,9 @@ export default async function uploadToS3 (
       });
     }
     debug(`wrote source file to ${tmp.path} for ${artifactName}`);
+
+    let stat = await fs.stat(tmp.path);
+    size = stat.size;
 
     // Can this be done at the same time as piping to the write stream?
     let hash = crypto.createHash('sha256');
@@ -125,5 +129,5 @@ export default async function uploadToS3 (
     tmp.unlink();
   }
 
-  return digest;
+  return {digest, size};
 }
