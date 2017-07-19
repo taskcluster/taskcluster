@@ -292,7 +292,7 @@ class QueueEvents(BaseClient):
     """
     Task Exception Messages
 
-    Whenever TaskCluster fails to run a message is posted to this exchange.
+    Whenever Taskcluster fails to run a message is posted to this exchange.
     This happens if the task isn't completed before its `deadlìne`,
     all retries failed (i.e. workers stopped responding), the task was
     canceled by another entity, or the task carried a malformed payload.

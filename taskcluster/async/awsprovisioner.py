@@ -327,40 +327,6 @@ class AwsProvisioner(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["backendStatus"], *args, **kwargs)
 
-    async def terminateAllInstancesOfWorkerType(self, *args, **kwargs):
-        """
-        Shutdown Every Ec2 Instance of this Worker Type
-
-        WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
-        Shut down every single EC2 instance associated with this workerType.
-        This means every single last one.  You probably don't want to use
-        this method, which is why it has an obnoxious name.  Don't even try
-        to claim you didn't know what this method does!
-
-        **This API end-point is experimental and may be subject to change without warning.**
-
-        This method is ``experimental``
-        """
-
-        return await self._makeApiCall(self.funcinfo["terminateAllInstancesOfWorkerType"], *args, **kwargs)
-
-    async def shutdownEverySingleEc2InstanceManagedByThisProvisioner(self, *args, **kwargs):
-        """
-        Shutdown Every Single Ec2 Instance Managed By This Provisioner
-
-        WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS
-        Shut down every single EC2 instance managed by this provisioner.
-        This means every single last one.  You probably don't want to use
-        this method, which is why it has an obnoxious name.  Don't even try
-        to claim you didn't know what this method does!
-
-        **This API end-point is experimental and may be subject to change without warning.**
-
-        This method is ``experimental``
-        """
-
-        return await self._makeApiCall(self.funcinfo["shutdownEverySingleEc2InstanceManagedByThisProvisioner"], *args, **kwargs)
-
     async def ping(self, *args, **kwargs):
         """
         Ping Server
@@ -442,21 +408,11 @@ class AwsProvisioner(AsyncBaseClient):
             'name': 'removeWorkerType',
             'route': '/worker-type/<workerType>',
             'stability': 'stable'},
-        "shutdownEverySingleEc2InstanceManagedByThisProvisioner": {           'args': [],
-            'method': 'post',
-            'name': 'shutdownEverySingleEc2InstanceManagedByThisProvisioner',
-            'route': '/shutdown/every/single/ec2/instance/managed/by/this/provisioner',
-            'stability': 'experimental'},
         "state": {           'args': ['workerType'],
             'method': 'get',
             'name': 'state',
             'route': '/state/<workerType>',
             'stability': 'stable'},
-        "terminateAllInstancesOfWorkerType": {           'args': ['workerType'],
-            'method': 'post',
-            'name': 'terminateAllInstancesOfWorkerType',
-            'route': '/worker-type/<workerType>/terminate-all-instances',
-            'stability': 'experimental'},
         "updateWorkerType": {           'args': ['workerType'],
             'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',
             'method': 'post',

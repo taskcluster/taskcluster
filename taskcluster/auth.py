@@ -13,9 +13,9 @@ _defaultConfig = config
 
 class Auth(BaseClient):
     """
-    Authentication related API end-points for TaskCluster and related
+    Authentication related API end-points for Taskcluster and related
     services. These API end-points are of interest if you wish to:
-      * Authorize a request signed with TaskCluster credentials,
+      * Authorize a request signed with Taskcluster credentials,
       * Manage clients and roles,
       * Inspect or audit clients and roles,
       * Gain access to various services guarded by this API.
@@ -29,9 +29,9 @@ class Auth(BaseClient):
     The authentication service manages _clients_, at a high-level each client
     consists of a `clientId`, an `accessToken`, scopes, and some metadata.
     The `clientId` and `accessToken` can be used for authentication when
-    calling TaskCluster APIs.
+    calling Taskcluster APIs.
 
-    The client's scopes control the client's access to TaskCluster resources.
+    The client's scopes control the client's access to Taskcluster resources.
     The scopes are *expanded* by substituting roles, as defined below.
 
     ### Roles
@@ -50,8 +50,8 @@ class Auth(BaseClient):
     The authentication service also has API end-points for delegating access
     to some guarded service such as AWS S3, or Azure Table Storage.
     Generally, we add API end-points to this server when we wish to use
-    TaskCluster credentials to grant access to a third-party service used
-    by many TaskCluster components.
+    Taskcluster credentials to grant access to a third-party service used
+    by many Taskcluster components.
     """
 
     classOptions = {
@@ -314,9 +314,9 @@ class Auth(BaseClient):
         not contain `.`, as recommended by Amazon.
 
         This method can only allow access to a whitelisted set of buckets.  To add
-        a bucket to that whitelist, contact the TaskCluster team, who will add it to
+        a bucket to that whitelist, contact the Taskcluster team, who will add it to
         the appropriate IAM policy.  If the bucket is in a different AWS account, you
-        will also need to add a bucket policy allowing access from the TaskCluster
+        will also need to add a bucket policy allowing access from the Taskcluster
         account.  That policy should look like this:
 
         ```
@@ -475,6 +475,20 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["statsumToken"], *args, **kwargs)
 
+    def webhooktunnelToken(self, *args, **kwargs):
+        """
+        Get Token for Webhooktunnel Proxy
+
+        Get temporary `token` and `id` for connecting to webhooktunnel
+        The token is valid for 96 hours, clients should refresh after expiration.
+
+        This method takes output: ``http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#``
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["webhooktunnelToken"], *args, **kwargs)
+
     def authenticateHawk(self, *args, **kwargs):
         """
         Authenticate Hawk Request
@@ -482,7 +496,7 @@ class Auth(BaseClient):
         Validate the request signature given on input and return list of scopes
         that the authenticating client has.
 
-        This method is used by other services that wish rely on TaskCluster
+        This method is used by other services that wish rely on Taskcluster
         credentials for authentication. This way we can use Hawk without having
         the secret credentials leave this service.
 
@@ -499,7 +513,7 @@ class Auth(BaseClient):
         """
         Test Authentication
 
-        Utility method to test client implementations of TaskCluster
+        Utility method to test client implementations of Taskcluster
         authentication.
 
         Rather than using real credentials, this endpoint accepts requests with
@@ -722,6 +736,12 @@ class Auth(BaseClient):
             'name': 'updateRole',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#',
             'route': '/roles/<roleId>',
+            'stability': 'stable'},
+        "webhooktunnelToken": {           'args': [],
+            'method': 'get',
+            'name': 'webhooktunnelToken',
+            'output': 'http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#',
+            'route': '/webhooktunnel',
             'stability': 'stable'},
     }
 

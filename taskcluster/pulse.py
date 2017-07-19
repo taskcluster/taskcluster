@@ -91,18 +91,6 @@ class Pulse(BaseClient):
 
         return self._makeApiCall(self.funcinfo["claimNamespace"], *args, **kwargs)
 
-    def deleteNamespace(self, *args, **kwargs):
-        """
-        Delete a namespace
-
-        Immediately delete the given namespace.  This will delete all exchanges and queues which the
-        namespace had configure access to, as if it had just expired.
-
-        This method is ``experimental``
-        """
-
-        return self._makeApiCall(self.funcinfo["deleteNamespace"], *args, **kwargs)
-
     def ping(self, *args, **kwargs):
         """
         Ping Server
@@ -121,11 +109,6 @@ class Pulse(BaseClient):
             'method': 'post',
             'name': 'claimNamespace',
             'output': 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json',
-            'route': '/namespace/<namespace>',
-            'stability': 'experimental'},
-        "deleteNamespace": {           'args': ['namespace'],
-            'method': 'delete',
-            'name': 'deleteNamespace',
             'route': '/namespace/<namespace>',
             'stability': 'experimental'},
         "listNamespaces": {           'args': [],

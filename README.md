@@ -197,9 +197,9 @@ loop = asyncio.get_event_loop()
 session = taskcluster.async.createSession(loop=loop)
 asyncAuth = taskcluster.async.Auth(options, session=session)
 ```
-Authentication related API end-points for TaskCluster and related
+Authentication related API end-points for Taskcluster and related
 services. These API end-points are of interest if you wish to:
-  * Authorize a request signed with TaskCluster credentials,
+  * Authorize a request signed with Taskcluster credentials,
   * Manage clients and roles,
   * Inspect or audit clients and roles,
   * Gain access to various services guarded by this API.
@@ -213,9 +213,9 @@ authentication (identifying a particular person).
 The authentication service manages _clients_, at a high-level each client
 consists of a `clientId`, an `accessToken`, scopes, and some metadata.
 The `clientId` and `accessToken` can be used for authentication when
-calling TaskCluster APIs.
+calling Taskcluster APIs.
 
-The client's scopes control the client's access to TaskCluster resources.
+The client's scopes control the client's access to Taskcluster resources.
 The scopes are *expanded* by substituting roles, as defined below.
 
 ### Roles
@@ -234,8 +234,8 @@ located at the end of a `roleId`. If you have a role with the following
 The authentication service also has API end-points for delegating access
 to some guarded service such as AWS S3, or Azure Table Storage.
 Generally, we add API end-points to this server when we wish to use
-TaskCluster credentials to grant access to a third-party service used
-by many TaskCluster components.
+Taskcluster credentials to grant access to a third-party service used
+by many Taskcluster components.
 #### List Clients
 Get a list of all clients.  With `prefix`, only clients for which
 it is a prefix of the clientId are returned.
@@ -566,9 +566,9 @@ parameter is required in the scope guarding access.  The bucket name must
 not contain `.`, as recommended by Amazon.
 
 This method can only allow access to a whitelisted set of buckets.  To add
-a bucket to that whitelist, contact the TaskCluster team, who will add it to
+a bucket to that whitelist, contact the Taskcluster team, who will add it to
 the appropriate IAM policy.  If the bucket is in a different AWS account, you
-will also need to add a bucket policy allowing access from the TaskCluster
+will also need to add a bucket policy allowing access from the Taskcluster
 account.  That policy should look like this:
 
 ```js
@@ -778,11 +778,25 @@ await asyncAuth.statsumToken(project) # -> result
 await asyncAuth.statsumToken(project='value') # -> result
 ```
 
+#### Get Token for Webhooktunnel Proxy
+Get temporary `token` and `id` for connecting to webhooktunnel
+The token is valid for 96 hours, clients should refresh after expiration.
+
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#)
+
+```python
+# Sync calls
+auth.webhooktunnelToken() # -> result`
+# Async call
+await asyncAuth.webhooktunnelToken() # -> result
+```
+
 #### Authenticate Hawk Request
 Validate the request signature given on input and return list of scopes
 that the authenticating client has.
 
-This method is used by other services that wish rely on TaskCluster
+This method is used by other services that wish rely on Taskcluster
 credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.
 
@@ -799,7 +813,7 @@ await asyncAuth.authenticateHawk(payload) # -> result
 ```
 
 #### Test Authentication
-Utility method to test client implementations of TaskCluster
+Utility method to test client implementations of Taskcluster
 authentication.
 
 Rather than using real credentials, this endpoint accepts requests with
@@ -1310,47 +1324,6 @@ Required [output schema](http://schemas.taskcluster.net/aws-provisioner/v1/backe
 awsProvisioner.backendStatus() # -> result`
 # Async call
 await asyncAwsProvisioner.backendStatus() # -> result
-```
-
-#### Shutdown Every Ec2 Instance of this Worker Type
-WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
-Shut down every single EC2 instance associated with this workerType. 
-This means every single last one.  You probably don't want to use 
-this method, which is why it has an obnoxious name.  Don't even try 
-to claim you didn't know what this method does!
-
-**This API end-point is experimental and may be subject to change without warning.**
-
-
-
-Takes the following arguments:
-
-  * `workerType`
-
-```python
-# Sync calls
-awsProvisioner.terminateAllInstancesOfWorkerType(workerType) # -> None`
-awsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') # -> None
-# Async call
-await asyncAwsProvisioner.terminateAllInstancesOfWorkerType(workerType) # -> None
-await asyncAwsProvisioner.terminateAllInstancesOfWorkerType(workerType='value') # -> None
-```
-
-#### Shutdown Every Single Ec2 Instance Managed By This Provisioner
-WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS 
-Shut down every single EC2 instance managed by this provisioner. 
-This means every single last one.  You probably don't want to use 
-this method, which is why it has an obnoxious name.  Don't even try 
-to claim you didn't know what this method does!
-
-**This API end-point is experimental and may be subject to change without warning.**
-
-
-```python
-# Sync calls
-awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() # -> None`
-# Async call
-await asyncAwsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() # -> None
 ```
 
 #### Ping Server
@@ -2384,25 +2357,6 @@ pulse.claimNamespace(payload, namespace='value') # -> result
 # Async call
 await asyncPulse.claimNamespace(namespace, payload) # -> result
 await asyncPulse.claimNamespace(payload, namespace='value') # -> result
-```
-
-#### Delete a namespace
-Immediately delete the given namespace.  This will delete all exchanges and queues which the
-namespace had configure access to, as if it had just expired.
-
-
-
-Takes the following arguments:
-
-  * `namespace`
-
-```python
-# Sync calls
-pulse.deleteNamespace(namespace) # -> None`
-pulse.deleteNamespace(namespace='value') # -> None
-# Async call
-await asyncPulse.deleteNamespace(namespace) # -> None
-await asyncPulse.deleteNamespace(namespace='value') # -> None
 ```
 
 #### Ping Server
