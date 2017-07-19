@@ -559,7 +559,7 @@ func TestProxyAuth(t *testing.T) {
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
 
 	conn, res, err := websocket.DefaultDialer.Dial(wsURL+"/register/workerid", header)
-	if res == nil || res.StatusCode != 400 {
+	if res == nil || res.StatusCode != 401 {
 		_ = conn.Close()
 		t.Fatalf("connection should fail")
 	}
