@@ -73,7 +73,7 @@ cd /usr/local/ && \
   node -v
 
 # Install some necessary node packages
-npm install -g yarn
+npm install -g yarn babel-cli
 
 # Install Video loopback devices
 sudo apt-get install -y \

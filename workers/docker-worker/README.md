@@ -104,7 +104,7 @@ an environment very similar to the one docker-worker runs in production.
 2. The tests require TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME, PULSE_PASSWORD to be setup within the environment.  If they were not available locally when building, add them to the virtual machine now.
 3. `cd /vagrant` # Your local checkout of the docker-worker repo is made available under the '/vagrant' directory
 4. `./build.sh` # Builds some of the test images that are required
-5. `yarn install` # Installs all the necessary node modules
+5. `yarn install --frozen-lockfile` # Installs all the necessary node modules
 
 #### Running Tests
 
