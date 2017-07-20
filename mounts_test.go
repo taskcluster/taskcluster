@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/taskcluster/generic-worker/gwconfig"
 )
 
 func toMountArray(t *testing.T, x interface{}) []Mount {
@@ -274,7 +276,7 @@ func TestCachesCanBeModified(t *testing.T) {
 }
 
 func Test32BitOverflow(t *testing.T) {
-	config = &Config{
+	config = &gwconfig.Config{
 		RequiredDiskSpaceMegabytes: 1024 * 10,
 	}
 	if requiredFreeSpace := requiredSpaceBytes(); requiredFreeSpace != 10737418240 {

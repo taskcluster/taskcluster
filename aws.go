@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
@@ -167,7 +168,7 @@ func Unzip(b []byte, dest string) error {
 	return nil
 }
 
-func (c *Config) updateConfigWithAmazonSettings() error {
+func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	// these are just default values, will be overwritten if set in worker type config
 	c.ShutdownMachineOnInternalError = true
 	c.ShutdownMachineOnIdle = true
@@ -228,7 +229,7 @@ func (c *Config) updateConfigWithAmazonSettings() error {
 	}
 
 	// Now overlay existing config with values in secrets
-	err = c.mergeInJSON([]byte(secrets.GenericWorker.Config))
+	err = c.MergeInJSON([]byte(secrets.GenericWorker.Config))
 	if err != nil {
 		return err
 	}
@@ -262,7 +263,7 @@ func deploymentIDUpdated() bool {
 		log.Printf("**** Can't unmarshal worker type secrets - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
 		return false
 	}
-	c := new(Config)
+	c := new(gwconfig.Config)
 	err = json.Unmarshal(secrets.GenericWorker.Config, c)
 	if err != nil {
 		log.Printf("**** Can't unmarshal config - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")

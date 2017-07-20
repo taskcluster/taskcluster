@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/mholt/archiver"
+	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
@@ -101,11 +102,11 @@ func (feature *MountsFeature) Name() string {
 }
 
 func (feature *MountsFeature) PersistState() (err error) {
-	err = writeToFileAsJSON(&fileCaches, "file-caches.json")
+	err = gwconfig.WriteToFileAsJSON(&fileCaches, "file-caches.json")
 	if err != nil {
 		return
 	}
-	err = writeToFileAsJSON(&directoryCaches, "directory-caches.json")
+	err = gwconfig.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")
 	return
 }
 

@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -40,7 +41,7 @@ func setup(t *testing.T, testName string) {
 	testdataDir = filepath.Join(cwd, "testdata")
 
 	// configure the worker
-	config = &Config{
+	config = &gwconfig.Config{
 		AccessToken:                    os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		CachesDir:                      filepath.Join(cwd, "caches"),
 		Certificate:                    os.Getenv("TASKCLUSTER_CERTIFICATE"),

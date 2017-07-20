@@ -20,6 +20,7 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -39,7 +40,7 @@ var (
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	Queue       *queue.Queue
 	Provisioner *awsprovisioner.AwsProvisioner
-	config      *Config
+	config      *gwconfig.Config
 	configFile  string
 	Features    []Feature = []Feature{
 		&LiveLogFeature{},
@@ -325,7 +326,7 @@ func main() {
 		config, err = loadConfig(configFile, configureForAws)
 		// persist before checking for error, so we can see what the problem was...
 		if config != nil {
-			config.persist(configFile)
+			config.Persist(configFile)
 		}
 		if err != nil {
 			log.Printf("Error loading configuration from file '%v':\n", configFile)
@@ -378,12 +379,12 @@ func (err MissingConfigError) Error() string {
 	return "Config setting \"" + err.Setting + "\" must be defined in file \"" + err.File + "\"."
 }
 
-func loadConfig(filename string, queryUserData bool) (*Config, error) {
+func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
 
 	// first assign defaults
-	c := &Config{
+	c := &gwconfig.Config{
 		CachesDir:                      "C:\\generic-worker\\caches",
 		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
@@ -411,13 +412,13 @@ func loadConfig(filename string, queryUserData bool) (*Config, error) {
 	// now overlay with data from amazon, if applicable
 	if queryUserData {
 		// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
-		c.updateConfigWithAmazonSettings()
+		updateConfigWithAmazonSettings(c)
 	}
 
 	configFileBytes, err := ioutil.ReadFile(filename)
 	// only overlay values if config file exists and could be read
 	if err == nil {
-		err = c.mergeInJSON(configFileBytes)
+		err = c.MergeInJSON(configFileBytes)
 		if err != nil {
 			return nil, err
 		}
@@ -1138,15 +1139,6 @@ func loadFromJSONFile(obj interface{}, filename string) (err error) {
 	return
 }
 
-func writeToFileAsJSON(obj interface{}, filename string) error {
-	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
-	if err != nil {
-		return err
-	}
-	log.Printf("Saving file %v with content:\n%v\n", filename, string(jsonBytes))
-	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
-}
-
 func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	err := logHandle.Close()
 	if err != nil {
@@ -1162,12 +1154,6 @@ func (task *TaskRun) uploadBackingLog() *CommandExecutionError {
 	}
 
 	return nil
-}
-
-// writes config to json file
-func (c *Config) persist(file string) error {
-	log.Print("Creating file " + file + "...")
-	return writeToFileAsJSON(c, file)
 }
 
 func convertNilToEmptyString(val interface{}) string {

@@ -1,4 +1,4 @@
-package main
+package gwconfig
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"github.com/peterbourgon/mergemap"
 )
 
-func (c *Config) mergeInJSON(data []byte) error {
+func (c *Config) MergeInJSON(data []byte) error {
 	// This is all HORRIBLE
 	// but it seems about the only reasonable way to properly merge
 	// the json schemas such that json objects are recursively merged.
