@@ -34,7 +34,8 @@ type Config struct {
 // to be used by the client
 type Configurer func() (Config, error)
 
-// Client ...
+// Client used to connect to a proxy instance and serve content
+// over the proxy. Client implements net.Listener.
 type Client struct {
 	m          sync.Mutex
 	id         string
@@ -50,6 +51,7 @@ type Client struct {
 	acceptErr  net.Error
 }
 
+// New creates a new Client instance.
 func New(configurer Configurer) (*Client, error) {
 	config, err := configurer()
 	if err != nil {
@@ -68,10 +70,14 @@ func New(configurer Configurer) (*Client, error) {
 	return cl, nil
 }
 
+// URL returns the url at which the proxy serves the client's
+// endpoints
 func (c *Client) URL() string {
 	return c.url.Load().(string)
 }
 
+// Accept is used to accept multiplexed streams from the
+// proxy as net.Conn.
 func (c *Client) Accept() (net.Conn, error) {
 	select {
 	case <-c.closed:
@@ -95,6 +101,7 @@ func (c *Client) Accept() (net.Conn, error) {
 	return stream, nil
 }
 
+// Addr returns the net.Addr of the underlying wsmux session
 func (c *Client) Addr() net.Addr {
 	return c.session.Addr()
 }
