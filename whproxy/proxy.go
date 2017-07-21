@@ -343,7 +343,14 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 // jwt signing and verification algorithm must be HMAC
 func (p *proxy) validateJWT(id string, tokenString string) error {
 	// parse jwt token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	// default parser verifies iat token if present. This can be a problem because of clocks not being
+	// in sync.
+	parser := &jwt.Parser{
+		ValidMethods:         []string{"HS256"},
+		SkipClaimsValidation: true, // Claims will be verified if token can be decoded using secret
+	}
+
+	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrUnexpectedSigningMethod
 		}
@@ -354,7 +361,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		// log first error
 		p.logerrorf(id, "", "%v: trying with second secret", err)
 
-		token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err = parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, ErrUnexpectedSigningMethod
 			}
