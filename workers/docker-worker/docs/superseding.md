@@ -21,7 +21,7 @@ Example:
 ```
 
 The docker-worker will append the taskId of the task it has received from the queue (the "initial taskId") as a query argument, `?taskId=<taskId>`.
-The supserseding task is free to interpret the URL path in any way.
+The service is free to interpret the URL path in any way.
 
 The supserseder returns a list of taskIds, including the initial taskId, in the `supersedes` property of the response body.
 The list is sorted such that each task supersedes all tasks appearing earlier in the list.
@@ -45,5 +45,5 @@ If the claims succeeded for all but the last task, then it would consider `909mR
 Note that this is not the same task that it received from the queue!
 
 When the primary task completes, all of the secondary tasks are resolved as exception/superseded, with an artifact named `public/superseded-by.json` containing the `taskId` and `runId` of the primary task.
-The primary task gets an artifact named `public/superses.json` with a list of `{taskId, runId}` for the tasks it supersedes.
+The primary task gets an artifact named `public/supersedes.json` with a list of `{taskId, runId}` for the tasks it supersedes.
 
