@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -17,9 +18,8 @@ func Min(a, b int) int {
 }
 
 var (
-	replaceHTTPSRe = regexp.MustCompile("^(http)(s?)")
-	idReplaceRe    = regexp.MustCompile("^/(\\w+)(/?)")
-	jwtRe          = regexp.MustCompile("^Bearer ([\\w-\\.]+)$")
+	idReplaceRe = regexp.MustCompile("^/(\\w+)(/?)")
+	jwtRe       = regexp.MustCompile("^Bearer ([\\w-\\.]+)$")
 )
 
 // ReplaceID replaces id in "/{id}/path" with "/path"
@@ -29,7 +29,10 @@ func ReplaceID(path string) string {
 
 // MakeWsURL converts http:// to ws://
 func MakeWsURL(url string) string {
-	return replaceHTTPSRe.ReplaceAllString(url, "ws$2")
+	if strings.HasPrefix(url, "http") {
+		return "ws" + strings.TrimPrefix(url, "http")
+	}
+	return url
 }
 
 func ExtractJWT(authHeader string) string {

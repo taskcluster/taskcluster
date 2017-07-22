@@ -28,6 +28,8 @@ type Config struct {
 	Token     string
 	Retry     RetryConfig
 	Logger    util.Logger
+	// uses domain style hosting to register if set
+	UseDomain bool
 }
 
 // Configurer is a function which can generate a Config object
@@ -48,6 +50,7 @@ type Client struct {
 	session    *wsmux.Session
 	state      clientState
 	closed     chan struct{}
+	useDomain  bool
 	acceptErr  net.Error
 }
 
@@ -127,6 +130,7 @@ func (c *Client) setConfig(config Config) {
 	c.id = config.ID
 	c.proxyAddr = config.ProxyAddr
 	c.token = config.Token
+	c.useDomain = config.UseDomain
 
 	c.retry = config.Retry.defaultValues()
 	c.logger = config.Logger
@@ -148,6 +152,11 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 
 	// initial connection
 	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
+	// at this point, proxy should return proxyAddr like ws://register.domain.ext
+	if c.useDomain {
+		addr = strings.TrimSuffix(c.proxyAddr, "/") + "/" + c.id
+	}
+
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
 	// initial attempt
@@ -174,6 +183,11 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 // backoff to attempt reconnection
 func (c *Client) retryConn() (*websocket.Conn, string, error) {
 	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
+	// at this point, proxy should return proxyAddr like ws://register.domain.ext
+	if c.useDomain {
+		addr = strings.TrimSuffix(c.proxyAddr, "/") + "/" + c.id
+	}
+
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
 
