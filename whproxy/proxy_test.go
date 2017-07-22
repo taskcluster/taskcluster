@@ -911,3 +911,34 @@ func TestProxySendsURL(t *testing.T) {
 		t.Fatal("bad url")
 	}
 }
+
+func TestProxyDomainRegister(t *testing.T) {
+	if os.Getenv("TEST_DNS_SET") != "yes" {
+		t.Skip("dns not set")
+	}
+	proxyConfig := Config{
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte("test-secret"),
+		JWTSecretB:   []byte("another-secret"),
+		Domain:       "tcproxy.dev",
+		Logger:       genLogger("domain-register-proxy-test"),
+		DomainHosted: true,
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// attempt hosting on port 80
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	// make connection
+	dialAddr := "ws://register.tcproxy.dev:" + getPort(server.URL) + "/workerid"
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+workeridjwt)
+	conn, res, err := websocket.DefaultDialer.Dial(dialAddr, header)
+	if err != nil {
+		t.Fatal(res, err)
+	}
+	_ = conn.Close()
+}

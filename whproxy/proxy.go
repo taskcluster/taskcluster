@@ -56,8 +56,9 @@ type proxy struct {
 
 // regex for parsing requests
 var (
-	registerRe = regexp.MustCompile("^/register/([a-z0-9_-]+)/?$")
-	serveRe    = regexp.MustCompile("^/([a-z0-9_-]+)/(.*)$")
+	registerRe       = regexp.MustCompile("^/register/([a-z0-9_-]+)/?$")
+	serveRe          = regexp.MustCompile("^/([a-z0-9_-]+)/(.*)$")
+	domainRegisterRe = regexp.MustCompile("^/([a-z0-9_-]+)/?$")
 )
 
 // New creates a new proxy instance and wraps it as an http.Handler.
@@ -71,7 +72,6 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// check for path style
 	// eg. domain = "tcproxy.net", req url = "https://tcproxy.net/.../"
 	// host may be of the form "host:port"
-	// register requests can only be path style
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
 	if strings.HasPrefix(r.Host, p.domain) {
 		// register will be matched first
@@ -110,8 +110,25 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		index := strings.Index(r.Host, ".")
 		id := r.Host[:index]
 		path := r.URL.Path
+
 		if id == "" {
 			http.NotFound(w, r)
+			return
+		}
+
+		if id == "register" || id == "www" {
+			tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
+			id = strings.TrimPrefix(r.URL.Path, "/")
+			match := domainRegisterRe.FindStringSubmatch(r.URL.Path)
+			if len(match) != 2 {
+				http.Error(w, http.StatusText(400), 400)
+				return
+			}
+			id = match[1]
+			if id == "" {
+				http.Error(w, http.StatusText(400), 400)
+			}
+			p.register(w, r, id, tokenString)
 			return
 		}
 		p.serveRequest(w, r, id, path)
