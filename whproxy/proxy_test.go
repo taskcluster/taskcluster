@@ -933,12 +933,17 @@ func TestProxyDomainRegister(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	dialAddr := "ws://register.tcproxy.dev:" + getPort(server.URL) + "/workerid"
-	header := make(http.Header)
-	header.Set("Authorization ", "Bearer "+workeridjwt)
-	conn, res, err := websocket.DefaultDialer.Dial(dialAddr, header)
-	if err != nil {
-		t.Fatal(res, err)
+	configurer := func() (whclient.Config, error) {
+		return whclient.Config{
+			ID:        "workerid",
+			Token:     workeridjwt,
+			ProxyAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
+			UseDomain: true,
+		}, nil
 	}
-	_ = conn.Close()
+	client, err := whclient.New(configurer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = client.Close()
 }
