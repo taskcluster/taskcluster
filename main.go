@@ -32,6 +32,7 @@ func main() {
 
 	// Load TLS certificates
 	useTLS := true
+	domainHosted := true
 	tlsKeyEnc := os.Getenv("TLS_KEY")
 	tlsCertEnc := os.Getenv("TLS_CERTIFICATE")
 
@@ -41,12 +42,8 @@ func main() {
 	if err != nil {
 		logger.Printf("tls error: %v", err)
 		useTLS = false
-	}
-
-	domainHosted := false
-	mode := os.Getenv("ROUTING_MODE")
-	if mode == "DOMAIN" {
-		domainHosted = true
+		// assume tls * cert
+		domainHosted = false
 	}
 
 	//load port
