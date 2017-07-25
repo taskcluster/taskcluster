@@ -9,7 +9,7 @@
 // http://references.taskcluster.net/aws-provisioner/v1/api.json
 
 // The AWS Provisioner is responsible for provisioning instances on EC2 for use in
-// TaskCluster.  The provisioner maintains a set of worker configurations which
+// Taskcluster.  The provisioner maintains a set of worker configurations which
 // can be managed with an API that is typically available at
 // aws-provisioner.taskcluster.net/v1.  This API can also perform basic instance
 // management tasks in addition to maintaining the internal state of worker type
@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 17 Jul 2017 at 21:23:00 UTC. The code was generated
+// Tue, 25 Jul 2017 at 19:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
