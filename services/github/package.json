@@ -22,7 +22,7 @@
     "debug": "^2.1.3",
     "eslint-config-taskcluster": "^2.0.0",
     "eslint-plugin-taskcluster": "^1.0.2",
-    "github": "^5.2.0",
+    "github": "9.2.0",
     "js-yaml": "^3.8.1",
     "json-parameterization": "^0.2.0",
     "jsonwebtoken": "^5.7.0",
