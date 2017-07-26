@@ -52,7 +52,7 @@ async function isCollaborator({login, organization, repository, sha, instGithub,
     await instGithub.repos.checkCollaborator({
       owner: organization,
       repo: repository,
-      collabuser: login,
+      username: login,
     });
     // No error, the user is a collaborator
     debug(`Checking collaborator: ${login} is a collaborator on ${organization}/${repository}: True!`);
