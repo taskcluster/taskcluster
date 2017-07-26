@@ -6,4 +6,4 @@ whclient/*-test
 webhooktunnel
 main
 certs/
-whcli/whcli
+cmd/whclient/whclient

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/auth"
 	"github.com/taskcluster/webhooktunnel/util"
@@ -19,14 +19,17 @@ import (
 const usage = `whcli <clientID> <accessToken> <targetPort>`
 
 func main() {
+	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.JSONFormatter{})
+
 	if len(os.Args) != 4 {
-		panic(usage)
+		log.Fatal(usage)
 	}
 
 	clientID, accessToken := os.Args[1], os.Args[2]
 	targetPort, err := strconv.Atoi(os.Args[3])
 	if err != nil || targetPort < 0 || targetPort > 65535 {
-		panic(usage)
+		log.Fatal(usage)
 	}
 
 	configurer := func() (whclient.Config, error) {
@@ -46,15 +49,14 @@ func main() {
 			ProxyAddr: proxyURL,
 			UseDomain: true,
 		}, nil
-
 	}
 
 	client, err := whclient.New(configurer)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	fmt.Printf("URL: %s", client.URL())
+	log.WithFields(log.Fields{"url": client.URL()}).Info("connected to proxy")
 
 	waitTime := 5 * time.Millisecond
 	for {
@@ -62,7 +64,7 @@ func main() {
 		if err != nil {
 			ne, ok := err.(net.Error)
 			if !ok || !ne.Temporary() {
-				panic(err)
+				log.Fatal(err)
 			}
 			// wait if temporary
 			time.Sleep(waitTime)
@@ -71,7 +73,6 @@ func main() {
 		}
 		// reset wait time
 		waitTime = 5 * time.Millisecond
-		fmt.Printf("new incoming stream")
 		go forward(stream, targetPort)
 	}
 }
