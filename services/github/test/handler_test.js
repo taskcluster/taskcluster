@@ -108,7 +108,7 @@ suite('handlers', () => {
       github.inst(5828).setRepoCollaborator({
         owner: 'TaskClusterRobot',
         repo: 'hooks-testing',
-        collabuser: 'goodBuddy',
+        username: 'goodBuddy',
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskClusterRobot',

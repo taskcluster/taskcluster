@@ -52,16 +52,16 @@ class FakeGithub {
         this._comments[key].push(info);
       },
       'repos.createCommitComment': () => {},
-      'orgs.checkMembership': async ({org, owner}) => {
-        if (this._org_membership[org] && this._org_membership[org].has(owner)) {
+      'orgs.checkMembership': async ({org, username}) => {
+        if (this._org_membership[org] && this._org_membership[org].has(username)) {
           return {};
         } else {
           throwError(404);
         }
       },
-      'repos.checkCollaborator': async ({owner, repo, collabuser}) => {
+      'repos.checkCollaborator': async ({owner, repo, username}) => {
         const key = `${owner}/${repo}`;
-        if (this._repo_collaborators[key] && this._repo_collaborators[key].has(collabuser)) {
+        if (this._repo_collaborators[key] && this._repo_collaborators[key].has(username)) {
           return {};
         } else {
           throwError(404);
@@ -150,12 +150,12 @@ class FakeGithub {
     this._org_membership[org].add(member);
   }
 
-  setRepoCollaborator({owner, repo, collabuser}) {
+  setRepoCollaborator({owner, repo, username}) {
     const key = `${owner}/${repo}`;
     if (!this._repo_collaborators[key]) {
       this._repo_collaborators[key] = new Set();
     }
-    this._repo_collaborators[key].add(collabuser);
+    this._repo_collaborators[key].add(username);
   }
 
   setRepoInfo({owner, repo, info}) {
