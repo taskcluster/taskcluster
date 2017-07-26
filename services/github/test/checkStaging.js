@@ -44,7 +44,7 @@ const checkStaging = async () => {
     let statuses = await github.repos.getStatuses({
       owner: 'taskcluster',
       repo: 'taskcluster-github-testing',
-      sha,
+      ref: sha,
     });
 
     let status = _.find(statuses, {context: 'Taskcluster-Staging (push)'});

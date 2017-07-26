@@ -140,7 +140,7 @@ async function installationAuthenticate(owner, OwnersDirectory, github) {
 async function findTCStatus(github, owner, repo, branch, configuration) {
   let taskclusterBot = await github.users.getForUser({user: configuration.app.botName});
   // Statuses is an array of status objects, where we find the relevant status
-  let statuses = await github.repos.getStatuses({owner, repo, sha: branch});
+  let statuses = await github.repos.getStatuses({owner, repo, ref: branch});
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 }
 

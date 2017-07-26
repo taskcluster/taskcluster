@@ -1552,9 +1552,9 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-github@9.2.0:
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/github/-/github-9.2.0.tgz#8a886dc40dd63636707dcaf99df3df26c59f16fc"
+github@8.2.1:
+  version "8.2.1"
+  resolved "https://registry.yarnpkg.com/github/-/github-8.2.1.tgz#616b2211fbcd1cc8631669aed67653e62eb53816"
   dependencies:
     follow-redirects "0.0.7"
     https-proxy-agent "^1.0.0"

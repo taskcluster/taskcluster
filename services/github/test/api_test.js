@@ -86,13 +86,13 @@ suite('api', () => {
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'coolRepo',
-      sha: 'master',
+      ref: 'master',
       info: [{creator: {id: 12345}, state: 'success'}, {creator: {id: 55555}, state: 'failure'}],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'awesomeRepo',
-      sha: 'master',
+      ref: 'master',
       info: [
         {creator: {id: 12345}, state: 'success'},
         {creator: {id: 55555}, state: 'success', target_url: 'Wonderland'},
@@ -101,7 +101,7 @@ suite('api', () => {
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'nonTCGHRepo',
-      sha: 'master',
+      ref: 'master',
       info: [{creator: {id: 123345}, state: 'success'}],
     });
     github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', user: 'magicalTCspirit'});
@@ -210,7 +210,7 @@ suite('api', () => {
     let status = github.inst(9090).getStatuses({
       owner: 'abc123',
       repo: 'awesomeRepo',
-      sha: 'master',
+      ref: 'master',
     }).pop();
     assert.equal(status.state, 'error');
     assert.equal(status.target_url, undefined);
@@ -229,7 +229,7 @@ suite('api', () => {
     let status = github.inst(9090).getStatuses({
       owner: 'abc123',
       repo: 'awesomeRepo',
-      sha: 'master',
+      ref: 'master',
     }).pop();
     assert.equal(status.state, 'failure');
     assert.equal(status.target_url, 'http://test.com');
