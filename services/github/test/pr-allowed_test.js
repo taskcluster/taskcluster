@@ -76,7 +76,7 @@ suite('allowPullRequests', function() {
     });
 
     test('allows the case where the login is a repo collaborator but not org member', async function() {
-      github.inst(9999).setRepoCollaborator({owner: 'buildbot', repo: 'bbdocs', collabuser: 'djmitche'});
+      github.inst(9999).setRepoCollaborator({owner: 'buildbot', repo: 'bbdocs', username: 'djmitche'});
       assert.equal(await prAllowed.isCollaborator({
         login: 'djmitche',
         organization: 'buildbot',
