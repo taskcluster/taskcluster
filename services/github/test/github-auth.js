@@ -107,8 +107,8 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'users.getForUser': async ({user}) => {
-        let requested = _.find(this._github_users, {user});
+      'users.getForUser': async ({username}) => {
+        let requested = _.find(this._github_users, {username});
         if (requested) {
           requested.id = parseInt(requested.id, 10);
           return requested;
@@ -163,11 +163,11 @@ class FakeGithub {
     this._repo_info[key] = info;
   }
 
-  setUser({id, email, user}) {
+  setUser({id, email, username}) {
     // Please note that here userId is a string. If you need to set up a github API function
     // to get and use userId, you need to use parseInt(id, 10)
     // (as an example, see users.getForUser above)
-    this._github_users.push({id: id.toString(), email, user});
+    this._github_users.push({id: id.toString(), email, username});
   }
 
   setRepositories(...repoNames) {
