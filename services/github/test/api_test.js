@@ -104,7 +104,7 @@ suite('api', () => {
       ref: 'master',
       info: [{creator: {id: 123345}, state: 'success'}],
     });
-    github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', user: 'magicalTCspirit'});
+    github.inst(9090).setUser({id: 55555, email: 'noreply@github.com', username: 'magicalTCspirit'});
   });
 
   test('all builds', async function() {
