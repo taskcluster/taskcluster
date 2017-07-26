@@ -99,8 +99,8 @@ class FakeGithub {
       'integrations.getInstallationRepositories': async () => {
         return this._repositories;
       },
-      'repos.getStatuses': async ({owner, repo, sha}) => {
-        const key = `${owner}/${repo}@${sha}`;
+      'repos.getStatuses': async ({owner, repo, ref}) => {
+        const key = `${owner}/${repo}@${ref}`;
         if (this._statuses[key]) {
           return this._statuses[key];
         } else {
@@ -176,13 +176,13 @@ class FakeGithub {
     this._repositories.total_count = this._repositories.repositories.length;
   }
 
-  setStatuses({owner, repo, sha, info}) {
-    const key = `${owner}/${repo}@${sha}`;
+  setStatuses({owner, repo, ref, info}) {
+    const key = `${owner}/${repo}@${ref}`;
     this._statuses[key] = info;
   }
 
-  getStatuses({owner, repo, sha}) {
-    const key = `${owner}/${repo}@${sha}`;
+  getStatuses({owner, repo, ref}) {
+    const key = `${owner}/${repo}@${ref}`;
     return this._statuses[key];
   }
 
