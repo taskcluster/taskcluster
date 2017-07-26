@@ -163,7 +163,7 @@ func (s *Session) Accept() (net.Conn, error) {
 
 	select {
 	case <-s.closed:
-		return nil, s.acceptErr
+		return nil, ErrSessionClosed
 	case str := <-s.streamCh:
 		if str == nil {
 			return nil, ErrSessionClosed
