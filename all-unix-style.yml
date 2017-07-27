@@ -59,11 +59,20 @@ properties:
         path:
           title: Artifact location
           type: string
-          description: Filesystem path of artifact
+          description: |-
+            Relative path of the file/directory from the task directory. Note this is not an absolute
+            path as is typically used in docker-worker, since the absolute task directory name is not
+            known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+            forward slashes or backslashes are used.
         name:
           title: Name of the artifact
           type: string
-          description: Name of the artifact, as it will be published. If not set, `path` will be used.
+          description: |-
+            Name of the artifact, as it will be published. If not set, `path` will be used.
+            Conventionally (although not enforced) path elements are forward slash separated. Example:
+            `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
+            Artifact names not beginning `public/` are scope-protected (caller requires scopes to
+            download the artifact). See the Queue documentation for more information.
         expires:
           title: Expiry date and time
           type: string
