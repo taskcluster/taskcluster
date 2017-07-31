@@ -161,6 +161,7 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 		".tgz": true,
 		".bz2": true,
 		".tbz": true,
+                ".xz": true,
 		// Flash
 		".swf": true,
 		".flv": true,
