@@ -26,12 +26,39 @@ If you prefer not to use a prepackaged binary, or want to have the latest unrele
 
 All being well, the binaries will be built under `${GOPATH}/bin`.
 
-# Acquire taskcluster credentials
+# Acquire taskcluster credentials for running tests
 
-* Sign up for a [Mozillians account](https://mozillians.org/en-US/)
+There are two alternative mechanisms to acquire the scopes you need.
+
+## Option 1
+
+This method works if you log into Taskcluster via mozillians, *or* you log into
+taskcluster via LDAP *using the same email address as your mozillians account*,
+*or* if you do not currently have a mozillians account but would like to create
+one.
+
+* Sign up for a [Mozillians account](https://mozillians.org/en-US/) (if you do not already have one)
 * Request membership of the [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/) mozillians group
+
+## Option 2
+
+This method is for those who wish not to create a mozillians account, but
+already authenticate into taskcluster via some other means, or have a
+mozillians account but it is registered to a different email address than the
+one they use to log into Taskcluster with (e.g. via LDAP integration).
+
+* Request the scope `assume:project:taskcluster:generic-worker-tester` to be
+  granted to you via a [bugzilla
+  request](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster&component=Service%20Request),
+  including your [currently active `ClientId`](https://tools.taskcluster.net/credentials/)
+  in the bug description. From the ClientId, we will be able to work out which role to assign the scope
+  to, in order that you acquire the scope with the client you log into Taskcluster tools site with.
+
+Once you have been granted the above scope:
+
 * If you are signed into tools.taskcluster.net already, **sign out**
 * Sign into [tools.taskcluster.net](https://tools.taskcluster.net/) using either your new Mozillians account, _or_ your LDAP account **if it uses the same email address as your Mozillians account**
+* Check that a role or client of yours appears in [this list](https://tools.taskcluster.net/auth/scopes/assume%3Aproject%3Ataskcluster%3Ageneric-worker-tester)
 * Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/) granting it the single scope `assume:project:taskcluster:generic-worker-tester`
 
 # Set up your env
@@ -49,7 +76,7 @@ All being well, the binaries will be built under `${GOPATH}/bin`.
     "publicIP":                   "<ideally an IP address of one of your network interfaces>",
     "signingKeyLocation":         "<file location you wrote gpg private key to>",
     "workerGroup":                "test-worker-group",
-    "workerId":                   "<a name to uniquely identify the worker instance>",
+    "workerId":                   "test-worker-id",
     "workerType":                 "<a unique name that only you will use for your test worker(s)>"
 }
 ```
