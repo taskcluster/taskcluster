@@ -11,43 +11,43 @@ type (
 
 	// Generic Worker config
 	Config struct {
-		AccessToken                    string                 `json:"accessToken"`
-		CachesDir                      string                 `json:"cachesDir"`
-		Certificate                    string                 `json:"certificate"`
-		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
+		AccessToken                    string                 `json:"accessToken,omitempty"`
+		CachesDir                      string                 `json:"cachesDir,omitempty"`
+		Certificate                    string                 `json:"certificate,omitempty"`
+		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs,omitempty"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
-		ClientID                       string                 `json:"clientId"`
-		DeploymentID                   string                 `json:"deploymentId"`
+		ClientID                       string                 `json:"clientId,omitempty"`
+		DeploymentID                   string                 `json:"deploymentId,omitempty"`
 		DisableReboots                 bool                   `json:"disableReboots"`
-		DownloadsDir                   string                 `json:"downloadsDir"`
-		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
-		InstanceID                     string                 `json:"instanceId"`
-		InstanceType                   string                 `json:"instanceType"`
-		LiveLogCertificate             string                 `json:"livelogCertificate"`
-		LiveLogExecutable              string                 `json:"livelogExecutable"`
-		LiveLogGETPort                 uint16                 `json:"livelogGETPort"`
-		LiveLogKey                     string                 `json:"livelogKey"`
-		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
-		LiveLogSecret                  string                 `json:"livelogSecret"`
-		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
-		SentryProject                  string                 `json:"sentryProject"`
-		PrivateIP                      net.IP                 `json:"privateIP"`
-		ProvisionerID                  string                 `json:"provisionerId"`
-		PublicIP                       net.IP                 `json:"publicIP"`
-		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs"`
-		Region                         string                 `json:"region"`
-		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
-		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
+		DownloadsDir                   string                 `json:"downloadsDir,omitempty"`
+		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs,omitempty"`
+		InstanceID                     string                 `json:"instanceId,omitempty"`
+		InstanceType                   string                 `json:"instanceType,omitempty"`
+		LiveLogCertificate             string                 `json:"livelogCertificate,omitempty"`
+		LiveLogExecutable              string                 `json:"livelogExecutable,omitempty"`
+		LiveLogGETPort                 uint16                 `json:"livelogGETPort,omitempty"`
+		LiveLogKey                     string                 `json:"livelogKey,omitempty"`
+		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort,omitempty"`
+		LiveLogSecret                  string                 `json:"livelogSecret,omitempty"`
+		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun,omitempty"`
+		SentryProject                  string                 `json:"sentryProject,omitempty"`
+		PrivateIP                      net.IP                 `json:"privateIP,omitempty"`
+		ProvisionerID                  string                 `json:"provisionerId,omitempty"`
+		PublicIP                       net.IP                 `json:"publicIP,omitempty"`
+		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs,omitempty"`
+		Region                         string                 `json:"region,omitempty"`
+		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes,omitempty"`
+		RunAfterUserCreation           string                 `json:"runAfterUserCreation,omitempty"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
-		SigningKeyLocation             string                 `json:"signingKeyLocation"`
-		Subdomain                      string                 `json:"subdomain"`
-		TasksDir                       string                 `json:"tasksDir"`
-		WorkerGroup                    string                 `json:"workerGroup"`
-		WorkerID                       string                 `json:"workerId"`
-		WorkerType                     string                 `json:"workerType"`
-		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
+		SigningKeyLocation             string                 `json:"signingKeyLocation,omitempty"`
+		Subdomain                      string                 `json:"subdomain,omitempty"`
+		TasksDir                       string                 `json:"tasksDir,omitempty"`
+		WorkerGroup                    string                 `json:"workerGroup,omitempty"`
+		WorkerID                       string                 `json:"workerId,omitempty"`
+		WorkerType                     string                 `json:"workerType,omitempty"`
+		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata,omitempty"`
 	}
 )
 
