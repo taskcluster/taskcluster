@@ -45,9 +45,16 @@ type (
 			Expires tcclient.Time `json:"expires,omitempty"`
 
 			// Name of the artifact, as it will be published. If not set, `path` will be used.
+			// Conventionally (although not enforced) path elements are forward slash separated. Example:
+			// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
+			// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
+			// download the artifact). See the Queue documentation for more information.
 			Name string `json:"name,omitempty"`
 
-			// Filesystem path of artifact
+			// Relative path of the file/directory from the task directory. Note this is not an absolute
+			// path as is typically used in docker-worker, since the absolute task directory name is not
+			// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+			// forward slashes or backslashes are used.
 			Path string `json:"path"`
 
 			// Artifacts can be either an individual `file` or a `directory` containing
@@ -363,12 +370,12 @@ func taskPayloadSchema() string {
             "type": "string"
           },
           "name": {
-            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.",
+            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.",
             "title": "Name of the artifact",
             "type": "string"
           },
           "path": {
-            "description": "Filesystem path of artifact",
+            "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.",
             "title": "Artifact location",
             "type": "string"
           },
