@@ -70,6 +70,8 @@ func (feature *ChainOfTrustFeature) IsEnabled(fl EnabledFeatures) bool {
 }
 
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
+	task.featureArtifacts[signedCertName] = "chain of trust feature"
+	task.featureArtifacts[certifiedLogName] = "chain of trust feature"
 	return &ChainOfTrustTaskFeature{
 		task: task,
 	}

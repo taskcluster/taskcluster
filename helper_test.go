@@ -6,7 +6,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,6 +17,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
+	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -227,4 +231,29 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 	if actualSHA256Hex := hex.EncodeToString(hasher.Sum(nil)); actualSHA256Hex != sha256Hex {
 		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
 	}
+}
+
+func getArtifactContent(t *testing.T, myQueue *queue.Queue, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+	url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
+	}
+	// need to do this so Content-Encoding header isn't swallowed by Go for test later on
+	tr := &http.Transport{
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
+	rawResp, _, err := httpbackoff.ClientGet(client, url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	resp, _, err := httpbackoff.Get(url.String())
+	if err != nil {
+		t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
+	}
+	return b, rawResp, resp, url
 }

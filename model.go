@@ -29,6 +29,17 @@ type (
 		maxRunTimeDeadline time.Time
 		Queue              *queue.Queue       `json:"-"`
 		StatusManager      *TaskStatusManager `json:"-"`
+		// This is a map of artifact names to internal feature names for
+		// reserving artifact names that are uploaded implicitly rather than
+		// being listed in the task.payload.artifacts section, such as logs,
+		// chain of trust signatures, etc. Including artifact names as keys in
+		// this map means that if they also get included as a payload artifact,
+		// the feature artifact will take precedence, and the payload artifact
+		// will be skipped. The internal feature name is just used for logging
+		// the feature name that caused the upload to be skipped, which may
+		// be useful for the user. Normally this map would get appended to by
+		// features when they are started.
+		featureArtifacts map[string]string
 	}
 
 	S3ArtifactResponse struct {

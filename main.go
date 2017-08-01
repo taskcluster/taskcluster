@@ -664,6 +664,9 @@ func FindAndRunTask() bool {
 			Queue:             taskQueue,
 			TaskClaimResponse: queue.TaskClaimResponse(taskResponse),
 			Artifacts:         map[string]Artifact{},
+			featureArtifacts: map[string]string{
+				livelogBackingName: "log feature",
+			},
 		}
 
 		task.StatusManager = NewTaskStatusManager(task)
@@ -1072,6 +1075,15 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	defer func() {
 		for _, artifact := range task.PayloadArtifacts() {
+			// Any attempt to upload a feature artifact should be skipped
+			// but not cause a failure, since e.g. a directory artifact
+			// could include one, non-maliciously, such as a top level
+			// public/ directory artifact that includes
+			// public/logs/live_backing.log inadvertently.
+			if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
+				task.Logf("WARNING - not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
+				continue
+			}
 			err.add(task.uploadArtifact(artifact))
 			// Note - the above error only covers not being able to upload an
 			// artifact, but doesn't cover case that an artifact could not be

@@ -53,6 +53,8 @@ type LiveLogTask struct {
 }
 
 func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
+	task.featureArtifacts[livelogName] = "livelog feature"
+	task.featureArtifacts[livelogBackingName] = "livelog feature"
 	return &LiveLogTask{
 		task: task,
 	}

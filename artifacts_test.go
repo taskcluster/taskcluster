@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -16,7 +14,6 @@ import (
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
 
-	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
@@ -367,6 +364,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/live_backing.log")...)
 	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/certified.log")...)
 	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/chainOfTrust.json.asc")...)
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/X.txt")...)
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/Y.txt")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -397,6 +396,16 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 				Expires: expires,
 				Type:    "file",
 			},
+			{
+				Path:    "public/X.txt",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/Y.txt",
+				Expires: expires,
+				Type:    "file",
+			},
 		},
 		Features: struct {
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
@@ -422,19 +431,37 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	if l := len(artifacts.Artifacts); l != 3 {
-		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+	if l := len(artifacts.Artifacts); l != 6 {
+		t.Fatalf("Was expecting 5 artifacts, but got %v", l)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
-	a := map[string]bool{
-		artifacts.Artifacts[0].Name: true,
-		artifacts.Artifacts[1].Name: true,
-		artifacts.Artifacts[2].Name: true,
+	a := map[string]bool{}
+	for _, j := range artifacts.Artifacts {
+		a[j.Name] = true
 	}
 
-	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
-		t.Fatalf("Wrong artifacts presented in task %v", taskID)
+	x, _, _, _ := getArtifactContent(t, myQueue, taskID, "public/X.txt")
+	y, _, _, _ := getArtifactContent(t, myQueue, taskID, "public/Y.txt")
+
+	if string(x) != string(y) {
+		t.Fatalf("Artifacts X.txt and Y.txt should have identical content in task %v, but they do not", taskID)
+	}
+
+	for _, artifactName := range []string{
+		"public/logs/live.log",
+		"public/logs/live_backing.log",
+		"public/logs/certified.log",
+		"public/chainOfTrust.json.asc",
+	} {
+		if !a[artifactName] {
+			t.Fatalf("Artifact %v missing in task %v", artifactName, taskID)
+		}
+		// make sure artifact content isn't from copied file
+		b, _, _, _ := getArtifactContent(t, myQueue, taskID, artifactName)
+		if string(b) == string(x) {
+			t.Fatalf("Protected artifact %v seems to have overridden content from X.txt in task %v", artifactName, taskID)
+		}
 	}
 }
 
@@ -538,8 +565,8 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
 	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	if status.Status.State != "exception" || status.Status.Runs[0].ReasonResolved != "malformed-payload" {
+		t.Fatalf("Expected task %v to resolve as 'exception/malformed-payload' but resolved as '%v/%v'", taskID, status.Status.State, status.Status.Runs[0].ReasonResolved)
 	}
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
@@ -841,27 +868,7 @@ func TestUpload(t *testing.T) {
 	cotCert := &ChainOfTrustData{}
 
 	for artifact, content := range expectedArtifacts {
-		url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
-		if err != nil {
-			t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
-		}
-		// need to do this so Content-Encoding header isn't swallowed by Go for test later on
-		tr := &http.Transport{
-			DisableCompression: true,
-		}
-		client := &http.Client{Transport: tr}
-		rawResp, _, err := httpbackoff.ClientGet(client, url.String())
-		if err != nil {
-			t.Fatalf("Error trying to fetch decompressed artifact from signed URL %s ...\n%s", url.String(), err)
-		}
-		resp, _, err := httpbackoff.Get(url.String())
-		if err != nil {
-			t.Fatalf("Error trying to fetch artifact from signed URL %s ...\n%s", url.String(), err)
-		}
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
-		}
+		b, rawResp, resp, url := getArtifactContent(t, myQueue, taskID, artifact)
 		for _, requiredSubstring := range content.extracts {
 			if strings.Index(string(b), requiredSubstring) < 0 {
 				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
