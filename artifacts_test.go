@@ -356,6 +356,346 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 	}
 }
 
+func TestProtectedArtifactsReplaced(t *testing.T) {
+	setup(t, "TestProtectedArtifactsReplaced")
+	defer teardown(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/live.log")...)
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/live_backing.log")...)
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/certified.log")...)
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/chainOfTrust.json.asc")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires,omitempty"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path:    "public/logs/live.log",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/logs/live_backing.log",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/logs/certified.log",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/chainOfTrust.json.asc",
+				Expires: expires,
+				Type:    "file",
+			},
+		},
+		Features: struct {
+			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+		}{
+			ChainOfTrust: true,
+		},
+	}
+	td := testTask(t)
+
+	taskID, myQueue := executeTask(t, td, payload)
+
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
+
+	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	if l := len(artifacts.Artifacts); l != 3 {
+		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+	}
+
+	// use the artifact names as keys in a map, so we can look up that each key exists
+	a := map[string]bool{
+		artifacts.Artifacts[0].Name: true,
+		artifacts.Artifacts[1].Name: true,
+		artifacts.Artifacts[2].Name: true,
+	}
+
+	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
+		t.Fatalf("Wrong artifacts presented in task %v", taskID)
+	}
+}
+
+func TestPublicDirectoryArtifact(t *testing.T) {
+	setup(t, "TestPublicDirectoryArtifact")
+	defer teardown(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/build/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires,omitempty"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path:    "public",
+				Expires: expires,
+				Type:    "directory",
+			},
+		},
+	}
+	td := testTask(t)
+
+	taskID, myQueue := executeTask(t, td, payload)
+
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
+
+	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	if l := len(artifacts.Artifacts); l != 3 {
+		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+	}
+
+	// use the artifact names as keys in a map, so we can look up that each key exists
+	a := map[string]bool{
+		artifacts.Artifacts[0].Name: true,
+		artifacts.Artifacts[1].Name: true,
+		artifacts.Artifacts[2].Name: true,
+	}
+
+	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
+		t.Fatalf("Wrong artifacts presented in task %v", taskID)
+	}
+}
+
+func TestConflictingFileArtifactsInPayload(t *testing.T) {
+	setup(t, "TestConflictingFileArtifactsInPayload")
+	defer teardown(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyArtifact("SampleArtifacts/b/c/d.jpg")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires,omitempty"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+				Name:    "public/build/X.txt",
+			},
+			{
+				Path:    "SampleArtifacts/b/c/d.jpg",
+				Expires: expires,
+				Type:    "file",
+				Name:    "public/build/X.txt",
+			},
+		},
+	}
+	td := testTask(t)
+
+	taskID, myQueue := executeTask(t, td, payload)
+
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
+
+	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	if l := len(artifacts.Artifacts); l != 3 {
+		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+	}
+
+	// use the artifact names as keys in a map, so we can look up that each key exists
+	a := map[string]bool{
+		artifacts.Artifacts[0].Name: true,
+		artifacts.Artifacts[1].Name: true,
+		artifacts.Artifacts[2].Name: true,
+	}
+
+	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
+		t.Fatalf("Wrong artifacts presented in task %v", taskID)
+	}
+}
+
+func TestFileArtifactTwiceInPayload(t *testing.T) {
+	setup(t, "TestFileArtifactTwiceInPayload")
+	defer teardown(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires,omitempty"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+				Name:    "public/build/X.txt",
+			},
+			{
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+				Name:    "public/build/X.txt",
+			},
+		},
+	}
+	td := testTask(t)
+
+	taskID, myQueue := executeTask(t, td, payload)
+
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
+
+	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	if l := len(artifacts.Artifacts); l != 3 {
+		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+	}
+
+	// use the artifact names as keys in a map, so we can look up that each key exists
+	a := map[string]bool{
+		artifacts.Artifacts[0].Name: true,
+		artifacts.Artifacts[1].Name: true,
+		artifacts.Artifacts[2].Name: true,
+	}
+
+	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
+		t.Fatalf("Wrong artifacts presented in task %v", taskID)
+	}
+}
+
+func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
+	setup(t, "TestArtifactIncludedAsFileAndDirectoryInPayload")
+	defer teardown(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []struct {
+			Expires tcclient.Time `json:"expires,omitempty"`
+			Name    string        `json:"name,omitempty"`
+			Path    string        `json:"path"`
+			Type    string        `json:"type"`
+		}{
+			{
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+				Name:    "public/build/X.txt",
+			},
+			{
+				Path:    "SampleArtifacts/_",
+				Expires: expires,
+				Type:    "directory",
+				Name:    "public/build",
+			},
+		},
+	}
+	td := testTask(t)
+
+	taskID, myQueue := executeTask(t, td, payload)
+
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != "completed" {
+		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
+	}
+
+	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	if l := len(artifacts.Artifacts); l != 3 {
+		t.Fatalf("Was expecting 3 artifacts, but got %v", l)
+	}
+
+	// use the artifact names as keys in a map, so we can look up that each key exists
+	a := map[string]bool{
+		artifacts.Artifacts[0].Name: true,
+		artifacts.Artifacts[1].Name: true,
+		artifacts.Artifacts[2].Name: true,
+	}
+
+	if !a["public/build/X.txt"] || !a["public/logs/live.log"] || !a["public/logs/live_backing.log"] {
+		t.Fatalf("Wrong artifacts presented in task %v", taskID)
+	}
+}
+
 func TestUpload(t *testing.T) {
 
 	setup(t, "TestUpload")

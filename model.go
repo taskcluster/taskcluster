@@ -19,9 +19,10 @@ type (
 		TaskReclaimResponse queue.TaskReclaimResponse    `json:"-"`
 		Definition          queue.TaskDefinitionResponse `json:"-"`
 		Payload             GenericWorkerPayload         `json:"-"`
-		Artifacts           []Artifact                   `json:"-"`
-		Status              TaskStatus                   `json:"-"`
-		Commands            []*process.Command           `json:"-"`
+		// Artifacts is a map from artifact name to artifact
+		Artifacts map[string]Artifact `json:"-"`
+		Status    TaskStatus          `json:"-"`
+		Commands  []*process.Command  `json:"-"`
 		// not exported
 		logWriter          io.Writer
 		reclaimTimer       *time.Timer

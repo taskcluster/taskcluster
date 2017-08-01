@@ -663,6 +663,7 @@ func FindAndRunTask() bool {
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,
 			TaskClaimResponse: queue.TaskClaimResponse(taskResponse),
+			Artifacts:         {},
 		}
 
 		task.StatusManager = NewTaskStatusManager(task)

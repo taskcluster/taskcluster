@@ -408,7 +408,10 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
-	task.Artifacts = append(task.Artifacts, artifact)
+	if _, exists := task.Artifacts[artifact.Base().Name]; exists {
+		return nil
+	}
+	task.Artifacts[artifact.Base().Name] = artifact
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
 		panic(err)

@@ -61,11 +61,11 @@ func goRun(goFile string) []string {
 	}
 }
 
-func copyArtifact(path string) []string {
-	targetFile := strings.Replace(path, "/", "\\", -1)
-	sourceFile := filepath.Join(testdataDir, targetFile)
+func copyArtifactTo(src, dest string) []string {
+	destFile := strings.Replace(dest, "/", "\\", -1)
+	sourceFile := filepath.Join(testdataDir, strings.Replace(src, "/", "\\", -1))
 	return []string{
-		"mkdir \"" + filepath.Dir(targetFile) + "\"",
-		"copy \"" + sourceFile + "\" \"" + targetFile + "\"",
+		"mkdir \"" + filepath.Dir(destFile) + "\"",
+		"copy \"" + sourceFile + "\" \"" + destFile + "\"",
 	}
 }
