@@ -76,7 +76,7 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 }
 
 func (artifact *RedirectArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Logf("Redirected artifact %v to URL %v with mime type %q and expiry %v", artifact.Name, artifact.URL, artifact.MimeType, artifact.Expires)
+	task.Logf("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", artifact.Name, artifact.URL, artifact.MimeType, artifact.Expires)
 	// nothing to do
 	return nil
 }
@@ -408,9 +408,6 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
-	if _, exists := task.Artifacts[artifact.Base().Name]; exists {
-		return nil
-	}
 	task.Artifacts[artifact.Base().Name] = artifact
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
@@ -432,12 +429,26 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 				if rootCause.HttpResponseCode/100 == 5 {
 					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
 				} else {
-					// if not a 5xx error, then either task cancelled, or a problem with the request == worker bug
+					// was artifact already uploaded ( => malformed payload)?
+					if rootCause.HttpResponseCode == 409 {
+						fullError := fmt.Errorf(
+							"There was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
+								"Check the artifacts section of the task payload at https://queue.taskcluster.net/v1/task/%v\n"+
+								"%v",
+							artifact.Base().Name,
+							artifact.Base().Name,
+							task.TaskID,
+							rootCause,
+						)
+						return MalformedPayloadError(fullError)
+					}
+					// was task cancelled or deadline exceeded?
 					task.StatusManager.UpdateStatus()
 					status := task.StatusManager.LastKnownStatus()
 					if status == deadlineExceeded || status == cancelled {
 						return nil
 					}
+					// assume a problem with the request == worker bug
 					panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
 				}
 			default:

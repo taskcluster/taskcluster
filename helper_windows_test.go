@@ -61,6 +61,10 @@ func goRun(goFile string) []string {
 	}
 }
 
+func copyArtifact(path string) []string {
+	return copyArtifactTo(path, path)
+}
+
 func copyArtifactTo(src, dest string) []string {
 	destFile := strings.Replace(dest, "/", "\\", -1)
 	sourceFile := filepath.Join(testdataDir, strings.Replace(src, "/", "\\", -1))

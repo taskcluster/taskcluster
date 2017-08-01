@@ -228,7 +228,3 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 		t.Errorf("Expected file %v to have SHA256 %v but it was %v", file, sha256Hex, actualSHA256Hex)
 	}
 }
-
-func copyArtifact(path string) [][]string {
-	return copyArtifactTo(path, path)
-}
