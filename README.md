@@ -84,6 +84,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run:
 
 ```
+$ generic-worker --help
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
