@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -14,6 +15,12 @@ import (
 	"github.com/taskcluster/stateless-dns-go/hostname"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+)
+
+var (
+	livelogName        = "public/logs/live.log"
+	livelogBackingName = "public/logs/live_backing.log"
+	livelogPath        = filepath.Join("generic-worker", "live_backing.log")
 )
 
 type LiveLogFeature struct {
@@ -112,12 +119,11 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 		log.Printf("WARN: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Print("Redirecting live.log to live_backing.log")
-	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, l.task.TaskID, l.task.RunID, "public/logs/live_backing.log")
+	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, l.task.TaskID, l.task.RunID, livelogBackingName)
 	err := l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{
-				CanonicalPath: "public/logs/live.log",
-				Name:          "public/logs/live.log",
+				Name: livelogName,
 				// same expiry as underlying log it points to
 				Expires: l.task.Definition.Expires,
 			},
@@ -148,8 +154,7 @@ func (l *LiveLogTask) uploadLiveLog() error {
 	uploadErr := l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{
-				CanonicalPath: "public/logs/live.log",
-				Name:          "public/logs/live.log",
+				Name: livelogName,
 				// livelog expires when task must have completed
 				Expires: tcclient.Time(maxRunTimeDeadline),
 			},

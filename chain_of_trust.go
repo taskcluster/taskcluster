@@ -16,6 +16,13 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
+var (
+	certifiedLogPath = filepath.Join("generic-worker", "certified.log")
+	certifiedLogName = "public/logs/certified.log"
+	signedCertPath   = filepath.Join("generic-worker", "chainOfTrust.json.asc")
+	signedCertName   = "public/chainOfTrust.json.asc"
+)
+
 type ChainOfTrustFeature struct {
 }
 
@@ -78,14 +85,14 @@ func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 }
 
 func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
-	logFile := filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log")
-	certifiedLogFile := filepath.Join(taskContext.TaskDir, "public", "logs", "certified.log")
-	signedCert := filepath.Join(taskContext.TaskDir, "public", "chainOfTrust.json.asc")
+	logFile := filepath.Join(taskContext.TaskDir, livelogPath)
+	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
+	signedCert := filepath.Join(taskContext.TaskDir, signedCertPath)
 	e := copyFileContents(logFile, certifiedLogFile)
 	if e != nil {
 		panic(e)
 	}
-	err := cot.task.uploadLog("public/logs/certified.log")
+	err := cot.task.uploadLog(certifiedLogName, certifiedLogPath)
 	if err != nil {
 		return err
 	}
@@ -156,7 +163,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	w.Close()
 	out.Write([]byte{'\n'})
 	out.Close()
-	err = cot.task.uploadLog("public/chainOfTrust.json.asc")
+	err = cot.task.uploadLog(signedCertName, signedCertPath)
 	if err != nil {
 		return err
 	}
@@ -164,7 +171,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 }
 
 func calculateHash(artifact *S3Artifact) (hash string, err error) {
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
+	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Path)
 	rawContent, err := os.Open(rawContentFile)
 	if err != nil {
 		return

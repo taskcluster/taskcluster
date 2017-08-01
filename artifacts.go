@@ -33,26 +33,27 @@ var (
 
 type (
 	Artifact interface {
-		ProcessResponse(response interface{}) error
+		ProcessResponse(response interface{}, task *TaskRun) error
 		RequestObject() interface{}
 		ResponseObject() interface{}
 		Base() *BaseArtifact
 	}
 
 	BaseArtifact struct {
-		CanonicalPath string
-		Name          string
-		Expires       tcclient.Time
+		Name    string
+		Expires tcclient.Time
 	}
 
 	S3Artifact struct {
 		*BaseArtifact
-		MimeType        string
+		Path            string
 		ContentEncoding string
+		MimeType        string
 	}
 
 	AzureArtifact struct {
 		*BaseArtifact
+		Path     string
 		MimeType string
 	}
 
@@ -64,6 +65,7 @@ type (
 
 	ErrorArtifact struct {
 		*BaseArtifact
+		Path    string
 		Message string
 		Reason  string
 	}
@@ -73,7 +75,8 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 	return base
 }
 
-func (artifact *RedirectArtifact) ProcessResponse(response interface{}) error {
+func (artifact *RedirectArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
+	task.Logf("Redirected artifact %v to URL %v with mime type %q and expiry %v", artifact.Name, artifact.URL, artifact.MimeType, artifact.Expires)
 	// nothing to do
 	return nil
 }
@@ -91,7 +94,8 @@ func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
 	return new(queue.RedirectArtifactResponse)
 }
 
-func (artifact *ErrorArtifact) ProcessResponse(response interface{}) error {
+func (artifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
+	task.Logf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", artifact.Name, artifact.Path, artifact.Message, artifact.Reason, artifact.Expires)
 	// TODO: process error response
 	return nil
 }
@@ -117,7 +121,7 @@ func (errArtifact *ErrorArtifact) String() string {
 // it to a temporary file. The file path of the generated temporary file is returned.
 // It is the responsibility of the caller to delete the temporary file.
 func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.CanonicalPath)
+	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Path)
 	baseName := filepath.Base(rawContentFile)
 	tmpFile, err := ioutil.TempFile("", baseName)
 	if err != nil {
@@ -169,17 +173,18 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 		".woff":  true,
 		".woff2": true,
 	}
-	if SKIP_COMPRESS_EXTENSIONS[filepath.Ext(artifact.CanonicalPath)] {
+	if SKIP_COMPRESS_EXTENSIONS[filepath.Ext(artifact.Path)] {
 		return
 	}
 
 	artifact.ContentEncoding = "gzip"
 }
 
-func (artifact *S3Artifact) ProcessResponse(resp interface{}) (err error) {
+func (artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
 	response := resp.(*queue.S3ArtifactResponse)
 
 	artifact.ChooseContentEncoding()
+	task.Logf("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", artifact.Name, artifact.Path, artifact.ContentEncoding, artifact.MimeType, artifact.Expires)
 	transferContentFile := artifact.CreateTempFileForPUTBody()
 	defer os.Remove(transferContentFile)
 
@@ -244,7 +249,7 @@ func (s3Artifact *S3Artifact) ResponseObject() interface{} {
 }
 
 func (s3Artifact *S3Artifact) String() string {
-	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'", s3Artifact.Name, s3Artifact.CanonicalPath, s3Artifact.Expires, s3Artifact.ContentEncoding, s3Artifact.MimeType)
+	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'", s3Artifact.Name, s3Artifact.Path, s3Artifact.Expires, s3Artifact.ContentEncoding, s3Artifact.MimeType)
 }
 
 // Returns the artifacts as listed in the payload of the task (note this does
@@ -252,14 +257,14 @@ func (s3Artifact *S3Artifact) String() string {
 func (task *TaskRun) PayloadArtifacts() []Artifact {
 	artifacts := make([]Artifact, 0)
 	for _, artifact := range task.Payload.Artifacts {
+		basePath := artifact.Path
 		base := &BaseArtifact{
-			CanonicalPath: canonicalPath(artifact.Path),
-			Name:          artifact.Name,
-			Expires:       artifact.Expires,
+			Name:    artifact.Name,
+			Expires: artifact.Expires,
 		}
 		// if no name given, use canonical path
 		if base.Name == "" {
-			base.Name = base.CanonicalPath
+			base.Name = canonicalPath(basePath)
 		}
 		// default expiry should be task expiry
 		if time.Time(base.Expires).IsZero() {
@@ -267,9 +272,9 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 		}
 		switch artifact.Type {
 		case "file":
-			artifacts = append(artifacts, resolve(base, "file"))
+			artifacts = append(artifacts, resolve(base, "file", basePath))
 		case "directory":
-			if errArtifact := resolve(base, "directory"); errArtifact != nil {
+			if errArtifact := resolve(base, "directory", basePath); errArtifact != nil {
 				artifacts = append(artifacts, errArtifact)
 				continue
 			}
@@ -282,28 +287,27 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 					// this indicates a bug in the code
 					panic(err)
 				}
-				relativePath, err := filepath.Rel(base.CanonicalPath, subPath)
+				relativePath, err := filepath.Rel(basePath, subPath)
 				if err != nil {
 					// this indicates a bug in the code
 					panic(err)
 				}
 				subName := filepath.Join(base.Name, relativePath)
 				b := &BaseArtifact{
-					CanonicalPath: canonicalPath(subPath),
-					Name:          canonicalPath(subName),
-					Expires:       base.Expires,
+					Name:    canonicalPath(subName),
+					Expires: base.Expires,
 				}
 				switch {
 				case info.IsDir():
-					if errArtifact := resolve(b, "directory"); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", subPath); errArtifact != nil {
 						artifacts = append(artifacts, errArtifact)
 					}
 				default:
-					artifacts = append(artifacts, resolve(b, "file"))
+					artifacts = append(artifacts, resolve(b, "file", subPath))
 				}
 				return nil
 			}
-			filepath.Walk(filepath.Join(taskContext.TaskDir, base.CanonicalPath), walkFn)
+			filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
 	return artifacts
@@ -318,8 +322,8 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *BaseArtifact, artifactType string) Artifact {
-	fullPath := filepath.Join(taskContext.TaskDir, base.CanonicalPath)
+func resolve(base *BaseArtifact, artifactType string, path string) Artifact {
+	fullPath := filepath.Join(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact
@@ -327,6 +331,7 @@ func resolve(base *BaseArtifact, artifactType string) Artifact {
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Could not read %s '%s'", artifactType, fullPath),
 			Reason:       "file-missing-on-worker",
+			Path:         path,
 		}
 	}
 	defer fileReader.Close()
@@ -337,6 +342,7 @@ func resolve(base *BaseArtifact, artifactType string) Artifact {
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Could not stat %s '%s'", artifactType, fullPath),
 			Reason:       "invalid-resource-on-worker",
+			Path:         path,
 		}
 	}
 	if artifactType == "file" && fileinfo.IsDir() {
@@ -344,6 +350,7 @@ func resolve(base *BaseArtifact, artifactType string) Artifact {
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("File artifact '%s' exists as a directory, not a file, on the worker", fullPath),
 			Reason:       "invalid-resource-on-worker",
+			Path:         path,
 		}
 	}
 	if artifactType == "directory" && !fileinfo.IsDir() {
@@ -351,12 +358,13 @@ func resolve(base *BaseArtifact, artifactType string) Artifact {
 			BaseArtifact: base,
 			Message:      fmt.Sprintf("Directory artifact '%s' exists as a file, not a directory, on the worker", fullPath),
 			Reason:       "invalid-resource-on-worker",
+			Path:         path,
 		}
 	}
 	if artifactType == "directory" {
 		return nil
 	}
-	extension := filepath.Ext(base.CanonicalPath)
+	extension := filepath.Ext(path)
 	// first look up our own custom mime type mappings
 	mimeType := customMimeMappings[strings.ToLower(extension)]
 	// then fall back to system mime type mappings
@@ -371,6 +379,7 @@ func resolve(base *BaseArtifact, artifactType string) Artifact {
 	return &S3Artifact{
 		BaseArtifact: base,
 		MimeType:     mimeType,
+		Path:         path,
 	}
 }
 
@@ -383,15 +392,15 @@ func canonicalPath(path string) string {
 	return strings.Replace(path, string(os.PathSeparator), "/", -1)
 }
 
-func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
+func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 	return task.uploadArtifact(
 		&S3Artifact{
 			BaseArtifact: &BaseArtifact{
-				CanonicalPath: logFile,
-				Name:          logFile,
+				Name: name,
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
+			Path:            path,
 			MimeType:        "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",
 		},
@@ -399,7 +408,6 @@ func (task *TaskRun) uploadLog(logFile string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
-	task.Logf("Uploading file %v as artifact %v", artifact.Base().CanonicalPath, artifact.Base().Name)
 	task.Artifacts = append(task.Artifacts, artifact)
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
@@ -442,7 +450,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	if e != nil {
 		panic(e)
 	}
-	e = artifact.ProcessResponse(resp)
+	e = artifact.ProcessResponse(resp, task)
 	// note: this only returns an error, if ProcessResponse returns an error...
 	if e != nil {
 		task.Logf("Error uploading artifact: %v", e)

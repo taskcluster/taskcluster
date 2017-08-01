@@ -212,7 +212,7 @@ func TestMissingScopes(t *testing.T) {
 	}
 
 	// check log mentions both missing scopes
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
@@ -320,7 +320,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	}
 
 	// check log mentions zip file is invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log"))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}

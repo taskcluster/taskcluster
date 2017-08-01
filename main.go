@@ -940,7 +940,7 @@ func (task *TaskRun) kill() {
 }
 
 func (task *TaskRun) createLogFile() *os.File {
-	absLogFile := filepath.Join(taskContext.TaskDir, "public", "logs", "live_backing.log")
+	absLogFile := filepath.Join(taskContext.TaskDir, livelogPath)
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		panic(err)
@@ -1011,7 +1011,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog("public/logs/live_backing.log"))
+		err.add(task.uploadLog(livelogBackingName, livelogPath))
 	}()
 
 	task.logHeader()
@@ -1146,16 +1146,6 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	}
 }
 
-func (task *TaskRun) uploadBackingLog() *CommandExecutionError {
-	log.Print("Uploading full log file")
-	err := task.uploadLog("public/logs/live_backing.log")
-	if err != nil {
-		return ResourceUnavailable(err)
-	}
-
-	return nil
-}
-
 func convertNilToEmptyString(val interface{}) string {
 	if val == nil {
 		return ""
@@ -1179,7 +1169,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 	if reboot {
 		return
 	}
-	logDir := filepath.Join(taskContext.TaskDir, "public", "logs")
+	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(livelogPath))
 	err := os.MkdirAll(logDir, 0777)
 	if err != nil {
 		panic(err)
