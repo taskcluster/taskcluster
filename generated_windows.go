@@ -95,6 +95,13 @@ type (
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
 		OSGroups []string `json:"osGroups,omitempty"`
+
+		// URL of the a service that can indicate tasks superseding this one; the current `taskId`
+		// will be appended as a query argument `taskId`. The service should return an object with
+		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
+		// tasks should be ordered such that each task supersedes all tasks appearing earlier in
+		// the list.
+		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
 	Mount json.RawMessage
@@ -451,6 +458,12 @@ func taskPayloadSchema() string {
       },
       "title": "OS Groups",
       "type": "array"
+    },
+    "supersederUrl": {
+      "description": "URL of the a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing earlier in\nthe list.",
+      "format": "uri",
+      "title": "Superseder URL",
+      "type": "string"
     }
   },
   "required": [
