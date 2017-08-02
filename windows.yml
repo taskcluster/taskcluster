@@ -109,6 +109,16 @@ properties:
       scope `generic-worker:os-group:<os-group>` for each group listed.
     items:
       type: string
+  supersederUrl:
+    type: string
+    title: Superseder URL
+    description: |-
+      URL of the a service that can indicate tasks superseding this one; the current `taskId`
+      will be appended as a query argument `taskId`. The service should return an object with
+      a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
+      tasks should be ordered such that each task supersedes all tasks appearing earlier in
+      the list.
+    format: uri
 definitions:
   mount:
     title: Mount
