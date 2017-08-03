@@ -32,6 +32,9 @@ helper.expireTasks = () => load('expire-tasks', loadOptions);
 // Allow tests to run expire-task-groups
 helper.expireTaskGroups = () => load('expire-task-groups', loadOptions);
 
+// Allow tests to run expire-provisioners
+helper.expireWorkerInfo = () => load('expire-worker-info', loadOptions);
+
 // Allow tests to run expire-task-group-members
 helper.expireTaskGroupMembers = () => {
   return load('expire-task-group-members', loadOptions);

@@ -30,6 +30,9 @@ defaults:
     # taskcluster.fromNow, notice this should be negative!
     taskExpirationDelay:          '- 30 minutes'
 
+    # Time delay before expiring worker info; notice this should be negative!
+    workerInfoExpirationDelay:    '- 30 minutes'
+
     # Time extension of the expires property for task-group definitions.
     # This is entities holding the schedulerId for a task-group, hence, we
     # expire them later to avoid people creating tasks with a different
