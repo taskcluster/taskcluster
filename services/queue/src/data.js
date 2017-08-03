@@ -613,3 +613,46 @@ TaskDependency.expire = async function(now) {
 
 // Export TaskDependency
 exports.TaskDependency = TaskDependency;
+
+/**
+ * Provisioner describes provisioners (construed broadly - a provisionerId doesn't
+ * necessarily correspond to a running service).
+ *
+ */
+let Provisioner = Entity.configure({
+  version:            1,
+  partitionKey:       Entity.keys.StringKey('provisionerId'),
+  rowKey:             Entity.keys.ConstantKey('provisioner'),
+  properties: {
+    provisionerId:    Entity.types.String,
+    // the time at which this provisioner should no longer be displayed
+    expires:          Entity.types.Date,
+  },
+});
+
+/**
+ * Expire Provisioner entries.
+ *
+ * Returns a promise that all expired Provisioner entries have been deleted
+ */
+Provisioner.expire = async function(now) {
+  assert(now instanceof Date, 'now must be given as option');
+  var count = 0;
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          entry => { count++; return entry.remove(true); },
+  });
+  return count;
+};
+
+/** Return JSON representation of provisioner meta-data */
+Provisioner.prototype.json = function() {
+  return {
+    provisionerId:    this.provisionerId,
+  };
+};
+
+// Export Provisioner
+exports.Provisioner = Provisioner;
