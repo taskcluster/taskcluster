@@ -46,4 +46,208 @@ tasks:
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
 
+  - provisionerId: aws-provisioner-v1
+    workerType: worker-ci-test
+    retries: 0
+    scopes:
+      - 'docker-worker:capability:privileged'
+      - 'docker-worker:capability:device:loopbackAudio'
+      - 'docker-worker:capability:device:loopbackVideo'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+    payload:
+      image: >-
+        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+      maxRunTime: 10800
+      command:
+        - >-
+          yarn install --frozen-lockfile && yarn build && ./build.sh &&
+          ./.test/docker-worker-test --this-chunk 1 --total-chunks 5
+      capabilities:
+        privileged: true
+        devices:
+          loopbackAudio: true
+          loopbackVideo: true
+      env:
+        WORKER_CI: '1'
+      features:
+        taskclusterProxy: true
+    metadata:
+      name: Docker-worker tests - 1
+      description: Runs entire docker-worker test suite
+      owner: garndt@mozilla.com
+      source: 'https://github.com/gregarndt/docker-worker.git'
+    tags: {}
+    extra:
+      github:
+        env: true
+        events:
+          - push
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+
+  - provisionerId: aws-provisioner-v1
+    workerType: worker-ci-test
+    retries: 0
+    scopes:
+      - 'docker-worker:capability:privileged'
+      - 'docker-worker:capability:device:loopbackAudio'
+      - 'docker-worker:capability:device:loopbackVideo'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+    payload:
+      image: >-
+        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+      maxRunTime: 10800
+      command:
+        - >-
+          yarn install --frozen-lockfile && yarn build && ./build.sh &&
+          ./.test/docker-worker-test --this-chunk 2 --total-chunks 5
+      capabilities:
+        privileged: true
+        devices:
+          loopbackAudio: true
+          loopbackVideo: true
+      env:
+        WORKER_CI: '1'
+      features:
+        taskclusterProxy: true
+    metadata:
+      name: Docker-worker tests - 2
+      description: Runs entire docker-worker test suite
+      owner: garndt@mozilla.com
+      source: 'https://github.com/gregarndt/docker-worker.git'
+    tags: {}
+    extra:
+      github:
+        env: true
+        events:
+          - push
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+
+  - provisionerId: aws-provisioner-v1
+    workerType: worker-ci-test
+    retries: 0
+    scopes:
+      - 'docker-worker:capability:privileged'
+      - 'docker-worker:capability:device:loopbackAudio'
+      - 'docker-worker:capability:device:loopbackVideo'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+    payload:
+      image: >-
+        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+      maxRunTime: 10800
+      command:
+        - >-
+          yarn install --frozen-lockfile && yarn build && ./build.sh &&
+          ./.test/docker-worker-test --this-chunk 3 --total-chunks 5
+      capabilities:
+        privileged: true
+        devices:
+          loopbackAudio: true
+          loopbackVideo: true
+      env:
+        WORKER_CI: '1'
+      features:
+        taskclusterProxy: true
+    metadata:
+      name: Docker-worker tests - 3
+      description: Runs entire docker-worker test suite
+      owner: garndt@mozilla.com
+      source: 'https://github.com/gregarndt/docker-worker.git'
+    tags: {}
+    extra:
+      github:
+        env: true
+        events:
+          - push
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+
+  - provisionerId: aws-provisioner-v1
+    workerType: worker-ci-test
+    retries: 0
+    scopes:
+      - 'docker-worker:capability:privileged'
+      - 'docker-worker:capability:device:loopbackAudio'
+      - 'docker-worker:capability:device:loopbackVideo'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+    payload:
+      image: >-
+        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+      maxRunTime: 10800
+      command:
+        - >-
+          yarn install --frozen-lockfile && yarn build && ./build.sh &&
+          ./.test/docker-worker-test --this-chunk 4 --total-chunks 5
+      capabilities:
+        privileged: true
+        devices:
+          loopbackAudio: true
+          loopbackVideo: true
+      env:
+        WORKER_CI: '1'
+      features:
+        taskclusterProxy: true
+    metadata:
+      name: Docker-worker tests - 4
+      description: Runs entire docker-worker test suite
+      owner: garndt@mozilla.com
+      source: 'https://github.com/gregarndt/docker-worker.git'
+    tags: {}
+    extra:
+      github:
+        env: true
+        events:
+          - push
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+
+  - provisionerId: aws-provisioner-v1
+    workerType: worker-ci-test
+    retries: 0
+    scopes:
+      - 'docker-worker:capability:privileged'
+      - 'docker-worker:capability:device:loopbackAudio'
+      - 'docker-worker:capability:device:loopbackVideo'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:ci-creds'
+      - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
+    payload:
+      image: >-
+        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+      maxRunTime: 10800
+      command:
+        - >-
+          yarn install --frozen-lockfile && yarn build && ./build.sh &&
+          ./.test/docker-worker-test --this-chunk 5 --total-chunks 5
+      capabilities:
+        privileged: true
+        devices:
+          loopbackAudio: true
+          loopbackVideo: true
+      env:
+        WORKER_CI: '1'
+      features:
+        taskclusterProxy: true
+    metadata:
+      name: Docker-worker tests - 5
+      description: Runs entire docker-worker test suite
+      owner: garndt@mozilla.com
+      source: 'https://github.com/gregarndt/docker-worker.git'
+    tags: {}
+    extra:
+      github:
+        env: true
+        events:
+          - push
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
 

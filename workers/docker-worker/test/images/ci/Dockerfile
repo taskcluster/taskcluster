@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     iptables \
     lxc \
-    python
+    python \
+    jq
 
 RUN curl -SL "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" | \
     tar xz -C /usr/local --strip-components=1 && \
