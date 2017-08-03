@@ -17,6 +17,7 @@ let ClaimResolver       = require('./claimresolver');
 let DependencyTracker   = require('./dependencytracker');
 let DependencyResolver  = require('./dependencyresolver');
 let WorkClaimer         = require('./workclaimer');
+let WorkerInfo          = require('./workerinfo');
 let loader              = require('taskcluster-lib-loader');
 let config              = require('typed-env-config');
 let monitor             = require('taskcluster-lib-monitor');
@@ -236,6 +237,21 @@ let load = loader({
     },
   },
 
+  // Create Provisioner table
+  Provisioner: {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
+      let Provisioner = data.Provisioner.setup({
+        table:            cfg.app.taskDependencyTableName,
+        account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
+        monitor:          monitor.prefix('table.taskdependencies'),
+      });
+      await Provisioner.ensureTable();
+      return Provisioner;
+    },
+  },
+
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor'],
@@ -260,6 +276,14 @@ let load = loader({
       monitor:        monitor.prefix('work-claimer'),
       claimTimeout:   cfg.app.claimTimeout,
       credentials:    cfg.taskcluster.credentials,
+    }),
+  },
+
+  // Create workerInfo
+  workerInfo: {
+    requires: ['Provisioner'],
+    setup: ({Provisioner}) => new WorkerInfo({
+      Provisioner,
     }),
   },
 
@@ -290,7 +314,7 @@ let load = loader({
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
-      'workClaimer',
+      'workClaimer', 'Provisioner', 'workerInfo',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -301,6 +325,7 @@ let load = loader({
         TaskGroupActiveSet: ctx.TaskGroupActiveSet,
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
         TaskDependency:   ctx.TaskDependency,
+        Provisioner:      ctx.Provisioner,
         dependencyTracker: ctx.dependencyTracker,
         publisher:        ctx.publisher,
         validator:        ctx.validator,
@@ -315,6 +340,7 @@ let load = loader({
         artifactRegion:   ctx.cfg.aws.region,
         monitor:          ctx.monitor.prefix('api-context'),
         workClaimer:      ctx.workClaimer,
+        workerInfo:       ctx.workerInfo,
       },
       validator:        ctx.validator,
       authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
@@ -534,6 +560,22 @@ let load = loader({
       debug('Expired %s task-requirement', count);
 
       monitor.count('expire-task-requirement.done');
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
+    },
+  },
+
+  // Create the worker-info expiration process (periodic job)
+  'expire-worker-info': {
+    requires: ['cfg', 'workerInfo', 'monitor'],
+    setup: async ({cfg, workerInfo, monitor}) => {
+      var now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
+      assert(!_.isNaN(now), 'Can\'t have NaN as now');
+
+      // Expire task-dependency using delay
+      let count = await workerInfo.expire(now);
+
+      monitor.count('expire-worker-info.done');
       monitor.stopResourceMonitoring();
       await monitor.flush();
     },

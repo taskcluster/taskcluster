@@ -122,6 +122,7 @@ var api = new API({
     'TaskGroupMember',    // data.TaskGroupMember instance
     'TaskGroupActiveSet', // data.TaskGroupMember instance (but in a different table)
     'TaskDependency',     // data.TaskDependency instance
+    'Provisioner',        // data.Provisioner instance
     'publicBucket',       // bucket instance for public artifacts
     'privateBucket',      // bucket instance for private artifacts
     'blobStore',          // BlobStore for azure artifacts
@@ -134,6 +135,7 @@ var api = new API({
     'dependencyTracker',  // Instance of DependencyTracker
     'monitor',            // base.monitor instance
     'workClaimer',        // Instance of WorkClaimer
+    'workerInfo',         // Instance of WorkerInfo
   ],
 });
 
@@ -1362,9 +1364,12 @@ api.declare({
     res.once('close', accept);
   });
 
-  let result = await this.workClaimer.claim(
-    provisionerId, workerType, workerGroup, workerId, count, aborted,
-  );
+  let [result] = await Promise.all([
+    this.workClaimer.claim(
+      provisionerId, workerType, workerGroup, workerId, count, aborted,
+    ),
+    this.workerInfo.provisionerSeen(provisionerId),
+  ]);
 
   return res.reply({
     tasks: result,
@@ -1438,9 +1443,12 @@ api.declare({
   }
 
   // Claim task
-  let result = await this.workClaimer.claimTask(
-    taskId, runId, workerGroup, workerId, task,
-  );
+  let [result] = await Promise.all([
+    this.workClaimer.claimTask(
+      taskId, runId, workerGroup, workerId, task,
+    ),
+    this.workerInfo.provisionerSeen(task.provisionerId),
+  ]);
 
   // If the run doesn't exist return ResourceNotFound
   if (result === 'run-not-found') {
@@ -1965,6 +1973,45 @@ api.declare({
 
 // Load artifacts.js so API end-points declared in that file is loaded
 require('./artifacts');
+
+/** Count pending tasks for workerType */
+api.declare({
+  method:     'get',
+  route:      '/provisioners',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name:       'listProvisioners',
+  stability:  API.stability.experimental,
+  output:     'list-provisioners-response.json#',
+  title:      'Get a list of all active provisioners',
+  description: [
+    'Get all active provisioners.',
+    '',
+    'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
+    'This does not necessarily mean there is an associated service performing any',
+    'provisioning activity.',
+    '',
+    'The response is paged. If this end-point returns a `continuationToken`, you',
+    'should call the end-point again with the `continuationToken` as a query-string',
+    'option. By default this end-point will list up to 1000 provisioners in a single',
+    'page. You may limit this with the query-string parameter `limit`.',
+  ].join('\n'),
+}, async function(req, res) {
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
+
+  let provisioners = await this.Provisioner.scan({}, {continuation, limit});
+  let result = {
+    provisioners: provisioners.entries.map(provisioner => provisioner.json()),
+  };
+  if (provisioners.continuation) {
+    result.continuationToken = provisioners.continuation;
+  }
+
+  return res.reply(result);
+});
 
 /** Count pending tasks for workerType */
 api.declare({
