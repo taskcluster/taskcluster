@@ -1,4 +1,4 @@
-Generated: 1501010699
+Generated: 1501799004
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6749,6 +6749,28 @@ you may limit this with the query-string parameter `limit`.'
 Entry 21    =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/provisioners'
+    Entry Args        = '[]'
+    Entry Query        = '[continuationToken limit]'
+    Entry Name        = 'listProvisioners'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#'
+    Entry Title       = 'Get a list of all active provisioners'
+    Entry Description = 'Get all active provisioners.
+
+The term "provisioner" is taken broadly to mean anything with a provisionerId.
+This does not necessarily mean there is an associated service performing any
+provisioning activity.
+
+The response is paged. If this end-point returns a `continuationToken`, you
+should call the end-point again with the `continuationToken` as a query-string
+option. By default this end-point will list up to 1000 provisioners in a single
+page. You may limit this with the query-string parameter `limit`.'
+Entry 22    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/pending/<provisionerId>/<workerType>'
     Entry Args        = '[provisionerId workerType]'
     Entry Query        = '[]'
@@ -6765,7 +6787,7 @@ The underlying Azure Storage Queues only promises to give us an estimate.
 Furthermore, we cache the result in memory for 20 seconds. So consumers
 should be no means expect this to be an accurate number.
 It is, however, a solid estimate of the number of pending tasks.'
-Entry 22    =
+Entry 23    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -7363,6 +7385,52 @@ Title                  = 'List Dependent Tasks Response'
 Type                   = 'object'
 TypeName               = 'ListDependentTasksResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#
+========================================================================
+Additional Properties  = 'false'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#'
+Properties
+  Property 'continuationToken' =
+    Description            = 'Opaque `continuationToken` to be given as query-string option to get the
+    next set of provisioners.
+    This property is only present if another request is necessary to fetch all
+    results. In practice the next request with a `continuationToken` may not
+    return additional results, but it can. Thus, you can only be sure to have
+    all the results if you've called with `continuationToken` until you get a
+    result without a `continuationToken`.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = 'ContinuationToken'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/continuationToken'
+  Property 'provisioners' =
+    Items
+      Additional Properties  = 'false'
+      Properties
+        Property 'provisionerId' =
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Title                  = 'Provisioner ID'
+          Type                   = 'string'
+          TypeName               = 'ProvisionerID'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId'
+      Required               = '[provisionerId]'
+      Title                  = 'Provisioner Information'
+      Type                   = 'object'
+      TypeName               = 'ProvisionerInformation'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items'
+    Type                   = 'array'
+    TypeName               = 'Provisioners'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners'
+Required               = '[provisioners]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Provisioners Response'
+Type                   = 'object'
+TypeName               = 'ListProvisionersResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#

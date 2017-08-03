@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 25 Jul 2017 at 19:24:00 UTC. The code was generated
+// Thu, 3 Aug 2017 at 22:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -630,6 +630,33 @@ func (myQueue *Queue) ListLatestArtifacts(taskId, continuationToken, limit strin
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), v)
 	return responseObject.(*ListArtifactsResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get all active provisioners.
+//
+// The term "provisioner" is taken broadly to mean anything with a provisionerId.
+// This does not necessarily mean there is an associated service performing any
+// provisioning activity.
+//
+// The response is paged. If this end-point returns a `continuationToken`, you
+// should call the end-point again with the `continuationToken` as a query-string
+// option. By default this end-point will list up to 1000 provisioners in a single
+// page. You may limit this with the query-string parameter `limit`.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#listProvisioners
+func (myQueue *Queue) ListProvisioners(continuationToken, limit string) (*ListProvisionersResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners", new(ListProvisionersResponse), v)
+	return responseObject.(*ListProvisionersResponse), err
 }
 
 // Get an approximate number of pending tasks for the given `provisionerId`
