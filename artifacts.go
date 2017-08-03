@@ -165,6 +165,7 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 		".tgz": true,
 		".bz2": true,
 		".tbz": true,
+		".whl": true, // Python wheel are already zip file
 		".xz":  true,
 		// Flash
 		".swf": true,
