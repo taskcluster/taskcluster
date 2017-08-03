@@ -3,7 +3,7 @@ title: Superseding
 order: 50
 ---
 
-In some casse, the demand for tasks outstrips the available resources to run those tasks, and pending counts on queues start to grow.
+In some cases, the demand for tasks outstrips the available resources to run those tasks, and pending counts on queues start to grow.
 In many cases, executing some tasks in the queue can render others unnecessary.
 For example, if the test tasks for a later version-control revision succeed, then tests for earlier revisions can be skipped.
 Such earlier tasks are said to be "superseded" by the later task.
@@ -24,26 +24,25 @@ The docker-worker will append the taskId of the task it has received from the qu
 The service is free to interpret the URL path in any way.
 
 The supserseder returns a list of taskIds, including the initial taskId, in the `supersedes` property of the response body.
-The list is sorted such that each task supersedes all tasks appearing earlier in the list.
-The worker will attempt to claim each task, and execute the highest-indexed task for which `claimTask` succeeds -- this task becomes the primary task.
+The list is sorted such that each task supersedes all tasks appearing later in the list.
+The worker will attempt to claim each task, and execute the lowest-indexed task for which `claimTask` succeeds -- this task becomes the primary task.
 
 Continuing the example, given an initial taskId of `E5SBRfo-RfOIxh0V4187Qg`, the foo-coalescer service might respond with
 
 ```js
 {
     "supersedes": [
-        "E5SBRfo-RfOIxh0V4187Qg",
+        "KGt8egfvRaqxczIRgOScaw",
         "909mRog1E98Va0g-bb91ba",
-        "KGt8egfvRaqxczIRgOScaw"
+        "E5SBRfo-RfOIxh0V4187Qg"
     ]
 }
 ```
 
 This indicates that, for this coalescing key, the best task to execute is `KGt8egfvRaqxczIRgOScaw`, superseding `909mRog1E98Va0g-bb91ba` and `E5SBRfo-RfOIxh0V4187Qg`.
 The worker would try to claim all three tasks.
-If the claims succeeded for all but the last task, then it would consider `909mRog1E98Va0g-bb91ba` the primary task and execute it.
+If the claims succeeded for all but the first task, then it would consider `909mRog1E98Va0g-bb91ba` the primary task and execute it.
 Note that this is not the same task that it received from the queue!
 
 When the primary task completes, all of the secondary tasks are resolved as exception/superseded, with an artifact named `public/superseded-by.json` containing the `taskId` and `runId` of the primary task.
 The primary task gets an artifact named `public/supersedes.json` with a list of `{taskId, runId}` for the tasks it supersedes.
-
