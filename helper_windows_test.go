@@ -69,7 +69,7 @@ func copyArtifactTo(src, dest string) []string {
 	destFile := strings.Replace(dest, "/", "\\", -1)
 	sourceFile := filepath.Join(testdataDir, strings.Replace(src, "/", "\\", -1))
 	return []string{
-		"mkdir \"" + filepath.Dir(destFile) + "\"",
+		"if not exist \"" + filepath.Dir(destFile) + "\" mkdir \"" + filepath.Dir(destFile) + "\"",
 		"copy \"" + sourceFile + "\" \"" + destFile + "\"",
 	}
 }
