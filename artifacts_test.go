@@ -109,7 +109,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 					Name:    "public/b/c/%%%/v/X",
 					Expires: inAnHour,
 				},
-				Path:     "SampleArtifacts/%%%/v/X",
+				Path:     filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 				MimeType: "application/octet-stream",
 			},
 			&S3Artifact{
@@ -117,7 +117,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 					Name:    "public/b/c/_/X.txt",
 					Expires: inAnHour,
 				},
-				Path:     "SampleArtifacts/_/X.txt",
+				Path:     filepath.Join("SampleArtifacts", "_", "X.txt"),
 				MimeType: "text/plain; charset=utf-8",
 			},
 			&S3Artifact{
@@ -125,7 +125,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
-				Path:     "SampleArtifacts/b/c/d.jpg",
+				Path:     filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 				MimeType: "image/jpeg",
 			},
 		})
@@ -155,7 +155,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 					Name:    "SampleArtifacts/%%%/v/X",
 					Expires: inAnHour,
 				},
-				Path:     "SampleArtifacts/%%%/v/X",
+				Path:     filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 				MimeType: "application/octet-stream",
 			},
 			&S3Artifact{
@@ -163,7 +163,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 					Name:    "SampleArtifacts/_/X.txt",
 					Expires: inAnHour,
 				},
-				Path:     "SampleArtifacts/_/X.txt",
+				Path:     filepath.Join("SampleArtifacts", "_", "X.txt"),
 				MimeType: "text/plain; charset=utf-8",
 			},
 			&S3Artifact{
@@ -171,7 +171,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 					Name:    "SampleArtifacts/b/c/d.jpg",
 					Expires: inAnHour,
 				},
-				Path:     "SampleArtifacts/b/c/d.jpg",
+				Path:     filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 				MimeType: "image/jpeg",
 			},
 		})
