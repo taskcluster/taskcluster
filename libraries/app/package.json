@@ -38,8 +38,7 @@
     "eslint-plugin-taskcluster": "^1.0.2",
     "mocha": "2.5.3",
     "source-map-support": "^0.4.0",
-    "superagent": "^1.8.3",
-    "superagent-promise": "^1.1.0"
+    "superagent": "3.5.1"
   },
   "main": "./lib/app.js"
 }
