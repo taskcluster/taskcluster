@@ -242,10 +242,10 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Provisioner = data.Provisioner.setup({
-        table:            cfg.app.taskDependencyTableName,
+        table:            cfg.app.provisionerTableName,
         account:          cfg.azureTableAccount,
         credentials:      cfg.taskcluster.credentials,
-        monitor:          monitor.prefix('table.taskdependencies'),
+        monitor:          monitor.prefix('table.provisioner'),
       });
       await Provisioner.ensureTable();
       return Provisioner;
