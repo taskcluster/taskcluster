@@ -32,7 +32,7 @@ func TestAppDataNotShared(t *testing.T) {
 	}
 	td1 := testTask(t)
 
-	taskID1, myQueue := executeTask(t, td1, payload1)
+	taskID1 := scheduleAndExecute(t, td1, payload1)
 
 	// Second task:
 	payload2 := GenericWorkerPayload{
@@ -50,17 +50,11 @@ func TestAppDataNotShared(t *testing.T) {
 	}
 	td2 := testTask(t)
 
-	taskID2, _ := executeTask(t, td2, payload2)
+	taskID2 := scheduleAndExecute(t, td2, payload2)
 
 	// make sure both tasks resolved successfully
 	for _, taskID := range []string{taskID1, taskID2} {
-		tsr, err := myQueue.Status(taskID)
-		if err != nil {
-			t.Fatalf("Could not retrieve task status")
-		}
-		if tsr.Status.State != "completed" {
-			t.Fatalf("Was expecting state %q but got %q", "completed", tsr.Status.State)
-		}
+		ensureResolution(t, taskID, "completed", "completed")
 	}
 }
 
@@ -96,14 +90,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	// make sure task resolved successfully
-	tsr, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Could not retrieve task status")
-	}
-	if tsr.Status.State != "completed" {
-		t.Fatalf("Was expecting state %q but got %q", "completed", tsr.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 }

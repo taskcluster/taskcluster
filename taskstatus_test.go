@@ -58,5 +58,5 @@ func TestResolveResolvedTask(t *testing.T) {
 	}
 	payload.Env = envRawMessage
 
-	_, _ = executeTask(t, td, payload)
+	_ = scheduleAndExecute(t, td, payload)
 }

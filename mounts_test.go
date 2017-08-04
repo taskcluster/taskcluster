@@ -122,16 +122,10 @@ func TestMounts(t *testing.T) {
 		"generic-worker:cache:devtools-app",
 	}
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
 	// check task succeeded
-	tsr, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Problem querying status of task %v: %v", taskID, err)
-	}
-	if tsr.Status.State != "completed" {
-		t.Fatalf("Task %v did not complete successfully - it has state %q but should have state \"completed\"", taskID, tsr.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 
 	checkSHA256(
 		t,
@@ -200,16 +194,9 @@ func TestMissingScopes(t *testing.T) {
 	td := testTask(t)
 	// don't set any scopes
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	// check task had exception/malformed-payload
-	tsr, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Problem querying status of task %v: %v", taskID, err)
-	}
-	if tsr.Status.State != "exception" || tsr.Status.Runs[0].ReasonResolved != "malformed-payload" {
-		t.Fatalf("Task %v did not complete as intended - it resolved as %v/%v but should have resolved as exception/malformed-payload", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
-	}
+	ensureResolution(t, taskID, "exception", "malformed-payload")
 
 	// check log mentions both missing scopes
 	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
@@ -247,7 +234,7 @@ func TestCachesCanBeModified(t *testing.T) {
 	execute := func() {
 		td := testTask(t)
 		td.Scopes = []string{"generic-worker:cache:test-modifications"}
-		executeTask(t, td, payload)
+		scheduleAndExecute(t, td, payload)
 	}
 
 	getCounter := func() int {
@@ -308,16 +295,9 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	// check task failed
-	tsr, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Problem querying status of task %v: %v", taskID, err)
-	}
-	if tsr.Status.State != "failed" || tsr.Status.Runs[0].ReasonResolved != "failed" {
-		t.Fatalf("Task %v did not complete as intended - it resolved as %v/%v but should have resolved as failed/failed", taskID, tsr.Status.State, tsr.Status.Runs[0].ReasonResolved)
-	}
+	ensureResolution(t, taskID, "failed", "failed")
 
 	// check log mentions zip file is invalid
 	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))

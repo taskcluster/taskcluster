@@ -34,6 +34,7 @@ var (
 	inAnHour       tcclient.Time
 	testdataDir    string
 	globalTestName string
+	myQueue        *queue.Queue
 )
 
 func setup(t *testing.T, testName string) {
@@ -115,6 +116,8 @@ func setup(t *testing.T, testName string) {
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
 	globalTestName = testName
+
+	myQueue = NewQueue(t)
 }
 
 func teardown(t *testing.T) {
@@ -127,7 +130,7 @@ func teardown(t *testing.T) {
 	}
 }
 
-func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string, myQueue *queue.Queue) {
+func NewQueue(t *testing.T) (myQueue *queue.Queue) {
 	// check we have all the env vars we need to run this test
 	if config.ClientID == "" || config.AccessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
@@ -138,6 +141,11 @@ func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericW
 		Certificate: config.Certificate,
 	}
 	myQueue = queue.New(creds)
+
+	return
+}
+
+func scheduleTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
 	taskID = slugid.Nice()
 
 	b, err := json.Marshal(&payload)
@@ -166,7 +174,11 @@ func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericW
 		t.Fatalf("Could not submit task: %v", err)
 	}
 
-	err = UpdateTasksResolvedFile(0)
+	return
+}
+
+func execute(t *testing.T) {
+	err := UpdateTasksResolvedFile(0)
 	if err != nil {
 		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
 	}
@@ -175,7 +187,11 @@ func executeTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericW
 	if exitCode != TASKS_COMPLETE {
 		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, TASKS_COMPLETE)
 	}
+}
 
+func scheduleAndExecute(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
+	taskID = scheduleTask(t, td, payload)
+	execute(t)
 	return
 }
 
@@ -233,7 +249,7 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 	}
 }
 
-func getArtifactContent(t *testing.T, myQueue *queue.Queue, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
+func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
 	url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
 	if err != nil {
 		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
@@ -256,4 +272,14 @@ func getArtifactContent(t *testing.T, myQueue *queue.Queue, taskID string, artif
 		t.Fatalf("Error trying to read response body of artifact from signed URL %s ...\n%s", url.String(), err)
 	}
 	return b, rawResp, resp, url
+}
+
+func ensureResolution(t *testing.T, taskID, state, reason string) {
+	status, err := myQueue.Status(taskID)
+	if err != nil {
+		t.Fatal("Error retrieving status from queue")
+	}
+	if status.Status.State != state || status.Status.Runs[0].ReasonResolved != reason {
+		t.Fatalf("Expected task %v to resolve as '%v/%v' but resolved as '%v/%v'", taskID, state, reason, status.Status.State, status.Status.Runs[0].ReasonResolved)
+	}
 }

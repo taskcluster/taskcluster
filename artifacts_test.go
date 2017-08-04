@@ -343,14 +343,8 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "failed" {
-		t.Fatalf("Expected state 'failed' but got state '%v'", status.Status.State)
-	}
+	taskID := scheduleAndExecute(t, td, payload)
+	ensureResolution(t, taskID, "failed", "failed")
 }
 
 func TestProtectedArtifactsReplaced(t *testing.T) {
@@ -415,15 +409,9 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -441,8 +429,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		a[j.Name] = true
 	}
 
-	x, _, _, _ := getArtifactContent(t, myQueue, taskID, "public/X.txt")
-	y, _, _, _ := getArtifactContent(t, myQueue, taskID, "public/Y.txt")
+	x, _, _, _ := getArtifactContent(t, taskID, "public/X.txt")
+	y, _, _, _ := getArtifactContent(t, taskID, "public/Y.txt")
 
 	if string(x) != string(y) {
 		t.Fatalf("Artifacts X.txt and Y.txt should have identical content in task %v, but they do not", taskID)
@@ -458,7 +446,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			t.Fatalf("Artifact %v missing in task %v", artifactName, taskID)
 		}
 		// make sure artifact content isn't from copied file
-		b, _, _, _ := getArtifactContent(t, myQueue, taskID, artifactName)
+		b, _, _, _ := getArtifactContent(t, taskID, artifactName)
 		if string(b) == string(x) {
 			t.Fatalf("Protected artifact %v seems to have overridden content from X.txt in task %v", artifactName, taskID)
 		}
@@ -492,15 +480,9 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -559,15 +541,9 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "exception" || status.Status.Runs[0].ReasonResolved != "malformed-payload" {
-		t.Fatalf("Expected task %v to resolve as 'exception/malformed-payload' but resolved as '%v/%v'", taskID, status.Status.State, status.Status.Runs[0].ReasonResolved)
-	}
+	ensureResolution(t, taskID, "exception", "malformed-payload")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -625,15 +601,9 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -691,15 +661,9 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -763,7 +727,7 @@ func TestUpload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
 	// some required substrings - not all, just a selection
 	expectedArtifacts := map[string]struct {
@@ -868,7 +832,7 @@ func TestUpload(t *testing.T) {
 	cotCert := &ChainOfTrustData{}
 
 	for artifact, content := range expectedArtifacts {
-		b, rawResp, resp, url := getArtifactContent(t, myQueue, taskID, artifact)
+		b, rawResp, resp, url := getArtifactContent(t, taskID, artifact)
 		for _, requiredSubstring := range content.extracts {
 			if strings.Index(string(b), requiredSubstring) < 0 {
 				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
@@ -983,13 +947,7 @@ func TestUpload(t *testing.T) {
 		}
 	}
 
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatal("Error retrieving status from queue")
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	ensureResolution(t, taskID, "completed", "completed")
 }
 
 func TestFileArtifactHasNoExpiry(t *testing.T) {
@@ -1016,14 +974,8 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Error retrieving status from queue: %v", err)
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	taskID := scheduleAndExecute(t, td, payload)
+	ensureResolution(t, taskID, "completed", "completed")
 	// check artifact expiry matches task expiry
 	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {
@@ -1066,14 +1018,8 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
 	td := testTask(t)
 
-	taskID, myQueue := executeTask(t, td, payload)
-	status, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Error retrieving status from queue: %v", err)
-	}
-	if status.Status.State != "completed" {
-		t.Fatalf("Expected state 'completed' but got state '%v'", status.Status.State)
-	}
+	taskID := scheduleAndExecute(t, td, payload)
+	ensureResolution(t, taskID, "completed", "completed")
 	// check artifact expiry matches task expiry
 	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {

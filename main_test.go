@@ -18,15 +18,9 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 		MaxRunTime: 10,
 	}
 	td := testTask(t)
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	tsr, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Could not retrieve task status")
-	}
-	if tsr.Status.State != "failed" {
-		t.Fatalf("Was expecting state %q but got %q", "failed", tsr.Status.State)
-	}
+	ensureResolution(t, taskID, "failed", "failed")
 }
 
 func TestAbortAfterMaxRunTime(t *testing.T) {
@@ -37,15 +31,9 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 		MaxRunTime: 3,
 	}
 	td := testTask(t)
-	taskID, myQueue := executeTask(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
 
-	tsr, err := myQueue.Status(taskID)
-	if err != nil {
-		t.Fatalf("Could not retrieve task status")
-	}
-	if tsr.Status.State != "failed" {
-		t.Fatalf("Was expecting state %q but got %q", "failed", tsr.Status.State)
-	}
+	ensureResolution(t, taskID, "failed", "failed")
 	// check uploaded log mentions abortion
 	// note: we do this rather than local log, to check also log got uploaded
 	// as failure path requires that task is resolved before logs are uploaded
