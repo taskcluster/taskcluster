@@ -50,7 +50,7 @@ var (
 		&SupersedeFeature{},
 	}
 
-	version = "10.1.8"
+	version = "10.2.0"
 	usage   = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
