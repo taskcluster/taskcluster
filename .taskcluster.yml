@@ -113,7 +113,7 @@ tasks:
         - cacheName: generic-worker-checkout
           directory: gopath\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.7.5.windows-amd64.zip
+            url: https://storage.googleapis.com/golang/go1.8.3.windows-amd64.zip
           directory: .
           format: zip
         - content:
@@ -180,7 +180,7 @@ tasks:
         - cacheName: generic-worker-checkout
           directory: gopath\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.7.5.windows-386.zip
+            url: https://storage.googleapis.com/golang/go1.8.3.windows-386.zip
           directory: .
           format: zip
         - content:
@@ -256,7 +256,7 @@ tasks:
         - cacheName: generic-worker-checkout
           directory: gopath\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.7.5.windows-amd64.zip
+            url: https://storage.googleapis.com/golang/go1.8.3.windows-amd64.zip
           directory: .
           format: zip
         - content:
@@ -292,7 +292,7 @@ tasks:
         - - /bin/bash
           - -vxec
           - |
-            export GOROOT="$(pwd)/go1.8/go"
+            export GOROOT="$(pwd)/go1.8.3/go"
             export GOPATH="$(pwd)/gopath"
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
@@ -326,8 +326,8 @@ tasks:
         - cacheName: generic-worker-checkout
           directory: gopath/src
         - content:
-            url: https://storage.googleapis.com/golang/go1.8.darwin-amd64.tar.gz
-          directory: go1.8
+            url: https://storage.googleapis.com/golang/go1.8.3.darwin-amd64.tar.gz
+          directory: go1.8.3
           format: tar.gz
 
 
@@ -335,64 +335,70 @@ tasks:
   #################### Linux ARM6 Build ####################
   ##########################################################
 
-  - provisionerId: pmoore-manual
-    workerType: raspberry-pi-3b
-    metadata:
-      name: "Build/test ARM6 generic-worker on Linux (Raspberry Pi)"
-      description: "This builds the ARM6 Linux version of generic-worker"
-      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
-      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
-    extra:
-      github:
-        # Events that will trigger this task
-        events:
-          - pull_request.*
-          - push
-    scopes:
-      - generic-worker:cache:generic-worker-checkout
-    payload:
-      maxRunTime: 3600
-      command:
-        - - /bin/bash
-          - -vxec
-          - |
-            export GOROOT="$(pwd)/go1.8/go"
-            export GOPATH="$(pwd)/gopath"
-            export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
-            export CGO_ENABLED=0
-            go version
-            go env
-            source "${GW_CREDS_BOOTSTRAP}"
-            mkdir -p "${GOPATH}/src/github.com/taskcluster"
-            cd "${GOPATH}/src/github.com/taskcluster"
-            if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
-            cd 'generic-worker'
-            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/${TASK_ID}"
-            git checkout -f "${TASK_ID}"
-            git reset --hard '{{ event.head.sha }}'
-            git clean -fdx
-            git checkout -B tmp -t "${TASK_ID}"
-            go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
-            cd gw-codegen
-            go get -v -u
-            cd ..
-            go generate
-            go get -v -u -t ./...
-            test "$(git status --porcelain | wc -l)" == 0
-            GORACE=history_size=7 go test -v ./...
-            ineffassign .
-      artifacts:
-        - name: public/build/generic-worker-linux-armv6l
-          path: gopath/bin/generic-worker
-          expires: "{{ '2 weeks' | $fromNow }}"
-          type: file
-      mounts:
-        - cacheName: generic-worker-checkout
-          directory: gopath/src
-        - content:
-            url: https://storage.googleapis.com/golang/go1.8.linux-armv6l.tar.gz
-          directory: go1.8
-          format: tar.gz
+
+  ##########################################################
+  # Currently Raspberry PI is not available (being used for other things)
+  # Will reenable when I have it back again
+  ##########################################################
+
+  # - provisionerId: pmoore-manual
+  #   workerType: raspberry-pi-3b
+  #   metadata:
+  #     name: "Build/test ARM6 generic-worker on Linux (Raspberry Pi)"
+  #     description: "This builds the ARM6 Linux version of generic-worker"
+  #     owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+  #     source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+  #   extra:
+  #     github:
+  #       # Events that will trigger this task
+  #       events:
+  #         - pull_request.*
+  #         - push
+  #   scopes:
+  #     - generic-worker:cache:generic-worker-checkout
+  #   payload:
+  #     maxRunTime: 3600
+  #     command:
+  #       - - /bin/bash
+  #         - -vxec
+  #         - |
+  #           export GOROOT="$(pwd)/go1.8.3/go"
+  #           export GOPATH="$(pwd)/gopath"
+  #           export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
+  #           export CGO_ENABLED=0
+  #           go version
+  #           go env
+  #           source "${GW_CREDS_BOOTSTRAP}"
+  #           mkdir -p "${GOPATH}/src/github.com/taskcluster"
+  #           cd "${GOPATH}/src/github.com/taskcluster"
+  #           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+  #           cd 'generic-worker'
+  #           git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/${TASK_ID}"
+  #           git checkout -f "${TASK_ID}"
+  #           git reset --hard '{{ event.head.sha }}'
+  #           git clean -fdx
+  #           git checkout -B tmp -t "${TASK_ID}"
+  #           go get -v github.com/taskcluster/livelog github.com/gordonklaus/ineffassign
+  #           cd gw-codegen
+  #           go get -v -u
+  #           cd ..
+  #           go generate
+  #           go get -v -u -t ./...
+  #           test "$(git status --porcelain | wc -l)" == 0
+  #           GORACE=history_size=7 go test -v ./...
+  #           ineffassign .
+  #     artifacts:
+  #       - name: public/build/generic-worker-linux-armv6l
+  #         path: gopath/bin/generic-worker
+  #         expires: "{{ '2 weeks' | $fromNow }}"
+  #         type: file
+  #     mounts:
+  #       - cacheName: generic-worker-checkout
+  #         directory: gopath/src
+  #       - content:
+  #           url: https://storage.googleapis.com/golang/go1.8.3.linux-armv6l.tar.gz
+  #         directory: go1.8.3
+  #         format: tar.gz
 
 
   ##########################################################

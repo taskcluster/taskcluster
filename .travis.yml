@@ -1,9 +1,9 @@
 language: go
 
 go:
-  # this is a lie - we will use 1.7 which isn't supported yet
+  # this is a lie - we will use 1.8.3 which isn't supported yet
   # by downloading it later in "before_install" section
-  # we use 1.7 due to https://github.com/contester/runlib/issues/5#issuecomment-241419381
+  # we use 1.8.3 due to https://github.com/contester/runlib/issues/5#issuecomment-241419381
   # which could have also been achieved via vendoring an older version, but for let's
   # keep up-to-date with latest version
   - 1.6
@@ -15,7 +15,7 @@ env:
   - "MY_GOOS=windows MY_GOARCH=386"
 
 before_install:
-  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz
+  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
   - tar -C $HOME -xf go.tar.gz
   - rm go.tar.gz
   - export GOROOT="${HOME}/go"

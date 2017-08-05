@@ -99,8 +99,8 @@ type (
 		// URL of the a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
-		// tasks should be ordered such that each task supersedes all tasks appearing earlier in
-		// the list.
+		// tasks should be ordered such that each task supersedes all tasks appearing later in the
+		// list.
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
@@ -460,7 +460,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "supersederUrl": {
-      "description": "URL of the a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing earlier in\nthe list.",
+      "description": "URL of the a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.",
       "format": "uri",
       "title": "Superseder URL",
       "type": "string"

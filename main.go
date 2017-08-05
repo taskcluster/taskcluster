@@ -47,6 +47,7 @@ var (
 		&OSGroupsFeature{},
 		&ChainOfTrustFeature{},
 		&MountsFeature{},
+		&SupersedeFeature{},
 	}
 
 	version = "10.1.8"

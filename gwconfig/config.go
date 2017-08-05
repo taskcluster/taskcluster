@@ -1,10 +1,10 @@
 package gwconfig
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net"
+
+	"github.com/taskcluster/generic-worker/fileutil"
 )
 
 type (
@@ -54,14 +54,5 @@ type (
 // writes config to json file
 func (c *Config) Persist(file string) error {
 	log.Print("Creating file " + file + "...")
-	return WriteToFileAsJSON(c, file)
-}
-
-func WriteToFileAsJSON(obj interface{}, filename string) error {
-	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
-	if err != nil {
-		return err
-	}
-	log.Printf("Saving file %v with content:\n%v\n", filename, string(jsonBytes))
-	return ioutil.WriteFile(filename, append(jsonBytes, '\n'), 0644)
+	return fileutil.WriteToFileAsJSON(c, file)
 }
