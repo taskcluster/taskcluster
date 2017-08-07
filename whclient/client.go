@@ -3,7 +3,6 @@ package whclient
 import (
 	"net"
 	"net/http"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -28,8 +27,6 @@ type Config struct {
 	Token     string
 	Retry     RetryConfig
 	Logger    util.Logger
-	// uses domain style hosting to register if set
-	UseDomain bool
 }
 
 // Configurer is a function which can generate a Config object
@@ -50,7 +47,6 @@ type Client struct {
 	session    *wsmux.Session
 	state      clientState
 	closed     chan struct{}
-	useDomain  bool
 	acceptErr  net.Error
 }
 
@@ -128,9 +124,8 @@ func (c *Client) Close() error {
 
 func (c *Client) setConfig(config Config) {
 	c.id = config.ID
-	c.proxyAddr = config.ProxyAddr
+	c.proxyAddr = util.MakeWsURL(config.ProxyAddr)
 	c.token = config.Token
-	c.useDomain = config.UseDomain
 
 	c.retry = config.Retry.defaultValues()
 	c.logger = config.Logger
@@ -151,17 +146,12 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	}
 
 	// initial connection
-	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
-	// at this point, proxy should return proxyAddr like ws://register.domain.ext
-	if c.useDomain {
-		addr = strings.TrimSuffix(c.proxyAddr, "/") + "/" + c.id
-	}
-
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
+	header.Set("x-webhooktunnel-id", c.id)
 	// initial attempt
 	c.logger.Printf("trying to connect to %s", c.proxyAddr)
-	conn, res, err := websocket.DefaultDialer.Dial(addr, header)
+	conn, res, err := websocket.DefaultDialer.Dial(c.proxyAddr, header)
 	if err != nil {
 		if shouldRetry(res) {
 			// retry connection and return result
@@ -182,14 +172,11 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 // retryConn is a utility function used by connectWithRetry to use exponential
 // backoff to attempt reconnection
 func (c *Client) retryConn() (*websocket.Conn, string, error) {
-	addr := strings.TrimSuffix(c.proxyAddr, "/") + "/register/" + c.id
 	// at this point, proxy should return proxyAddr like ws://register.domain.ext
-	if c.useDomain {
-		addr = strings.TrimSuffix(c.proxyAddr, "/") + "/" + c.id
-	}
 
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
+	header.Set("x-webhooktunnel-id", c.id)
 
 	currentDelay := c.retry.InitialDelay
 	maxTimer := time.After(c.retry.MaxElapsedTime)
@@ -201,7 +188,7 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 			return nil, "", ErrRetryTimedOut
 		case <-backoff:
 			c.logger.Printf("trying to connect to %s", c.proxyAddr)
-			conn, res, err := websocket.DefaultDialer.Dial(addr, header)
+			conn, res, err := websocket.DefaultDialer.Dial(c.proxyAddr, header)
 			if err == nil {
 				url := res.Header.Get("x-webhooktunnel-client-url")
 				return conn, url, nil
@@ -214,7 +201,6 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 
 			currentDelay = c.retry.nextDelay(currentDelay)
 			backoff = time.After(currentDelay)
-
 		}
 	}
 }
