@@ -56,7 +56,6 @@ type proxy struct {
 
 // regex for parsing requests
 var (
-	registerRe       = regexp.MustCompile("^/register/([a-z0-9_-]+)/?$")
 	serveRe          = regexp.MustCompile("^/([a-z0-9_-]+)/(.*)$")
 	domainRegisterRe = regexp.MustCompile("^/([a-z0-9_-]+)/?$")
 )
@@ -73,15 +72,14 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// eg. domain = "tcproxy.net", req url = "https://tcproxy.net/.../"
 	// host may be of the form "host:port"
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
-	if strings.HasPrefix(r.Host, p.domain) {
-		// register will be matched first
-		if registerRe.MatchString(r.URL.Path) { // matches "/register/(\w+)/?$"
-			id := registerRe.FindStringSubmatch(r.URL.Path)[1]
-			tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
-			p.register(w, r, id, tokenString)
-			return
-		}
+	if id := r.Header.Get("x-webhooktunnel-id"); id != "" {
+		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
+		p.register(w, r, id, tokenString)
+		return
+	}
 
+	// try to match tasks.build/<id>/<whatever>
+	if strings.HasPrefix(r.Host, p.domain) {
 		s := strings.TrimPrefix(r.URL.Path, "/")
 		index := strings.Index(s, "/")
 		id, path := "", "/"
@@ -98,37 +96,19 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		p.serveRequest(w, r, id, path)
 		return
 	}
-
 	// if address has port, strip port
 	host := r.Host
 	index := strings.Index(host, ":")
 	if index > 0 {
 		host = host[:index]
 	}
-	p.logf("", r.RemoteAddr, "rewritten host=%s", host)
+	// try to match <id>.tasks.build/<whatever>
 	if strings.HasSuffix(host, "."+p.domain) {
 		index := strings.Index(r.Host, ".")
 		id := r.Host[:index]
 		path := r.URL.Path
-
 		if id == "" {
 			http.NotFound(w, r)
-			return
-		}
-
-		if id == "register" || id == "www" {
-			tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
-			id = strings.TrimPrefix(r.URL.Path, "/")
-			match := domainRegisterRe.FindStringSubmatch(r.URL.Path)
-			if len(match) != 2 {
-				http.Error(w, http.StatusText(400), 400)
-				return
-			}
-			id = match[1]
-			if id == "" {
-				http.Error(w, http.StatusText(400), 400)
-			}
-			p.register(w, r, id, tokenString)
 			return
 		}
 		p.serveRequest(w, r, id, path)
