@@ -106,4 +106,17 @@ fi
 git commit -m "Version $VERSION"
 git tag "$VERSION"
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
-./.tox/py35/bin/python setup.py sdist upload
+
+# Generate a source distribution as well as Python 2 and 3
+# variants of wheels (since the contents differs for each).
+# Tox already installed recent setuptools and wheel for us.
+./.tox/py35/bin/python setup.py sdist
+./.tox/py35/bin/python setup.py bdist_wheel
+# Work around https://bitbucket.org/pypa/wheel/issues/147/bdist_wheel-should-start-by-cleaning-up
+rm -rf build/
+./.tox/py27/bin/python setup.py bdist_wheel
+
+# Publish to PyPI using Twine, as recommended by:
+# https://packaging.python.org/tutorials/distributing-packages/#uploading-your-project-to-pypi
+./.tox/py35/bin/pip install -U twine
+./.tox/py35/bin/twine upload dist/*
