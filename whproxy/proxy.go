@@ -72,7 +72,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// eg. domain = "tcproxy.net", req url = "https://tcproxy.net/.../"
 	// host may be of the form "host:port"
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
-	if id := r.Header.Get("x-webhooktunnel-id"); id != "" {
+	if path, id := r.URL.Path, r.Header.Get("x-webhooktunnel-id"); id != "" && path == "/" {
 		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
 		p.register(w, r, id, tokenString)
 		return

@@ -490,7 +490,8 @@ func TestWebSocketClosure(t *testing.T) {
 
 	// logger.Printf("connecting to proxy")
 	// create websocket connection
-	conn, res, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/", nil)
+	// add the previous header to make sure registration only occurs when path is "/"
+	conn, res, err := websocket.DefaultDialer.Dial(wsURL+"/wsworker/", header)
 	if err != nil {
 		t.Fatal(err)
 	}
