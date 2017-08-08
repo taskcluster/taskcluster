@@ -11,12 +11,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/auth"
-	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/whclient"
 )
 
 // whclient <clientID> <accessToken> <targetPort>
-const usage = `whcli <clientID> <accessToken> <targetPort>`
+const usage = `whclient <clientID> <accessToken> <targetPort>`
 
 func main() {
 	log.SetOutput(os.Stdout)
@@ -42,12 +41,10 @@ func main() {
 		if err != nil {
 			return whclient.Config{}, err
 		}
-		proxyURL := util.MakeWsURL(whtResponse.ProxyURL)
 		return whclient.Config{
 			ID:        whtResponse.TunnelID,
 			Token:     whtResponse.Token,
-			ProxyAddr: proxyURL,
-			UseDomain: true,
+			ProxyAddr: whtResponse.ProxyURL,
 		}, nil
 	}
 
