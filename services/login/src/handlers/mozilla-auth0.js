@@ -18,7 +18,6 @@ class Handler {
     assert(handlerCfg.apiAudience, `${name}.apiAudience is required`);
     assert(handlerCfg.clientId, `${name}.clientId is required`);
     assert(handlerCfg.clientSecret, `${name}.clientSecret is required`);
-    assert(handlerCfg.mgmtApiToken, `${name}.mgmtApiToken is required`);
     _.assign(this, handlerCfg);
 
     // use express-jwt to validate JWTs against auth0
