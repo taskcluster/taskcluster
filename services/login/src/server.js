@@ -64,6 +64,30 @@ let load = loader({
     },
   },
 
+  handlers: {
+    requires: ['cfg'],
+    setup: ({cfg}) => {
+      let handlers = {};
+
+      // carry out the authorization process, either with a done callback
+      // or returning a promise
+      let authorize = (user, done) => {
+        let promise = authorizer.authorize(user);
+        if (done) {
+          promise.then(() => done(null, user), (err) => done(err, null));
+        } else {
+          return promise;
+        }
+      }
+
+      Object.keys(cfg.handlers).forEach((name) => {
+        let Handler = require('./handlers/' + name).default;
+        handlers[name] = new Handler({name, cfg});
+      });
+      return handlers;
+    },
+  },
+
   raven: {
     requires: ['cfg'],
     setup: ({cfg}) => {
@@ -86,8 +110,8 @@ let load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'raven', 'authorizer'],
-    setup: ({cfg, validator, raven, authorizer}) => {
+    requires: ['cfg', 'validator', 'raven', 'handlers'],
+    setup: ({cfg, validator, raven, handlers}) => {
       return v1.setup({
         context: {},
         validator,
@@ -97,10 +121,7 @@ let load = loader({
         referencePrefix:  'login/v1/api.json',
         aws:              cfg.aws,
         raven:            raven,
-        context: {
-          temporaryCredentials: cfg.app.temporaryCredentials,
-          authorizer,
-        }
+        context:          {cfg, handlers},
       });
     },
   },
@@ -165,6 +186,10 @@ let load = loader({
       // set up authenticators' sub-paths
       _.forIn(authenticators, (authn, name) => {
         app.use('/' + name, authn.router());
+      });
+
+      app.get('/some-tool', (req, res) => {
+        return res.render('some-tool');
       });
 
       // Add logout method
