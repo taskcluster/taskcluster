@@ -9,10 +9,7 @@
 // http://references.taskcluster.net/login/v1/api.json
 
 // The Login service serves as the interface between external authentication
-// systems and TaskCluster credentials.  It acts as the server side of
-// https://tools.taskcluster.net.  If you are working on federating logins
-// with TaskCluster, this is probably *not* the service you are looking for.
-// Instead, use the federated login support in the tools site.
+// systems and TaskCluster credentials.
 //
 // See: https://docs.taskcluster.net/reference/core/login/api-docs
 //
@@ -24,7 +21,7 @@
 //
 // and then call one or more of myLogin's methods, e.g.:
 //
-//  err := myLogin.Ping(.....)
+//  data, err := myLogin.OidcCredentials(.....)
 // handling any errors...
 //  if err != nil {
 //  	// handle error...
@@ -34,11 +31,13 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 3 Aug 2017 at 22:23:00 UTC. The code was generated
+// Tue, 8 Aug 2017 at 16:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package login
 
 import (
+	"net/url"
+
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
@@ -59,7 +58,7 @@ type Login tcclient.Client
 //  myLogin := login.New(creds)                              // set credentials
 //  myLogin.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myLogin.BaseURL = "http://localhost:1234/api/Login/v1"   // alternative API endpoint (production by default)
-//  err := myLogin.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
+//  data, err := myLogin.OidcCredentials(.....)              // for example, call the OidcCredentials(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -70,6 +69,31 @@ func New(credentials *tcclient.Credentials) *Login {
 		Authenticate: true,
 	})
 	return &myLogin
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Given an OIDC `access_token` from a trusted OpenID provider, return a
+// set of Taskcluster credentials for use on behalf of the identified
+// user.
+//
+// This method is typically not called with a Taskcluster client library
+// and does not accept Hawk credentials. The `access_token` should be
+// given in an `Authorization` header:
+// ```
+// Authorization: Bearer abc.xyz
+// ```
+//
+// The `access_token` is first verified against the named
+// :provider, then passed to the provider's API to retrieve a user
+// profile. That profile is then used to generate Taskcluster credentials
+// appropriate to the user.
+//
+// See https://docs.taskcluster.net/reference/core/login/api-docs#oidcCredentials
+func (myLogin *Login) OidcCredentials(provider string) (*CredentialsResponse, error) {
+	cd := tcclient.Client(*myLogin)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/oidc-credentials/"+url.QueryEscape(provider), new(CredentialsResponse), nil)
+	return responseObject.(*CredentialsResponse), err
 }
 
 // Respond without doing anything.

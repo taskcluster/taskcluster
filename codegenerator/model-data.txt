@@ -1,4 +1,4 @@
-Generated: 1501799004
+Generated: 1502209406
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5313,12 +5313,36 @@ Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Login API'
 Description = 'The Login service serves as the interface between external authentication
-systems and TaskCluster credentials.  It acts as the server side of
-https://tools.taskcluster.net.  If you are working on federating logins
-with TaskCluster, this is probably *not* the service you are looking for.
-Instead, use the federated login support in the tools site.'
+systems and TaskCluster credentials.'
 Base URL    = 'https://login.taskcluster.net/v1'
 Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/oidc-credentials/<provider>'
+    Entry Args        = '[provider]'
+    Entry Query        = '[]'
+    Entry Name        = 'oidcCredentials'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/login/v1/credentials-response.json'
+    Entry Title       = 'Get TaskCluster credentials given a suitable `access_token`'
+    Entry Description = 'Given an OIDC `access_token` from a trusted OpenID provider, return a
+set of Taskcluster credentials for use on behalf of the identified
+user.
+
+This method is typically not called with a Taskcluster client library
+and does not accept Hawk credentials. The `access_token` should be
+given in an `Authorization` header:
+```
+Authorization: Bearer abc.xyz
+```
+
+The `access_token` is first verified against the named
+:provider, then passed to the provider's API to retrieve a user
+profile. That profile is then used to generate Taskcluster credentials
+appropriate to the user.'
+Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -5332,6 +5356,35 @@ Entry 0     =
     Entry Title       = 'Ping Server'
     Entry Description = 'Respond without doing anything.
 This endpoint is used to check that the service is up.'
+
+
+http://schemas.taskcluster.net/login/v1/credentials-response.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'A response containing temporary credentials.
+'
+ID                     = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
+Properties
+  Property 'accessToken' =
+    Pattern                = '^[a-zA-Z0-9_-]{22,66}$'
+    Type                   = 'string'
+    TypeName               = 'AccessToken'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/accessToken'
+  Property 'certificate' =
+    Type                   = 'string'
+    TypeName               = 'Certificate'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/certificate'
+  Property 'clientId' =
+    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Type                   = 'string'
+    TypeName               = 'ClientID'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/clientId'
+Required               = '[clientId accessToken certificate]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Credentials Response'
+Type                   = 'object'
+TypeName               = 'CredentialsResponse'
+SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
 
 
 http://references.taskcluster.net/notify/v1/api.json
