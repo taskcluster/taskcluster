@@ -6,14 +6,60 @@ var api = new API({
   title:         "Login API",
   description:   [
     "The Login service serves as the interface between external authentication",
-    "systems and TaskCluster credentials.  It acts as the server side of",
-    "https://tools.taskcluster.net.  If you are working on federating logins",
-    "with TaskCluster, this is probably *not* the service you are looking for.",
-    "Instead, use the federated login support in the tools site.",
+    "systems and TaskCluster credentials.",
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
-  context: ['authorizer', 'temporaryCredentials'],
+  context: ['cfg', 'handlers'],
 });
 
 // Export api
 module.exports = api;
+
+api.declare({
+  method:     'get',
+  route:      '/oidc-credentials/:provider',
+  name:       'oidcCredentials',
+  idempotent: false,
+  output:     'credentials-response.json',
+  title:      'Get TaskCluster credentials given a suitable `access_token`',
+  stability:  API.stability.experimental,
+  deferAuth:  true,
+  description: [
+    'Given an OIDC `access_token` from a trusted OpenID provider, return a',
+    'set of Taskcluster credentials for use on behalf of the identified',
+    'user.',
+    '',
+    'This method is typically not called with a Taskcluster client library',
+    'and does not accept Hawk credentials. The `access_token` should be',
+    'given in an `Authorization` header:',
+    '```',
+    'Authorization: Bearer abc.xyz',
+    '```',
+    '',
+    'The `access_token` is first verified against the named',
+    ':provider, then passed to the provider\'s API to retrieve a user',
+    'profile. That profile is then used to generate Taskcluster credentials',
+    'appropriate to the user.',
+  ].join('\n'),
+}, async function(req, res) {
+  // handlers are loaded from src/handlers based on cfg.handlers
+  let handler = this.handlers[req.params.provider];
+  if (!handler) {
+    return res.reportError('InputError',
+        'Invalid accessToken provider {{provider}}',
+        {provider: req.params.provider});
+  }
+
+  let user = await handler.userFromRequest(req, res)
+  if (!user) {
+    // don't report much to the user, to avoid revealing sensitive information, although
+    // it is likely in the service logs.
+    return res.reportError('InputError',
+        'Could not validate access token',
+        {});
+  }
+
+  // create and return temporary credentials
+  let credentials = user.createCredentials(this.cfg.app.temporaryCredentials);
+  return res.reply(credentials);
+});
