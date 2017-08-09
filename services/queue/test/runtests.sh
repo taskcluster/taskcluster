@@ -1,7 +1,6 @@
 #!/bin/bash -ve
 # USAGE: Run this file using `npm test` (must run from repository root)
 
-
 mocha                             \
   .test/lint_test.js              \
   .test/validate_test.js          \
@@ -27,4 +26,5 @@ mocha                             \
   .test/expiretask_test.js        \
   .test/expirequeues_test.js      \
   .test/dependency_test.js        \
+  .test/workerinfo_test.js        \
   ;
