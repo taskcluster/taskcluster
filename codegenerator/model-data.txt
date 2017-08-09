@@ -1,4 +1,4 @@
-Generated: 1502209406
+Generated: 1502285001
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6843,6 +6843,24 @@ It is, however, a solid estimate of the number of pending tasks.'
 Entry 23    =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types'
+    Entry Args        = '[provisionerId]'
+    Entry Query        = '[continuationToken limit]'
+    Entry Name        = 'listWorkerTypes'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#'
+    Entry Title       = 'Get a list of all active worker-types'
+    Entry Description = 'Get all active worker-types for the given provisioner.
+
+The response is paged. If this end-point returns a `continuationToken`, you
+should call the end-point again with the `continuationToken` as a query-string
+option. By default this end-point will list up to 1000 worker-types in a single
+page. You may limit this with the query-string parameter `limit`.'
+Entry 24    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Query        = '[]'
@@ -7545,6 +7563,57 @@ Title                  = 'List Task-Group Response'
 Type                   = 'object'
 TypeName               = 'ListTaskGroupResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#
+=======================================================================
+Additional Properties  = 'false'
+Description            = 'Response from a `listWorkerTypes` request.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#'
+Properties
+  Property 'continuationToken' =
+    Description            = 'Opaque `continuationToken` to be given as query-string option to get the
+    next set of worker-types in the provisioner.
+    This property is only present if another request is necessary to fetch all
+    results. In practice the next request with a `continuationToken` may not
+    return additional results, but it can. Thus, you can only be sure to have
+    all the results if you've called `listWorkerTypes` with `continuationToken`
+    until you get a result without a `continuationToken`.
+    '
+    Title                  = 'Continuation Token'
+    Type                   = 'string'
+    TypeName               = 'ContinuationToken'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/continuationToken'
+  Property 'workerTypes' =
+    Description            = 'List of worker-types in this provisioner.
+    '
+    Items
+      Additional Properties  = 'false'
+      Properties
+        Property 'workerType' =
+          Description            = 'WorkerType name.
+          '
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Title                  = 'WorkerType name'
+          Type                   = 'string'
+          TypeName               = 'WorkerTypeName'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/workerType'
+      Type                   = 'object'
+      TypeName               = 'WorkerTypesEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items'
+    Title                  = 'WorkerTypes from the Provisioner'
+    Type                   = 'array'
+    TypeName               = 'WorkerTypesFromTheProvisioner'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes'
+Required               = '[workerTypes]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'List Worker-Types Response'
+Type                   = 'object'
+TypeName               = 'ListWorkerTypesResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#

@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 8 Aug 2017 at 16:23:00 UTC. The code was generated
+// Wed, 9 Aug 2017 at 13:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -672,6 +672,29 @@ func (myQueue *Queue) PendingTasks(provisionerId, workerType string) (*CountPend
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get all active worker-types for the given provisioner.
+//
+// The response is paged. If this end-point returns a `continuationToken`, you
+// should call the end-point again with the `continuationToken` as a query-string
+// option. By default this end-point will list up to 1000 worker-types in a single
+// page. You may limit this with the query-string parameter `limit`.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#listWorkerTypes
+func (myQueue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit string) (*ListWorkerTypesResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types", new(ListWorkerTypesResponse), v)
+	return responseObject.(*ListWorkerTypesResponse), err
 }
 
 // Respond without doing anything.
