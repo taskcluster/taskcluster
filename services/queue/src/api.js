@@ -123,6 +123,7 @@ var api = new API({
     'TaskGroupActiveSet', // data.TaskGroupMember instance (but in a different table)
     'TaskDependency',     // data.TaskDependency instance
     'Provisioner',        // data.Provisioner instance
+    'WorkerType',         // data.WorkerType instance
     'publicBucket',       // bucket instance for public artifacts
     'privateBucket',      // bucket instance for private artifacts
     'blobStore',          // BlobStore for azure artifacts
@@ -1368,7 +1369,7 @@ api.declare({
     this.workClaimer.claim(
       provisionerId, workerType, workerGroup, workerId, count, aborted,
     ),
-    this.workerInfo.provisionerSeen(provisionerId),
+    this.workerInfo.seen(provisionerId, workerType),
   ]);
 
   return res.reply({
@@ -1447,7 +1448,7 @@ api.declare({
     this.workClaimer.claimTask(
       taskId, runId, workerGroup, workerId, task,
     ),
-    this.workerInfo.provisionerSeen(task.provisionerId),
+    this.workerInfo.seen(task.provisionerId),
   ]);
 
   // If the run doesn't exist return ResourceNotFound
@@ -1999,11 +2000,11 @@ api.declare({
     'page. You may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  let continuation = req.query.continuationToken || null;
-  let limit = parseInt(req.query.limit || 1000, 10);
+  const continuation = req.query.continuationToken || null;
+  const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  let provisioners = await this.Provisioner.scan({}, {continuation, limit});
-  let result = {
+  const provisioners = await this.Provisioner.scan({}, {continuation, limit});
+  const result = {
     provisioners: provisioners.entries.map(provisioner => provisioner.json()),
   };
   if (provisioners.continuation) {
@@ -2045,4 +2046,41 @@ api.declare({
     workerType:     workerType,
     pendingTasks:   count,
   });
+});
+
+/** List worker-types for a given provisioner */
+api.declare({
+  method:     'get',
+  route:      '/provisioners/:provisionerId/worker-types',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name:       'listWorkerTypes',
+  stability:  API.stability.experimental,
+  output:     'list-workertypes-response.json#',
+  title:      'Get a list of all active worker-types',
+  description: [
+    'Get all active worker-types for the given provisioner.',
+    '',
+    'The response is paged. If this end-point returns a `continuationToken`, you',
+    'should call the end-point again with the `continuationToken` as a query-string',
+    'option. By default this end-point will list up to 1000 worker-types in a single',
+    'page. You may limit this with the query-string parameter `limit`.',
+  ].join('\n'),
+}, async function(req, res) {
+  const continuation = req.query.continuationToken || null;
+  const provisionerId = req.params.provisionerId;
+  const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
+
+  const workerTypes = await this.WorkerType.scan({provisionerId}, {continuation, limit});
+  const result = {
+    workerTypes: workerTypes.entries.map(workerType => ({workerType: workerType.workerType})),
+  };
+
+  if (workerTypes.continuation) {
+    result.continuationToken = workerTypes.continuation;
+  }
+
+  return res.reply(result);
 });
