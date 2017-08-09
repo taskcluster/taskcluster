@@ -21,6 +21,7 @@ defaults:
     taskGroupActiveSetTableName:  TaskGroupActiveSets
     taskRequirementTableName:     TaskRequirement
     taskDependencyTableName:      TaskDependency
+    workerTypeTableName:          WorkerType
     provisionerTableName:         Provisioner
 
     # Time delay before expiring artifacts, in readable format, see:
@@ -140,6 +141,7 @@ production:
     taskGroupActiveSetTableName:  'QueueTaskGroupActiveSets'
     taskRequirementTableName:     'QueueTaskRequirement'
     taskDependencyTableName:      'QueueTaskDependency'
+    workerTypeTableName:          'QueueWorkerType'
     provisionerTableName:         'QueueProvisioner'
     cloudMirrorRegions:
       - us-east-1
@@ -212,6 +214,7 @@ load-test:
     taskGroupActiveSetTableName:  'LoadTestTaskSizeMembers2'
     taskRequirementTableName:     'LoadTestTaskRequirement2'
     taskDependencyTableName:      'LoadTestTaskDependency2'
+    workerTypeTableName:          'LoadTestWorkerType'
     provisionerTableName:         'LoadTestProvisioner'
     claimQueue:                   'load-test-claim-queue'
     deadlineQueue:                'load-test-deadline-queue'

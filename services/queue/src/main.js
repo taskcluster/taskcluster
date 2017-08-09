@@ -252,6 +252,21 @@ let load = loader({
     },
   },
 
+  // Create WorkerType table
+  WorkerType: {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
+      let WorkerType = data.WorkerType.setup({
+        table:            cfg.app.workerTypeTableName,
+        account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
+        monitor:          monitor.prefix('table.workerType'),
+      });
+      await WorkerType.ensureTable();
+      return WorkerType;
+    },
+  },
+
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor'],
@@ -281,9 +296,9 @@ let load = loader({
 
   // Create workerInfo
   workerInfo: {
-    requires: ['Provisioner'],
-    setup: ({Provisioner}) => new WorkerInfo({
-      Provisioner,
+    requires: ['Provisioner', 'WorkerType'],
+    setup: ({Provisioner, WorkerType}) => new WorkerInfo({
+      Provisioner, WorkerType,
     }),
   },
 
@@ -314,7 +329,7 @@ let load = loader({
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
-      'workClaimer', 'Provisioner', 'workerInfo',
+      'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -326,6 +341,7 @@ let load = loader({
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
         TaskDependency:   ctx.TaskDependency,
         Provisioner:      ctx.Provisioner,
+        WorkerType:       ctx.WorkerType,
         dependencyTracker: ctx.dependencyTracker,
         publisher:        ctx.publisher,
         validator:        ctx.validator,
@@ -569,11 +585,13 @@ let load = loader({
   'expire-worker-info': {
     requires: ['cfg', 'workerInfo', 'monitor'],
     setup: async ({cfg, workerInfo, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
+      const now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
       assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
-      // Expire task-dependency using delay
-      let count = await workerInfo.expire(now);
+      // Expire worker-info using delay
+      debug('Expiring worker-info at: %s, from before %s', new Date(), now);
+      const count = await workerInfo.expire(now);
+      debug('Expired %s worker-info', count);
 
       monitor.count('expire-worker-info.done');
       monitor.stopResourceMonitoring();
