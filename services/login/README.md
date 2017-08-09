@@ -1,6 +1,26 @@
 TaskCluster User Login Service
 ==============================
 
+This service currently supports two login methods, as we transition from one to
+the other.
+
+New Login Method
+----------------
+
+NOTE: This method is *experimental* and still under development.  It is
+expected to be production-ready by October 2017.
+
+The new method requires client applications to use an OIDC provider to
+authenticate the user, and then provides Taskcluster credentials appropriate to
+that user.
+
+See [getting user
+creds](https://docs.taskcluster.net/reference/integrations/taskcluster-login/getting-user-creds)
+for more detail.
+
+Old Login Method
+----------------
+
 This service provides a very minimal UI that users can authenticate against
 and then get temporary credentials issued.
 
