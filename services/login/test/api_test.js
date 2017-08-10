@@ -25,8 +25,11 @@ suite('API', function() {
       let res = await request
         .get(helper.baseUrl + '/oidc-credentials/test')
         .set('Authorization', 'Bearer let-me-in');
-      let creds = JSON.parse(res.text);
-      assume(creds.clientId).to.equal('test/let-me-in');
+      let resp = JSON.parse(res.text);
+      assume(resp.credentials.clientId).to.equal('test/let-me-in');
+      let until_exp = new Date(resp.expires) - new Date();
+      console.log(until_exp);
+      assume(until_exp).greaterThan(14 * 60 * 1000);
     });
 
   });

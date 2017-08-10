@@ -20,7 +20,7 @@ api.declare({
   route:      '/oidc-credentials/:provider',
   name:       'oidcCredentials',
   idempotent: false,
-  output:     'credentials-response.json',
+  output:     'oidc-credentials-response.json',
   title:      'Get TaskCluster credentials given a suitable `access_token`',
   stability:  API.stability.experimental,
   deferAuth:  true,
@@ -39,7 +39,9 @@ api.declare({
     'The `access_token` is first verified against the named',
     ':provider, then passed to the provider\'s API to retrieve a user',
     'profile. That profile is then used to generate Taskcluster credentials',
-    'appropriate to the user.',
+    'appropriate to the user. Note that the resulting credentials may or may',
+    'not include a `certificate` property. Callers should be prepared for either',
+    'alternative.',
   ].join('\n'),
 }, async function(req, res) {
   // handlers are loaded from src/handlers based on cfg.handlers
@@ -60,6 +62,12 @@ api.declare({
   }
 
   // create and return temporary credentials
-  let credentials = user.createCredentials(this.cfg.app.temporaryCredentials);
-  return res.reply(credentials);
+  let {credentials, expires} = user.createCredentials(this.cfg.app.temporaryCredentials);
+  // move expires back by 30 seconds to ensure the user refreshes well in advance of the
+  // actual credential expiration time
+  expires.setSeconds(expires.getSeconds() - 30);
+  return res.reply({
+    expires: expires.toJSON(),
+    credentials,
+  });
 });

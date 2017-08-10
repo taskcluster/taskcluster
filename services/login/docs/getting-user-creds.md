@@ -48,11 +48,15 @@ application.
 ## Getting Credentials
 
 Your application should defer getting Taskcluster credentials until they are
-needed, and should support automatically re-fetching credentials and re-trying
-a request when they expire (identified by a 401 response from a Taskcluster
-API).
+needed, and should support automatically refreshing expired credentials as
+needed. The credentials may expire before the `access_token` or `id_token`.
 
 To get credentials, call the [`oidcCredentials`
 endpoint](/reference/integrations/taskcluster-login/references/api#oidcCredentials)
 with provider `mozilla-auth0`.  Pass the `access_token` from Auth0 in the
 `Authorization` header as described in the API documentation.
+
+Note that the returned credentials may or may not contain a `certificate`
+field. Be sure that any code handling credentials is compatible with either
+result. As always, callers should not interpret the resulting credentials in
+any way, although displaying the clientId to the user is acceptable.

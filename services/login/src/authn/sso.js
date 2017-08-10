@@ -74,7 +74,7 @@ class SSOLogin {
       delete req.session['new-way'];
 
       // generate temporary credentials and send them back to tools in a URL query
-      let credentials = req.user.createCredentials(this.cfg.app.temporaryCredentials);
+      let {credentials} = req.user.createCredentials(this.cfg.app.temporaryCredentials);
       var querystring = [];
       querystring.push('clientId=' + encodeURIComponent(credentials.clientId));
       querystring.push('accessToken=' + encodeURIComponent(credentials.accessToken));
