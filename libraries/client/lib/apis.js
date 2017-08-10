@@ -3,7 +3,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://auth.taskcluster.net/v1",
-      "description": "Authentication related API end-points for TaskCluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with TaskCluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling TaskCluster APIs.\n\nThe client's scopes control the client's access to TaskCluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskCluster credentials to grant access to a third-party service used\nby many TaskCluster components.",
+      "description": "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling Taskcluster APIs.\n\nThe client's scopes control the client's access to Taskcluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskcluster credentials to grant access to a third-party service used\nby many Taskcluster components.",
       "entries": [
         {
           "args": [
@@ -281,7 +281,7 @@ module.exports = {
             "bucket",
             "prefix"
           ],
-          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the TaskCluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the TaskCluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.\n\nFinally, note that the `PutObjectAcl` call is not allowed.  Passing a canned\nACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and\nwill result in an access-denied error from AWS.  This limitation is due to a\nsecurity flaw in Amazon S3 which might otherwise allow indefinite access to\nuploaded objects.\n\n**EC2 metadata compatibility**, if the querystring parameter\n`?format=iam-role-compat` is given, the response will be compatible\nwith the JSON exposed by the EC2 metadata service. This aims to ease\ncompatibility for libraries and tools built to auto-refresh credentials.\nFor details on the format returned by EC2 metadata service see:\n[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).",
+          "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the Taskcluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the Taskcluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.\n\nFinally, note that the `PutObjectAcl` call is not allowed.  Passing a canned\nACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and\nwill result in an access-denied error from AWS.  This limitation is due to a\nsecurity flaw in Amazon S3 which might otherwise allow indefinite access to\nuploaded objects.\n\n**EC2 metadata compatibility**, if the querystring parameter\n`?format=iam-role-compat` is given, the response will be compatible\nwith the JSON exposed by the EC2 metadata service. This aims to ease\ncompatibility for libraries and tools built to auto-refresh credentials.\nFor details on the format returned by EC2 metadata service see:\n[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).",
           "method": "get",
           "name": "awsS3Credentials",
           "output": "http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#",
@@ -425,7 +425,26 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on TaskCluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
+          "description": "Get temporary `token` and `id` for connecting to webhooktunnel\nThe token is valid for 96 hours, clients should refresh after expiration.",
+          "method": "get",
+          "name": "webhooktunnelToken",
+          "output": "http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#",
+          "query": [
+          ],
+          "route": "/webhooktunnel",
+          "scopes": [
+            [
+              "auth:webhooktunnel"
+            ]
+          ],
+          "stability": "stable",
+          "title": "Get Token for Webhooktunnel Proxy",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on Taskcluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",
           "input": "http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#",
           "method": "post",
           "name": "authenticateHawk",
@@ -440,7 +459,7 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Utility method to test client implementations of TaskCluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method.",
+          "description": "Utility method to test client implementations of Taskcluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method.",
           "input": "http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#",
           "method": "post",
           "name": "testAuthenticate",
@@ -597,7 +616,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://aws-provisioner.taskcluster.net/v1",
-      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
+      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskcluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
       "entries": [
         {
           "args": [
@@ -739,7 +758,7 @@ module.exports = {
           "route": "/secret/<token>",
           "scopes": [
             [
-              "aws-provisioner:create-secret"
+              "aws-provisioner:create-secret:<workerType>"
             ]
           ],
           "stability": "stable",
@@ -873,43 +892,6 @@ module.exports = {
         },
         {
           "args": [
-            "workerType"
-          ],
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance associated with this workerType. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "method": "post",
-          "name": "terminateAllInstancesOfWorkerType",
-          "query": [
-          ],
-          "route": "/worker-type/<workerType>/terminate-all-instances",
-          "scopes": [
-            [
-              "aws-provisioner:terminate-all-worker-type:<workerType>"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Shutdown Every Ec2 Instance of this Worker Type",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "WARNING: YOU ALMOST CERTAINLY DO NOT WANT TO USE THIS \nShut down every single EC2 instance managed by this provisioner. \nThis means every single last one.  You probably don't want to use \nthis method, which is why it has an obnoxious name.  Don't even try \nto claim you didn't know what this method does!\n\n**This API end-point is experimental and may be subject to change without warning.**",
-          "method": "post",
-          "name": "shutdownEverySingleEc2InstanceManagedByThisProvisioner",
-          "query": [
-          ],
-          "route": "/shutdown/every/single/ec2/instance/managed/by/this/provisioner",
-          "scopes": [
-            [
-              "aws-provisioner:terminate-all-worker-type:*"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Shutdown Every Single Ec2 Instance Managed By This Provisioner",
-          "type": "function"
-        },
-        {
-          "args": [
           ],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
@@ -1030,7 +1012,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://github.taskcluster.net/v1",
-      "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks",
+      "description": "The github service, typically available at\n`github.taskcluster.net`, is responsible for publishing pulse\nmessages in response to GitHub events.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
       "entries": [
         {
           "args": [
@@ -1647,8 +1629,23 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://login.taskcluster.net/v1",
-      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.",
+      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.",
       "entries": [
+        {
+          "args": [
+            "provider"
+          ],
+          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.",
+          "method": "get",
+          "name": "oidcCredentials",
+          "output": "http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json",
+          "query": [
+          ],
+          "route": "/oidc-credentials/<provider>",
+          "stability": "experimental",
+          "title": "Get TaskCluster credentials given a suitable `access_token`",
+          "type": "function"
+        },
         {
           "args": [
           ],
@@ -1821,25 +1818,6 @@ module.exports = {
           ],
           "stability": "experimental",
           "title": "Claim a namespace",
-          "type": "function"
-        },
-        {
-          "args": [
-            "namespace"
-          ],
-          "description": "Immediately delete the given namespace.  This will delete all exchanges and queues which the\nnamespace had configure access to, as if it had just expired.",
-          "method": "delete",
-          "name": "deleteNamespace",
-          "query": [
-          ],
-          "route": "/namespace/<namespace>",
-          "scopes": [
-            [
-              "pulse:namespace:<namespace>"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Delete a namespace",
           "type": "function"
         },
         {
@@ -2449,6 +2427,22 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "description": "Get all active provisioners.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 provisioners in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listProvisioners",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/provisioners",
+          "stability": "experimental",
+          "title": "Get a list of all active provisioners",
+          "type": "function"
+        },
+        {
+          "args": [
             "provisionerId",
             "workerType"
           ],
@@ -2461,6 +2455,23 @@ module.exports = {
           "route": "/pending/<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId"
+          ],
+          "description": "Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listWorkerTypes",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types",
+          "stability": "experimental",
+          "title": "Get a list of all active worker-types",
           "type": "function"
         },
         {
@@ -2914,7 +2925,7 @@ module.exports = {
           "type": "topic-exchange"
         },
         {
-          "description": "Whenever TaskCluster fails to run a message is posted to this exchange.\nThis happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding), the task was\ncanceled by another entity, or the task carried a malformed payload.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
+          "description": "Whenever Taskcluster fails to run a message is posted to this exchange.\nThis happens if the task isn't completed before its `deadlìne`,\nall retries failed (i.e. workers stopped responding), the task was\ncanceled by another entity, or the task carried a malformed payload.\n\nThe specific _reason_ is evident from that task status structure, refer\nto the `reasonResolved` property for the last run.",
           "exchange": "task-exception",
           "name": "taskException",
           "routingKey": [
