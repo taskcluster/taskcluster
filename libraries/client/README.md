@@ -212,6 +212,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.azureBlobSAS(account, container, level) : result`
  * `auth.sentryDSN(project) : result`
  * `auth.statsumToken(project) : result`
+ * `auth.webhooktunnelToken() : result`
  * `auth.authenticateHawk(payload) : result`
  * `auth.testAuthenticate(payload) : result`
  * `auth.testAuthenticateGet() : result`
@@ -238,8 +239,6 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.state(workerType) : void`
  * `awsProvisioner.newState(workerType) : void`
  * `awsProvisioner.backendStatus() : result`
- * `awsProvisioner.terminateAllInstancesOfWorkerType(workerType) : void`
- * `awsProvisioner.shutdownEverySingleEc2InstanceManagedByThisProvisioner() : void`
  * `awsProvisioner.ping() : void`
 
 ### Methods in `taskcluster.Github`
@@ -296,6 +295,7 @@ var index = new taskcluster.Index(options);
 //  - https://login.taskcluster.net/v1
 var login = new taskcluster.Login(options);
 ```
+ * `login.oidcCredentials(provider) : result`
  * `login.ping() : void`
 
 ### Methods in `taskcluster.Notify`
@@ -319,7 +319,6 @@ var pulse = new taskcluster.Pulse(options);
  * `pulse.listNamespaces([options]) : result`
  * `pulse.namespace(namespace) : result`
  * `pulse.claimNamespace(namespace, payload) : result`
- * `pulse.deleteNamespace(namespace) : void`
  * `pulse.ping() : void`
 
 ### Methods in `taskcluster.PurgeCache`
@@ -360,7 +359,9 @@ var queue = new taskcluster.Queue(options);
  * `queue.getLatestArtifact(taskId, name) : void`
  * `queue.listArtifacts(taskId, runId, [options]) : result`
  * `queue.listLatestArtifacts(taskId, [options]) : result`
+ * `queue.listProvisioners([options]) : result`
  * `queue.pendingTasks(provisionerId, workerType) : result`
+ * `queue.listWorkerTypes(provisionerId, [options]) : result`
  * `queue.ping() : void`
 
 ### Methods in `taskcluster.Scheduler`
