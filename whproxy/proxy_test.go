@@ -597,6 +597,64 @@ func TestProxyAuth(t *testing.T) {
 	_ = conn.Close()
 }
 
+func TestConcurrentConnections(t *testing.T) {
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+	wsURL := util.MakeWsURL(server.URL)
+
+	clientLogger := genLogger("concurrent-client-test")
+	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, clientLogger))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var wg sync.WaitGroup
+	clHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(1 * time.Second)
+		wg.Done()
+		w.Write([]byte("Hello"))
+	})
+	clServer := &http.Server{Handler: clHandler}
+	go func() {
+		_ = clServer.Serve(client)
+	}()
+
+	done := make(chan struct{}, 1)
+	wg.Add(200)
+	for i := 0; i < 200; i++ {
+		go func() {
+			req, err := http.NewRequest(http.MethodGet, server.URL+"/test-worker/", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-time.After(2 * time.Second):
+		t.Fatal("test timed out")
+	case <-done:
+	}
+}
+
 // Ensure authentication with both secrets works
 func TestProxySecrets(t *testing.T) {
 	proxyConfig := Config{
