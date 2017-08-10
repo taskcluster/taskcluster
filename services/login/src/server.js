@@ -201,7 +201,7 @@ let load = loader({
       // Render index
       app.get('/', (req, res) => {
         let user = User.get(req);
-        let credentials = user.createCredentials(cfg.app.temporaryCredentials);
+        let {credentials} = user.createCredentials(cfg.app.temporaryCredentials);
         res.render('index', {
           user, credentials,
           querystring,
