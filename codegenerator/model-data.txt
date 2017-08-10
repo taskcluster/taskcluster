@@ -1,4 +1,4 @@
-Generated: 1502285001
+Generated: 1502382238
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5325,7 +5325,7 @@ Entry 0     =
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/login/v1/credentials-response.json'
+    Entry Output      = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json'
     Entry Title       = 'Get TaskCluster credentials given a suitable `access_token`'
     Entry Description = 'Given an OIDC `access_token` from a trusted OpenID provider, return a
 set of Taskcluster credentials for use on behalf of the identified
@@ -5341,7 +5341,9 @@ Authorization: Bearer abc.xyz
 The `access_token` is first verified against the named
 :provider, then passed to the provider's API to retrieve a user
 profile. That profile is then used to generate Taskcluster credentials
-appropriate to the user.'
+appropriate to the user. Note that the resulting credentials may or may
+not include a `certificate` property. Callers should be prepared for either
+alternative.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -5358,33 +5360,49 @@ Entry 1     =
 This endpoint is used to check that the service is up.'
 
 
-http://schemas.taskcluster.net/login/v1/credentials-response.json#
-==================================================================
-Additional Properties  = 'false'
-Description            = 'A response containing temporary credentials.
+http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#
+=======================================================================
+Description            = 'A response containing credentials corresponding to a supplied OIDC `access_token`.
 '
-ID                     = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
+ID                     = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#'
 Properties
-  Property 'accessToken' =
-    Pattern                = '^[a-zA-Z0-9_-]{22,66}$'
+  Property 'credentials' =
+    Additional Properties  = 'false'
+    Description            = 'Taskcluster credentials. Note that the credentials may not contain a certificate!
+    '
+    Properties
+      Property 'accessToken' =
+        Pattern                = '^[a-zA-Z0-9_-]{22,66}$'
+        Type                   = 'string'
+        TypeName               = 'AccessToken'
+        SourceURL              = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/accessToken'
+      Property 'certificate' =
+        Type                   = 'string'
+        TypeName               = 'Certificate'
+        SourceURL              = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/certificate'
+      Property 'clientId' =
+        Pattern                = '^[A-Za-z0-9@/:._-]+$'
+        Type                   = 'string'
+        TypeName               = 'ClientID'
+        SourceURL              = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/clientId'
+    Required               = '[clientId accessToken]'
+    Title                  = 'Taskcluster Credentials'
+    Type                   = 'object'
+    TypeName               = 'TaskclusterCredentials'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials'
+  Property 'expires' =
+    Description            = 'Time after which the credentials are no longer valid.  Callers should
+    call `oidcCredentials` again to get fresh credentials before this time.
+    '
+    Format                 = 'date-time'
     Type                   = 'string'
-    TypeName               = 'AccessToken'
-    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/accessToken'
-  Property 'certificate' =
-    Type                   = 'string'
-    TypeName               = 'Certificate'
-    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/certificate'
-  Property 'clientId' =
-    Pattern                = '^[A-Za-z0-9@/:._-]+$'
-    Type                   = 'string'
-    TypeName               = 'ClientID'
-    SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#/properties/clientId'
-Required               = '[clientId accessToken certificate]'
+    TypeName               = 'Expires'
+    SourceURL              = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/expires'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Credentials Response'
 Type                   = 'object'
 TypeName               = 'CredentialsResponse'
-SourceURL              = 'http://schemas.taskcluster.net/login/v1/credentials-response.json#'
+SourceURL              = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#'
 
 
 http://references.taskcluster.net/notify/v1/api.json
