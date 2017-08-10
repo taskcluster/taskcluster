@@ -51,13 +51,18 @@ export default class User {
     }
     let scopes = this.scopes();
 
-    return taskcluster.createTemporaryCredentials({
-      clientId: this.identity,
-      start: taskcluster.fromNow(options.startOffset),
-      expiry: taskcluster.fromNow(options.expiry),
-      scopes,
-      credentials: options.credentials
-    });
+    let expires = taskcluster.fromNow(options.expiry);
+
+    return {
+      expires,
+      credentials: taskcluster.createTemporaryCredentials({
+        clientId: this.identity,
+        start: taskcluster.fromNow(options.startOffset),
+        expiry: expires,
+        scopes,
+        credentials: options.credentials,
+      }),
+    };
   }
 
   /** Serialize user to JSON */
