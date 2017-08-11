@@ -1,6 +1,8 @@
-import Mozillians from 'mozillians-client'
-import assert from 'assert'
-var debug = require('debug')('MozilliansAuthorizer');
+import Mozillians from 'mozillians-client';
+import assert from 'assert';
+import Debug from 'debug';
+
+var debug = Debug('MozilliansAuthorizer');
 
 /* Determine appropriate roles based on Mozillians vouched groups */
 class MozilliansAuthorizer {
@@ -47,7 +49,7 @@ class MozilliansAuthorizer {
     // group-based roles.  This allows them to complete the tutorial.
     if (!vouched) {
       user.addRole('mozillians-unvouched');
-      return
+      return;
     }
 
     // For each group to be considered we check if the user is a member

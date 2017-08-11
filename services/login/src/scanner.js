@@ -1,8 +1,10 @@
-import taskcluster from 'taskcluster-client'
-import scopeUtils from 'taskcluster-lib-scopes'
-import User from './user'
-import _ from 'lodash'
-var debug = require('debug')('scanner');
+import taskcluster from 'taskcluster-client';
+import scopeUtils from 'taskcluster-lib-scopes';
+import User from './user';
+import _ from 'lodash';
+import Debug from 'debug';
+
+var debug = Debug('scanner');
 
 export default async function scanner(cfg, authorizer) {
   // * get the set of identityProviderIds
@@ -23,7 +25,7 @@ export default async function scanner(cfg, authorizer) {
   // enumerate all clients for any of those identity providers
   let clients = [];
   for (let idp of identityProviders) {
-    clients = clients.concat(await auth.listClients({prefix: idp + "/"}));
+    clients = clients.concat(await auth.listClients({prefix: idp + '/'}));
   }
 
   // sort by clientId, so that each identity (a prefix of the clientId) appears
@@ -33,9 +35,9 @@ export default async function scanner(cfg, authorizer) {
   // iterate through the clients, constructing a new User as necessary, comparing
   // the client's scopes to the User's scopes and disabling where necessary.
   let user, userScopes;
-  let idPattern = /^([^\/]*\/[^\/]*)\/.+$/
+  let idPattern = /^([^\/]*\/[^\/]*)\/.+$/;
   for (let client of clients.sort()) {
-    debug("examining client", client.clientId);
+    debug('examining client', client.clientId);
     if (!client.clientId.match(idPattern) || client.disabled) {
       continue;
     }
@@ -52,7 +54,7 @@ export default async function scanner(cfg, authorizer) {
       // allow the implicit 'assume:client-id:<clientId> auth adds for each client
       userScopes.push('assume:client-id:' + clientIdentity + '/*');
 
-      debug("..against user", user.identity);
+      debug('..against user', user.identity);
     }
 
     // if this client's expandedScopes are not satisfied by the user's expanded
