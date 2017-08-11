@@ -170,6 +170,8 @@ func Save(config map[string]map[string]interface{}) error {
 
 	// Write config file
 	configFile := configFile()
+	// Attempt to create config folder if it doesn't exist... (ignore errors)
+	_ = os.MkdirAll(filepath.Dir(configFile), 0664)
 	if err = ioutil.WriteFile(configFile, data, 0664); err != nil {
 		return fmt.Errorf("Failed to write config file: %s, error: %s", configFile, err)
 	}

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bryanl/webbrowser"
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
@@ -37,7 +37,7 @@ and save the temporary credentials to local configuration file.`,
 		"loginUrl": config.OptionDefinition{
 			Description: "URL for the login service.",
 			Default:     "https://login.taskcluster.net",
-			Validate:    func(value interface{}) error {
+			Validate: func(value interface{}) error {
 				if _, ok := value.(string); !ok {
 					return errors.New("Must be a string")
 				}
@@ -120,7 +120,8 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 
 	// Open browser
 	fmt.Fprintln(cmd.OutOrStdout(), "Listening for a callback on: "+target)
-	webbrowser.Open(loginURL, webbrowser.NewWindow, true)
+	fmt.Fprintln(cmd.OutOrStdout(), "Opening URL: "+loginURL)
+	browser.OpenURL(loginURL)
 
 	// Start serving
 	s.Serve(listener)
