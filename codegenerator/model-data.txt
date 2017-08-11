@@ -1,4 +1,4 @@
-Generated: 1502382238
+Generated: 1502461395
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2254,6 +2254,44 @@ Description            = 'A worker launchSpecification and required metadata
 '
 ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#'
 Properties
+  Property 'availabilityZones' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Availability zone configuration'
+      Properties
+        Property 'availabilityZone' =
+          Description            = 'The AWS availability zone being configured.  Example: eu-central-1b
+          '
+          Type                   = 'string'
+          TypeName               = 'AvailabilityZone'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/availabilityZone'
+        Property 'launchSpec' =
+          Description            = 'LaunchSpecification entries unique to this AZ
+          '
+          Type                   = 'object'
+          TypeName               = 'LaunchSpec'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec'
+        Property 'secrets' =
+          Default                = 'map[]'
+          Description            = 'Static Secrets unique to this AZ
+          '
+          Type                   = 'object'
+          TypeName               = 'Secrets'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/secrets'
+        Property 'userData' =
+          Default                = 'map[]'
+          Description            = 'UserData entries unique to this AZ
+          '
+          Type                   = 'object'
+          TypeName               = 'UserData'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/userData'
+      Required               = '[availabilityZone launchSpec]'
+      Type                   = 'object'
+      TypeName               = 'AvailabilityZonesEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items'
+    Type                   = 'array'
+    TypeName               = 'AvailabilityZones'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones'
   Property 'canUseOndemand' =
     Description            = 'True if this worker type is allowed on demand instances.  Currently
     ignored
@@ -2574,6 +2612,44 @@ Description            = 'A worker launchSpecification and required metadata
 '
 ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'
 Properties
+  Property 'availabilityZones' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Availability zone configuration'
+      Properties
+        Property 'availabilityZone' =
+          Description            = 'The AWS availability zone being configured.  Example: eu-central-1b
+          '
+          Type                   = 'string'
+          TypeName               = 'AvailabilityZone'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/availabilityZone'
+        Property 'launchSpec' =
+          Description            = 'LaunchSpecification entries unique to this AZ
+          '
+          Type                   = 'object'
+          TypeName               = 'LaunchSpec'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec'
+        Property 'secrets' =
+          Default                = 'map[]'
+          Description            = 'Static Secrets unique to this AZ
+          '
+          Type                   = 'object'
+          TypeName               = 'Secrets'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/secrets'
+        Property 'userData' =
+          Default                = 'map[]'
+          Description            = 'UserData entries unique to this AZ
+          '
+          Type                   = 'object'
+          TypeName               = 'UserData'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/userData'
+      Required               = '[availabilityZone launchSpec]'
+      Type                   = 'object'
+      TypeName               = 'AvailabilityZonesEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items'
+    Type                   = 'array'
+    TypeName               = 'AvailabilityZones'
+    SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones'
   Property 'canUseOndemand' =
     Description            = 'True if this worker type is allowed on demand instances.  Currently
     ignored

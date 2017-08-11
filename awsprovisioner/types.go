@@ -35,6 +35,34 @@ type (
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
 	CreateWorkerTypeRequest struct {
 
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones
+		AvailabilityZones []struct {
+
+			// The AWS availability zone being configured.  Example: eu-central-1b
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/availabilityZone
+			AvailabilityZone string `json:"availabilityZone"`
+
+			// LaunchSpecification entries unique to this AZ
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec
+			LaunchSpec json.RawMessage `json:"launchSpec"`
+
+			// Static Secrets unique to this AZ
+			//
+			// Default:    map[]
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/secrets
+			Secrets json.RawMessage `json:"secrets,omitempty"`
+
+			// UserData entries unique to this AZ
+			//
+			// Default:    map[]
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/userData
+			UserData json.RawMessage `json:"userData,omitempty"`
+		} `json:"availabilityZones,omitempty"`
+
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
 		//
@@ -278,6 +306,34 @@ type (
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
 	GetWorkerTypeResponse struct {
+
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones
+		AvailabilityZones []struct {
+
+			// The AWS availability zone being configured.  Example: eu-central-1b
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/availabilityZone
+			AvailabilityZone string `json:"availabilityZone"`
+
+			// LaunchSpecification entries unique to this AZ
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec
+			LaunchSpec json.RawMessage `json:"launchSpec"`
+
+			// Static Secrets unique to this AZ
+			//
+			// Default:    map[]
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/secrets
+			Secrets json.RawMessage `json:"secrets,omitempty"`
+
+			// UserData entries unique to this AZ
+			//
+			// Default:    map[]
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/userData
+			UserData json.RawMessage `json:"userData,omitempty"`
+		} `json:"availabilityZones,omitempty"`
 
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
