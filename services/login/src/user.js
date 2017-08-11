@@ -47,7 +47,7 @@ export default class User {
   createCredentials(options) {
     assert(options);
     if (!this.identity) {
-      return {crednetials: null, expires: null};
+      return {credentials: null, expires: null};
     }
     let scopes = this.scopes();
 
