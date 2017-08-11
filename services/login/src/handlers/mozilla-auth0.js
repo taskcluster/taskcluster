@@ -1,13 +1,12 @@
-import User from './../user'
-import assert from 'assert'
+import User from './../user';
+import assert from 'assert';
 import _ from 'lodash';
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import jwks from 'jwks-rsa';
 import Debug from 'debug';
 import auth0js from 'auth0-js';
-
-const request = require('superagent-promise')(require('superagent'), Promise);
+import request from 'superagent';
 
 const debug = Debug('handlers.mozilla-auth0');
 
@@ -51,14 +50,14 @@ class Handler {
       .set('content-type', 'application/json')
       .send({
         grant_type: 'client_credentials',
-       client_id: this.clientId,
-       client_secret: this.clientSecret,
-       audience: `https://${this.domain}/api/v2/`,
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        audience: `https://${this.domain}/api/v2/`,
       });
 
     let token = JSON.parse(res.text).access_token;
     if (!token) {
-      throw new Error('did not receive a token from Auth0 /oauth/token endpoint')
+      throw new Error('did not receive a token from Auth0 /oauth/token endpoint');
     }
 
     // parse the token just enough to figure out when it expires
@@ -80,7 +79,7 @@ class Handler {
     try {
       await new Promise((resolve, reject) =>
         this.jwtCheck(req, res, (err) => err ? reject(err) : resolve()));
-    } catch(err) {
+    } catch (err) {
       debug(`error validating jwt: ${err}`);
       return;
     }
@@ -89,7 +88,7 @@ class Handler {
 
     let a0 = await this.getManagementApi();
     let profile = await new Promise((resolve, reject) =>
-      a0.getUser(req.user.sub, (err, prof) => err ? reject(err) : resolve(prof)))
+      a0.getUser(req.user.sub, (err, prof) => err ? reject(err) : resolve(prof)));
 
     if (!profile.email_verified) {
       debug('profile.email is not verified; ignoring profile');

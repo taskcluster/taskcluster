@@ -1,25 +1,25 @@
-import express from 'express'
-import passport from 'passport'
-import _ from 'lodash'
-import sslify from 'express-sslify'
-import http from 'http'
-import path from 'path'
-import session from 'cookie-session'
-import config from 'taskcluster-lib-config'
-import bodyParser from 'body-parser'
-import User from './user'
-import querystring from 'querystring'
-import loader from 'taskcluster-lib-loader'
-import taskcluster from 'taskcluster-client'
-import flash from 'connect-flash'
-import scanner from './scanner'
-import Authorizer from './authz'
-import v1 from './v1'
-import LDAPClient from './ldap'
-import tcApp from 'taskcluster-lib-app'
-import validator from 'taskcluster-lib-validate'
-import raven from 'raven'
-import docs from 'taskcluster-lib-docs'
+import express from 'express';
+import passport from 'passport';
+import _ from 'lodash';
+import sslify from 'express-sslify';
+import http from 'http';
+import path from 'path';
+import session from 'cookie-session';
+import config from 'taskcluster-lib-config';
+import bodyParser from 'body-parser';
+import User from './user';
+import querystring from 'querystring';
+import loader from 'taskcluster-lib-loader';
+import taskcluster from 'taskcluster-client';
+import flash from 'connect-flash';
+import scanner from './scanner';
+import Authorizer from './authz';
+import v1 from './v1';
+import LDAPClient from './ldap';
+import tcApp from 'taskcluster-lib-app';
+import validator from 'taskcluster-lib-validate';
+import monitor from 'taskcluster-lib-monitor';
+import docs from 'taskcluster-lib-docs';
 
 require('source-map-support').install();
 
@@ -27,7 +27,7 @@ let load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => {
-      return config({profile})
+      return config({profile});
     },
   },
 
@@ -54,7 +54,7 @@ let load = loader({
         } else {
           return promise;
         }
-      }
+      };
 
       cfg.app.authenticators.forEach((name) => {
         let Authn = require('./authn/' + name);
@@ -78,7 +78,7 @@ let load = loader({
         } else {
           return promise;
         }
-      }
+      };
 
       Object.keys(cfg.handlers).forEach((name) => {
         let Handler = require('./handlers/' + name).default;
@@ -88,14 +88,14 @@ let load = loader({
     },
   },
 
-  raven: {
-    requires: ['cfg'],
-    setup: ({cfg}) => {
-      if (cfg.raven.sentryDSN) {
-        return new raven.Client(cfg.raven.sentryDSN);
-      }
-      return null;
-    }
+  monitor: {
+    requires: ['process', 'profile', 'cfg'],
+    setup: ({process, profile, cfg}) => monitor({
+      project: 'taskcluster-login',
+      credentials: cfg.credentials,
+      mock: profile !== 'production',
+      process,
+    }),
   },
 
   validator: {
@@ -106,12 +106,12 @@ let load = loader({
         publish: cfg.app.publishMetaData,
         aws: cfg.aws,
       });
-    }
+    },
   },
 
   router: {
-    requires: ['cfg', 'validator', 'raven', 'handlers'],
-    setup: ({cfg, validator, raven, handlers}) => {
+    requires: ['cfg', 'validator', 'monitor', 'handlers'],
+    setup: ({cfg, validator, monitor, handlers}) => {
       return v1.setup({
         context: {},
         validator,
@@ -120,7 +120,7 @@ let load = loader({
         baseUrl:          cfg.server.publicUrl + '/v1',
         referencePrefix:  'login/v1/api.json',
         aws:              cfg.aws,
-        raven:            raven,
+        monitor:          monitor.prefix('api'),
         context:          {cfg, handlers},
       });
     },
@@ -147,7 +147,7 @@ let load = loader({
       // Create application
       let app = tcApp(cfg.server);
 
-      // setup "trust proxy", which tc-lib-app does not do
+      // setup 'trust proxy', which tc-lib-app does not do
       app.set('trust proxy', cfg.server.trustProxy);
 
       // Setup API
@@ -169,7 +169,7 @@ let load = loader({
         secureProxy: cfg.server.trustProxy,
         httpOnly: true,
         signed: true,
-        maxAge: 5 * 60 * 1000
+        maxAge: 5 * 60 * 1000,
       }));
 
       // Set up message flashing
@@ -186,10 +186,6 @@ let load = loader({
       // set up authenticators' sub-paths
       _.forIn(authenticators, (authn, name) => {
         app.use('/' + name, authn.router());
-      });
-
-      app.get('/some-tool', (req, res) => {
-        return res.render('some-tool');
       });
 
       // Add logout method
@@ -242,7 +238,7 @@ let load = loader({
     setup: async ({cfg}) => {
       let email = process.argv[3];
       if (!email) {
-        console.error("Specify an email address on the command line");
+        console.error('Specify an email address on the command line');
         process.exit(1);
         return;
       }
@@ -259,24 +255,24 @@ let load = loader({
       }
 
       let entries = await client.search(
-        "dc=mozilla", {
-        scope: 'sub',
-        filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
-        attributes: ['cn'],
-        timeLimit: 10,
-      });
+        'dc=mozilla', {
+          scope: 'sub',
+          filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
+          attributes: ['cn'],
+          timeLimit: 10,
+        });
       let groups = entries.map(entry => entry.object.cn);
 
       // SCM groups are posixGroup objects with the email in the memberUid
       // field.  This code does not capture other POSIX groups (which have the
       // user's uid field in the memberUid field).
       entries = await client.search(
-        "dc=mozilla", {
-        scope: 'sub',
-        filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
-        attributes: ['cn'],
-        timeLimit: 10,
-      });
+        'dc=mozilla', {
+          scope: 'sub',
+          filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
+          attributes: ['cn'],
+          timeLimit: 10,
+        });
       groups = groups.concat(entries.map(entry => entry.object.cn));
 
       groups.sort();
@@ -285,13 +281,14 @@ let load = loader({
       process.exit(0);
     },
   },
-}, ['profile']);
+}, ['profile', 'process']);
 
 if (!module.parent) {
   load(process.argv[2], {
-    profile: process.env.NODE_ENV
+    profile: process.env.NODE_ENV,
+    process: process.argv[2],
   }).catch(err => {
-    console.log("Server crashed: " + err.stack);
+    console.log('Server crashed: ' + err.stack);
     process.exit(1);
   });
 }

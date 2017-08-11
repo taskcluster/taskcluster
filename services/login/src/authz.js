@@ -23,7 +23,7 @@ export default class Authorizer {
     /* invoke all authorizers which recognize this identityProviderId */
     return Promise.all(this.authorizers.map(authz => {
       if (authz.identityProviders.indexOf(user.identityProviderId) !== -1) {
-        return authz.authorize(user)
+        return authz.authorize(user);
       }
     }));
   }
@@ -34,6 +34,6 @@ export default class Authorizer {
   get identityProviders() {
     return this.authorizers
       .map(authz => authz.identityProviders)
-      .reduce((a,b) => a.concat(b));
+      .reduce((a, b) => a.concat(b));
   }
 }

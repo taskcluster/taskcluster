@@ -1,4 +1,4 @@
-import User from './../user'
+import User from './../user';
 import Debug from 'debug';
 
 const debug = Debug('handlers.test');
