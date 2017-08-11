@@ -1,12 +1,12 @@
-import API from 'taskcluster-lib-api'
-import User from './user'
-import _ from 'lodash'
+import API from 'taskcluster-lib-api';
+import User from './user';
+import _ from 'lodash';
 
 var api = new API({
-  title:         "Login API",
+  title:         'Login API',
   description:   [
-    "The Login service serves as the interface between external authentication",
-    "systems and TaskCluster credentials.",
+    'The Login service serves as the interface between external authentication',
+    'systems and TaskCluster credentials.',
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
   context: ['cfg', 'handlers'],
@@ -56,7 +56,7 @@ api.declare({
         {provider: req.params.provider});
   }
 
-  let user = await handler.userFromRequest(req, res)
+  let user = await handler.userFromRequest(req, res);
   if (!user) {
     // don't report much to the user, to avoid revealing sensitive information, although
     // it is likely in the service logs.
