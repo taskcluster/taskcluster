@@ -10,3 +10,4 @@ expireTaskGroupSizes:   node lib/main expire-task-group-sizes
 expireTaskDependency    node lib/main expire-task-dependency
 expireTaskRequirement   node lib/main expire-task-requirement
 expireQueues:           node lib/main expire-queues
+expireWorkerInfo:       node lib/main expire-worker-info
