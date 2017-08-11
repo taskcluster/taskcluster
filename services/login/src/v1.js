@@ -42,6 +42,10 @@ api.declare({
     'appropriate to the user. Note that the resulting credentials may or may',
     'not include a `certificate` property. Callers should be prepared for either',
     'alternative.',
+    '',
+    'The given credentials will expire in a relatively short time. Callers should',
+    'monitor this expiration and refresh the credentials if necessary, by calling',
+    'this endpoint again, if they have expired.',
   ].join('\n'),
 }, async function(req, res) {
   // handlers are loaded from src/handlers based on cfg.handlers
@@ -61,11 +65,14 @@ api.declare({
         {});
   }
 
-  // create and return temporary credentials
-  let {credentials, expires} = user.createCredentials(this.cfg.app.temporaryCredentials);
+  // create and return temporary credentials, limiting expires to a max of 15 minutes
+  let {credentials: issuer, startOffset} = this.cfg.app.temporaryCredentials;
+  let {credentials, expires} = user.createCredentials({credentials: issuer, startOffset, expiry: '15 min'});
+
   // move expires back by 30 seconds to ensure the user refreshes well in advance of the
   // actual credential expiration time
   expires.setSeconds(expires.getSeconds() - 30);
+
   return res.reply({
     expires: expires.toJSON(),
     credentials,

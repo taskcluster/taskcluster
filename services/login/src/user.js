@@ -51,7 +51,11 @@ export default class User {
     }
     let scopes = this.scopes();
 
+    // take the soonest expiry
     let expires = taskcluster.fromNow(options.expiry);
+    if (this.expires && this.expires < expires) {
+      expires = this.expires;
+    }
 
     return {
       expires,
