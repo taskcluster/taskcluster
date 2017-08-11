@@ -1,8 +1,8 @@
-import express from 'express'
-import Auth0Strategy from 'passport-auth0'
-import passport from 'passport'
-import assert from 'assert'
-import User from './../user'
+import express from 'express';
+import Auth0Strategy from 'passport-auth0';
+import passport from 'passport';
+import assert from 'assert';
+import User from './../user';
 import url from 'url';
 
 class Auth0Login {
@@ -67,7 +67,7 @@ class Auth0Login {
       querystring = querystring.join('&');
 
       let url = `https://tools.taskcluster.net/login/?${querystring}`;
-      res.redirect(url)
+      res.redirect(url);
     });
 
     return router;

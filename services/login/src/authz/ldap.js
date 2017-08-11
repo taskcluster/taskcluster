@@ -1,7 +1,8 @@
-var Promise = require('promise');
-var assert = require('assert');
-var LDAPClient = require('./../ldap');
-var debug = require('debug')('LDAPAuthorizer');
+import assert from 'assert';
+import LDAPClient from '../ldap';
+import Debug from 'debug';
+
+var debug = Debug('LDAPAuthorizer');
 
 /* Determine appropriate roles based on Mozilla LDAP group membership */
 class LDAPAuthorizer {
@@ -14,7 +15,7 @@ class LDAPAuthorizer {
    *   key:           // Client side key (for certificate)
    *   user:          // Bind user
    *   password:      // Password for bind user
-   *   allowedGroups: // groups to reflect into roles, or "all"
+   *   allowedGroups: // groups to reflect into roles, or 'all'
    */
   constructor(options) {
     assert(options, 'options are required');
@@ -43,7 +44,7 @@ class LDAPAuthorizer {
 
   async authorize(user) {
     // only trust ldap-authenticated identities
-    if (user.identityProviderId !== "mozilla-ldap") {
+    if (user.identityProviderId !== 'mozilla-ldap') {
       return;
     }
     let email = user.identityId;
@@ -55,7 +56,7 @@ class LDAPAuthorizer {
     let addRolesForEntries = (entries) => {
       entries.forEach((entry) => {
         let group = entry.object.cn;
-        debug("..found", group);
+        debug('..found', group);
 
         // This is unlikely, and probably forbidden in LDAP, but just in case, let's
         // avoid characters that have special meanings in scopes.
@@ -80,12 +81,12 @@ class LDAPAuthorizer {
       // field.  This code does not capture other POSIX groups (which have the
       // user's uid field in the memberUid field).
       addRolesForEntries(await client.search(
-        "dc=mozilla", {
-        scope: 'sub',
-        filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
-        attributes: ['cn'],
-        timeLimit: 10,
-      }));
+        'dc=mozilla', {
+          scope: 'sub',
+          filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
+          attributes: ['cn'],
+          timeLimit: 10,
+        }));
 
       let userDn = await client.dnForEmail(email);
       if (!userDn) {
@@ -95,12 +96,12 @@ class LDAPAuthorizer {
 
       debug(`enumerating LDAP groups for ${userDn}`);
       addRolesForEntries(await client.search(
-        "dc=mozilla", {
-        scope: 'sub',
-        filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
-        attributes: ['cn'],
-        timeLimit: 10,
-      }));
+        'dc=mozilla', {
+          scope: 'sub',
+          filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
+          attributes: ['cn'],
+          timeLimit: 10,
+        }));
     });
   }
 };

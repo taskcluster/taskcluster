@@ -1,7 +1,9 @@
-var url = require('url');
-var ldap = require('ldapjs');
-var _ = require('lodash');
-var debug = require('debug')('LDAPClient');
+import url from 'url';
+import ldap from 'ldapjs';
+import _ from 'lodash';
+import Debug from 'debug';
+
+var debug = Debug('LDAPClient');
 
 class LDAPClient {
   constructor(cfg) {
@@ -49,10 +51,10 @@ class LDAPClient {
         break;
       } catch (err) {
         if (attempts >= tries) {
-          debug("error performing LDAP operation; failing", err);
+          debug('error performing LDAP operation; failing', err);
           throw err;
         } else {
-          debug("error performing LDAP operation; retrying", err);
+          debug('error performing LDAP operation; retrying', err);
         }
       }
     }
@@ -62,48 +64,46 @@ class LDAPClient {
     debug(`bind(${user}, <password>)`);
     return new Promise((accept, reject) => this.client.bind(
       user, password, err => {
-      err ? reject(err) : accept();
-    }));
+        err ? reject(err) : accept();
+      }));
   }
 
-  search(base, options) {
+  async search(base, options) {
     debug(`search(${base}, ${JSON.stringify(options)})`);
     let entries = [];
-    return new Promise((accept, reject) => this.client.search(
+    let res = await new Promise((accept, reject) => this.client.search(
       base, options, (err, res) => {
-      err ? reject(err) : accept(res);
-    })).then((res) => {
-      return new Promise((accept, reject) => {
-        res.on('searchEntry', entry => {
-          entries.push(entry);
-        });
-        res.on('error', (err) => {
-          reject(err);
-        });
-        res.on('end', result => {
-          if (result.status !== 0) {
-            return reject(new Error('LDAP error, got status: ' + result.status));
-          }
-          return accept(entries);
-        });
+        err ? reject(err) : accept(res);
+      }));
+    return await new Promise((accept, reject) => {
+      res.on('searchEntry', entry => {
+        entries.push(entry);
+      });
+      res.on('error', (err) => {
+        reject(err);
+      });
+      res.on('end', result => {
+        if (result.status !== 0) {
+          return reject(new Error('LDAP error, got status: ' + result.status));
+        }
+        return accept(entries);
       });
     });
   }
 
-  dnForEmail(email) {
+  async dnForEmail(email) {
     debug(`dnForEmail(${email})`);
     let userDn;
-    return this.search(
-      "dc=mozilla", {
-      scope: 'sub',
-      filter: '(&(objectClass=inetOrgPerson)(mail=' + email + '))',
-      attributes: [],
-      timeLimit: 10,
-    }).then((entries) => {
-      if (entries && entries.length === 1) {
-        return entries[0].object.dn;
-      }
-    });
+    let entries = await this.search(
+      'dc=mozilla', {
+        scope: 'sub',
+        filter: '(&(objectClass=inetOrgPerson)(mail=' + email + '))',
+        attributes: [],
+        timeLimit: 10,
+      });
+    if (entries && entries.length === 1) {
+      return entries[0].object.dn;
+    }
   }
 }
 

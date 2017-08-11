@@ -1,6 +1,6 @@
-import taskcluster from 'taskcluster-client'
-import _ from 'lodash'
-import assert from 'assert'
+import taskcluster from 'taskcluster-client';
+import _ from 'lodash';
+import assert from 'assert';
 
 export default class User {
   constructor() {
@@ -14,7 +14,7 @@ export default class User {
 
   set identity(identity) {
     assert(identity.split('/').length == 2,
-        "identity must have exactly one '/' character");
+        'identity must have exactly one '/' character');
     this._identity = identity;
     // always reset roles when changing identity
     this.roles = [];
@@ -36,10 +36,10 @@ export default class User {
   }
 
   scopes() {
-    let scopes = this.roles.map(role => "assume:" + role);
+    let scopes = this.roles.map(role => 'assume:' + role);
     // add permission to manage scopes prefixed by the identity
     ['create-client', 'delete-client', 'update-client', 'reset-access-token'].forEach(v => {
-      scopes.push("auth:" + v + ":" + this.identity + "/*");
+      scopes.push('auth:' + v + ':' + this.identity + '/*');
     });
     return scopes;
   }

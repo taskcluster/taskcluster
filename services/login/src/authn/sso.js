@@ -1,8 +1,8 @@
-import express from 'express'
-import saml from 'passport-saml'
-import passport from 'passport'
-import assert from 'assert'
-import User from './../user'
+import express from 'express';
+import saml from 'passport-saml';
+import passport from 'passport';
+import assert from 'assert';
+import User from './../user';
 
 class SSOLogin {
   constructor(options) {
@@ -23,7 +23,7 @@ class SSOLogin {
       entryPoint: options.cfg.sso.entryPoint,
       cert: options.cfg.sso.certificate,
       skipRequestCompression: true,
-      passReqToCallback: true
+      passReqToCallback: true,
     }, this.samlCallback.bind(this)));
   }
 
@@ -63,7 +63,7 @@ class SSOLogin {
       // NOTE: Okta handles most errors internally -- I don't know how to reproduce
       // this failureRedirect
       failureRedirect: '/',
-      failureFlash: true
+      failureFlash: true,
     }), (req, res) => {
       if (!req.session['new-way']) {
         res.redirect('/');
@@ -82,7 +82,7 @@ class SSOLogin {
       querystring = querystring.join('&');
 
       let url = `https://tools.taskcluster.net/login/?${querystring}`;
-      res.redirect(url)
+      res.redirect(url);
     });
 
     // but tc-tools sends the browser to GET this URL
