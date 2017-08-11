@@ -44,6 +44,32 @@ but unnamed temporary credentials can be created regardless of your scopes.## AP
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
 
+## Sync vs Async
+
+The objects under `taskcluster` (e.g., `taskcluster.Queue`) are python2-compatible and operate synchronously.
+
+
+The objects under `taskcluster.async` (e.g., `taskcluster.async.Queue`) require `python>=3.5`. The async objects use asyncio coroutines for concurrency; this allows us to put I/O operations in the background, so operations that require the cpu can happen sooner. Given dozens of operations that can run concurrently (e.g., cancelling a medium-to-large task graph), this can result in significant performance improvements. The code would look something like
+
+```python
+#!/usr/bin/env python
+import aiohttp
+import asyncio
+from taskcluster.async import Auth
+
+async def do_ping():
+    with aiohttp.ClientSession() as session:
+        a = Auth(session=session)
+        print(await a.ping())
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(do_ping())
+```
+
+Other async code examples are available [here](#methods-contained-in-the-client-library).
+
+Here's a slide deck for an [introduction to async python](https://gitpitch.com/escapewindow/slides-sf-2017/async-python).
+
 ## Usage
 
 * Here's a simple command:
