@@ -98,6 +98,7 @@ class Handler {
 
     let user = new User();
     user.identity = 'mozilla-auth0/' + profile.email;
+    user.expires = new Date(req.user.exp * 1000);
 
     // TODO: add scopes based on profile; waiting on profile rollout and documentation
 
