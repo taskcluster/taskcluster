@@ -40,7 +40,7 @@ let load = loader({
     setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-foo',
       credentials: cfg.taskcluster.credentials,
-      mock: cfg.monitor.mock,  // true in production, false in testing
+      mock: cfg.monitor.mock,  // false in production, true in testing
       process,
     }),
   },
