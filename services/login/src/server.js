@@ -92,7 +92,7 @@ let load = loader({
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
       project: 'taskcluster-login',
-      credentials: cfg.credentials,
+      credentials: cfg.app.credentials,
       mock: profile !== 'production',
       process,
     }),
