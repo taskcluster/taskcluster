@@ -103,10 +103,9 @@ func main() {
 			}()
 			select {
 			case <-time.After(closeWait):
-				os.Exit(0)
 			case <-done:
-				os.Exit(0)
 			}
+			os.Exit(0)
 		case stream := <-strChan:
 			f := &forwarder{
 				stream: stream,
