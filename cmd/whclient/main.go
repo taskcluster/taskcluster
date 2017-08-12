@@ -80,10 +80,7 @@ func main() {
 			log.Printf("new connection")
 			waitTime = 5 * time.Millisecond
 
-			select {
-			case strChan <- stream:
-			default:
-			}
+			strChan <- stream
 		}
 	}()
 
@@ -106,14 +103,9 @@ func main() {
 			}()
 			select {
 			case <-time.After(closeWait):
-				// kill everything
-				it := runSet.Iterator()
-				for elem := range it.C {
-					forw := elem.(*forwarder)
-					// this will trigger a call to notify
-					forw.kill()
-				}
+				os.Exit(0)
 			case <-done:
+				os.Exit(0)
 			}
 		case stream := <-strChan:
 			f := &forwarder{
