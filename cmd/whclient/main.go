@@ -77,7 +77,6 @@ func main() {
 				continue
 			}
 			// reset wait time
-			log.Printf("new connection")
 			waitTime = 5 * time.Millisecond
 
 			strChan <- stream
