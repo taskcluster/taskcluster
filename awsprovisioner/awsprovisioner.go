@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 11 Aug 2017 at 18:23:00 UTC. The code was generated
+// Mon, 14 Aug 2017 at 15:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -335,55 +335,11 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs_SignedURL(workerType string
 // pending requests.  The `summary` property contains an updated summary
 // similar to that returned from `listWorkerTypeSummaries`.
 //
-// Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
-//
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#state
 func (awsProvisioner *AwsProvisioner) State(workerType string) error {
 	cd := tcclient.Client(*awsProvisioner)
 	_, _, err := (&cd).APICall(nil, "GET", "/state/"+url.QueryEscape(workerType), nil, nil)
 	return err
-}
-
-// Returns a signed URL for State, valid for the specified duration.
-//
-// Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
-//
-// See State for more details.
-func (awsProvisioner *AwsProvisioner) State_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*awsProvisioner)
-	return (&cd).SignedURL("/state/"+url.QueryEscape(workerType), nil, duration)
-}
-
-// Return the state of a given workertype as stored by the provisioner.
-// This state is stored as three lists: 1 for running instances, 1 for
-// pending requests.  The `summary` property contains an updated summary
-// similar to that returned from `listWorkerTypeSummaries`.
-//
-// Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
-//
-// See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#newState
-func (awsProvisioner *AwsProvisioner) NewState(workerType string) error {
-	cd := tcclient.Client(*awsProvisioner)
-	_, _, err := (&cd).APICall(nil, "GET", "/new-state/"+url.QueryEscape(workerType), nil, nil)
-	return err
-}
-
-// Returns a signed URL for NewState, valid for the specified duration.
-//
-// Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
-//
-// See NewState for more details.
-func (awsProvisioner *AwsProvisioner) NewState_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*awsProvisioner)
-	return (&cd).SignedURL("/new-state/"+url.QueryEscape(workerType), nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
