@@ -1,0 +1,43 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "List Workers Response"
+description: |
+  Response from a `listWorkers` request.
+type:               object
+properties:
+  workers:
+    type:           array
+    title:          "Workers from a WorkerType"
+    description: |
+      List of workers in this worker-type.
+    items:
+      type:         object
+      properties:
+          workerGroup:
+                    description: |
+                      Identifier for the worker group containing this worker.
+                    type:         string
+                    minLength:    {$const: identifier-min-length}
+                    maxLength:    {$const: identifier-max-length}
+                    pattern:      {$const: identifier-pattern}
+          workerId:
+                    description: |
+                      Identifier for this worker (unique within this worker group).
+                    type:         string
+                    minLength:    {$const: identifier-min-length}
+                    maxLength:    {$const: identifier-max-length}
+                    pattern:      {$const: identifier-pattern}
+      additionalProperties: false
+  continuationToken:
+    type:           string
+    title:          "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of workers in the worker-type.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listWorkerTypes` with `continuationToken`
+      until you get a result without a `continuationToken`.
+additionalProperties: false
+required:
+ - workers

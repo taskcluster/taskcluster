@@ -11,9 +11,11 @@ suite('provisioners and worker-types', () => {
   setup(async function() {
     const Provisioner = await helper.load('Provisioner', helper.loadOptions);
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+    const Worker = await helper.load('Worker', helper.loadOptions);
 
     await Provisioner.scan({}, {handler: p => p.remove()});
     await WorkerType.scan({}, {handler: p => p.remove()});
+    await Worker.scan({}, {handler: p => p.remove()});
   });
 
   test('queue.listProvisioners returns an empty list', async () => {
@@ -115,5 +117,79 @@ suite('provisioners and worker-types', () => {
 
     const result = await helper.queue.listWorkerTypes('prov1');
     assert(result.workerTypes.length === 0, 'expected no worker-types');
+  });
+
+  test('queue.listWorkers returns an empty list', async () => {
+    const result = await helper.queue.listWorkers('prov1', 'gecko-b-2-linux');
+
+    assert(result.workers.length === 0, 'Did not expect any workers');
+  });
+
+  test('queue.listWorkers returns workers', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov1';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+
+    await Worker.create({provisionerId, workerType, workerGroup, workerId, expires: new Date('3017-07-29')});
+
+    const result = await helper.queue.listWorkers(provisionerId, workerType);
+
+    assert(result.workers.length === 1, 'expected workers');
+    assert(result.workers[0].workerGroup === workerGroup, `expected ${workerGroup}`);
+    assert(result.workers[0].workerId === workerId, `expected ${workerId}`);
+  });
+
+  test('list workers (limit and continuationToken)', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const expires = new Date('3017-07-29');
+    const provisionerId = 'prov2';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+
+    await Worker.create({provisionerId, workerType, workerGroup, workerId: 'my-worker1', expires});
+    await Worker.create({provisionerId, workerType, workerGroup, workerId: 'my-worker2', expires});
+
+    let result = await helper.queue.listWorkers(provisionerId, workerType, {limit: 1});
+    assert(result.continuationToken);
+    assert(result.workers.length === 1);
+
+    result = await helper.queue.listWorkers(provisionerId, workerType, {
+      limit: 1,
+      continuationToken: result.continuationToken,
+    });
+    assert(!result.continuationToken);
+    assert(result.workers.length === 1);
+  });
+
+  test('workerSeen creates and updates a worker', async () => {
+    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+    const provisionerId = 'prov1';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+
+    await Promise.all([
+      workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
+      workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
+    ]);
+
+    const result = await helper.queue.listWorkers(provisionerId, workerType);
+    assert(result.workers.length === 1, 'expected a worker');
+  });
+
+  test('worker expiration works', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov2';
+    const workerType = 'gecko-b-2-linux';
+
+    await Worker.create({
+      provisionerId, workerType, workerGroup: 'my-worker-group', workerId: 'my-worker', expires: new Date('1017-07-29'),
+    });
+    await helper.expireWorkerInfo();
+
+    const result = await helper.queue.listWorkers(provisionerId, workerType);
+    assert(result.workers.length === 0, 'expected no workers');
   });
 });
