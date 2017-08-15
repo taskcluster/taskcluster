@@ -267,6 +267,21 @@ let load = loader({
     },
   },
 
+  // Create Worker table
+  Worker: {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: async ({cfg, monitor, process}) => {
+      let Worker = data.Worker.setup({
+        table:            cfg.app.workerTableName,
+        account:          cfg.azureTableAccount,
+        credentials:      cfg.taskcluster.credentials,
+        monitor:          monitor.prefix('table.worker'),
+      });
+      await Worker.ensureTable();
+      return Worker;
+    },
+  },
+
   // Create QueueService to manage azure queues
   queueService: {
     requires: ['cfg', 'monitor'],
@@ -296,9 +311,9 @@ let load = loader({
 
   // Create workerInfo
   workerInfo: {
-    requires: ['Provisioner', 'WorkerType'],
-    setup: ({Provisioner, WorkerType}) => new WorkerInfo({
-      Provisioner, WorkerType,
+    requires: ['Provisioner', 'WorkerType', 'Worker'],
+    setup: ({Provisioner, WorkerType, Worker}) => new WorkerInfo({
+      Provisioner, WorkerType, Worker,
     }),
   },
 
@@ -329,7 +344,7 @@ let load = loader({
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
-      'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType',
+      'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -342,6 +357,7 @@ let load = loader({
         TaskDependency:   ctx.TaskDependency,
         Provisioner:      ctx.Provisioner,
         WorkerType:       ctx.WorkerType,
+        Worker:           ctx.Worker,
         dependencyTracker: ctx.dependencyTracker,
         publisher:        ctx.publisher,
         validator:        ctx.validator,
