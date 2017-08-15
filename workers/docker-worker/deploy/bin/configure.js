@@ -61,7 +61,7 @@ co(function*() {
   var config = yield configure();
   fs.writeFileSync(CONFIG, JSON.stringify(config, null, 2));
   console.log(color.yellowBright('Configured wrote to: ' + CONFIG) + '\n');
-})(function(err) {
+}).then(function(err) {
   if (err) throw err;
   process.exit();
 });
