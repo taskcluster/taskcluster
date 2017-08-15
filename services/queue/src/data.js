@@ -695,3 +695,41 @@ WorkerType.expire = async function(now) {
 
 // Export WorkerType
 exports.WorkerType = WorkerType;
+
+/**
+ * Entity for tracking workers.
+ */
+let Worker = Entity.configure({
+  version:            1,
+  partitionKey:       Entity.keys.CompositeKey('provisionerId', 'workerType'),
+  rowKey:             Entity.keys.CompositeKey('workerGroup', 'workerId'),
+  properties: {
+    provisionerId:    Entity.types.String,
+    workerType:       Entity.types.String,
+    workerGroup:      Entity.types.String,
+    workerId:         Entity.types.String,
+    // the time at which this worker should no longer be displayed
+    expires:          Entity.types.Date,
+  },
+});
+
+/**
+ * Expire Worker entries.
+ *
+ * Returns a promise that all expired Worker entries have been deleted
+ */
+Worker.expire = async function(now) {
+  assert(now instanceof Date, 'now must be given as option');
+  let count = 0;
+
+  await Entity.scan.call(this, {
+    expires:          Entity.op.lessThan(now),
+  }, {
+    limit:            250, // max number of concurrent delete operations
+    handler:          entry => { count++; return entry.remove(true); },
+  });
+
+  return count;
+};
+
+exports.Worker = Worker;

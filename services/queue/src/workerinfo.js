@@ -1,6 +1,20 @@
-let taskcluster = require('taskcluster-client');
-let assert      = require('assert');
-let debug       = require('debug')('workerinfo');
+const taskcluster = require('taskcluster-client');
+const assert      = require('assert');
+const debug       = require('debug')('workerinfo');
+
+const ignoreEntityAlreadyExists = (err) => {
+  if (!err || err.code !== 'EntityAlreadyExists') {
+    throw err;
+  }
+};
+
+const expired = entity => new Date(entity.expires) - Date.now() < 24 * 60 * 60 * 1000;
+
+const updateExpiration = (entity, expires) => {
+  if (expired(entity)) {
+    entity.expires = expires;
+  }
+};
 
 class WorkerInfo {
   constructor(options) {
@@ -8,6 +22,7 @@ class WorkerInfo {
     assert(options.Provisioner);
     this.Provisioner = options.Provisioner;
     this.WorkerType = options.WorkerType;
+    this.Worker = options.Worker;
 
     // update `expires` values in Azure at this frequency; larger values give less accurate
     // expires times, but reduce Azure traffic.
@@ -30,71 +45,67 @@ class WorkerInfo {
     let nextUpdate = this.nextUpdateAt[key];
     if (!nextUpdate || nextUpdate < now) {
       this.nextUpdateAt[key] = taskcluster.fromNow(this.updateFrequency);
+
       await updateExpires();
     }
   }
 
-  async seen(provisionerId, workerType) {
-    const expired = entity => Date.now() - new Date(entity.expires) > 24 * 60 * 60 * 1000;
-    const expires = taskcluster.fromNow('5 days');  // temporary hard coded expiration
+  async seen(provisionerId, workerType, workerGroup, workerId) {
+    const expires = workerId ? taskcluster.fromNow('1 day') : taskcluster.fromNow('5 days');
 
-    const provisionerSeen = async (provisionerId) => {
-      await this.valueSeen(provisionerId, async () => {
+    const createEntry = async (entity, entry) => {
+      try {
+        await entity.create(entry);
+      } catch (err) {
+        ignoreEntityAlreadyExists(err);
+      }
+    };
+
+    const promises = [];
+
+    // provisioner seen
+    if (provisionerId) {
+      promises.push(this.valueSeen(provisionerId, async () => {
         // perform an Azure upsert, trying the update first as it is more common
         const provisioner = await this.Provisioner.load({provisionerId}, true);
+
         if (provisioner) {
-          await provisioner.modify(entity => {
-            if (expired(entity)) {
-              entity.expires = expires;
-            }
-          });
-
-          return;
+          return provisioner.modify(entity => updateExpiration(entity, expires));
         }
 
-        try {
-          await this.Provisioner.create({provisionerId, expires});
-        } catch (err) {
-          // EntityAlreadyExists means we raced with another create, so just let it win
-          if (!err || err.code !== 'EntityAlreadyExists') {
-            throw err;
-          }
-        }
-      });
-    };
+        createEntry(this.Provisioner, {provisionerId, expires});
+      }));
+    }
 
-    const workerTypeSeen = async (provisionerId, workerType) => {
-      await this.valueSeen(`${provisionerId}/${workerType}`, async () => {
+    // worker-type seen
+    if (provisionerId && workerType) {
+      promises.push(this.valueSeen(`${provisionerId}/${workerType}`, async () => {
         // perform an Azure upsert, trying the update first as it is more common
         const wType = await this.WorkerType.load({provisionerId, workerType}, true);
+
         if (wType) {
-          await wType.modify(entity => {
-            if (expired(entity)) {
-              entity.expires = expires;
-            }
-          });
-
-          return;
+          return wType.modify(entity => updateExpiration(entity, expires));
         }
 
-        try {
-          await this.WorkerType.create({provisionerId, workerType, expires});
-        } catch (err) {
-          // EntityAlreadyExists means we raced with another create, so just let it win
-          if (!err || err.code !== 'EntityAlreadyExists') {
-            throw err;
-          }
+        createEntry(this.WorkerType, {provisionerId, workerType, expires});
+      }));
+    }
+
+    // worker  seen
+    if (provisionerId && workerType && workerGroup && workerId) {
+      promises.push(this.valueSeen(`${provisionerId}/${workerType}/${workerGroup}/${workerId}`, async () => {
+        // perform an Azure upsert, trying the update first as it is more common
+        const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
+
+        if (worker) {
+          return worker.modify(entity => updateExpiration(entity, expires));
         }
-      });
-    };
 
-    if (provisionerId) {
-      provisionerSeen(provisionerId);
+        createEntry(this.Worker, {provisionerId, workerType, workerGroup, workerId, expires});
+      }));
     }
 
-    if (provisionerId && workerType) {
-      workerTypeSeen(provisionerId, workerType);
-    }
+    await Promise.all(promises);
   }
 
   async expire(now) {
@@ -107,6 +118,10 @@ class WorkerInfo {
     debug('Expiring worker-types at: %s, from before %s', new Date(), now);
     count = await this.WorkerType.expire(now);
     debug('Expired %s worker-types', count);
+
+    debug('Expiring workers at: %s, from before %s', new Date(), now);
+    count = await this.Worker.expire(now);
+    debug('Expired %s workers', count);
   }
 }
 
