@@ -842,36 +842,6 @@ module.exports = {
           "query": [
           ],
           "route": "/state/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "stability": "stable",
-          "title": "Get AWS State for a worker type",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerType"
-          ],
-          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
-          "method": "get",
-          "name": "newState",
-          "query": [
-          ],
-          "route": "/new-state/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
           "stability": "stable",
           "title": "Get AWS State for a worker type",
           "type": "function"
@@ -1635,7 +1605,7 @@ module.exports = {
           "args": [
             "provider"
           ],
-          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.",
+          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
           "method": "get",
           "name": "oidcCredentials",
           "output": "http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json",
@@ -2472,6 +2442,24 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types",
           "stability": "experimental",
           "title": "Get a list of all active worker-types",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "Get a list of all active workerGroup/workerId of a workerType.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listWorkers",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-workers-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/provisioners/<provisionerId>/workerTypes/<workerType>/workers",
+          "stability": "experimental",
+          "title": "Get a list of all active workerGroup/workerId of a workerType",
           "type": "function"
         },
         {

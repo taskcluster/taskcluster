@@ -237,7 +237,6 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.removeSecret(token) : void`
  * `awsProvisioner.getLaunchSpecs(workerType) : result`
  * `awsProvisioner.state(workerType) : void`
- * `awsProvisioner.newState(workerType) : void`
  * `awsProvisioner.backendStatus() : result`
  * `awsProvisioner.ping() : void`
 
@@ -362,6 +361,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.listProvisioners([options]) : result`
  * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.listWorkerTypes(provisionerId, [options]) : result`
+ * `queue.listWorkers(provisionerId, workerType, [options]) : result`
  * `queue.ping() : void`
 
 ### Methods in `taskcluster.Scheduler`
