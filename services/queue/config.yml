@@ -21,6 +21,7 @@ defaults:
     taskGroupActiveSetTableName:  TaskGroupActiveSets
     taskRequirementTableName:     TaskRequirement
     taskDependencyTableName:      TaskDependency
+    workerTableName:              Worker
     workerTypeTableName:          WorkerType
     provisionerTableName:         Provisioner
 
@@ -141,6 +142,7 @@ production:
     taskGroupActiveSetTableName:  'QueueTaskGroupActiveSets'
     taskRequirementTableName:     'QueueTaskRequirement'
     taskDependencyTableName:      'QueueTaskDependency'
+    workerTableName:              'QueueWorker'
     workerTypeTableName:          'QueueWorkerType'
     provisionerTableName:         'QueueProvisioner'
     cloudMirrorRegions:
@@ -214,6 +216,7 @@ load-test:
     taskGroupActiveSetTableName:  'LoadTestTaskSizeMembers2'
     taskRequirementTableName:     'LoadTestTaskRequirement2'
     taskDependencyTableName:      'LoadTestTaskDependency2'
+    workerTableName:              'LoadTestWorker'
     workerTypeTableName:          'LoadTestWorkerType'
     provisionerTableName:         'LoadTestProvisioner'
     claimQueue:                   'load-test-claim-queue'
