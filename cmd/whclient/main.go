@@ -25,24 +25,39 @@ the internet.
 
 [Firewall/NAT [User] <--]---> [Proxy] <--- [Web]
 
-Usage: whclient <clientID> <accessToken> <targetPort>
+Usage: whclient <clientID> <accessToken> <targetPort> [--cert=<cert>] [--out-file=<outFile>] [--json]
 whclient -h | --help
 
 Options:
--h --help Show help`
+-h --help 		Show help
+--cert=<cert> 		Certificate for temporary credentials
+--out-file=<outFile> 	Dump url to this file
+--json 			Output logs in JSON format`
 
 const closeWait = 2 * time.Second
 
 func main() {
-	log.SetFormatter(&log.JSONFormatter{})
-
 	arguments, _ := docopt.Parse(usage, nil, true, "Webhook Client 0.1", false)
 
-	clientID, accessToken := arguments["<clientID>"].(string), arguments["<accessToken>"].(string)
+	clientID, accessToken, cert := arguments["<clientID>"].(string), arguments["<accessToken>"].(string), ""
+	if arguments["--cert"] != nil {
+		cert = arguments["--cert"].(string)
+	}
+
 	targetPort, err := strconv.Atoi(arguments["<targetPort>"].(string))
 	if err != nil || targetPort < 0 || targetPort > 65535 {
 		log.Fatal(usage)
 	}
+
+	outFile := ""
+	if arguments["--out-file"] != nil {
+		outFile = arguments["--out-file"].(string)
+	}
+
+	if arguments["--json"].(bool) == true {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
+
 	// Configure signals for graceful handling
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -56,7 +71,7 @@ func main() {
 	// accept new streams from this channel
 	strChan := make(chan net.Conn, 1)
 
-	client, err := whclient.New(makeConfigurer(clientID, accessToken))
+	client, err := whclient.New(makeConfigurer(clientID, accessToken, cert))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,7 +104,18 @@ func main() {
 		close(sigChan)
 	}()
 
-	log.WithFields(log.Fields{"url": client.URL()}).Info("connected to proxy")
+	whurl := client.URL()
+	log.WithFields(log.Fields{"url": whurl}).Info("connected to proxy")
+	// dump if outFile provided
+	if outFile != "" {
+		file, err := os.Create(outFile)
+		if err != nil {
+			panic(err)
+		}
+		_, _ = file.Write([]byte(whurl))
+		_ = file.Close()
+		log.WithFields(log.Fields{"url": whurl, "file": outFile}).Info("wrote url to file")
+	}
 
 	for run {
 		select {
@@ -173,11 +199,12 @@ func (f *forwarder) kill() {
 	}
 }
 
-func makeConfigurer(clientID, accessToken string) func() (whclient.Config, error) {
+func makeConfigurer(clientID, accessToken, certificate string) func() (whclient.Config, error) {
 	configurer := func() (whclient.Config, error) {
 		creds := &tcclient.Credentials{
 			ClientID:    clientID,
 			AccessToken: accessToken,
+			Certificate: certificate,
 		}
 		myAuth := auth.New(creds)
 		whtResponse, err := myAuth.WebhooktunnelToken()
