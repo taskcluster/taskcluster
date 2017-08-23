@@ -20,7 +20,7 @@ A generic worker for task cluster, written in go.
 
 If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
 
-* Head over to http://golang.org/doc/install and follow the instructions for your platform. Be sure to set your GOPATH to something appropriate.
+* Head over to http://golang.org/doc/install and follow the instructions for your platform. __Note, go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
 * Run `go get github.com/taskcluster/generic-worker`
 * Run `go get github.com/taskcluster/livelog`
 
