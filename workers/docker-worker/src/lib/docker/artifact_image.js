@@ -255,6 +255,7 @@ export default class ArtifactImage {
     let filename = path.basename(tarballPath, '.tar');
     let editedTarballPath = path.join(dir, filename + '-edited.tar');
     let extractedPath = path.join(dir, filename);
+    let manifestPath = path.join(extractedPath, 'manifest.json');
 
     let extractStream = tarfs.extract(extractedPath);
     fs.createReadStream(tarballPath).pipe(extractStream);
@@ -267,7 +268,12 @@ export default class ArtifactImage {
     let repositories = fs.readFileSync(path.join(extractedPath, 'repositories'));
     let repoInfo = JSON.parse(repositories);
 
-    let oldRepoName = Object.keys(repoInfo)[0];
+    let keys = Object.keys(repoInfo);
+    if (keys.length > 1) {
+      throw new Error("Image tarballs must only contain one image");
+    }
+
+    let oldRepoName = keys[0];
     let oldTag = Object.keys(repoInfo[oldRepoName])[0];
     let newRepoInfo = {};
     newRepoInfo[imageName] = repoInfo[oldRepoName];
@@ -279,6 +285,16 @@ export default class ArtifactImage {
 
     newRepoInfo = JSON.stringify(newRepoInfo);
     fs.writeFileSync(path.join(extractedPath, 'repositories'), newRepoInfo);
+
+    if (fs.existsSync(manifestPath)) {
+      let manifest = JSON.parse(fs.readFileSync(manifestPath));
+      if (manifest.length > 1) {
+        throw new Error("Image tarballs must only contain one image");
+      }
+
+      manifest[0]['RepoTags'] = [`${imageName}:latest`];
+      fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    }
 
     let pack = tarfs.pack(path.join(dir, filename));
     pack.pipe(fs.createWriteStream(editedTarballPath));
