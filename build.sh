@@ -13,8 +13,8 @@ GO_MIN="$(echo "${GO_VERSION}" | cut -f2 -d'.')"
 if [ -z "${GO_VERSION}" ]; then
   echo "Have you installed go? I get no result from \`go version\` command." >&2
   exit 64
-elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 7 ]; then
-  echo "Go version go1.x needed, where x >= 7, but the version I found is: '${GO_VERSION}'" >&2
+elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 8 ]; then
+  echo "Go version go1.x needed, where x >= 8, but the version I found is: '${GO_VERSION}'" >&2
   echo "I found it here:" >&2
   which go >&2
   echo "The complete output of \`go version\` command is:" >&2
