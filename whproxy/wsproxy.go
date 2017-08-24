@@ -44,7 +44,7 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	uri := "ws://" + r.URL.Host + util.ReplaceID(r.URL.Path)
 	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
-		p.logerrorf(tunnelID, r.RemoteAddr, "could not dial tunnel: path=%s", r.URL.Path)
+		p.logerrorf(tunnelID, r.RemoteAddr, "could not dial tunnel: path=%s, error: %v", r.URL.Path, err)
 		return err
 	}
 	viewerConn, err := p.upgrader.Upgrade(w, r, nil)

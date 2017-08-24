@@ -252,6 +252,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, path string) {
 	// log new request arrival
 	p.logf(id, r.RemoteAddr, "request: host=%s path=%s", r.Host, path)
+	p.logf(id, r.RemoteAddr, "request: URL: %v", r.URL)
 
 	session, ok := p.getWorkerSession(id)
 
