@@ -628,6 +628,21 @@ let Provisioner = Entity.configure({
     // the time at which this provisioner should no longer be displayed
     expires:          Entity.types.Date,
   },
+}).configure({
+  version:            2,
+  properties: {
+    provisionerId:    Entity.types.String,
+    // the time at which this provisioner should no longer be displayed
+    expires:          Entity.types.Date,
+    description:      Entity.types.String,
+    stability:        Entity.types.String,
+  },
+  migrate(item) {
+    item.description = '';
+    item.stability = 'experimental';
+
+    return item;
+  },
 });
 
 /**
@@ -653,6 +668,9 @@ Provisioner.expire = async function(now) {
 Provisioner.prototype.json = function() {
   return {
     provisionerId:    this.provisionerId,
+    expires:          this.expires.toJSON(),
+    description:      this.description,
+    stability:        this.stability,
   };
 };
 

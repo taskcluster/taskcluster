@@ -25,12 +25,21 @@ suite('provisioners and worker-types', () => {
 
   test('queue.listProvisioners returns provisioners', async () => {
     const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    const provisioner = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      description: 'test-provisioner',
+      stability: 'experimental',
+    };
 
-    await Provisioner.create({provisionerId: 'prov1', expires: new Date('3017-07-29')});
+    await Provisioner.create(provisioner);
 
     const result = await helper.queue.listProvisioners();
+
     assert(result.provisioners.length === 1, 'expected provisioners');
-    assert(result.provisioners[0].provisionerId === 'prov1', 'expected prov1');
+    assert(result.provisioners[0].provisionerId === provisioner.provisionerId, 'expected prov1');
+    assert(result.provisioners[0].description === provisioner.description, 'expected description');
+    assert(result.provisioners[0].stability === provisioner.stability, 'expected stability');
   });
 
   test('provisioner seen creates and updates a provisioner', async () => {
@@ -49,7 +58,9 @@ suite('provisioners and worker-types', () => {
   test('provisioner expiration works', async () => {
     const Provisioner = await helper.load('Provisioner', helper.loadOptions);
 
-    await Provisioner.create({provisionerId: 'prov1', expires: new Date('1017-07-29')});
+    await Provisioner.create({
+      provisionerId: 'prov1', expires: new Date('1017-07-29'), description: 'test-prov', stability: 'experimental',
+    });
     await helper.expireWorkerInfo();
 
     const result = await helper.queue.listProvisioners();

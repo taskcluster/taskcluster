@@ -73,7 +73,7 @@ class WorkerInfo {
           return provisioner.modify(entity => updateExpiration(entity, expires));
         }
 
-        createEntry(this.Provisioner, {provisionerId, expires});
+        createEntry(this.Provisioner, {provisionerId, expires, description: '', stability: 'experimental'});
       }));
     }
 
