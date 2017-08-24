@@ -2008,6 +2008,7 @@ api.declare({
   const result = {
     provisioners: provisioners.entries.map(provisioner => provisioner.json()),
   };
+
   if (provisioners.continuation) {
     result.continuationToken = provisioners.continuation;
   }
