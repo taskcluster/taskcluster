@@ -409,12 +409,36 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners
 		Provisioners []struct {
 
+			// Description of the provisioner.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/description
+			Description string `json:"description"`
+
+			// Date and time after which the provisioner created will be automatically
+			// deleted by the queue.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/expires
+			Expires tcclient.Time `json:"expires"`
+
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId
 			ProvisionerID string `json:"provisionerId"`
+
+			// This is the stability of the provisioner. Accepted values:
+			//  * `experimental`
+			//  * `stable`
+			//  * `deprecated`
+			//
+			// Possible values:
+			//   * "experimental"
+			//   * "stable"
+			//   * "deprecated"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/stability
+			Stability string `json:"stability"`
 		} `json:"provisioners"`
 	}
 
@@ -474,6 +498,37 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes
 		WorkerTypes []struct {
+
+			// Description of the worker-type.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/description
+			Description string `json:"description,omitempty"`
+
+			// Date and time after which the worker-type will be automatically
+			// deleted by the queue.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires
+			Expires tcclient.Time `json:"expires,omitempty"`
+
+			// Syntax:     ^([a-zA-Z0-9-_]*)$
+			// Min length: 1
+			// Max length: 22
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
+			ProvisionerID string `json:"provisionerId,omitempty"`
+
+			// This is the stability of the worker-type. Accepted values:
+			//  * `experimental`
+			//  * `stable`
+			//  * `deprecated`
+			//
+			// Possible values:
+			//   * "experimental"
+			//   * "stable"
+			//   * "deprecated"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/stability
+			Stability string `json:"stability,omitempty"`
 
 			// WorkerType name.
 			//

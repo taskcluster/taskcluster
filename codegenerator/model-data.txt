@@ -1,4 +1,4 @@
-Generated: 1502828601
+Generated: 1503606299
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6943,7 +6943,7 @@ page. You may limit this with the query-string parameter `limit`.'
 Entry 24    =
     Entry Type        = 'function'
     Entry Method      = 'get'
-    Entry Route       = '/provisioners/<provisionerId>/workerTypes/<workerType>/workers'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers'
     Entry Args        = '[provisionerId workerType]'
     Entry Query        = '[continuationToken limit]'
     Entry Name        = 'listWorkers'
@@ -7580,6 +7580,22 @@ Properties
     Items
       Additional Properties  = 'false'
       Properties
+        Property 'description' =
+          Description            = 'Description of the provisioner.
+          '
+          Title                  = 'Description'
+          Type                   = 'string'
+          TypeName               = 'Description'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/description'
+        Property 'expires' =
+          Description            = 'Date and time after which the provisioner created will be automatically
+          deleted by the queue.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Provisioner Expiration'
+          Type                   = 'string'
+          TypeName               = 'ProvisionerExpiration'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/expires'
         Property 'provisionerId' =
           MaxLength              = '22'
           MinLength              = '1'
@@ -7588,7 +7604,18 @@ Properties
           Type                   = 'string'
           TypeName               = 'ProvisionerID'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId'
-      Required               = '[provisionerId]'
+        Property 'stability' =
+          Description            = 'This is the stability of the provisioner. Accepted values:
+           * `experimental`
+           * `stable`
+           * `deprecated`
+          '
+          Enum                   = '[experimental stable deprecated]'
+          Title                  = 'Stability'
+          Type                   = 'string'
+          TypeName               = 'Stability'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/stability'
+      Required               = '[provisionerId description stability expires]'
       Title                  = 'Provisioner Information'
       Type                   = 'object'
       TypeName               = 'ProvisionerInformation'
@@ -7750,6 +7777,41 @@ Properties
     Items
       Additional Properties  = 'false'
       Properties
+        Property 'description' =
+          Description            = 'Description of the worker-type.
+          '
+          Title                  = 'Description'
+          Type                   = 'string'
+          TypeName               = 'Description'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/description'
+        Property 'expires' =
+          Description            = 'Date and time after which the worker-type will be automatically
+          deleted by the queue.
+          '
+          Format                 = 'date-time'
+          Title                  = 'Worker-type Expiration'
+          Type                   = 'string'
+          TypeName               = 'WorkerTypeExpiration'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires'
+        Property 'provisionerId' =
+          MaxLength              = '22'
+          MinLength              = '1'
+          Pattern                = '^([a-zA-Z0-9-_]*)$'
+          Title                  = 'Provisioner ID'
+          Type                   = 'string'
+          TypeName               = 'ProvisionerID'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId'
+        Property 'stability' =
+          Description            = 'This is the stability of the worker-type. Accepted values:
+           * `experimental`
+           * `stable`
+           * `deprecated`
+          '
+          Enum                   = '[experimental stable deprecated]'
+          Title                  = 'Stability'
+          Type                   = 'string'
+          TypeName               = 'Stability'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/stability'
         Property 'workerType' =
           Description            = 'WorkerType name.
           '
