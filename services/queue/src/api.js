@@ -2089,7 +2089,7 @@ api.declare({
 /** List all active workerGroup/workerId of a workerType */
 api.declare({
   method:     'get',
-  route:      '/provisioners/:provisionerId/workerTypes/:workerType/workers',
+  route:      '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
