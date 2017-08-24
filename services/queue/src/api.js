@@ -2076,7 +2076,7 @@ api.declare({
 
   const workerTypes = await this.WorkerType.scan({provisionerId}, {continuation, limit});
   const result = {
-    workerTypes: workerTypes.entries.map(workerType => ({workerType: workerType.workerType})),
+    workerTypes: workerTypes.entries.map(workerType => workerType.json()),
   };
 
   if (workerTypes.continuation) {

@@ -672,6 +672,22 @@ let WorkerType = Entity.configure({
     // the time at which this worker-type should no longer be displayed
     expires:          Entity.types.Date,
   },
+}).configure({
+  version:            2,
+  properties: {
+    provisionerId:    Entity.types.String,
+    workerType:       Entity.types.String,
+    // the time at which this worker-type should no longer be displayed
+    expires:          Entity.types.Date,
+    description:      Entity.types.Text,
+    stability:        Entity.types.String,
+  },
+  migrate(item) {
+    item.description = '';
+    item.stability = 'experimental';
+
+    return item;
+  },
 });
 
 /**
@@ -691,6 +707,16 @@ WorkerType.expire = async function(now) {
   });
 
   return count;
+};
+
+WorkerType.prototype.json = function() {
+  return {
+    workerType:       this.workerType,
+    provisionerId:    this.provisionerId,
+    expires:          this.expires.toJSON(),
+    description:      this.description,
+    stability:        this.stability,
+  };
 };
 
 // Export WorkerType

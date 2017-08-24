@@ -65,22 +65,34 @@ suite('provisioners and worker-types', () => {
 
   test('queue.listWorkerTypes returns workerTypes', async () => {
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
-    const workerType = 'gecko-b-2-linux';
+    const wType = {
+      provisionerId: 'prov-A',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('3017-07-29'),
+      description: 'test-worker-type',
+      stability: 'experimental',
+    };
 
-    await WorkerType.create({provisionerId: 'prov-A', workerType, expires: new Date('3017-07-29')});
+    await WorkerType.create(wType);
 
     const result = await helper.queue.listWorkerTypes('prov-A');
 
     assert(result.workerTypes.length === 1, 'expected workerTypes');
-    assert(result.workerTypes[0].workerType === workerType, `expected ${workerType}`);
+    assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
   });
 
   test('list worker-types (limit and continuationToken)', async () => {
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
     const expires = new Date('3017-07-29');
+    const wType = {
+      provisionerId: 'prov1',
+      expires,
+      description: 'test-worker-type',
+      stability: 'experimental',
+    };
 
-    await WorkerType.create({provisionerId: 'prov1', workerType: 'gecko-b-2-linux', expires});
-    await WorkerType.create({provisionerId: 'prov1', workerType: 'gecko-b-2-android', expires});
+    await WorkerType.create(Object.assign({}, {workerType: 'gecko-b-2-linux'}, wType));
+    await WorkerType.create(Object.assign({}, {workerType: 'gecko-b-2-android'}, wType));
 
     let result = await helper.queue.listWorkerTypes('prov1', {limit: 1});
 
@@ -112,7 +124,13 @@ suite('provisioners and worker-types', () => {
   test('worker-type expiration works', async () => {
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
 
-    await WorkerType.create({provisionerId: 'prov1', workerType: 'gecko-b-2-linux', expires: new Date('1017-07-29')});
+    await WorkerType.create({
+      provisionerId: 'prov1',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('1017-07-29'),
+      description: 'test-worker-type',
+      stability: 'experimental',
+    });
     await helper.expireWorkerInfo();
 
     const result = await helper.queue.listWorkerTypes('prov1');
