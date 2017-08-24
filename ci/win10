@@ -69,6 +69,6 @@
           directory: .
           format: zip
         - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/MinGit-2.11.0.3-64-bit.zip
+            url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
           directory: git
           format: zip
