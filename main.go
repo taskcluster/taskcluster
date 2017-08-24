@@ -70,7 +70,7 @@ and reports back results to the queue.
     generic-worker --version
 
   Targets:
-    run                                     Runs the generic-worker in an infinite loop.
+    run                                     Runs the generic-worker.
     show-payload-schema                     Each taskcluster task defines a payload to be
                                             interpreted by the worker that executes it. This
                                             payload is validated against a json schema baked
@@ -81,11 +81,6 @@ and reports back results to the queue.
                                             Windows service running under the Local System
                                             account. This is the preferred way to run the
                                             worker under Windows.
-    install startup                         This will install the generic worker as a
-                                            Scheduled Task which runs when the given user
-                                            logs on. This method is no longer recommended
-                                            and is likely to be removed from future
-                                            releases.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
