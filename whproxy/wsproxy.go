@@ -1,8 +1,10 @@
 package whproxy
 
 import (
+	"io"
 	"net"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -24,10 +26,7 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	connClosure := func(network, addr string) (net.Conn, error) {
 		return stream, nil
 	}
-	dialer := &websocket.Dialer{
-		NetDial:	connClosure,
-		Subprotocols:	websocket.Subprotocols(r),
-	}
+	dialer := &websocket.Dialer{NetDial: connClosure}
 
 	// create new header
 	// copy request headers to new header. Avoid websocket headers
@@ -68,7 +67,11 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 		p.logf(tunnelID, r.RemoteAddr, "WS: closed underlying wsmux stream: path= %s, streamID=%d", r.URL.RequestURI(), id)
 	}()
 	// bridge both websocket connections
-	return p.bridgeConn(tunnelConn, viewerConn)
+	bridgeErr := p.bridgeConn(tunnelConn, viewerConn)
+	if bridgeErr != nil {
+		p.logerrorf(tunnelID, r.RemoteAddr, "bridge closed with err: %v", bridgeErr)
+	}
+	return bridgeErr
 }
 
 func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
@@ -81,10 +84,10 @@ func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 
 	// set close handlers
 	conn1.SetCloseHandler(func(code int, text string) error {
-		return conn2.Close()
+		return nil
 	})
 	conn2.SetCloseHandler(func(code int, text string) error {
-		return conn1.Close()
+		return nil
 	})
 
 	// ensure connections are closed after bridge exits
@@ -94,30 +97,36 @@ func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {
 	}()
 
 	kill := make(chan bool, 1)
+	var eSrc, eDest atomic.Value
+	// Wait until errors are written
+
 	go func() {
-		_ = copyWsData(conn1, conn2, kill)
-		select {
-		case <-kill:
-		default:
-			close(kill)
+		err := copyWsData(conn1, conn2, kill)
+		if err != nil {
+			eSrc.Store(err)
 		}
 	}()
 	go func() {
-		_ = copyWsData(conn2, conn1, kill)
-		select {
-		case <-kill:
-		default:
-			close(kill)
+		err := copyWsData(conn2, conn1, kill)
+		if err != nil {
+			eDest.Store(err)
 		}
 	}()
 
 	<-kill
+	if err, ok := eSrc.Load().(error); ok && err != nil {
+		return err
+	}
+	if err, ok := eDest.Load().(error); ok && err != nil {
+		return err
+	}
 	return nil
 }
 
 func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error {
+	defer asyncClose(kill)
 	for {
-		mtype, buf, err := src.ReadMessage()
+		mtype, reader, err := src.NextReader()
 		if err != nil {
 			// Abnormal closure occurs if the websocket is over a wsmux stream
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure,
@@ -126,7 +135,7 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error
 			}
 			return nil
 		}
-		err = dest.WriteMessage(mtype, buf)
+		writer, err := dest.NextWriter(mtype)
 		if err != nil {
 			// Abnormal closure occurs if the websocket is over a wsmux stream
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure,
@@ -135,6 +144,12 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error
 			}
 			return nil
 		}
+		_, err = io.Copy(writer, reader)
+		_ = writer.Close()
+		if err != nil {
+			return err
+		}
+
 		select {
 		case <-kill:
 			return nil
@@ -145,6 +160,14 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, kill chan bool) error
 
 func forwardControl(messageType int, dest *websocket.Conn) func(string) error {
 	return func(appData string) error {
-		return dest.WriteControl(messageType, []byte(appData), time.Now().Add(1*time.Second))
+		return dest.WriteControl(messageType, []byte(appData), time.Now().Add(20*time.Second))
+	}
+}
+
+func asyncClose(kill chan bool) {
+	select {
+	case <-kill:
+	default:
+		close(kill)
 	}
 }

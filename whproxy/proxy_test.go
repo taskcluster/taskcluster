@@ -480,10 +480,12 @@ func TestWebsocketProxyControl(t *testing.T) {
 // Ensure websocket close is proxied
 func TestWebSocketClosure(t *testing.T) {
 	logger := genLogger("ws-closure-test")
+	proxyLogger := genLogger("ws-closure-proxy-test")
 	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
+		Logger:     proxyLogger,
 	}
 
 	proxy, err := New(proxyConfig)
