@@ -24,7 +24,10 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	connClosure := func(network, addr string) (net.Conn, error) {
 		return stream, nil
 	}
-	dialer := &websocket.Dialer{NetDial: connClosure}
+	dialer := &websocket.Dialer{
+		NetDial:	connClosure,
+		Subprotocols:	websocket.Subprotocols(r),
+	}
 
 	// create new header
 	// copy request headers to new header. Avoid websocket headers
