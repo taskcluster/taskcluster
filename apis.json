@@ -582,7 +582,7 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://aws-provisioner.taskcluster.net/v1",
-      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskCluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
+      "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskcluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
       "entries": [
         {
           "args": [],
@@ -793,35 +793,6 @@
           "name": "state",
           "query": [],
           "route": "/state/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
-          "stability": "stable",
-          "title": "Get AWS State for a worker type",
-          "type": "function"
-        },
-        {
-          "args": [
-            "workerType"
-          ],
-          "description": "Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.",
-          "method": "get",
-          "name": "newState",
-          "query": [],
-          "route": "/new-state/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
           "stability": "stable",
           "title": "Get AWS State for a worker type",
           "type": "function"
@@ -1543,8 +1514,22 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://login.taskcluster.net/v1",
-      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.  It acts as the server side of\nhttps://tools.taskcluster.net.  If you are working on federating logins\nwith TaskCluster, this is probably *not* the service you are looking for.\nInstead, use the federated login support in the tools site.",
+      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.",
       "entries": [
+        {
+          "args": [
+            "provider"
+          ],
+          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
+          "method": "get",
+          "name": "oidcCredentials",
+          "output": "http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json",
+          "query": [],
+          "route": "/oidc-credentials/<provider>",
+          "stability": "experimental",
+          "title": "Get TaskCluster credentials given a suitable `access_token`",
+          "type": "function"
+        },
         {
           "args": [],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
@@ -2287,6 +2272,21 @@
           "type": "function"
         },
         {
+          "args": [],
+          "description": "Get all active provisioners.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 provisioners in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listProvisioners",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/provisioners",
+          "stability": "experimental",
+          "title": "Get a list of all active provisioners",
+          "type": "function"
+        },
+        {
           "args": [
             "provisionerId",
             "workerType"
@@ -2299,6 +2299,41 @@
           "route": "/pending/<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId"
+          ],
+          "description": "Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listWorkerTypes",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types",
+          "stability": "experimental",
+          "title": "Get a list of all active worker-types",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "Get a list of all active workerGroup/workerId of a workerType.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "method": "get",
+          "name": "listWorkers",
+          "output": "http://schemas.taskcluster.net/queue/v1/list-workers-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
+          "stability": "experimental",
+          "title": "Get a list of all active workerGroup/workerId of a workerType",
           "type": "function"
         },
         {
