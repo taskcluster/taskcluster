@@ -91,7 +91,7 @@ class Handler {
     // deprecate this one.
     let scopes = req.user.scope ? req.user.scope.split(' ') : [];
     if (!scopes.includes('full-user-credentials')) {
-      debug('request did not have the `full-user-credentials` scope');
+      debug(`request did not have the 'full-user-credentials' scope; had ${req.user.scope}`);
       return;
     }
 
