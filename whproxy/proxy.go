@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -80,7 +81,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// try to match tasks.build/<id>/<whatever>
 	if strings.HasPrefix(r.Host, p.domain) {
-		s := strings.TrimPrefix(r.URL.Path, "/")
+		s := strings.TrimPrefix(r.URL.RequestURI(), "/")
 		index := strings.Index(s, "/")
 		id, path := "", "/"
 		if index < 0 {
@@ -106,7 +107,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(host, "."+p.domain) {
 		index := strings.Index(r.Host, ".")
 		id := r.Host[:index]
-		path := r.URL.Path
+		path := r.URL.RequestURI()
 		if id == "" {
 			http.NotFound(w, r)
 			return
@@ -274,7 +275,13 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	}
 
 	// Open a stream to the tunnel session
-	r.URL.Path = path
+	// path is the modified RequestURI
+	reqURI, err := url.ParseRequestURI(path)
+	if err != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	r.URL = reqURI
 	p.logf(id, r.RemoteAddr, "attempting to open new stream")
 	reqStream, streamID, err := session.Open()
 	if err != nil {

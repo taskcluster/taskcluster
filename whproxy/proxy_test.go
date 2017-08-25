@@ -197,6 +197,66 @@ func TestProxyRequest(t *testing.T) {
 	}
 }
 
+func TestProxyURIRewrite(t *testing.T) {
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger("request-test"),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	// get url
+	wsURL := util.MakeWsURL(server.URL)
+	// makeshift client
+
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+workeridjwt)
+	header.Set("x-webhooktunnel-id", "workerid")
+	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// handler to serve client requests
+	reqURI := "/path?foo=bar&abc=def"
+	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.RequestURI() != reqURI {
+			t.Fatal("bad uri propogated")
+		}
+		w.Write([]byte("Hello World\n"))
+	})
+
+	// serve client endpoint
+	clientServer := &http.Server{Handler: clientHandler}
+	go func() {
+		_ = clientServer.Serve(wsmux.Client(clientWs, wsmux.Config{}))
+	}()
+	defer func() {
+		_ = clientServer.Close()
+	}()
+
+	// make requests
+	viewer := &http.Client{}
+	servURL := server.URL + "/workerid" + reqURI
+
+	// GET request
+	resp, err := viewer.Get(servURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != 200 {
+		t.Fatal("bad status code")
+	}
+}
+
 func TestProxyWebsocket(t *testing.T) {
 	proxyConfig := Config{
 		Upgrader:   upgrader,
@@ -1031,4 +1091,68 @@ func TestProxyDomainRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = client.Close()
+}
+
+func TestProxyWebSocketPath(t *testing.T) {
+	if os.Getenv("TEST_DNS_SET") != "yes" {
+		t.Skip("dns not set")
+	}
+	proxyConfig := Config{
+		Upgrader:     upgrader,
+		JWTSecretA:   []byte("test-secret"),
+		JWTSecretB:   []byte("another-secret"),
+		Domain:       "tcproxy.dev",
+		Logger:       genLogger("domain-register-proxy-test"),
+		DomainHosted: true,
+	}
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// attempt hosting on port 80
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	configurer := func() (whclient.Config, error) {
+		return whclient.Config{
+			ID:        "workerid",
+			Token:     workeridjwt,
+			ProxyAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
+		}, nil
+	}
+
+	client, err := whclient.New(configurer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reqURI := "/hookid/path?foo=bar&abc=def"
+	uri := "ws://workerid.tcproxy.dev:" + getPort(server.URL) + reqURI
+	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			t.Fatal("request should be a websocket upgrade")
+		}
+		if r.URL.RequestURI() != reqURI {
+			t.Fatalf("invalid request uri propogated: %s", r.URL.RequestURI())
+		}
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = conn.Close()
+	})
+
+	clientHost := &http.Server{Handler: clientHandler}
+	go func() {
+		_ = clientHost.Serve(client)
+	}()
+	defer func() {
+		_ = clientHost.Close()
+	}()
+
+	conn, _, err := websocket.DefaultDialer.Dial(uri, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = conn.Close()
 }
