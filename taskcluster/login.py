@@ -14,15 +14,45 @@ _defaultConfig = config
 class Login(BaseClient):
     """
     The Login service serves as the interface between external authentication
-    systems and TaskCluster credentials.  It acts as the server side of
-    https://tools.taskcluster.net.  If you are working on federating logins
-    with TaskCluster, this is probably *not* the service you are looking for.
-    Instead, use the federated login support in the tools site.
+    systems and TaskCluster credentials.
     """
 
     classOptions = {
         "baseUrl": "https://login.taskcluster.net/v1"
     }
+
+    def oidcCredentials(self, *args, **kwargs):
+        """
+        Get TaskCluster credentials given a suitable `access_token`
+
+        Given an OIDC `access_token` from a trusted OpenID provider, return a
+        set of Taskcluster credentials for use on behalf of the identified
+        user.
+
+        This method is typically not called with a Taskcluster client library
+        and does not accept Hawk credentials. The `access_token` should be
+        given in an `Authorization` header:
+        ```
+        Authorization: Bearer abc.xyz
+        ```
+
+        The `access_token` is first verified against the named
+        :provider, then passed to the provider's API to retrieve a user
+        profile. That profile is then used to generate Taskcluster credentials
+        appropriate to the user. Note that the resulting credentials may or may
+        not include a `certificate` property. Callers should be prepared for either
+        alternative.
+
+        The given credentials will expire in a relatively short time. Callers should
+        monitor this expiration and refresh the credentials if necessary, by calling
+        this endpoint again, if they have expired.
+
+        This method takes output: ``http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["oidcCredentials"], *args, **kwargs)
 
     def ping(self, *args, **kwargs):
         """
@@ -37,6 +67,12 @@ class Login(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
+        "oidcCredentials": {           'args': ['provider'],
+            'method': 'get',
+            'name': 'oidcCredentials',
+            'output': 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json',
+            'route': '/oidc-credentials/<provider>',
+            'stability': 'experimental'},
         "ping": {           'args': [],
             'method': 'get',
             'name': 'ping',

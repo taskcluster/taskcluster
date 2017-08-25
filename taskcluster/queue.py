@@ -545,6 +545,28 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listLatestArtifacts"], *args, **kwargs)
 
+    def listProvisioners(self, *args, **kwargs):
+        """
+        Get a list of all active provisioners
+
+        Get all active provisioners.
+
+        The term "provisioner" is taken broadly to mean anything with a provisionerId.
+        This does not necessarily mean there is an associated service performing any
+        provisioning activity.
+
+        The response is paged. If this end-point returns a `continuationToken`, you
+        should call the end-point again with the `continuationToken` as a query-string
+        option. By default this end-point will list up to 1000 provisioners in a single
+        page. You may limit this with the query-string parameter `limit`.
+
+        This method takes output: ``http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listProvisioners"], *args, **kwargs)
+
     def pendingTasks(self, *args, **kwargs):
         """
         Get Number of Pending Tasks
@@ -563,6 +585,42 @@ class Queue(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["pendingTasks"], *args, **kwargs)
+
+    def listWorkerTypes(self, *args, **kwargs):
+        """
+        Get a list of all active worker-types
+
+        Get all active worker-types for the given provisioner.
+
+        The response is paged. If this end-point returns a `continuationToken`, you
+        should call the end-point again with the `continuationToken` as a query-string
+        option. By default this end-point will list up to 1000 worker-types in a single
+        page. You may limit this with the query-string parameter `limit`.
+
+        This method takes output: ``http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listWorkerTypes"], *args, **kwargs)
+
+    def listWorkers(self, *args, **kwargs):
+        """
+        Get a list of all active workerGroup/workerId of a workerType
+
+        Get a list of all active workerGroup/workerId of a workerType.
+
+        The response is paged. If this end-point returns a `continuationToken`, you
+        should call the end-point again with the `continuationToken` as a query-string
+        option. By default this end-point will list up to 1000 workers in a single
+        page. You may limit this with the query-string parameter `limit`.
+
+        This method takes output: ``http://schemas.taskcluster.net/queue/v1/list-workers-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listWorkers"], *args, **kwargs)
 
     def ping(self, *args, **kwargs):
         """
@@ -649,6 +707,13 @@ class Queue(BaseClient):
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/artifacts',
             'stability': 'experimental'},
+        "listProvisioners": {           'args': [],
+            'method': 'get',
+            'name': 'listProvisioners',
+            'output': 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/provisioners',
+            'stability': 'experimental'},
         "listTaskGroup": {           'args': ['taskGroupId'],
             'method': 'get',
             'name': 'listTaskGroup',
@@ -656,6 +721,20 @@ class Queue(BaseClient):
             'query': ['continuationToken', 'limit'],
             'route': '/task-group/<taskGroupId>/list',
             'stability': 'stable'},
+        "listWorkerTypes": {           'args': ['provisionerId'],
+            'method': 'get',
+            'name': 'listWorkerTypes',
+            'output': 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/provisioners/<provisionerId>/worker-types',
+            'stability': 'experimental'},
+        "listWorkers": {           'args': ['provisionerId', 'workerType'],
+            'method': 'get',
+            'name': 'listWorkers',
+            'output': 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
+            'stability': 'experimental'},
         "pendingTasks": {           'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'pendingTasks',

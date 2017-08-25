@@ -14,7 +14,7 @@ _defaultConfig = config
 class AwsProvisioner(AsyncBaseClient):
     """
     The AWS Provisioner is responsible for provisioning instances on EC2 for use in
-    TaskCluster.  The provisioner maintains a set of worker configurations which
+    Taskcluster.  The provisioner maintains a set of worker configurations which
     can be managed with an API that is typically available at
     aws-provisioner.taskcluster.net/v1.  This API can also perform basic instance
     management tasks in addition to maintaining the internal state of worker type
@@ -294,20 +294,6 @@ class AwsProvisioner(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["state"], *args, **kwargs)
 
-    async def newState(self, *args, **kwargs):
-        """
-        Get AWS State for a worker type
-
-        Return the state of a given workertype as stored by the provisioner.
-        This state is stored as three lists: 1 for running instances, 1 for
-        pending requests.  The `summary` property contains an updated summary
-        similar to that returned from `listWorkerTypeSummaries`.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["newState"], *args, **kwargs)
-
     async def backendStatus(self, *args, **kwargs):
         """
         Backend Status
@@ -387,11 +373,6 @@ class AwsProvisioner(AsyncBaseClient):
             'name': 'listWorkerTypes',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#',
             'route': '/list-worker-types',
-            'stability': 'stable'},
-        "newState": {           'args': ['workerType'],
-            'method': 'get',
-            'name': 'newState',
-            'route': '/new-state/<workerType>',
             'stability': 'stable'},
         "ping": {           'args': [],
             'method': 'get',
