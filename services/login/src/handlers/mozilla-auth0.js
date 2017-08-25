@@ -86,6 +86,15 @@ class Handler {
 
     debug(`received valid access_token for subject ${req.user.sub}`);
 
+    // for the moment, we require the `full-user-credentials` scope, because
+    // that's the only one.  This allows us to later add other scopes and
+    // deprecate this one.
+    let scopes = req.user.scope ? req.user.scope.split(' ') : [];
+    if (scopes.includes('full-user-credentials')) {
+      debug('request did not have the `full-user-credentials` scope');
+      return;
+    }
+
     let a0 = await this.getManagementApi();
     let profile = await new Promise((resolve, reject) =>
       a0.getUser(req.user.sub, (err, prof) => err ? reject(err) : resolve(prof)));

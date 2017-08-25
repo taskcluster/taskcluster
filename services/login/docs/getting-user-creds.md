@@ -37,8 +37,8 @@ will amount to redirecting the user to the `/authorize` endpoint with some
 URL parameters.
 
 The key to later using this sign-in for access to Taskcluster is to include
-`"openid"` in the (space-separated) scopes and to include
-`audience=login.taskcluster.net`.
+`"openid"` and `"full-user-credentials"` in the (space-separated) scopes and to
+include `audience=login.taskcluster.net`.
 
 When the sign-in is complete, Auth0 will redirect back to your application with
 an `id_token` and an `access_token`. The `id_token` can be used by your app to
