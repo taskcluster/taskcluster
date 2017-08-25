@@ -960,7 +960,7 @@ session = taskcluster.async.createSession(loop=loop)
 asyncAwsProvisioner = taskcluster.async.AwsProvisioner(options, session=session)
 ```
 The AWS Provisioner is responsible for provisioning instances on EC2 for use in
-TaskCluster.  The provisioner maintains a set of worker configurations which
+Taskcluster.  The provisioner maintains a set of worker configurations which
 can be managed with an API that is typically available at
 aws-provisioner.taskcluster.net/v1.  This API can also perform basic instance
 management tasks in addition to maintaining the internal state of worker type
@@ -1310,27 +1310,6 @@ awsProvisioner.state(workerType='value') # -> None
 # Async call
 await asyncAwsProvisioner.state(workerType) # -> None
 await asyncAwsProvisioner.state(workerType='value') # -> None
-```
-
-#### Get AWS State for a worker type
-Return the state of a given workertype as stored by the provisioner. 
-This state is stored as three lists: 1 for running instances, 1 for
-pending requests.  The `summary` property contains an updated summary
-similar to that returned from `listWorkerTypeSummaries`.
-
-
-
-Takes the following arguments:
-
-  * `workerType`
-
-```python
-# Sync calls
-awsProvisioner.newState(workerType) # -> None`
-awsProvisioner.newState(workerType='value') # -> None
-# Async call
-await asyncAwsProvisioner.newState(workerType) # -> None
-await asyncAwsProvisioner.newState(workerType='value') # -> None
 ```
 
 #### Backend Status
@@ -2184,10 +2163,47 @@ session = taskcluster.async.createSession(loop=loop)
 asyncLogin = taskcluster.async.Login(options, session=session)
 ```
 The Login service serves as the interface between external authentication
-systems and TaskCluster credentials.  It acts as the server side of
-https://tools.taskcluster.net.  If you are working on federating logins
-with TaskCluster, this is probably *not* the service you are looking for.
-Instead, use the federated login support in the tools site.
+systems and TaskCluster credentials.
+#### Get TaskCluster credentials given a suitable `access_token`
+Given an OIDC `access_token` from a trusted OpenID provider, return a
+set of Taskcluster credentials for use on behalf of the identified
+user.
+
+This method is typically not called with a Taskcluster client library
+and does not accept Hawk credentials. The `access_token` should be
+given in an `Authorization` header:
+```
+Authorization: Bearer abc.xyz
+```
+
+The `access_token` is first verified against the named
+:provider, then passed to the provider's API to retrieve a user
+profile. That profile is then used to generate Taskcluster credentials
+appropriate to the user. Note that the resulting credentials may or may
+not include a `certificate` property. Callers should be prepared for either
+alternative.
+
+The given credentials will expire in a relatively short time. Callers should
+monitor this expiration and refresh the credentials if necessary, by calling
+this endpoint again, if they have expired.
+
+
+
+Takes the following arguments:
+
+  * `provider`
+
+Required [output schema](http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json)
+
+```python
+# Sync calls
+login.oidcCredentials(provider) # -> result`
+login.oidcCredentials(provider='value') # -> result
+# Async call
+await asyncLogin.oidcCredentials(provider) # -> result
+await asyncLogin.oidcCredentials(provider='value') # -> result
+```
+
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -3217,6 +3233,28 @@ await asyncQueue.listLatestArtifacts(taskId) # -> result
 await asyncQueue.listLatestArtifacts(taskId='value') # -> result
 ```
 
+#### Get a list of all active provisioners
+Get all active provisioners.
+
+The term "provisioner" is taken broadly to mean anything with a provisionerId.
+This does not necessarily mean there is an associated service performing any
+provisioning activity.
+
+The response is paged. If this end-point returns a `continuationToken`, you
+should call the end-point again with the `continuationToken` as a query-string
+option. By default this end-point will list up to 1000 provisioners in a single
+page. You may limit this with the query-string parameter `limit`.
+
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#)
+
+```python
+# Sync calls
+queue.listProvisioners() # -> result`
+# Async call
+await asyncQueue.listProvisioners() # -> result
+```
+
 #### Get Number of Pending Tasks
 Get an approximate number of pending tasks for the given `provisionerId`
 and `workerType`.
@@ -3242,6 +3280,57 @@ queue.pendingTasks(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.pendingTasks(provisionerId, workerType) # -> result
 await asyncQueue.pendingTasks(provisionerId='value', workerType='value') # -> result
+```
+
+#### Get a list of all active worker-types
+Get all active worker-types for the given provisioner.
+
+The response is paged. If this end-point returns a `continuationToken`, you
+should call the end-point again with the `continuationToken` as a query-string
+option. By default this end-point will list up to 1000 worker-types in a single
+page. You may limit this with the query-string parameter `limit`.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#)
+
+```python
+# Sync calls
+queue.listWorkerTypes(provisionerId) # -> result`
+queue.listWorkerTypes(provisionerId='value') # -> result
+# Async call
+await asyncQueue.listWorkerTypes(provisionerId) # -> result
+await asyncQueue.listWorkerTypes(provisionerId='value') # -> result
+```
+
+#### Get a list of all active workerGroup/workerId of a workerType
+Get a list of all active workerGroup/workerId of a workerType.
+
+The response is paged. If this end-point returns a `continuationToken`, you
+should call the end-point again with the `continuationToken` as a query-string
+option. By default this end-point will list up to 1000 workers in a single
+page. You may limit this with the query-string parameter `limit`.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/list-workers-response.json#)
+
+```python
+# Sync calls
+queue.listWorkers(provisionerId, workerType) # -> result`
+queue.listWorkers(provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncQueue.listWorkers(provisionerId, workerType) # -> result
+await asyncQueue.listWorkers(provisionerId='value', workerType='value') # -> result
 ```
 
 #### Ping Server
