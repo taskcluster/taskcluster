@@ -90,7 +90,7 @@ class Handler {
     // that's the only one.  This allows us to later add other scopes and
     // deprecate this one.
     let scopes = req.user.scope ? req.user.scope.split(' ') : [];
-    if (scopes.includes('full-user-credentials')) {
+    if (!scopes.includes('full-user-credentials')) {
       debug('request did not have the `full-user-credentials` scope');
       return;
     }
