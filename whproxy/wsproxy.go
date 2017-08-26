@@ -41,15 +41,16 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 			k == "Sec-Websocket-Key" ||
 			k == "Sec-Websocket-Version" ||
 			k == "Sec-Websocket-Extensions" ||
-			k == "Sec-Websocket-Protocol" {
+			k == "Sec-Websocket-Protocol" ||
+			k == "Origin" {
 			continue
 		}
 		reqHeader[k] = v
 	}
 
-	uri := "ws://" + r.URL.Host + r.URL.RequestURI()
+	uri := "ws://" + r.Host + r.URL.RequestURI()
 	if !p.domainHosted {
-		uri = "ws://" + r.URL.Host + util.ReplaceID(r.URL.RequestURI())
+		uri = "ws://" + r.Host + util.ReplaceID(r.URL.RequestURI())
 	}
 	p.logf(tunnelID, r.RemoteAddr, "dialing ws on stream: %d, url: %s", id, uri)
 	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
