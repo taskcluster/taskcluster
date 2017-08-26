@@ -40,7 +40,8 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 			k == "Connection" ||
 			k == "Sec-Websocket-Key" ||
 			k == "Sec-Websocket-Version" ||
-			k == "Sec-Websocket-Extensions" {
+			k == "Sec-Websocket-Extensions" ||
+			k == "Sec-Websocket-Protocol" {
 			continue
 		}
 		reqHeader[k] = v
