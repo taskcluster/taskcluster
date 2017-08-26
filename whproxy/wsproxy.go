@@ -61,6 +61,9 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 
 	upgrader := websocket.Upgrader{
 		Subprotocols: websocket.Subprotocols(r),
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
 	}
 	viewerConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
