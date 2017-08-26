@@ -26,7 +26,10 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	connClosure := func(network, addr string) (net.Conn, error) {
 		return stream, nil
 	}
-	dialer := &websocket.Dialer{NetDial: connClosure}
+	dialer := &websocket.Dialer{
+		NetDial:      connClosure,
+		Subprotocols: websocket.Subprotocols(r),
+	}
 
 	// create new header
 	// copy request headers to new header. Avoid websocket headers
@@ -53,7 +56,11 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 		p.logerrorf(tunnelID, r.RemoteAddr, "could not dial tunnel: path=%s, error: %v", r.URL.RequestURI(), err)
 		return err
 	}
-	viewerConn, err := p.upgrader.Upgrade(w, r, nil)
+
+	upgrader := websocket.Upgrader{
+		Subprotocols: websocket.Subprotocols(r),
+	}
+	viewerConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		p.logerrorf(tunnelID, r.RemoteAddr, "could not upgrade client connection: path=%s, error: %v", r.URL.RequestURI(), err)
 		// close tunnel connection
