@@ -43,7 +43,7 @@ clean:
 			fi \
 		done \
 	fi
-	rm -rf filescreated.dat .tox htmlcov .coverage nosetests.xml README.html
+	rm -rf filescreated.dat .tox htmlcov .coverage nosetests.xml
 	rm -rf *.egg *.egg-info .eggs/ dist/ build/
 	find . -name "*.py?" -exec rm {} +
 	find . -type d -name __pycache__ -exec rm -rf {} +
