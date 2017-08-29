@@ -427,13 +427,13 @@ When releasing a new version of `taskcluster-client-web` library, you should
 always re-build the project using `yarn build`. There are also
 several other scripts for maintenance:
 
-- `yarn update`: Pull the latest API manifest, re-build the package, and update all documentation.
+- `yarn update-all`: Pull the latest API manifest, re-build the package, and update all documentation.
 - `yarn build`: Re-build the library for distribution.
 - `yarn docs`: Generate the API documentation Markdown files from the API reference.
-- `yarn clients`: Pull the latest API manifest from the schema endpoint and re-create the client classes.
+- `yarn compile-clients`: Pull the latest API manifest from the schema endpoint and re-create the client classes.
 - `yarn list-clients`: Print a list of client APIs built into taskcluster-client-web based on the API reference.
-- `yarn show <client>`: Print the detailed schema information for a particular client, e.g. `yarm show Auth`.
-- `yarn test`: Run the test suites.
+- `yarn show-client <client>`: Print the detailed schema information for a particular client, e.g. `yarm show Auth`.
+- `yarn test`: Run the test suites (TODO).
 
 ## License
 
