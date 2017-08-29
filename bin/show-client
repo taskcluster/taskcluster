@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const cliff = require('cliff');
+const fetchApis = require('./fetch-apis');
+
+const name = process.argv[2];
+
+fetchApis()
+  .then(apis => {
+    const api = apis[name];
+
+    if (!api) {
+      console.error(`No API named \`${name}\``);
+    } else {
+      console.log(cliff.inspect(api).replace(/    /g, '  '));
+    }
+  });

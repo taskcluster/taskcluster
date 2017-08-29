@@ -1,0 +1,37 @@
+{
+  "name": "taskcluster-client-web",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "author": "Eli Perelman <eli@eliperelman.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "neutrino build",
+    "docs": "bin/generate-docs",
+    "compile-clients": "bin/compile-clients",
+    "list-clients": "bin/list-clients",
+    "show-client": "bin/show-client",
+    "test": "neutrino test",
+    "update-all": "yarn compile-clients && yarn build && yarn docs"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "cliff": "^0.1.10",
+    "common-tags": "^1.4.0",
+    "ejs": "^2.5.7",
+    "got": "^7.1.0",
+    "javascript-stringify": "^1.6.0",
+    "json-schema-to-markdown": "^1.0.3",
+    "json-stable-stringify": "^1.0.1",
+    "neutrino": "^6.1.5"
+  },
+  "dependencies": {
+    "deepmerge": "^1.5.1",
+    "hawk": "^6.0.2",
+    "lodash.clonedeep": "^4.5.0",
+    "mitt": "^1.1.2",
+    "query-string": "^5.0.0",
+    "slugid": "^1.1.0",
+    "url-join": "^2.0.2"
+  }
+}

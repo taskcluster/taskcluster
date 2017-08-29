@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+
+const parse = require('json-schema-to-markdown');
+const tags = require('common-tags');
+const { createWriteStream, writeFileSync } = require('fs');
+const { join } = require('path');
+const fetchApis = require('./fetch-apis');
+
+const renderMethods = (stream, reference, name) => {
+  const methods = reference.entries.filter(entry => entry.type === 'function');
+
+  if (!methods.length) {
+    return;
+  }
+
+  const instanceName = `${name[0].toLowerCase()}${name.substr(1)}`;
+
+  stream.write(tags.stripIndents`
+    ## ${name} Client
+      
+    \`\`\`js
+    // Create ${name} client instance with default baseUrl:
+    // ${reference.baseUrl}
+    
+    const ${instanceName} = new taskcluster.${name}(options);
+    \`\`\`
+    
+    ## Methods in ${name} Client
+    
+    ${
+      methods
+        .map(entry => {
+          const args = entry.args.slice();
+          const commentArgs = entry.args.slice();
+          const hasOptions = entry.query && entry.query.length;
+          
+          if (entry.input) {
+            args.push('payload');
+            commentArgs.push('payload');
+          }
+          
+          if (hasOptions) {
+            commentArgs.push('[options]');
+          }
+    
+          return tags.stripIndents`
+            \`\`\`js
+            // ${instanceName}.${entry.name} :: ${
+              commentArgs.length === 1 ?
+                commentArgs[0] :
+                `(${commentArgs.join(' -> ')})`
+            } -> ${entry.output ? 'Promise Result' : 'Promise Nothing'}
+            ${instanceName}.${entry.name}(${args.join(', ')})
+            ${hasOptions ? `${instanceName}.${entry.name}(${args.concat('options').join(', ')})\n\`\`\`` : '```'}
+          `;
+        })
+        .join('\n\n')
+    }
+  `);
+};
+
+const renderExchanges = (stream, reference, name) => {
+  const exchanges = reference.entries.filter(entry => entry.type === 'topic-exchange');
+
+  if (!exchanges.length) {
+    return;
+  }
+
+  const instanceName = `${name[0].toLowerCase()}${name.substr(1)}`;
+
+  stream.write(tags.stripIndents`
+    ## ${name} Client
+    
+    \`\`\`js
+    // Create ${name} client instance with default exchangePrefix:
+    // ${reference.exchangePrefix}
+    
+    const ${instanceName} = new taskcluster.${name}(options);
+    \`\`\`
+    
+    ## Exchanges in ${name} Client
+    
+    ${
+      exchanges
+        .map(entry => tags.stripIndents`
+          \`\`\`js
+          // ${instanceName}.${entry.name} :: routingKeyPattern -> Promise BindingInfo
+          ${instanceName}.${entry.name}(routingKeyPattern)
+          \`\`\`
+        `)
+        .join('\n\n')
+    }
+  `);
+};
+
+fetchApis()
+  .then(apis => {
+    const docs = Object
+      .keys(apis)
+      .map(name => {
+        const reference = apis[name].reference;
+        const filename = `${name.toLowerCase()}.md`;
+        const stream = createWriteStream(join(__dirname, `../docs/${filename}`));
+
+        console.log(`Generating docs for ${name}`);
+
+        stream.write(parse(reference));
+        stream.write('\n\n');
+        renderMethods(stream, reference, name);
+        stream.write('\n\n');
+        renderExchanges(stream, reference, name);
+
+        return {
+          name,
+          filename
+        };
+      });
+
+    const README =
+`# Documentation
+
+The documentation in this directory is automatically generated from the API entries
+generated from the [Taskcluster Manifest Reference](${fetchApis.MANIFEST_URL}).
+Detailed documentation with description, payload, and result formats is available on
+[docs.taskcluster.net](http://docs.taskcluster.net).
+
+On the [documentation site](http://docs.taskcluster.net) entries often have a
+_signature_; you'll find that it corresponds with the signatures below. Note that all
+the methods return a \`Promise\`. A method marked with \`Promise Result\` is a promise that
+resolves with the API result. A method marked with \`Promise Nothing\` will also return a
+promise but has no resulting value from the API to resolve. Remember to \`catch\` any errors
+that may be rejected from a Promise.
+
+${docs.map(doc => `- [${doc.name}](${doc.filename})`).join('\n')}
+`;
+
+    console.log('\nUpdating docs/README.md');
+    writeFileSync(join(__dirname, '../docs/README.md'), README);
+  })
+  .catch(err => console.error(err));

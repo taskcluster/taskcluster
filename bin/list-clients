@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const cliff = require('cliff');
+const fetchApis = require('./fetch-apis');
+
+fetchApis()
+  .then(apis => {
+    const rows = Object
+      .keys(apis)
+      .sort()
+      .reduce((rows, name) => [...rows, [name, apis[name].referenceUrl]], [
+        ['Name', 'referenceUrl'],
+        ['====', '============']
+      ]);
+
+    console.log(cliff.stringifyRows(rows));
+  });
