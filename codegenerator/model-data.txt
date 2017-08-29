@@ -1,4 +1,4 @@
-Generated: 1503606299
+Generated: 1504020230
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -649,6 +649,7 @@ Any Of                 = 'Item '0' =
       for logging, auditing, and identifying the credential but **must** not be
       used for access control.  That's what scopes are for.
       '
+      Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
       Type                   = 'string'
       TypeName               = 'ClientID'
       SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId'
@@ -748,6 +749,7 @@ Properties
     for logging, auditing, and identifying the credential but **must** not be
     used for access control.  That's what scopes are for.
     '
+    Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
     Type                   = 'string'
     TypeName               = 'ClientID'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId'
@@ -1084,7 +1086,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client
     '
-    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
     Type                   = 'string'
     TypeName               = 'ClientID'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/clientId'
@@ -1231,7 +1233,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId of the client scopes is requested about
     '
-    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
     Type                   = 'string'
     TypeName               = 'ClientID'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/clientId'
@@ -1615,7 +1617,7 @@ Properties
   Property 'clientId' =
     Description            = 'ClientId from the request as it will be logged
     '
-    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
     Type                   = 'string'
     TypeName               = 'ClientID'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/clientId'
@@ -1779,7 +1781,7 @@ Properties
   Property 'clientId' =
     Description            = '`clientId` of the client that was changed
     '
-    Pattern                = '^[A-Za-z0-9@/:._-]+$'
+    Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
     Type                   = 'string'
     TypeName               = 'ClientID'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/client-message.json#/properties/clientId'

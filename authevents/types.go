@@ -14,7 +14,7 @@ type (
 
 		// `clientId` of the client that was changed
 		//
-		// Syntax:     ^[A-Za-z0-9@/:._-]+$
+		// Syntax:     ^[A-Za-z0-9@/:.+|_-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/client-message.json#/properties/clientId
 		ClientID string `json:"clientId"`
