@@ -43,6 +43,7 @@ anyOf:
           for logging, auditing, and identifying the credential but **must** not be
           used for access control.  That's what scopes are for.
         type:                 string
+        pattern:              {$const: clientId}
       expires:
         description: |
           The expiration time for the credentials used to make this request.
