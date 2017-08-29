@@ -1,5 +1,5 @@
 defaults:
-  statsComponent: 'docker-worker'
+  monitorProject: 'docker-worker'
   deviceManagement:
     cpu:
       enabled: false
@@ -197,7 +197,7 @@ production:
     domain:  'taskcluster-worker.net'
 
 test:
-  statsComponent: 'docker-worker-test'
+  monitorProject: 'docker-worker-test'
   capacity: 1
   testMode: true
   createQueue: false

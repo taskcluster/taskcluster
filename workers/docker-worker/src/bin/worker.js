@@ -147,7 +147,7 @@ program.parse(process.argv);
   config.docker = require('../lib/docker')();
 
   let monitor = await monitoring({
-    project: 'docker-worker',
+    project: config.monitorProject,
     credentials: config.taskcluster,
     mock: profile === 'test',
     reportUsage: false
