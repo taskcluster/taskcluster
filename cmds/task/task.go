@@ -40,6 +40,12 @@ func init() {
 			Short: "Get the name of a task.",
 			RunE:  executeHelperE(runName),
 		},
+		// definition
+		&cobra.Command{
+			Use:   "def <taskId>",
+			Short: "Get the full definition of a task.",
+			RunE:  executeHelperE(runDef),
+		},
 		// group
 		&cobra.Command{
 			Use:   "group <taskId>",

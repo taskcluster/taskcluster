@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"encoding/json"
 
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -69,6 +70,25 @@ func runName(credentials *tcclient.Credentials, args []string, out io.Writer, _ 
 	}
 
 	fmt.Fprintln(out, t.Metadata.Name)
+	return nil
+}
+
+// runDef gets the definition of a given task.
+func runDef(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+	q := makeQueue(credentials)
+	taskID := args[0]
+
+	t, err := q.Task(taskID)
+	if err != nil {
+		return fmt.Errorf("could not get the task %s: %v", taskID, err)
+	}
+
+	def, err := json.MarshalIndent(t, "", "  ")
+	if err != nil {
+		return fmt.Errorf("unable to marshal task %s into json: %v", taskID, err)
+	}
+
+	fmt.Fprintln(out, string(def))
 	return nil
 }
 
