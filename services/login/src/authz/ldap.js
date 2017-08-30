@@ -67,6 +67,8 @@ class LDAPAuthorizer {
 
         if (this.allowedGroups === 'all' || this.allowedGroups.indexOf(group) !== -1) {
           user.addRole('mozilla-group:' + group);
+        } else {
+          debug(`    rejecting, as it is not in allowedGroups (${JSON.stringify(this.alloewdGroups)})`);
         }
       });
     };
