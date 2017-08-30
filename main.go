@@ -50,32 +50,27 @@ func main() {
 		additionalScopes = make([]string, 0)
 	}
 
-	// Client is is required but has a default.
 	clientId := arguments["--client-id"]
 	if clientId == nil || clientId == "" {
 		clientId = os.Getenv("TASKCLUSTER_CLIENT_ID")
 	}
+	if clientId == "" {
+		log.Fatal("Client ID must be passed via environment variable TASKCLUSTER_CLIENT_ID or command line option --client-id")
+	}
+	log.Printf("clientId: '%v'", clientId)
 
-	// Access token is also required but has a default.
 	accessToken := arguments["--access-token"]
 	if accessToken == nil || accessToken == "" {
 		accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	}
+	if accessToken == "" {
+		log.Fatal("Access token must be passed via environment variable TASKCLUSTER_ACCESS_TOKEN or command line option --access-token")
+	}
+	log.Print("accessToken: <not shown>")
 
 	certificate := arguments["--certificate"]
 	if certificate == nil || certificate == "" {
 		certificate = os.Getenv("TASKCLUSTER_CERTIFICATE")
-	}
-
-	log.Printf("clientId: '%v'", clientId)
-	log.Printf("accessToken: '%v'", accessToken)
-
-	// Ensure we have credentials our auth proxy is pretty much useless without
-	// it.
-	if accessToken == "" || clientId == "" {
-		log.Fatalf(
-			"Credentials must be passed via environment variables or flags...",
-		)
 	}
 
 	if certificate == "" {
