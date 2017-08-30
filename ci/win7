@@ -69,6 +69,6 @@
           directory: .
           format: zip
         - content:
-            url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/Git-2.14.1-32-bit.tar.bz2
+            url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
           directory: git
           format: tar.bz2
