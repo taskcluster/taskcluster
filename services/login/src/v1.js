@@ -9,7 +9,7 @@ var api = new API({
     'systems and TaskCluster credentials.',
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
-  context: ['cfg', 'handlers'],
+  context: ['cfg', 'handlers', 'authorizer'],
 });
 
 // Export api
@@ -61,9 +61,12 @@ api.declare({
     // don't report much to the user, to avoid revealing sensitive information, although
     // it is likely in the service logs.
     return res.reportError('InputError',
-        'Could not validate access token',
+        'Could not generate credentials for this access token',
         {});
   }
+
+  // add scopes for this user based on matching authorizers
+  this.authorizer.authorize(user);
 
   // create and return temporary credentials, limiting expires to a max of 15 minutes
   let {credentials: issuer, startOffset} = this.cfg.app.temporaryCredentials;
