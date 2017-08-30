@@ -718,7 +718,7 @@ let WorkerType = Entity.configure({
     stability:        Entity.types.String,
   },
   migrate(item) {
-    item.lastDateActive = null;
+    item.lastDateActive = new Date(2000, 0, 1);
 
     return item;
   },
