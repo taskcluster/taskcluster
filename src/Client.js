@@ -1,5 +1,3 @@
-import merge from 'deepmerge';
-import clone from 'lodash.clonedeep';
 import { stringify } from 'query-string';
 import hawk from 'hawk';
 import fetch from './fetch';
@@ -16,10 +14,12 @@ export default class Client {
   };
 
   constructor(options = {}) {
-    this.options = merge.all([Client.defaults, options, {
+    this.options = {
+      ...Client.defaults,
+      ...options,
       baseUrl: (options.baseUrl || '').replace(/\/$/, ''),
       exchangePrefix: options.exchangePrefix || ''
-    }]);
+    };
 
     if (this.options.randomizationFactor < 0 || this.options.randomizationFactor >= 1) {
       throw new Error('options.randomizationFactor must be between 0 and 1');
@@ -172,10 +172,15 @@ export default class Client {
 
     const url = this.buildUrl(method, ...args);
     const { credentials } = this.options;
+
+    if (!credentials) {
+      throw new Error('buildSignedUrl missing required credentials');
+    }
+
     const { clientId, accessToken } = credentials;
 
     if (!clientId) {
-      throw new Error('buildSignedUrl missing required credentials');
+      throw new Error('buildSignedUrl missing required credentials clientId');
     }
 
     if (!accessToken) {
@@ -249,14 +254,15 @@ export default class Client {
 
     return {
       routingKeyPattern,
-      routingKeyReference: clone(entry.routingKey),
+      routingKeyReference: entry.routingKey.map(item => ({ ...item })),
       exchange: `${this.options.exchangePrefix}${entry.exchange}`
     };
   }
 
-  request(entry, args) {
+  async request(entry, args) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const endpoint = this.buildEndpoint(entry, args);
+    const extra = this.buildExtraData();
     const query = args[expectedArity] ? `?${stringify(args[expectedArity])}` : '';
     const url = `${this.options.baseUrl}${endpoint}${query}`;
     const options = {
@@ -265,6 +271,10 @@ export default class Client {
 
     if (entry.input) {
       options.body = args[expectedArity - 1];
+    }
+
+    if (extra) {
+      options.extra = extra;
     }
 
     if (this.options.credentials) {

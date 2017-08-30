@@ -17,13 +17,22 @@ fetchApis()
       .keys(apis)
       .sort()
       .reduce((exports, name, index, context) => {
+        const client = apis[name];
+
         writeFileSync(
           join(src, `clients/${name}.js`),
-          template({ name, client: apis[name], stringify }),
+          template({
+            name,
+            stringify,
+            baseUrl: client.reference.baseUrl,
+            exchangePrefix: client.reference.exchangePrefix,
+            methods: client.reference.entries.filter(({ type }) => type === 'function'),
+            topics: client.reference.entries.filter(({ type }) => type === 'topic-exchange')
+          }),
           { encoding: 'utf-8' }
         );
 
-        return `${exports}export { ${name} as ${name} } from './clients/${name}';${index === context.length - 1 ? '' : '\n'}`;
+        return `${exports}export { default as ${name} } from './clients/${name}';${index === context.length - 1 ? '' : '\n'}`;
       }, '');
 
     writeFileSync(

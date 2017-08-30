@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class PurgeCacheEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-purge-cache/v1/'
     });
+    
   }
 
   // When a cache purge is requested  a message will be posted on this

@@ -1,5 +1,4 @@
 import hawk from 'hawk';
-import clone from 'lodash.clonedeep';
 import { v4 } from 'slugid';
 import Auth from './clients/Auth';
 
@@ -84,7 +83,7 @@ export const createTemporaryCredentials = (opts) => {
 
   const certificate = {
     version: 1,
-    scopes: clone(options.scopes),
+    scopes: [...options.scopes],
     start: options.start.getTime(),
     expiry: options.expiry.getTime(),
     seed: v4() + v4(),

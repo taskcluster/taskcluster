@@ -3,11 +3,17 @@
 import Client from '../Client';
 
 export default class Notify extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: 'https://notify.taskcluster.net/v1',
       exchangePrefix: ''
     });
+    
+    this.email.entryReference = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',title:'Send an Email',description:'Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email',scopes:[['notify:email:<address>']],input:'http://schemas.taskcluster.net/notify/v1/email-request.json'};
+    this.pulse.entryReference = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',title:'Publish a Pulse Message',description:'Publish a message on pulse with the given `routingKey`.',scopes:[['notify:pulse:<routingKey>']],input:'http://schemas.taskcluster.net/notify/v1/pulse-request.json'};
+    this.irc.entryReference = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',title:'Post IRC Message',description:'Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn\'t online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.',scopes:[['notify:irc-channel:<channel>','notify:irc-user:<user>']],input:'http://schemas.taskcluster.net/notify/v1/irc-request.json'};
+    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
   }
 
   // Send an email to `address`. The content is markdown and will be rendered
@@ -15,18 +21,14 @@ export default class Notify extends Client {
   // email. If a link is included, it will be rendered to a nice button in the
   // HTML version of the email
   email(...args) {
-    const entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',title:'Send an Email',description:'Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email',scopes:[['notify:email:<address>']],input:'http://schemas.taskcluster.net/notify/v1/email-request.json'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.email.entryReference, args);
+    return this.request(this.email.entryReference, args);
   }
 
   // Publish a message on pulse with the given `routingKey`.
   pulse(...args) {
-    const entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',title:'Publish a Pulse Message',description:'Publish a message on pulse with the given `routingKey`.',scopes:[['notify:pulse:<routingKey>']],input:'http://schemas.taskcluster.net/notify/v1/pulse-request.json'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.pulse.entryReference, args);
+    return this.request(this.pulse.entryReference, args);
   }
 
   // Post a message on IRC to a specific channel or user, or a specific user
@@ -39,18 +41,14 @@ export default class Notify extends Client {
   // error. We maybe improve this behavior in the future. For now just keep
   // in mind that IRC is a best-effort service.
   irc(...args) {
-    const entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',title:'Post IRC Message',description:'Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn\'t online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.',scopes:[['notify:irc-channel:<channel>','notify:irc-user:<user>']],input:'http://schemas.taskcluster.net/notify/v1/irc-request.json'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.irc.entryReference, args);
+    return this.request(this.irc.entryReference, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    const entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.ping.entryReference, args);
+    return this.request(this.ping.entryReference, args);
   }
 }

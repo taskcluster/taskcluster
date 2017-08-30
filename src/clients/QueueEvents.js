@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class QueueEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-queue/v1/'
     });
+    
   }
 
   // When a task is created or just defined a message is posted to this

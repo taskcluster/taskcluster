@@ -3,20 +3,26 @@
 import Client from '../Client';
 
 export default class Index extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: 'https://index.taskcluster.net/v1',
       exchangePrefix: ''
     });
+    
+    this.findTask.entryReference = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',title:'Find Indexed Task',description:'Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status.',output:'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'};
+    this.listNamespaces.entryReference = {type:'function',method:'post',route:'/namespaces/<namespace>',query:[],args:['namespace'],name:'listNamespaces',stability:'stable',title:'List Namespaces',description:'List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.',input:'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#',output:'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#'};
+    this.listTasks.entryReference = {type:'function',method:'post',route:'/tasks/<namespace>',query:[],args:['namespace'],name:'listTasks',stability:'stable',title:'List Tasks',description:'List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.',input:'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#',output:'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'};
+    this.insertTask.entryReference = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',title:'Insert Task into Index',description:'Insert a task into the index.  If the new rank is less than the existing rank\nat the given index path, the task is not indexed but the response is still 200 OK.\n\nPlease see the introduction above for information\nabout indexing successfully completed tasks automatically using custom routes.',scopes:[['index:insert-task:<namespace>']],input:'http://schemas.taskcluster.net/index/v1/insert-task-request.json#',output:'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'};
+    this.findArtifactFromTask.entryReference = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',title:'Get Artifact From Indexed Task',description:'Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.',scopes:[['queue:get-artifact:<name>']]};
+    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
   }
 
   // Find a task by index path, returning the highest-rank task with that path. If no
   // task exists for the given path, this API end-point will respond with a 404 status.
   findTask(...args) {
-    const entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',title:'Find Indexed Task',description:'Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status.',output:'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.findTask.entryReference, args);
+    return this.request(this.findTask.entryReference, args);
   }
 
   // List the namespaces immediately under a given namespace.
@@ -26,10 +32,8 @@ export default class Index extends Client {
   // request. For the initial request, the payload should be an empty JSON
   // object.
   listNamespaces(...args) {
-    const entry = {type:'function',method:'post',route:'/namespaces/<namespace>',query:[],args:['namespace'],name:'listNamespaces',stability:'stable',title:'List Namespaces',description:'List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.',input:'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#',output:'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.listNamespaces.entryReference, args);
+    return this.request(this.listNamespaces.entryReference, args);
   }
 
   // List the tasks immediately under a given namespace.
@@ -41,10 +45,8 @@ export default class Index extends Client {
   // **Remark**, this end-point is designed for humans browsing for tasks, not
   // services, as that makes little sense.
   listTasks(...args) {
-    const entry = {type:'function',method:'post',route:'/tasks/<namespace>',query:[],args:['namespace'],name:'listTasks',stability:'stable',title:'List Tasks',description:'List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.',input:'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#',output:'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.listTasks.entryReference, args);
+    return this.request(this.listTasks.entryReference, args);
   }
 
   // Insert a task into the index.  If the new rank is less than the existing rank
@@ -52,10 +54,8 @@ export default class Index extends Client {
   // Please see the introduction above for information
   // about indexing successfully completed tasks automatically using custom routes.
   insertTask(...args) {
-    const entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',title:'Insert Task into Index',description:'Insert a task into the index.  If the new rank is less than the existing rank\nat the given index path, the task is not indexed but the response is still 200 OK.\n\nPlease see the introduction above for information\nabout indexing successfully completed tasks automatically using custom routes.',scopes:[['index:insert-task:<namespace>']],input:'http://schemas.taskcluster.net/index/v1/insert-task-request.json#',output:'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.insertTask.entryReference, args);
+    return this.request(this.insertTask.entryReference, args);
   }
 
   // Find a task by index path and redirect to the artifact on the most recent
@@ -70,18 +70,14 @@ export default class Index extends Client {
   // installer and debug symbols into a single artifact.
   // If no task exists for the given index path, this API end-point responds with 404.
   findArtifactFromTask(...args) {
-    const entry = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',title:'Get Artifact From Indexed Task',description:'Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.',scopes:[['queue:get-artifact:<name>']]};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.findArtifactFromTask.entryReference, args);
+    return this.request(this.findArtifactFromTask.entryReference, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    const entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.ping.entryReference, args);
+    return this.request(this.ping.entryReference, args);
   }
 }

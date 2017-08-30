@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class GithubEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-github/v1/'
     });
+    
   }
 
   // When a GitHub pull request event is posted it will be broadcast on this

@@ -3,11 +3,15 @@
 import Client from '../Client';
 
 export default class Login extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: 'https://login.taskcluster.net/v1',
       exchangePrefix: ''
     });
+    
+    this.oidcCredentials.entryReference = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',title:'Get TaskCluster credentials given a suitable `access_token`',description:'Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider\'s API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.',output:'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json'};
+    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
   }
 
   // Given an OIDC `access_token` from a trusted OpenID provider, return a
@@ -29,18 +33,14 @@ export default class Login extends Client {
   // monitor this expiration and refresh the credentials if necessary, by calling
   // this endpoint again, if they have expired.
   oidcCredentials(...args) {
-    const entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',title:'Get TaskCluster credentials given a suitable `access_token`',description:'Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider\'s API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.',output:'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.oidcCredentials.entryReference, args);
+    return this.request(this.oidcCredentials.entryReference, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    const entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.ping.entryReference, args);
+    return this.request(this.ping.entryReference, args);
   }
 }

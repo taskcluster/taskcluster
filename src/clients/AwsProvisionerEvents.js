@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class AwsProvisionerEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-aws-provisioner/v1/'
     });
+    
   }
 
   // When a new `workerType` is created a message will be published to this

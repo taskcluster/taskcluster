@@ -3,11 +3,28 @@
 import Client from '../Client';
 
 export default class AwsProvisioner extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: 'https://aws-provisioner.taskcluster.net/v1',
       exchangePrefix: ''
     });
+    
+    this.listWorkerTypeSummaries.entryReference = {type:'function',method:'get',route:'/list-worker-type-summaries',query:[],args:[],name:'listWorkerTypeSummaries',stability:'stable',title:'List worker types with details',description:'Return a list of worker types, including some summary information about\ncurrent capacity for each.  While this list includes all defined worker types,\nthere may be running EC2 instances for deleted worker types that are not\nincluded here.  The list is unordered.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#'};
+    this.createWorkerType.entryReference = {type:'function',method:'put',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'createWorkerType',stability:'stable',title:'Create new Worker Type',description:'Create a worker type.  A worker type contains all the configuration\nneeded for the provisioner to manage the instances.  Each worker type\nknows which regions and which instance types are allowed for that\nworker type.  Remember that Capacity is the number of concurrent tasks\nthat can be run on a given EC2 resource and that Utility is the relative\nperformance rate between different instance types.  There is no way to\nconfigure different regions to have different sets of instance types\nso ensure that all instance types are available in all regions.\nThis function is idempotent.\n\nOnce a worker type is in the provisioner, a back ground process will\nbegin creating instances for it based on its capacity bounds and its\npending task count from the Queue.  It is the worker\'s responsibility\nto shut itself down.  The provisioner has a limit (currently 96hours)\nfor all instances to prevent zombie instances from running indefinitely.\n\nThe provisioner will ensure that all instances created are tagged with\naws resource tags containing the provisioner id and the worker type.\n\nIf provided, the secrets in the global, region and instance type sections\nare available using the secrets api.  If specified, the scopes provided\nwill be used to generate a set of temporary credentials available with\nthe other secrets.',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'};
+    this.updateWorkerType.entryReference = {type:'function',method:'post',route:'/worker-type/<workerType>/update',query:[],args:['workerType'],name:'updateWorkerType',stability:'stable',title:'Update Worker Type',description:'Provide a new copy of a worker type to replace the existing one.\nThis will overwrite the existing worker type definition if there\nis already a worker type of that name.  This method will return a\n200 response along with a copy of the worker type definition created\nNote that if you are using the result of a GET on the worker-type\nend point that you will need to delete the lastModified and workerType\nkeys from the object returned, since those fields are not allowed\nthe request body for this method\n\nOtherwise, all input requirements and actions are the same as the\ncreate method.',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'};
+    this.workerTypeLastModified.entryReference = {type:'function',method:'get',route:'/worker-type-last-modified/<workerType>',query:[],args:['workerType'],name:'workerTypeLastModified',stability:'stable',title:'Get Worker Type Last Modified Time',description:'This method is provided to allow workers to see when they were\nlast modified.  The value provided through UserData can be\ncompared against this value to see if changes have been made\nIf the worker type definition has not been changed, the date\nshould be identical as it is the same stored value.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#'};
+    this.workerType.entryReference = {type:'function',method:'get',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'workerType',stability:'stable',title:'Get Worker Type',description:'Retrieve a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'};
+    this.removeWorkerType.entryReference = {type:'function',method:'delete',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'removeWorkerType',stability:'stable',title:'Delete Worker Type',description:'Delete a worker type definition.  This method will only delete\nthe worker type definition from the storage table.  The actual\ndeletion will be handled by a background worker.  As soon as this\nmethod is called for a worker type, the background worker will\nimmediately submit requests to cancel all spot requests for this\nworker type as well as killing all instances regardless of their\nstate.  If you want to gracefully remove a worker type, you must\neither ensure that no tasks are created with that worker type name\nor you could theoretically set maxCapacity to 0, though, this is\nnot a supported or tested action',scopes:[['aws-provisioner:manage-worker-type:<workerType>']]};
+    this.listWorkerTypes.entryReference = {type:'function',method:'get',route:'/list-worker-types',query:[],args:[],name:'listWorkerTypes',stability:'stable',title:'List Worker Types',description:'Return a list of string worker type names.  These are the names\nof all managed worker types known to the provisioner.  This does\nnot include worker types which are left overs from a deleted worker\ntype definition but are still running in AWS.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'};
+    this.createSecret.entryReference = {type:'function',method:'put',route:'/secret/<token>',query:[],args:['token'],name:'createSecret',stability:'stable',title:'Create new Secret',description:'Insert a secret into the secret storage.  The supplied secrets will\nbe provided verbatime via `getSecret`, while the supplied scopes will\nbe converted into credentials by `getSecret`.\n\nThis method is not ordinarily used in production; instead, the provisioner\ncreates a new secret directly for each spot bid.',scopes:[['aws-provisioner:create-secret:<workerType>']],input:'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'};
+    this.getSecret.entryReference = {type:'function',method:'get',route:'/secret/<token>',query:[],args:['token'],name:'getSecret',stability:'stable',title:'Get a Secret',description:'Retrieve a secret from storage.  The result contains any passwords or\nother restricted information verbatim as well as a temporary credential\nbased on the scopes specified when the secret was created.\n\nIt is important that this secret is deleted by the consumer (`removeSecret`),\nor else the secrets will be visible to any process which can access the\nuser data associated with the instance.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'};
+    this.instanceStarted.entryReference = {type:'function',method:'get',route:'/instance-started/<instanceId>/<token>',query:[],args:['instanceId','token'],name:'instanceStarted',stability:'stable',title:'Report an instance starting',description:'An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill'};
+    this.removeSecret.entryReference = {type:'function',method:'delete',route:'/secret/<token>',query:[],args:['token'],name:'removeSecret',stability:'stable',title:'Remove a Secret',description:'Remove a secret.  After this call, a call to `getSecret` with the given\ntoken will return no information.\n\nIt is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto untrusted processes to prevent credential and/or secret leakage.'};
+    this.getLaunchSpecs.entryReference = {type:'function',method:'get',route:'/worker-type/<workerType>/launch-specifications',query:[],args:['workerType'],name:'getLaunchSpecs',stability:'experimental',title:'Get All Launch Specifications for WorkerType',description:'This method returns a preview of all possible launch specifications\nthat this worker type definition could submit to EC2.  It is used to\ntest worker types, nothing more\n\n**This API end-point is experimental and may be subject to change without warning.**',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#'};
+    this.state.entryReference = {type:'function',method:'get',route:'/state/<workerType>',query:[],args:['workerType'],name:'state',stability:'stable',title:'Get AWS State for a worker type',description:'Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.'};
+    this.backendStatus.entryReference = {type:'function',method:'get',route:'/backend-status',query:[],args:[],name:'backendStatus',stability:'experimental',title:'Backend Status',description:'This endpoint is used to show when the last time the provisioner\nhas checked in.  A check in is done through the deadman\'s snitch\napi.  It is done at the conclusion of a provisioning iteration\nand used to tell if the background provisioning process is still\nrunning.\n\n**Warning** this api end-point is **not stable**.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#'};
+    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
   }
 
   // Return a list of worker types, including some summary information about
@@ -15,10 +32,8 @@ export default class AwsProvisioner extends Client {
   // there may be running EC2 instances for deleted worker types that are not
   // included here.  The list is unordered.
   listWorkerTypeSummaries(...args) {
-    const entry = {type:'function',method:'get',route:'/list-worker-type-summaries',query:[],args:[],name:'listWorkerTypeSummaries',stability:'stable',title:'List worker types with details',description:'Return a list of worker types, including some summary information about\ncurrent capacity for each.  While this list includes all defined worker types,\nthere may be running EC2 instances for deleted worker types that are not\nincluded here.  The list is unordered.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.listWorkerTypeSummaries.entryReference, args);
+    return this.request(this.listWorkerTypeSummaries.entryReference, args);
   }
 
   // Create a worker type.  A worker type contains all the configuration
@@ -42,10 +57,8 @@ export default class AwsProvisioner extends Client {
   // will be used to generate a set of temporary credentials available with
   // the other secrets.
   createWorkerType(...args) {
-    const entry = {type:'function',method:'put',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'createWorkerType',stability:'stable',title:'Create new Worker Type',description:'Create a worker type.  A worker type contains all the configuration\nneeded for the provisioner to manage the instances.  Each worker type\nknows which regions and which instance types are allowed for that\nworker type.  Remember that Capacity is the number of concurrent tasks\nthat can be run on a given EC2 resource and that Utility is the relative\nperformance rate between different instance types.  There is no way to\nconfigure different regions to have different sets of instance types\nso ensure that all instance types are available in all regions.\nThis function is idempotent.\n\nOnce a worker type is in the provisioner, a back ground process will\nbegin creating instances for it based on its capacity bounds and its\npending task count from the Queue.  It is the worker\'s responsibility\nto shut itself down.  The provisioner has a limit (currently 96hours)\nfor all instances to prevent zombie instances from running indefinitely.\n\nThe provisioner will ensure that all instances created are tagged with\naws resource tags containing the provisioner id and the worker type.\n\nIf provided, the secrets in the global, region and instance type sections\nare available using the secrets api.  If specified, the scopes provided\nwill be used to generate a set of temporary credentials available with\nthe other secrets.',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.createWorkerType.entryReference, args);
+    return this.request(this.createWorkerType.entryReference, args);
   }
 
   // Provide a new copy of a worker type to replace the existing one.
@@ -59,10 +72,8 @@ export default class AwsProvisioner extends Client {
   // Otherwise, all input requirements and actions are the same as the
   // create method.
   updateWorkerType(...args) {
-    const entry = {type:'function',method:'post',route:'/worker-type/<workerType>/update',query:[],args:['workerType'],name:'updateWorkerType',stability:'stable',title:'Update Worker Type',description:'Provide a new copy of a worker type to replace the existing one.\nThis will overwrite the existing worker type definition if there\nis already a worker type of that name.  This method will return a\n200 response along with a copy of the worker type definition created\nNote that if you are using the result of a GET on the worker-type\nend point that you will need to delete the lastModified and workerType\nkeys from the object returned, since those fields are not allowed\nthe request body for this method\n\nOtherwise, all input requirements and actions are the same as the\ncreate method.',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.updateWorkerType.entryReference, args);
+    return this.request(this.updateWorkerType.entryReference, args);
   }
 
   // This method is provided to allow workers to see when they were
@@ -71,10 +82,8 @@ export default class AwsProvisioner extends Client {
   // If the worker type definition has not been changed, the date
   // should be identical as it is the same stored value.
   workerTypeLastModified(...args) {
-    const entry = {type:'function',method:'get',route:'/worker-type-last-modified/<workerType>',query:[],args:['workerType'],name:'workerTypeLastModified',stability:'stable',title:'Get Worker Type Last Modified Time',description:'This method is provided to allow workers to see when they were\nlast modified.  The value provided through UserData can be\ncompared against this value to see if changes have been made\nIf the worker type definition has not been changed, the date\nshould be identical as it is the same stored value.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.workerTypeLastModified.entryReference, args);
+    return this.request(this.workerTypeLastModified.entryReference, args);
   }
 
   // Retrieve a copy of the requested worker type definition.
@@ -83,10 +92,8 @@ export default class AwsProvisioner extends Client {
   // use the results of this method to submit date to the update
   // method.
   workerType(...args) {
-    const entry = {type:'function',method:'get',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'workerType',stability:'stable',title:'Get Worker Type',description:'Retrieve a copy of the requested worker type definition.\nThis copy contains a lastModified field as well as the worker\ntype name.  As such, it will require manipulation to be able to\nuse the results of this method to submit date to the update\nmethod.',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.workerType.entryReference, args);
+    return this.request(this.workerType.entryReference, args);
   }
 
   // Delete a worker type definition.  This method will only delete
@@ -100,10 +107,8 @@ export default class AwsProvisioner extends Client {
   // or you could theoretically set maxCapacity to 0, though, this is
   // not a supported or tested action
   removeWorkerType(...args) {
-    const entry = {type:'function',method:'delete',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'removeWorkerType',stability:'stable',title:'Delete Worker Type',description:'Delete a worker type definition.  This method will only delete\nthe worker type definition from the storage table.  The actual\ndeletion will be handled by a background worker.  As soon as this\nmethod is called for a worker type, the background worker will\nimmediately submit requests to cancel all spot requests for this\nworker type as well as killing all instances regardless of their\nstate.  If you want to gracefully remove a worker type, you must\neither ensure that no tasks are created with that worker type name\nor you could theoretically set maxCapacity to 0, though, this is\nnot a supported or tested action',scopes:[['aws-provisioner:manage-worker-type:<workerType>']]};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.removeWorkerType.entryReference, args);
+    return this.request(this.removeWorkerType.entryReference, args);
   }
 
   // Return a list of string worker type names.  These are the names
@@ -111,10 +116,8 @@ export default class AwsProvisioner extends Client {
   // not include worker types which are left overs from a deleted worker
   // type definition but are still running in AWS.
   listWorkerTypes(...args) {
-    const entry = {type:'function',method:'get',route:'/list-worker-types',query:[],args:[],name:'listWorkerTypes',stability:'stable',title:'List Worker Types',description:'Return a list of string worker type names.  These are the names\nof all managed worker types known to the provisioner.  This does\nnot include worker types which are left overs from a deleted worker\ntype definition but are still running in AWS.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.listWorkerTypes.entryReference, args);
+    return this.request(this.listWorkerTypes.entryReference, args);
   }
 
   // Insert a secret into the secret storage.  The supplied secrets will
@@ -123,10 +126,8 @@ export default class AwsProvisioner extends Client {
   // This method is not ordinarily used in production; instead, the provisioner
   // creates a new secret directly for each spot bid.
   createSecret(...args) {
-    const entry = {type:'function',method:'put',route:'/secret/<token>',query:[],args:['token'],name:'createSecret',stability:'stable',title:'Create new Secret',description:'Insert a secret into the secret storage.  The supplied secrets will\nbe provided verbatime via `getSecret`, while the supplied scopes will\nbe converted into credentials by `getSecret`.\n\nThis method is not ordinarily used in production; instead, the provisioner\ncreates a new secret directly for each spot bid.',scopes:[['aws-provisioner:create-secret:<workerType>']],input:'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.createSecret.entryReference, args);
+    return this.request(this.createSecret.entryReference, args);
   }
 
   // Retrieve a secret from storage.  The result contains any passwords or
@@ -136,10 +137,8 @@ export default class AwsProvisioner extends Client {
   // or else the secrets will be visible to any process which can access the
   // user data associated with the instance.
   getSecret(...args) {
-    const entry = {type:'function',method:'get',route:'/secret/<token>',query:[],args:['token'],name:'getSecret',stability:'stable',title:'Get a Secret',description:'Retrieve a secret from storage.  The result contains any passwords or\nother restricted information verbatim as well as a temporary credential\nbased on the scopes specified when the secret was created.\n\nIt is important that this secret is deleted by the consumer (`removeSecret`),\nor else the secrets will be visible to any process which can access the\nuser data associated with the instance.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.getSecret.entryReference, args);
+    return this.request(this.getSecret.entryReference, args);
   }
 
   // An instance will report in by giving its instance id as well
@@ -148,10 +147,8 @@ export default class AwsProvisioner extends Client {
   // machines do not check in.  We could generate a different token
   // but that seems like overkill
   instanceStarted(...args) {
-    const entry = {type:'function',method:'get',route:'/instance-started/<instanceId>/<token>',query:[],args:['instanceId','token'],name:'instanceStarted',stability:'stable',title:'Report an instance starting',description:'An instance will report in by giving its instance id as well\nas its security token.  The token is given and checked to ensure\nthat it matches a real token that exists to ensure that random\nmachines do not check in.  We could generate a different token\nbut that seems like overkill'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.instanceStarted.entryReference, args);
+    return this.request(this.instanceStarted.entryReference, args);
   }
 
   // Remove a secret.  After this call, a call to `getSecret` with the given
@@ -160,10 +157,8 @@ export default class AwsProvisioner extends Client {
   // secret delete the secret from storage before handing over control
   // to untrusted processes to prevent credential and/or secret leakage.
   removeSecret(...args) {
-    const entry = {type:'function',method:'delete',route:'/secret/<token>',query:[],args:['token'],name:'removeSecret',stability:'stable',title:'Remove a Secret',description:'Remove a secret.  After this call, a call to `getSecret` with the given\ntoken will return no information.\n\nIt is very important that the consumer of a \nsecret delete the secret from storage before handing over control\nto untrusted processes to prevent credential and/or secret leakage.'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.removeSecret.entryReference, args);
+    return this.request(this.removeSecret.entryReference, args);
   }
 
   // This method returns a preview of all possible launch specifications
@@ -171,10 +166,8 @@ export default class AwsProvisioner extends Client {
   // test worker types, nothing more
   // **This API end-point is experimental and may be subject to change without warning.**
   getLaunchSpecs(...args) {
-    const entry = {type:'function',method:'get',route:'/worker-type/<workerType>/launch-specifications',query:[],args:['workerType'],name:'getLaunchSpecs',stability:'experimental',title:'Get All Launch Specifications for WorkerType',description:'This method returns a preview of all possible launch specifications\nthat this worker type definition could submit to EC2.  It is used to\ntest worker types, nothing more\n\n**This API end-point is experimental and may be subject to change without warning.**',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.getLaunchSpecs.entryReference, args);
+    return this.request(this.getLaunchSpecs.entryReference, args);
   }
 
   // Return the state of a given workertype as stored by the provisioner. 
@@ -182,10 +175,8 @@ export default class AwsProvisioner extends Client {
   // pending requests.  The `summary` property contains an updated summary
   // similar to that returned from `listWorkerTypeSummaries`.
   state(...args) {
-    const entry = {type:'function',method:'get',route:'/state/<workerType>',query:[],args:['workerType'],name:'state',stability:'stable',title:'Get AWS State for a worker type',description:'Return the state of a given workertype as stored by the provisioner. \nThis state is stored as three lists: 1 for running instances, 1 for\npending requests.  The `summary` property contains an updated summary\nsimilar to that returned from `listWorkerTypeSummaries`.'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.state.entryReference, args);
+    return this.request(this.state.entryReference, args);
   }
 
   // This endpoint is used to show when the last time the provisioner
@@ -195,18 +186,14 @@ export default class AwsProvisioner extends Client {
   // running.
   // **Warning** this api end-point is **not stable**.
   backendStatus(...args) {
-    const entry = {type:'function',method:'get',route:'/backend-status',query:[],args:[],name:'backendStatus',stability:'experimental',title:'Backend Status',description:'This endpoint is used to show when the last time the provisioner\nhas checked in.  A check in is done through the deadman\'s snitch\napi.  It is done at the conclusion of a provisioning iteration\nand used to tell if the background provisioning process is still\nrunning.\n\n**Warning** this api end-point is **not stable**.',output:'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.backendStatus.entryReference, args);
+    return this.request(this.backendStatus.entryReference, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    const entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
+    this.validateMethod(this.ping.entryReference, args);
+    return this.request(this.ping.entryReference, args);
   }
 }

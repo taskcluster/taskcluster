@@ -1,4 +1,3 @@
-import merge from 'deepmerge';
 import hawk from 'hawk';
 
 const defaults = {
@@ -8,11 +7,13 @@ const defaults = {
   randomizationFactor: 0.25,
   maxDelay: 30 * 1000,
   timeout: 30 * 1000,
-  headers: {}
+  headers: {
+    'Content-Type': 'application/json'
+  }
 };
 
 export default (url, opts = {}) => {
-  const options = merge(defaults, opts);
+  const options = { ...defaults, ...opts, headers: { ...defaults.headers, ...opts.headers } };
   const { delayFactor, randomizationFactor, maxDelay, retries } = options;
 
   if (typeof options.credentials !== 'string') {
@@ -25,13 +26,20 @@ export default (url, opts = {}) => {
       ext: options.extra
     });
 
-    options.credentials = 'omit';
+    // options.credentials = 'omit';
     options.headers.Authorization = header.field;
   }
 
   return new Promise((resolve, reject) => {
     (function attempt(n) {
       fetch(url, options)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(response.statusText);
+          }
+
+          return response.json();
+        })
         .then(resolve)
         .catch(err => {
           if (n > retries) {

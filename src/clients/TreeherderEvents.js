@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class TreeherderEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-treeherder/v1/'
     });
+    
   }
 
   // When a task run is scheduled or resolved, a message is posted to

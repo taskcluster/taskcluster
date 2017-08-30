@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class SchedulerEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-scheduler/v1/'
     });
+    
   }
 
   // When a task-graph is submitted it immediately starts running and a

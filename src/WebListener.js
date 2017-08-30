@@ -1,5 +1,4 @@
-import emitter from 'mitt';
-import join from 'url-join';
+import emitter from './vendor/mitt';
 import { v4 } from 'slugid';
 
 const READY_STATE = {
@@ -32,7 +31,8 @@ export default class WebListener {
   }
 
   async connect() {
-    const socketUrl = join(this.options.baseUrl, 'listen');
+    const { baseUrl } = this.options;
+    const socketUrl = baseUrl.endsWith('/') ? `${baseUrl}listen` : `${baseUrl}/listen`;
 
     this.socket = new WebSocket(socketUrl);
     this.socket.addEventListener('message', this.handleMessage);

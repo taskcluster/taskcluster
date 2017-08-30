@@ -3,11 +3,13 @@
 import Client from '../Client';
 
 export default class AuthEvents extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
+      ...options,
       baseUrl: '',
       exchangePrefix: 'exchange/taskcluster-auth/v1/'
     });
+    
   }
 
   // Message that a new client has been created.

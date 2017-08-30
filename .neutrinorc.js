@@ -4,6 +4,7 @@ module.exports = {
   use: [
     '@eliperelman/neutrino-preset-library',
     (neutrino) => {
+      neutrino.config.devtool('inline-source-map');
       neutrino.config.output.library('taskcluster');
       neutrino.config.resolve.alias.set('hawk', 'hawk/dist/browser.js');
       neutrino.config.module
@@ -16,6 +17,7 @@ module.exports = {
             [require.resolve('babel-plugin-transform-class-properties'), { spec: true }],
           ]
         }));
-    }
+    },
+    'neutrino-preset-karma'
   ]
 };

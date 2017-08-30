@@ -14,6 +14,7 @@
     "update-all": "yarn compile-clients && yarn build && yarn docs"
   },
   "devDependencies": {
+    "@eliperelman/neutrino-preset-library": "^1.0.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "cliff": "^0.1.10",
@@ -23,15 +24,13 @@
     "javascript-stringify": "^1.6.0",
     "json-schema-to-markdown": "^1.0.3",
     "json-stable-stringify": "^1.0.1",
-    "neutrino": "^6.1.5"
+    "karma-sourcemap-loader": "^0.3.7",
+    "neutrino": "^6.1.5",
+    "neutrino-preset-karma": "^6.1.5"
   },
   "dependencies": {
-    "deepmerge": "^1.5.1",
     "hawk": "^6.0.2",
-    "lodash.clonedeep": "^4.5.0",
-    "mitt": "^1.1.2",
     "query-string": "^5.0.0",
-    "slugid": "^1.1.0",
-    "url-join": "^2.0.2"
+    "slugid": "^1.1.0"
   }
 }

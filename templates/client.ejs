@@ -3,20 +3,21 @@
 import Client from '../Client';
 
 export default class <%= name %> extends Client {
-  constructor() {
+  constructor(options = {}) {
     super({
-      baseUrl: '<%= client.reference.baseUrl %>',
-      exchangePrefix: '<%= client.reference.exchangePrefix %>'
+      ...options,
+      baseUrl: '<%= baseUrl %>',
+      exchangePrefix: '<%= exchangePrefix %>'
     });
-  }<% client.reference.entries.filter(({ type }) => type === 'function').forEach(entry => { %>
+    <% methods.forEach(entry => { %>
+    this.<%= entry.name %>.entryReference = <%- stringify(entry) %>;<% }) %>
+  }<% methods.forEach(entry => { %>
 <% entry.description.split('\n').filter(Boolean).forEach(line => { %>
   <%- `// ${line}` %><% }) %>
   <%= entry.name %>(...args) {
-    const entry = <%- stringify(entry) %>;
-
-    this.validateMethod(entry, args);
-    return this.request(entry, args);
-  }<% }) %><% client.reference.entries.filter(({ type }) => type === 'topic-exchange').forEach(entry => { %>
+    this.validateMethod(this.<%= entry.name %>.entryReference, args);
+    return this.request(this.<%= entry.name %>.entryReference, args);
+  }<% }) %><% topics.forEach(entry => { %>
 <% entry.description.split('\n').filter(Boolean).forEach(line => { %>
   <%- `// ${line}` %><% }) %>
   <%= entry.name %>(routingKeyPattern) {

@@ -1,7 +1,10 @@
 # Taskcluster Client Web
-## A Taskcluster client library for the browser.
 
-This client library is generated from the auto-generated API reference.
+**A Taskcluster client library for the browser.**
+
+This client library is generated from the auto-generated API reference. taskcluster-client-web differs from
+[taskcluster-client](https://github.com/taskcluster/taskcluster-client) by providing a version that is compatible
+with the browser out of the box and does not require a build step to use.
 
 ## Installation
 
@@ -25,6 +28,16 @@ npm install --save-dev taskcluster-client-web
 <script src="path/to/taskcluster-client-web.js"></script>
 
 <!-- You can also include it from the unpkg CDN -->
+<script src="https://unpkg.com/taskcluster-client-web"></script>
+```
+
+_Note: taskcluster-client-web depends on 3 external packages: hawk, query-string, and slugid.
+You must manually include these if you choose to use the script installation:_
+
+```html
+<script src="https://unpkg.com/hawk"></script>
+<script src="https://unpkg.com/query-string"></script>
+<script src="https://unpkg.com/slugid"></script>
 <script src="https://unpkg.com/taskcluster-client-web"></script>
 ```
 
@@ -65,6 +78,8 @@ require(['taskcluster-client-web'], ({ Queue }) => {
 ```html
 <script src="path/to/taskcluster-client-web.js"></script>
 <script>
+  const taskcluster = window.taskcluster;
+
   const { Queue } = taskcluster;
 </script>
 ```
