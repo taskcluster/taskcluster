@@ -1,0 +1,57 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:          "Worker-type Response"
+description: |
+  Response to a worker-type request from a provisioner.
+type:           object
+properties:
+  provisionerId:
+    title:        "Provisioner ID"
+    type:         string
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  workerType:
+    type:         string
+    title:        "WorkerType name"
+    description: |
+      WorkerType name.
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  stability:
+    title:        "Stability"
+    description: |
+      This is the stability of the worker-type. Accepted values:
+        * `experimental`
+        * `stable`
+        * `deprecated`
+    type:         string
+    enum:         ["experimental", "stable", "deprecated"]
+  description:
+    title:        "Description"
+    description: |
+      Description of the worker-type.
+    type:         string
+  expires:
+    title:        "Worker-type Expiration"
+    description: |
+      Date and time after which the worker-type will be automatically
+      deleted by the queue.
+    type:         string
+    format:       date-time
+  lastDateActive:
+    title:        "Worker-type Last Date Active"
+    description: |
+      Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours
+      but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+      of when the worker-type was last seen active.
+    type:         string
+    format:       date-time
+additionalProperties: false
+required:
+  - workerType
+  - provisionerId
+  - description
+  - stability
+  - expires
+  - lastDateActive
