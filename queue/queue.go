@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 29 Aug 2017 at 15:23:00 UTC. The code was generated
+// Wed, 30 Aug 2017 at 17:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -695,6 +695,36 @@ func (myQueue *Queue) ListWorkerTypes(provisionerId, continuationToken, limit st
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types", new(ListWorkerTypesResponse), v)
 	return responseObject.(*ListWorkerTypesResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a worker-type from a provisioner.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#getWorkerType
+func (myQueue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerTypeResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
+	return responseObject.(*WorkerTypeResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Declare a workerType, supplying some details about it.
+//
+// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
+// possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
+// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
+// `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
+//
+// Required scopes:
+//   * queue:declare-worker-type:<provisionerId>/<workerType>#<property>
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#declareWorkerType
+func (myQueue *Queue) DeclareWorkerType(provisionerId, workerType string, payload *WorkerTypeRequest) (*WorkerTypeResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
+	return responseObject.(*WorkerTypeResponse), err
 }
 
 // Stability: *** EXPERIMENTAL ***

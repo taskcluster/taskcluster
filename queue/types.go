@@ -510,6 +510,11 @@ type (
 			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires
 			Expires tcclient.Time `json:"expires,omitempty"`
 
+			// Date and time where the worker-type was last seen active
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/lastDateActive
+			LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
@@ -1635,6 +1640,89 @@ type (
 		// Max length: 22
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType
+		WorkerType string `json:"workerType"`
+	}
+
+	// Request to update a worker-type.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
+	WorkerTypeRequest struct {
+
+		// Description of the provisioner.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/description
+		Description string `json:"description,omitempty"`
+
+		// Date and time after which the worker-type will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/expires
+		Expires tcclient.Time `json:"expires,omitempty"`
+
+		// This is the stability of the provisioner. Accepted values:
+		//   * `experimental`
+		//   * `stable`
+		//   * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/stability
+		Stability string `json:"stability,omitempty"`
+	}
+
+	// Response to a worker-type request from a provisioner.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#
+	WorkerTypeResponse struct {
+
+		// Description of the worker-type.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/description
+		Description string `json:"description"`
+
+		// Date and time after which the worker-type will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours
+		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+		// of when the worker-type was last seen active.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/lastDateActive
+		LastDateActive tcclient.Time `json:"lastDateActive"`
+
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/provisionerId
+		ProvisionerID string `json:"provisionerId"`
+
+		// This is the stability of the worker-type. Accepted values:
+		//   * `experimental`
+		//   * `stable`
+		//   * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/stability
+		Stability string `json:"stability"`
+
+		// WorkerType name.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )

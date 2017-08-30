@@ -1,4 +1,4 @@
-Generated: 1504020230
+Generated: 1504113849
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6945,6 +6945,37 @@ page. You may limit this with the query-string parameter `limit`.'
 Entry 24    =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'getWorkerType'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
+    Entry Title       = 'Get a worker-type'
+    Entry Description = 'Get a worker-type from a provisioner.'
+Entry 25    =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>'
+    Entry Args        = '[provisionerId workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'declareWorkerType'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[queue:declare-worker-type:<provisionerId>/<workerType>#<property>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
+    Entry Title       = 'Update a worker-type'
+    Entry Description = 'Declare a workerType, supplying some details about it.
+
+`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
+possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
+provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
+`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.'
+Entry 26    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers'
     Entry Args        = '[provisionerId workerType]'
     Entry Query        = '[continuationToken limit]'
@@ -6960,7 +6991,7 @@ The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
 option. By default this end-point will list up to 1000 workers in a single
 page. You may limit this with the query-string parameter `limit`.'
-Entry 25    =
+Entry 27    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -7795,6 +7826,14 @@ Properties
           Type                   = 'string'
           TypeName               = 'WorkerTypeExpiration'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires'
+        Property 'lastDateActive' =
+          Description            = 'Date and time where the worker-type was last seen active
+          '
+          Format                 = 'date-time'
+          Title                  = 'Worker-type Last Date Active'
+          Type                   = 'string'
+          TypeName               = 'WorkerTypeLastDateActive'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/lastDateActive'
         Property 'provisionerId' =
           MaxLength              = '22'
           MinLength              = '1'
@@ -9406,6 +9445,117 @@ Title                  = 'Task Definition Response'
 Type                   = 'object'
 TypeName               = 'TaskDefinitionResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
+=======================================================================
+Additional Properties  = 'false'
+Description            = 'Request to update a worker-type.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#'
+Properties
+  Property 'description' =
+    Description            = 'Description of the provisioner.
+    '
+    Title                  = 'Description'
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/description'
+  Property 'expires' =
+    Description            = 'Date and time after which the worker-type will be automatically
+    deleted by the queue.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker-type Expiration'
+    Type                   = 'string'
+    TypeName               = 'WorkerTypeExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/expires'
+  Property 'stability' =
+    Description            = 'This is the stability of the provisioner. Accepted values:
+      * `experimental`
+      * `stable`
+      * `deprecated`
+    '
+    Enum                   = '[experimental stable deprecated]'
+    Title                  = 'Stability'
+    Type                   = 'string'
+    TypeName               = 'Stability'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/stability'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Worker-type Request'
+Type                   = 'object'
+TypeName               = 'WorkerTypeRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/workertype-response.json#
+=================================================================
+Additional Properties  = 'false'
+Description            = 'Response to a worker-type request from a provisioner.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
+Properties
+  Property 'description' =
+    Description            = 'Description of the worker-type.
+    '
+    Title                  = 'Description'
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/description'
+  Property 'expires' =
+    Description            = 'Date and time after which the worker-type will be automatically
+    deleted by the queue.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker-type Expiration'
+    Type                   = 'string'
+    TypeName               = 'WorkerTypeExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/expires'
+  Property 'lastDateActive' =
+    Description            = 'Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours
+    but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+    of when the worker-type was last seen active.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker-type Last Date Active'
+    Type                   = 'string'
+    TypeName               = 'WorkerTypeLastDateActive'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/lastDateActive'
+  Property 'provisionerId' =
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner ID'
+    Type                   = 'string'
+    TypeName               = 'ProvisionerID'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/provisionerId'
+  Property 'stability' =
+    Description            = 'This is the stability of the worker-type. Accepted values:
+      * `experimental`
+      * `stable`
+      * `deprecated`
+    '
+    Enum                   = '[experimental stable deprecated]'
+    Title                  = 'Stability'
+    Type                   = 'string'
+    TypeName               = 'Stability'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/stability'
+  Property 'workerType' =
+    Description            = 'WorkerType name.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'WorkerType name'
+    Type                   = 'string'
+    TypeName               = 'WorkerTypeName'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType'
+Required               = '[workerType provisionerId description stability expires lastDateActive]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Worker-type Response'
+Type                   = 'object'
+TypeName               = 'WorkerTypeResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
 
 
 http://references.taskcluster.net/queue/v1/exchanges.json
