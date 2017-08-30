@@ -43,13 +43,15 @@ particular task but additional scopes may be added by specifying them after the
 task id.
 
   Usage:
-    taskcluster-proxy [options] <taskId> [<scope>...]
-    taskcluster-proxy --help
+    taskcluster-proxy [options] [<scope>...]
+    taskcluster-proxy -h|--help
+    taskcluster-proxy --version
 
   Options:
     -h --help                       Show this help screen.
     --version                       Show the taskcluster-proxy version number.
     -p --port <port>                Port to bind the proxy server to [default: 8080].
+    -t --task-id <taskId>           Restrict given scopes to those defined in taskId.
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
     --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
@@ -75,7 +77,7 @@ connection (typically https://localhost:60024/).
 
 ```sh
 # Start the proxy server; note that 2sz... is the taskId
-taskcluster-proxy 2szAy1JzSr6pyjVCdiTcoQ -p 60024
+taskcluster-proxy -t 2szAy1JzSr6pyjVCdiTcoQ -p 60024
 ```
 
 #### Fetch a task
@@ -98,7 +100,7 @@ curl localhost:60024/bewit --data 'https://queue.taskcluster.net/v1/task/2szAy1J
 The proxy runs fine natively, but if you wish, you can also create a docker image to run it in.
 
 ```sh
-./build.sh user/taskcluster-proxy
+./build.sh 'user/taskcluster-proxy:latest'
 ```
 
 ## Endpoints
