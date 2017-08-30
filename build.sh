@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 help() {
   echo ""
   echo "Builds proxy server (For linux) and places into a docker container."
