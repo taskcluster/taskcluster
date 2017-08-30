@@ -69,17 +69,6 @@ let load = loader({
     setup: ({cfg}) => {
       let handlers = {};
 
-      // carry out the authorization process, either with a done callback
-      // or returning a promise
-      let authorize = (user, done) => {
-        let promise = authorizer.authorize(user);
-        if (done) {
-          promise.then(() => done(null, user), (err) => done(err, null));
-        } else {
-          return promise;
-        }
-      };
-
       Object.keys(cfg.handlers).forEach((name) => {
         let Handler = require('./handlers/' + name).default;
         handlers[name] = new Handler({name, cfg});
@@ -110,8 +99,8 @@ let load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'monitor', 'handlers'],
-    setup: ({cfg, validator, monitor, handlers}) => {
+    requires: ['cfg', 'validator', 'monitor', 'handlers', 'authorizer'],
+    setup: ({cfg, validator, monitor, handlers, authorizer}) => {
       return v1.setup({
         context: {},
         validator,
@@ -121,7 +110,7 @@ let load = loader({
         referencePrefix:  'login/v1/api.json',
         aws:              cfg.aws,
         monitor:          monitor.prefix('api'),
-        context:          {cfg, handlers},
+        context:          {cfg, handlers, authorizer},
       });
     },
   },
