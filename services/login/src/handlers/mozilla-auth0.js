@@ -99,16 +99,54 @@ class Handler {
     let profile = await new Promise((resolve, reject) =>
       a0.getUser(req.user.sub, (err, prof) => err ? reject(err) : resolve(prof)));
 
-    if (!profile.email_verified) {
-      debug('profile.email is not verified; ignoring profile');
+    if ('active' in profile && !profile.active) {
+      debug('user is not active; rejecting');
       return;
     }
 
-    let user = new User();
-    user.identity = 'mozilla-auth0/' + profile.email;
+    let user = userFromProfile(profile);
     user.expires = new Date(req.user.exp * 1000);
+    return user;
+  }
 
-    // TODO: add scopes based on profile; waiting on profile rollout and documentation
+  userFromProfile(profile) {
+    let user = new User();
+
+    // we recognize a few different kinds of 'identities' that auth0 can send
+    // our way.  Each of these translates into a different identityProviderId,
+    // which authorizers will later use to figure out what scopes this user
+    // has.  We do not ever expect to have more than one identity in this array,
+    // in a practical sense.
+    for (let {provider, connection} of profile.identities) {
+      // The 'Mozilla-LDAP' connection corresponds to an LDAP login. For this
+      // login, emails are a unique identifier
+      if (provider === 'ad' && connection === 'Mozilla-LDAP') {
+        if (profile.email_verified) {
+          user.identity = 'mozilla-ldap/' + profile.email;
+          break;
+        }
+      // The 'email' connection corresponds to a passwordless login.
+      } else if (provider === 'email' && connection === 'email') {
+        if (profile.email_verified) {
+          user.identity = 'email/' + profile.email;
+          break;
+        }
+      // Login with google really only gives us an email, too.
+      } else if (provider === 'google-oauth2' && connection === 'google-oauth2') {
+        if (profile.email_verified) {
+          user.identity = 'email/' + profile.email;
+          break;
+        }
+      // Github logins take the nickname from the profile; we don't get a reliable
+      // email
+      } else if (provider === 'github' && connection === 'github') {
+        user.identity = 'github/' + profile.nickname;
+      }
+    }
+    if (!user.identity) {
+      debug('No recognized identity providers');
+      return;
+    }
 
     return user;
   }
