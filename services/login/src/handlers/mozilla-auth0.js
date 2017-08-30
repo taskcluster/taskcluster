@@ -104,7 +104,7 @@ class Handler {
       return;
     }
 
-    let user = userFromProfile(profile);
+    let user = this.userFromProfile(profile);
     user.expires = new Date(req.user.exp * 1000);
     return user;
   }
