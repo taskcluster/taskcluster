@@ -47,6 +47,12 @@ properties:
             deleted by the queue.
           type:         string
           format:       date-time
+        lastDateActive:
+          title:        "Worker-type Last Date Active"
+          description: |
+            Date and time where the worker-type was last seen active
+          type:         string
+          format:       date-time
       additionalProperties: false
   continuationToken:
     type:               string
