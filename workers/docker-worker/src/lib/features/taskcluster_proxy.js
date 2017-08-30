@@ -38,7 +38,7 @@ export default class TaskclusterProxy {
         cmd.push('--certificate=' + task.claim.credentials.certificate);
     }
     const cert = JSON.parse(task.claim.credentials.certificate);
-    cmd.push(task.status.taskId);
+    cmd.push(`--task-id=${task.status.taskId}`);
     cmd = cmd.concat(cert.scopes);
 
     // create the container.
