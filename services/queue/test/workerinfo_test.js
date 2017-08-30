@@ -80,6 +80,7 @@ suite('provisioners and worker-types', () => {
       provisionerId: 'prov-A',
       workerType: 'gecko-b-2-linux',
       expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
       description: 'test-worker-type',
       stability: 'experimental',
     };
@@ -98,6 +99,7 @@ suite('provisioners and worker-types', () => {
     const wType = {
       provisionerId: 'prov1',
       expires,
+      lastDateActive: new Date(),
       description: 'test-worker-type',
       stability: 'experimental',
     };
@@ -139,6 +141,7 @@ suite('provisioners and worker-types', () => {
       provisionerId: 'prov1',
       workerType: 'gecko-b-2-linux',
       expires: new Date('1017-07-29'),
+      lastDateActive: new Date(),
       description: 'test-worker-type',
       stability: 'experimental',
     });
@@ -220,5 +223,90 @@ suite('provisioners and worker-types', () => {
 
     const result = await helper.queue.listWorkers(provisionerId, workerType);
     assert(result.workers.length === 0, 'expected no workers');
+  });
+
+  test('queue.getWorkerType returns a worker-type', async () => {
+    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+    const wType = {
+      provisionerId: 'prov-A',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-worker-type',
+      stability: 'experimental',
+    };
+
+    await WorkerType.create(wType);
+
+    const result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
+
+    assert(result.workerType === wType.workerType, `expected ${wType.workerType}`);
+    assert(result.provisionerId === wType.provisionerId, `expected ${wType.provisionerId}`);
+    assert(result.description === wType.description, `expected ${wType.description}`);
+    assert(result.stability === wType.stability, `expected ${wType.stability}`);
+    assert(new Date(result.expires).getTime() === wType.expires.getTime(), `expected ${wType.expires}`);
+  });
+
+  test('queue.declareWorkerType updates a worker-type', async () => {
+    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+
+    const wType = await WorkerType.create({
+      provisionerId: 'prov1',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-wType',
+      stability: 'experimental',
+    });
+
+    const updateProps = {
+      description: 'desc-wType',
+    };
+
+    await helper.queue.declareWorkerType(wType.provisionerId, wType.workerType, updateProps);
+
+    const result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
+
+    assert(result.provisionerId === wType.provisionerId, `expected ${wType.provisionerId}`);
+    assert(result.workerType === wType.workerType, `expected ${wType.provisionerId}`);
+    assert(result.description === updateProps.description, `expected ${updateProps.description}`);
+    assert(result.stability === wType.stability, `expected ${wType.stability}`);
+    assert(new Date(result.expires).getTime() === wType.expires.getTime(), `expected ${wType.expires}`);
+  });
+
+  test('worker-type lastDateActive updates', async () => {
+    let result;
+    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+
+    const wType = {
+      provisionerId: 'prov1',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-wType',
+      stability: 'experimental',
+    };
+
+    await WorkerType.create(wType);
+    await workerInfo.seen(wType.provisionerId, wType.workerType);
+
+    result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
+
+    assert(
+      new Date(result.lastDateActive).getTime() === wType.lastDateActive.getTime(), `expected ${wType.lastDateActive}`
+    );
+
+    wType.workerType = 'gecko-b-2-android';
+    wType.lastDateActive = taskcluster.fromNow('- 7h');
+
+    await WorkerType.create(wType);
+    await workerInfo.seen(wType.provisionerId, wType.workerType);
+
+    result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
+
+    assert(
+      new Date(result.lastDateActive).getTime() !== wType.lastDateActive.getTime(), 'expected different lastDateActive'
+    );
   });
 });

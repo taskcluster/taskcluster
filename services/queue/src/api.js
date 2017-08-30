@@ -2087,6 +2087,93 @@ api.declare({
   return res.reply(result);
 });
 
+/** Get a worker-type from a provisioner */
+api.declare({
+  method:     'get',
+  route:      '/provisioners/:provisionerId/worker-types/:workerType',
+  name:       'getWorkerType',
+  stability:  API.stability.experimental,
+  output:     'workertype-response.json#',
+  title:      'Get a worker-type',
+  description: [
+    'Get a worker-type from a provisioner.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {provisionerId, workerType} = req.params;
+
+  const wType = await this.WorkerType.load({
+    provisionerId,
+    workerType,
+    expires: Entity.op.greaterThan(new Date()),
+  });
+
+  if (!wType) {
+    return res.reportError('ResourceNotFound',
+      'Worker-type {{workerType}} with Provisioner {{provisionerId}} not found. Are you sure it was created?', {
+        workerType,
+        provisionerId,
+      },
+    );
+  }
+
+  return res.reply(wType.json());
+});
+
+/** Update a worker-type */
+api.declare({
+  method:     'put',
+  route:      '/provisioners/:provisionerId/worker-types/:workerType',
+  name:       'declareWorkerType',
+  stability:  API.stability.experimental,
+  scopes:     [
+    [
+      'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
+    ],
+  ],
+  deferAuth:  true,
+  output:     'workertype-response.json#',
+  input:      'update-workertype-request.json#',
+  title:      'Update a worker-type',
+  description: [
+    'Declare a workerType, supplying some details about it.',
+    '',
+    '`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are',
+    'possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`',
+    'provisioner with a body `{description: \'This worker type is great\'}` would require you to have the scope',
+    '`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {provisionerId, workerType} = req.params;
+  const {stability, description, expires} = req.body;
+
+  const wType = await this.WorkerType.load({provisionerId, workerType}, true);
+
+  // Authenticate request by providing parameters
+  const requestAllowed = Object.keys(req.body)
+    .every(property => req.satisfies({provisionerId, workerType, property}));
+
+  if (!requestAllowed) {
+    return;
+  }
+
+  const result = wType ?
+    await wType.modify((entity) => {
+      entity.stability = stability || entity.stability;
+      entity.description = description || entity.description;
+      entity.expires = new Date(expires || entity.expires);
+    }) :
+    await this.WorkerType.create({
+      provisionerId,
+      workerType,
+      expires: expires || taskcluster.fromNow('5 days'),
+      lastDateActive: new Date(),
+      description: description || '',
+      stability: stability || 'experimental',
+    });
+
+  return res.reply(result.json());
+});
+
 /** List all active workerGroup/workerId of a workerType */
 api.declare({
   method:     'get',
