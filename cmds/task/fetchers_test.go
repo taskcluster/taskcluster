@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"encoding/json"
 
 	"github.com/spf13/cobra"
 	assert "github.com/stretchr/testify/require"
@@ -113,6 +114,21 @@ func (suite *FakeServerSuite) TestNameCommand() {
 	runName(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
 	suite.Equal(string(buf.Bytes()), "my-test\n")
+}
+
+func (suite *FakeServerSuite) TestDefCommand() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+
+	// run the command
+	args := []string{fakeTaskID}
+	runDef(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	var f interface{}
+	json.Unmarshal(buf.Bytes(), &f)
+	m := f.(map[string]interface{})
+	m = m["metadata"].(map[string]interface{})
+	suite.Equal(m["name"], "my-test")
 }
 
 // Test the `task log` subcommand against a real task, since it does its own
