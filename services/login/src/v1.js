@@ -66,7 +66,7 @@ api.declare({
   }
 
   // add scopes for this user based on matching authorizers
-  this.authorizer.authorize(user);
+  await this.authorizer.authorize(user);
 
   // create and return temporary credentials, limiting expires to a max of 15 minutes
   let {credentials: issuer, startOffset} = this.cfg.app.temporaryCredentials;
