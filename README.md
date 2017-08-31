@@ -11,7 +11,7 @@ with the browser out of the box and does not require a build step to use.
 You can install this package using Yarn, npm, or include via script tags:
 
 **Yarn installation**
--web
+
 ```bash
 yarn add taskcluster-client-web
 ```
