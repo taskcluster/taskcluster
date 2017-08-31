@@ -10,18 +10,18 @@ export default class PurgeCache extends Client {
       exchangePrefix: ''
     });
     
-    this.purgeCache.entryReference = {type:'function',method:'post',route:'/purge-cache/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'purgeCache',stability:'experimental',title:'Purge Worker Cache',description:'Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.',scopes:[['purge-cache:<provisionerId>/<workerType>:<cacheName>']],input:'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#'};
-    this.allPurgeRequests.entryReference = {type:'function',method:'get',route:'/purge-cache/list',query:['continuationToken','limit'],args:[],name:'allPurgeRequests',stability:'experimental',title:'All Open Purge Requests',description:'This is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.',output:'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#'};
-    this.purgeRequests.entryReference = {type:'function',method:'get',route:'/purge-cache/<provisionerId>/<workerType>',query:['since'],args:['provisionerId','workerType'],name:'purgeRequests',stability:'experimental',title:'Open Purge Requests for a provisionerId/workerType pair',description:'List of caches that need to be purged if they are from before\na certain time. This is safe to be used in automation from\nworkers.',output:'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#'};
-    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
+    this.purgeCache.entry = {type:'function',method:'post',route:'/purge-cache/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'purgeCache',stability:'experimental',scopes:[['purge-cache:<provisionerId>/<workerType>:<cacheName>']],input:true};
+    this.allPurgeRequests.entry = {type:'function',method:'get',route:'/purge-cache/list',query:['continuationToken','limit'],args:[],name:'allPurgeRequests',stability:'experimental',output:true};
+    this.purgeRequests.entry = {type:'function',method:'get',route:'/purge-cache/<provisionerId>/<workerType>',query:['since'],args:['provisionerId','workerType'],name:'purgeRequests',stability:'experimental',output:true};
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
   }
 
   // Publish a purge-cache message to purge caches named `cacheName` with
   // `provisionerId` and `workerType` in the routing-key. Workers should
   // be listening for this message and purge caches when they see it.
   purgeCache(...args) {
-    this.validateMethod(this.purgeCache.entryReference, args);
-    return this.request(this.purgeCache.entryReference, args);
+    this.validate(this.purgeCache.entry, args);
+    return this.request(this.purgeCache.entry, args);
   }
 
   // This is useful mostly for administors to view
@@ -30,22 +30,22 @@ export default class PurgeCache extends Client {
   // endpoint that is specific to their workerType and
   // provisionerId.
   allPurgeRequests(...args) {
-    this.validateMethod(this.allPurgeRequests.entryReference, args);
-    return this.request(this.allPurgeRequests.entryReference, args);
+    this.validate(this.allPurgeRequests.entry, args);
+    return this.request(this.allPurgeRequests.entry, args);
   }
 
   // List of caches that need to be purged if they are from before
   // a certain time. This is safe to be used in automation from
   // workers.
   purgeRequests(...args) {
-    this.validateMethod(this.purgeRequests.entryReference, args);
-    return this.request(this.purgeRequests.entryReference, args);
+    this.validate(this.purgeRequests.entry, args);
+    return this.request(this.purgeRequests.entry, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    this.validateMethod(this.ping.entryReference, args);
-    return this.request(this.ping.entryReference, args);
+    this.validate(this.ping.entry, args);
+    return this.request(this.ping.entry, args);
   }
 }

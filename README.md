@@ -19,7 +19,7 @@ yarn add taskcluster-client-web
 **NPM installation**
 
 ```bash
-npm install --save-dev taskcluster-client-web
+npm install --save taskcluster-client-web
 ```
 
 **Script installation**
@@ -31,13 +31,13 @@ npm install --save-dev taskcluster-client-web
 <script src="https://unpkg.com/taskcluster-client-web"></script>
 ```
 
-_Note: taskcluster-client-web depends on 3 external packages: hawk, query-string, and slugid.
+_Note: taskcluster-client-web depends on 2 external packages: hawk and query-string.
 You must manually include these if you choose to use the script installation:_
 
 ```html
-<script src="https://unpkg.com/hawk"></script>
-<script src="https://unpkg.com/query-string"></script>
-<script src="https://unpkg.com/slugid"></script>
+<script src="https://unpkg.com/hawk/lib/browser.js"></script>
+<script>window.hawk = hawk;</script>
+<script src="https://wzrd.in/standalone/query-string"></script>
 <script src="https://unpkg.com/taskcluster-client-web"></script>
 ```
 

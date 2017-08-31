@@ -10,53 +10,53 @@ export default class Hooks extends Client {
       exchangePrefix: ''
     });
     
-    this.listHookGroups.entryReference = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'experimental',title:'List hook groups',description:'This endpoint will return a list of all hook groups with at least one hook.',output:'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json'};
-    this.listHooks.entryReference = {type:'function',method:'get',route:'/hooks/<hookGroupId>',query:[],args:['hookGroupId'],name:'listHooks',stability:'experimental',title:'List hooks in a given group',description:'This endpoint will return a list of all the hook definitions within a\ngiven hook group.',output:'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json'};
-    this.hook.entryReference = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'experimental',title:'Get hook definition',description:'This endpoint will return the hook definition for the given `hookGroupId`\nand hookId.',output:'http://schemas.taskcluster.net/hooks/v1/hook-definition.json'};
-    this.getHookStatus.entryReference = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'experimental',title:'Get hook status',description:'This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.',output:'http://schemas.taskcluster.net/hooks/v1/hook-status.json'};
-    this.getHookSchedule.entryReference = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/schedule',query:[],args:['hookGroupId','hookId'],name:'getHookSchedule',stability:'deprecated',title:'Get hook schedule',description:'This endpoint will return the schedule and next scheduled creation time\nfor the given hook.',output:'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json'};
-    this.createHook.entryReference = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',title:'Create a hook',description:'This endpoint will create a new hook.\n\nThe caller\'s credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.\n',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json',output:'http://schemas.taskcluster.net/hooks/v1/hook-definition.json'};
-    this.updateHook.entryReference = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',title:'Update a hook',description:'This endpoint will update an existing hook.  All fields except\n`hookGroupId` and `hookId` can be modified.',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json',output:'http://schemas.taskcluster.net/hooks/v1/hook-definition.json'};
-    this.removeHook.entryReference = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',title:'Delete a hook',description:'This endpoint will remove a hook definition.',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>']]};
-    this.triggerHook.entryReference = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',title:'Trigger a hook',description:'This endpoint will trigger the creation of a task from a hook definition.',scopes:[['hooks:trigger-hook:<hookGroupId>/<hookId>']],input:'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json',output:'http://schemas.taskcluster.net/hooks/v1/task-status.json'};
-    this.getTriggerToken.entryReference = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',title:'Get a trigger token',description:'Retrieve a unique secret token for triggering the specified hook. This\ntoken can be deactivated with `resetTriggerToken`.',scopes:[['hooks:get-trigger-token:<hookGroupId>/<hookId>']],output:'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json'};
-    this.resetTriggerToken.entryReference = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',title:'Reset a trigger token',description:'Reset the token for triggering a given hook. This invalidates token that\nmay have been issued via getTriggerToken with a new token.',scopes:[['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],output:'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json'};
-    this.triggerHookWithToken.entryReference = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'experimental',title:'Trigger a hook with a token',description:'This endpoint triggers a defined hook with a valid token.',input:'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json',output:'http://schemas.taskcluster.net/hooks/v1/task-status.json'};
-    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
+    this.listHookGroups.entry = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'experimental',output:true};
+    this.listHooks.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>',query:[],args:['hookGroupId'],name:'listHooks',stability:'experimental',output:true};
+    this.hook.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'experimental',output:true};
+    this.getHookStatus.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'experimental',output:true};
+    this.getHookSchedule.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/schedule',query:[],args:['hookGroupId','hookId'],name:'getHookSchedule',stability:'deprecated',output:true};
+    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true};
+    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true};
+    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>']]};
+    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',scopes:[['hooks:trigger-hook:<hookGroupId>/<hookId>']],input:true,output:true};
+    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',scopes:[['hooks:get-trigger-token:<hookGroupId>/<hookId>']],output:true};
+    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',scopes:[['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],output:true};
+    this.triggerHookWithToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'experimental',input:true,output:true};
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
   }
 
   // This endpoint will return a list of all hook groups with at least one hook.
   listHookGroups(...args) {
-    this.validateMethod(this.listHookGroups.entryReference, args);
-    return this.request(this.listHookGroups.entryReference, args);
+    this.validate(this.listHookGroups.entry, args);
+    return this.request(this.listHookGroups.entry, args);
   }
 
   // This endpoint will return a list of all the hook definitions within a
   // given hook group.
   listHooks(...args) {
-    this.validateMethod(this.listHooks.entryReference, args);
-    return this.request(this.listHooks.entryReference, args);
+    this.validate(this.listHooks.entry, args);
+    return this.request(this.listHooks.entry, args);
   }
 
   // This endpoint will return the hook definition for the given `hookGroupId`
   // and hookId.
   hook(...args) {
-    this.validateMethod(this.hook.entryReference, args);
-    return this.request(this.hook.entryReference, args);
+    this.validate(this.hook.entry, args);
+    return this.request(this.hook.entry, args);
   }
 
   // This endpoint will return the current status of the hook.  This represents a
   // snapshot in time and may vary from one call to the next.
   getHookStatus(...args) {
-    this.validateMethod(this.getHookStatus.entryReference, args);
-    return this.request(this.getHookStatus.entryReference, args);
+    this.validate(this.getHookStatus.entry, args);
+    return this.request(this.getHookStatus.entry, args);
   }
 
   // This endpoint will return the schedule and next scheduled creation time
   // for the given hook.
   getHookSchedule(...args) {
-    this.validateMethod(this.getHookSchedule.entryReference, args);
-    return this.request(this.getHookSchedule.entryReference, args);
+    this.validate(this.getHookSchedule.entry, args);
+    return this.request(this.getHookSchedule.entry, args);
   }
 
   // This endpoint will create a new hook.
@@ -64,53 +64,53 @@ export default class Hooks extends Client {
   // create the task.  That role must satisfy task.scopes as well as the
   // necessary scopes to add the task to the queue.
   createHook(...args) {
-    this.validateMethod(this.createHook.entryReference, args);
-    return this.request(this.createHook.entryReference, args);
+    this.validate(this.createHook.entry, args);
+    return this.request(this.createHook.entry, args);
   }
 
   // This endpoint will update an existing hook.  All fields except
   // `hookGroupId` and `hookId` can be modified.
   updateHook(...args) {
-    this.validateMethod(this.updateHook.entryReference, args);
-    return this.request(this.updateHook.entryReference, args);
+    this.validate(this.updateHook.entry, args);
+    return this.request(this.updateHook.entry, args);
   }
 
   // This endpoint will remove a hook definition.
   removeHook(...args) {
-    this.validateMethod(this.removeHook.entryReference, args);
-    return this.request(this.removeHook.entryReference, args);
+    this.validate(this.removeHook.entry, args);
+    return this.request(this.removeHook.entry, args);
   }
 
   // This endpoint will trigger the creation of a task from a hook definition.
   triggerHook(...args) {
-    this.validateMethod(this.triggerHook.entryReference, args);
-    return this.request(this.triggerHook.entryReference, args);
+    this.validate(this.triggerHook.entry, args);
+    return this.request(this.triggerHook.entry, args);
   }
 
   // Retrieve a unique secret token for triggering the specified hook. This
   // token can be deactivated with `resetTriggerToken`.
   getTriggerToken(...args) {
-    this.validateMethod(this.getTriggerToken.entryReference, args);
-    return this.request(this.getTriggerToken.entryReference, args);
+    this.validate(this.getTriggerToken.entry, args);
+    return this.request(this.getTriggerToken.entry, args);
   }
 
   // Reset the token for triggering a given hook. This invalidates token that
   // may have been issued via getTriggerToken with a new token.
   resetTriggerToken(...args) {
-    this.validateMethod(this.resetTriggerToken.entryReference, args);
-    return this.request(this.resetTriggerToken.entryReference, args);
+    this.validate(this.resetTriggerToken.entry, args);
+    return this.request(this.resetTriggerToken.entry, args);
   }
 
   // This endpoint triggers a defined hook with a valid token.
   triggerHookWithToken(...args) {
-    this.validateMethod(this.triggerHookWithToken.entryReference, args);
-    return this.request(this.triggerHookWithToken.entryReference, args);
+    this.validate(this.triggerHookWithToken.entry, args);
+    return this.request(this.triggerHookWithToken.entry, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    this.validateMethod(this.ping.entryReference, args);
-    return this.request(this.ping.entryReference, args);
+    this.validate(this.ping.entry, args);
+    return this.request(this.ping.entry, args);
   }
 }

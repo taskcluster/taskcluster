@@ -15,9 +15,9 @@ export default class PurgeCacheEvents extends Client {
   // When a cache purge is requested  a message will be posted on this
   // exchange with designated `provisionerId` and `workerType` in the
   // routing-key and the name of the `cacheFolder` as payload
-  purgeCache(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'purge-cache',name:'purgeCache',title:'Purge Cache Messages',description:'When a cache purge is requested  a message will be posted on this\nexchange with designated `provisionerId` and `workerType` in the\nrouting-key and the name of the `cacheFolder` as payload',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `\'primary\'` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'provisionerId',summary:'`provisionerId` under which to purge cache.',multipleWords:false,required:true},{name:'workerType',summary:'`workerType` for which to purge cache.',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'};
+  purgeCache(pattern) {
+    const entry = {type:'topic-exchange',exchange:'purge-cache',name:'purgeCache',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 }

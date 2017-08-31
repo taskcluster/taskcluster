@@ -15,27 +15,27 @@ export default class GithubEvents extends Client {
   // When a GitHub pull request event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  pullRequest(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',title:'GitHub Pull Request Event',description:'When a GitHub pull request event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'organization',summary:'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.',multipleWords:false,required:true},{name:'repository',summary:'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.',multipleWords:false,required:true},{name:'action',summary:'The GitHub `action` which triggered an event. See for possible values see the payload actions property.',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'};
+  pullRequest(pattern) {
+    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 
   // When a GitHub push event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  push(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'push',name:'push',title:'GitHub push Event',description:'When a GitHub push event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'organization',summary:'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.',multipleWords:false,required:true},{name:'repository',summary:'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-push-message.json#'};
+  push(pattern) {
+    const entry = {type:'topic-exchange',exchange:'push',name:'push',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-push-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 
   // When a GitHub release event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  release(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'release',name:'release',title:'GitHub release Event',description:'When a GitHub release event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'organization',summary:'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.',multipleWords:false,required:true},{name:'repository',summary:'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-release-message.json#'};
+  release(pattern) {
+    const entry = {type:'topic-exchange',exchange:'release',name:'release',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-release-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 }

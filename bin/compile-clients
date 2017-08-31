@@ -3,6 +3,7 @@
 const got = require('got');
 const stringify = require('javascript-stringify');
 const { compile } = require('ejs');
+const omit = require('object.omit');
 const { readFileSync, writeFileSync } = require('fs');
 const { join } = require('path');
 const fetchApis = require('./fetch-apis');
@@ -24,10 +25,27 @@ fetchApis()
           template({
             name,
             stringify,
+            omit,
             baseUrl: client.reference.baseUrl,
             exchangePrefix: client.reference.exchangePrefix,
-            methods: client.reference.entries.filter(({ type }) => type === 'function'),
-            topics: client.reference.entries.filter(({ type }) => type === 'topic-exchange')
+            methods: client.reference.entries
+              .filter(({ type }) => type === 'function')
+              .map(entry => {
+                if (entry.input) {
+                  entry.input = true;
+                }
+
+                if (entry.output) {
+                  entry.output = true;
+                }
+
+                return entry;
+              }),
+            topics: client.reference.entries
+              .filter(({ type }) => type === 'topic-exchange')
+              .map(entry => Object.assign(entry, {
+                routingKey: entry.routingKey.map(route => omit(route, ['summary']))
+              }))
           }),
           { encoding: 'utf-8' }
         );

@@ -1,5 +1,5 @@
 import emitter from './vendor/mitt';
-import { v4 } from 'slugid';
+import { v4 } from './utils';
 
 const READY_STATE = {
   CONNECTING: 0,
@@ -12,7 +12,7 @@ export default class WebListener {
   constructor(options) {
     this.emitter = emitter();
     this.options = {
-      baseUrl: 'https://events.taskcluster.net/v1',
+      baseUrl: 'wss://events.taskcluster.net/v1',
       ...options
     };
 
@@ -32,7 +32,7 @@ export default class WebListener {
 
   async connect() {
     const { baseUrl } = this.options;
-    const socketUrl = baseUrl.endsWith('/') ? `${baseUrl}listen` : `${baseUrl}/listen`;
+    const socketUrl = baseUrl.endsWith('/') ? `${baseUrl}listen/websocket` : `${baseUrl}/listen/websocket`;
 
     this.socket = new WebSocket(socketUrl);
     this.socket.addEventListener('message', this.handleMessage);
@@ -155,7 +155,7 @@ export default class WebListener {
     }
 
     return new Promise(resolve => {
-      this.emitter.once('close', resolve);
+      this.emitter.on('close', resolve);
       this.socket.close();
     });
   }

@@ -10,19 +10,19 @@ export default class <%= name %> extends Client {
       exchangePrefix: '<%= exchangePrefix %>'
     });
     <% methods.forEach(entry => { %>
-    this.<%= entry.name %>.entryReference = <%- stringify(entry) %>;<% }) %>
+    this.<%= entry.name %>.entry = <%- stringify(omit(entry, ['description', 'title'])) %>;<% }) %>
   }<% methods.forEach(entry => { %>
 <% entry.description.split('\n').filter(Boolean).forEach(line => { %>
   <%- `// ${line}` %><% }) %>
   <%= entry.name %>(...args) {
-    this.validateMethod(this.<%= entry.name %>.entryReference, args);
-    return this.request(this.<%= entry.name %>.entryReference, args);
+    this.validate(this.<%= entry.name %>.entry, args);
+    return this.request(this.<%= entry.name %>.entry, args);
   }<% }) %><% topics.forEach(entry => { %>
 <% entry.description.split('\n').filter(Boolean).forEach(line => { %>
   <%- `// ${line}` %><% }) %>
-  <%= entry.name %>(routingKeyPattern) {
-    const entry = <%- stringify(entry) %>;
+  <%= entry.name %>(pattern) {
+    const entry = <%- stringify(omit(entry, ['description', 'title'])) %>;
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }<% }) %>
 }

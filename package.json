@@ -26,11 +26,11 @@
     "json-stable-stringify": "^1.0.1",
     "karma-sourcemap-loader": "^0.3.7",
     "neutrino": "^6.1.5",
-    "neutrino-preset-karma": "^6.1.5"
+    "neutrino-preset-karma": "^6.1.5",
+    "object.omit": "^2.0.1"
   },
   "dependencies": {
     "hawk": "^6.0.2",
-    "query-string": "^5.0.0",
-    "slugid": "^1.1.0"
+    "query-string": "^5.0.0"
   }
 }

@@ -14,9 +14,9 @@ export default class TreeherderEvents extends Client {
 
   // When a task run is scheduled or resolved, a message is posted to
   // this exchange in a Treeherder consumable format.
-  jobs(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'jobs',name:'jobs',title:'Job Messages',description:'When a task run is scheduled or resolved, a message is posted to\nthis exchange in a Treeherder consumable format.',routingKey:[{name:'destination',summary:'destination',multipleWords:false,required:true},{name:'project',summary:'project',multipleWords:false,required:true},{name:'reserved',summary:'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'};
+  jobs(pattern) {
+    const entry = {type:'topic-exchange',exchange:'jobs',name:'jobs',routingKey:[{name:'destination',multipleWords:false,required:true},{name:'project',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 }

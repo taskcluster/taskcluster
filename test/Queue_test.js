@@ -1,7 +1,9 @@
 import { Queue } from '../src';
 import assert from 'assert';
 
-describe('Queue', () => {
+describe('Queue', function() {
+  this.timeout(30000);
+
   const queue = new Queue();
 
   it('should be loaded', () => {

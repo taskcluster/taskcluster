@@ -10,43 +10,43 @@ export default class Github extends Client {
       exchangePrefix: ''
     });
     
-    this.githubWebHookConsumer.entryReference = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental',title:'Consume GitHub WebHook',description:'Capture a GitHub event and publish it via pulse, if it\'s a push,\nrelease or pull request.'};
-    this.builds.entryReference = {type:'function',method:'get',route:'/builds',query:['continuationToken','limit','organization','repository','sha'],args:[],name:'builds',stability:'experimental',title:'List of Builds',description:'A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.',output:'http://schemas.taskcluster.net/github/v1/build-list.json#'};
-    this.badge.entryReference = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/badge.svg',query:[],args:['owner','repo','branch'],name:'badge',stability:'experimental',title:'Latest Build Status Badge',description:'Checks the status of the latest build of a given branch\nand returns corresponding badge svg.'};
-    this.repository.entryReference = {type:'function',method:'get',route:'/repository/<owner>/<repo>',query:[],args:['owner','repo'],name:'repository',stability:'experimental',title:'Get Repository Info',description:'Returns any repository metadata that is\nuseful within Taskcluster related services.',output:'http://schemas.taskcluster.net/github/v1/repository.json'};
-    this.latest.entryReference = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/latest',query:[],args:['owner','repo','branch'],name:'latest',stability:'experimental',title:'Latest Status for Branch',description:'For a given branch of a repository, this will always point\nto a status page for the most recent task triggered by that\nbranch.\n\nNote: This is a redirect rather than a direct link.'};
-    this.createStatus.entryReference = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',title:'Post a status against a given changeset',description:'For a given changeset (SHA) of a repository, this will attach a "commit status"\non github. These statuses are links displayed next to each revision.\nThe status is either OK (green check) or FAILURE (red cross), \nmade of a custom title and link.',scopes:[['github:create-status:<owner>/<repo>']],input:'http://schemas.taskcluster.net/github/v1/create-status.json'};
-    this.createComment.entryReference = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',title:'Post a comment on a given GitHub Issue or Pull Request',description:'For a given Issue or Pull Request of a repository, this will write a new message.',scopes:[['github:create-comment:<owner>/<repo>']],input:'http://schemas.taskcluster.net/github/v1/create-comment.json'};
-    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
+    this.githubWebHookConsumer.entry = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental'};
+    this.builds.entry = {type:'function',method:'get',route:'/builds',query:['continuationToken','limit','organization','repository','sha'],args:[],name:'builds',stability:'experimental',output:true};
+    this.badge.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/badge.svg',query:[],args:['owner','repo','branch'],name:'badge',stability:'experimental'};
+    this.repository.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>',query:[],args:['owner','repo'],name:'repository',stability:'experimental',output:true};
+    this.latest.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/latest',query:[],args:['owner','repo','branch'],name:'latest',stability:'experimental'};
+    this.createStatus.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',scopes:[['github:create-status:<owner>/<repo>']],input:true};
+    this.createComment.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',scopes:[['github:create-comment:<owner>/<repo>']],input:true};
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
   }
 
   // Capture a GitHub event and publish it via pulse, if it's a push,
   // release or pull request.
   githubWebHookConsumer(...args) {
-    this.validateMethod(this.githubWebHookConsumer.entryReference, args);
-    return this.request(this.githubWebHookConsumer.entryReference, args);
+    this.validate(this.githubWebHookConsumer.entry, args);
+    return this.request(this.githubWebHookConsumer.entry, args);
   }
 
   // A paginated list of builds that have been run in
   // Taskcluster. Can be filtered on various git-specific
   // fields.
   builds(...args) {
-    this.validateMethod(this.builds.entryReference, args);
-    return this.request(this.builds.entryReference, args);
+    this.validate(this.builds.entry, args);
+    return this.request(this.builds.entry, args);
   }
 
   // Checks the status of the latest build of a given branch
   // and returns corresponding badge svg.
   badge(...args) {
-    this.validateMethod(this.badge.entryReference, args);
-    return this.request(this.badge.entryReference, args);
+    this.validate(this.badge.entry, args);
+    return this.request(this.badge.entry, args);
   }
 
   // Returns any repository metadata that is
   // useful within Taskcluster related services.
   repository(...args) {
-    this.validateMethod(this.repository.entryReference, args);
-    return this.request(this.repository.entryReference, args);
+    this.validate(this.repository.entry, args);
+    return this.request(this.repository.entry, args);
   }
 
   // For a given branch of a repository, this will always point
@@ -54,8 +54,8 @@ export default class Github extends Client {
   // branch.
   // Note: This is a redirect rather than a direct link.
   latest(...args) {
-    this.validateMethod(this.latest.entryReference, args);
-    return this.request(this.latest.entryReference, args);
+    this.validate(this.latest.entry, args);
+    return this.request(this.latest.entry, args);
   }
 
   // For a given changeset (SHA) of a repository, this will attach a "commit status"
@@ -63,20 +63,20 @@ export default class Github extends Client {
   // The status is either OK (green check) or FAILURE (red cross), 
   // made of a custom title and link.
   createStatus(...args) {
-    this.validateMethod(this.createStatus.entryReference, args);
-    return this.request(this.createStatus.entryReference, args);
+    this.validate(this.createStatus.entry, args);
+    return this.request(this.createStatus.entry, args);
   }
 
   // For a given Issue or Pull Request of a repository, this will write a new message.
   createComment(...args) {
-    this.validateMethod(this.createComment.entryReference, args);
-    return this.request(this.createComment.entryReference, args);
+    this.validate(this.createComment.entry, args);
+    return this.request(this.createComment.entry, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    this.validateMethod(this.ping.entryReference, args);
-    return this.request(this.ping.entryReference, args);
+    this.validate(this.ping.entry, args);
+    return this.request(this.ping.entry, args);
   }
 }

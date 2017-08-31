@@ -14,25 +14,25 @@ export default class AwsProvisionerEvents extends Client {
 
   // When a new `workerType` is created a message will be published to this
   // exchange.
-  workerTypeCreated(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'worker-type-created',name:'workerTypeCreated',title:'WorkerType Created Message',description:'When a new `workerType` is created a message will be published to this\nexchange.',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `\'primary\'` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'workerType',summary:'WorkerType that this message concerns.',multipleWords:false,required:true},{name:'reserved',summary:'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
+  workerTypeCreated(pattern) {
+    const entry = {type:'topic-exchange',exchange:'worker-type-created',name:'workerTypeCreated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 
   // When a `workerType` is updated a message will be published to this
   // exchange.
-  workerTypeUpdated(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'worker-type-updated',name:'workerTypeUpdated',title:'WorkerType Updated Message',description:'When a `workerType` is updated a message will be published to this\nexchange.',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `\'primary\'` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'workerType',summary:'WorkerType that this message concerns.',multipleWords:false,required:true},{name:'reserved',summary:'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
+  workerTypeUpdated(pattern) {
+    const entry = {type:'topic-exchange',exchange:'worker-type-updated',name:'workerTypeUpdated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 
   // When a `workerType` is removed a message will be published to this
   // exchange.
-  workerTypeRemoved(routingKeyPattern) {
-    const entry = {type:'topic-exchange',exchange:'worker-type-removed',name:'workerTypeRemoved',title:'WorkerType Removed Message',description:'When a `workerType` is removed a message will be published to this\nexchange.',routingKey:[{name:'routingKeyKind',summary:'Identifier for the routing-key kind. This is always `\'primary\'` for the formalized routing key.',constant:'primary',multipleWords:false,required:true},{name:'workerType',summary:'WorkerType that this message concerns.',multipleWords:false,required:true},{name:'reserved',summary:'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
+  workerTypeRemoved(pattern) {
+    const entry = {type:'topic-exchange',exchange:'worker-type-removed',name:'workerTypeRemoved',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
 
-    return this.normalizeRoutingKeyPattern(entry, routingKeyPattern);
+    return this.normalizePattern(entry, pattern);
   }
 }

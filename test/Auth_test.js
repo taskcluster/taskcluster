@@ -1,7 +1,9 @@
 import assert from 'assert';
-import { Auth } from '../src';
+import { Auth, createTemporaryCredentials } from '../src';
 
-describe('Auth', () => {
+describe('Auth', function() {
+  this.timeout(30000);
+
   const auth = new Auth({
     credentials: {
       clientId: 'tester',
@@ -10,7 +12,7 @@ describe('Auth', () => {
   });
 
   it('should be loaded', () => {
-    assert.ok(auth);
+    assert(auth);
   });
 
   it('should successfully ping', () => {
@@ -25,7 +27,7 @@ describe('Auth', () => {
   it('should build signed URL', () => {
     const url = auth.buildSignedUrl(auth.client, 'test');
 
-    assert.ok(url.startsWith('https://auth.taskcluster.net/v1/clients/test?bewit'));
+    assert(url.startsWith('https://auth.taskcluster.net/v1/clients/test?bewit'));
   });
 
   it('should request with authentication', () => {
@@ -62,11 +64,7 @@ describe('Auth', () => {
       })
       .then(({ clientId, scopes }) => {
         assert.equal(clientId, 'tester');
-        assert.deepEqual(scopes, []);
-      })
-      .catch(err => {
-        console.log('WAT');
-        console.log(err.toString());
+        assert.deepEqual(scopes, ['test:param']);
       });
   });
 
@@ -83,6 +81,64 @@ describe('Auth', () => {
       .testAuthenticate({
         clientScopes: ['test:*'],
         requiredScopes: ['test:something-else']
+      })
+      .then(
+        () => assert(false, 'Expected request to fail'),
+        (err) => assert(err)
+      );
+  });
+
+  it('should fetch using temporary credentials', () => {
+    const auth = new Auth({
+      credentials: createTemporaryCredentials({
+        scopes: ['test:param'],
+        expiry: new Date(new Date().getTime() + 60 * 1000),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['test:*'],
+        requiredScopes: ['test:param']
+      })
+      .then(({ clientId, scopes }) => {
+        assert.equal(clientId, 'tester');
+        assert.deepEqual(scopes, ['test:param']);
       });
+  });
+
+  it('should fail fetch using unauthorized temporary credentials', () => {
+    const auth = new Auth({
+      credentials: createTemporaryCredentials({
+        scopes: ['test:params'],
+        expiry: new Date(new Date().getTime() + 60 * 1000),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'wrong-secret'
+        }
+      })
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['test:*'],
+        requiredScopes: ['test:something-else']
+      })
+      .then(
+        () => assert(false, 'Expected request to fail'),
+        (err) => {
+          assert(err);
+          assert(err.status === 401, 'Expected HTTP 401');
+        });
+  });
+
+  it('should fetch signed URL', () => {
+    const url = auth.buildSignedUrl(auth.listClients, { prefix: 'non-existent/' });
+
+    return fetch(url, { method: 'GET' });
   });
 });

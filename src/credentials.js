@@ -1,9 +1,9 @@
 import hawk from 'hawk';
-import { v4 } from 'slugid';
+import { v4 } from './utils';
 import Auth from './clients/Auth';
 
 const THIRTY_ONE_DAYS = 31 * 24 * 60 * 60 * 1000;
-const createHmac = hawk.crypto.utils.algo.HMAC.create;
+const createHmac = (...args) => hawk.crypto.utils.algo.HMAC.create(...args);
 const sha256 = hawk.crypto.utils.algo.SHA256;
 const base64 = hawk.crypto.utils.enc.Base64;
 

@@ -10,13 +10,13 @@ export default class Scheduler extends Client {
       exchangePrefix: ''
     });
     
-    this.createTaskGraph.entryReference = {type:'function',method:'put',route:'/task-graph/<taskGraphId>',args:['taskGraphId'],name:'createTaskGraph',stability:'experimental',title:'Create new task-graph',description:'Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     "XgvL0qtSR92cIWpcwdGKCA",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     "73GsfK62QNKAk2Hg1EEZTQ",\n      requires:   ["XgvL0qtSR92cIWpcwdGKCA"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  "XgvL0qtSR92cIWpcwdGKCA"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `"task-graph-scheduler"`. This\nproperty must be either undefined or set to `"task-graph-scheduler"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it\'s important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\n(`queue:define-task:..` or `queue:create-task:..`; see the queue for\ndetails on scopes required). Note, the task-graph does not require\npermissions to schedule the tasks (`queue:schedule-task:..`), as this is\ndone with scopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC\'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.',scopes:[['scheduler:create-task-graph']],input:'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',output:'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'};
-    this.extendTaskGraph.entryReference = {type:'function',method:'post',route:'/task-graph/<taskGraphId>/extend',args:['taskGraphId'],name:'extendTaskGraph',stability:'experimental',title:'Extend existing task-graph',description:'Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routes`\nkey, `scopes`, `metadata` and `tags` cannot be modified.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.',scopes:[['scheduler:extend-task-graph:<taskGraphId>']],input:'http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#',output:'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#'};
-    this.status.entryReference = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/status',args:['taskGraphId'],name:'status',stability:'experimental',title:'Task Graph Status',description:'Get task-graph status, this will return the _task-graph status\nstructure_. which can be used to check if a task-graph is `running`,\n`blocked` or `finished`.\n\n**Note**, that `finished` implies successfully completion.',output:'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json'};
-    this.info.entryReference = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/info',args:['taskGraphId'],name:'info',stability:'experimental',title:'Task Graph Information',description:'Get task-graph information, this includes the _task-graph status\nstructure_, along with `metadata` and `tags`, but not information\nabout all tasks.\n\nIf you want more detailed information use the `inspectTaskGraph`\nend-point instead.',output:'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json'};
-    this.inspect.entryReference = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/inspect',args:['taskGraphId'],name:'inspect',stability:'experimental',title:'Inspect Task Graph',description:'Inspect a task-graph, this returns all the information the task-graph\nscheduler knows about the task-graph and the state of its tasks.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit\'s safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.',output:'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json'};
-    this.inspectTask.entryReference = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/inspect/<taskId>',args:['taskGraphId','taskId'],name:'inspectTask',stability:'experimental',title:'Inspect Task from a Task-Graph',description:'Inspect a task from a task-graph, this returns all the information the\ntask-graph scheduler knows about the specific task.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit\'s safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.',output:'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json'};
-    this.ping.entryReference = {type:'function',method:'get',route:'/ping',args:[],name:'ping',stability:'experimental',title:'Ping Server',description:'Documented later...\n\n**Warning** this api end-point is **not stable**.'};
+    this.createTaskGraph.entry = {type:'function',method:'put',route:'/task-graph/<taskGraphId>',args:['taskGraphId'],name:'createTaskGraph',stability:'experimental',scopes:[['scheduler:create-task-graph']],input:true,output:true};
+    this.extendTaskGraph.entry = {type:'function',method:'post',route:'/task-graph/<taskGraphId>/extend',args:['taskGraphId'],name:'extendTaskGraph',stability:'experimental',scopes:[['scheduler:extend-task-graph:<taskGraphId>']],input:true,output:true};
+    this.status.entry = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/status',args:['taskGraphId'],name:'status',stability:'experimental',output:true};
+    this.info.entry = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/info',args:['taskGraphId'],name:'info',stability:'experimental',output:true};
+    this.inspect.entry = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/inspect',args:['taskGraphId'],name:'inspect',stability:'experimental',output:true};
+    this.inspectTask.entry = {type:'function',method:'get',route:'/task-graph/<taskGraphId>/inspect/<taskId>',args:['taskGraphId','taskId'],name:'inspectTask',stability:'experimental',output:true};
+    this.ping.entry = {type:'function',method:'get',route:'/ping',args:[],name:'ping',stability:'experimental'};
   }
 
   // Create a new task-graph, the `status` of the resulting JSON is a
@@ -78,8 +78,8 @@ export default class Scheduler extends Client {
   // CC'ed with the routing-key: `route.<route>`. This is useful if you want
   // another component to listen for completed tasks you have posted.
   createTaskGraph(...args) {
-    this.validateMethod(this.createTaskGraph.entryReference, args);
-    return this.request(this.createTaskGraph.entryReference, args);
+    this.validate(this.createTaskGraph.entry, args);
+    return this.request(this.createTaskGraph.entry, args);
   }
 
   // Add a set of tasks to an existing task-graph. The request format is very
@@ -94,8 +94,8 @@ export default class Scheduler extends Client {
   // state. Hence, it is only truly _safe_ to call this API end-point from
   // within a task in the task-graph being modified.
   extendTaskGraph(...args) {
-    this.validateMethod(this.extendTaskGraph.entryReference, args);
-    return this.request(this.extendTaskGraph.entryReference, args);
+    this.validate(this.extendTaskGraph.entry, args);
+    return this.request(this.extendTaskGraph.entry, args);
   }
 
   // Get task-graph status, this will return the _task-graph status
@@ -103,8 +103,8 @@ export default class Scheduler extends Client {
   // `blocked` or `finished`.
   // **Note**, that `finished` implies successfully completion.
   status(...args) {
-    this.validateMethod(this.status.entryReference, args);
-    return this.request(this.status.entryReference, args);
+    this.validate(this.status.entry, args);
+    return this.request(this.status.entry, args);
   }
 
   // Get task-graph information, this includes the _task-graph status
@@ -113,8 +113,8 @@ export default class Scheduler extends Client {
   // If you want more detailed information use the `inspectTaskGraph`
   // end-point instead.
   info(...args) {
-    this.validateMethod(this.info.entryReference, args);
-    return this.request(this.info.entryReference, args);
+    this.validate(this.info.entry, args);
+    return this.request(this.info.entry, args);
   }
 
   // Inspect a task-graph, this returns all the information the task-graph
@@ -128,8 +128,8 @@ export default class Scheduler extends Client {
   // as we do not promise it will remain fully backward compatible in
   // the future.
   inspect(...args) {
-    this.validateMethod(this.inspect.entryReference, args);
-    return this.request(this.inspect.entryReference, args);
+    this.validate(this.inspect.entry, args);
+    return this.request(this.inspect.entry, args);
   }
 
   // Inspect a task from a task-graph, this returns all the information the
@@ -143,14 +143,14 @@ export default class Scheduler extends Client {
   // as we do not promise it will remain fully backward compatible in
   // the future.
   inspectTask(...args) {
-    this.validateMethod(this.inspectTask.entryReference, args);
-    return this.request(this.inspectTask.entryReference, args);
+    this.validate(this.inspectTask.entry, args);
+    return this.request(this.inspectTask.entry, args);
   }
 
   // Documented later...
   // **Warning** this api end-point is **not stable**.
   ping(...args) {
-    this.validateMethod(this.ping.entryReference, args);
-    return this.request(this.ping.entryReference, args);
+    this.validate(this.ping.entry, args);
+    return this.request(this.ping.entry, args);
   }
 }

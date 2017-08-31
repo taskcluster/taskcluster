@@ -10,24 +10,24 @@ export default class Secrets extends Client {
       exchangePrefix: ''
     });
     
-    this.set.entryReference = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',title:'Set Secret',description:'Set the secret associated with some key.  If the secret already exists, it is\nupdated instead.',scopes:[['secrets:set:<name>']],input:'http://schemas.taskcluster.net/secrets/v1/secret.json#'};
-    this.remove.entryReference = {type:'function',method:'delete',route:'/secret/<name>',query:[],args:['name'],name:'remove',stability:'stable',title:'Delete Secret',description:'Delete the secret associated with some key.',scopes:[['secrets:set:<name>']]};
-    this.get.entryReference = {type:'function',method:'get',route:'/secret/<name>',query:[],args:['name'],name:'get',stability:'stable',title:'Read Secret',description:'Read the secret associated with some key.  If the secret has recently\nexpired, the response code 410 is returned.  If the caller lacks the\nscope necessary to get the secret, the call will fail with a 403 code\nregardless of whether the secret exists.',scopes:[['secrets:get:<name>']],output:'http://schemas.taskcluster.net/secrets/v1/secret.json#'};
-    this.list.entryReference = {type:'function',method:'get',route:'/secrets',query:[],args:[],name:'list',stability:'stable',title:'List Secrets',description:'List the names of all secrets that you would have access to read. In\nother words, secret name `<X>` will only be returned if a) a secret\nwith name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.',output:'http://schemas.taskcluster.net/secrets/v1/secret-list.json#'};
-    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
+    this.set.entry = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',scopes:[['secrets:set:<name>']],input:true};
+    this.remove.entry = {type:'function',method:'delete',route:'/secret/<name>',query:[],args:['name'],name:'remove',stability:'stable',scopes:[['secrets:set:<name>']]};
+    this.get.entry = {type:'function',method:'get',route:'/secret/<name>',query:[],args:['name'],name:'get',stability:'stable',scopes:[['secrets:get:<name>']],output:true};
+    this.list.entry = {type:'function',method:'get',route:'/secrets',query:[],args:[],name:'list',stability:'stable',output:true};
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
   }
 
   // Set the secret associated with some key.  If the secret already exists, it is
   // updated instead.
   set(...args) {
-    this.validateMethod(this.set.entryReference, args);
-    return this.request(this.set.entryReference, args);
+    this.validate(this.set.entry, args);
+    return this.request(this.set.entry, args);
   }
 
   // Delete the secret associated with some key.
   remove(...args) {
-    this.validateMethod(this.remove.entryReference, args);
-    return this.request(this.remove.entryReference, args);
+    this.validate(this.remove.entry, args);
+    return this.request(this.remove.entry, args);
   }
 
   // Read the secret associated with some key.  If the secret has recently
@@ -35,22 +35,22 @@ export default class Secrets extends Client {
   // scope necessary to get the secret, the call will fail with a 403 code
   // regardless of whether the secret exists.
   get(...args) {
-    this.validateMethod(this.get.entryReference, args);
-    return this.request(this.get.entryReference, args);
+    this.validate(this.get.entry, args);
+    return this.request(this.get.entry, args);
   }
 
   // List the names of all secrets that you would have access to read. In
   // other words, secret name `<X>` will only be returned if a) a secret
   // with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
   list(...args) {
-    this.validateMethod(this.list.entryReference, args);
-    return this.request(this.list.entryReference, args);
+    this.validate(this.list.entry, args);
+    return this.request(this.list.entry, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    this.validateMethod(this.ping.entryReference, args);
-    return this.request(this.ping.entryReference, args);
+    this.validate(this.ping.entry, args);
+    return this.request(this.ping.entry, args);
   }
 }

@@ -12,12 +12,28 @@ const defaults = {
   }
 };
 
+const handleResponse = (response) => {
+  if (response.ok) {
+    return response.json();
+  }
+
+  return response
+    .json()
+    .then(err => {
+      const message = err.message ? err.message.split('---')[0] : response.statusText;
+
+      return Promise.reject(Object.assign(new Error(message), {
+        status: response.status
+      }));
+    });
+};
+
 export default (url, opts = {}) => {
   const options = { ...defaults, ...opts, headers: { ...defaults.headers, ...opts.headers } };
   const { delayFactor, randomizationFactor, maxDelay, retries } = options;
 
   if (typeof options.credentials !== 'string') {
-    const header = hawk.client.header(url, options.method, {
+    const header = hawk.client.header(url, options.method.toUpperCase(), {
       credentials: {
         id: options.credentials.clientId,
         key: options.credentials.accessToken,
@@ -26,20 +42,14 @@ export default (url, opts = {}) => {
       ext: options.extra
     });
 
-    // options.credentials = 'omit';
+    options.credentials = 'omit';
     options.headers.Authorization = header.field;
   }
 
   return new Promise((resolve, reject) => {
     (function attempt(n) {
       fetch(url, options)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(response.statusText);
-          }
-
-          return response.json();
-        })
+        .then(handleResponse)
         .then(resolve)
         .catch(err => {
           if (n > retries) {

@@ -59,7 +59,7 @@ export default class Client {
     // If there is a certificate we have temporary credentials, and we
     // must provide the certificate
     if (certificate) {
-      extra.certificate = typeof extra.certificate === 'string' ?
+      extra.certificate = typeof certificate === 'string' ?
         JSON.parse(certificate) :
         certificate;
     }
@@ -102,7 +102,7 @@ export default class Client {
     }
 
     // Find the method
-    const entry = method.entryReference;
+    const entry = method.entry;
 
     if (!entry || entry.type !== 'function') {
       throw new Error('Method in buildUrl must be an API method from the same object');
@@ -144,7 +144,7 @@ export default class Client {
     }
 
     // Find reference entry
-    const entry = method.entryReference;
+    const entry = method.entry;
 
     if (entry.method.toLowerCase() !== 'get') {
       throw new Error('buildSignedUrl only works for GET requests');
@@ -200,7 +200,7 @@ export default class Client {
     return url.includes('?') ? `${url}&bewit=${bewit}` : `${url}?bewit=${bewit}`;
   }
 
-  validateMethod(entry, args = []) {
+  validate(entry, args = []) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const queryOptions = entry.query || [];
     const arity = args.length;
@@ -219,7 +219,7 @@ export default class Client {
       });
   }
 
-  normalizeRoutingKeyPattern(entry, pattern) {
+  normalizePattern(entry, pattern) {
     const initialPattern = pattern || {};
 
     if (!(initialPattern instanceof Object)) {
@@ -270,7 +270,7 @@ export default class Client {
     };
 
     if (entry.input) {
-      options.body = args[expectedArity - 1];
+      options.body = JSON.stringify(args[expectedArity - 1]);
     }
 
     if (extra) {

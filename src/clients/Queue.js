@@ -10,46 +10,48 @@ export default class Queue extends Client {
       exchangePrefix: ''
     });
     
-    this.task.entryReference = {type:'function',method:'get',route:'/task/<taskId>',query:[],args:['taskId'],name:'task',stability:'stable',title:'Get Task Definition',description:'This end-point will return the task-definition. Notice that the task\ndefinition may have been modified by queue, if an optional property is\nnot specified the queue may provide a default value.',output:'http://schemas.taskcluster.net/queue/v1/task.json#'};
-    this.status.entryReference = {type:'function',method:'get',route:'/task/<taskId>/status',query:[],args:['taskId'],name:'status',stability:'stable',title:'Get task status',description:'Get task status structure from `taskId`',output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.listTaskGroup.entryReference = {type:'function',method:'get',route:'/task-group/<taskGroupId>/list',query:['continuationToken','limit'],args:['taskGroupId'],name:'listTaskGroup',stability:'stable',title:'List Task Group',description:'List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must call\nthe `listTaskGroup` again with the `continuationToken` as the\nquery-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.',output:'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#'};
-    this.listDependentTasks.entryReference = {type:'function',method:'get',route:'/task/<taskId>/dependents',query:['continuationToken','limit'],args:['taskId'],name:'listDependentTasks',stability:'stable',title:'List Dependent Tasks',description:'List tasks that depend on the given `taskId`.\n\nAs many tasks from different task-groups may dependent on a single tasks,\nthis end-point may return a `continuationToken`. To continue listing\ntasks you must call `listDependentTasks` again with the\n`continuationToken` as the query-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 tasks in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listDependentTasks` with the last `continuationToken` until\nyou get a result without a `continuationToken`.\n\nIf you are not interested in listing all the tasks at once, you may\nuse the query-string option `limit` to return fewer.',output:'http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#'};
-    this.createTask.entryReference = {type:'function',method:'put',route:'/task/<taskId>',query:[],args:['taskId'],name:'createTask',stability:'stable',title:'Create New Task',description:'Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC\'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**, any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.',scopes:[['queue:create-task:<priority>:<provisionerId>/<workerType>','queue:scheduler-id:<schedulerId>']],input:'http://schemas.taskcluster.net/queue/v1/create-task-request.json#',output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.defineTask.entryReference = {type:'function',method:'post',route:'/task/<taskId>/define',query:[],args:['taskId'],name:'defineTask',stability:'deprecated',title:'Define Task',description:'**Deprecated**, this is the same as `createTask` with a **self-dependency**.\nThis is only present for legacy.',scopes:[['queue:create-task:<priority>:<provisionerId>/<workerType>','queue:scheduler-id:<schedulerId>']],input:'http://schemas.taskcluster.net/queue/v1/create-task-request.json#',output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.scheduleTask.entryReference = {type:'function',method:'post',route:'/task/<taskId>/schedule',query:[],args:['taskId'],name:'scheduleTask',stability:'stable',title:'Schedule Defined Task',description:'scheduleTask will schedule a task to be executed, even if it has\nunresolved dependencies. A task would otherwise only be scheduled if\nits dependencies were resolved.\n\nThis is useful if you have defined a task that depends on itself or on\nsome other task that has not been resolved, but you wish the task to be\nscheduled immediately.\n\nThis will announce the task as pending and workers will be allowed to\nclaim it and resolve the task.\n\n**Note** this operation is **idempotent** and will not fail or complain\nif called with a `taskId` that is already scheduled, or even resolved.\nTo reschedule a task previously resolved, use `rerunTask`.',scopes:[['queue:schedule-task','assume:scheduler-id:<schedulerId>/<taskGroupId>'],['queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>']],output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.rerunTask.entryReference = {type:'function',method:'post',route:'/task/<taskId>/rerun',query:[],args:['taskId'],name:'rerunTask',stability:'deprecated',title:'Rerun a Resolved Task',description:'This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.',scopes:[['queue:rerun-task','assume:scheduler-id:<schedulerId>/<taskGroupId>'],['queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>']],output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.cancelTask.entryReference = {type:'function',method:'post',route:'/task/<taskId>/cancel',query:[],args:['taskId'],name:'cancelTask',stability:'stable',title:'Cancel Task',description:'This method will cancel a task that is either `unscheduled`, `pending` or\n`running`. It will resolve the current run as `exception` with\n`reasonResolved` set to `canceled`. If the task isn\'t scheduled yet, ie.\nit doesn\'t have any runs, an initial run will be added and resolved as\ndescribed above. Hence, after canceling a task, it cannot be scheduled\nwith `queue.scheduleTask`, but a new run can be created with\n`queue.rerun`. These semantics is equivalent to calling\n`queue.scheduleTask` immediately followed by `queue.cancelTask`.\n\n**Remark** this operation is idempotent, if you try to cancel a task that\nisn\'t `unscheduled`, `pending` or `running`, this operation will just\nreturn the current task status.',scopes:[['queue:cancel-task','assume:scheduler-id:<schedulerId>/<taskGroupId>'],['queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>']],output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.pollTaskUrls.entryReference = {type:'function',method:'get',route:'/poll-task-url/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pollTaskUrls',stability:'stable',title:'Get Urls to Poll Pending Tasks',description:'Get a signed URLs to get and delete messages from azure queue.\nOnce messages are polled from here, you can claim the referenced task\nwith `claimTask`, and afterwards you should always delete the message.',scopes:[['queue:poll-task-urls','assume:worker-type:<provisionerId>/<workerType>'],['queue:poll-task-urls:<provisionerId>/<workerType>']],output:'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'};
-    this.claimWork.entryReference = {type:'function',method:'post',route:'/claim-work/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'claimWork',stability:'stable',title:'Claim Work',description:'Claim any task, more to be added later... long polling up to 20s.',scopes:[['queue:claim-work:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']],input:'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#',output:'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#'};
-    this.claimTask.entryReference = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/claim',query:[],args:['taskId','runId'],name:'claimTask',stability:'stable',title:'Claim Task',description:'claim a task, more to be added later...',scopes:[['queue:claim-task','assume:worker-type:<provisionerId>/<workerType>','assume:worker-id:<workerGroup>/<workerId>'],['queue:claim-task:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']],input:'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#',output:'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'};
-    this.reclaimTask.entryReference = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/reclaim',query:[],args:['taskId','runId'],name:'reclaimTask',stability:'stable',title:'Reclaim task',description:'Refresh the claim for a specific `runId` for given `taskId`. This updates\nthe `takenUntil` property and returns a new set of temporary credentials\nfor performing requests on behalf of the task. These credentials should\nbe used in-place of the credentials returned by `claimWork`.\n\nThe `reclaimTask` requests serves to:\n * Postpone `takenUntil` preventing the queue from resolving\n   `claim-expired`,\n * Refresh temporary credentials used for processing the task, and\n * Abort execution if the task/run have been resolved.\n\nIf the `takenUntil` timestamp is exceeded the queue will resolve the run\nas _exception_ with reason `claim-expired`, and proceeded to retry to the\ntask. This ensures that tasks are retried, even if workers disappear\nwithout warning.\n\nIf the task is resolved, this end-point will return `409` reporting\n`RequestConflict`. This typically happens if the task have been canceled\nor the `task.deadline` have been exceeded. If reclaiming fails, workers\nshould abort the task and forget about the given `runId`. There is no\nneed to resolve the run or upload artifacts.',scopes:[['queue:claim-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:reclaim-task:<taskId>/<runId>']],output:'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'};
-    this.reportCompleted.entryReference = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/completed',query:[],args:['taskId','runId'],name:'reportCompleted',stability:'stable',title:'Report Run Completed',description:'Report a task completed, resolving the run as `completed`.',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.reportFailed.entryReference = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/failed',query:[],args:['taskId','runId'],name:'reportFailed',stability:'stable',title:'Report Run Failed',description:'Report a run failed, resolving the run as `failed`. Use this to resolve\na run that failed because the task specific code behaved unexpectedly.\nFor example the task exited non-zero, or didn\'t produce expected output.\n\nDo not use this if the task couldn\'t be run because if malformed\npayload, or other unexpected condition. In these cases we have a task\nexception, which should be reported with `reportException`.',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.reportException.entryReference = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/exception',query:[],args:['taskId','runId'],name:'reportException',stability:'stable',title:'Report Task Exception',description:'Resolve a run as _exception_. Generally, you will want to report tasks as\nfailed instead of exception. You should `reportException` if,\n\n  * The `task.payload` is invalid,\n  * Non-existent resources are referenced,\n  * Declared actions cannot be executed due to unavailable resources,\n  * The worker had to shutdown prematurely,\n  * The worker experienced an unknown error, or,\n  * The task explicitly requested a retry.\n\nDo not use this to signal that some user-specified code crashed for any\nreason specific to this code. If user-specific code hits a resource that\nis temporarily unavailable worker should report task _failed_.',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],input:'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#',output:'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'};
-    this.createArtifact.entryReference = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'createArtifact',stability:'stable',title:'Create Artifact',description:'This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn\'t exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.',scopes:[['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>'],['queue:create-artifact:<taskId>/<runId>']],input:'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#',output:'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'};
-    this.getArtifact.entryReference = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'getArtifact',stability:'stable',title:'Get Artifact from Run',description:'Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)',scopes:[['queue:get-artifact:<name>']]};
-    this.getLatestArtifact.entryReference = {type:'function',method:'get',route:'/task/<taskId>/artifacts/<name>',query:[],args:['taskId','name'],name:'getLatestArtifact',stability:'stable',title:'Get Artifact from Latest Run',description:'Get artifact by `<name>` from the last run of a task.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.',scopes:[['queue:get-artifact:<name>']]};
-    this.listArtifacts.entryReference = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts',query:['continuationToken','limit'],args:['taskId','runId'],name:'listArtifacts',stability:'experimental',title:'Get Artifacts from Run',description:'Returns a list of artifacts and associated meta-data for a given run.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.',output:'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'};
-    this.listLatestArtifacts.entryReference = {type:'function',method:'get',route:'/task/<taskId>/artifacts',query:['continuationToken','limit'],args:['taskId'],name:'listLatestArtifacts',stability:'experimental',title:'Get Artifacts from Latest Run',description:'Returns a list of artifacts and associated meta-data for the latest run\nfrom the given task.\n\nAs a task may have many artifacts paging may be necessary. If this\nend-point returns a `continuationToken`, you should call the end-point\nagain with the `continuationToken` as the query-string option:\n`continuationToken`.\n\nBy default this end-point will list up-to 1000 artifacts in a single page\nyou may limit this with the query-string parameter `limit`.',output:'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#'};
-    this.listProvisioners.entryReference = {type:'function',method:'get',route:'/provisioners',query:['continuationToken','limit'],args:[],name:'listProvisioners',stability:'experimental',title:'Get a list of all active provisioners',description:'Get all active provisioners.\n\nThe term "provisioner" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 provisioners in a single\npage. You may limit this with the query-string parameter `limit`.',output:'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#'};
-    this.pendingTasks.entryReference = {type:'function',method:'get',route:'/pending/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pendingTasks',stability:'stable',title:'Get Number of Pending Tasks',description:'Get an approximate number of pending tasks for the given `provisionerId`\nand `workerType`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.',output:'http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#'};
-    this.listWorkerTypes.entryReference = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types',query:['continuationToken','limit'],args:['provisionerId'],name:'listWorkerTypes',stability:'experimental',title:'Get a list of all active worker-types',description:'Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.',output:'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#'};
-    this.listWorkers.entryReference = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',title:'Get a list of all active workerGroup/workerId of a workerType',description:'Get a list of all active workerGroup/workerId of a workerType.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.',output:'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#'};
-    this.ping.entryReference = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable',title:'Ping Server',description:'Respond without doing anything.\nThis endpoint is used to check that the service is up.'};
+    this.task.entry = {type:'function',method:'get',route:'/task/<taskId>',query:[],args:['taskId'],name:'task',stability:'stable',output:true};
+    this.status.entry = {type:'function',method:'get',route:'/task/<taskId>/status',query:[],args:['taskId'],name:'status',stability:'stable',output:true};
+    this.listTaskGroup.entry = {type:'function',method:'get',route:'/task-group/<taskGroupId>/list',query:['continuationToken','limit'],args:['taskGroupId'],name:'listTaskGroup',stability:'stable',output:true};
+    this.listDependentTasks.entry = {type:'function',method:'get',route:'/task/<taskId>/dependents',query:['continuationToken','limit'],args:['taskId'],name:'listDependentTasks',stability:'stable',output:true};
+    this.createTask.entry = {type:'function',method:'put',route:'/task/<taskId>',query:[],args:['taskId'],name:'createTask',stability:'stable',scopes:[['queue:create-task:<priority>:<provisionerId>/<workerType>','queue:scheduler-id:<schedulerId>']],input:true,output:true};
+    this.defineTask.entry = {type:'function',method:'post',route:'/task/<taskId>/define',query:[],args:['taskId'],name:'defineTask',stability:'deprecated',scopes:[['queue:create-task:<priority>:<provisionerId>/<workerType>','queue:scheduler-id:<schedulerId>']],input:true,output:true};
+    this.scheduleTask.entry = {type:'function',method:'post',route:'/task/<taskId>/schedule',query:[],args:['taskId'],name:'scheduleTask',stability:'stable',scopes:[['queue:schedule-task','assume:scheduler-id:<schedulerId>/<taskGroupId>'],['queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>']],output:true};
+    this.rerunTask.entry = {type:'function',method:'post',route:'/task/<taskId>/rerun',query:[],args:['taskId'],name:'rerunTask',stability:'deprecated',scopes:[['queue:rerun-task','assume:scheduler-id:<schedulerId>/<taskGroupId>'],['queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>']],output:true};
+    this.cancelTask.entry = {type:'function',method:'post',route:'/task/<taskId>/cancel',query:[],args:['taskId'],name:'cancelTask',stability:'stable',scopes:[['queue:cancel-task','assume:scheduler-id:<schedulerId>/<taskGroupId>'],['queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>']],output:true};
+    this.pollTaskUrls.entry = {type:'function',method:'get',route:'/poll-task-url/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pollTaskUrls',stability:'stable',scopes:[['queue:poll-task-urls','assume:worker-type:<provisionerId>/<workerType>'],['queue:poll-task-urls:<provisionerId>/<workerType>']],output:true};
+    this.claimWork.entry = {type:'function',method:'post',route:'/claim-work/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'claimWork',stability:'stable',scopes:[['queue:claim-work:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']],input:true,output:true};
+    this.claimTask.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/claim',query:[],args:['taskId','runId'],name:'claimTask',stability:'stable',scopes:[['queue:claim-task','assume:worker-type:<provisionerId>/<workerType>','assume:worker-id:<workerGroup>/<workerId>'],['queue:claim-task:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']],input:true,output:true};
+    this.reclaimTask.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/reclaim',query:[],args:['taskId','runId'],name:'reclaimTask',stability:'stable',scopes:[['queue:claim-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:reclaim-task:<taskId>/<runId>']],output:true};
+    this.reportCompleted.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/completed',query:[],args:['taskId','runId'],name:'reportCompleted',stability:'stable',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],output:true};
+    this.reportFailed.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/failed',query:[],args:['taskId','runId'],name:'reportFailed',stability:'stable',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],output:true};
+    this.reportException.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/exception',query:[],args:['taskId','runId'],name:'reportException',stability:'stable',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],input:true,output:true};
+    this.createArtifact.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'createArtifact',stability:'stable',scopes:[['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>'],['queue:create-artifact:<taskId>/<runId>']],input:true,output:true};
+    this.getArtifact.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'getArtifact',stability:'stable',scopes:[['queue:get-artifact:<name>']]};
+    this.getLatestArtifact.entry = {type:'function',method:'get',route:'/task/<taskId>/artifacts/<name>',query:[],args:['taskId','name'],name:'getLatestArtifact',stability:'stable',scopes:[['queue:get-artifact:<name>']]};
+    this.listArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts',query:['continuationToken','limit'],args:['taskId','runId'],name:'listArtifacts',stability:'experimental',output:true};
+    this.listLatestArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/artifacts',query:['continuationToken','limit'],args:['taskId'],name:'listLatestArtifacts',stability:'experimental',output:true};
+    this.listProvisioners.entry = {type:'function',method:'get',route:'/provisioners',query:['continuationToken','limit'],args:[],name:'listProvisioners',stability:'experimental',output:true};
+    this.pendingTasks.entry = {type:'function',method:'get',route:'/pending/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pendingTasks',stability:'stable',output:true};
+    this.listWorkerTypes.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types',query:['continuationToken','limit'],args:['provisionerId'],name:'listWorkerTypes',stability:'experimental',output:true};
+    this.getWorkerType.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'getWorkerType',stability:'experimental',output:true};
+    this.declareWorkerType.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'declareWorkerType',stability:'experimental',scopes:[['queue:declare-worker-type:<provisionerId>/<workerType>#<property>']],input:true,output:true};
+    this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true};
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
   }
 
   // This end-point will return the task-definition. Notice that the task
   // definition may have been modified by queue, if an optional property is
   // not specified the queue may provide a default value.
   task(...args) {
-    this.validateMethod(this.task.entryReference, args);
-    return this.request(this.task.entryReference, args);
+    this.validate(this.task.entry, args);
+    return this.request(this.task.entry, args);
   }
 
   // Get task status structure from `taskId`
   status(...args) {
-    this.validateMethod(this.status.entryReference, args);
-    return this.request(this.status.entryReference, args);
+    this.validate(this.status.entry, args);
+    return this.request(this.status.entry, args);
   }
 
   // List tasks sharing the same `taskGroupId`.
@@ -66,8 +68,8 @@ export default class Queue extends Client {
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
   listTaskGroup(...args) {
-    this.validateMethod(this.listTaskGroup.entryReference, args);
-    return this.request(this.listTaskGroup.entryReference, args);
+    this.validate(this.listTaskGroup.entry, args);
+    return this.request(this.listTaskGroup.entry, args);
   }
 
   // List tasks that depend on the given `taskId`.
@@ -84,8 +86,8 @@ export default class Queue extends Client {
   // If you are not interested in listing all the tasks at once, you may
   // use the query-string option `limit` to return fewer.
   listDependentTasks(...args) {
-    this.validateMethod(this.listDependentTasks.entryReference, args);
-    return this.request(this.listDependentTasks.entryReference, args);
+    this.validate(this.listDependentTasks.entry, args);
+    return this.request(this.listDependentTasks.entry, args);
   }
 
   // Create a new task, this is an **idempotent** operation, so repeat it if
@@ -108,15 +110,15 @@ export default class Queue extends Client {
   // **Important** Any scopes the task requires are also required for creating
   // the task. Please see the Request Payload (Task Definition) for details.
   createTask(...args) {
-    this.validateMethod(this.createTask.entryReference, args);
-    return this.request(this.createTask.entryReference, args);
+    this.validate(this.createTask.entry, args);
+    return this.request(this.createTask.entry, args);
   }
 
   // **Deprecated**, this is the same as `createTask` with a **self-dependency**.
   // This is only present for legacy.
   defineTask(...args) {
-    this.validateMethod(this.defineTask.entryReference, args);
-    return this.request(this.defineTask.entryReference, args);
+    this.validate(this.defineTask.entry, args);
+    return this.request(this.defineTask.entry, args);
   }
 
   // scheduleTask will schedule a task to be executed, even if it has
@@ -131,8 +133,8 @@ export default class Queue extends Client {
   // if called with a `taskId` that is already scheduled, or even resolved.
   // To reschedule a task previously resolved, use `rerunTask`.
   scheduleTask(...args) {
-    this.validateMethod(this.scheduleTask.entryReference, args);
-    return this.request(this.scheduleTask.entryReference, args);
+    this.validate(this.scheduleTask.entry, args);
+    return this.request(this.scheduleTask.entry, args);
   }
 
   // This method _reruns_ a previously resolved task, even if it was
@@ -146,8 +148,8 @@ export default class Queue extends Client {
   // is not either `failed` or `completed`, this operation will just return
   // the current task status.
   rerunTask(...args) {
-    this.validateMethod(this.rerunTask.entryReference, args);
-    return this.request(this.rerunTask.entryReference, args);
+    this.validate(this.rerunTask.entry, args);
+    return this.request(this.rerunTask.entry, args);
   }
 
   // This method will cancel a task that is either `unscheduled`, `pending` or
@@ -162,28 +164,28 @@ export default class Queue extends Client {
   // isn't `unscheduled`, `pending` or `running`, this operation will just
   // return the current task status.
   cancelTask(...args) {
-    this.validateMethod(this.cancelTask.entryReference, args);
-    return this.request(this.cancelTask.entryReference, args);
+    this.validate(this.cancelTask.entry, args);
+    return this.request(this.cancelTask.entry, args);
   }
 
   // Get a signed URLs to get and delete messages from azure queue.
   // Once messages are polled from here, you can claim the referenced task
   // with `claimTask`, and afterwards you should always delete the message.
   pollTaskUrls(...args) {
-    this.validateMethod(this.pollTaskUrls.entryReference, args);
-    return this.request(this.pollTaskUrls.entryReference, args);
+    this.validate(this.pollTaskUrls.entry, args);
+    return this.request(this.pollTaskUrls.entry, args);
   }
 
   // Claim any task, more to be added later... long polling up to 20s.
   claimWork(...args) {
-    this.validateMethod(this.claimWork.entryReference, args);
-    return this.request(this.claimWork.entryReference, args);
+    this.validate(this.claimWork.entry, args);
+    return this.request(this.claimWork.entry, args);
   }
 
   // claim a task, more to be added later...
   claimTask(...args) {
-    this.validateMethod(this.claimTask.entryReference, args);
-    return this.request(this.claimTask.entryReference, args);
+    this.validate(this.claimTask.entry, args);
+    return this.request(this.claimTask.entry, args);
   }
 
   // Refresh the claim for a specific `runId` for given `taskId`. This updates
@@ -205,14 +207,14 @@ export default class Queue extends Client {
   // should abort the task and forget about the given `runId`. There is no
   // need to resolve the run or upload artifacts.
   reclaimTask(...args) {
-    this.validateMethod(this.reclaimTask.entryReference, args);
-    return this.request(this.reclaimTask.entryReference, args);
+    this.validate(this.reclaimTask.entry, args);
+    return this.request(this.reclaimTask.entry, args);
   }
 
   // Report a task completed, resolving the run as `completed`.
   reportCompleted(...args) {
-    this.validateMethod(this.reportCompleted.entryReference, args);
-    return this.request(this.reportCompleted.entryReference, args);
+    this.validate(this.reportCompleted.entry, args);
+    return this.request(this.reportCompleted.entry, args);
   }
 
   // Report a run failed, resolving the run as `failed`. Use this to resolve
@@ -222,8 +224,8 @@ export default class Queue extends Client {
   // payload, or other unexpected condition. In these cases we have a task
   // exception, which should be reported with `reportException`.
   reportFailed(...args) {
-    this.validateMethod(this.reportFailed.entryReference, args);
-    return this.request(this.reportFailed.entryReference, args);
+    this.validate(this.reportFailed.entry, args);
+    return this.request(this.reportFailed.entry, args);
   }
 
   // Resolve a run as _exception_. Generally, you will want to report tasks as
@@ -238,8 +240,8 @@ export default class Queue extends Client {
   // reason specific to this code. If user-specific code hits a resource that
   // is temporarily unavailable worker should report task _failed_.
   reportException(...args) {
-    this.validateMethod(this.reportException.entryReference, args);
-    return this.request(this.reportException.entryReference, args);
+    this.validate(this.reportException.entry, args);
+    return this.request(this.reportException.entry, args);
   }
 
   // This API end-point creates an artifact for a specific run of a task. This
@@ -293,8 +295,8 @@ export default class Queue extends Client {
   // updated. You should only use this to update the `url` property for
   // reference artifacts your process has created.
   createArtifact(...args) {
-    this.validateMethod(this.createArtifact.entryReference, args);
-    return this.request(this.createArtifact.entryReference, args);
+    this.validate(this.createArtifact.entry, args);
+    return this.request(this.createArtifact.entry, args);
   }
 
   // Get artifact by `<name>` from a specific run.
@@ -313,8 +315,8 @@ export default class Queue extends Client {
   // where request volume is known to be low, and caching not useful.
   // (This feature may be disabled in the future, use is sparingly!)
   getArtifact(...args) {
-    this.validateMethod(this.getArtifact.entryReference, args);
-    return this.request(this.getArtifact.entryReference, args);
+    this.validate(this.getArtifact.entry, args);
+    return this.request(this.getArtifact.entry, args);
   }
 
   // Get artifact by `<name>` from the last run of a task.
@@ -330,8 +332,8 @@ export default class Queue extends Client {
   // `queue.getArtifact`, so consider that if you already know the `runId` of
   // the latest run. Otherwise, just us the most convenient API end-point.
   getLatestArtifact(...args) {
-    this.validateMethod(this.getLatestArtifact.entryReference, args);
-    return this.request(this.getLatestArtifact.entryReference, args);
+    this.validate(this.getLatestArtifact.entry, args);
+    return this.request(this.getLatestArtifact.entry, args);
   }
 
   // Returns a list of artifacts and associated meta-data for a given run.
@@ -342,8 +344,8 @@ export default class Queue extends Client {
   // By default this end-point will list up-to 1000 artifacts in a single page
   // you may limit this with the query-string parameter `limit`.
   listArtifacts(...args) {
-    this.validateMethod(this.listArtifacts.entryReference, args);
-    return this.request(this.listArtifacts.entryReference, args);
+    this.validate(this.listArtifacts.entry, args);
+    return this.request(this.listArtifacts.entry, args);
   }
 
   // Returns a list of artifacts and associated meta-data for the latest run
@@ -355,8 +357,8 @@ export default class Queue extends Client {
   // By default this end-point will list up-to 1000 artifacts in a single page
   // you may limit this with the query-string parameter `limit`.
   listLatestArtifacts(...args) {
-    this.validateMethod(this.listLatestArtifacts.entryReference, args);
-    return this.request(this.listLatestArtifacts.entryReference, args);
+    this.validate(this.listLatestArtifacts.entry, args);
+    return this.request(this.listLatestArtifacts.entry, args);
   }
 
   // Get all active provisioners.
@@ -368,8 +370,8 @@ export default class Queue extends Client {
   // option. By default this end-point will list up to 1000 provisioners in a single
   // page. You may limit this with the query-string parameter `limit`.
   listProvisioners(...args) {
-    this.validateMethod(this.listProvisioners.entryReference, args);
-    return this.request(this.listProvisioners.entryReference, args);
+    this.validate(this.listProvisioners.entry, args);
+    return this.request(this.listProvisioners.entry, args);
   }
 
   // Get an approximate number of pending tasks for the given `provisionerId`
@@ -379,8 +381,8 @@ export default class Queue extends Client {
   // should be no means expect this to be an accurate number.
   // It is, however, a solid estimate of the number of pending tasks.
   pendingTasks(...args) {
-    this.validateMethod(this.pendingTasks.entryReference, args);
-    return this.request(this.pendingTasks.entryReference, args);
+    this.validate(this.pendingTasks.entry, args);
+    return this.request(this.pendingTasks.entry, args);
   }
 
   // Get all active worker-types for the given provisioner.
@@ -389,8 +391,24 @@ export default class Queue extends Client {
   // option. By default this end-point will list up to 1000 worker-types in a single
   // page. You may limit this with the query-string parameter `limit`.
   listWorkerTypes(...args) {
-    this.validateMethod(this.listWorkerTypes.entryReference, args);
-    return this.request(this.listWorkerTypes.entryReference, args);
+    this.validate(this.listWorkerTypes.entry, args);
+    return this.request(this.listWorkerTypes.entry, args);
+  }
+
+  // Get a worker-type from a provisioner.
+  getWorkerType(...args) {
+    this.validate(this.getWorkerType.entry, args);
+    return this.request(this.getWorkerType.entry, args);
+  }
+
+  // Declare a workerType, supplying some details about it.
+  // `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
+  // possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
+  // provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
+  // `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
+  declareWorkerType(...args) {
+    this.validate(this.declareWorkerType.entry, args);
+    return this.request(this.declareWorkerType.entry, args);
   }
 
   // Get a list of all active workerGroup/workerId of a workerType.
@@ -399,14 +417,14 @@ export default class Queue extends Client {
   // option. By default this end-point will list up to 1000 workers in a single
   // page. You may limit this with the query-string parameter `limit`.
   listWorkers(...args) {
-    this.validateMethod(this.listWorkers.entryReference, args);
-    return this.request(this.listWorkers.entryReference, args);
+    this.validate(this.listWorkers.entry, args);
+    return this.request(this.listWorkers.entry, args);
   }
 
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
   ping(...args) {
-    this.validateMethod(this.ping.entryReference, args);
-    return this.request(this.ping.entryReference, args);
+    this.validate(this.ping.entry, args);
+    return this.request(this.ping.entry, args);
   }
 }

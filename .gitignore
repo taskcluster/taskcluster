@@ -7,6 +7,7 @@ lerna-debug.log
 # Build directories
 build
 lib
+.coverage
 
 # Runtime data
 pids
