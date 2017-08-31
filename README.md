@@ -127,13 +127,13 @@ support, you can also `await` these methods.
 ### Web Listener
 
 Listening to Pulse Events can be done using a `WebListener`. The WebListener will
-connect to `events.taskcluster.net` using a Web Socket.
+connect to `events.taskcluster.net` using a WebSocket.
 
 ```js
 import { WebListener } from 'taskcluster-client-web';
 
 const listener = new WebListener({
-  baseUrl: 'http://url' // defaults to: https://events.taskcluster.net/v1
+  baseUrl: 'wss://host' // defaults to: wss://events.taskcluster.net/v1
 });
 ```
 
