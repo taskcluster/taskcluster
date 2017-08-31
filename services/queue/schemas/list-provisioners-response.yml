@@ -35,12 +35,19 @@ properties:
             deleted by the queue.
           type:         string
           format:       date-time
+        lastDateActive:
+          title:        "Provisioner Last Date Active"
+          description: |
+            Date and time where the provisioner was last seen active
+          type:         string
+          format:       date-time
       additionalProperties: false
       required:
         - provisionerId
         - description
         - stability
         - expires
+        - lastDateActive
   continuationToken:
     type:             string
     title:            "Continuation Token"
