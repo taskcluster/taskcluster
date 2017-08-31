@@ -1,0 +1,48 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:          "Provisioner Response"
+description: |
+  Response containing information about a provisioner.
+type:           object
+properties:
+  provisionerId:
+    title:        "Provisioner ID"
+    type:         string
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  stability:
+    title:        "Stability"
+    description: |
+      This is the stability of the provisioner. Accepted values:
+        * `experimental`
+        * `stable`
+        * `deprecated`
+    type:         string
+    enum:         ["experimental", "stable", "deprecated"]
+  description:
+    title:        "Description"
+    description: |
+      Description of the provisioner.
+    type:         string
+  expires:
+    title:        "Provisioner Expiration"
+    description: |
+      Date and time after which the provisioner will be automatically
+      deleted by the queue.
+    type:         string
+    format:       date-time
+  lastDateActive:
+    title:        "Provisioner Last Date Active"
+    description: |
+      Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours
+      but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+      of when the provisioner was last seen active.
+    type:         string
+    format:       date-time
+additionalProperties: true
+required:
+  - provisionerId
+  - description
+  - stability
+  - expires
+  - lastDateActive

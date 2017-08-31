@@ -2016,6 +2016,98 @@ api.declare({
   return res.reply(result);
 });
 
+/** Get a provisioner */
+api.declare({
+  method:     'get',
+  route:      '/provisioners/:provisionerId',
+  name:       'getProvisioner',
+  stability:  API.stability.experimental,
+  output:     'provisioner-response.json#',
+  title:      'Get an active provisioner',
+  description: [
+    'Get an active provisioner.',
+    '',
+    'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
+    'This does not necessarily mean there is an associated service performing any',
+    'provisioning activity.',
+  ].join('\n'),
+}, async function(req, res) {
+  const provisionerId = req.params.provisionerId;
+
+  const provisioner = await this.Provisioner.load({
+    provisionerId,
+    expires: Entity.op.greaterThan(new Date()),
+  });
+
+  if (!provisioner) {
+    return res.reportError('ResourceNotFound',
+      'Provisioner {{provisionerId}} not found. Are you sure it was created?', {
+        provisionerId,
+      },
+    );
+  }
+
+  return res.reply(provisioner.json());
+});
+
+/** Update a provisioner */
+api.declare({
+  method:     'put',
+  route:      '/provisioners/:provisionerId',
+  name:       'declareProvisioner',
+  stability:  API.stability.experimental,
+  scopes:     [
+    [
+      'queue:declare-provisioner:<provisionerId>#<property>',
+    ],
+  ],
+  deferAuth:  true,
+  output:     'provisioner-response.json#',
+  input:      'update-provisioner-request.json#',
+  title:      'Update a provisioner',
+  description: [
+    'Declare a provisioner, supplying some details about it.',
+    '',
+    '`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are',
+    'possessed. For example, a request to update the `aws-provisioner-v1`',
+    'provisioner with a body `{description: \'This provisioner is great\'}` would require you to have the scope',
+    '`queue:declare-provisioner:aws-provisioner-v1#description`.',
+    '',
+    'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
+    'This does not necessarily mean there is an associated service performing any',
+    'provisioning activity.',
+  ].join('\n'),
+}, async function(req, res) {
+  const provisionerId = req.params.provisionerId;
+  const {stability, description, expires} = req.body;
+
+  const prov = await this.Provisioner.load({provisionerId}, true);
+
+  // Authenticate request by providing parameters
+  const requestAllowed = Object.keys(req.body)
+    .every(property => req.satisfies({provisionerId, property}));
+
+  if (!requestAllowed) {
+    return;
+  }
+
+  const result = prov ?
+    await prov.modify((entity) => {
+      entity.stability = stability || entity.stability;
+      entity.description = description || entity.description;
+      entity.expires = new Date(expires || entity.expires);
+    }) :
+    await this.Provisioner.create({
+      provisionerId,
+      expires: expires || taskcluster.fromNow('5 days'),
+      lastDateActive: new Date(),
+      description: description || '',
+      stability: stability || 'experimental',
+    });
+
+  return res.reply(result.json());
+});
+
 /** Count pending tasks for workerType */
 api.declare({
   method:     'get',

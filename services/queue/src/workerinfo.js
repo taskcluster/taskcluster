@@ -79,10 +79,19 @@ class WorkerInfo {
         const provisioner = await this.Provisioner.load({provisionerId}, true);
 
         if (provisioner) {
-          return provisioner.modify(entity => updateExpiration(entity, expires));
+          return provisioner.modify(entity => {
+            updateExpiration(entity, expires);
+            updateLastDateActive(entity);
+          });
         }
 
-        createEntry(this.Provisioner, {provisionerId, expires, description: '', stability: 'experimental'});
+        createEntry(this.Provisioner, {
+          provisionerId,
+          expires,
+          description: '',
+          stability: 'experimental',
+          lastDateActive: new Date(),
+        });
       }));
     }
 
