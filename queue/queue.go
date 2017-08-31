@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 30 Aug 2017 at 17:24:00 UTC. The code was generated
+// Thu, 31 Aug 2017 at 17:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -657,6 +657,44 @@ func (myQueue *Queue) ListProvisioners(continuationToken, limit string) (*ListPr
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners", new(ListProvisionersResponse), v)
 	return responseObject.(*ListProvisionersResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get an active provisioner.
+//
+// The term "provisioner" is taken broadly to mean anything with a provisionerId.
+// This does not necessarily mean there is an associated service performing any
+// provisioning activity.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#getProvisioner
+func (myQueue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId), new(ProvisionerResponse), nil)
+	return responseObject.(*ProvisionerResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Declare a provisioner, supplying some details about it.
+//
+// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
+// possessed. For example, a request to update the `aws-provisioner-v1`
+// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
+// `queue:declare-provisioner:aws-provisioner-v1#description`.
+//
+// The term "provisioner" is taken broadly to mean anything with a provisionerId.
+// This does not necessarily mean there is an associated service performing any
+// provisioning activity.
+//
+// Required scopes:
+//   * queue:declare-provisioner:<provisionerId>#<property>
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#declareProvisioner
+func (myQueue *Queue) DeclareProvisioner(provisionerId string, payload *ProvisionerRequest) (*ProvisionerResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId), new(ProvisionerResponse), nil)
+	return responseObject.(*ProvisionerResponse), err
 }
 
 // Get an approximate number of pending tasks for the given `provisionerId`

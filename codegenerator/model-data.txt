@@ -1,4 +1,4 @@
-Generated: 1504113849
+Generated: 1504200218
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6908,6 +6908,45 @@ page. You may limit this with the query-string parameter `limit`.'
 Entry 22    =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/provisioners/<provisionerId>'
+    Entry Args        = '[provisionerId]'
+    Entry Query        = '[]'
+    Entry Name        = 'getProvisioner'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#'
+    Entry Title       = 'Get an active provisioner'
+    Entry Description = 'Get an active provisioner.
+
+The term "provisioner" is taken broadly to mean anything with a provisionerId.
+This does not necessarily mean there is an associated service performing any
+provisioning activity.'
+Entry 23    =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/provisioners/<provisionerId>'
+    Entry Args        = '[provisionerId]'
+    Entry Query        = '[]'
+    Entry Name        = 'declareProvisioner'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[queue:declare-provisioner:<provisionerId>#<property>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#'
+    Entry Title       = 'Update a provisioner'
+    Entry Description = 'Declare a provisioner, supplying some details about it.
+
+`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
+possessed. For example, a request to update the `aws-provisioner-v1`
+provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
+`queue:declare-provisioner:aws-provisioner-v1#description`.
+
+The term "provisioner" is taken broadly to mean anything with a provisionerId.
+This does not necessarily mean there is an associated service performing any
+provisioning activity.'
+Entry 24    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/pending/<provisionerId>/<workerType>'
     Entry Args        = '[provisionerId workerType]'
     Entry Query        = '[]'
@@ -6924,7 +6963,7 @@ The underlying Azure Storage Queues only promises to give us an estimate.
 Furthermore, we cache the result in memory for 20 seconds. So consumers
 should be no means expect this to be an accurate number.
 It is, however, a solid estimate of the number of pending tasks.'
-Entry 23    =
+Entry 25    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types'
@@ -6942,7 +6981,7 @@ The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
 option. By default this end-point will list up to 1000 worker-types in a single
 page. You may limit this with the query-string parameter `limit`.'
-Entry 24    =
+Entry 26    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>'
@@ -6955,7 +6994,7 @@ Entry 24    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
     Entry Title       = 'Get a worker-type'
     Entry Description = 'Get a worker-type from a provisioner.'
-Entry 25    =
+Entry 27    =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>'
@@ -6973,7 +7012,7 @@ Entry 25    =
 possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
 provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
 `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.'
-Entry 26    =
+Entry 28    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers'
@@ -6991,7 +7030,7 @@ The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
 option. By default this end-point will list up to 1000 workers in a single
 page. You may limit this with the query-string parameter `limit`.'
-Entry 27    =
+Entry 29    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -7629,6 +7668,14 @@ Properties
           Type                   = 'string'
           TypeName               = 'ProvisionerExpiration'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/expires'
+        Property 'lastDateActive' =
+          Description            = 'Date and time where the provisioner was last seen active
+          '
+          Format                 = 'date-time'
+          Title                  = 'Provisioner Last Date Active'
+          Type                   = 'string'
+          TypeName               = 'ProvisionerLastDateActive'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/lastDateActive'
         Property 'provisionerId' =
           MaxLength              = '22'
           MinLength              = '1'
@@ -7648,7 +7695,7 @@ Properties
           Type                   = 'string'
           TypeName               = 'Stability'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/stability'
-      Required               = '[provisionerId description stability expires]'
+      Required               = '[provisionerId description stability expires lastDateActive]'
       Title                  = 'Provisioner Information'
       Type                   = 'object'
       TypeName               = 'ProvisionerInformation'
@@ -8647,6 +8694,66 @@ TypeName               = 'ErrorArtifactResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]'
 
 
+http://schemas.taskcluster.net/queue/v1/provisioner-response.json#
+==================================================================
+Additional Properties  = 'true'
+Description            = 'Response containing information about a provisioner.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#'
+Properties
+  Property 'description' =
+    Description            = 'Description of the provisioner.
+    '
+    Title                  = 'Description'
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/description'
+  Property 'expires' =
+    Description            = 'Date and time after which the provisioner will be automatically
+    deleted by the queue.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Provisioner Expiration'
+    Type                   = 'string'
+    TypeName               = 'ProvisionerExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/expires'
+  Property 'lastDateActive' =
+    Description            = 'Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours
+    but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+    of when the provisioner was last seen active.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Provisioner Last Date Active'
+    Type                   = 'string'
+    TypeName               = 'ProvisionerLastDateActive'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/lastDateActive'
+  Property 'provisionerId' =
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner ID'
+    Type                   = 'string'
+    TypeName               = 'ProvisionerID'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/provisionerId'
+  Property 'stability' =
+    Description            = 'This is the stability of the provisioner. Accepted values:
+      * `experimental`
+      * `stable`
+      * `deprecated`
+    '
+    Enum                   = '[experimental stable deprecated]'
+    Title                  = 'Stability'
+    Type                   = 'string'
+    TypeName               = 'Stability'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/stability'
+Required               = '[provisionerId description stability expires lastDateActive]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Provisioner Response'
+Type                   = 'object'
+TypeName               = 'ProvisionerResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#'
+
+
 http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 ================================================================
 Additional Properties  = 'false'
@@ -9445,6 +9552,47 @@ Title                  = 'Task Definition Response'
 Type                   = 'object'
 TypeName               = 'TaskDefinitionResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#
+========================================================================
+Additional Properties  = 'false'
+Description            = 'Request to update a provisioner.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#'
+Properties
+  Property 'description' =
+    Description            = 'Description of the provisioner.
+    '
+    Title                  = 'Description'
+    Type                   = 'string'
+    TypeName               = 'Description'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/description'
+  Property 'expires' =
+    Description            = 'Date and time after which the provisioner will be automatically
+    deleted by the queue.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Provisioner Expiration'
+    Type                   = 'string'
+    TypeName               = 'ProvisionerExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/expires'
+  Property 'stability' =
+    Description            = 'This is the stability of the provisioner. Accepted values:
+      * `experimental`
+      * `stable`
+      * `deprecated`
+    '
+    Enum                   = '[experimental stable deprecated]'
+    Title                  = 'Stability'
+    Type                   = 'string'
+    TypeName               = 'Stability'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/stability'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Provisioner Request'
+Type                   = 'object'
+TypeName               = 'ProvisionerRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#

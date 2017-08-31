@@ -420,6 +420,11 @@ type (
 			// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/expires
 			Expires tcclient.Time `json:"expires"`
 
+			// Date and time where the provisioner was last seen active
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/lastDateActive
+			LastDateActive tcclient.Time `json:"lastDateActive"`
+
 			// Syntax:     ^([a-zA-Z0-9-_]*)$
 			// Min length: 1
 			// Max length: 22
@@ -650,6 +655,80 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
 	PostArtifactResponse json.RawMessage
+
+	// Request to update a provisioner.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#
+	ProvisionerRequest struct {
+
+		// Description of the provisioner.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/description
+		Description string `json:"description,omitempty"`
+
+		// Date and time after which the provisioner will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/expires
+		Expires tcclient.Time `json:"expires,omitempty"`
+
+		// This is the stability of the provisioner. Accepted values:
+		//   * `experimental`
+		//   * `stable`
+		//   * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/stability
+		Stability string `json:"stability,omitempty"`
+	}
+
+	// Response containing information about a provisioner.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#
+	ProvisionerResponse struct {
+
+		// Description of the provisioner.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/description
+		Description string `json:"description"`
+
+		// Date and time after which the provisioner will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours
+		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
+		// of when the provisioner was last seen active.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/lastDateActive
+		LastDateActive tcclient.Time `json:"lastDateActive"`
+
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/provisionerId
+		ProvisionerID string `json:"provisionerId"`
+
+		// This is the stability of the provisioner. Accepted values:
+		//   * `experimental`
+		//   * `stable`
+		//   * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/stability
+		Stability string `json:"stability"`
+	}
 
 	// Request the queue to redirect to a URL for a given artifact.
 	// This allows you to reference artifacts that aren't managed by the queue.
