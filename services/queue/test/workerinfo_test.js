@@ -28,6 +28,7 @@ suite('provisioners and worker-types', () => {
     const provisioner = {
       provisionerId: 'prov1',
       expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
       description: 'test-provisioner',
       stability: 'experimental',
     };
@@ -59,7 +60,11 @@ suite('provisioners and worker-types', () => {
     const Provisioner = await helper.load('Provisioner', helper.loadOptions);
 
     await Provisioner.create({
-      provisionerId: 'prov1', expires: new Date('1017-07-29'), description: 'test-prov', stability: 'experimental',
+      provisionerId: 'prov1',
+      expires: new Date('1017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-prov',
+      stability: 'experimental',
     });
     await helper.expireWorkerInfo();
 
@@ -274,6 +279,51 @@ suite('provisioners and worker-types', () => {
     assert(new Date(result.expires).getTime() === wType.expires.getTime(), `expected ${wType.expires}`);
   });
 
+  test('queue.getProvisioner returns a provisioner', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    const provisioner = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+    };
+
+    await Provisioner.create(provisioner);
+
+    const result = await helper.queue.getProvisioner(provisioner.provisionerId);
+
+    assert(result.provisionerId === provisioner.provisionerId, `expected ${provisioner.provisionerId}`);
+    assert(result.description === provisioner.description, `expected ${provisioner.description}`);
+    assert(result.stability === provisioner.stability, `expected ${provisioner.stability}`);
+    assert(new Date(result.expires).getTime() === provisioner.expires.getTime(), `expected ${provisioner.expires}`);
+  });
+
+  test('queue.declareProvisioner updates a provisioner', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+
+    const provisioner = await Provisioner.create({
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+    });
+
+    const updateProps = {
+      description: 'desc-provisioner',
+    };
+
+    await helper.queue.declareProvisioner(provisioner.provisionerId, updateProps);
+
+    const result = await helper.queue.getProvisioner(provisioner.provisionerId);
+
+    assert(result.provisionerId === provisioner.provisionerId, `expected ${provisioner.provisionerId}`);
+    assert(result.description === updateProps.description, `expected ${updateProps.description}`);
+    assert(result.stability === provisioner.stability, `expected ${provisioner.stability}`);
+    assert(new Date(result.expires).getTime() === provisioner.expires.getTime(), `expected ${provisioner.expires}`);
+  });
+
   test('worker-type lastDateActive updates', async () => {
     let result;
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
@@ -307,6 +357,41 @@ suite('provisioners and worker-types', () => {
 
     assert(
       new Date(result.lastDateActive).getTime() !== wType.lastDateActive.getTime(), 'expected different lastDateActive'
+    );
+  });
+
+  test('provisioner lastDateActive updates', async () => {
+    let result;
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+
+    const prov = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-prov',
+      stability: 'experimental',
+    };
+
+    await Provisioner.create(prov);
+    await workerInfo.seen(prov.provisionerId);
+
+    result = await helper.queue.getProvisioner(prov.provisionerId);
+
+    assert(
+      new Date(result.lastDateActive).getTime() === prov.lastDateActive.getTime(), `expected ${prov.lastDateActive}`
+    );
+
+    prov.lastDateActive = taskcluster.fromNow('- 7h');
+    prov.provisionerId = 'prov2';
+
+    await Provisioner.create(prov);
+    await workerInfo.seen(prov.provisionerId);
+
+    result = await helper.queue.getProvisioner(prov.provisionerId);
+
+    assert(
+      new Date(result.lastDateActive).getTime() !== prov.lastDateActive.getTime(), 'expected different lastDateActive'
     );
   });
 });
