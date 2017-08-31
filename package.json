@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "lib/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "scripts": {
     "build": "neutrino build",
     "docs": "bin/generate-docs",
