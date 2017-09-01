@@ -9,10 +9,7 @@ The [Taskcluster manual](/manual/using/integration) contains advice for
 intergrating with Taskcluster in general, including some important security
 considerations.  Here, we'll focus on the technical implementation.
 
-NOTE: This method is *experimental* and still under development.  It is
-expected to be production-ready by October 2017.
-
-# Overview
+## Overview
 
 The general process is as follows:
 
@@ -23,29 +20,30 @@ The general process is as follows:
    identifying the user.  The service responds with a set of Taskcluster
    credentials.
  
- * The app then calls the Taskcluster API directly, using those credentials.
+ * Your app then calls the Taskcluster API directly, using those credentials.
 
 The service is built to support multiple OIDC providers, but at the moment the
 only supported provider is Mozilla's Auth0 account.
 
-## Auth0 Sign-In
+### Auth0 Sign-In
 
 Follow the [Auth0 documentation](https://auth0.com/docs) and the [Mozilla
 guidelines](https://wiki.mozilla.org/Security/Guidelines/OpenID_connect) to set
 up sign-in using the "hosted lock". Once you have a clientId established, this
-will amount to redirecting the user to the `/authorize` endpoint with some
-URL parameters.
+will amount to redirecting the user to the `/authorize` endpoint with some URL
+parameters. There are libraries available for most languages to make this
+process easier, and the Auth0 documentation is quite thorough.
 
-The key to later using this sign-in for access to Taskcluster is to include
-`"openid"` and `"full-user-credentials"` in the (space-separated) scopes and to
-include `audience=login.taskcluster.net`.
+The keys to later using this sign-in for access to Taskcluster are:
+ * the OID audience must include `login.taskcluster.net`
+ * the OIDC scopes must include `full-user-credentials` and `openid`
 
 When the sign-in is complete, Auth0 will redirect back to your application with
 an `id_token` and an `access_token`. The `id_token` can be used by your app to
 identify and authorize the user to your backend, just like any OIDC
-application.
+application. The `access_token` will allow access to the Login service.
 
-## Getting Credentials
+### Getting Credentials
 
 Your application should defer getting Taskcluster credentials until they are
 needed, and should support automatically refreshing expired credentials as
@@ -60,3 +58,11 @@ Note that the returned credentials may or may not contain a `certificate`
 field. Be sure that any code handling credentials is compatible with either
 result. As always, callers should not interpret the resulting credentials in
 any way, although displaying the clientId to the user is acceptable.
+
+## Demo
+
+The
+[taskcluster-oidc-test](https://github.com/taskcluster/taskcluster-oidc-test)
+repository provides an example of a sipmle single page app following this
+process.  You can see it in action at
+https://taskcluster-oidc-test.herokuapp.com.

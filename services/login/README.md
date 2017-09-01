@@ -1,25 +1,36 @@
 TaskCluster User Login Service
 ==============================
 
-This service currently supports two login methods, as we transition from one to
-the other.
+This service supports the generation of Taskcluster credentials appropriate to
+a user.
 
-New Login Method
-----------------
-
-NOTE: This method is *experimental* and still under development.  It is
-expected to be production-ready by October 2017.
-
-The new method requires client applications to use an OIDC provider to
-authenticate the user, and then provides Taskcluster credentials appropriate to
-that user.
+While this service is intended to be used with interactive applications, it
+does not have any user interface of its own. Instead, it relies on an OIDC
+provider to handle user interaction, and issues credentials on the basis of the
+resulting OIDC `access_token` .
 
 See [getting user
 creds](https://docs.taskcluster.net/reference/integrations/taskcluster-login/getting-user-creds)
-for more detail.
+for more detail about interacting with this service.
 
-Old Login Method
-----------------
+## Development and Testing
+
+Test this like any Taskcluster microservice: install with `yarn` and then test
+with `yarn test`.
+
+To actually perform authentication in a development setting, you will need to
+[request an OIDC
+client](https://mozilla.service-now.com/sp?id=sc_cat_item&sys_id=1e9746c20f76aa0087591d2be1050ecb) with the following additional attributes:
+
+ * Non-Interactive Client
+ * Access to the Auth0 management API with the `read:users` scope
+
+## Old Login Methods
+
+> These methods are deprecated and will be removed within a matter of months. This documentation
+> remains only to help understand the remaining code.
+
+### Federated Logins
 
 This service provides a very minimal UI that users can authenticate against
 and then get temporary credentials issued.
@@ -57,11 +68,8 @@ We do this as temporary credentials can't cover an infinite list of scopes.
 Additionally this allows us to ensure that groups are indeed intended to be used
 for issuing taskcluster scopes.
 
-If there is a demand, we can look at making this more dynamic, so it's easier to
-allow new groups. Maybe by issuing scopes for any group that has a role.
+#### Federated Access Grant
 
-Access Grant for Tools
-----------------------
 If you send a web-browser to `/?target=<target>&description=<description>` then
 once a user has authenticated, the user will be presented with a button to grant
 access to the target `<target>` (while `<decription>` is displayed as markdown).
@@ -78,7 +86,17 @@ appropriate error messages, you can call the
 [auth.currentScopes](https://docs.taskcluster.net/reference/platform/auth/api-docs#currentScopes)
 method.
 
-Service Owner
--------------
+### Direct Logins for Tools
+
+There are two bits of special support for rapid logins to the Tools site:
+
+ * "Sign-In With Okta" follows the usual Okta login process, but automatically
+   redirects back to tools.
+
+ * "Sign-In With Email" uses an Auth0 lock on the login site (against IAM
+   guidelines) to authenticate uesrs by email verification. When used from the
+   tools site, again there is an immediate redirect back.
+
+## Service Owner
 
 Service Owner: dustin@mozilla.com
