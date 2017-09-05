@@ -615,6 +615,17 @@ let load = loader({
     },
   },
 
+  // drop the provisioner / workerType / worker tracking tables (in case
+  // of backouts). Intended to be run from a one-off heroku dyno
+  'remove-all-worker-tables': {
+    requires: ['Provisioner', 'WorkerType', 'Worker'],
+    setup: async ({Provisioner, WorkerType, Worker}) => {
+      await Provisioner.removeTable();
+      await WorkerType.removeTable();
+      await Worker.removeTable();
+    },
+  },
+
   // Create the load-test process (run as one-off job)
   'load-test': {
     requires: ['cfg'],
