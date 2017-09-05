@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -16,7 +17,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 	c, err := q.CancelTask(taskID)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 	}
 
