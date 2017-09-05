@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -25,6 +26,9 @@ var (
 	validArgs         []string
 	cache             = Cache()
 	pingURLsCachePath = filepath.Join("cmds", "status", "pingURLs.json")
+	magenta           = color.New(color.FgMagenta)
+	yellow            = color.New(color.FgYellow)
+	green             = color.New(color.FgGreen)
 )
 
 type (
@@ -154,7 +158,7 @@ func ReadCachedURLsFile(cache *configdir.Config, cachePath string) (cachedURLs *
 // already, and creating parent folders, if required), using the current time
 // for the retrieval timestamp.
 func (p PingURLs) Cache(cache *configdir.Config, cachePath string) (cachedURLs *CachedURLs, err error) {
-	color.Magenta("Writing cache file %v", filepath.Join(cache.Path, cachePath))
+	magenta.Fprintf(os.Stderr, "Writing cache file %v\n", filepath.Join(cache.Path, cachePath))
 
 	cachedURLs = &CachedURLs{
 		LastUpdated: time.Now(),
@@ -182,7 +186,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 // ScrapePingURLs queries manifestURL to return a manifest of services, which
 // are then queried to fetch ping URLs for taskcluster services
 func ScrapePingURLs(manifestURL string) (pingURLs PingURLs, err error) {
-	color.Yellow("Scraping ping URLs from %v", manifestURL)
+	yellow.Fprintf(os.Stderr, "Scraping ping URLs from %v\n", manifestURL)
 	var allAPIs map[string]string
 	err = objectFromJSONURL(manifestURL, &allAPIs)
 	if err != nil {
@@ -256,8 +260,8 @@ func respbody(service string) error {
 	}
 	if servstat.Alive {
 		living := "Alive"
-		fmt.Printf("      %v\n", service)
-		color.Green("      %v\n", living)
+		fmt.Fprintf(os.Stderr, "      %v\n", service)
+		green.Fprintf(os.Stderr, "      %v\n", living)
 	}
 
 	return nil
