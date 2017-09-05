@@ -9,7 +9,6 @@ let Promise     = require('promise');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
-
 // Priority levels in order from high to low
 const PRIORITY_LEVELS = [
   'highest',
@@ -1373,6 +1372,8 @@ api.declare({
     this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
   ]);
 
+  await this.workerInfo.taskSeen(provisionerId, workerType, workerGroup, workerId, result);
+
   return res.reply({
     tasks: result,
   });
@@ -2312,4 +2313,94 @@ api.declare({
   }
 
   return res.reply(result);
+});
+
+/** Get a worker from a worker-type */
+api.declare({
+  method:     'get',
+  route:      '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
+  name:       'getWorker',
+  stability:  API.stability.experimental,
+  output:     'worker-response.json#',
+  title:      'Get a worker-type',
+  description: [
+    'Get a worker from a worker-type.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {provisionerId, workerType, workerGroup, workerId} = req.params;
+
+  const worker = await this.Worker.load({
+    provisionerId,
+    workerType,
+    workerGroup,
+    workerId,
+    expires: Entity.op.greaterThan(new Date()),
+  });
+
+  if (!worker) {
+    return res.reportError('ResourceNotFound',
+      'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
+      'worker-type {{workerType}} and provisionerId {{provisionerId}} not found.' +
+      'Are you sure it was created?', {
+        workerId,
+        workerGroup,
+        workerType,
+        provisionerId,
+      },
+    );
+  }
+
+  return res.reply(worker.json());
+});
+
+// /** Update a worker */
+api.declare({
+  method:     'put',
+  route:      '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
+  name:       'declareWorker',
+  stability:  API.stability.experimental,
+  scopes:     [
+    [
+      'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>',
+    ],
+  ],
+  deferAuth:  true,
+  output:     'worker-response.json#',
+  input:      'update-worker-request.json#',
+  title:      'Declare a worker',
+  description: [
+    'Declare a worker, supplying some details about it.',
+    '',
+    '`declareWorker` allows updating one or more properties of a worker as long as the required scopes are',
+    'possessed.',
+  ].join('\n'),
+}, async function(req, res) {
+  const {provisionerId, workerType, workerGroup, workerId} = req.params;
+  const {expires} = req.body;
+
+  const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
+
+  // Authenticate request by providing parameters
+  const requestAllowed = Object.keys(req.body)
+    .every(property => req.satisfies({provisionerId, workerType, workerGroup, workerId, property}));
+
+  if (!requestAllowed) {
+    return;
+  }
+
+  const result = worker ?
+    await worker.modify((entity) => {
+      entity.expires = new Date(expires || entity.expires);
+    }) :
+    await this.Worker.create({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks: Entity.types.SlugIdArray.create(),
+      expires: expires || taskcluster.fromNow('1 day'),
+      firstClaim: new Date(),
+    });
+
+  return res.reply(result.json());
 });
