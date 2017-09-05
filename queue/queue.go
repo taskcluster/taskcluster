@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 31 Aug 2017 at 17:23:00 UTC. The code was generated
+// Tue, 5 Sep 2017 at 19:25:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -786,6 +786,34 @@ func (myQueue *Queue) ListWorkers(provisionerId, workerType, continuationToken, 
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", new(ListWorkersResponse), v)
 	return responseObject.(*ListWorkersResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a worker from a worker-type.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#getWorker
+func (myQueue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	return responseObject.(*WorkerResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Declare a worker, supplying some details about it.
+//
+// `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
+// possessed.
+//
+// Required scopes:
+//   * queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#declareWorker
+func (myQueue *Queue) DeclareWorker(provisionerId, workerType, workerGroup, workerId string, payload *WorkerRequest) (*WorkerResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	return responseObject.(*WorkerResponse), err
 }
 
 // Respond without doing anything.

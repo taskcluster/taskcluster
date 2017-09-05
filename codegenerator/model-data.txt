@@ -1,4 +1,4 @@
-Generated: 1504200218
+Generated: 1504639514
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7033,6 +7033,35 @@ page. You may limit this with the query-string parameter `limit`.'
 Entry 29    =
     Entry Type        = 'function'
     Entry Method      = 'get'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>'
+    Entry Args        = '[provisionerId workerType workerGroup workerId]'
+    Entry Query        = '[]'
+    Entry Name        = 'getWorker'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[]'
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
+    Entry Title       = 'Get a worker-type'
+    Entry Description = 'Get a worker from a worker-type.'
+Entry 30    =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>'
+    Entry Args        = '[provisionerId workerType workerGroup workerId]'
+    Entry Query        = '[]'
+    Entry Name        = 'declareWorker'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
+    Entry Title       = 'Declare a worker'
+    Entry Description = 'Declare a worker, supplying some details about it.
+
+`declareWorker` allows updating one or more properties of a worker as long as the required scopes are
+possessed.'
+Entry 31    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
     Entry Route       = '/ping'
     Entry Args        = '[]'
     Entry Query        = '[]'
@@ -9595,6 +9624,29 @@ TypeName               = 'ProvisionerRequest'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#'
 
 
+http://schemas.taskcluster.net/queue/v1/update-worker-request.json#
+===================================================================
+Additional Properties  = 'false'
+Description            = 'Request to update a worker.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#'
+Properties
+  Property 'expires' =
+    Description            = 'Date and time after which the worker will be automatically
+    deleted by the queue.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker Expiration'
+    Type                   = 'string'
+    TypeName               = 'WorkerExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/expires'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Worker Request'
+Type                   = 'object'
+TypeName               = 'WorkerRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#'
+
+
 http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
 =======================================================================
 Additional Properties  = 'false'
@@ -9634,6 +9686,95 @@ Title                  = 'Worker-type Request'
 Type                   = 'object'
 TypeName               = 'WorkerTypeRequest'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/worker-response.json#
+=============================================================
+Additional Properties  = 'false'
+Description            = 'Response containing information about a worker.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
+Properties
+  Property 'expires' =
+    Description            = 'Date and time after which the worker will be automatically
+    deleted by the queue.
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker Expiration'
+    Type                   = 'string'
+    TypeName               = 'WorkerExpiration'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/expires'
+  Property 'firstClaim' =
+    Description            = 'Date of the first time this worker claimed a task.
+    '
+    Format                 = 'date-time'
+    Title                  = 'First task claimed'
+    Type                   = 'string'
+    TypeName               = 'FirstTaskClaimed'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/firstClaim'
+  Property 'provisionerId' =
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Provisioner ID'
+    Type                   = 'string'
+    TypeName               = 'ProvisionerID'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId'
+  Property 'recentTasks' =
+    Description            = '20 most recent task Ids claimed by the worker.
+    '
+    Items
+      Description            = 'Unique task identifier, this is UUID encoded as
+      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+      stripped of `=` padding.
+      '
+      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+      Title                  = 'Task Identifiers'
+      Type                   = 'string'
+      TypeName               = 'TaskIdentifiers'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items'
+    Title                  = 'Recent Tasks'
+    Type                   = 'array'
+    TypeName               = 'RecentTasks'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks'
+  Property 'workerGroup' =
+    Description            = 'Identifier for group that worker who executes this run is a part of,
+    this identifier is mainly used for efficient routing.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Group'
+    Type                   = 'string'
+    TypeName               = 'WorkerGroup'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerGroup'
+  Property 'workerId' =
+    Description            = 'Identifier for worker evaluating this run within given
+    `workerGroup`.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'Worker Identifier'
+    Type                   = 'string'
+    TypeName               = 'WorkerIdentifier'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerId'
+  Property 'workerType' =
+    Description            = 'WorkerType name.
+    '
+    MaxLength              = '22'
+    MinLength              = '1'
+    Pattern                = '^([a-zA-Z0-9-_]*)$'
+    Title                  = 'WorkerType name'
+    Type                   = 'string'
+    TypeName               = 'WorkerTypeName'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType'
+Required               = '[provisionerId workerType workerGroup workerId recentTasks expires firstClaim]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Worker Response'
+Type                   = 'object'
+TypeName               = 'WorkerResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/workertype-response.json#

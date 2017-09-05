@@ -1722,6 +1722,76 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
+	// Request to update a worker.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#
+	WorkerRequest struct {
+
+		// Date and time after which the worker will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/expires
+		Expires tcclient.Time `json:"expires,omitempty"`
+	}
+
+	// Response containing information about a worker.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#
+	WorkerResponse struct {
+
+		// Date and time after which the worker will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// Date of the first time this worker claimed a task.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/firstClaim
+		FirstClaim tcclient.Time `json:"firstClaim"`
+
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId
+		ProvisionerID string `json:"provisionerId"`
+
+		// 20 most recent task Ids claimed by the worker.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks
+		RecentTasks []string `json:"recentTasks"`
+
+		// Identifier for group that worker who executes this run is a part of,
+		// this identifier is mainly used for efficient routing.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerGroup
+		WorkerGroup string `json:"workerGroup"`
+
+		// Identifier for worker evaluating this run within given
+		// `workerGroup`.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerId
+		WorkerID string `json:"workerId"`
+
+		// WorkerType name.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType
+		WorkerType string `json:"workerType"`
+	}
+
 	// Request to update a worker-type.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
