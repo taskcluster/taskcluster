@@ -1,8 +1,11 @@
 const taskcluster = require('taskcluster-client');
+const Entity      = require('azure-entities');
 const assert      = require('assert');
+const slugid      = require('slugid');
 const debug       = require('debug')('workerinfo');
 
 const DAY = 24 * 60 * 60 * 1000;
+const RECENT_TASKS_LIMIT = 20;
 
 const ignoreEntityAlreadyExists = (err) => {
   if (!err || err.code !== 'EntityAlreadyExists') {
@@ -129,7 +132,17 @@ class WorkerInfo {
           return worker.modify(entity => updateExpiration(entity, expires));
         }
 
-        createEntry(this.Worker, {provisionerId, workerType, workerGroup, workerId, expires});
+        const recentTasks = Entity.types.SlugIdArray.create();
+
+        createEntry(this.Worker, {
+          provisionerId,
+          workerType,
+          workerGroup,
+          workerId,
+          expires,
+          recentTasks,
+          firstClaim: new Date(),
+        });
       }));
     }
 
@@ -150,6 +163,50 @@ class WorkerInfo {
     debug('Expiring workers at: %s, from before %s', new Date(), now);
     count = await this.Worker.expire(now);
     debug('Expired %s workers', count);
+  }
+
+  async taskSeen(provisionerId, workerType, workerGroup, workerId, tasks) {
+    // Keep track of most recent tasks of a worker
+    const worker = await this.Worker.load({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+    }, true);
+
+    if (!tasks.length || !worker) {
+      return;
+    }
+
+    let existentTasks = worker.recentTasks.toArray();
+
+    // Allocate more space if needed
+    if (existentTasks.length && !worker.recentTasks.avail) {
+      worker.recentTasks.realloc();
+    }
+
+    // realloc will not add more space if no items in the buffer. We'll need to create a new SlugIdArray
+    const recentTasks = worker.recentTasks.avail ?
+      worker.recentTasks :
+      Entity.types.SlugIdArray.create();
+
+    tasks.forEach((task, index) => {
+      const taskId = tasks[index].status.taskId;
+
+      if (!existentTasks.includes(taskId)) {
+        if (existentTasks.length === RECENT_TASKS_LIMIT) {
+          recentTasks.remove(existentTasks[0]);
+          existentTasks = existentTasks.slice(1, RECENT_TASKS_LIMIT + 1);
+        }
+
+        existentTasks.push(taskId);
+        recentTasks.push(taskId);
+      }
+    });
+
+    await worker.modify(entity => {
+      entity.recentTasks = recentTasks;
+    });
   }
 }
 

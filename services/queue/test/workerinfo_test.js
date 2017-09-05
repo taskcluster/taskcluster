@@ -3,6 +3,8 @@ suite('provisioners and worker-types', () => {
   var assert      = require('assert');
   var _           = require('lodash');
   var Promise     = require('promise');
+  var slugid      = require('slugid');
+  var Entity      = require('azure-entities');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
@@ -168,14 +170,23 @@ suite('provisioners and worker-types', () => {
     const workerType = 'gecko-b-2-linux';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
+    const worker = {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks: Entity.types.SlugIdArray.create(),
+      expires: new Date('3017-07-29'),
+      firstClaim: new Date(),
+    };
 
-    await Worker.create({provisionerId, workerType, workerGroup, workerId, expires: new Date('3017-07-29')});
+    await Worker.create(worker);
 
     const result = await helper.queue.listWorkers(provisionerId, workerType);
 
     assert(result.workers.length === 1, 'expected workers');
-    assert(result.workers[0].workerGroup === workerGroup, `expected ${workerGroup}`);
-    assert(result.workers[0].workerId === workerId, `expected ${workerId}`);
+    assert(result.workers[0].workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
+    assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
   });
 
   test('list workers (limit and continuationToken)', async () => {
@@ -184,9 +195,21 @@ suite('provisioners and worker-types', () => {
     const provisionerId = 'prov2';
     const workerType = 'gecko-b-2-linux';
     const workerGroup = 'my-worker-group';
+    const worker = {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId: 'my-worker1',
+      recentTasks: Entity.types.SlugIdArray.create(),
+      expires,
+      firstClaim: new Date(),
+    };
 
-    await Worker.create({provisionerId, workerType, workerGroup, workerId: 'my-worker1', expires});
-    await Worker.create({provisionerId, workerType, workerGroup, workerId: 'my-worker2', expires});
+    await Worker.create(worker);
+
+    worker.workerId = 'my-worker2';
+
+    await Worker.create(worker);
 
     let result = await helper.queue.listWorkers(provisionerId, workerType, {limit: 1});
     assert(result.continuationToken);
@@ -222,11 +245,17 @@ suite('provisioners and worker-types', () => {
     const workerType = 'gecko-b-2-linux';
 
     await Worker.create({
-      provisionerId, workerType, workerGroup: 'my-worker-group', workerId: 'my-worker', expires: new Date('1017-07-29'),
+      provisionerId, workerType,
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      recentTasks: Entity.types.SlugIdArray.create(),
+      expires: new Date('1017-07-29'),
+      firstClaim: new Date(),
     });
     await helper.expireWorkerInfo();
 
     const result = await helper.queue.listWorkers(provisionerId, workerType);
+
     assert(result.workers.length === 0, 'expected no workers');
   });
 
@@ -393,5 +422,156 @@ suite('provisioners and worker-types', () => {
     assert(
       new Date(result.lastDateActive).getTime() !== prov.lastDateActive.getTime(), 'expected different lastDateActive'
     );
+  });
+
+  test('queue.getWorker returns workers', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov1';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+    const taskId = slugid.v4();
+    const taskId2 = slugid.v4();
+    const recentTasks = Entity.types.SlugIdArray.create();
+
+    recentTasks.push(taskId);
+    recentTasks.push(taskId2);
+
+    const worker = {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks,
+      expires: new Date('3017-07-29'),
+      firstClaim: new Date(),
+    };
+
+    await Worker.create(worker);
+
+    const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+
+    assert(result.provisionerId === worker.provisionerId, `expected ${worker.provisionerId}`);
+    assert(result.workerType === worker.workerType, `expected ${worker.workerType}`);
+    assert(result.workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
+    assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
+    assert(new Date(result.expires).getTime() === worker.expires.getTime(), `expected ${worker.expires}`);
+    assert(new Date(result.firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`);
+    assert(result.recentTasks[0] === taskId, `expected ${taskId}`);
+    assert(result.recentTasks[1] === taskId2, `expected ${taskId2}`);
+  });
+
+  test('queue.declareWorker updates a worker', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const recentTasks = Entity.types.SlugIdArray.create();
+    const taskId = slugid.v4();
+
+    recentTasks.push(taskId);
+
+    const worker = await Worker.create({
+      provisionerId: 'prov1',
+      workerType: 'gecko-b-2-linux',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      recentTasks,
+      expires: new Date('3017-07-29'),
+      firstClaim: new Date(),
+    });
+
+    const updateProps = {
+      expires: new Date('3000-01-01'),
+    };
+
+    await helper.queue.declareWorker(
+      worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps
+    );
+
+    const result = await helper.queue.getWorker(
+      worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId
+    );
+
+    assert(result.provisionerId === worker.provisionerId, `expected ${worker.provisionerId}`);
+    assert(result.workerType === worker.workerType, `expected ${worker.workerType}`);
+    assert(result.workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
+    assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
+    assert(result.recentTasks[0] === taskId, `expected ${taskId}`);
+    assert(new Date(result.expires).getTime() === updateProps.expires.getTime(), `expected ${updateProps.expires}`);
+  });
+
+  test('queue.claimWork adds a task to a worker', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov1';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+    const taskId = slugid.v4();
+
+    await helper.queue.createTask(taskId, {
+      provisionerId,
+      workerType,
+      priority: 'normal',
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('30 min'),
+      payload: {},
+      metadata: {
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
+        owner:          'haali@mozilla.com',
+        source:         'https://github.com/taskcluster/taskcluster-queue',
+      },
+    });
+
+    await helper.queue.claimWork(provisionerId, workerType, {
+      workerGroup,
+      workerId,
+      tasks: 1,
+    });
+
+    const result = await Worker.load({provisionerId, workerType, workerGroup, workerId});
+
+    assert(result.recentTasks.toArray()[0] === taskId, `expected taskId ${taskId}`);
+  });
+
+  test('queue.getWorker returns 20 most recent taskIds', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'no-provisioner';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+    let taskIds = [];
+
+    for (let i = 0; i < 30; i++) {
+      taskIds.push(slugid.v4());
+
+      await helper.queue.createTask(taskIds[i], {
+        provisionerId,
+        workerType,
+        priority: 'normal',
+        created: taskcluster.fromNowJSON(),
+        deadline: taskcluster.fromNowJSON('30 min'),
+        payload: {},
+        metadata: {
+          name:           'Unit testing task',
+          description:    'Task created during unit tests',
+          owner:          'haali@mozilla.com',
+          source:         'https://github.com/taskcluster/taskcluster-queue',
+        },
+      });
+    }
+
+    await helper.queue.claimWork(provisionerId, workerType, {
+      workerGroup,
+      workerId,
+      tasks: 30,
+    });
+
+    const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+    const recentTasks = result.recentTasks;
+
+    assert(result.recentTasks.length === 20, 'expected to have 20 tasks');
+
+    for (let i =0; i < 20; i++) {
+      assert(recentTasks[i] === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
+    }
   });
 });

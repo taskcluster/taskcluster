@@ -788,6 +788,24 @@ let Worker = Entity.configure({
     // the time at which this worker should no longer be displayed
     expires:          Entity.types.Date,
   },
+}).configure({
+  version:            2,
+  properties: {
+    provisionerId:    Entity.types.String,
+    workerType:       Entity.types.String,
+    workerGroup:      Entity.types.String,
+    workerId:         Entity.types.String,
+    recentTasks:      Entity.types.SlugIdArray,
+    // the time at which this worker should no longer be displayed
+    expires:          Entity.types.Date,
+    firstClaim:       Entity.types.Date,
+  },
+  migrate(item) {
+    item.firstClaim = new Date(2000, 0, 1);
+    item.recentTasks = Entity.types.SlugIdArray.create();
+
+    return item;
+  },
 });
 
 /**
@@ -807,6 +825,18 @@ Worker.expire = async function(now) {
   });
 
   return count;
+};
+
+Worker.prototype.json = function() {
+  return {
+    workerType:       this.workerType,
+    provisionerId:    this.provisionerId,
+    workerId:         this.workerId,
+    workerGroup:      this.workerGroup,
+    recentTasks:      this.recentTasks.toArray(),
+    expires:          this.expires.toJSON(),
+    firstClaim:       this.firstClaim.toJSON(),
+  };
 };
 
 exports.Worker = Worker;
