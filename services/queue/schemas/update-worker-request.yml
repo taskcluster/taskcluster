@@ -1,0 +1,14 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:          "Worker Request"
+description: |
+  Request to update a worker.
+type:           object
+properties:
+  expires:
+    title:        "Worker Expiration"
+    description: |
+      Date and time after which the worker will be automatically
+      deleted by the queue.
+    type:         string
+    format:       date-time
+additionalProperties: false

@@ -1,0 +1,73 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:          "Worker Response"
+description: |
+  Response containing information about a worker.
+type:           object
+properties:
+  provisionerId:
+    title:        "Provisioner ID"
+    type:         string
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  workerType:
+    type:         string
+    title:        "WorkerType name"
+    description: |
+      WorkerType name.
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  workerGroup:
+    title:        "Worker Group"
+    description: |
+      Identifier for group that worker who executes this run is a part of,
+      this identifier is mainly used for efficient routing.
+    type:         string
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  workerId:
+    title:        "Worker Identifier"
+    description: |
+      Identifier for worker evaluating this run within given
+      `workerGroup`.
+    type:         string
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
+  recentTasks:
+    title:        "Recent Tasks"
+    description: |
+      20 most recent task Ids claimed by the worker.
+    type:         array
+    items:
+      title:      "Task Identifiers"
+      type:       string
+      description: |
+        Unique task identifier, this is UUID encoded as
+        [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+        stripped of `=` padding.
+      pattern:        {$const: slugid-pattern}
+  expires:
+    title:        "Worker Expiration"
+    description: |
+      Date and time after which the worker will be automatically
+      deleted by the queue.
+    type:         string
+    format:       date-time
+  firstClaim:
+    title:        "First task claimed"
+    description: |
+      Date of the first time this worker claimed a task.
+    type:         string
+    format:       date-time
+additionalProperties: false
+required:
+  - provisionerId
+  - workerType
+  - workerGroup
+  - workerId
+  - recentTasks
+  - expires
+  - firstClaim
