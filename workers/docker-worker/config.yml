@@ -31,7 +31,7 @@ defaults:
     randomizationFactor: 0.25
   features:
     relengAPIProxy:
-      image: 'taskcluster/relengapi-proxy:2.1.1'
+      image: 'taskcluster/relengapi-proxy:2.0.1'
       token: !env RELENG_API_TOKEN
   ssl:
     certificate: '/etc/star_taskcluster-worker_net.crt'
