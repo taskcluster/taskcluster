@@ -359,9 +359,15 @@ var queue = new taskcluster.Queue(options);
  * `queue.listArtifacts(taskId, runId, [options]) : result`
  * `queue.listLatestArtifacts(taskId, [options]) : result`
  * `queue.listProvisioners([options]) : result`
+ * `queue.getProvisioner(provisionerId) : result`
+ * `queue.declareProvisioner(provisionerId, payload) : result`
  * `queue.pendingTasks(provisionerId, workerType) : result`
  * `queue.listWorkerTypes(provisionerId, [options]) : result`
+ * `queue.getWorkerType(provisionerId, workerType) : result`
+ * `queue.declareWorkerType(provisionerId, workerType, payload) : result`
  * `queue.listWorkers(provisionerId, workerType, [options]) : result`
+ * `queue.getWorker(provisionerId, workerType, workerGroup, workerId) : result`
+ * `queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) : result`
  * `queue.ping() : void`
 
 ### Methods in `taskcluster.Scheduler`
