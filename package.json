@@ -21,7 +21,6 @@
     "cliff": "^0.1.10",
     "common-tags": "^1.4.0",
     "ejs": "^2.5.7",
-    "fetch-mock": "^5.12.2",
     "got": "^7.1.0",
     "javascript-stringify": "^1.6.0",
     "json-schema-to-markdown": "^1.0.3",
@@ -29,12 +28,11 @@
     "karma-sourcemap-loader": "^0.3.7",
     "neutrino": "^6.1.5",
     "neutrino-preset-karma": "^6.1.5",
-    "object.omit": "^3.0.0",
-    "sinon": "^3.2.1"
+    "neutrino-preset-taskcluster-web-library": "^1.0.0",
+    "object.omit": "^3.0.0"
   },
   "dependencies": {
     "hawk": "^6.0.2",
-    "neutrino-preset-taskcluster-web-library": "^1.0.0",
     "query-string": "^5.0.0"
   }
 }
