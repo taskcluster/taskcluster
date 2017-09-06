@@ -77,6 +77,9 @@ func (l *SupersedeTask) Start() *CommandExecutionError {
 		return nil
 	}
 	taskIDs := supersedes.TaskIDs
+	if len(taskIDs) < 1 {
+		return nil
+	}
 	if l.task.TaskID != taskIDs[0] {
 		supersededByFile := filepath.Join(taskContext.TaskDir, supersededByPath)
 		err = fileutil.WriteToFileAsJSON(
