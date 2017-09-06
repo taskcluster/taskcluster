@@ -2,14 +2,6 @@
 # yarn lockfile v1
 
 
-"@eliperelman/neutrino-preset-library@^1.0.0":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@eliperelman/neutrino-preset-library/-/neutrino-preset-library-1.0.3.tgz#6be62ca98400fb513c5caa827fd67cb8fd20f0f8"
-  dependencies:
-    neutrino-middleware-banner "^6.1.5"
-    neutrino-preset-web "^6.1.5"
-    webpack-node-externals "^1.6.0"
-
 abbrev@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.0.tgz#d0554c2256636e2f56e7c2e5ad183f859428d81f"
@@ -3908,6 +3900,14 @@ neutrino-preset-karma@^6.1.5:
     ramda "^0.24.1"
     webpack "^2.6.1"
     webpack-dev-middleware "^1.10.2"
+
+neutrino-preset-taskcluster-web-library@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/neutrino-preset-taskcluster-web-library/-/neutrino-preset-taskcluster-web-library-1.0.0.tgz#92c701e8dbca78962b6e065628fb1ce7b130e776"
+  dependencies:
+    neutrino-middleware-banner "^6.1.5"
+    neutrino-preset-web "^6.1.5"
+    webpack-node-externals "^1.6.0"
 
 neutrino-preset-web@^6.1.5:
   version "6.1.5"

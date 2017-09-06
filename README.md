@@ -36,7 +36,10 @@ You must manually include these if you choose to use the script installation:_
 
 ```html
 <script src="https://unpkg.com/hawk/lib/browser.js"></script>
-<script>window.hawk = hawk;</script>
+<script>
+// hawk's "browser" client doesn't expose itself on window
+window.hawk = hawk;
+</script>
 <script src="https://wzrd.in/standalone/query-string"></script>
 <script src="https://unpkg.com/taskcluster-client-web"></script>
 ```

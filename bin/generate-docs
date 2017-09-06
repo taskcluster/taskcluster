@@ -97,6 +97,7 @@ fetchApis()
   .then(apis => {
     const docs = Object
       .keys(apis)
+      .sort()
       .map(name => {
         const reference = apis[name].reference;
         const filename = `${name.toLowerCase()}.md`;

@@ -15,7 +15,6 @@
     "update-all": "yarn compile-clients && yarn build && yarn docs"
   },
   "devDependencies": {
-    "@eliperelman/neutrino-preset-library": "^1.0.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "chai": "^4.1.2",
@@ -35,6 +34,7 @@
   },
   "dependencies": {
     "hawk": "^6.0.2",
+    "neutrino-preset-taskcluster-web-library": "^1.0.0",
     "query-string": "^5.0.0"
   }
 }
