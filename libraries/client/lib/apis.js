@@ -2413,6 +2413,42 @@ module.exports = {
         },
         {
           "args": [
+            "provisionerId"
+          ],
+          "description": "Get an active provisioner.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
+          "method": "get",
+          "name": "getProvisioner",
+          "output": "http://schemas.taskcluster.net/queue/v1/provisioner-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>",
+          "stability": "experimental",
+          "title": "Get an active provisioner",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId"
+          ],
+          "description": "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `aws-provisioner-v1`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:aws-provisioner-v1#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
+          "input": "http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#",
+          "method": "put",
+          "name": "declareProvisioner",
+          "output": "http://schemas.taskcluster.net/queue/v1/provisioner-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>",
+          "scopes": [
+            [
+              "queue:declare-provisioner:<provisionerId>#<property>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Update a provisioner",
+          "type": "function"
+        },
+        {
+          "args": [
             "provisionerId",
             "workerType"
           ],
@@ -2449,6 +2485,44 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
+          "description": "Get a worker-type from a provisioner.",
+          "method": "get",
+          "name": "getWorkerType",
+          "output": "http://schemas.taskcluster.net/queue/v1/workertype-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "stability": "experimental",
+          "title": "Get a worker-type",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.",
+          "input": "http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#",
+          "method": "put",
+          "name": "declareWorkerType",
+          "output": "http://schemas.taskcluster.net/queue/v1/workertype-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
+          "scopes": [
+            [
+              "queue:declare-worker-type:<provisionerId>/<workerType>#<property>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Update a worker-type",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
           "description": "Get a list of all active workerGroup/workerId of a workerType.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkers",
@@ -2457,9 +2531,51 @@ module.exports = {
             "continuationToken",
             "limit"
           ],
-          "route": "/provisioners/<provisionerId>/workerTypes/<workerType>/workers",
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "stability": "experimental",
           "title": "Get a list of all active workerGroup/workerId of a workerType",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Get a worker from a worker-type.",
+          "method": "get",
+          "name": "getWorker",
+          "output": "http://schemas.taskcluster.net/queue/v1/worker-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Get a worker-type",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Declare a worker, supplying some details about it.\n\n`declareWorker` allows updating one or more properties of a worker as long as the required scopes are\npossessed.",
+          "input": "http://schemas.taskcluster.net/queue/v1/update-worker-request.json#",
+          "method": "put",
+          "name": "declareWorker",
+          "output": "http://schemas.taskcluster.net/queue/v1/worker-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>",
+          "scopes": [
+            [
+              "queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Declare a worker",
           "type": "function"
         },
         {
