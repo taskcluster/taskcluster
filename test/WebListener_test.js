@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { WebListener, QueueEvents } from '../src';
 
 describe('WebListener', function() {

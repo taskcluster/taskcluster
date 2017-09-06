@@ -1,5 +1,5 @@
-import assert from 'assert';
-import { Auth, createTemporaryCredentials } from '../src';
+import { expect } from 'chai';
+import { Auth, createTemporaryCredentials, fromNow, request } from '../src';
 
 describe('Auth', function() {
   this.timeout(30000);
@@ -11,23 +11,135 @@ describe('Auth', function() {
     }
   });
 
-  it('should be loaded', () => {
-    assert(auth);
-  });
-
   it('should successfully ping', () => {
     return auth
       .ping()
-      .then(({ alive }) => assert.ok(alive))
-      .catch(err => {
-        console.log(err);
-      });
+      .then(({ alive }) => expect(alive).to.be.ok);
   });
 
   it('should build signed URL', () => {
-    const url = auth.buildSignedUrl(auth.client, 'test');
+    expect(auth.buildSignedUrl(auth.client, 'test'))
+      .to.match(new RegExp('^https://auth.taskcluster.net/v1/clients/test\\?bewit'));
+  });
 
-    assert(url.startsWith('https://auth.taskcluster.net/v1/clients/test?bewit'));
+  it('should request from signed URL', () => {
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
+
+    return request(url);
+  });
+
+  it('should fetch from signed URL with authorized scopes', () => {
+    const auth = new Auth({
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+      authorizedScopes: ['test:authenticate-get', 'test:foo']
+    });
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
+
+    return request(url)
+      .then(({ scopes }) => {
+        expect(scopes).to.deep.equal(['test:authenticate-get', 'test:foo']);
+      });
+  });
+
+  it('should fetch from signed URL with temporary credentials', () => {
+    const auth = new Auth({
+      credentials: createTemporaryCredentials({
+        scopes: ['test:authenticate-get', 'test:bar'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
+
+    return request(url)
+      .then(({ scopes }) => {
+        expect(scopes).to.deep.equal(['test:authenticate-get', 'test:bar']);
+      });
+  });
+
+  it('should fetch from expiring signed URL with temporary credentials', () => {
+    const auth = new Auth({
+      credentials: createTemporaryCredentials({
+        scopes: ['test:authenticate-get', 'test:bar'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 });
+
+    return request(url);
+  });
+
+  it('should fetch from signed URL with temporary credentials and authorized scopes', () => {
+    const auth = new Auth({
+      authorizedScopes: ['test:authenticate-get'],
+      credentials: createTemporaryCredentials({
+        scopes: ['test:auth*'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
+
+    return request(url)
+      .then(({ scopes }) => {
+        expect(scopes).to.deep.equal(['test:authenticate-get']);
+      });
+  });
+
+  it('should fail fetch from expired signed URL with temporary credentials', () => {
+    const auth = new Auth({
+      credentials: createTemporaryCredentials({
+        scopes: ['test:authenticate-get', 'test:bar'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet, { expiration: -600 });
+
+    return request(url)
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.response.status).to.equal(401);
+        }
+      );
+  });
+
+  it('should fail fetch from signed URL with unauthorized scopes', () => {
+    const auth = new Auth({
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret',
+      },
+      authorizedScopes: ['test:get'] // missing test:authenticate-get
+    });
+    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
+
+    return request(url)
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.response.status).to.equal(403);
+        }
+      );
   });
 
   it('should request with authentication', () => {
@@ -37,15 +149,15 @@ describe('Auth', function() {
         requiredScopes: []
       })
       .then(({ clientId, scopes }) => {
-        assert.equal(clientId, 'tester');
-        assert.deepEqual(scopes, []);
+        expect(clientId).to.equal('tester');
+        expect(scopes).to.deep.equal([]);
       });
   });
 
   it('should request with authentication and query string', () => {
     return auth
       .listClients({ prefix: 'abc' })
-      .then(clients => assert.deepEqual(clients, []));
+      .then(clients => expect(clients).to.deep.equal([]));
   });
 
   it('should fetch using authorized scopes', () => {
@@ -63,8 +175,8 @@ describe('Auth', function() {
         requiredScopes: ['test:param']
       })
       .then(({ clientId, scopes }) => {
-        assert.equal(clientId, 'tester');
-        assert.deepEqual(scopes, ['test:param']);
+        expect(clientId).to.equal('tester');
+        expect(scopes).to.deep.equal(['test:param']);
       });
   });
 
@@ -83,16 +195,39 @@ describe('Auth', function() {
         requiredScopes: ['test:something-else']
       })
       .then(
-        () => assert(false, 'Expected request to fail'),
-        (err) => assert(err)
+        () => expect.fail('Expected request to fail'),
+        (err) => expect(err).to.be.an('error')
       );
   });
 
-  it('should fetch using temporary credentials', () => {
+  it('should fail fetch using insufficient scopes', () => {
+    const auth = new Auth({
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret'
+      },
+      authorizedScopes: ['scopes:something-else']
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*'],
+        requiredScopes: ['scopes:specific']
+      })
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.body.code).to.equal('InsufficientScopes');
+        }
+      );
+  });
+
+  it('should fetch using unnamed temporary credentials', () => {
     const auth = new Auth({
       credentials: createTemporaryCredentials({
-        scopes: ['test:param'],
-        expiry: new Date(new Date().getTime() + 60 * 1000),
+        scopes: ['scopes:specific'],
+        expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
           accessToken: 'no-secret'
@@ -102,12 +237,12 @@ describe('Auth', function() {
 
     return auth
       .testAuthenticate({
-        clientScopes: ['test:*'],
-        requiredScopes: ['test:param']
+        clientScopes: ['scopes:*'],
+        requiredScopes: ['scopes:specific']
       })
       .then(({ clientId, scopes }) => {
-        assert.equal(clientId, 'tester');
-        assert.deepEqual(scopes, ['test:param']);
+        expect(clientId).to.equal('tester');
+        expect(scopes).to.deep.equal(['scopes:specific']);
       });
   });
 
@@ -115,7 +250,7 @@ describe('Auth', function() {
     const auth = new Auth({
       credentials: createTemporaryCredentials({
         scopes: ['test:params'],
-        expiry: new Date(new Date().getTime() + 60 * 1000),
+        expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
           accessToken: 'wrong-secret'
@@ -129,16 +264,207 @@ describe('Auth', function() {
         requiredScopes: ['test:something-else']
       })
       .then(
-        () => assert(false, 'Expected request to fail'),
+        () => expect.fail('Expected request to fail'),
         (err) => {
-          assert(err);
-          assert(err.status === 401, 'Expected HTTP 401');
-        });
+          expect(err).to.be.an('error');
+          expect(err.response.status).to.equal(401);
+        }
+      );
   });
 
-  it('should fetch signed URL', () => {
-    const url = auth.buildSignedUrl(auth.listClients, { prefix: 'non-existent/' });
+  it('should fail fetch using insufficient temporary credentials', () => {
+    const auth = new Auth({
+      credentials: createTemporaryCredentials({
+        scopes: ['scopes:something-else'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
 
-    return fetch(url, { method: 'GET' });
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*'],
+        requiredScopes: ['scopes:specific']
+      })
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.body.code).to.equal('InsufficientScopes');
+        }
+      );
+  });
+
+  it('should fetch with named temporary credentials', () => {
+    const credentials = createTemporaryCredentials({
+      scopes: ['scopes:specific'],
+      clientId: 'my-temp-cred',
+      expiry: fromNow('1 hour'),
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret'
+      }
+    });
+
+    expect(credentials.clientId).to.equal('my-temp-cred');
+
+    const auth = new Auth({ credentials });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
+        requiredScopes: ['scopes:specific']
+      })
+      .then(({ clientId, scopes }) => {
+        expect(clientId).to.equal('my-temp-cred');
+        expect(scopes).to.deep.equal(['scopes:specific']);
+      });
+  });
+
+  it('should fetch with named temporary credentials and authorized scopes', () => {
+    const credentials = createTemporaryCredentials({
+      scopes: ['scopes:*'],
+      clientId: 'my-temp-cred',
+      expiry: fromNow('1 hour'),
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'no-secret'
+      }
+    });
+
+    expect(credentials.clientId).to.equal('my-temp-cred');
+
+    const auth = new Auth({
+      credentials,
+      authorizedScopes: ['scopes:specific', 'scopes:another']
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
+        requiredScopes: ['scopes:specific']
+      })
+      .then(({ clientId, scopes }) => {
+        expect(clientId).to.equal('my-temp-cred');
+        expect(scopes).to.deep.equal(['scopes:specific', 'scopes:another']);
+      });
+  });
+
+  it('should fetch with temporary credentials using authorized scopes', () => {
+    const auth = new Auth({
+      authorizedScopes: ['scopes:subcategory:specific'],
+      credentials: createTemporaryCredentials({
+        scopes: ['scopes:subcategory:*'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*'],
+        requiredScopes: ['scopes:subcategory:specific']
+      })
+      .then(({ clientId, scopes }) => {
+        expect(clientId).to.equal('tester');
+        expect(scopes).to.deep.equal(['scopes:subcategory:specific']);
+      });
+  });
+
+  it('should fail fetch using temporary credentials with unauthorized and insufficient scopes', () => {
+    const auth = new Auth({
+      authorizedScopes: ['scopes:subcategory:wrong-scope'],
+      credentials: createTemporaryCredentials({
+        scopes: ['scopes:subcategory:*'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'no-secret'
+        }
+      })
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*'],
+        requiredScopes: ['scopes:subcategory:specific']
+      })
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.body.code).to.equal('InsufficientScopes');
+        }
+      )
+  });
+
+  it('should fail fetch using temporary credentials with authorized but bad authentication', () => {
+    const auth = new Auth({
+      authorizedScopes: ['scopes:subcategory:specific'],
+      credentials: createTemporaryCredentials({
+        scopes: ['scopes:subcategory:*'],
+        expiry: fromNow('1 hour'),
+        credentials: {
+          clientId: 'tester',
+          accessToken: 'wrong'
+        }
+      })
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: ['scopes:*'],
+        requiredScopes: ['scopes:subcategory:specific']
+      })
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.body.code).to.equal('AuthenticationFailed');
+        }
+      )
+  });
+
+  it('should fail with bad authentication', () => {
+    const auth = new Auth({
+      credentials: {
+        clientId: 'tester',
+        accessToken: 'wrong'
+      }
+    });
+
+    return auth
+      .testAuthenticate({
+        clientScopes: [],
+        requiredScopes: []
+      })
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.body.code).to.equal('AuthenticationFailed');
+        }
+      );
+  });
+
+  it('should fail with bad scopes', () => {
+    return auth
+      .testAuthenticate({
+        clientScopes: ['some-scope'],
+        requiredScopes: ['another-scope']
+      })
+      .then(
+        () => expect.fail('Expected request to fail'),
+        (err) => {
+          expect(err).to.be.an('error');
+          expect(err.body.code).to.equal('InsufficientScopes');
+        }
+      );
   });
 });

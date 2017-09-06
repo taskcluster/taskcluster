@@ -1,0 +1,11 @@
+dist: trusty
+language: node_js
+cache: yarn
+node_js:
+- '6.10'
+- '8'
+install:
+- yarn install --frozen-lockfile
+script:
+- yarn test
+- yarn build

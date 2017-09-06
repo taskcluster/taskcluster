@@ -13,17 +13,18 @@ const defaults = {
 };
 
 const handleResponse = (response) => {
-  if (response.ok) {
-    return response.json();
-  }
-
   return response
     .json()
-    .then(err => {
-      const message = err.message ? err.message.split('---')[0] : response.statusText;
+    .then(json => {
+      if (response.ok) {
+        return json;
+      }
+
+      const message = json.message ? json.message.split('---')[0] : response.statusText;
 
       return Promise.reject(Object.assign(new Error(message), {
-        status: response.status
+        response,
+        body: json
       }));
     });
 };

@@ -32,11 +32,15 @@ export default class Queue extends Client {
     this.listArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts',query:['continuationToken','limit'],args:['taskId','runId'],name:'listArtifacts',stability:'experimental',output:true};
     this.listLatestArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/artifacts',query:['continuationToken','limit'],args:['taskId'],name:'listLatestArtifacts',stability:'experimental',output:true};
     this.listProvisioners.entry = {type:'function',method:'get',route:'/provisioners',query:['continuationToken','limit'],args:[],name:'listProvisioners',stability:'experimental',output:true};
+    this.getProvisioner.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>',query:[],args:['provisionerId'],name:'getProvisioner',stability:'experimental',output:true};
+    this.declareProvisioner.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>',query:[],args:['provisionerId'],name:'declareProvisioner',stability:'experimental',scopes:[['queue:declare-provisioner:<provisionerId>#<property>']],input:true,output:true};
     this.pendingTasks.entry = {type:'function',method:'get',route:'/pending/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pendingTasks',stability:'stable',output:true};
     this.listWorkerTypes.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types',query:['continuationToken','limit'],args:['provisionerId'],name:'listWorkerTypes',stability:'experimental',output:true};
     this.getWorkerType.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'getWorkerType',stability:'experimental',output:true};
     this.declareWorkerType.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'declareWorkerType',stability:'experimental',scopes:[['queue:declare-worker-type:<provisionerId>/<workerType>#<property>']],input:true,output:true};
     this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true};
+    this.getWorker.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'getWorker',stability:'experimental',output:true};
+    this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',scopes:[['queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>']],input:true,output:true};
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
   }
 
@@ -374,6 +378,28 @@ export default class Queue extends Client {
     return this.request(this.listProvisioners.entry, args);
   }
 
+  // Get an active provisioner.
+  // The term "provisioner" is taken broadly to mean anything with a provisionerId.
+  // This does not necessarily mean there is an associated service performing any
+  // provisioning activity.
+  getProvisioner(...args) {
+    this.validate(this.getProvisioner.entry, args);
+    return this.request(this.getProvisioner.entry, args);
+  }
+
+  // Declare a provisioner, supplying some details about it.
+  // `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
+  // possessed. For example, a request to update the `aws-provisioner-v1`
+  // provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
+  // `queue:declare-provisioner:aws-provisioner-v1#description`.
+  // The term "provisioner" is taken broadly to mean anything with a provisionerId.
+  // This does not necessarily mean there is an associated service performing any
+  // provisioning activity.
+  declareProvisioner(...args) {
+    this.validate(this.declareProvisioner.entry, args);
+    return this.request(this.declareProvisioner.entry, args);
+  }
+
   // Get an approximate number of pending tasks for the given `provisionerId`
   // and `workerType`.
   // The underlying Azure Storage Queues only promises to give us an estimate.
@@ -419,6 +445,20 @@ export default class Queue extends Client {
   listWorkers(...args) {
     this.validate(this.listWorkers.entry, args);
     return this.request(this.listWorkers.entry, args);
+  }
+
+  // Get a worker from a worker-type.
+  getWorker(...args) {
+    this.validate(this.getWorker.entry, args);
+    return this.request(this.getWorker.entry, args);
+  }
+
+  // Declare a worker, supplying some details about it.
+  // `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
+  // possessed.
+  declareWorker(...args) {
+    this.validate(this.declareWorker.entry, args);
+    return this.request(this.declareWorker.entry, args);
   }
 
   // Respond without doing anything.

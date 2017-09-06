@@ -139,6 +139,16 @@ queue.listProvisioners(options)
 ```
 
 ```js
+// queue.getProvisioner :: provisionerId -> Promise Result
+queue.getProvisioner(provisionerId)
+```
+
+```js
+// queue.declareProvisioner :: (provisionerId -> payload) -> Promise Result
+queue.declareProvisioner(provisionerId, payload)
+```
+
+```js
 // queue.pendingTasks :: (provisionerId -> workerType) -> Promise Result
 queue.pendingTasks(provisionerId, workerType)
 ```
@@ -150,9 +160,29 @@ queue.listWorkerTypes(provisionerId, options)
 ```
 
 ```js
+// queue.getWorkerType :: (provisionerId -> workerType) -> Promise Result
+queue.getWorkerType(provisionerId, workerType)
+```
+
+```js
+// queue.declareWorkerType :: (provisionerId -> workerType -> payload) -> Promise Result
+queue.declareWorkerType(provisionerId, workerType, payload)
+```
+
+```js
 // queue.listWorkers :: (provisionerId -> workerType -> [options]) -> Promise Result
 queue.listWorkers(provisionerId, workerType)
 queue.listWorkers(provisionerId, workerType, options)
+```
+
+```js
+// queue.getWorker :: (provisionerId -> workerType -> workerGroup -> workerId) -> Promise Result
+queue.getWorker(provisionerId, workerType, workerGroup, workerId)
+```
+
+```js
+// queue.declareWorker :: (provisionerId -> workerType -> workerGroup -> workerId -> payload) -> Promise Result
+queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload)
 ```
 
 ```js

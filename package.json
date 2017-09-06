@@ -9,6 +9,7 @@
     "docs": "bin/generate-docs",
     "compile-clients": "bin/compile-clients",
     "list-clients": "bin/list-clients",
+    "prepare": "yarn update-all",
     "show-client": "bin/show-client",
     "test": "neutrino test",
     "update-all": "yarn compile-clients && yarn build && yarn docs"
@@ -17,9 +18,11 @@
     "@eliperelman/neutrino-preset-library": "^1.0.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "chai": "^4.1.2",
     "cliff": "^0.1.10",
     "common-tags": "^1.4.0",
     "ejs": "^2.5.7",
+    "fetch-mock": "^5.12.2",
     "got": "^7.1.0",
     "javascript-stringify": "^1.6.0",
     "json-schema-to-markdown": "^1.0.3",
@@ -27,7 +30,8 @@
     "karma-sourcemap-loader": "^0.3.7",
     "neutrino": "^6.1.5",
     "neutrino-preset-karma": "^6.1.5",
-    "object.omit": "^2.0.1"
+    "object.omit": "^3.0.0",
+    "sinon": "^3.2.1"
   },
   "dependencies": {
     "hawk": "^6.0.2",

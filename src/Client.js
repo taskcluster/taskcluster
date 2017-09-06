@@ -2,6 +2,8 @@ import { stringify } from 'query-string';
 import hawk from 'hawk';
 import fetch from './fetch';
 
+const REMOVE_TRAILING_SLASH = /\/$/;
+
 export default class Client {
   static defaults = {
     credentials: null,
@@ -13,16 +15,54 @@ export default class Client {
     maxDelay: 30 * 1000
   };
 
+  static create(reference) {
+    return class extends Client {
+      constructor(options) {
+        super({ ...options, reference });
+      }
+    };
+  }
+
   constructor(options = {}) {
     this.options = {
       ...Client.defaults,
       ...options,
-      baseUrl: (options.baseUrl || '').replace(/\/$/, ''),
+      baseUrl: (options.baseUrl || '').replace(REMOVE_TRAILING_SLASH, ''),
       exchangePrefix: options.exchangePrefix || ''
     };
 
     if (this.options.randomizationFactor < 0 || this.options.randomizationFactor >= 1) {
       throw new Error('options.randomizationFactor must be between 0 and 1');
+    }
+
+    const { reference } = options;
+
+    if (reference) {
+      if (reference.baseUrl) {
+        this.options.baseUrl = reference.baseUrl.replace(REMOVE_TRAILING_SLASH, '');
+      }
+
+      if (reference.exchangePrefix) {
+        this.options.exchangePrefix = reference.exchangePrefix;
+      }
+
+      if (reference.entries) {
+        reference.entries.forEach(entry => {
+          if (entry.type === 'function') {
+            this[entry.name] = function(...args) {
+              this.validate(entry, args);
+              return this.request(entry, args);
+            };
+            this[entry.name].entry = entry;
+          }
+
+          if (entry.type === 'topic-exchange') {
+            this[entry.name] = function(pattern) {
+              return this.normalizePattern(entry, pattern);
+            };
+          }
+        });
+      }
     }
   }
 
@@ -133,7 +173,8 @@ export default class Client {
         });
     }
 
-    const query = args[arity] ? `?${stringify(args[arity])}` : '';
+    const queryArgs = args[arity] && stringify(args[arity]);
+    const query = queryArgs ? `?${queryArgs}` : '';
 
     return `${this.options.baseUrl}${endpoint}${query}`;
   }

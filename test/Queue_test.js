@@ -1,5 +1,5 @@
+import { expect } from 'chai';
 import { Queue } from '../src';
-import assert from 'assert';
 
 describe('Queue', function() {
   this.timeout(30000);
@@ -7,12 +7,12 @@ describe('Queue', function() {
   const queue = new Queue();
 
   it('should be loaded', () => {
-    assert.ok(queue);
+    expect(queue).to.be.ok;
   });
 
-  it('should successfully ping', async () => {
-    const { alive } = await queue.ping();
-
-    assert.ok(alive);
+  it('should successfully ping', () => {
+    return queue
+      .ping()
+      .then(({ alive }) => expect(alive).to.be.ok);
   });
 });
