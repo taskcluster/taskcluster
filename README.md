@@ -437,7 +437,7 @@ import { slugid } from 'taskcluster-client-web';
 const taskId = slugid();
 ```
 
-The generates _nice_ random slug IDs. Refer to slugid package for further details.
+The generates _nice_ random slug IDs.
 
 ## Updating Built-In APIs
 
@@ -451,7 +451,7 @@ several other scripts for maintenance:
 - `yarn compile-clients`: Pull the latest API manifest from the schema endpoint and re-create the client classes.
 - `yarn list-clients`: Print a list of client APIs built into taskcluster-client-web based on the API reference.
 - `yarn show-client <client>`: Print the detailed schema information for a particular client, e.g. `yarm show Auth`.
-- `yarn test`: Run the test suites (TODO).
+- `yarn test`: Run the test suites.
 
 ## License
 
