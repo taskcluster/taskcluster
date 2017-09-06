@@ -5,7 +5,7 @@ const MANIFEST_URL = 'http://references.taskcluster.net/manifest.json';
 module.exports = () => {
   const apis = {};
 
-  got(MANIFEST_URL, { json: true })
+  return got(MANIFEST_URL, { json: true })
     .then(({ body }) => Promise.all(Object
       .keys(body)
       .map(name => got(body[name], { json: true })
