@@ -15,5 +15,4 @@ before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 script:
-- yarn test
-- yarn build
+- yarn test # the prepare script already does a build prior to this
