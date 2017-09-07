@@ -22,7 +22,7 @@ class Auth0Login {
       domain: options.cfg.auth0.domain,
       clientID: options.cfg.auth0.clientId,
       clientSecret: options.cfg.auth0.clientSecret,
-      callbackURL: url.resolve(options.cfg.server.publicUrl, '/auth0/login'),
+      callbackURL: url.resolve(options.cfg.server.publicUrl, '/auth0/callback'),
     }, this.auth0Callback.bind(this)));
   }
 
