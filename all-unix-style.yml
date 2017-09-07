@@ -115,7 +115,7 @@ properties:
     type: string
     title: Superseder URL
     description: |-
-      URL of the a service that can indicate tasks superseding this one; the current `taskId`
+      URL of a service that can indicate tasks superseding this one; the current `taskId`
       will be appended as a query argument `taskId`. The service should return an object with
       a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
       tasks should be ordered such that each task supersedes all tasks appearing later in the
@@ -160,12 +160,13 @@ definitions:
           scope `queue:get-artifact:<artifact-name>` to use this cache.
       content:
         title: Content
-        description: Optional content to be loaded when initially creating the cache.
+        description: Optional content to be preloaded when initially creating the
+          cache (if set, `format` must also be provided).
         "$ref": "#/definitions/content"
       format:
         title: Format
         type: string
-        description: Archive format of content for writable directory cache
+        description: Archive format of the preloaded content (if `content` provided).
         enum:
         - rar
         - tar.bz2

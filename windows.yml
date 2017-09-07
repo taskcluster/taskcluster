@@ -113,7 +113,7 @@ properties:
     type: string
     title: Superseder URL
     description: |-
-      URL of the a service that can indicate tasks superseding this one; the current `taskId`
+      URL of a service that can indicate tasks superseding this one; the current `taskId`
       will be appended as a query argument `taskId`. The service should return an object with
       a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
       tasks should be ordered such that each task supersedes all tasks appearing later in the

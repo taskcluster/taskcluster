@@ -96,7 +96,7 @@ type (
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
 		OSGroups []string `json:"osGroups,omitempty"`
 
-		// URL of the a service that can indicate tasks superseding this one; the current `taskId`
+		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
 		// tasks should be ordered such that each task supersedes all tasks appearing later in the
@@ -142,13 +142,13 @@ type (
 		// Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope `generic-worker:cache:<cache-name>`. Note if this cache is loaded from an artifact, you will also require scope `queue:get-artifact:<artifact-name>` to use this cache.
 		CacheName string `json:"cacheName"`
 
-		// Optional content to be loaded when initially creating the cache.
+		// Optional content to be preloaded when initially creating the cache (if set, `format` must also be provided).
 		Content Content `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume
 		Directory string `json:"directory"`
 
-		// Archive format of content for writable directory cache
+		// Archive format of the preloaded content (if `content` provided).
 		//
 		// Possible values:
 		//   * "rar"
@@ -334,7 +334,7 @@ func taskPayloadSchema() string {
         },
         "content": {
           "$ref": "#/definitions/content",
-          "description": "Optional content to be loaded when initially creating the cache.",
+          "description": "Optional content to be preloaded when initially creating the cache (if set, ` + "`" + `format` + "`" + ` must also be provided).",
           "title": "Content"
         },
         "directory": {
@@ -343,7 +343,7 @@ func taskPayloadSchema() string {
           "type": "string"
         },
         "format": {
-          "description": "Archive format of content for writable directory cache",
+          "description": "Archive format of the preloaded content (if ` + "`" + `content` + "`" + ` provided).",
           "enum": [
             "rar",
             "tar.bz2",
@@ -464,7 +464,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "supersederUrl": {
-      "description": "URL of the a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.",
+      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.",
       "format": "uri",
       "title": "Superseder URL",
       "type": "string"
