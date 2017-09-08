@@ -29,7 +29,7 @@ class Auth0Login {
   router() {
     let router = new express.Router();
 
-    // render the Jade template that shows the lock on get
+    // render the Jade template that shows the email-only lock on get
     router.get('/login', (req, res) => {
       res.render('auth0', {
         auth0_domain: this.cfg.auth0.domain,
@@ -46,6 +46,9 @@ class Auth0Login {
       });
     });
 
+    // this path will either handle a callback from the lock in the Jade
+    // template, or a callback from the hosted lock (allowing LDAP login).  In
+    // either case, req.user has been set up already.
     router.get('/callback', passport.authenticate('auth0', {
     }), (req, res) => {
       // if this was a local request, just go back to /
@@ -73,14 +76,28 @@ class Auth0Login {
     return router;
   };
 
-  // for the moment, we *only* support email login with Auth0.
   auth0Callback(accessToken, refreshToken, extraParams, profile, done) {
+    // Support both email and LDAP logins.  This is a bit of a cheat until everything
+    // is using OIDC, and unfortunately gives LDAP logins full 3-day temporary credentials
     try {
       let user = new User();
+
       if (!profile._json.email_verified) {
         throw new Error('email is not verified');
       }
-      user.identity = 'email/' + profile._json.email;
+
+      let {provider, connection} = profile.identities[0];
+      // The 'Mozilla-LDAP' connection corresponds to an LDAP login. For this
+      // login, emails are a unique identifier
+      if (provider === 'ad' && connection === 'Mozilla-LDAP') {
+        user.identity = 'mozilla-ldap/' + profile._json.email;
+      // The 'email' connection corresponds to a passwordless login.
+      } else if (provider === 'email' && connection === 'email') {
+        user.identity = 'email/' + profile._json.email;
+      } else {
+        throw new Error('unrecognized identity');
+      }
+
       this.authorize(user, done);
     } catch (err) {
       done(err, null);
