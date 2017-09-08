@@ -119,7 +119,9 @@ properties:
       will be appended as a query argument `taskId`. The service should return an object with
       a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
       tasks should be ordered such that each task supersedes all tasks appearing later in the
-      list.
+      list.  See
+      [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)
+      for more detail.
     format: uri
 definitions:
   mount:
