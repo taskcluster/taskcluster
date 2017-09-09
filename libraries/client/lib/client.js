@@ -213,6 +213,11 @@ exports.createClient = function(reference, name) {
     }
   };
 
+  Client.prototype.use = function(optionsUpdates) {
+    var options = _.defaults({}, optionsUpdates, this._options);
+    return new Client(options);
+  };
+
   // For each function entry create a method on the Client class
   reference.entries.filter(function(entry) {
     return entry.type === 'function';
