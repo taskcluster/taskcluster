@@ -252,6 +252,15 @@ suite('client requests/responses', function() {
     });
   });
 
+  test('Use .use to set baseUrl (404)', async () => {
+    nock('https://fake-staging.taskcluster.net').get('/v1/get-test')
+      .reply(404, {code: 'NotFoundError'});
+    let client = new Fake().use({baseUrl: 'https://fake-staging.taskcluster.net/v1'});
+    await client.get().then(() => assert('false'), err => {
+      assert(err.statusCode === 404);
+    });
+  });
+
   test('GET public resource', async () => {
     nock('https://fake.taskcluster.net').get('/v1/get-test')
       .reply(200, {})

@@ -47,6 +47,13 @@ The `payload` parameter is always a JSON object as documented by the REST API
 documentation. The methods always returns a _promise_ for the response JSON
 object as documented in the REST API documentation.
 
+If you need to create a client similar to a existing client, but with some
+options changed, use `client.use(options)`:
+
+```js
+await queue.use({authorizedScopes: [..]}).createTask(..);
+```
+
 ## Listening for Events
 
 Many TaskCluster components publishes messages about current events to pulse.
