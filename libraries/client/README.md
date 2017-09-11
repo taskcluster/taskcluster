@@ -51,8 +51,14 @@ If you need to create a client similar to a existing client, but with some
 options changed, use `client.use(options)`:
 
 ```js
-await queue.use({authorizedScopes: [..]}).createTask(..);
+queue
+  .use({authorizedScopes: [..]})
+  .createTask(..)
+  .then(..);
 ```
+
+This replaces any given options with new values.
+
 
 ## Listening for Events
 
