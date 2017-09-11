@@ -127,6 +127,19 @@ documentation. The methods always returns a _promise_ for the response JSON
 object as documented in the REST API documentation. If you have JavaScript Async Function
 support, you can also `await` these methods.
 
+If you need to create a client similar to a existing client, but with some
+options changed, use `client.use(options)`:
+
+```js
+queue
+  .use({authorizedScopes: [..]})
+  .createTask(..)
+  .then(..);
+```
+
+This replaces any given options with new values.
+
+
 ### Web Listener
 
 Listening to Pulse Events can be done using a `WebListener`. The WebListener will

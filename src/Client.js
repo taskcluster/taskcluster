@@ -66,6 +66,11 @@ export default class Client {
     }
   }
 
+  use(optionsUpdates) {
+    const options = { ...this.options , ...optionsUpdates };
+    return new this.constructor(options);
+  }
+
   debug(level, message) {
     if (!message) {
       message = level;

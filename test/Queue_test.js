@@ -15,4 +15,11 @@ describe('Queue', function() {
       .ping()
       .then(({ alive }) => expect(alive).to.be.ok);
   });
+
+  it('should successfully ping with `.use`', () => {
+    return queue
+      .use({authorizedScopes: []})
+      .ping()
+      .then(({ alive }) => expect(alive).to.be.ok);
+  });
 });
