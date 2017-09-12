@@ -12,7 +12,13 @@ export default class Client {
     retries: 5,
     delayFactor: 100,
     randomizationFactor: 0.25,
-    maxDelay: 30 * 1000
+    maxDelay: 30 * 1000,
+    exchangeAccessTokenUrl: 'https://login.taskcluster.net/v1/oidc-credentials/mozilla-auth0',
+    exchangeAccessToken: (accessToken, url) => fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
   };
 
   static create(reference) {
@@ -34,6 +40,9 @@ export default class Client {
     if (this.options.randomizationFactor < 0 || this.options.randomizationFactor >= 1) {
       throw new Error('options.randomizationFactor must be between 0 and 1');
     }
+
+    // Kick off any work needed to exchange an access token for credentials
+    this.exchange();
 
     const { reference } = options;
 
@@ -80,6 +89,23 @@ export default class Client {
     if (this.options.debug) {
       console[level](message);
     }
+  }
+
+  exchange() {
+    if (this.options.expires && Date.now() < this.options.expires.getTime()) {
+      return this.__exchange;
+    }
+
+    this.__exchange = this.options.accessToken ?
+      this.options
+        .exchangeAccessToken(this.options.accessToken, this.options.exchangeAccessTokenUrl)
+        .then(({ credentials, expires }) => {
+          this.options.credentials = credentials;
+          this.options.expires = new Date(expires);
+        }) :
+      Promise.resolve();
+
+    return this.__exchange;
   }
 
   getMethodExpectedArity({ input, args }) {
@@ -305,7 +331,7 @@ export default class Client {
     };
   }
 
-  async request(entry, args) {
+  request(entry, args) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const endpoint = this.buildEndpoint(entry, args);
     const extra = this.buildExtraData();
@@ -323,10 +349,14 @@ export default class Client {
       options.extra = extra;
     }
 
-    if (this.options.credentials) {
-      options.credentials = this.options.credentials;
-    }
+    return this
+      .exchange()
+      .then(() => {
+        if (this.options.credentials) {
+          options.credentials = this.options.credentials;
+        }
 
-    return fetch(url, options);
+        return fetch(url, options);
+      });
   }
 }

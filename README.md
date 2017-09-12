@@ -301,6 +301,19 @@ const auth = new Auth({
 });
 ```
 
+You may also choose to pass an access token from a Taskcluster-Login-supported authentication service,
+e.g. auth0. Passing an access token will cause the client instance to remotely fetch the associated
+credentials, which will then be filled in as options just as though they had been passed directly to
+the client constructor.
+
+Passing an access token to the client constructor has the added benefit of automatically fetching
+new credentials when the existing credentials expire, up until the access token's valid duration.
+
+_Note: Using an authentication access token instead of credentials will cause a network request to occur
+to fetch credentials every time a client class is created. For the sake of efficiency, you should try to
+limit the creation of client classes to minimize this impact and reuse the client instances as much as
+possible within your application._
+
 ### Restricting Authorized Scopes
 
 If you wish to perform requests on behalf of a third-party that has a smaller set of
@@ -352,6 +365,7 @@ listener.bind(queueEvents.taskCompleted({ taskId: '<myTaskId>' }));
 ```
 
 ## Relative Date-Time Utilities
+
 Many Taskcluster APIs require ISO 8601 timestamp offsets into the future
 as way of providing expiration, deadlines, etc. These can be easily created
 using `new Date().toJSON()`, however, it can be rather error prone and tedious
