@@ -45,12 +45,6 @@
         "url": "http://references.taskcluster.net/queue/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/platform/queue/exchanges"
     }, {
-        "url": "http://references.taskcluster.net/scheduler/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/platform/scheduler/api-docs"
-    }, {
-        "url": "http://references.taskcluster.net/scheduler/v1/exchanges.json",
-        "docroot": "https://docs.taskcluster.net/reference/platform/scheduler/exchanges"
-    }, {
         "url": "http://references.taskcluster.net/secrets/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/secrets/api-docs"
     }, {

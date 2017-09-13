@@ -21,7 +21,6 @@ This library provides the following packages to interface with Taskcluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/notify
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/secrets
 
 ### AMQP APIs
@@ -30,7 +29,6 @@ This library provides the following packages to interface with Taskcluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/githubevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecacheevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/schedulerevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/treeherderevents
 
 ## Example programs
