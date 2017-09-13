@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client-web",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "main": "lib/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "build": "neutrino build",
-    "docs": "bin/generate-docs",
-    "compile-clients": "bin/compile-clients",
+    "docs": "rm -f docs/* && bin/generate-docs",
+    "compile-clients": "rm -f src/clients/* && bin/compile-clients",
     "list-clients": "bin/list-clients",
     "prepare": "yarn build",
     "show-client": "bin/show-client",
