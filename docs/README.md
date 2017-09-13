@@ -27,7 +27,5 @@ that may be rejected from a Promise.
 - [PurgeCacheEvents](purgecacheevents.md)
 - [Queue](queue.md)
 - [QueueEvents](queueevents.md)
-- [Scheduler](scheduler.md)
-- [SchedulerEvents](schedulerevents.md)
 - [Secrets](secrets.md)
 - [TreeherderEvents](treeherderevents.md)

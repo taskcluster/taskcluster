@@ -132,9 +132,9 @@ options changed, use `client.use(options)`:
 
 ```js
 queue
-  .use({authorizedScopes: [..]})
-  .createTask(..)
-  .then(..);
+  .use({ authorizedScopes: [/* ... */] })
+  .createTask(/* ... */)
+  .then(/* ... */);
 ```
 
 This replaces any given options with new values.
@@ -304,7 +304,20 @@ const auth = new Auth({
 You may also choose to pass an access token from a Taskcluster-Login-supported authentication service,
 e.g. auth0. Passing an access token will cause the client instance to remotely fetch the associated
 credentials, which will then be filled in as options just as though they had been passed directly to
-the client constructor.
+the client constructor. Calling any methods on the client instance will wait for the credentials exchange
+to complete before being submitted.
+
+```js
+import { Queue } from 'taskcluster-client-web';
+
+const queue = new Queue({
+  accessToken: '<e.g. auth0 access token>'
+});
+
+queue
+  .createTask(/* ... */)
+  .then(/* ... */);
+```
 
 Passing an access token to the client constructor has the added benefit of automatically fetching
 new credentials when the existing credentials expire, up until the access token's valid duration.
