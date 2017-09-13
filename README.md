@@ -53,7 +53,7 @@ The following importing standards are supported:
 **ES imports**
 
 ```js
-import taskcluster from 'taskcluster-client-web';
+import * as taskcluster from 'taskcluster-client-web';
 import { Queue } from 'taskcluster-client-web';
 ```
 
