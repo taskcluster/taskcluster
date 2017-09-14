@@ -4,7 +4,7 @@ order: 20
 ---
 
 Your main interface to Taskcluster-Github is via `.taskcluster.yml` in the root
-of your project. This is a YAML file that speciifies the tasks to run on
+of your project. This is a YAML file that specifies the tasks to run on
 pushes, pull requests, or releases.
 
 The format of the file is:
@@ -62,7 +62,7 @@ The available events are:
   * `pull_request.reopened`
   * `pull_request.synchronize` (a new commit is pushed to the branch in the PR. NOTE: There is no 'd' at the end of 'synchronize')
   * `push`                     (a push is made directly to the repo)
-  * `release`                  (a new tag or release published in any branch of the repo)
+  * `release`                  (a new release published in any branch of the repo. NOTE: New tags are actually push events in github)
 
 
 In almost all cases, you'll only want `[push, pull_request.opened, pull_request.synchronize]`.
@@ -84,6 +84,16 @@ tasks:
 ```
 
 Branch filtering doesn't work for releases.
+
+### Roles
+
+Pushes, pull requests, and releases all are given access to [scopes](/manual/design/apis/hawk/scopes) via [roles](/manual/design/apis/hawk/roles) in Taskcluster. Following are the roles assigned to each type of event:
+
+* `Push` -- `assume:repo:github.com/<organization>/<repository>:branch:<branch>`
+* `Pull Request` -- `assume:repo:github.com/<organization>/<repository>:pull-request`
+* `Release` -- `assume:repo:github.com/<organization/<repository>:release`
+
+In the [role manager](https://tools.taskcluster.net/auth/roles/), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to only releases or specific branches, etc. [Read more](/manual/design/apis/hawk/scopes) about how scopes and roles work to see what you can do. There are lots of examples in the roles inspector for other repositories that have been set up. Look for roles that begin with `repo:github.com/` to see how they work.
 
 ## Who Can Trigger Jobs?
 
@@ -113,7 +123,7 @@ In addition to these token substitutions, by setting `extra.github.env` to
 environment variables with `GITHUB_` prefix. If these environment variables are
 not required (i.e. you only require token substitutions) then you do not need
 to set `extra.github.env`. These environment variables are also listed in the
-tables below, where they occur. Currently not all token substituions are
+tables below, where they occur. Currently not all token substitutions are
 available as environment variables (notably, the release metadata).
 
 ## Deadlines and the fromNow function
@@ -134,8 +144,8 @@ tasks:
     deadline: "{{ '2 hours' | $fromNow }}" # the task will timeout if it doesn't complete within 2 hours
 ```
 
-There is also a ``{{ timestamp }}`` token which coresponse to UNIX epoch in
-miliseconds.
+There is also a ``{{ timestamp }}`` token which corresponds to UNIX epoch in
+milliseconds.
 
 ## Pull Request Metadata
 
