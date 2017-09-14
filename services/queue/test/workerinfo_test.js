@@ -177,6 +177,7 @@ suite('provisioners and worker-types', () => {
       workerId,
       recentTasks: Entity.types.SlugIdArray.create(),
       expires: new Date('3017-07-29'),
+      disabled: false,
       firstClaim: new Date(),
     };
 
@@ -202,6 +203,7 @@ suite('provisioners and worker-types', () => {
       workerId: 'my-worker1',
       recentTasks: Entity.types.SlugIdArray.create(),
       expires,
+      disabled: false,
       firstClaim: new Date(),
     };
 
@@ -250,6 +252,7 @@ suite('provisioners and worker-types', () => {
       workerId: 'my-worker',
       recentTasks: Entity.types.SlugIdArray.create(),
       expires: new Date('1017-07-29'),
+      disabled: false,
       firstClaim: new Date(),
     });
     await helper.expireWorkerInfo();
@@ -444,6 +447,7 @@ suite('provisioners and worker-types', () => {
       workerId,
       recentTasks,
       expires: new Date('3017-07-29'),
+      disabled: false,
       firstClaim: new Date(),
     };
 
@@ -475,6 +479,7 @@ suite('provisioners and worker-types', () => {
       workerId: 'my-worker',
       recentTasks,
       expires: new Date('3017-07-29'),
+      disabled: false,
       firstClaim: new Date(),
     });
 
@@ -534,8 +539,8 @@ suite('provisioners and worker-types', () => {
 
   test('queue.getWorker returns 20 most recent taskIds', async () => {
     const Worker = await helper.load('Worker', helper.loadOptions);
-    const provisionerId = 'no-provisioner';
-    const workerType = 'gecko-b-2-linux';
+    const provisionerId = 'no-prov';
+    const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
     let taskIds = [];
@@ -573,5 +578,72 @@ suite('provisioners and worker-types', () => {
     for (let i =0; i < 20; i++) {
       assert(recentTasks[i] === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
     }
+  });
+
+  test('disable/enable a worker', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov1';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+    const taskId = slugid.v4();
+    const taskId2 = slugid.v4();
+    const recentTasks = Entity.types.SlugIdArray.create();
+    let result;
+
+    const worker = {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks,
+      expires: new Date('3017-07-29'),
+      disabled: false,
+      firstClaim: new Date(),
+    };
+
+    const makeTask = async taskId => {
+      await helper.queue.createTask(taskId, {
+        provisionerId,
+        workerType,
+        priority: 'normal',
+        created: taskcluster.fromNowJSON(),
+        deadline: taskcluster.fromNowJSON('30 min'),
+        payload: {},
+        metadata: {
+          name:           'Unit testing task',
+          description:    'Task created during unit tests',
+          owner:          'haali@mozilla.com',
+          source:         'https://github.com/taskcluster/taskcluster-queue',
+        },
+      });
+    };
+
+    await Worker.create(worker);
+    // Disable worker
+    await helper.queue.declareWorker(provisionerId, workerType, workerGroup, workerId, {disabled: true});
+    makeTask(taskId);
+    await helper.queue.claimWork(provisionerId, workerType, {
+      workerGroup,
+      workerId,
+      tasks: 1,
+    });
+
+    result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+
+    assert(result.recentTasks.length === 0, 'expected to have 0 tasks');
+
+    // Enable worker
+    await helper.queue.declareWorker(provisionerId, workerType, workerGroup, workerId, {disabled: false});
+    makeTask(taskId2);
+    await helper.queue.claimWork(provisionerId, workerType, {
+      workerGroup,
+      workerId,
+      tasks: 1,
+    });
+
+    result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+
+    assert(result.recentTasks.length === 1, 'expected to have 1 task');
   });
 });
