@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Index extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://index.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.findTask.entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',output:true};

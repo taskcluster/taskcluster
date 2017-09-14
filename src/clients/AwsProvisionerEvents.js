@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class AwsProvisionerEvents extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '',
-      exchangePrefix: 'exchange/taskcluster-aws-provisioner/v1/'
+      exchangePrefix: 'exchange/taskcluster-aws-provisioner/v1/',
+      ...options
     });
     
   }

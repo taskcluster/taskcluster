@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Login extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://login.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.oidcCredentials.entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',output:true};

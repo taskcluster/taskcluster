@@ -13,6 +13,7 @@ export default class Client {
     delayFactor: 100,
     randomizationFactor: 0.25,
     maxDelay: 30 * 1000,
+    exchangePrefix: '',
     exchangeAccessTokenUrl: 'https://login.taskcluster.net/v1/oidc-credentials/mozilla-auth0',
     exchangeAccessToken: (accessToken, url) => fetch(url, {
       headers: {
@@ -33,9 +34,11 @@ export default class Client {
     this.options = {
       ...Client.defaults,
       ...options,
-      baseUrl: (options.baseUrl || '').replace(REMOVE_TRAILING_SLASH, ''),
-      exchangePrefix: options.exchangePrefix || ''
     };
+
+    if (this.options.baseUrl) {
+      this.options.baseUrl = this.options.baseUrl.replace(REMOVE_TRAILING_SLASH, '');
+    }
 
     if (this.options.randomizationFactor < 0 || this.options.randomizationFactor >= 1) {
       throw new Error('options.randomizationFactor must be between 0 and 1');

@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class AwsProvisioner extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://aws-provisioner.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.listWorkerTypeSummaries.entry = {type:'function',method:'get',route:'/list-worker-type-summaries',query:[],args:[],name:'listWorkerTypeSummaries',stability:'stable',output:true};

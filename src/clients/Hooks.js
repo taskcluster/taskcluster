@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Hooks extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://hooks.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.listHookGroups.entry = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'experimental',output:true};

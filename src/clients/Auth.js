@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Auth extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://auth.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix'],args:[],name:'listClients',stability:'stable',output:true};

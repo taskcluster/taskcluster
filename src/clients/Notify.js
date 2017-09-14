@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Notify extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://notify.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',scopes:[['notify:email:<address>']],input:true};

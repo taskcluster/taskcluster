@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Secrets extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://secrets.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.set.entry = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',scopes:[['secrets:set:<name>']],input:true};

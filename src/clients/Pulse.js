@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Pulse extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://pulse.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.overview.entry = {type:'function',method:'get',route:'/overview',query:[],args:[],name:'overview',stability:'experimental',output:true};

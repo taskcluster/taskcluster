@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class PurgeCache extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://purge-cache.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.purgeCache.entry = {type:'function',method:'post',route:'/purge-cache/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'purgeCache',stability:'experimental',scopes:[['purge-cache:<provisionerId>/<workerType>:<cacheName>']],input:true};

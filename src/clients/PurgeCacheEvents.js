@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class PurgeCacheEvents extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '',
-      exchangePrefix: 'exchange/taskcluster-purge-cache/v1/'
+      exchangePrefix: 'exchange/taskcluster-purge-cache/v1/',
+      ...options
     });
     
   }
