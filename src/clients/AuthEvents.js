@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class AuthEvents extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '',
-      exchangePrefix: 'exchange/taskcluster-auth/v1/'
+      exchangePrefix: 'exchange/taskcluster-auth/v1/',
+      ...options
     });
     
   }

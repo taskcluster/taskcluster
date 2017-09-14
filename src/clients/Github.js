@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Github extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://github.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.githubWebHookConsumer.entry = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental'};

@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class GithubEvents extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '',
-      exchangePrefix: 'exchange/taskcluster-github/v1/'
+      exchangePrefix: 'exchange/taskcluster-github/v1/',
+      ...options
     });
     
   }

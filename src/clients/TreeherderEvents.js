@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class TreeherderEvents extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '',
-      exchangePrefix: 'exchange/taskcluster-treeherder/v1/'
+      exchangePrefix: 'exchange/taskcluster-treeherder/v1/',
+      ...options
     });
     
   }

@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class <%= name %> extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '<%= baseUrl %>',
-      exchangePrefix: '<%= exchangePrefix %>'
+      exchangePrefix: '<%= exchangePrefix %>',
+      ...options
     });
     <% methods.forEach(entry => { %>
     this.<%= entry.name %>.entry = <%- stringify(omit(entry, ['description', 'title'])) %>;<% }) %>

@@ -28,6 +28,13 @@ describe('Auth', function() {
     return request(url);
   });
 
+  it('should use a baseUrl if requested', () => {
+    const auth = new Auth({
+      baseUrl: 'https://localhost/auth/v1'
+    });
+    expect(auth.options.baseUrl).to.equal('https://localhost/auth/v1');
+  });
+
   it('should fetch from signed URL with authorized scopes', () => {
     const auth = new Auth({
       credentials: {

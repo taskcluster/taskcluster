@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class Queue extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: 'https://queue.taskcluster.net/v1',
-      exchangePrefix: ''
+      exchangePrefix: '',
+      ...options
     });
     
     this.task.entry = {type:'function',method:'get',route:'/task/<taskId>',query:[],args:['taskId'],name:'task',stability:'stable',output:true};

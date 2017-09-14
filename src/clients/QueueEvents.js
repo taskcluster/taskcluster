@@ -5,9 +5,9 @@ import Client from '../Client';
 export default class QueueEvents extends Client {
   constructor(options = {}) {
     super({
-      ...options,
       baseUrl: '',
-      exchangePrefix: 'exchange/taskcluster-queue/v1/'
+      exchangePrefix: 'exchange/taskcluster-queue/v1/',
+      ...options
     });
     
   }
