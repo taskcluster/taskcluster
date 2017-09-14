@@ -12,6 +12,7 @@ import fs from "mz/fs";
 import child_process from "mz/child_process";
 import taskcluster from 'taskcluster-client';
 import base from 'taskcluster-base';
+import promiseRetry from 'promise-retry';
 
 import features from './features';
 import getHostname from './util/hostname';
@@ -813,10 +814,21 @@ export class Task extends EventEmitter {
     this.writeLogHeader();
     let linkInfo = {};
     try {
+      const retryOptions = {
+        retries: 3,
+        minTimeout: 2000,
+        randomize: true
+      }
+
       // Build the list of container links... and base environment variables
-      linkInfo = await this.states.link(this);
+      linkInfo = await promiseRetry(retry => {
+        return this.states.link(this).catch(retry);
+      }, retryOptions);
+
       // Hooks prior to running the task.
-      await this.states.created(this);
+      await promiseRetry(retry => {
+        return this.states.created(this).catch(retry);
+      }, retryOptions);
     } catch (e) {
       return await this.abortRun(
         fmtErrorLog(
