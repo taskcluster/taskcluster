@@ -129,7 +129,11 @@ class WorkerInfo {
         const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
 
         if (worker) {
-          return worker.modify(entity => updateExpiration(entity, expires));
+          try {
+            return worker.modify(entity => updateExpiration(entity, expires));
+          } catch (err) {
+            throw err;
+          }
         }
 
         const recentTasks = Entity.types.SlugIdArray.create();
@@ -141,6 +145,7 @@ class WorkerInfo {
           workerId,
           expires,
           recentTasks,
+          disabled: false,
           firstClaim: new Date(),
         });
       }));
@@ -174,7 +179,7 @@ class WorkerInfo {
       workerId,
     }, true);
 
-    if (!tasks.length || !worker) {
+    if (!tasks.length || !worker || worker.disabled) {
       return;
     }
 

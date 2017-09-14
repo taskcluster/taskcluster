@@ -56,6 +56,12 @@ properties:
       deleted by the queue.
     type:         string
     format:       date-time
+  disabled:
+    title:        "Worker Disabled"
+    description: |
+      Disabling a worker allows the machine to remain alive but not accept jobs.
+      Enabling a worker on the other hand will resume accepting jobs.
+    type:         "boolean"
   firstClaim:
     title:        "First task claimed"
     description: |
@@ -70,4 +76,5 @@ required:
   - workerId
   - recentTasks
   - expires
+  - disabled
   - firstClaim

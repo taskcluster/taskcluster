@@ -806,6 +806,26 @@ let Worker = Entity.configure({
 
     return item;
   },
+}).configure({
+  version:            3,
+  properties: {
+    provisionerId:    Entity.types.String,
+    workerType:       Entity.types.String,
+    workerGroup:      Entity.types.String,
+    workerId:         Entity.types.String,
+    recentTasks:      Entity.types.SlugIdArray,
+    disabled:         Entity.types.Boolean,
+    // the time at which this worker should no longer be displayed
+    expires:          Entity.types.Date,
+    firstClaim:       Entity.types.Date,
+  },
+  migrate(item) {
+    item.firstClaim = new Date(2000, 0, 1);
+    item.recentTasks = Entity.types.SlugIdArray.create();
+    item.disabled = false;
+
+    return item;
+  },
 });
 
 /**
@@ -833,6 +853,7 @@ Worker.prototype.json = function() {
     provisionerId:    this.provisionerId,
     workerId:         this.workerId,
     workerGroup:      this.workerGroup,
+    disabled:         this.disabled,
     recentTasks:      this.recentTasks.toArray(),
     expires:          this.expires.toJSON(),
     firstClaim:       this.firstClaim.toJSON(),
