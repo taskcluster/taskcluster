@@ -1,4 +1,5 @@
 export { default as Client } from './Client';
+export { default as OIDCCredentialAgent } from './agents/OIDCCredentialAgent';
 export { createTemporaryCredentials, credentialInformation } from './credentials';
 export { fromNow, fromNowJSON, slugid, parseTime } from './utils';
 export { default as WebListener } from './WebListener';

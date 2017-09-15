@@ -1,6 +1,9 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { Client } from '../src';
 import reference from './reference-harness';
+
+use(chaiAsPromised);
 
 // This suite exercises the request and response functionality of
 // a client against a fake service defined by this reference
@@ -8,6 +11,19 @@ import reference from './reference-harness';
 const signed = (url) => url.includes('?') ?
   new RegExp(`^${url.replace('?', '\\?')}&bewit=(.*)`) :
   new RegExp(`^${url}\\?bewit=(.*)`);
+
+// assert that the given promise is rejected; chai-as-promised's
+// .rejected appears not to work
+const assertRejected = (promise) => {
+  let rejected = false;
+  return promise
+    .catch(() => { rejected = true; })
+    .then(() => {
+      if (!rejected) {
+        throw new Error('expected rejection');
+      }
+    });
+};
 
 describe('Building URLs', function() {
   this.timeout(30000);
@@ -28,8 +44,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL', () => {
-    expect(client.buildSignedUrl(client.get))
-      .to.match(signed('https://fake.taskcluster.net/v1/get-test'));
+    return expect(client.buildSignedUrl(client.get))
+      .to.eventually.match(signed('https://fake.taskcluster.net/v1/get-test'));
   });
 
   it('should build URL with parameter', () => {
@@ -38,8 +54,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL with parameter', () => {
-    expect(client.buildSignedUrl(client.param, 'test'))
-      .to.match(signed('https://fake.taskcluster.net/v1/url-param/test/list'));
+    return expect(client.buildSignedUrl(client.param, 'test'))
+      .to.eventually.match(signed('https://fake.taskcluster.net/v1/url-param/test/list'));
   });
 
   it('should build URL with 2 parameters', () => {
@@ -48,8 +64,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL with 2 parameters', () => {
-    expect(client.buildSignedUrl(client.param2, 'test', 'te/st'))
-      .to.match(signed('https://fake.taskcluster.net/v1/url-param2/test/te%2Fst/list'));
+    return expect(client.buildSignedUrl(client.param2, 'test', 'te/st'))
+      .to.eventually.match(signed('https://fake.taskcluster.net/v1/url-param2/test/te%2Fst/list'));
   });
 
   it('should not build URL with missing parameter', () => {
@@ -58,8 +74,7 @@ describe('Building URLs', function() {
   });
 
   it('should not build signed URL with missing parameter', () => {
-    expect(() => client.buildSignedUrl(client.param2, 'te/st'))
-      .to.throw();
+    return assertRejected(client.buildSignedUrl(client.param2, 'te/st'));
   });
 
   it('should build URL with query options', () => {
@@ -68,8 +83,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL with query options', () => {
-    expect(client.buildSignedUrl(client.query, { option: 2 }))
-      .to.match(signed('https://fake.taskcluster.net/v1/query/test?option=2'));
+    return expect(client.buildSignedUrl(client.query, { option: 2 }))
+      .to.eventually.match(signed('https://fake.taskcluster.net/v1/query/test?option=2'));
   });
 
   it('should build URL with empty query options', () => {
@@ -78,8 +93,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL with empty query options', () => {
-    expect(client.buildSignedUrl(client.query, {}))
-      .to.match(new RegExp('^https://fake.taskcluster.net/v1/query/test'));
+    return expect(client.buildSignedUrl(client.query, {}))
+      .to.eventually.match(new RegExp('^https://fake.taskcluster.net/v1/query/test'));
   });
 
   it('should not build URL with incorrect query option', () => {
@@ -88,8 +103,7 @@ describe('Building URLs', function() {
   });
 
   it('should not build signed URL with incorrect query option', () => {
-    expect(() => client.buildSignedUrl(client.query, { wrongKey: 2 }))
-      .to.throw();
+    return assertRejected(client.buildSignedUrl(client.query, { wrongKey: 2 }));
   });
 
   it('should build URL with parameter and query option', () => {
@@ -98,8 +112,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL with parameter and query option', () => {
-    expect(client.buildSignedUrl(client.paramQuery, 'test', { option: 2 }))
-      .to.match(signed('https://fake.taskcluster.net/v1/param-query/test?option=2'));
+    return expect(client.buildSignedUrl(client.paramQuery, 'test', { option: 2 }))
+      .to.eventually.match(signed('https://fake.taskcluster.net/v1/param-query/test?option=2'));
   });
 
   it('should build URL with parameter and empty query options', () => {
@@ -108,8 +122,8 @@ describe('Building URLs', function() {
   });
 
   it('should build signed URL with parameter and empty query options', () => {
-    expect(client.buildSignedUrl(client.paramQuery, 'test', {}))
-      .to.match(signed('https://fake.taskcluster.net/v1/param-query/test'));
+    return expect(client.buildSignedUrl(client.paramQuery, 'test', {}))
+      .to.eventually.match(signed('https://fake.taskcluster.net/v1/param-query/test'));
   });
 
   it('should not build URL with query options and missing parameter', () => {
@@ -128,7 +142,6 @@ describe('Building URLs', function() {
   });
 
   it('should not build signed URL for non-existent method', () => {
-    expect(() => client.buildSignedUrl('non-existent'))
-      .to.throw();
+    return assertRejected(client.buildSignedUrl('non-existent'));
   });
 });

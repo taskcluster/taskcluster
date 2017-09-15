@@ -216,14 +216,18 @@ import { Queue } from 'taskcluster-client-web';
 const queue = new Queue({ credentials });
 
 // Build signed url
-const signedUrl = queue.buildSignedUrl(
-  queue.getArtifactFromRun, // method to build signed url for.
-  taskId, // Task ID parameter
-  runId, // Run ID parameter
-  artifactName, // Artifact name parameter
-  { expiration: 60 * 10 }  // Expiration time in seconds
-);
+queue
+  .buildSignedUrl(
+    queue.getArtifactFromRun, // method to build signed url for.
+    taskId, // Task ID parameter
+    runId, // Run ID parameter
+    artifactName, // Artifact name parameter
+    { expiration: 60 * 10 }  // Expiration time in seconds
+  )
+  .then(signedUrl => { /* ... });
 ```
+
+**NOTE**: This method returns a promise, unlike in taskcluster-client.
 
 Please note that the `payload` parameter cannot be encoded in the signed URL
 and must be sent as request payload. This should work fine, just remember that
@@ -301,31 +305,52 @@ const auth = new Auth({
 });
 ```
 
-You may also choose to pass an access token from a Taskcluster-Login-supported authentication service,
-e.g. auth0. Passing an access token will cause the client instance to remotely fetch the associated
-credentials, which will then be filled in as options just as though they had been passed directly to
-the client constructor. Calling any methods on the client instance will wait for the credentials exchange
-to complete before being submitted.
+This is common server-side when using
+[taskcluster-client](https://github.com/taskcluster/taskcluster-client), but
+for web applications the credentials are usually acquired through some
+user-login process. For such cases, the client uses a `credentialAgent` to get
+Taskcluster credentials corresponding to the logged-in user. Agents can be
+shared between multiple clients, and are inherited via `.use`.
+
+#### OIDCCredentialAgent
+
+[Taskcluster-Login](https://docs.taskcluster.net/reference/integrations/taskcluster-login/docs/getting-user-creds)
+provides Taskcluster credentials in exchange for an OIDC `access_token`. To use
+this functionality, construct an `OIDCCredentialAgent` and pass it to the
+client. This agent will automatically fetch credentials as needed.
 
 ```js
-import { Queue } from 'taskcluster-client-web';
+import { Queue, OIDCCredentialAgent } from 'taskcluster-client-web';
 
-const queue = new Queue({
-  accessToken: '<e.g. auth0 access token>'
+const credentialAgent = new OIDCCredentialAgent({
+  accessToken: '...',
+  oidcProvider: 'mozilla-auth0',
 });
+
+const queue = new Queue({ credentialAgent });
 
 queue
   .createTask(/* ... */)
   .then(/* ... */);
 ```
 
-Passing an access token to the client constructor has the added benefit of automatically fetching
-new credentials when the existing credentials expire, up until the access token's valid duration.
+To get credentials from the agent, call its `getCredentials` method:
 
-_Note: Using an authentication access token instead of credentials will cause a network request to occur
-to fetch credentials every time a client class is created. For the sake of efficiency, you should try to
-limit the creation of client classes to minimize this impact and reuse the client instances as much as
-possible within your application._
+```js
+let credentials = await credentialAgent.getCredentials()
+```
+
+When the access token is refreshed, simply update it on the credential agent:
+
+```js
+credentialAgent.accessToken = newAccessToken;
+```
+
+#### Other Credential Agents
+
+Any object with an async `getCredentials()` method that returns Taskcluster
+credentials is suitable as a credential agent.  The method will be called for
+every Client method call, so it should perform some local caching.
 
 ### Restricting Authorized Scopes
 
