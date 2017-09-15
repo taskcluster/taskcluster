@@ -539,7 +539,7 @@ suite('provisioners and worker-types', () => {
 
   test('queue.getWorker returns 20 most recent taskIds', async () => {
     const Worker = await helper.load('Worker', helper.loadOptions);
-    const provisionerId = 'no-prov';
+    const provisionerId = 'no-provisioner';
     const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
