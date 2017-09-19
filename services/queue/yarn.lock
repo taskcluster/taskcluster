@@ -207,9 +207,9 @@ aws4@^1.2.1:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.6.0.tgz#83ef5ca860b2b32e4a0deedee8c771b9db57471e"
 
-azure-entities@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-2.0.1.tgz#8e465f0501e49eba2e59ce058afaff6edc7e1e96"
+azure-entities@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-2.0.5.tgz#84fe8c1f84035a34d4bb3bf3e7fa8ec3c9c28243"
   dependencies:
     ajv "^4.11.2"
     babel-runtime "^6.22.0"
