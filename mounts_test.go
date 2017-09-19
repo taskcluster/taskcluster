@@ -45,19 +45,19 @@ func TestMounts(t *testing.T) {
 		&FileMount{
 			File: filepath.Join("preloaded", "check-shasums.sh"),
 			Content: Content(`{
-				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/check-shasums.sh"
+				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/check-shasums.sh"
 			}`),
 		},
 		&FileMount{
 			File: filepath.Join("preloaded", "check-shasums.ps1"),
 			Content: Content(`{
-				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/check-shasums.ps1"
+				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/check-shasums.ps1"
 			}`),
 		},
 		&FileMount{
 			File: filepath.Join("preloaded", "shasums"),
 			Content: Content(`{
-				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/shasums"
+				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/shasums"
 			}`),
 		},
 
@@ -69,11 +69,11 @@ func TestMounts(t *testing.T) {
 
 		// pre-loaded writable directory cache from artifact
 		&WritableDirectoryCache{
-			CacheName: "tomato-cache",
-			Directory: filepath.Join("my-task-caches", "tomatoes"),
+			CacheName: "unknown-issuer-app-cache",
+			Directory: filepath.Join("my-task-caches", "unknown_issuer_app_1"),
 			Content: Content(`{
-				"taskId":   "To_4IZUgRgOrmR2w6UTerA",
-				"artifact": "public/build/mozharness.zip"
+				"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+				"artifact": "public/build/unknown_issuer_app_1.zip"
 			}`),
 			Format: "zip",
 		},
@@ -92,7 +92,7 @@ func TestMounts(t *testing.T) {
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("my-task-caches", "mozharness"),
 			Content: Content(`{
-				"taskId":   "OpqCz--JTlCYFq_bu3489A",
+				"taskId":   "VESwp9JaRo-XkFN_bemBhw",
 				"artifact": "public/build/mozharness.zip"
 			}`),
 			Format: "zip",
@@ -118,7 +118,7 @@ func TestMounts(t *testing.T) {
 	td.Scopes = []string{
 		"queue:get-artifact:SampleArtifacts/_/X.txt",
 		"generic-worker:cache:banana-cache",
-		"generic-worker:cache:tomato-cache",
+		"generic-worker:cache:unknown-issuer-app-cache",
 		"generic-worker:cache:devtools-app",
 	}
 
@@ -129,8 +129,8 @@ func TestMounts(t *testing.T) {
 
 	checkSHA256(
 		t,
-		"51477c657887ebd351a0d9dd9bb914c7ada9b34222745b9c030a3c13bde90b9f",
-		fileCaches["artifact:OpqCz--JTlCYFq_bu3489A:public/build/mozharness.zip"].Location,
+		"625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e",
+		fileCaches["artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip"].Location,
 	)
 	checkSHA256(
 		t,
@@ -144,13 +144,13 @@ func TestMounts(t *testing.T) {
 	)
 	checkSHA256(
 		t,
-		"8da97cd31517c99029c8d2bc69e276f8a0d96e6ce9409dab819b8be19114c44d",
-		fileCaches["urlcontent:https://raw.githubusercontent.com/taskcluster/testrepo/master/generic-worker/check-shasums.sh"].Location,
+		"96f72a068ed0aa4db440f5dc49379d6567b1e6c0c5bac44dc905745639c4314b",
+		fileCaches["urlcontent:https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/check-shasums.sh"].Location,
 	)
 	checkSHA256(
 		t,
-		"800683ad3faff0d4f4ecb07d31c1ad1f229615835b6da6be2dabf633d844574b",
-		fileCaches["artifact:To_4IZUgRgOrmR2w6UTerA:public/build/mozharness.zip"].Location,
+		"613193e90dcba442ffa01622834387bb5f175fdc67c46f564284261076994a75",
+		fileCaches["artifact:VESwp9JaRo-XkFN_bemBhw:public/build/mozharness.zip"].Location,
 	)
 	checkSHA256(
 		t,
