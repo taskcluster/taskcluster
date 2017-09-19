@@ -35,6 +35,7 @@ func TestMounts(t *testing.T) {
 		// file mount from artifact
 		&FileMount{
 			File: filepath.Join("preloaded", "Mr X.txt"),
+			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 			Content: Content(`{
 				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
 				"artifact": "SampleArtifacts/_/X.txt"
@@ -71,6 +72,7 @@ func TestMounts(t *testing.T) {
 		&WritableDirectoryCache{
 			CacheName: "unknown-issuer-app-cache",
 			Directory: filepath.Join("my-task-caches", "unknown_issuer_app_1"),
+			// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 			Content: Content(`{
 				"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
 				"artifact": "public/build/unknown_issuer_app_1.zip"
@@ -91,6 +93,7 @@ func TestMounts(t *testing.T) {
 		// read only directory from artifact
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("my-task-caches", "mozharness"),
+			// Note: the task definition for taskId VESwp9JaRo-XkFN_bemBhw can be seen in the testdata/tasks directory
 			Content: Content(`{
 				"taskId":   "VESwp9JaRo-XkFN_bemBhw",
 				"artifact": "public/build/mozharness.zip"
@@ -130,6 +133,7 @@ func TestMounts(t *testing.T) {
 	checkSHA256(
 		t,
 		"625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e",
+		// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
 		fileCaches["artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip"].Location,
 	)
 	checkSHA256(
@@ -140,6 +144,7 @@ func TestMounts(t *testing.T) {
 	checkSHA256(
 		t,
 		"8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
+		// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 		fileCaches["artifact:KTBKfEgxR5GdfIIREQIvFQ:SampleArtifacts/_/X.txt"].Location,
 	)
 	checkSHA256(
@@ -150,6 +155,7 @@ func TestMounts(t *testing.T) {
 	checkSHA256(
 		t,
 		"613193e90dcba442ffa01622834387bb5f175fdc67c46f564284261076994a75",
+		// Note: the task definition for taskId VESwp9JaRo-XkFN_bemBhw can be seen in the testdata/tasks directory
 		fileCaches["artifact:VESwp9JaRo-XkFN_bemBhw:public/build/mozharness.zip"].Location,
 	)
 	checkSHA256(
@@ -173,6 +179,7 @@ func TestMissingScopes(t *testing.T) {
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&FileMount{
 			File: filepath.Join("preloaded", "Mr X.txt"),
+			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 			Content: Content(`{
 				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
 				"artifact": "SampleArtifacts/_/X.txt"
@@ -278,6 +285,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("."),
+			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
 			Content: Content(`{
 				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
 				"artifact": "SampleArtifacts/_/X.txt"
