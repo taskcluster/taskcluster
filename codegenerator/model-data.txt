@@ -1,4 +1,4 @@
-Generated: 1505417086
+Generated: 1505841863
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2257,6 +2257,12 @@ Properties
           Type                   = 'object'
           TypeName               = 'LaunchSpec'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec'
+        Property 'region' =
+          Description            = 'The AWS region containing this availability zone.  Example: eu-central-1
+          '
+          Type                   = 'string'
+          TypeName               = 'Region'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/region'
         Property 'secrets' =
           Default                = 'map[]'
           Description            = 'Static Secrets unique to this AZ
@@ -2271,7 +2277,7 @@ Properties
           Type                   = 'object'
           TypeName               = 'UserData'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/userData'
-      Required               = '[availabilityZone launchSpec]'
+      Required               = '[region availabilityZone launchSpec]'
       Type                   = 'object'
       TypeName               = 'AvailabilityZonesEntry'
       SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items'
@@ -2615,6 +2621,12 @@ Properties
           Type                   = 'object'
           TypeName               = 'LaunchSpec'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec'
+        Property 'region' =
+          Description            = 'The AWS region containing this availability zone.  Example: eu-central-1
+          '
+          Type                   = 'string'
+          TypeName               = 'Region'
+          SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/region'
         Property 'secrets' =
           Default                = 'map[]'
           Description            = 'Static Secrets unique to this AZ
@@ -2629,7 +2641,7 @@ Properties
           Type                   = 'object'
           TypeName               = 'UserData'
           SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/userData'
-      Required               = '[availabilityZone launchSpec]'
+      Required               = '[availabilityZone region launchSpec]'
       Type                   = 'object'
       TypeName               = 'AvailabilityZonesEntry'
       SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items'

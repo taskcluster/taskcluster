@@ -48,6 +48,11 @@ type (
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
 
+			// The AWS region containing this availability zone.  Example: eu-central-1
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/region
+			Region string `json:"region"`
+
 			// Static Secrets unique to this AZ
 			//
 			// Default:    map[]
@@ -319,6 +324,11 @@ type (
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
+
+			// The AWS region containing this availability zone.  Example: eu-central-1
+			//
+			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/region
+			Region string `json:"region"`
 
 			// Static Secrets unique to this AZ
 			//
