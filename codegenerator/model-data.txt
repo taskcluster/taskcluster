@@ -1,4 +1,4 @@
-Generated: 1505841863
+Generated: 1505856221
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7839,6 +7839,32 @@ Properties
     Items
       Additional Properties  = 'false'
       Properties
+        Property 'disabled' =
+          Description            = 'Disabling a worker allows the machine to remain alive but not accept jobs.
+          Enabling a worker on the other hand will resume accepting jobs.
+          '
+          Title                  = 'Worker Disabled'
+          Type                   = 'boolean'
+          TypeName               = 'WorkerDisabled'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/disabled'
+        Property 'firstClaim' =
+          Description            = 'Date of the first time this worker claimed a task.
+          '
+          Format                 = 'date-time'
+          Title                  = 'First task claimed'
+          Type                   = 'string'
+          TypeName               = 'FirstTaskClaimed'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim'
+        Property 'latestTask' =
+          Description            = 'Unique task identifier, this is UUID encoded as
+          [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+          stripped of `=` padding.
+          '
+          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+          Title                  = 'Most Recent Claimed Task Identifier'
+          Type                   = 'string'
+          TypeName               = 'MostRecentClaimedTaskIdentifier'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask'
         Property 'workerGroup' =
           Description            = 'Identifier for the worker group containing this worker.
           '
