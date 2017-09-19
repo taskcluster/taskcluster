@@ -26,6 +26,26 @@ properties:
                     minLength:    {$const: identifier-min-length}
                     maxLength:    {$const: identifier-max-length}
                     pattern:      {$const: identifier-pattern}
+          disabled:
+                    title:        "Worker Disabled"
+                    description: |
+                      Disabling a worker allows the machine to remain alive but not accept jobs.
+                      Enabling a worker on the other hand will resume accepting jobs.
+                    type:         "boolean"
+          firstClaim:
+                    title:        "First task claimed"
+                    description: |
+                      Date of the first time this worker claimed a task.
+                    type:         string
+                    format:       date-time
+          latestTask:
+              title:          "Most Recent Claimed Task Identifier"
+              description: |
+                Unique task identifier, this is UUID encoded as
+                [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                stripped of `=` padding.
+              type:           string
+              pattern:        {$const: slugid-pattern}
       additionalProperties: false
   continuationToken:
     type:           string

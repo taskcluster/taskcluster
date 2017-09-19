@@ -170,6 +170,8 @@ suite('provisioners and worker-types', () => {
     const workerType = 'gecko-b-2-linux';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
+    const taskId = slugid.v4();
+    const taskId2 = slugid.v4();
     const worker = {
       provisionerId,
       workerType,
@@ -181,6 +183,9 @@ suite('provisioners and worker-types', () => {
       firstClaim: new Date(),
     };
 
+    worker.recentTasks.push(taskId);
+    worker.recentTasks.push(taskId2);
+
     await Worker.create(worker);
 
     const result = await helper.queue.listWorkers(provisionerId, workerType);
@@ -188,6 +193,11 @@ suite('provisioners and worker-types', () => {
     assert(result.workers.length === 1, 'expected workers');
     assert(result.workers[0].workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
     assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
+    assert(result.workers[0].disabled === worker.disabled, `expected ${worker.disabled}`);
+    assert(result.workers[0].latestTask === taskId2, `expected ${taskId2}`);
+    assert(
+      new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`
+    );
   });
 
   test('list workers (limit and continuationToken)', async () => {
