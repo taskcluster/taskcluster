@@ -16,7 +16,7 @@
     "assume": "^1.2.4",
     "aws-sdk": "^2.1.21",
     "aws-sdk-promise": "0.0.2",
-    "azure-entities": "^2.0.1",
+    "azure-entities": "^2.0.5",
     "azure-storage": "0.4.3",
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0",
@@ -58,6 +58,6 @@
   "engine-strict": true,
   "engines": {
     "node": "8.2.1",
-    "yarn": "0.27.5"
+    "yarn": "^1.0.2"
   }
 }
