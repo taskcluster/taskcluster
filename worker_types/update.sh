@@ -8,10 +8,14 @@ chmod 400 "${REGION}.id_rsa"
 
 # aws cli docs lie, they say userdata must be base64 encoded, but cli encodes for you, so just cat it...
 USER_DATA="$(cat userdata)"
+AMI_BASE_NAME="$(cat ami-base-name)"
 
 # find out latest windows 2012 r2 ami to use...
-AMI="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=platform,Values=windows" "Name=name,Values=Windows_Server-2012-R2_RTM-English-64Bit-Base*" --query 'Images[*].{A:CreationDate,B:ImageId}' --output text | sort -u | tail -1 | cut -f2)"
-log "Latest Windows 2012 R2 AMI is: ${AMI}"
+AMI_METADATA="$(aws --region "${REGION}" ec2 describe-images --owners self amazon --filters "Name=platform,Values=windows" "Name=name,Values=${AMI_BASE_NAME}" --query 'Images[*].{A:CreationDate,B:ImageId,C:Name}' --output text | sort -u | tail -1 | cut -f2,3)"
+
+AMI="$(echo $AMI_METADATA | sed 's/ .*//')"
+AMI_NAME="$(echo $AMI_METADATA | sed 's/.* //')"
+log "Base AMI is: ${AMI} ('${AMI_NAME}')"
 
 . ../find_old_aws_objects.sh
 
