@@ -1,4 +1,5 @@
 import { stringify } from 'query-string';
+import OIDCCredentialAgent from './agents/OIDCCredentialAgent';
 import hawk from 'hawk';
 import fetch from './fetch';
 
@@ -14,12 +15,7 @@ export default class Client {
     randomizationFactor: 0.25,
     maxDelay: 30 * 1000,
     exchangePrefix: '',
-    exchangeAccessTokenUrl: 'https://login.taskcluster.net/v1/oidc-credentials/mozilla-auth0',
-    exchangeAccessToken: (accessToken, url) => fetch(url, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
+    credentialAgent: null
   };
 
   static create(reference) {
@@ -44,8 +40,9 @@ export default class Client {
       throw new Error('options.randomizationFactor must be between 0 and 1');
     }
 
-    // Kick off any work needed to exchange an access token for credentials
-    this.exchange();
+    if (this.options.accessToken) {
+      throw new Error('options.accessToken is no longer supported; use OIDCCredentialAgent');
+    }
 
     const { reference } = options;
 
@@ -94,38 +91,20 @@ export default class Client {
     }
   }
 
-  exchange() {
-    if (this.options.expires && Date.now() < this.options.expires.getTime()) {
-      return this.__exchange;
-    }
-
-    this.__exchange = this.options.accessToken ?
-      this.options
-        .exchangeAccessToken(this.options.accessToken, this.options.exchangeAccessTokenUrl)
-        .then(({ credentials, expires }) => {
-          this.options.credentials = credentials;
-          this.options.expires = new Date(expires);
-        }) :
-      Promise.resolve();
-
-    return this.__exchange;
-  }
-
   getMethodExpectedArity({ input, args }) {
     return input ? args.length + 1 : args.length;
   }
 
-  buildExtraData() {
-    const { credentials, authorizedScopes } = this.options;
-
+  buildExtraData(credentials) {
     if (!credentials) {
-      return null;
+      return;
     }
 
+    const { authorizedScopes } = this.options;
     const { clientId, accessToken, certificate } = credentials;
 
     if (!clientId || !accessToken) {
-      return null;
+      return;
     }
 
     const extra = {};
@@ -145,9 +124,9 @@ export default class Client {
     }
 
     // If extra has any keys, base64 encode it
-    return Object.keys(extra).length ?
-      window.btoa(JSON.stringify(extra)) :
-      null;
+    if (Object.keys(extra).length) {
+      return window.btoa(JSON.stringify(extra));
+    }
   }
 
   buildEndpoint(entry, args) {
@@ -213,7 +192,7 @@ export default class Client {
     return `${this.options.baseUrl}${endpoint}${query}`;
   }
 
-  buildSignedUrl(method, ...args) {
+  async buildSignedUrl(method, ...args) {
     if (!method) {
       throw new Error('buildSignedUrl is missing required `method` argument');
     }
@@ -246,7 +225,9 @@ export default class Client {
     }
 
     const url = this.buildUrl(method, ...args);
-    const { credentials } = this.options;
+    const credentials = this.credentialAgent ?
+      await this.options.credentialAgent.getCredentials() :
+      this.options.credentials;
 
     if (!credentials) {
       throw new Error('buildSignedUrl missing required credentials');
@@ -269,7 +250,7 @@ export default class Client {
         algorithm: 'sha256'
       },
       ttlSec: expiration,
-      ext: this.buildExtraData()
+      ext: this.buildExtraData(credentials)
     });
 
     return url.includes('?') ? `${url}&bewit=${bewit}` : `${url}?bewit=${bewit}`;
@@ -334,32 +315,25 @@ export default class Client {
     };
   }
 
-  request(entry, args) {
+  async request(entry, args) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const endpoint = this.buildEndpoint(entry, args);
-    const extra = this.buildExtraData();
     const query = args[expectedArity] ? `?${stringify(args[expectedArity])}` : '';
     const url = `${this.options.baseUrl}${endpoint}${query}`;
-    const options = {
-      method: entry.method
-    };
+    const options = { method: entry.method };
+
+    const credentials = this.credentialAgent ?
+      await this.options.credentialAgent.getCredentials() :
+      this.options.credentials;
 
     if (entry.input) {
       options.body = JSON.stringify(args[expectedArity - 1]);
     }
-
-    if (extra) {
-      options.extra = extra;
+    if (credentials) {
+      options.credentials = credentials;
+      options.extra = this.buildExtraData(credentials);
     }
 
-    return this
-      .exchange()
-      .then(() => {
-        if (this.options.credentials) {
-          options.credentials = this.options.credentials;
-        }
-
-        return fetch(url, options);
-      });
+    return fetch(url, options);
   }
 }

@@ -1,5 +1,8 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { Auth, createTemporaryCredentials, fromNow, request } from '../src';
+
+use(chaiAsPromised);
 
 describe('Auth', function() {
   this.timeout(30000);
@@ -19,13 +22,12 @@ describe('Auth', function() {
 
   it('should build signed URL', () => {
     expect(auth.buildSignedUrl(auth.client, 'test'))
-      .to.match(new RegExp('^https://auth.taskcluster.net/v1/clients/test\\?bewit'));
+      .to.eventually.match(new RegExp('^https://auth.taskcluster.net/v1/clients/test\\?bewit'));
   });
 
   it('should request from signed URL', () => {
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
-
-    return request(url);
+    return auth.buildSignedUrl(auth.testAuthenticateGet)
+      .then(url => request(url));
   });
 
   it('should use a baseUrl if requested', () => {
@@ -43,9 +45,9 @@ describe('Auth', function() {
       },
       authorizedScopes: ['test:authenticate-get', 'test:foo']
     });
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
-
-    return request(url)
+    return auth
+      .buildSignedUrl(auth.testAuthenticateGet)
+      .then(url => request(url))
       .then(({ scopes }) => {
         expect(scopes).to.deep.equal(['test:authenticate-get', 'test:foo']);
       });
@@ -62,9 +64,9 @@ describe('Auth', function() {
         }
       })
     });
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
-
-    return request(url)
+    return auth
+      .buildSignedUrl(auth.testAuthenticateGet)
+      .then(url => request(url))
       .then(({ scopes }) => {
         expect(scopes).to.deep.equal(['test:authenticate-get', 'test:bar']);
       });
@@ -81,9 +83,9 @@ describe('Auth', function() {
         }
       })
     });
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 });
-
-    return request(url);
+    return auth
+      .buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 })
+      then(url => request(url));
   });
 
   it('should fetch from signed URL with temporary credentials and authorized scopes', () => {
@@ -98,9 +100,9 @@ describe('Auth', function() {
         }
       })
     });
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
-
-    return request(url)
+    return auth
+      .buildSignedUrl(auth.testAuthenticateGet)
+      .then(url => request(url))
       .then(({ scopes }) => {
         expect(scopes).to.deep.equal(['test:authenticate-get']);
       });
@@ -117,9 +119,9 @@ describe('Auth', function() {
         }
       })
     });
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet, { expiration: -600 });
-
-    return request(url)
+    return auth
+      .buildSignedUrl(auth.testAuthenticateGet, { expiration: -600 })
+      .then(url => request(url))
       .then(
         () => expect.fail('Expected request to fail'),
         (err) => {
@@ -137,9 +139,9 @@ describe('Auth', function() {
       },
       authorizedScopes: ['test:get'] // missing test:authenticate-get
     });
-    const url = auth.buildSignedUrl(auth.testAuthenticateGet);
-
-    return request(url)
+    return auth
+      .buildSignedUrl(auth.testAuthenticateGet)
+      .then(url => request(url))
       .then(
         () => expect.fail('Expected request to fail'),
         (err) => {
