@@ -312,7 +312,7 @@ export default class Client {
     const url = `${this.options.baseUrl}${endpoint}${query}`;
     const options = { method: entry.method };
 
-    const credentials = this.credentialAgent ?
+    const credentials = this.options.credentialAgent ?
       await this.options.credentialAgent.getCredentials() :
       this.options.credentials;
 
