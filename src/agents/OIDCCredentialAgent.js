@@ -27,7 +27,7 @@ export default class OIDCCredentialAgent {
     if (this.credentialsPromise && this.credentialsExpire > new Date()) {
       return this.credentialsPromise;
     }
-    
+
     // Call the oidcCredentials endpoint with the access token.
     const loginBaseUrl = 'https://login.taskcluster.net';
     const url = `${loginBaseUrl}/v1/oidc-credentials/${this.oidcProvider}`;
@@ -37,12 +37,12 @@ export default class OIDCCredentialAgent {
         Authorization: `Bearer ${this.accessToken}`
       }
     })
-    .then(response => {
+    .then((response) => {
       this.credentialsExpire = new Date(response.expires);
 
       return response.credentials;
     })
-    .catch(err => {
+    .catch((err) => {
       this.credentialsPromise = null;
       throw err;
     });

@@ -9,34 +9,33 @@ export default class Auth extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix'],args:[],name:'listClients',stability:'stable',output:true};
-    this.client.entry = {type:'function',method:'get',route:'/clients/<clientId>',query:[],args:['clientId'],name:'client',stability:'stable',output:true};
-    this.createClient.entry = {type:'function',method:'put',route:'/clients/<clientId>',query:[],args:['clientId'],name:'createClient',stability:'stable',scopes:[['auth:create-client:<clientId>']],input:true,output:true};
-    this.resetAccessToken.entry = {type:'function',method:'post',route:'/clients/<clientId>/reset',query:[],args:['clientId'],name:'resetAccessToken',stability:'stable',scopes:[['auth:reset-access-token:<clientId>']],output:true};
-    this.updateClient.entry = {type:'function',method:'post',route:'/clients/<clientId>',query:[],args:['clientId'],name:'updateClient',stability:'stable',scopes:[['auth:update-client:<clientId>']],input:true,output:true};
-    this.enableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/enable',query:[],args:['clientId'],name:'enableClient',stability:'stable',scopes:[['auth:enable-client:<clientId>']],output:true};
-    this.disableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/disable',query:[],args:['clientId'],name:'disableClient',stability:'stable',scopes:[['auth:disable-client:<clientId>']],output:true};
-    this.deleteClient.entry = {type:'function',method:'delete',route:'/clients/<clientId>',query:[],args:['clientId'],name:'deleteClient',stability:'stable',scopes:[['auth:delete-client:<clientId>']]};
-    this.listRoles.entry = {type:'function',method:'get',route:'/roles/',query:[],args:[],name:'listRoles',stability:'stable',output:true};
-    this.role.entry = {type:'function',method:'get',route:'/roles/<roleId>',query:[],args:['roleId'],name:'role',stability:'stable',output:true};
-    this.createRole.entry = {type:'function',method:'put',route:'/roles/<roleId>',query:[],args:['roleId'],name:'createRole',stability:'stable',scopes:[['auth:create-role:<roleId>']],input:true,output:true};
-    this.updateRole.entry = {type:'function',method:'post',route:'/roles/<roleId>',query:[],args:['roleId'],name:'updateRole',stability:'stable',scopes:[['auth:update-role:<roleId>']],input:true,output:true};
-    this.deleteRole.entry = {type:'function',method:'delete',route:'/roles/<roleId>',query:[],args:['roleId'],name:'deleteRole',stability:'stable',scopes:[['auth:delete-role:<roleId>']]};
-    this.expandScopes.entry = {type:'function',method:'get',route:'/scopes/expand',query:[],args:[],name:'expandScopes',stability:'stable',input:true,output:true};
-    this.currentScopes.entry = {type:'function',method:'get',route:'/scopes/current',query:[],args:[],name:'currentScopes',stability:'stable',output:true};
-    this.awsS3Credentials.entry = {type:'function',method:'get',route:'/aws/s3/<level>/<bucket>/<prefix>',query:['format'],args:['level','bucket','prefix'],name:'awsS3Credentials',stability:'stable',scopes:[['auth:aws-s3:<level>:<bucket>/<prefix>']],output:true};
-    this.azureAccounts.entry = {type:'function',method:'get',route:'/azure/accounts',query:[],args:[],name:'azureAccounts',stability:'stable',scopes:[['auth:azure-table:list-accounts']],output:true};
-    this.azureTables.entry = {type:'function',method:'get',route:'/azure/<account>/tables',query:['continuationToken'],args:['account'],name:'azureTables',stability:'stable',scopes:[['auth:azure-table:list-tables:<account>']],output:true};
-    this.azureTableSAS.entry = {type:'function',method:'get',route:'/azure/<account>/table/<table>/<level>',query:[],args:['account','table','level'],name:'azureTableSAS',stability:'stable',scopes:[['auth:azure-table:<level>:<account>/<table>']],output:true};
-    this.azureBlobSAS.entry = {type:'function',method:'get',route:'/azure/<account>/containers/<container>/<level>',query:[],args:['account','container','level'],name:'azureBlobSAS',stability:'stable',scopes:[['auth:azure-blob:<level>:<account>/<container>']],output:true};
-    this.sentryDSN.entry = {type:'function',method:'get',route:'/sentry/<project>/dsn',query:[],args:['project'],name:'sentryDSN',stability:'stable',scopes:[['auth:sentry:<project>']],output:true};
-    this.statsumToken.entry = {type:'function',method:'get',route:'/statsum/<project>/token',query:[],args:['project'],name:'statsumToken',stability:'stable',scopes:[['auth:statsum:<project>']],output:true};
-    this.webhooktunnelToken.entry = {type:'function',method:'get',route:'/webhooktunnel',query:[],args:[],name:'webhooktunnelToken',stability:'stable',scopes:[['auth:webhooktunnel']],output:true};
-    this.authenticateHawk.entry = {type:'function',method:'post',route:'/authenticate-hawk',query:[],args:[],name:'authenticateHawk',stability:'stable',input:true,output:true};
-    this.testAuthenticate.entry = {type:'function',method:'post',route:'/test-authenticate',query:[],args:[],name:'testAuthenticate',stability:'stable',input:true,output:true};
-    this.testAuthenticateGet.entry = {type:'function',method:'get',route:'/test-authenticate-get/',query:[],args:[],name:'testAuthenticateGet',stability:'stable',output:true};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix'],args:[],name:'listClients',stability:'stable',output:true}; // eslint-disable-line
+    this.client.entry = {type:'function',method:'get',route:'/clients/<clientId>',query:[],args:['clientId'],name:'client',stability:'stable',output:true}; // eslint-disable-line
+    this.createClient.entry = {type:'function',method:'put',route:'/clients/<clientId>',query:[],args:['clientId'],name:'createClient',stability:'stable',scopes:[['auth:create-client:<clientId>']],input:true,output:true}; // eslint-disable-line
+    this.resetAccessToken.entry = {type:'function',method:'post',route:'/clients/<clientId>/reset',query:[],args:['clientId'],name:'resetAccessToken',stability:'stable',scopes:[['auth:reset-access-token:<clientId>']],output:true}; // eslint-disable-line
+    this.updateClient.entry = {type:'function',method:'post',route:'/clients/<clientId>',query:[],args:['clientId'],name:'updateClient',stability:'stable',scopes:[['auth:update-client:<clientId>']],input:true,output:true}; // eslint-disable-line
+    this.enableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/enable',query:[],args:['clientId'],name:'enableClient',stability:'stable',scopes:[['auth:enable-client:<clientId>']],output:true}; // eslint-disable-line
+    this.disableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/disable',query:[],args:['clientId'],name:'disableClient',stability:'stable',scopes:[['auth:disable-client:<clientId>']],output:true}; // eslint-disable-line
+    this.deleteClient.entry = {type:'function',method:'delete',route:'/clients/<clientId>',query:[],args:['clientId'],name:'deleteClient',stability:'stable',scopes:[['auth:delete-client:<clientId>']]}; // eslint-disable-line
+    this.listRoles.entry = {type:'function',method:'get',route:'/roles/',query:[],args:[],name:'listRoles',stability:'stable',output:true}; // eslint-disable-line
+    this.role.entry = {type:'function',method:'get',route:'/roles/<roleId>',query:[],args:['roleId'],name:'role',stability:'stable',output:true}; // eslint-disable-line
+    this.createRole.entry = {type:'function',method:'put',route:'/roles/<roleId>',query:[],args:['roleId'],name:'createRole',stability:'stable',scopes:[['auth:create-role:<roleId>']],input:true,output:true}; // eslint-disable-line
+    this.updateRole.entry = {type:'function',method:'post',route:'/roles/<roleId>',query:[],args:['roleId'],name:'updateRole',stability:'stable',scopes:[['auth:update-role:<roleId>']],input:true,output:true}; // eslint-disable-line
+    this.deleteRole.entry = {type:'function',method:'delete',route:'/roles/<roleId>',query:[],args:['roleId'],name:'deleteRole',stability:'stable',scopes:[['auth:delete-role:<roleId>']]}; // eslint-disable-line
+    this.expandScopes.entry = {type:'function',method:'get',route:'/scopes/expand',query:[],args:[],name:'expandScopes',stability:'stable',input:true,output:true}; // eslint-disable-line
+    this.currentScopes.entry = {type:'function',method:'get',route:'/scopes/current',query:[],args:[],name:'currentScopes',stability:'stable',output:true}; // eslint-disable-line
+    this.awsS3Credentials.entry = {type:'function',method:'get',route:'/aws/s3/<level>/<bucket>/<prefix>',query:['format'],args:['level','bucket','prefix'],name:'awsS3Credentials',stability:'stable',scopes:[['auth:aws-s3:<level>:<bucket>/<prefix>']],output:true}; // eslint-disable-line
+    this.azureAccounts.entry = {type:'function',method:'get',route:'/azure/accounts',query:[],args:[],name:'azureAccounts',stability:'stable',scopes:[['auth:azure-table:list-accounts']],output:true}; // eslint-disable-line
+    this.azureTables.entry = {type:'function',method:'get',route:'/azure/<account>/tables',query:['continuationToken'],args:['account'],name:'azureTables',stability:'stable',scopes:[['auth:azure-table:list-tables:<account>']],output:true}; // eslint-disable-line
+    this.azureTableSAS.entry = {type:'function',method:'get',route:'/azure/<account>/table/<table>/<level>',query:[],args:['account','table','level'],name:'azureTableSAS',stability:'stable',scopes:[['auth:azure-table:<level>:<account>/<table>']],output:true}; // eslint-disable-line
+    this.azureBlobSAS.entry = {type:'function',method:'get',route:'/azure/<account>/containers/<container>/<level>',query:[],args:['account','container','level'],name:'azureBlobSAS',stability:'stable',scopes:[['auth:azure-blob:<level>:<account>/<container>']],output:true}; // eslint-disable-line
+    this.sentryDSN.entry = {type:'function',method:'get',route:'/sentry/<project>/dsn',query:[],args:['project'],name:'sentryDSN',stability:'stable',scopes:[['auth:sentry:<project>']],output:true}; // eslint-disable-line
+    this.statsumToken.entry = {type:'function',method:'get',route:'/statsum/<project>/token',query:[],args:['project'],name:'statsumToken',stability:'stable',scopes:[['auth:statsum:<project>']],output:true}; // eslint-disable-line
+    this.webhooktunnelToken.entry = {type:'function',method:'get',route:'/webhooktunnel',query:[],args:[],name:'webhooktunnelToken',stability:'stable',scopes:[['auth:webhooktunnel']],output:true}; // eslint-disable-line
+    this.authenticateHawk.entry = {type:'function',method:'post',route:'/authenticate-hawk',query:[],args:[],name:'authenticateHawk',stability:'stable',input:true,output:true}; // eslint-disable-line
+    this.testAuthenticate.entry = {type:'function',method:'post',route:'/test-authenticate',query:[],args:[],name:'testAuthenticate',stability:'stable',input:true,output:true}; // eslint-disable-line
+    this.testAuthenticateGet.entry = {type:'function',method:'get',route:'/test-authenticate-get/',query:[],args:[],name:'testAuthenticateGet',stability:'stable',output:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // Get a list of all clients.  With `prefix`, only clients for which
@@ -311,7 +310,7 @@ export default class Auth extends Client {
   // so it can be used with signed URLs (bewits).
   // Rather than using real credentials, this endpoint accepts requests with
   // clientId `tester` and accessToken `no-secret`. That client's scopes are
-  // `['test:*', 'auth:create-client:test:*']`.  The call fails if the 
+  // `['test:*', 'auth:create-client:test:*']`.  The call fails if the
   // `test:authenticate-get` scope is not available.
   // The request is validated, with any certificate, authorizedScopes, etc.
   // applied, and the resulting scopes are checked, just like any API call.

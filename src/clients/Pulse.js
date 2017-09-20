@@ -9,12 +9,11 @@ export default class Pulse extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.overview.entry = {type:'function',method:'get',route:'/overview',query:[],args:[],name:'overview',stability:'experimental',output:true};
-    this.listNamespaces.entry = {type:'function',method:'get',route:'/namespaces',query:['limit','continuation'],args:[],name:'listNamespaces',stability:'experimental',output:true};
-    this.namespace.entry = {type:'function',method:'get',route:'/namespace/<namespace>',query:[],args:['namespace'],name:'namespace',stability:'experimental',output:true};
-    this.claimNamespace.entry = {type:'function',method:'post',route:'/namespace/<namespace>',query:[],args:['namespace'],name:'claimNamespace',stability:'experimental',scopes:[['pulse:namespace:<namespace>']],input:true,output:true};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.overview.entry = {type:'function',method:'get',route:'/overview',query:[],args:[],name:'overview',stability:'experimental',output:true}; // eslint-disable-line
+    this.listNamespaces.entry = {type:'function',method:'get',route:'/namespaces',query:['limit','continuation'],args:[],name:'listNamespaces',stability:'experimental',output:true}; // eslint-disable-line
+    this.namespace.entry = {type:'function',method:'get',route:'/namespace/<namespace>',query:[],args:['namespace'],name:'namespace',stability:'experimental',output:true}; // eslint-disable-line
+    this.claimNamespace.entry = {type:'function',method:'post',route:'/namespace/<namespace>',query:[],args:['namespace'],name:'claimNamespace',stability:'experimental',scopes:[['pulse:namespace:<namespace>']],input:true,output:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // Get an overview of the Rabbit cluster.

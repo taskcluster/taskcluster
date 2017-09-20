@@ -9,14 +9,13 @@ export default class GithubEvents extends Client {
       exchangePrefix: 'exchange/taskcluster-github/v1/',
       ...options
     });
-    
   }
 
   // When a GitHub pull request event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
   pullRequest(pattern) {
-    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -25,7 +24,7 @@ export default class GithubEvents extends Client {
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
   push(pattern) {
-    const entry = {type:'topic-exchange',exchange:'push',name:'push',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-push-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'push',name:'push',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-push-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -34,7 +33,7 @@ export default class GithubEvents extends Client {
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
   release(pattern) {
-    const entry = {type:'topic-exchange',exchange:'release',name:'release',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-release-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'release',name:'release',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-release-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

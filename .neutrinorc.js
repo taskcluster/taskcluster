@@ -2,7 +2,13 @@ const merge = require('deepmerge');
 
 module.exports = {
   use: [
-    'neutrino-preset-taskcluster-web-library',
+    ['neutrino-preset-taskcluster-web-library', {
+      eslint: {
+        rules: {
+          'no-underscore-dangle': 'off'
+        }
+      }
+    }],
     (neutrino) => {
      neutrino.config.when(process.env.NODE_ENV !== 'test', () => {
        neutrino.config.externals({

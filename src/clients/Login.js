@@ -9,9 +9,8 @@ export default class Login extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.oidcCredentials.entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',output:true};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.oidcCredentials.entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',output:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // Given an OIDC `access_token` from a trusted OpenID provider, return a

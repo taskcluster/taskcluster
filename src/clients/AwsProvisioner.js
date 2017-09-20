@@ -9,22 +9,21 @@ export default class AwsProvisioner extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.listWorkerTypeSummaries.entry = {type:'function',method:'get',route:'/list-worker-type-summaries',query:[],args:[],name:'listWorkerTypeSummaries',stability:'stable',output:true};
-    this.createWorkerType.entry = {type:'function',method:'put',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'createWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:true,output:true};
-    this.updateWorkerType.entry = {type:'function',method:'post',route:'/worker-type/<workerType>/update',query:[],args:['workerType'],name:'updateWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:true,output:true};
-    this.workerTypeLastModified.entry = {type:'function',method:'get',route:'/worker-type-last-modified/<workerType>',query:[],args:['workerType'],name:'workerTypeLastModified',stability:'stable',output:true};
-    this.workerType.entry = {type:'function',method:'get',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'workerType',stability:'stable',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:true};
-    this.removeWorkerType.entry = {type:'function',method:'delete',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'removeWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']]};
-    this.listWorkerTypes.entry = {type:'function',method:'get',route:'/list-worker-types',query:[],args:[],name:'listWorkerTypes',stability:'stable',output:true};
-    this.createSecret.entry = {type:'function',method:'put',route:'/secret/<token>',query:[],args:['token'],name:'createSecret',stability:'stable',scopes:[['aws-provisioner:create-secret:<workerType>']],input:true};
-    this.getSecret.entry = {type:'function',method:'get',route:'/secret/<token>',query:[],args:['token'],name:'getSecret',stability:'stable',output:true};
-    this.instanceStarted.entry = {type:'function',method:'get',route:'/instance-started/<instanceId>/<token>',query:[],args:['instanceId','token'],name:'instanceStarted',stability:'stable'};
-    this.removeSecret.entry = {type:'function',method:'delete',route:'/secret/<token>',query:[],args:['token'],name:'removeSecret',stability:'stable'};
-    this.getLaunchSpecs.entry = {type:'function',method:'get',route:'/worker-type/<workerType>/launch-specifications',query:[],args:['workerType'],name:'getLaunchSpecs',stability:'experimental',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:true};
-    this.state.entry = {type:'function',method:'get',route:'/state/<workerType>',query:[],args:['workerType'],name:'state',stability:'stable'};
-    this.backendStatus.entry = {type:'function',method:'get',route:'/backend-status',query:[],args:[],name:'backendStatus',stability:'experimental',output:true};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.listWorkerTypeSummaries.entry = {type:'function',method:'get',route:'/list-worker-type-summaries',query:[],args:[],name:'listWorkerTypeSummaries',stability:'stable',output:true}; // eslint-disable-line
+    this.createWorkerType.entry = {type:'function',method:'put',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'createWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:true,output:true}; // eslint-disable-line
+    this.updateWorkerType.entry = {type:'function',method:'post',route:'/worker-type/<workerType>/update',query:[],args:['workerType'],name:'updateWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:true,output:true}; // eslint-disable-line
+    this.workerTypeLastModified.entry = {type:'function',method:'get',route:'/worker-type-last-modified/<workerType>',query:[],args:['workerType'],name:'workerTypeLastModified',stability:'stable',output:true}; // eslint-disable-line
+    this.workerType.entry = {type:'function',method:'get',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'workerType',stability:'stable',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:true}; // eslint-disable-line
+    this.removeWorkerType.entry = {type:'function',method:'delete',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'removeWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']]}; // eslint-disable-line
+    this.listWorkerTypes.entry = {type:'function',method:'get',route:'/list-worker-types',query:[],args:[],name:'listWorkerTypes',stability:'stable',output:true}; // eslint-disable-line
+    this.createSecret.entry = {type:'function',method:'put',route:'/secret/<token>',query:[],args:['token'],name:'createSecret',stability:'stable',scopes:[['aws-provisioner:create-secret:<workerType>']],input:true}; // eslint-disable-line
+    this.getSecret.entry = {type:'function',method:'get',route:'/secret/<token>',query:[],args:['token'],name:'getSecret',stability:'stable',output:true}; // eslint-disable-line
+    this.instanceStarted.entry = {type:'function',method:'get',route:'/instance-started/<instanceId>/<token>',query:[],args:['instanceId','token'],name:'instanceStarted',stability:'stable'}; // eslint-disable-line
+    this.removeSecret.entry = {type:'function',method:'delete',route:'/secret/<token>',query:[],args:['token'],name:'removeSecret',stability:'stable'}; // eslint-disable-line
+    this.getLaunchSpecs.entry = {type:'function',method:'get',route:'/worker-type/<workerType>/launch-specifications',query:[],args:['workerType'],name:'getLaunchSpecs',stability:'experimental',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:true}; // eslint-disable-line
+    this.state.entry = {type:'function',method:'get',route:'/state/<workerType>',query:[],args:['workerType'],name:'state',stability:'stable'}; // eslint-disable-line
+    this.backendStatus.entry = {type:'function',method:'get',route:'/backend-status',query:[],args:[],name:'backendStatus',stability:'experimental',output:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // Return a list of worker types, including some summary information about
@@ -153,7 +152,7 @@ export default class AwsProvisioner extends Client {
 
   // Remove a secret.  After this call, a call to `getSecret` with the given
   // token will return no information.
-  // It is very important that the consumer of a 
+  // It is very important that the consumer of a
   // secret delete the secret from storage before handing over control
   // to untrusted processes to prevent credential and/or secret leakage.
   removeSecret(...args) {
@@ -170,7 +169,7 @@ export default class AwsProvisioner extends Client {
     return this.request(this.getLaunchSpecs.entry, args);
   }
 
-  // Return the state of a given workertype as stored by the provisioner. 
+  // Return the state of a given workertype as stored by the provisioner.
   // This state is stored as three lists: 1 for running instances, 1 for
   // pending requests.  The `summary` property contains an updated summary
   // similar to that returned from `listWorkerTypeSummaries`.

@@ -9,7 +9,6 @@ export default class QueueEvents extends Client {
       exchangePrefix: 'exchange/taskcluster-queue/v1/',
       ...options
     });
-    
   }
 
   // When a task is created or just defined a message is posted to this
@@ -20,7 +19,7 @@ export default class QueueEvents extends Client {
   // Please, note that messages are also published on this exchange if defined
   // using `createTask`.
   taskDefined(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-defined',name:'taskDefined',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-defined',name:'taskDefined',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -32,7 +31,7 @@ export default class QueueEvents extends Client {
   // efficiently and they would be able to reduce their polling interval
   // significantly without affecting general responsiveness.
   taskPending(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-pending',name:'taskPending',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-pending',name:'taskPending',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -40,7 +39,7 @@ export default class QueueEvents extends Client {
   // Whenever a task is claimed by a worker, a run is started on the worker,
   // and a message is posted on this exchange.
   taskRunning(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-running',name:'taskRunning',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-running',name:'taskRunning',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -62,7 +61,7 @@ export default class QueueEvents extends Client {
   // smarter to index artifacts after the task in question have completed
   // successfully.
   artifactCreated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'artifact-created',name:'artifactCreated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'artifact-created',name:'artifactCreated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -73,7 +72,7 @@ export default class QueueEvents extends Client {
   // that completed the task. But information about additional runs is also
   // available from the task status structure.
   taskCompleted(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-completed',name:'taskCompleted',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-completed',name:'taskCompleted',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -82,7 +81,7 @@ export default class QueueEvents extends Client {
   // to this exchange. This is same as worker ran task-specific code, but the
   // task specific code exited non-zero.
   taskFailed(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-failed',name:'taskFailed',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-failed',name:'taskFailed',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -94,7 +93,7 @@ export default class QueueEvents extends Client {
   // The specific _reason_ is evident from that task status structure, refer
   // to the `reasonResolved` property for the last run.
   taskException(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-exception',name:'taskException',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-exception',name:'taskException',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -105,7 +104,7 @@ export default class QueueEvents extends Client {
   // not. A task group may be resolved multiple times, since new tasks may
   // be submitted against an already resolved task group.
   taskGroupResolved(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-group-resolved',name:'taskGroupResolved',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'};
+    const entry = {type:'topic-exchange',exchange:'task-group-resolved',name:'taskGroupResolved',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

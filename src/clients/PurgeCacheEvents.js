@@ -9,14 +9,13 @@ export default class PurgeCacheEvents extends Client {
       exchangePrefix: 'exchange/taskcluster-purge-cache/v1/',
       ...options
     });
-    
   }
 
   // When a cache purge is requested  a message will be posted on this
   // exchange with designated `provisionerId` and `workerType` in the
   // routing-key and the name of the `cacheFolder` as payload
   purgeCache(pattern) {
-    const entry = {type:'topic-exchange',exchange:'purge-cache',name:'purgeCache',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'purge-cache',name:'purgeCache',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

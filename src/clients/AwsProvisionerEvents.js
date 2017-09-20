@@ -9,13 +9,12 @@ export default class AwsProvisionerEvents extends Client {
       exchangePrefix: 'exchange/taskcluster-aws-provisioner/v1/',
       ...options
     });
-    
   }
 
   // When a new `workerType` is created a message will be published to this
   // exchange.
   workerTypeCreated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'worker-type-created',name:'workerTypeCreated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'worker-type-created',name:'workerTypeCreated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -23,7 +22,7 @@ export default class AwsProvisionerEvents extends Client {
   // When a `workerType` is updated a message will be published to this
   // exchange.
   workerTypeUpdated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'worker-type-updated',name:'workerTypeUpdated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'worker-type-updated',name:'workerTypeUpdated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -31,7 +30,7 @@ export default class AwsProvisionerEvents extends Client {
   // When a `workerType` is removed a message will be published to this
   // exchange.
   workerTypeRemoved(pattern) {
-    const entry = {type:'topic-exchange',exchange:'worker-type-removed',name:'workerTypeRemoved',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'};
+    const entry = {type:'topic-exchange',exchange:'worker-type-removed',name:'workerTypeRemoved',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

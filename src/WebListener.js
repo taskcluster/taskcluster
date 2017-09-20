@@ -5,7 +5,7 @@ const READY_STATE = {
   CONNECTING: 0,
   OPEN: 1,
   CLOSING: 2,
-  CLOSED: 4,
+  CLOSED: 4
 };
 
 export default class WebListener {
@@ -53,22 +53,18 @@ export default class WebListener {
     const awaitingBindings = Promise.all(this._bindings.map(binding => this._send('bind', binding)));
 
     const isReady = new Promise((resolve, reject) => {
-      const resolver = () => {
-        this.off('ready', resolver);
-        this.off('error', rejector);
-        this.off('close', rejector);
-        resolve();
-      };
-      const rejector = (err) => {
-        this.off('ready', resolver);
-        this.off('error', rejector);
-        this.off('close', rejector);
-        reject(err);
+      const once = () => {
+        this.off('ready', resolve);
+        this.off('error', reject);
+        this.off('close', reject);
       };
 
-      this.on('ready', resolver);
-      this.on('error', rejector);
-      this.on('close', rejector);
+      this.on('ready', resolve);
+      this.on('ready', once);
+      this.on('error', reject);
+      this.on('error', once);
+      this.on('close', reject);
+      this.on('close', once);
     });
 
     // When all bindings have been bound, we're just waiting for 'ready'
@@ -90,6 +86,7 @@ export default class WebListener {
     });
   }
 
+  // eslint-disable-next-line consistent-return
   handleMessage = (e) => {
     let message;
 
@@ -106,7 +103,7 @@ export default class WebListener {
     }
 
     this._pendingPromises = this._pendingPromises
-      .filter(promise => {
+      .filter((promise) => {
         // Only keep promises that are still pending,
         // filter out the ones we are handling right now
         if (promise.id !== message.id) {
@@ -154,7 +151,7 @@ export default class WebListener {
       return Promise.resolve();
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.emitter.on('close', resolve);
       this.socket.close();
     });
