@@ -1,5 +1,4 @@
 import { stringify } from 'query-string';
-import OIDCCredentialAgent from './agents/OIDCCredentialAgent';
 import hawk from 'hawk';
 import fetch from './fetch';
 
@@ -29,7 +28,7 @@ export default class Client {
   constructor(options = {}) {
     this.options = {
       ...Client.defaults,
-      ...options,
+      ...options
     };
 
     if (this.options.baseUrl) {
@@ -56,9 +55,10 @@ export default class Client {
       }
 
       if (reference.entries) {
-        reference.entries.forEach(entry => {
+        reference.entries.forEach((entry) => {
           if (entry.type === 'function') {
-            this[entry.name] = function(...args) {
+            // eslint-disable-next-line func-names
+            this[entry.name] = function (...args) {
               this.validate(entry, args);
               return this.request(entry, args);
             };
@@ -66,7 +66,8 @@ export default class Client {
           }
 
           if (entry.type === 'topic-exchange') {
-            this[entry.name] = function(pattern) {
+            // eslint-disable-next-line func-names
+            this[entry.name] = function (pattern) {
               return this.normalizePattern(entry, pattern);
             };
           }
@@ -76,25 +77,15 @@ export default class Client {
   }
 
   use(optionsUpdates) {
-    const options = { ...this.options , ...optionsUpdates };
+    const options = { ...this.options, ...optionsUpdates };
     return new this.constructor(options);
-  }
-
-  debug(level, message) {
-    if (!message) {
-      message = level;
-      level = 'info';
-    }
-
-    if (this.options.debug) {
-      console[level](message);
-    }
   }
 
   getMethodExpectedArity({ input, args }) {
     return input ? args.length + 1 : args.length;
   }
 
+  /* eslint-disable consistent-return */
   buildExtraData(credentials) {
     if (!credentials) {
       return;
@@ -128,6 +119,7 @@ export default class Client {
       return window.btoa(JSON.stringify(extra));
     }
   }
+  /* eslint-enable consistent-return */
 
   buildEndpoint(entry, args) {
     return entry.route.replace(/<([^<>]+)>/g, (text, arg) => {
@@ -166,8 +158,6 @@ export default class Client {
     const supportsOptions = optionKeys.length !== 0;
     const arity = entry.args.length;
 
-    this.debug(`Building URL for: ${entry.name}`);
-
     if (args.length !== arity && (!supportsOptions || args.length !== arity + 1)) {
       throw new Error(
         `Method \`${entry.name}.buildUrl\` expected ${arity + 1} argument(s) but received ${args.length + 1}`
@@ -179,7 +169,7 @@ export default class Client {
     if (args[arity]) {
       Object
         .keys(args[arity])
-        .forEach(key => {
+        .forEach((key) => {
           if (!optionKeys.includes(key)) {
             throw new Error(`Method \`${entry.name}\` expected options ${optionKeys.join(', ')} but received ${key}`);
           }
@@ -267,7 +257,7 @@ export default class Client {
 
     Object
       .keys(args[expectedArity] || {})
-      .forEach(key => {
+      .forEach((key) => {
         if (!queryOptions.includes(key)) {
           throw new Error(`${key} is not a valid option for ${entry.name}.
             Valid options include: ${queryOptions.join(', ')}`);
@@ -283,7 +273,7 @@ export default class Client {
     }
 
     const routingKeyPattern = entry.routingKey
-      .map(key => {
+      .map((key) => {
         const value = key.constant || initialPattern[key.name];
 
         if (typeof value === 'number') {

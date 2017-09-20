@@ -8,20 +8,19 @@ export default class <%= name %> extends Client {
       baseUrl: '<%= baseUrl %>',
       exchangePrefix: '<%= exchangePrefix %>',
       ...options
-    });
-    <% methods.forEach(entry => { %>
-    this.<%= entry.name %>.entry = <%- stringify(omit(entry, ['description', 'title'])) %>;<% }) %>
+    });<% methods.forEach(entry => { %>
+    this.<%= entry.name %>.entry = <%- stringify(omit(entry, ['description', 'title'])) %>; // eslint-disable-line<% }) %>
   }<% methods.forEach(entry => { %>
 <% entry.description.split('\n').filter(Boolean).forEach(line => { %>
-  <%- `// ${line}` %><% }) %>
+  <%- `// ${line.trimRight()}` %><% }) %>
   <%= entry.name %>(...args) {
     this.validate(this.<%= entry.name %>.entry, args);
     return this.request(this.<%= entry.name %>.entry, args);
   }<% }) %><% topics.forEach(entry => { %>
 <% entry.description.split('\n').filter(Boolean).forEach(line => { %>
-  <%- `// ${line}` %><% }) %>
+  <%- `// ${line.trimRight()}` %><% }) %>
   <%= entry.name %>(pattern) {
-    const entry = <%- stringify(omit(entry, ['description', 'title'])) %>;
+    const entry = <%- stringify(omit(entry, ['description', 'title'])) %>; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }<% }) %>

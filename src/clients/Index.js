@@ -9,13 +9,12 @@ export default class Index extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.findTask.entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',output:true};
-    this.listNamespaces.entry = {type:'function',method:'post',route:'/namespaces/<namespace>',query:[],args:['namespace'],name:'listNamespaces',stability:'stable',input:true,output:true};
-    this.listTasks.entry = {type:'function',method:'post',route:'/tasks/<namespace>',query:[],args:['namespace'],name:'listTasks',stability:'stable',input:true,output:true};
-    this.insertTask.entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',scopes:[['index:insert-task:<namespace>']],input:true,output:true};
-    this.findArtifactFromTask.entry = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',scopes:[['queue:get-artifact:<name>']]};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.findTask.entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',output:true}; // eslint-disable-line
+    this.listNamespaces.entry = {type:'function',method:'post',route:'/namespaces/<namespace>',query:[],args:['namespace'],name:'listNamespaces',stability:'stable',input:true,output:true}; // eslint-disable-line
+    this.listTasks.entry = {type:'function',method:'post',route:'/tasks/<namespace>',query:[],args:['namespace'],name:'listTasks',stability:'stable',input:true,output:true}; // eslint-disable-line
+    this.insertTask.entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',scopes:[['index:insert-task:<namespace>']],input:true,output:true}; // eslint-disable-line
+    this.findArtifactFromTask.entry = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',scopes:[['queue:get-artifact:<name>']]}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // Find a task by index path, returning the highest-rank task with that path. If no

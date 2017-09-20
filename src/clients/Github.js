@@ -9,15 +9,14 @@ export default class Github extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.githubWebHookConsumer.entry = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental'};
-    this.builds.entry = {type:'function',method:'get',route:'/builds',query:['continuationToken','limit','organization','repository','sha'],args:[],name:'builds',stability:'experimental',output:true};
-    this.badge.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/badge.svg',query:[],args:['owner','repo','branch'],name:'badge',stability:'experimental'};
-    this.repository.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>',query:[],args:['owner','repo'],name:'repository',stability:'experimental',output:true};
-    this.latest.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/latest',query:[],args:['owner','repo','branch'],name:'latest',stability:'experimental'};
-    this.createStatus.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',scopes:[['github:create-status:<owner>/<repo>']],input:true};
-    this.createComment.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',scopes:[['github:create-comment:<owner>/<repo>']],input:true};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.githubWebHookConsumer.entry = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental'}; // eslint-disable-line
+    this.builds.entry = {type:'function',method:'get',route:'/builds',query:['continuationToken','limit','organization','repository','sha'],args:[],name:'builds',stability:'experimental',output:true}; // eslint-disable-line
+    this.badge.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/badge.svg',query:[],args:['owner','repo','branch'],name:'badge',stability:'experimental'}; // eslint-disable-line
+    this.repository.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>',query:[],args:['owner','repo'],name:'repository',stability:'experimental',output:true}; // eslint-disable-line
+    this.latest.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/latest',query:[],args:['owner','repo','branch'],name:'latest',stability:'experimental'}; // eslint-disable-line
+    this.createStatus.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',scopes:[['github:create-status:<owner>/<repo>']],input:true}; // eslint-disable-line
+    this.createComment.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',scopes:[['github:create-comment:<owner>/<repo>']],input:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // Capture a GitHub event and publish it via pulse, if it's a push,
@@ -60,7 +59,7 @@ export default class Github extends Client {
 
   // For a given changeset (SHA) of a repository, this will attach a "commit status"
   // on github. These statuses are links displayed next to each revision.
-  // The status is either OK (green check) or FAILURE (red cross), 
+  // The status is either OK (green check) or FAILURE (red cross),
   // made of a custom title and link.
   createStatus(...args) {
     this.validate(this.createStatus.entry, args);

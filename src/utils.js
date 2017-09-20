@@ -21,17 +21,17 @@ export const parseTime = (str = '') => {
   }
 
   // Negate if needed
-  const neg = (match[2] === '-' ? - 1 : 1);
+  const neg = (match[2] === '-' ? -1 : 1);
 
   // Return parsed values
   return {
-    years: parseInt(match[4] || 0) * neg,
-    months: parseInt(match[8] || 0) * neg,
-    weeks: parseInt(match[11] || 0) * neg,
-    days: parseInt(match[15] || 0) * neg,
-    hours: parseInt(match[18] || 0) * neg,
-    minutes: parseInt(match[22] || 0) * neg,
-    seconds: parseInt(match[25] || 0) * neg
+    years: parseInt(match[4] || 0, 10) * neg,
+    months: parseInt(match[8] || 0, 10) * neg,
+    weeks: parseInt(match[11] || 0, 10) * neg,
+    days: parseInt(match[15] || 0, 10) * neg,
+    hours: parseInt(match[18] || 0, 10) * neg,
+    minutes: parseInt(match[22] || 0, 10) * neg,
+    seconds: parseInt(match[25] || 0, 10) * neg
   };
 };
 
@@ -52,11 +52,11 @@ export const fromNow = (offset, reference = new Date()) => {
 
   return new Date(
     reference.getTime() +
-    parsedOffset.weeks * 7 * 24 * 60 * 60 * 1000 +
-    parsedOffset.days * 24 * 60 * 60 * 1000 +
-    parsedOffset.hours * 60 * 60 * 1000 +
-    parsedOffset.minutes * 60 * 1000 +
-    parsedOffset.seconds * 1000
+    (parsedOffset.weeks * 7 * 24 * 60 * 60 * 1000) +
+    (parsedOffset.days * 24 * 60 * 60 * 1000) +
+    (parsedOffset.hours * 60 * 60 * 1000) +
+    (parsedOffset.minutes * 60 * 1000) +
+    (parsedOffset.seconds * 1000)
   );
 };
 
@@ -75,7 +75,8 @@ export const fromNow = (offset, reference = new Date()) => {
  */
 export const fromNowJSON = (offset, reference) => fromNow(offset, reference).toJSON();
 
-export const uuid = () => ([1e7]+-1e3+-4e3+-8e3+-1e11)
+/* eslint-disable no-bitwise, no-mixed-operators */
+export const uuid = () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11)
   .replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4)
     .toString(16));
 
@@ -83,7 +84,7 @@ const slug = (nice = false) => {
   const bytes = uuid();
 
   if (nice) {
-    bytes[0] = bytes[0] & 0x7f; // unset first bit to ensure [A-Za-f] first char
+    bytes[0] &= 0x7f; // unset first bit to ensure [A-Za-f] first char
   }
 
   return btoa(bytes)
@@ -91,6 +92,7 @@ const slug = (nice = false) => {
     .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
     .substring(0, 22); // Drop '==' padding
 };
+/* eslint-enable no-bitwise, no-mixed-operators */
 
 /**
  * Returns a randomly generated uuid v4 compliant slug

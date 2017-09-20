@@ -9,20 +9,19 @@ export default class Hooks extends Client {
       exchangePrefix: '',
       ...options
     });
-    
-    this.listHookGroups.entry = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'experimental',output:true};
-    this.listHooks.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>',query:[],args:['hookGroupId'],name:'listHooks',stability:'experimental',output:true};
-    this.hook.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'experimental',output:true};
-    this.getHookStatus.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'experimental',output:true};
-    this.getHookSchedule.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/schedule',query:[],args:['hookGroupId','hookId'],name:'getHookSchedule',stability:'deprecated',output:true};
-    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true};
-    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true};
-    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>']]};
-    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',scopes:[['hooks:trigger-hook:<hookGroupId>/<hookId>']],input:true,output:true};
-    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',scopes:[['hooks:get-trigger-token:<hookGroupId>/<hookId>']],output:true};
-    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',scopes:[['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],output:true};
-    this.triggerHookWithToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'experimental',input:true,output:true};
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'};
+    this.listHookGroups.entry = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'experimental',output:true}; // eslint-disable-line
+    this.listHooks.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>',query:[],args:['hookGroupId'],name:'listHooks',stability:'experimental',output:true}; // eslint-disable-line
+    this.hook.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'experimental',output:true}; // eslint-disable-line
+    this.getHookStatus.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'experimental',output:true}; // eslint-disable-line
+    this.getHookSchedule.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/schedule',query:[],args:['hookGroupId','hookId'],name:'getHookSchedule',stability:'deprecated',output:true}; // eslint-disable-line
+    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true}; // eslint-disable-line
+    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true}; // eslint-disable-line
+    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>']]}; // eslint-disable-line
+    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',scopes:[['hooks:trigger-hook:<hookGroupId>/<hookId>']],input:true,output:true}; // eslint-disable-line
+    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',scopes:[['hooks:get-trigger-token:<hookGroupId>/<hookId>']],output:true}; // eslint-disable-line
+    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',scopes:[['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],output:true}; // eslint-disable-line
+    this.triggerHookWithToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'experimental',input:true,output:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
   // This endpoint will return a list of all hook groups with at least one hook.

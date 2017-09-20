@@ -34,7 +34,7 @@ export const createTemporaryCredentials = (opts) => {
   }
 
   // subtract 5 min for clock drift
-  const now = new Date(Date.now() - 1000 * 5 * 60);
+  const now = new Date(Date.now() - ((1000 * 5) * 60));
   const options = { start: now, scopes: [], ...opts };
   const isNamed = !!options.clientId;
 
@@ -56,7 +56,7 @@ export const createTemporaryCredentials = (opts) => {
 
   if (options.credentials.certificate != null) {
     throw new Error(`Temporary credentials cannot be used to make new temporary credentials.
-      Ensure that options.credentials.certificate is null.`)
+      Ensure that options.credentials.certificate is null.`);
   }
 
   if (!(options.start instanceof Date)) {
@@ -75,7 +75,7 @@ export const createTemporaryCredentials = (opts) => {
     throw new Error('options.scopes must be an array');
   }
 
-  options.scopes.forEach(scope => {
+  options.scopes.forEach((scope) => {
     if (typeof scope !== 'string') {
       throw new Error('options.scopes must be an array of strings');
     }
@@ -88,7 +88,7 @@ export const createTemporaryCredentials = (opts) => {
     expiry: options.expiry.getTime(),
     seed: v4() + v4(),
     signature: null,
-    issuer: isNamed ? options.credentials.clientId : null,
+    issuer: isNamed ? options.credentials.clientId : null
   };
 
   const signature = createHmac(sha256, options.credentials.accessToken);
@@ -103,7 +103,7 @@ export const createTemporaryCredentials = (opts) => {
   signature.update(`seed:${certificate.seed}\n`);
   signature.update(`start:${certificate.start}\n`);
   signature.update(`expiry:${certificate.expiry}\n`);
-  signature.update(`scopes:\n`);
+  signature.update('scopes:\n');
   signature.update(certificate.scopes.join('\n'));
   certificate.signature = signature.finalize().toString(base64);
 
@@ -113,7 +113,7 @@ export const createTemporaryCredentials = (opts) => {
     .toString(base64)
     .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
     .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
-    .replace(/=/g,  ''); // Drop '==' padding
+    .replace(/=/g, ''); // Drop '==' padding
 
   return {
     accessToken,
@@ -176,7 +176,7 @@ export const credentialInformation = async (credentials) => {
   const credentialsClient = new Auth({ credentials });
   const clientLookup = anonymousClient
     .client(issuer)
-    .then(client => {
+    .then((client) => {
       const expires = new Date(client.expires);
 
       if (!result.expiry || result.expiry > expires) {
@@ -189,7 +189,9 @@ export const credentialInformation = async (credentials) => {
     });
   const scopeLookup = credentialsClient
     .currentScopes()
-    .then(response => result.scopes = response.scopes);
+    .then((response) => {
+      result.scopes = response.scopes;
+    });
 
   await Promise.all([clientLookup, scopeLookup]);
 

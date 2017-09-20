@@ -12,10 +12,9 @@ const defaults = {
   }
 };
 
-const handleResponse = (response) => {
-  return response
+const handleResponse = response => response
     .json()
-    .then(json => {
+    .then((json) => {
       if (response.ok) {
         return json;
       }
@@ -27,7 +26,6 @@ const handleResponse = (response) => {
         body: json
       }));
     });
-};
 
 export default (url, opts = {}) => {
   const options = { ...defaults, ...opts, headers: { ...defaults.headers, ...opts.headers } };
@@ -52,18 +50,18 @@ export default (url, opts = {}) => {
       fetch(url, options)
         .then(handleResponse)
         .then(resolve)
-        .catch(err => {
+        .catch((err) => {
           if (n > retries) {
-            return reject(err);
+            reject(err);
+          } else {
+            const delay = Math.min(
+              ((n - 1) ** 2) * delayFactor * (((Math.random() * 2 * randomizationFactor) + 1) - randomizationFactor),
+              maxDelay
+            );
+
+            setTimeout(() => attempt(n + 1), delay);
           }
-
-          const delay = Math.min(
-            Math.pow(2, n - 1) * delayFactor * (Math.random() * 2 * randomizationFactor + 1 - randomizationFactor),
-            maxDelay
-          );
-
-          setTimeout(() => attempt(n + 1), delay);
         });
-    })(options.retries);
+    }(options.retries));
   });
 };
