@@ -183,29 +183,17 @@ class WorkerInfo {
       return;
     }
 
-    let existentTasks = worker.recentTasks.toArray();
-
-    // Allocate more space if needed
-    if (existentTasks.length && !worker.recentTasks.avail) {
-      worker.recentTasks.realloc();
-    }
-
-    // realloc will not add more space if no items in the buffer. We'll need to create a new SlugIdArray
-    const recentTasks = worker.recentTasks.avail ?
-      worker.recentTasks :
-      Entity.types.SlugIdArray.create();
+    const recentTasks = worker.recentTasks.clone();
 
     tasks.forEach((task, index) => {
       const taskId = tasks[index].status.taskId;
 
-      if (!existentTasks.includes(taskId)) {
-        if (existentTasks.length === RECENT_TASKS_LIMIT) {
-          recentTasks.remove(existentTasks[0]);
-          existentTasks = existentTasks.slice(1, RECENT_TASKS_LIMIT + 1);
-        }
-
-        existentTasks.push(taskId);
+      if (recentTasks.indexOf(taskId) === -1) {
         recentTasks.push(taskId);
+      }
+
+      if (recentTasks.length > RECENT_TASKS_LIMIT) {
+        recentTasks.shift();
       }
     });
 
