@@ -200,6 +200,33 @@ suite('provisioners and worker-types', () => {
     );
   });
 
+  test('queue.listWorkers returns filtered workers', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov1';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+
+    const worker = {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks: Entity.types.SlugIdArray.create(),
+      expires: new Date('3017-07-29'),
+      disabled: false,
+      firstClaim: new Date(),
+    };
+
+    await Worker.create(worker);
+
+    const result = await helper.queue.listWorkers(provisionerId, workerType, {disabled: false});
+    const result2 = await helper.queue.listWorkers(provisionerId, workerType, {disabled: true});
+
+    assert(result.workers.length === 1, 'expected 1 worker');
+    assert(result2.workers.length === 0, 'expected no worker');
+  });
+
   test('list workers (limit and continuationToken)', async () => {
     const Worker = await helper.load('Worker', helper.loadOptions);
     const expires = new Date('3017-07-29');
