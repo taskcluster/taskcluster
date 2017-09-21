@@ -156,40 +156,6 @@
               "title": "Loopback Audio device",
               "description": "Audio loopback device created using snd-aloop",
               "type": "boolean"
-            },
-            "phone": {
-              "title": "Phone device",
-              "description": "Phone device that will be created using Testdroid",
-              "type": "object",
-              "required": [
-                "type",
-                "sims",
-                "build",
-                "memory"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "type": {
-                  "title": "Phone Type",
-                  "description": "Phone device type. Example: 'flame'",
-                  "type": "string"
-                },
-                "sims": {
-                  "title": "Sims",
-                  "description": "Number of sims to be available in the device",
-                  "type": "string"
-                },
-                "build": {
-                  "title": "Build URL",
-                  "description": "URL for the build the phone has been (or will be) flashed with",
-                  "type": "string"
-                },
-                "memory": {
-                  "title": "Device Memory",
-                  "description": "The memory configuration the device to be configured with",
-                  "type": "string"
-                }
-              }
             }
           }
         }
@@ -290,11 +256,6 @@
           "title": "Task cluster auth proxy service",
           "description": "The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task."
         },
-        "testdroidProxy": {
-          "type": "boolean",
-          "title": "Testdroid proxy service",
-          "description": ""
-        },
         "balrogVPNProxy": {
           "type": "boolean",
           "title": "Balrog proxy service",
@@ -334,6 +295,11 @@
           "type": "boolean",
           "title": "Allow ptrace within the container",
           "description": "This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy. "
+        },
+        "chainOfTrust": {
+          "type": "boolean",
+          "title": "Enable generation of a openpgp signed Chain of Trust artifact",
+          "description": "An artifact named chainOfTrust.json.asc should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in."
         }
       }
     }
