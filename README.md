@@ -39,17 +39,31 @@ credentials = taskcluster.createTemporaryCredentials(
 
 You cannot use temporary credentials to issue new temporary credentials.  You
 must have `auth:create-client:<name>` to create a named temporary credential,
-but unnamed temporary credentials can be created regardless of your scopes.## API Documentation
+but unnamed temporary credentials can be created regardless of your scopes.
+
+## API Documentation
 
 The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
 
+## Query-String arguments
+Query string arguments are currently unsupported with this client.  The
+documentation below on the various methods might make reference to query string
+parameters, but there is no way at present to specify those options using this
+client.
+
 ## Sync vs Async
 
-The objects under `taskcluster` (e.g., `taskcluster.Queue`) are python2-compatible and operate synchronously.
+The objects under `taskcluster` (e.g., `taskcluster.Queue`) are
+python2-compatible and operate synchronously.
 
 
-The objects under `taskcluster.async` (e.g., `taskcluster.async.Queue`) require `python>=3.5`. The async objects use asyncio coroutines for concurrency; this allows us to put I/O operations in the background, so operations that require the cpu can happen sooner. Given dozens of operations that can run concurrently (e.g., cancelling a medium-to-large task graph), this can result in significant performance improvements. The code would look something like
+The objects under `taskcluster.async` (e.g., `taskcluster.async.Queue`) require
+`python>=3.5`. The async objects use asyncio coroutines for concurrency; this
+allows us to put I/O operations in the background, so operations that require
+the cpu can happen sooner. Given dozens of operations that can run concurrently
+(e.g., cancelling a medium-to-large task graph), this can result in significant
+performance improvements. The code would look something like
 
 ```python
 #!/usr/bin/env python
