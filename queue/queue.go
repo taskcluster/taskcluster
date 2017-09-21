@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 19 Sep 2017 at 21:23:00 UTC. The code was generated
+// Thu, 21 Sep 2017 at 18:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -767,7 +767,10 @@ func (myQueue *Queue) DeclareWorkerType(provisionerId, workerType string, payloa
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Get a list of all active workerGroup/workerId of a workerType.
+// Get a list of all active workers of a workerType.
+//
+// `listWorkers` allows a response to be filtered by the `disabled` property.
+// To filter the query, you should call the end-point with `disabled` as a query-string option.
 //
 // The response is paged. If this end-point returns a `continuationToken`, you
 // should call the end-point again with the `continuationToken` as a query-string
@@ -775,10 +778,13 @@ func (myQueue *Queue) DeclareWorkerType(provisionerId, workerType string, payloa
 // page. You may limit this with the query-string parameter `limit`.
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listWorkers
-func (myQueue *Queue) ListWorkers(provisionerId, workerType, continuationToken, limit string) (*ListWorkersResponse, error) {
+func (myQueue *Queue) ListWorkers(provisionerId, workerType, continuationToken, disabled, limit string) (*ListWorkersResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
+	}
+	if disabled != "" {
+		v.Add("disabled", disabled)
 	}
 	if limit != "" {
 		v.Add("limit", limit)

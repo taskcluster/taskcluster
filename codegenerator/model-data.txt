@@ -1,4 +1,4 @@
-Generated: 1505856221
+Generated: 1506018286
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7029,14 +7029,17 @@ Entry 28    =
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers'
     Entry Args        = '[provisionerId workerType]'
-    Entry Query        = '[continuationToken limit]'
+    Entry Query        = '[continuationToken disabled limit]'
     Entry Name        = 'listWorkers'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#'
-    Entry Title       = 'Get a list of all active workerGroup/workerId of a workerType'
-    Entry Description = 'Get a list of all active workerGroup/workerId of a workerType.
+    Entry Title       = 'Get a list of all active workers of a workerType'
+    Entry Description = 'Get a list of all active workers of a workerType.
+
+`listWorkers` allows a response to be filtered by the `disabled` property.
+To filter the query, you should call the end-point with `disabled` as a query-string option.
 
 The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
