@@ -280,11 +280,6 @@
           "title": "Enable live logging (worker local)",
           "description": "Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3"
         },
-        "azureLiveLog": {
-          "type": "boolean",
-          "title": "Enable live logging (via azure blobs)",
-          "description": "Useful for situations where it is impossible to reach the worker and parsing the azure livelog is possible"
-        },
         "bulkLog": {
           "type": "boolean",
           "title": "Bulk upload the task log into a single artifact",
