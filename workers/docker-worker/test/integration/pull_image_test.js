@@ -49,7 +49,6 @@ suite('pull image', () => {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
-    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
   });
 
   test('ensure public lz4 compressed image from a task can be pulled', async () => {
@@ -75,7 +74,6 @@ suite('pull image', () => {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
-    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
   });
 
   test('ensure public zstd compressed image from a task can be pulled', async () => {
@@ -101,7 +99,6 @@ suite('pull image', () => {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
-    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
   });
 
   test('ensure public indexed image can be pulled', async () => {
@@ -125,7 +122,6 @@ suite('pull image', () => {
       }
     });
 
-    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
   });
@@ -152,7 +148,6 @@ suite('pull image', () => {
       }
     });
 
-    assert.ok(result.log.includes('busybox'), 'Does not appear to be the correct image with busybox');
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
   });

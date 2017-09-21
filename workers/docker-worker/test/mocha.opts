@@ -2,5 +2,5 @@
 --ui tdd
 --require .test/helper
 --require source-map-support/register
---timeout 240s
+--timeout 400s
 --reporter spec

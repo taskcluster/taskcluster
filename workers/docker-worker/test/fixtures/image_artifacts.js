@@ -10,7 +10,7 @@ export const TASK_IMAGE_ARTIFACT_HASH = 'sha256:0d79355a83063d592285e529460af86e
 export const TASK_IMAGE_HASH = 'sha256:dcf5b7936f77be812c8a17ba8284d198e3afcf57fb11bb2ab4311a511bf95f39';
 
 // LZ4 compressed image
-export const LZ4_TASK_ID = 'Bs7M5ZpLRy-Wz_WdwjJrNw';
+export const LZ4_TASK_ID = 'TwSPMBlrRd2VMT6xczLkOA';
 
 // Zstandard compressed impage
-export const ZSTD_TASK_ID = 'NbX_D1kMQ26AG0MV-elObg';
+export const ZSTD_TASK_ID = 'd6hoilN7TduHjBDHPd-JgA';
