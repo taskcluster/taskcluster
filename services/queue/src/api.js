@@ -2308,13 +2308,17 @@ api.declare({
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
+    disabled: /^(true|false)$/,
   },
   name:       'listWorkers',
   stability:  API.stability.experimental,
   output:     'list-workers-response.json#',
-  title:      'Get a list of all active workerGroup/workerId of a workerType',
+  title:      'Get a list of all active workers of a workerType',
   description: [
-    'Get a list of all active workerGroup/workerId of a workerType.',
+    'Get a list of all active workers of a workerType.',
+    '',
+    '`listWorkers` allows a response to be filtered by the `disabled` property.',
+    'To filter the query, you should call the end-point with `disabled` as a query-string option.',
     '',
     'The response is paged. If this end-point returns a `continuationToken`, you',
     'should call the end-point again with the `continuationToken` as a query-string',
@@ -2323,15 +2327,22 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   const continuation = req.query.continuationToken || null;
+  const disabled = req.query.disabled || null;
   const provisionerId = req.params.provisionerId;
   const workerType = req.params.workerType;
   const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  const workers = await this.Worker.scan({
+  const workerQuery = {
     provisionerId,
     workerType,
     expires: Entity.op.greaterThan(new Date()),
-  }, {continuation, limit});
+  };
+
+  if (disabled) {
+    workerQuery.disabled = JSON.parse(disabled);
+  }
+
+  const workers = await this.Worker.scan(workerQuery, {continuation, limit});
 
   const result = {
     workers: workers.entries.map(worker => {
