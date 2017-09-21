@@ -20,7 +20,6 @@ import {EventEmitter} from 'events';
 import getLogsLocationsFromTask from '../build/lib/features/logs_location.js';
 
 let queueEvents = new taskcluster.QueueEvents();
-let schedulerEvents = new taskcluster.SchedulerEvents();
 let debug = Debug('docker-worker:test:testworker');
 
 /** Test provisioner id, don't change this... */
@@ -49,10 +48,6 @@ export default class TestWorker extends EventEmitter {
     this.pulse = config.pulse;
 
     this.queue = new taskcluster.Queue({
-      credentials: config.taskcluster
-    });
-
-    this.scheduler = new taskcluster.Scheduler({
       credentials: config.taskcluster
     });
 
@@ -131,26 +126,6 @@ export default class TestWorker extends EventEmitter {
   }
 
   /**
-  Post a task to the graph with the testing configuration.
-
-  @param {String} graphId task graph id.
-  @param {Object} graphConfig for the graph..
-  */
-  async createGraph(graphId, graphConfig) {
-    var graph = Graph.create(graphConfig);
-    graph.tasks.map(function(graphTask) {
-      graphTask.task.schedulerId = 'task-graph-scheduler';
-      graphTask.task.workerType = this.workerType;
-      graphTask.task.provisionerId = this.provisionerId;
-      graphTask.task.taskGroupId = graphId;
-      return graphTask;
-    }, this);
-
-    debug('post to graph %j', graph);
-    return await this.scheduler.createTaskGraph(graphId, graph);
-  }
-
-  /**
   Fetch all the common stats used by the tests.
   */
   async fetchTaskStats(task, runId) {
@@ -188,51 +163,6 @@ export default class TestWorker extends EventEmitter {
       taskId: taskId,
       runId: runId
     };
-  }
-
-  async postToScheduler(graphId, graph) {
-    // Create and bind the listener which will notify us when the worker
-    // completes a task.
-    var listener = new taskcluster.PulseListener({
-      credentials: this.pulse
-    });
-
-    // Listen for either blocked or finished...
-    await listener.bind(schedulerEvents.taskGraphBlocked({
-      taskGraphId: graphId
-    }));
-
-    await listener.bind(schedulerEvents.taskGraphFinished({
-      taskGraphId: graphId
-    }));
-
-    // Connect to queue and being consuming it...
-    await listener.connect();
-    await listener.resume();
-
-    // Begin listening at the same time we create the task to ensure we get the
-    // message at the correct time.
-    var creation = await Promise.all([
-      waitForEvent(listener, 'message'),
-      this.createGraph(graphId, graph),
-    ]);
-
-    // Fetch the final result json.
-    var status = creation.shift().payload.status;
-
-    // Close listener we only care about one message at a time.
-    try {
-      await listener.close();
-    } catch(e) {
-      console.log('error during close:', e);
-    }
-
-    var graph = await this.scheduler.inspect(graphId);
-    return await Promise.all(graph.tasks.map(async (task) => {
-      // Note: that we assume runId 0 here which is fine locally since we know
-      // the number of runs but not safe is we wanted to test reruns.
-      return await this.fetchTaskStats(task, 0);
-    }));
   }
 
   /**

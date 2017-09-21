@@ -8,7 +8,6 @@ import _ from 'lodash';
 import assert from 'assert';
 import TaskclusterLogs from './features/local_live_log';
 import ArtifactUpload from './features/artifacts';
-import ExtendTaskGraph from './features/extend_task_graph';
 import AllowPtrace from './features/allow_ptrace';
 import ChainOfTrust from './features/chain_of_trust';
 import BulkLog from './features/bulk_log';
@@ -35,16 +34,6 @@ const features = {
     module: ArtifactUpload
   },
 
-  extendTaskGraph: {
-    title: 'Task graph extensions',
-    description: 'The `.graphs` property in payload allows specifying paths ' +
-                 'which if present will be used to extend the task graph ' +
-                 '(Keeping it alive) this can be used for dynamic tests, ' +
-                 'bisections, any dynamic tasks, etc...',
-    defaults: true,
-    module: ExtendTaskGraph
-  },
-
   chainOfTrust: {
     title: 'Enable generation of a openpgp signed Chain of Trust artifact',
     description: 'An artifact named chainOfTrust.json.asc should be generated ' +
@@ -66,7 +55,7 @@ const features = {
   taskclusterProxy: {
     title: 'Task cluster auth proxy service',
     description: 'The auth proxy allows making requests to taskcluster/queue ' +
-                 'and taskcluster/scheduler directly from your task with the ' +
+                 'directly from your task with the ' +
                  'same scopes as set in the task. This can be used to make ' +
                  'api calls via the [client](https://github.com/taskcluster/taskcluster-client) ' +
                  'CURL, etc... Without embedding credentials in the task.',

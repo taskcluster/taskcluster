@@ -222,15 +222,6 @@
         }
       }
     },
-    "graphs": {
-      "type": "array",
-      "title": "Paths (in the container) to a json files which are used to extend the task graph",
-      "description": "Contents of file are used to extend the graph (if this task was part of a graph). See https://docs.taskcluster.net/reference/platform/scheduler/api-docs#extendTaskGraph",
-      "items": {
-        "title": "Individual path to graph extension point.",
-        "type": "string"
-      }
-    },
     "artifacts": {
       "type": "object",
       "title": "Artifact map (name -> source)",
@@ -283,11 +274,6 @@
           "type": "boolean",
           "title": "Artifact uploads",
           "description": ""
-        },
-        "extendTaskGraph": {
-          "type": "boolean",
-          "title": "Task graph extensions",
-          "description": "The `.graphs` property in payload allows specifying paths which if present will be used to extend the task graph (Keeping it alive) this can be used for dynamic tests, bisections, any dynamic tasks, etc..."
         },
         "dind": {
           "type": "boolean",

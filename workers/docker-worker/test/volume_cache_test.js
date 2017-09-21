@@ -1,9 +1,11 @@
 import assert from 'assert';
+import devnull from 'dev-null';
 import VolumeCache from '../build/lib/volume_cache';
 import GarbageCollector from '../build/lib/gc';
 import {createLogger} from '../build/lib/log';
 import Debug from 'debug';
 import Docker from '../build/lib/docker';
+import dockerUtils from 'dockerode-process/utils';
 import waitForEvent from '../build/lib/wait_for_event';
 import fs from 'fs';
 import path from 'path';
@@ -28,7 +30,6 @@ suite('volume cache test', function () {
   });
 
   var monitor;
-  var IMAGE = 'taskcluster/test-ubuntu';
 
   setup(async () => {
     monitor = await monitoring({
@@ -136,10 +137,15 @@ suite('volume cache test', function () {
 
     var c = cmd(
       'echo "foo" > /docker_cache/tmp-obj-dir/blah.txt'
+
     );
 
+    let pullStream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu:latest');
+    pullStream.pipe(devnull());
+    await waitForEvent(pullStream, 'end');
+
     var createConfig = {
-      Image: IMAGE,
+      Image: 'taskcluster/test-ubuntu:latest',
       Cmd: c,
       AttachStdin:false,
       AttachStdout:true,
