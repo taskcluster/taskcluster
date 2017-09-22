@@ -80,7 +80,7 @@ class LDAPAuthorizer {
         debug(`no user found for ${email}; skipping LDAP groups`);
         return;
       }
-      debug(`authorizing ${user.identity} with LDAP DN ${userDN}`);
+      debug(`authorizing ${user.identity} with LDAP DN ${userDn}`);
 
       addRolesForEntries(await client.search(
         'dc=mozilla', {
