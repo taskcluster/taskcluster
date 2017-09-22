@@ -41,8 +41,7 @@ properties:
           artifact.
         type:         string
         enum:
-          - s3
-          - azure
+          - blob
           - reference
           - error
       name:

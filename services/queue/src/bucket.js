@@ -1,4 +1,4 @@
-let aws         = require('aws-sdk-promise');
+let aws         = require('aws-sdk');
 let _           = require('lodash');
 let debug       = require('debug')('app:bucket');
 let assert      = require('assert');
@@ -147,7 +147,7 @@ Bucket.prototype.setupCORS = async function() {
   try {
     // Fetch CORS to see if they as expected already
     var req = await this.s3.getBucketCors().promise();
-    if (_.isEqual(req.data.CORSRules, rules)) {
+    if (_.isEqual(req.CORSRules, rules)) {
       debug('CORS already set for bucket: %s', this.bucket);
       return;
     }

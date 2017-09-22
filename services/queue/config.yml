@@ -6,11 +6,16 @@ defaults:
     # Number of seconds before the claim to a run expires
     claimTimeout:                 1200
 
-    # S3 buckets where artifacts are stored
+    # Blob Artifact configuration
+    publicBlobArtifactBucket:     !env PUBLIC_BLOB_ARTIFACT_BUCKET
+    privateBlobArtifactBucket:    !env PRIVATE_BLOB_ARTIFACT_BUCKET
+    blobArtifactRegion:           !env BLOB_ARTIFACT_REGION
+
+    # S3 buckets where artifacts are stored NOTE: Only legacy S3 type
     publicArtifactBucket:         !env PUBLIC_ARTIFACT_BUCKET
     privateArtifactBucket:        !env PRIVATE_ARTIFACT_BUCKET
 
-    # Azure blob container for artifacts
+    # Azure blob container for artifacts NOTE: Only for legacy Azure Type
     artifactContainer:            artifacts
 
     # Azure table name for tasks, artifact meta-data
@@ -132,6 +137,9 @@ defaults:
 # Configuration in production
 production:
   app:
+    publicBlobArtifactBucket:     'taskcluster-public-blobs'
+    privateBlobArtifactBucket:    'taskcluster-private-blobs'
+    blobArtifactRegion:           'us-east-1'
     publicArtifactBucket:         'taskcluster-public-artifacts'
     privateArtifactBucket:        'taskcluster-private-artifacts'
     artifactContainer:            'artifacts'
@@ -167,6 +175,9 @@ test:
     publishMetaData:              false
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1
+    publicBlobArtifactBucket:     'test-bucket-for-any-garbage'
+    privateBlobArtifactBucket:    'test-bucket-for-any-garbage2'
+    blobArtifactRegion:           'us-west-2'
     publicArtifactBucket:         'test-bucket-for-any-garbage'
     privateArtifactBucket:        'test-bucket-for-any-garbage2'
     artifactContainer:            'artifacts'

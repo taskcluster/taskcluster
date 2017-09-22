@@ -348,6 +348,63 @@ let Artifact = Entity.configure({
     'publicBucket',   // Public artifact bucket wrapping S3
     'monitor',        // base.monitor instance
   ],
+}).configure({
+  version: 2,
+  properties: {
+    taskId:         Entity.types.SlugId,
+    runId:          Entity.types.Number,
+    name:           Entity.types.String,
+    storageType:    Entity.types.String,
+    contentType:    Entity.types.String,
+    /**
+     * Location details storageType,
+     *
+     * storageType: s3
+     *   bucket:        S3 bucket that contains the object
+     *   prefix:        Prefix (path) for the object within the bucket
+     *
+     * storageType: azure
+     *   container:     Azure container that holds the blob
+     *   path:          Path to blob within container
+     *
+     * storageType: reference
+     *   url:           URL that artifact should redirect to
+     *
+     * storageType: error
+     *   reason:        Formalized reason for error artifact, see JSON schema.
+     *   message:       Human readable error message to return
+     * storageType: blob
+     *   contentType
+     *   contentEncoding
+     *   contentSha256: SHA256 hash of the un-encoded artifact
+     *   contentLength: Number of bytes of the un-encoded artifact
+     *   transferSha256: SHA256 hash of the content-encoding encoded artifact
+     *   transferLength: Number of bytes of the content-encoding encoded artifact
+     *   partsHash: Rather than storing the potentially large list of sha256/size
+     *              pairings for each part, we just need to store enough information
+     *              to determine if the operation would result in an idempotency
+     *              error
+     */
+    details:        Entity.types.JSON,
+    expires:        Entity.types.Date,
+    /** 
+     * Present is a number field which represents an artifact being present and
+     * the upload being completed.  The handling logic for the artifact's
+     * storage type will fully define what that means for a given storage type.
+     */
+    present:        Entity.types.Boolean,
+  },
+  context: [
+    'blobStore',      // BlobStore instance wrapping Azure Blob Storage
+    'privateBucket',  // Private artifact bucket wrapping S3
+    'publicBucket',   // Public artifact bucket wrapping S3
+    'monitor',        // base.monitor instance
+    's3Controller',   // For deleting objects
+  ],
+  migrate(item) {
+    item.present = true;
+    return item;
+  },
 });
 
 /** Return JSON representation of artifact meta-data */
@@ -371,6 +428,15 @@ Artifact.prototype.json = function() {
 Artifact.prototype.remove = function(ignoreError) {
   // Promise that deleted underlying artifact, and keep reference to context
   var deleted = Promise.resolve();
+
+  if (this.storageType === 'blob') {
+    debug('Deleting expired s3 artifact from bucket: %s, key: %s',
+          this.details.bucket, this.details.key);
+    deleted = this.s3Controller.deleteObject({
+      bucket: this.details.bucket,
+      key: this.details.key,
+    });
+  }
 
   // Handle S3 artifacts
   if (this.storageType === 's3') {
@@ -434,10 +500,10 @@ Artifact.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          (item) => { count++; return item.remove(true); },
+    limit:   250, // max number of concurrent delete operations
+    handler: (item) => { count++; return item.remove(true); },
   });
   return count;
 };

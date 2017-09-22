@@ -24,6 +24,8 @@ let monitor             = require('taskcluster-lib-monitor');
 let validator           = require('taskcluster-lib-validate');
 let docs                = require('taskcluster-lib-docs');
 let App                 = require('taskcluster-lib-app');
+let remoteS3            = require('remotely-signed-s3');
+let aws                 = require('aws-sdk');
 
 // Create component loader
 let load = loader({
@@ -128,6 +130,7 @@ let load = loader({
     requires: [
       'cfg', 'monitor', 'process',
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
+      's3Controller',
     ],
     setup: async (ctx) => {
       let Artifact = data.Artifact.setup({
@@ -139,6 +142,7 @@ let load = loader({
           publicBucket:   ctx.publicArtifactBucket,
           privateBucket:  ctx.privateArtifactBucket,
           monitor:        ctx.monitor.prefix('data.Artifact'),
+          s3Controller:   ctx.s3Controller,
         },
         monitor:          ctx.monitor.prefix('table.artifacts'),
       });
@@ -338,6 +342,24 @@ let load = loader({
     },
   },
 
+  s3Controller: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      return new remoteS3.Controller({
+        region: cfg.app.blobArtifactRegion,
+        accessKeyId: cfg.aws.accessKeyId,
+        secretAccessKey: cfg.aws.secretAccessKey,
+      });
+    },
+  },
+
+  s3Runner: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      return new remoteS3.Runner();
+    },
+  },
+
   api: {
     requires: [
       'cfg', 'publisher', 'validator', 'Task', 'Artifact',
@@ -345,6 +367,7 @@ let load = loader({
       'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
       'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
+      's3Controller', 's3Runner',
     ],
     setup: (ctx) => v1.setup({
       context: {
@@ -373,6 +396,11 @@ let load = loader({
         monitor:          ctx.monitor.prefix('api-context'),
         workClaimer:      ctx.workClaimer,
         workerInfo:       ctx.workerInfo,
+        s3Controller:     ctx.s3Controller,
+        s3Runner:         ctx.s3Runner,
+        blobRegion:       ctx.cfg.app.blobArtifactRegion, 
+        publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
+        privateBlobBucket:ctx.cfg.app.privateBlobArtifactBucket,
       },
       validator:        ctx.validator,
       authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
