@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 21 Sep 2017 at 18:24:00 UTC. The code was generated
+// Fri, 22 Sep 2017 at 19:24:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -442,19 +442,30 @@ func (myQueue *Queue) ReportException(taskId, runId string, payload *TaskExcepti
 // intermediate artifacts from data processing applications, as the
 // artifacts can be set to expire a few days later.
 //
-// We currently support 4 different `storageType`s, each storage type have
+// We currently support 3 different `storageType`s, each storage type have
 // slightly different features and in some cases difference semantics.
+// We also have 2 deprecated `storageType`s which are only maintained for
+// backwards compatiability and should not be used in new implementations
 //
-// **S3 artifacts**, is useful for static files which will be stored on S3.
-// When creating an S3 artifact the queue will return a pre-signed URL
-// to which you can do a `PUT` request to upload your artifact. Note
-// that `PUT` request **must** specify the `content-length` header and
-// **must** give the `content-type` header the same value as in the request
-// to `createArtifact`.
+// **Blob artifacts**, are useful for storing large files.  Currently, these
+// are all stored in S3 but there are facilities for adding support for other
+// backends in futre.  A call for this type of artifact must provide information
+// about the file which will be uploaded.  This includes sha256 sums and sizes.
+// This method will return a list of general form HTTP requests which are signed
+// by AWS S3 credentials managed by the Queue.  Once these requests are completed
+// the list of `ETag` values returned by the requests must be passed to the
+// queue `completeArtifact` method
 //
-// **Azure artifacts**, are stored in _Azure Blob Storage_ service, which
-// given the consistency guarantees and API interface offered by Azure is
-// more suitable for artifacts that will be modified during the execution
+// **S3 artifacts**, DEPRECATED is useful for static files which will be
+// stored on S3. When creating an S3 artifact the queue will return a
+// pre-signed URL to which you can do a `PUT` request to upload your
+// artifact. Note that `PUT` request **must** specify the `content-length`
+// header and **must** give the `content-type` header the same value as in
+// the request to `createArtifact`.
+//
+// **Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+// which given the consistency guarantees and API interface offered by Azure
+// is more suitable for artifacts that will be modified during the execution
 // of the task. For example docker-worker has a feature that persists the
 // task log to Azure Blob Storage every few seconds creating a somewhat
 // live log. A request to create an Azure artifact will return a URL
@@ -500,6 +511,21 @@ func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostAr
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse), nil)
 	return responseObject.(*PostArtifactResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// tbd
+//
+// Required scopes:
+//   * (queue:create-artifact:<name> and assume:worker-id:<workerGroup>/<workerId>), or
+//   * queue:create-artifact:<taskId>/<runId>
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#completeArtifact
+func (myQueue *Queue) CompleteArtifact(taskId, runId, name string, payload *CompleteArtifactRequest) error {
+	cd := tcclient.Client(*myQueue)
+	_, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+	return err
 }
 
 // Get artifact by `<name>` from a specific run.

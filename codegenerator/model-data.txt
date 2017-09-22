@@ -1,4 +1,4 @@
-Generated: 1506018286
+Generated: 1506108280
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6747,19 +6747,30 @@ expiration point. This features makes it feasible to upload large
 intermediate artifacts from data processing applications, as the
 artifacts can be set to expire a few days later.
 
-We currently support 4 different `storageType`s, each storage type have
+We currently support 3 different `storageType`s, each storage type have
 slightly different features and in some cases difference semantics.
+We also have 2 deprecated `storageType`s which are only maintained for
+backwards compatiability and should not be used in new implementations
 
-**S3 artifacts**, is useful for static files which will be stored on S3.
-When creating an S3 artifact the queue will return a pre-signed URL
-to which you can do a `PUT` request to upload your artifact. Note
-that `PUT` request **must** specify the `content-length` header and
-**must** give the `content-type` header the same value as in the request
-to `createArtifact`.
+**Blob artifacts**, are useful for storing large files.  Currently, these
+are all stored in S3 but there are facilities for adding support for other
+backends in futre.  A call for this type of artifact must provide information
+about the file which will be uploaded.  This includes sha256 sums and sizes.
+This method will return a list of general form HTTP requests which are signed
+by AWS S3 credentials managed by the Queue.  Once these requests are completed
+the list of `ETag` values returned by the requests must be passed to the
+queue `completeArtifact` method
 
-**Azure artifacts**, are stored in _Azure Blob Storage_ service, which
-given the consistency guarantees and API interface offered by Azure is
-more suitable for artifacts that will be modified during the execution
+**S3 artifacts**, DEPRECATED is useful for static files which will be
+stored on S3. When creating an S3 artifact the queue will return a
+pre-signed URL to which you can do a `PUT` request to upload your
+artifact. Note that `PUT` request **must** specify the `content-length`
+header and **must** give the `content-type` header the same value as in
+the request to `createArtifact`.
+
+**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+which given the consistency guarantees and API interface offered by Azure
+is more suitable for artifacts that will be modified during the execution
 of the task. For example docker-worker has a feature that persists the
 task log to Azure Blob Storage every few seconds creating a somewhat
 live log. A request to create an Azure artifact will return a URL
@@ -6797,6 +6808,19 @@ updated. You should only use this to update the `url` property for
 reference artifacts your process has created.'
 Entry 17    =
     Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
+    Entry Args        = '[taskId runId name]'
+    Entry Query        = '[]'
+    Entry Name        = 'completeArtifact'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[queue:create-artifact:<name> assume:worker-id:<workerGroup>/<workerId>] [queue:create-artifact:<taskId>/<runId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#'
+    Entry Output      = ''
+    Entry Title       = 'Complete Artifact'
+    Entry Description = 'tbd'
+Entry 18    =
+    Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts/<name>'
     Entry Args        = '[taskId runId name]'
@@ -6825,7 +6849,7 @@ response times. Caching can be skipped by setting the header
 `x-taskcluster-skip-cache: true`, this should only be used for resources
 where request volume is known to be low, and caching not useful.
 (This feature may be disabled in the future, use is sparingly!)'
-Entry 18    =
+Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts/<name>'
@@ -6852,7 +6876,7 @@ use that URL with a normal HTTP client.
 **Remark**, this end-point is slightly slower than
 `queue.getArtifact`, so consider that if you already know the `runId` of
 the latest run. Otherwise, just us the most convenient API end-point.'
-Entry 19    =
+Entry 20    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/runs/<runId>/artifacts'
@@ -6873,7 +6897,7 @@ again with the `continuationToken` as the query-string option:
 
 By default this end-point will list up-to 1000 artifacts in a single page
 you may limit this with the query-string parameter `limit`.'
-Entry 20    =
+Entry 21    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<taskId>/artifacts'
@@ -6895,7 +6919,7 @@ again with the `continuationToken` as the query-string option:
 
 By default this end-point will list up-to 1000 artifacts in a single page
 you may limit this with the query-string parameter `limit`.'
-Entry 21    =
+Entry 22    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners'
@@ -6917,7 +6941,7 @@ The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
 option. By default this end-point will list up to 1000 provisioners in a single
 page. You may limit this with the query-string parameter `limit`.'
-Entry 22    =
+Entry 23    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>'
@@ -6934,7 +6958,7 @@ Entry 22    =
 The term "provisioner" is taken broadly to mean anything with a provisionerId.
 This does not necessarily mean there is an associated service performing any
 provisioning activity.'
-Entry 23    =
+Entry 24    =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/provisioners/<provisionerId>'
@@ -6956,7 +6980,7 @@ provisioner with a body `{description: 'This provisioner is great'}` would requi
 The term "provisioner" is taken broadly to mean anything with a provisionerId.
 This does not necessarily mean there is an associated service performing any
 provisioning activity.'
-Entry 24    =
+Entry 25    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/pending/<provisionerId>/<workerType>'
@@ -6975,7 +6999,7 @@ The underlying Azure Storage Queues only promises to give us an estimate.
 Furthermore, we cache the result in memory for 20 seconds. So consumers
 should be no means expect this to be an accurate number.
 It is, however, a solid estimate of the number of pending tasks.'
-Entry 25    =
+Entry 26    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types'
@@ -6993,7 +7017,7 @@ The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
 option. By default this end-point will list up to 1000 worker-types in a single
 page. You may limit this with the query-string parameter `limit`.'
-Entry 26    =
+Entry 27    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>'
@@ -7006,7 +7030,7 @@ Entry 26    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
     Entry Title       = 'Get a worker-type'
     Entry Description = 'Get a worker-type from a provisioner.'
-Entry 27    =
+Entry 28    =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>'
@@ -7024,7 +7048,7 @@ Entry 27    =
 possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
 provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
 `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.'
-Entry 28    =
+Entry 29    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers'
@@ -7045,7 +7069,7 @@ The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
 option. By default this end-point will list up to 1000 workers in a single
 page. You may limit this with the query-string parameter `limit`.'
-Entry 29    =
+Entry 30    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>'
@@ -7058,7 +7082,7 @@ Entry 29    =
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
     Entry Title       = 'Get a worker-type'
     Entry Description = 'Get a worker from a worker-type.'
-Entry 30    =
+Entry 31    =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>'
@@ -7074,7 +7098,7 @@ Entry 30    =
 
 `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
 possessed.'
-Entry 31    =
+Entry 32    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -8133,10 +8157,42 @@ ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-
 OneOf
   Item '0' =
     Additional Properties  = 'false'
-    Description            = 'Request for a signed PUT URL that will allow you to upload an artifact
-    to an S3 bucket managed by the queue.
+    Description            = 'Request a list of requests in a generalized format which can be run to
+    upload an artifact to storage managed by the queue.
     '
     Properties
+      Property 'contentEncoding' =
+        Description            = 'Optionally provide an encoding type which should be set as the HTTP
+        Content-Encoding header for this artifact.
+        '
+        MaxLength              = '255'
+        Type                   = 'string'
+        TypeName               = 'ContentEncoding'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentEncoding'
+      Property 'contentLength' =
+        Description            = 'The number of bytes of the entire artifact.  This must be the number
+        of bytes in the file to be uploaded.  For single part uploads, the
+        upload will fail if the number of bytes uploaded does not match this
+        value.  A single part upload (e.g. no parts list) may be at most 5GB.
+        This limit is enforced in the code because it is not possible to
+        represent all of the restrictions in a json-schema.  A multipart
+        upload may be at most 5TB, with each part other than the last being
+        between 5MB and 5GB in size.
+        '
+        Minimum                = '0'
+        Type                   = 'integer'
+        TypeName               = 'ContentLength'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength'
+      Property 'contentSha256' =
+        Description            = 'The complete SHA256 value of the entire artifact.  This must be the
+        SHA256 of the file which is to be uploaded.  For single part uploads,
+        the upload will fail if the SHA256 value of what is uploaded does not
+        match this value
+        '
+        Pattern                = '^[a-fA-F0-9]{64}$'
+        Type                   = 'string'
+        TypeName               = 'ContentSha256'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentSha256'
       Property 'contentType' =
         Description            = 'Artifact mime-type, when uploading artifact to the signed
         `PUT` URL returned from this request this must given with the
@@ -8158,19 +8214,115 @@ OneOf
         Type                   = 'string'
         TypeName               = 'Expires'
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires'
+      Property 'parts' =
+        Description            = 'A list of parts for a multipart upload.  The presence of this list is
+        how a multipart upload is differentiated from a single part upload.
+        The items in this list represent individual parts for upload.  For a
+        multipart upload, the sha256 values provided here must match the
+        sha256 value that S3 internally computes for the upload to be
+        considered a success.  The overall sha256 value is not checked
+        explicitly because the S3 API does not allow for that, but the same
+        code that is responsible for generating the parts hashes would also
+        be generating the overall hash, which makes this less of a concern.
+        The worst case is that we have artifacts which incorrectly do not
+        validate, which is not as big of a security concern.
+        '
+        Items
+          Properties
+            Property 'sha256' =
+              Description            = 'The sha256 hash of the part.
+              '
+              MaxLength              = '64'
+              MinLength              = '64'
+              Pattern                = '^[a-fA-F0-9]{64}$'
+              Type                   = 'string'
+              TypeName               = 'Sha256'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/sha256'
+            Property 'size' =
+              Description            = 'The number of bytes in this part.  Keep in mind for S3 that
+              all but the last part must be minimum 5MB and the maximum for
+              a single part is 5GB.  The overall size may not exceed 5TB
+              '
+              Minimum                = '0'
+              Type                   = 'integer'
+              TypeName               = 'Size'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size'
+          Type                   = 'object'
+          TypeName               = 'PartsEntry'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items'
+        MinLength              = '1'
+        Type                   = 'array'
+        TypeName               = 'Parts'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `'blob'`'
+        Enum                   = '[blob]'
+        Type                   = 'string'
+        TypeName               = 'StorageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType'
+      Property 'transferLength' =
+        Description            = 'The number of bytes transfered across the wire to the backing
+        datastore.  If specified, it represents the post-content-encoding
+        byte count
+        '
+        Minimum                = '0'
+        Type                   = 'integer'
+        TypeName               = 'TransferLength'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength'
+      Property 'transferSha256' =
+        Description            = 'This is the sha256 of the bytes transfered across the wire to the
+        backing datastore.  If specified, it represents the
+        post-content-encoding sha256 value
+        '
+        Pattern                = '^[a-fA-F0-9]{64}$'
+        Type                   = 'string'
+        TypeName               = 'TransferSha256'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferSha256'
+    Required               = '[storageType expires contentType contentSha256 contentLength]'
+    Title                  = 'Blob Artifact Request'
+    Type                   = 'object'
+    TypeName               = 'BlobArtifactRequest'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]'
+  Item '1' =
+    Additional Properties  = 'false'
+    Description            = 'Request for a signed PUT URL that will allow you to upload an artifact
+    to an S3 bucket managed by the queue.
+    '
+    Properties
+      Property 'contentType' =
+        Description            = 'Artifact mime-type, when uploading artifact to the signed
+        `PUT` URL returned from this request this must given with the
+         `ContentType` header. Please, provide correct mime-type,
+         this make tooling a lot easier, specifically,
+         always using `application/json` for JSON artifacts.
+        '
+        MaxLength              = '255'
+        Type                   = 'string'
+        TypeName               = 'ContentType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType'
+      Property 'expires' =
+        Description            = 'Date-time after which the artifact should be deleted. Note, that
+        these will be collected over time, and artifacts may remain
+        available after expiration. S3 based artifacts are identified in
+        azure table storage and explicitly deleted on S3 after expiration.
+        '
+        Format                 = 'date-time'
+        Type                   = 'string'
+        TypeName               = 'Expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires'
       Property 'storageType' =
         Description            = 'Artifact storage type, in this case `'s3'`
         '
         Enum                   = '[s3]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType'
     Required               = '[storageType expires contentType]'
     Title                  = 'S3 Artifact Request'
     Type                   = 'object'
     TypeName               = 'S3ArtifactRequest'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]'
-  Item '1' =
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]'
+  Item '2' =
     Additional Properties  = 'false'
     Description            = 'Request for an Azure Shared Access Signature (SAS) that will allow
     you to upload an artifact to an Azure blob storage container managed
@@ -8186,7 +8338,7 @@ OneOf
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = 'ContentType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType'
       Property 'expires' =
         Description            = 'Date-time after which the artifact should be deleted.
         Note, that these will be collected over time, and artifacts may
@@ -8197,20 +8349,20 @@ OneOf
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = 'Expires'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires'
       Property 'storageType' =
         Description            = 'Artifact storage type, in this case `azure`
         '
         Enum                   = '[azure]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType'
     Required               = '[storageType expires contentType]'
     Title                  = 'Azure Artifact Request'
     Type                   = 'object'
     TypeName               = 'AzureArtifactRequest'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]'
-  Item '2' =
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]'
+  Item '3' =
     Additional Properties  = 'false'
     Description            = 'Request the queue to redirect to a URL for a given artifact.
     This allows you to reference artifacts that aren't managed by the queue.
@@ -8230,7 +8382,7 @@ OneOf
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = 'ContentType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/contentType'
       Property 'expires' =
         Description            = 'Date-time after which the queue should no longer redirect to this URL.
         Note, that the queue will and cannot delete the resource your URL
@@ -8239,14 +8391,14 @@ OneOf
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = 'Expires'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires'
       Property 'storageType' =
         Description            = 'Artifact storage type, in this case `reference`
         '
         Enum                   = '[reference]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType'
       Property 'url' =
         Description            = 'URL to which the queue should redirect using a `303` (See other)
         redirect.
@@ -8254,13 +8406,13 @@ OneOf
         Format                 = 'uri'
         Type                   = 'string'
         TypeName               = 'URL'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/url'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/url'
     Required               = '[storageType expires url contentType]'
     Title                  = 'Redirect Artifact Request'
     Type                   = 'object'
     TypeName               = 'RedirectArtifactRequest'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]'
-  Item '3' =
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]'
+  Item '4' =
     Additional Properties  = 'false'
     Description            = 'Request the queue to reply `403` (forbidden) with `reason` and `message`
     to any `GET` request for this artifact. This is mainly useful as a way
@@ -8275,33 +8427,33 @@ OneOf
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = 'Expires'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/expires'
       Property 'message' =
         Description            = 'Human readable explanation of why the artifact is missing
         '
         MaxLength              = '4096'
         Type                   = 'string'
         TypeName               = 'Message'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/message'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/message'
       Property 'reason' =
         Description            = 'Reason why the artifact doesn't exist.
         '
         Enum                   = '[file-missing-on-worker invalid-resource-on-worker too-large-file-on-worker]'
         Type                   = 'string'
         TypeName               = 'Reason'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/reason'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/reason'
       Property 'storageType' =
         Description            = 'Artifact storage type, in this case `error`
         '
         Enum                   = '[error]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/storageType'
     Required               = '[storageType expires reason message]'
     Title                  = 'Error Artifact Request'
     Type                   = 'object'
     TypeName               = 'ErrorArtifactRequest'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Request'
 Type                   = 'object'
@@ -8312,10 +8464,42 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-
 http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
 ============================================================================
 Additional Properties  = 'false'
-Description            = 'Request for a signed PUT URL that will allow you to upload an artifact
-to an S3 bucket managed by the queue.
+Description            = 'Request a list of requests in a generalized format which can be run to
+upload an artifact to storage managed by the queue.
 '
 Properties
+  Property 'contentEncoding' =
+    Description            = 'Optionally provide an encoding type which should be set as the HTTP
+    Content-Encoding header for this artifact.
+    '
+    MaxLength              = '255'
+    Type                   = 'string'
+    TypeName               = 'ContentEncoding'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentEncoding'
+  Property 'contentLength' =
+    Description            = 'The number of bytes of the entire artifact.  This must be the number
+    of bytes in the file to be uploaded.  For single part uploads, the
+    upload will fail if the number of bytes uploaded does not match this
+    value.  A single part upload (e.g. no parts list) may be at most 5GB.
+    This limit is enforced in the code because it is not possible to
+    represent all of the restrictions in a json-schema.  A multipart
+    upload may be at most 5TB, with each part other than the last being
+    between 5MB and 5GB in size.
+    '
+    Minimum                = '0'
+    Type                   = 'integer'
+    TypeName               = 'ContentLength'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength'
+  Property 'contentSha256' =
+    Description            = 'The complete SHA256 value of the entire artifact.  This must be the
+    SHA256 of the file which is to be uploaded.  For single part uploads,
+    the upload will fail if the SHA256 value of what is uploaded does not
+    match this value
+    '
+    Pattern                = '^[a-fA-F0-9]{64}$'
+    Type                   = 'string'
+    TypeName               = 'ContentSha256'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentSha256'
   Property 'contentType' =
     Description            = 'Artifact mime-type, when uploading artifact to the signed
     `PUT` URL returned from this request this must given with the
@@ -8337,21 +8521,120 @@ Properties
     Type                   = 'string'
     TypeName               = 'Expires'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires'
+  Property 'parts' =
+    Description            = 'A list of parts for a multipart upload.  The presence of this list is
+    how a multipart upload is differentiated from a single part upload.
+    The items in this list represent individual parts for upload.  For a
+    multipart upload, the sha256 values provided here must match the
+    sha256 value that S3 internally computes for the upload to be
+    considered a success.  The overall sha256 value is not checked
+    explicitly because the S3 API does not allow for that, but the same
+    code that is responsible for generating the parts hashes would also
+    be generating the overall hash, which makes this less of a concern.
+    The worst case is that we have artifacts which incorrectly do not
+    validate, which is not as big of a security concern.
+    '
+    Items
+      Properties
+        Property 'sha256' =
+          Description            = 'The sha256 hash of the part.
+          '
+          MaxLength              = '64'
+          MinLength              = '64'
+          Pattern                = '^[a-fA-F0-9]{64}$'
+          Type                   = 'string'
+          TypeName               = 'Sha256'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/sha256'
+        Property 'size' =
+          Description            = 'The number of bytes in this part.  Keep in mind for S3 that
+          all but the last part must be minimum 5MB and the maximum for
+          a single part is 5GB.  The overall size may not exceed 5TB
+          '
+          Minimum                = '0'
+          Type                   = 'integer'
+          TypeName               = 'Size'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size'
+      Type                   = 'object'
+      TypeName               = 'PartsEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items'
+    MinLength              = '1'
+    Type                   = 'array'
+    TypeName               = 'Parts'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts'
+  Property 'storageType' =
+    Description            = 'Artifact storage type, in this case `'blob'`'
+    Enum                   = '[blob]'
+    Type                   = 'string'
+    TypeName               = 'StorageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType'
+  Property 'transferLength' =
+    Description            = 'The number of bytes transfered across the wire to the backing
+    datastore.  If specified, it represents the post-content-encoding
+    byte count
+    '
+    Minimum                = '0'
+    Type                   = 'integer'
+    TypeName               = 'TransferLength'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength'
+  Property 'transferSha256' =
+    Description            = 'This is the sha256 of the bytes transfered across the wire to the
+    backing datastore.  If specified, it represents the
+    post-content-encoding sha256 value
+    '
+    Pattern                = '^[a-fA-F0-9]{64}$'
+    Type                   = 'string'
+    TypeName               = 'TransferSha256'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferSha256'
+Required               = '[storageType expires contentType contentSha256 contentLength]'
+Title                  = 'Blob Artifact Request'
+Type                   = 'object'
+TypeName               = 'BlobArtifactRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]'
+
+
+http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
+============================================================================
+Additional Properties  = 'false'
+Description            = 'Request for a signed PUT URL that will allow you to upload an artifact
+to an S3 bucket managed by the queue.
+'
+Properties
+  Property 'contentType' =
+    Description            = 'Artifact mime-type, when uploading artifact to the signed
+    `PUT` URL returned from this request this must given with the
+     `ContentType` header. Please, provide correct mime-type,
+     this make tooling a lot easier, specifically,
+     always using `application/json` for JSON artifacts.
+    '
+    MaxLength              = '255'
+    Type                   = 'string'
+    TypeName               = 'ContentType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType'
+  Property 'expires' =
+    Description            = 'Date-time after which the artifact should be deleted. Note, that
+    these will be collected over time, and artifacts may remain
+    available after expiration. S3 based artifacts are identified in
+    azure table storage and explicitly deleted on S3 after expiration.
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'Expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires'
   Property 'storageType' =
     Description            = 'Artifact storage type, in this case `'s3'`
     '
     Enum                   = '[s3]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType'
 Required               = '[storageType expires contentType]'
 Title                  = 'S3 Artifact Request'
 Type                   = 'object'
 TypeName               = 'S3ArtifactRequest'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
+http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
 ============================================================================
 Additional Properties  = 'false'
 Description            = 'Request for an Azure Shared Access Signature (SAS) that will allow
@@ -8368,7 +8651,7 @@ Properties
     MaxLength              = '255'
     Type                   = 'string'
     TypeName               = 'ContentType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType'
   Property 'expires' =
     Description            = 'Date-time after which the artifact should be deleted.
     Note, that these will be collected over time, and artifacts may
@@ -8379,22 +8662,22 @@ Properties
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires'
   Property 'storageType' =
     Description            = 'Artifact storage type, in this case `azure`
     '
     Enum                   = '[azure]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType'
 Required               = '[storageType expires contentType]'
 Title                  = 'Azure Artifact Request'
 Type                   = 'object'
 TypeName               = 'AzureArtifactRequest'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
+http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
 ============================================================================
 Additional Properties  = 'false'
 Description            = 'Request the queue to redirect to a URL for a given artifact.
@@ -8415,7 +8698,7 @@ Properties
     MaxLength              = '255'
     Type                   = 'string'
     TypeName               = 'ContentType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/contentType'
   Property 'expires' =
     Description            = 'Date-time after which the queue should no longer redirect to this URL.
     Note, that the queue will and cannot delete the resource your URL
@@ -8424,14 +8707,14 @@ Properties
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires'
   Property 'storageType' =
     Description            = 'Artifact storage type, in this case `reference`
     '
     Enum                   = '[reference]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType'
   Property 'url' =
     Description            = 'URL to which the queue should redirect using a `303` (See other)
     redirect.
@@ -8439,15 +8722,15 @@ Properties
     Format                 = 'uri'
     Type                   = 'string'
     TypeName               = 'URL'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/url'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/url'
 Required               = '[storageType expires url contentType]'
 Title                  = 'Redirect Artifact Request'
 Type                   = 'object'
 TypeName               = 'RedirectArtifactRequest'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
+http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]
 ============================================================================
 Additional Properties  = 'false'
 Description            = 'Request the queue to reply `403` (forbidden) with `reason` and `message`
@@ -8463,33 +8746,33 @@ Properties
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/expires'
   Property 'message' =
     Description            = 'Human readable explanation of why the artifact is missing
     '
     MaxLength              = '4096'
     Type                   = 'string'
     TypeName               = 'Message'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/message'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/message'
   Property 'reason' =
     Description            = 'Reason why the artifact doesn't exist.
     '
     Enum                   = '[file-missing-on-worker invalid-resource-on-worker too-large-file-on-worker]'
     Type                   = 'string'
     TypeName               = 'Reason'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/reason'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/reason'
   Property 'storageType' =
     Description            = 'Artifact storage type, in this case `error`
     '
     Enum                   = '[error]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/storageType'
 Required               = '[storageType expires reason message]'
 Title                  = 'Error Artifact Request'
 Type                   = 'object'
 TypeName               = 'ErrorArtifactRequest'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]'
 
 
 http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
@@ -8500,6 +8783,57 @@ Note that the `storageType` property is referenced in the request as well.
 ID                     = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
 OneOf
   Item '0' =
+    Additional Properties  = 'false'
+    Description            = 'Response to a request for creating a new blob artifact
+    '
+    Properties
+      Property 'expires' =
+        Description            = 'Date-time after which the signed `requests` no longer work
+        '
+        Format                 = 'date-time'
+        Type                   = 'string'
+        TypeName               = 'Expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires'
+      Property 'requests' =
+        Description            = 'A list of generalized HTTP requests which must be run to upload the
+        artifact.
+        '
+        Items
+          Properties
+            Property 'headers' =
+              Description            = 'Headers of request'
+              Type                   = 'object'
+              TypeName               = 'Headers'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers'
+            Property 'method' =
+              Description            = 'HTTP 1.1 method of request'
+              Enum                   = '[GET POST PUT DELETE OPTIONS HEAD PATCH]'
+              Type                   = 'string'
+              TypeName               = 'Method'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method'
+            Property 'url' =
+              Description            = 'URL of request'
+              Type                   = 'string'
+              TypeName               = 'URL'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url'
+          Type                   = 'object'
+          TypeName               = 'RequestsEntry'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items'
+        Type                   = 'array'
+        TypeName               = 'Requests'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests'
+      Property 'storageType' =
+        Description            = 'Artifact storage type, in this case `'blob'`
+        '
+        Enum                   = '[blob]'
+        Type                   = 'string'
+        TypeName               = 'StorageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType'
+    Title                  = 'Blob Artifact Response'
+    Type HAS NOT BEEN SET!!!
+    TypeName               = 'BlobArtifactResponse'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]'
+  Item '1' =
     Additional Properties  = 'false'
     Description            = 'Response to a request for a signed PUT URL that will allow you to
     upload an artifact to an S3 bucket managed by the queue.
@@ -8512,14 +8846,14 @@ OneOf
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = 'ContentType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/contentType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType'
       Property 'expires' =
         Description            = 'Date-time after which the signed `putUrl` no longer works
         '
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = 'Expires'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires'
       Property 'putUrl' =
         Description            = 'URL to which a `PUT` request can be made to upload the artifact
         requested. Note, the `Content-Length` must be specified correctly,
@@ -8528,20 +8862,20 @@ OneOf
         Format                 = 'uri'
         Type                   = 'string'
         TypeName               = 'PutURL'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/putUrl'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl'
       Property 'storageType' =
         Description            = 'Artifact storage type, in this case `'s3'`
         '
         Enum                   = '[s3]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType'
     Required               = '[storageType putUrl expires contentType]'
     Title                  = 'S3 Artifact Response'
     Type                   = 'object'
     TypeName               = 'S3ArtifactResponse'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]'
-  Item '1' =
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]'
+  Item '2' =
     Additional Properties  = 'false'
     Description            = 'Response to a request for an Azure Shared Access Signature (SAS)
     that will allow you to upload an artifact to an Azure blob storage
@@ -8555,7 +8889,7 @@ OneOf
         MaxLength              = '255'
         Type                   = 'string'
         TypeName               = 'ContentType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/contentType'
       Property 'expires' =
         Description            = 'Date-time after which Shared Access Signature (SAS) will
         seize to work.
@@ -8563,7 +8897,7 @@ OneOf
         Format                 = 'date-time'
         Type                   = 'string'
         TypeName               = 'Expires'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/expires'
       Property 'putUrl' =
         Description            = 'Shared Access Signature (SAS) with write permissions, see
         [Azure REST API]
@@ -8573,20 +8907,20 @@ OneOf
         Format                 = 'uri'
         Type                   = 'string'
         TypeName               = 'PutURL'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/putUrl'
       Property 'storageType' =
         Description            = 'Artifact storage type, in this case `azure`
         '
         Enum                   = '[azure]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType'
     Required               = '[storageType expires contentType putUrl]'
     Title                  = 'Azure Artifact Response'
     Type                   = 'object'
     TypeName               = 'AzureArtifactResponse'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]'
-  Item '2' =
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]'
+  Item '3' =
     Additional Properties  = 'false'
     Description            = 'Response to a request for the queue to redirect to a URL for a given
     artifact.
@@ -8598,13 +8932,13 @@ OneOf
         Enum                   = '[reference]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType'
     Required               = '[storageType]'
     Title                  = 'Redirect Artifact Response'
     Type                   = 'object'
     TypeName               = 'RedirectArtifactResponse'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]'
-  Item '3' =
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]'
+  Item '4' =
     Additional Properties  = 'false'
     Description            = 'Response to a request for the queue to reply `403` (forbidden) with
     `reason` and `message` to any `GET` request for this artifact.
@@ -8616,12 +8950,12 @@ OneOf
         Enum                   = '[error]'
         Type                   = 'string'
         TypeName               = 'StorageType'
-        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType'
+        SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]/properties/storageType'
     Required               = '[storageType]'
     Title                  = 'Error Artifact Response'
     Type                   = 'object'
     TypeName               = 'ErrorArtifactResponse'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Response'
 Type                   = 'object'
@@ -8630,6 +8964,60 @@ SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-
 
 
 http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
+=============================================================================
+Additional Properties  = 'false'
+Description            = 'Response to a request for creating a new blob artifact
+'
+Properties
+  Property 'expires' =
+    Description            = 'Date-time after which the signed `requests` no longer work
+    '
+    Format                 = 'date-time'
+    Type                   = 'string'
+    TypeName               = 'Expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires'
+  Property 'requests' =
+    Description            = 'A list of generalized HTTP requests which must be run to upload the
+    artifact.
+    '
+    Items
+      Properties
+        Property 'headers' =
+          Description            = 'Headers of request'
+          Type                   = 'object'
+          TypeName               = 'Headers'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers'
+        Property 'method' =
+          Description            = 'HTTP 1.1 method of request'
+          Enum                   = '[GET POST PUT DELETE OPTIONS HEAD PATCH]'
+          Type                   = 'string'
+          TypeName               = 'Method'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method'
+        Property 'url' =
+          Description            = 'URL of request'
+          Type                   = 'string'
+          TypeName               = 'URL'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url'
+      Type                   = 'object'
+      TypeName               = 'RequestsEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items'
+    Type                   = 'array'
+    TypeName               = 'Requests'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests'
+  Property 'storageType' =
+    Description            = 'Artifact storage type, in this case `'blob'`
+    '
+    Enum                   = '[blob]'
+    Type                   = 'string'
+    TypeName               = 'StorageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType'
+Title                  = 'Blob Artifact Response'
+Type HAS NOT BEEN SET!!!
+TypeName               = 'BlobArtifactResponse'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]'
+
+
+http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
 =============================================================================
 Additional Properties  = 'false'
 Description            = 'Response to a request for a signed PUT URL that will allow you to
@@ -8643,14 +9031,14 @@ Properties
     MaxLength              = '255'
     Type                   = 'string'
     TypeName               = 'ContentType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/contentType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType'
   Property 'expires' =
     Description            = 'Date-time after which the signed `putUrl` no longer works
     '
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires'
   Property 'putUrl' =
     Description            = 'URL to which a `PUT` request can be made to upload the artifact
     requested. Note, the `Content-Length` must be specified correctly,
@@ -8659,22 +9047,22 @@ Properties
     Format                 = 'uri'
     Type                   = 'string'
     TypeName               = 'PutURL'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/putUrl'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl'
   Property 'storageType' =
     Description            = 'Artifact storage type, in this case `'s3'`
     '
     Enum                   = '[s3]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType'
 Required               = '[storageType putUrl expires contentType]'
 Title                  = 'S3 Artifact Response'
 Type                   = 'object'
 TypeName               = 'S3ArtifactResponse'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
+http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
 =============================================================================
 Additional Properties  = 'false'
 Description            = 'Response to a request for an Azure Shared Access Signature (SAS)
@@ -8689,7 +9077,7 @@ Properties
     MaxLength              = '255'
     Type                   = 'string'
     TypeName               = 'ContentType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/contentType'
   Property 'expires' =
     Description            = 'Date-time after which Shared Access Signature (SAS) will
     seize to work.
@@ -8697,7 +9085,7 @@ Properties
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/expires'
   Property 'putUrl' =
     Description            = 'Shared Access Signature (SAS) with write permissions, see
     [Azure REST API]
@@ -8707,22 +9095,22 @@ Properties
     Format                 = 'uri'
     Type                   = 'string'
     TypeName               = 'PutURL'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/putUrl'
   Property 'storageType' =
     Description            = 'Artifact storage type, in this case `azure`
     '
     Enum                   = '[azure]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType'
 Required               = '[storageType expires contentType putUrl]'
 Title                  = 'Azure Artifact Response'
 Type                   = 'object'
 TypeName               = 'AzureArtifactResponse'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
+http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
 =============================================================================
 Additional Properties  = 'false'
 Description            = 'Response to a request for the queue to redirect to a URL for a given
@@ -8735,15 +9123,15 @@ Properties
     Enum                   = '[reference]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType'
 Required               = '[storageType]'
 Title                  = 'Redirect Artifact Response'
 Type                   = 'object'
 TypeName               = 'RedirectArtifactResponse'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]'
 
 
-http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
+http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]
 =============================================================================
 Additional Properties  = 'false'
 Description            = 'Response to a request for the queue to reply `403` (forbidden) with
@@ -8756,12 +9144,12 @@ Properties
     Enum                   = '[error]'
     Type                   = 'string'
     TypeName               = 'StorageType'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]/properties/storageType'
 Required               = '[storageType]'
 Title                  = 'Error Artifact Response'
 Type                   = 'object'
 TypeName               = 'ErrorArtifactResponse'
-SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]'
 
 
 http://schemas.taskcluster.net/queue/v1/provisioner-response.json#
@@ -8822,6 +9210,31 @@ Title                  = 'Provisioner Response'
 Type                   = 'object'
 TypeName               = 'ProvisionerResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#'
+
+
+http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#
+==================================================================
+Additional Properties  = 'false'
+Description            = 'Complete an aritifact'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#'
+Properties
+  Property 'etags' =
+    Description            = 'A list of the etags given by the API of the blob storage provider.  This is an opaque
+    string value provided by the API.
+    '
+    Items
+      Type                   = 'string'
+      TypeName               = 'EtagsEntry'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags/items'
+    Type                   = 'array'
+    TypeName               = 'Etags'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags'
+Required               = '[etags]'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Complete Artifact Request'
+Type                   = 'object'
+TypeName               = 'CompleteArtifactRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#'
 
 
 http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
@@ -10549,7 +10962,7 @@ Properties
         Description            = 'This is the `storageType` for the request that was used to create the
         artifact.
         '
-        Enum                   = '[s3 azure reference error]'
+        Enum                   = '[blob reference error]'
         Title                  = 'Artifact Storage-Type'
         Type                   = 'string'
         TypeName               = 'ArtifactStorageType'

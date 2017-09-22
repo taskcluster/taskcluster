@@ -14,7 +14,7 @@ type (
 	// you to upload an artifact to an Azure blob storage container managed
 	// by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
 	AzureArtifactRequest struct {
 
 		// Artifact mime-type, when uploading artifact please use the same
@@ -24,7 +24,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the artifact should be deleted.
@@ -33,7 +33,7 @@ type (
 		// identified in azure table storage and explicitly deleted in the
 		// azure storage container after expiration.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `azure`
@@ -41,7 +41,7 @@ type (
 		// Possible values:
 		//   * "azure"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
@@ -49,7 +49,7 @@ type (
 	// that will allow you to upload an artifact to an Azure blob storage
 	// container managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
 	AzureArtifactResponse struct {
 
 		// Artifact mime-type, should be specified with the
@@ -57,13 +57,13 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which Shared Access Signature (SAS) will
 		// seize to work.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Shared Access Signature (SAS) with write permissions, see
@@ -71,7 +71,7 @@ type (
 		// (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
 		// reference for details on how to use this.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/putUrl
 		PutURL string `json:"putUrl"`
 
 		// Artifact storage type, in this case `azure`
@@ -79,9 +79,134 @@ type (
 		// Possible values:
 		//   * "azure"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
+
+	// Request a list of requests in a generalized format which can be run to
+	// upload an artifact to storage managed by the queue.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
+	BlobArtifactRequest struct {
+
+		// Optionally provide an encoding type which should be set as the HTTP
+		// Content-Encoding header for this artifact.
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentEncoding
+		ContentEncoding string `json:"contentEncoding,omitempty"`
+
+		// The number of bytes of the entire artifact.  This must be the number
+		// of bytes in the file to be uploaded.  For single part uploads, the
+		// upload will fail if the number of bytes uploaded does not match this
+		// value.  A single part upload (e.g. no parts list) may be at most 5GB.
+		// This limit is enforced in the code because it is not possible to
+		// represent all of the restrictions in a json-schema.  A multipart
+		// upload may be at most 5TB, with each part other than the last being
+		// between 5MB and 5GB in size.
+		//
+		// Mininum:    0
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength
+		ContentLength int `json:"contentLength"`
+
+		// The complete SHA256 value of the entire artifact.  This must be the
+		// SHA256 of the file which is to be uploaded.  For single part uploads,
+		// the upload will fail if the SHA256 value of what is uploaded does not
+		// match this value
+		//
+		// Syntax:     ^[a-fA-F0-9]{64}$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentSha256
+		ContentSha256 string `json:"contentSha256"`
+
+		// Artifact mime-type, when uploading artifact to the signed
+		// `PUT` URL returned from this request this must given with the
+		//  `ContentType` header. Please, provide correct mime-type,
+		//  this make tooling a lot easier, specifically,
+		//  always using `application/json` for JSON artifacts.
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentType
+		ContentType string `json:"contentType"`
+
+		// Date-time after which the artifact should be deleted. Note, that
+		// these will be collected over time, and artifacts may remain
+		// available after expiration. S3 based artifacts are identified in
+		// azure table storage and explicitly deleted on S3 after expiration.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// A list of parts for a multipart upload.  The presence of this list is
+		// how a multipart upload is differentiated from a single part upload.
+		// The items in this list represent individual parts for upload.  For a
+		// multipart upload, the sha256 values provided here must match the
+		// sha256 value that S3 internally computes for the upload to be
+		// considered a success.  The overall sha256 value is not checked
+		// explicitly because the S3 API does not allow for that, but the same
+		// code that is responsible for generating the parts hashes would also
+		// be generating the overall hash, which makes this less of a concern.
+		// The worst case is that we have artifacts which incorrectly do not
+		// validate, which is not as big of a security concern.
+		//
+		// Min length: 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts
+		Parts []struct {
+
+			// The sha256 hash of the part.
+			//
+			// Syntax:     ^[a-fA-F0-9]{64}$
+			// Min length: 64
+			// Max length: 64
+			//
+			// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/sha256
+			Sha256 string `json:"sha256,omitempty"`
+
+			// The number of bytes in this part.  Keep in mind for S3 that
+			// all but the last part must be minimum 5MB and the maximum for
+			// a single part is 5GB.  The overall size may not exceed 5TB
+			//
+			// Mininum:    0
+			//
+			// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size
+			Size int `json:"size,omitempty"`
+		} `json:"parts,omitempty"`
+
+		// Artifact storage type, in this case `'blob'`
+		//
+		// Possible values:
+		//   * "blob"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType
+		StorageType string `json:"storageType"`
+
+		// The number of bytes transfered across the wire to the backing
+		// datastore.  If specified, it represents the post-content-encoding
+		// byte count
+		//
+		// Mininum:    0
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength
+		TransferLength int `json:"transferLength,omitempty"`
+
+		// This is the sha256 of the bytes transfered across the wire to the
+		// backing datastore.  If specified, it represents the
+		// post-content-encoding sha256 value
+		//
+		// Syntax:     ^[a-fA-F0-9]{64}$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferSha256
+		TransferSha256 string `json:"transferSha256,omitempty"`
+	}
+
+	// Response to a request for creating a new blob artifact
+	//
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
+	BlobArtifactResponse json.RawMessage
 
 	// Request to claim a task for a worker to process.
 	//
@@ -209,6 +334,18 @@ type (
 		} `json:"tasks"`
 	}
 
+	// Complete an aritifact
+	//
+	// See http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#
+	CompleteArtifactRequest struct {
+
+		// A list of the etags given by the API of the blob storage provider.  This is an opaque
+		// string value provided by the API.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags
+		Etags []string `json:"etags"`
+	}
+
 	// Response to a request for the number of pending tasks for a given
 	// `provisionerId` and `workerType`.
 	//
@@ -250,20 +387,20 @@ type (
 	// for a task to declare that it failed to provide an artifact it wanted
 	// to upload.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]
 	ErrorArtifactRequest struct {
 
 		// Date-time after which the queue should stop replying with the error
 		// and forget about the artifact.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Human readable explanation of why the artifact is missing
 		//
 		// Max length: 4096
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/message
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/message
 		Message string `json:"message"`
 
 		// Reason why the artifact doesn't exist.
@@ -273,7 +410,7 @@ type (
 		//   * "invalid-resource-on-worker"
 		//   * "too-large-file-on-worker"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/reason
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/reason
 		Reason string `json:"reason"`
 
 		// Artifact storage type, in this case `error`
@@ -281,14 +418,14 @@ type (
 		// Possible values:
 		//   * "error"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Response to a request for the queue to reply `403` (forbidden) with
 	// `reason` and `message` to any `GET` request for this artifact.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]
 	ErrorArtifactResponse struct {
 
 		// Artifact storage type, in this case `error`
@@ -296,7 +433,7 @@ type (
 		// Possible values:
 		//   * "error"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
@@ -758,7 +895,7 @@ type (
 	// stored on the worker host and only available there for a specific
 	// amount of time.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
 	RedirectArtifactRequest struct {
 
 		// Artifact mime-type for the resource to which the queue should
@@ -768,14 +905,14 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the queue should no longer redirect to this URL.
 		// Note, that the queue will and cannot delete the resource your URL
 		// references, you are responsible for doing that yourself.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `reference`
@@ -783,20 +920,20 @@ type (
 		// Possible values:
 		//   * "reference"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType
 		StorageType string `json:"storageType"`
 
 		// URL to which the queue should redirect using a `303` (See other)
 		// redirect.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/url
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/url
 		URL string `json:"url"`
 	}
 
 	// Response to a request for the queue to redirect to a URL for a given
 	// artifact.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
 	RedirectArtifactResponse struct {
 
 		// Artifact storage type, in this case `reference`
@@ -804,14 +941,14 @@ type (
 		// Possible values:
 		//   * "reference"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Request for a signed PUT URL that will allow you to upload an artifact
 	// to an S3 bucket managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
 	S3ArtifactRequest struct {
 
 		// Artifact mime-type, when uploading artifact to the signed
@@ -822,7 +959,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the artifact should be deleted. Note, that
@@ -830,7 +967,7 @@ type (
 		// available after expiration. S3 based artifacts are identified in
 		// azure table storage and explicitly deleted on S3 after expiration.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `'s3'`
@@ -838,14 +975,14 @@ type (
 		// Possible values:
 		//   * "s3"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Response to a request for a signed PUT URL that will allow you to
 	// upload an artifact to an S3 bucket managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
 	S3ArtifactResponse struct {
 
 		// Artifact mime-type, must be specified as header when uploading with
@@ -853,19 +990,19 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/contentType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the signed `putUrl` no longer works
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// URL to which a `PUT` request can be made to upload the artifact
 		// requested. Note, the `Content-Length` must be specified correctly,
 		// and the `ContentType` header must be set the value specified below.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/putUrl
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl
 		PutURL string `json:"putUrl"`
 
 		// Artifact storage type, in this case `'s3'`
@@ -873,7 +1010,7 @@ type (
 		// Possible values:
 		//   * "s3"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
@@ -1907,6 +2044,22 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// BlobArtifactResponse is of type json.RawMessage...
+func (this *BlobArtifactResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*this)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (this *BlobArtifactResponse) UnmarshalJSON(data []byte) error {
+	if this == nil {
+		return errors.New("BlobArtifactResponse: UnmarshalJSON on nil pointer")
+	}
+	*this = append((*this)[0:0], data...)
+	return nil
+}
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // PostArtifactRequest is of type json.RawMessage...
