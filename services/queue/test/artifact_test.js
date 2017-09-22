@@ -1,4 +1,6 @@
 suite('Artifacts', function() {
+  var os            = require('os');
+  var path          = require('path');
   var debug         = require('debug')('test:artifacts');
   var assert        = require('assert');
   var slugid        = require('slugid');
@@ -15,6 +17,13 @@ suite('Artifacts', function() {
   var {Netmask}     = require('netmask');
   var assume        = require('assume');
   var helper        = require('./helper');
+  var fs            = require('fs');
+  var crypto        = require('crypto');
+  var remoteS3      = require('remotely-signed-s3');
+  var qs            = require('querystring');
+  var urllib        = require('url');
+  var http          = require('http');
+  var https         = require('https');
 
   // Static URL from which ip-ranges from AWS services can be fetched
   const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
@@ -31,6 +40,79 @@ suite('Artifacts', function() {
     }
     assume(res.statusCode).equals(303);
     return request.get(res.headers.location).end();
+  };
+
+  var getWithoutRedirecting = async (url) => {
+    var res;
+    try {
+      res = await request.get(url).redirects(0).end();
+    } catch (err) {
+      res = err.response;
+    }
+    assume(res.statusCode).equals(303);
+    return res;
+  };
+
+  let verifyDownload = async (url, hash, size) => {
+    debug(`verifying ${url} to have ${hash} and ${size} bytes`);
+    // Superagent complains about double callbacks... I don't
+    // really need it anyway
+    return new Promise((resolve, reject) => {
+      let urlparts = urllib.parse(url);
+
+      // TODO: Figure out why we get a Parse Error when using https...
+      debug('NOTE: not sure why, but https: is resulting in a parse error\n' +
+            'so for the test we are fetching over http');
+      //urlparts.protocol = 'http:';
+
+      let request;
+      if (/^https/.test(urlparts.protocol)) {
+        request = https.request(urlparts);
+      } else {
+        request = http.request(urlparts);
+      }
+
+      request.on('error', err => {
+        debug('Request Error: ' + err.stack || err);
+        reject(err);
+      });
+
+      request.on('aborted', () => {
+        debug('Request aborted');
+        reject(new Error('Request Aborted'));
+      });
+
+      request.on('response', response => {
+        let bodySize = 0;
+        let bodyHash = crypto.createHash('sha256').update('');
+
+        response.on('error', err => {
+          debug('Response Error: ' + err.stack || err);
+          reject(err);
+        });
+
+        response.on('data', data => {
+          bodySize += data.length;
+          bodyHash.update(data);
+        });
+
+        response.on('end', () => {
+          bodyHash = bodyHash.digest('hex');
+          try {
+            assume(bodyHash).equals(hash);
+            assume(bodySize).equals(size);
+            assume(response.headers['x-amz-meta-content-sha256']).equals(hash);
+            assume(response.headers['x-amz-meta-content-length']).equals(size.toString(10));
+            assume(response.headers['content-length']).equals(size.toString(10));
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        });
+      });
+
+      request.end('');
+    });
   };
 
   // Get something we expect to return 404, this is just easier than having
@@ -69,6 +151,242 @@ suite('Artifacts', function() {
     },
   };
   this.timeout(3 * 60 * 1000);
+
+  suite('Blob Storage Type', () => {
+    let bigfilename = path.join(os.tmpdir(), slugid.v4());
+    let bigfilehash;
+    let bigfilesize = 10 * 1024 * 1024 + 512 * 1024; // 10.5 MB so we get a partial last part
+
+    let client = new remoteS3.Client({
+      partsize: 5 * 1024 * 1024,
+      multisize: 10 * 1024 * 1024,
+    });
+
+    debug(`Temporary file ${bigfilename} of size ${bigfilesize} bytes`);
+
+    before(() => {
+      let buf = crypto.randomBytes(bigfilesize);
+      assert(buf.length === bigfilesize);
+      bigfilehash = crypto.createHash('sha256').update(buf).digest('hex');
+      fs.writeFileSync(bigfilename, buf);
+    });
+
+    after(() => {
+      fs.unlinkSync(bigfilename);
+    });
+
+    test('S3 single part complete flow', async () => {
+      let taskId = slugid.v4();
+      
+      debug('### Creating task');
+      await helper.queue.createTask(taskId, taskDef);
+
+      debug('### Claiming task');
+      await helper.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker',
+      });
+
+      let uploadInfo = await client.prepareUpload({
+        filename: bigfilename,
+        forceSP: true,
+      });
+
+      let response = await helper.queue.createArtifact(taskId, 0, 'public/singlepart.dat', {
+        storageType: 'blob',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+        contentLength: uploadInfo.size,
+        contentSha256: uploadInfo.sha256,
+      });
+
+      assume(response).has.property('storageType', 'blob');
+      assume(response).has.property('requests');
+      assume(response.requests).to.be.instanceof(Array);
+      assume(response.requests).to.have.lengthOf(1);
+      // Probably overkill because the schema should catch this but not the
+      // worst idea
+      assume(response.requests[0]).to.have.property('url');
+      assume(response.requests[0]).to.have.property('method');
+      assume(response.requests[0]).to.have.property('headers');
+
+      let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
+
+      response = await helper.queue.completeArtifact(taskId, 0, 'public/singlepart.dat', {
+        etags: uploadOutcome.etags, 
+      });
+
+      let secondResponse = await helper.queue.completeArtifact(taskId, 0, 'public/singlepart.dat', {
+        etags: uploadOutcome.etags, 
+      });
+      assume(response).deeply.equals(secondResponse);
+
+      let artifactUrl = helper.queue.buildUrl(
+        helper.queue.getArtifact,
+        taskId, 0, 'public/singlepart.dat',
+      );
+      debug('Fetching artifact from: %s', artifactUrl);
+      let artifact = await getWithoutRedirecting(artifactUrl);
+
+      let expectedUrl = 
+        `https://test-bucket-for-any-garbage.s3-us-west-2.amazonaws.com/${taskId}/0/public/singlepart.dat`;
+      assume(artifact.headers).has.property('location', expectedUrl);
+
+      await verifyDownload(artifact.headers.location, bigfilehash, bigfilesize);
+
+    });
+
+    test('S3 multi part complete flow', async () => {
+      let name = 'public/multipart.dat';
+      let taskId = slugid.v4();
+      
+      debug('### Creating task');
+      await helper.queue.createTask(taskId, taskDef);
+
+      debug('### Claiming task');
+      await helper.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker',
+      });
+
+      let uploadInfo = await client.prepareUpload({
+        filename: bigfilename,
+        forceMP: true,
+      });
+
+      let response = await helper.queue.createArtifact(taskId, 0, name, {
+        storageType: 'blob',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+        contentLength: uploadInfo.size,
+        contentSha256: uploadInfo.sha256,
+        parts: uploadInfo.parts.map(x => {
+          return {sha256: x.sha256, size: x.size};
+        }),
+      });
+
+      assume(response).has.property('storageType', 'blob');
+      assume(response).has.property('requests');
+      assume(response.requests).to.be.instanceof(Array);
+      assume(response.requests).to.have.lengthOf(3);
+      // Probably overkill because the schema should catch this but not the
+      // worst idea
+      for (let i of [0, 1, 2]) {
+        assume(response.requests[0]).to.have.property('url');
+        assume(response.requests[1]).to.have.property('method');
+        assume(response.requests[2]).to.have.property('headers');
+      }
+
+      let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
+
+      response = await helper.queue.completeArtifact(taskId, 0, name, {
+        etags: uploadOutcome.etags, 
+      });
+
+      // Ensure idempotency for completion of artifacts
+      let secondResponse = await helper.queue.completeArtifact(taskId, 0, name, {
+        etags: uploadOutcome.etags, 
+      });
+      assume(response).deeply.equals(secondResponse);
+
+      let artifactUrl = helper.queue.buildUrl(
+        helper.queue.getArtifact,
+        taskId, 0, name,
+      );
+
+      debug('Fetching artifact from: %s', artifactUrl);
+      let artifact = await getWithoutRedirecting(artifactUrl);
+
+      let expectedUrl = `https://test-bucket-for-any-garbage.s3-us-west-2.amazonaws.com/${taskId}/0/${name}`;
+      assume(artifact.headers).has.property('location', expectedUrl);
+
+      await verifyDownload(artifact.headers.location, bigfilehash, bigfilesize);
+    });
+    
+    test('S3 multi part idempotency', async () => {
+      let name = 'public/multipart.dat';
+      let taskId = slugid.v4();
+      
+      debug('### Creating task');
+      await helper.queue.createTask(taskId, taskDef);
+
+      debug('### Claiming task');
+      await helper.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker',
+      });
+
+      debug('### Preparing upload');
+      let uploadInfo = await client.prepareUpload({
+        filename: bigfilename,
+        forceMP: true,
+      });
+
+      debug('### Calling createArtifact first time');
+      let firstResponse = await helper.queue.createArtifact(taskId, 0, name, {
+        storageType: 'blob',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+        contentLength: uploadInfo.size,
+        contentSha256: uploadInfo.sha256,
+        parts: uploadInfo.parts.map(x => {
+          return {sha256: x.sha256, size: x.size};
+        }),
+      });
+
+      await new Promise((resolve, reject) => {
+        setTimeout(resolve, 2000);
+      });
+
+      debug('### Calling createArtifact second time');
+      let secondResponse = await helper.queue.createArtifact(taskId, 0, name, {
+        storageType: 'blob',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+        contentLength: uploadInfo.size,
+        contentSha256: uploadInfo.sha256,
+        parts: uploadInfo.parts.map(x => {
+          return {sha256: x.sha256, size: x.size};
+        }),
+      });
+      
+      let firstUploadId = qs.parse(urllib.parse(firstResponse.requests[0].url).query).uploadId;
+      let secondUploadId = qs.parse(urllib.parse(secondResponse.requests[0].url).query).uploadId;
+      assume(firstUploadId).equals(secondUploadId);
+
+      // Now let's ensure that they are equivalent but with newer signatures
+      for (let r of [0, 1, 2]) {
+        let a = firstResponse.requests[r];
+        let b = secondResponse.requests[r];
+        assume(a.url).equals(b.url);
+        assume(a.method).equals(b.method);
+        assume(a.headers['content-length']).equals(b.headers['content-length']);
+        assume(a.headers['x-amz-content-sha256']).equals(b.headers['x-amz-content-sha256']);
+        assume(a.headers.host).equals(b.headers.host);
+        // We should have new times here
+        assume(a.headers['X-Amz-Date']).does.not.equal(b.headers['X-Amz-Date']);
+        let fixdate = (d) => {
+          let yr = d.slice(0, 4);
+          let mt = d.slice(4, 6);
+          let dy = d.slice(6, 8);
+          let hr = d.slice(9, 11);
+          let mn = d.slice(11, 13);
+          let sc = d.slice(13, 15);
+          return new Date(`${yr}-${mt}-${dy}T${hr}:${mn}:${sc}`);
+        };
+        let aDate = fixdate(a.headers['X-Amz-Date']);
+        let bDate = fixdate(b.headers['X-Amz-Date']);
+        assume(aDate.getTime()).lessThan(bDate.getTime());
+      }
+
+      // Just run the upload for posterity
+      let uploadOutcome = await client.runUpload(secondResponse.requests, uploadInfo);
+
+      let response = await helper.queue.completeArtifact(taskId, 0, name, {
+        etags: uploadOutcome.etags, 
+      });
+    });
+  });
 
   test('Post S3 artifact', async () => {
     var taskId = slugid.v4();
