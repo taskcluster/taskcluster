@@ -52,4 +52,8 @@ module.exports = {
   'sslKeyLocation': {
     description: 'Location of SSL key for secure things like live logging'
   },
+
+  'cotSigningKey': {
+    description: 'Location of chain of trust signing key'
+  }
 };

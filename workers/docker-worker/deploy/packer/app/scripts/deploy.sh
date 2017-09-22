@@ -46,29 +46,3 @@ docker pull taskcluster/relengapi-proxy:2.0.1
 
 # Export the images as a tarball to load when insances are initialized
 docker save taskcluster/taskcluster-proxy:4.0.0 taskcluster/livelog:v4 taskcluster/dind-service:v4.0 taskcluster/relengapi-proxy:2.0.1 > /home/ubuntu/docker_worker/docker_worker_images.tar
-
-# Generate enough entropy to allow for gpg key generation
-sudo rngd -r /dev/urandom
-
-# Generate gpg key
-cat >gen_key_conf <<EOF
-  %echo Generating GPG signing key
-  Key-Type: RSA
-  Key-Length: 2048
-  Name-Real: Docker-Worker
-  Name-Email: taskcluster-accounts+gpgsigning@mozilla.com
-  %commit
-  %echo Done generating key
-EOF
-
-echo "Generating public signing key"
-sudo gpg --batch --gen-key gen_key_conf
-rm gen_key_conf
-
-echo "Exporting public signing key"
-sudo gpg -a --export-secret-keys > docker-worker-gpg-signing-key.key
-sudo mv docker-worker-gpg-signing-key.key /etc
-
-echo "Public signing key"
-sudo gpg -a --export > /tmp/docker-worker.pub
-

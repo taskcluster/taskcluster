@@ -26,6 +26,30 @@
       "destination":    "/tmp/deploy.sh"
     },
     {
+      "type":           "file",
+      "source":         "deploy/bin/gen-signing-key",
+      "destination":    "/tmp/gen-signing-key"
+    },
+    {
+      "type":           "shell",
+      "inline":         ["chmod u+x /tmp/gen-signing-key"]
+    },
+    {
+      "type":           "shell",
+      "inline":         ["/tmp/gen-signing-key"],
+      "only":           ["hvm-builder", "pv-builder"]
+    },
+    {
+      "type":           "file",
+      "source":         "{{user `cotSigningKey`}}",
+      "destination":    "docker-worker-gpg-signing-key.key",
+      "only":           ["hvm-builder-trusted"]
+    },
+    {
+      "type":           "shell",
+      "inline":         ["sudo mv docker-worker-gpg-signing-key.key /etc"]
+    },
+    {
       "type":           "shell",
       "inline":         ["chmod u+x /tmp/deploy.sh"]
     },
@@ -38,12 +62,6 @@
     {
       "type":           "shell",
       "inline":         ["sudo unattended-upgrade"]
-    },
-    {
-      "type":           "file",
-      "direction":      "download",
-      "source":          "/tmp/docker-worker.pub",
-      "destination":    "docker-worker-{{build_name}}-{{timestamp}}.pub"
     }
   ],
   "builders": [
@@ -56,6 +74,22 @@
       "instance_type":  "m3.large",
       "ssh_username":   "ubuntu",
       "ami_name":       "taskcluster-docker-worker-{{user `fsType`}}-{{timestamp}}",
+      "tags": {
+        "OS_Version":       "Ubuntu",
+        "Release":          "Latest",
+        "Revision":         "{{user `workerRevision`}}",
+        "Base_AMI":         "{{user `hvmSourceAMI`}}"
+      }
+    },
+    {
+      "type":           "amazon-ebs",
+      "name":           "hvm-builder-trusted",
+      "region":         "us-west-2",
+      "ami_regions":    ["us-west-1", "us-east-1"],
+      "source_ami":     "{{user `hvmSourceAMI`}}",
+      "instance_type":  "m3.large",
+      "ssh_username":   "ubuntu",
+      "ami_name":       "taskcluster-docker-worker-{{user `fsType`}}-trusted-{{timestamp}}",
       "tags": {
         "OS_Version":       "Ubuntu",
         "Release":          "Latest",
@@ -78,6 +112,13 @@
         "Revision":         "{{user `workerRevision`}}",
         "Base_AMI":         "{{user `pvSourceAMI`}}"
       }
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "packer-artifacts.json",
+      "strip_path": true
     }
   ]
 }

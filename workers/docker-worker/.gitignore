@@ -1,4 +1,6 @@
 /.vagrant
+docker-worker.key
+docker-worker.crt
 /packer_cache
 /docker-worker-*
 /.env
@@ -9,8 +11,8 @@
 /deploy.json
 docker-worker.conf.json
 *.box
-docker-worker-*.pub
 docker-worker.tgz
 build
 .test
 yarn-error.log
+packer-artifacts.json
