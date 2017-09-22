@@ -1,0 +1,15 @@
+$schema:            http://json-schema.org/draft-04/schema#
+title:              "Complete Artifact Request"
+description: Complete an aritifact
+type:               object
+properties:
+  etags:
+    description: | 
+      A list of the etags given by the API of the blob storage provider.  This is an opaque
+      string value provided by the API.
+    type: array
+    items:
+      type: string
+additionalProperties: false
+required:
+  - etags
