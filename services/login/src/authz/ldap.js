@@ -51,24 +51,21 @@ class LDAPAuthorizer {
 
     user.addRole('mozilla-user:' + email);
 
-    debug(`ldap authorizing ${user.identity}`);
-
     let addRolesForEntries = (entries) => {
       entries.forEach((entry) => {
         let group = entry.object.cn;
-        debug('..found', group);
 
         // This is unlikely, and probably forbidden in LDAP, but just in case, let's
         // avoid characters that have special meanings in scopes.
         if (group.endsWith('*')) {
-          debug('    rejecting, as it ends with *');
+          debug(`ignoring group ${group}, as it ends with *`);
           return;
         }
 
         if (this.allowedGroups === 'all' || this.allowedGroups.indexOf(group) !== -1) {
           user.addRole('mozilla-group:' + group);
         } else {
-          debug(`    rejecting, as it is not in allowedGroups (${JSON.stringify(this.alloewdGroups)})`);
+          debug(`ignoring ${group}, as it is not in allowedGroups (${JSON.stringify(this.alloewdGroups)})`);
         }
       });
     };
@@ -83,8 +80,8 @@ class LDAPAuthorizer {
         debug(`no user found for ${email}; skipping LDAP groups`);
         return;
       }
+      debug(`authorizing ${user.identity} with LDAP DN ${userDN}`);
 
-      debug(`enumerating LDAP groups for ${userDn}`);
       addRolesForEntries(await client.search(
         'dc=mozilla', {
           scope: 'sub',
