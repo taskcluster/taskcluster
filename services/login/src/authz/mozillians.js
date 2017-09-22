@@ -65,7 +65,6 @@ class MozilliansAuthorizer {
       if (g.results.length === 1) {
         let u = g.results[0];
         if (u.is_vouched && u.username === mozilliansUser) {
-          debug(`found mozillians group ${g.group} for ${mozilliansUser}`);
           user.addRole('mozillians-group:' + g.group);
         }
       }
