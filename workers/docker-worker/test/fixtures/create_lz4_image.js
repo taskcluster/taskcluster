@@ -49,6 +49,20 @@ function compressFile(file) {
   });
 }
 
+function scheduleReclaim(queue, claim) {
+  const takenFor = (new Date(claim.takenUntil) - new Date());
+  const nextReclaim = takenFor / 1000;
+
+  return setTimeout(async () => {
+    try {
+      claim = await queue.reclaimTask(
+        claim.status.taskId,
+        claim.runId
+      );
+    } catch (e) {}
+  }, nextReclaim);
+}
+
 async function main() {
   const zstImagePath = '/tmp/image.tar.zst';
   const lz4ImagePath = '/tmp/image.tar.lz4';
@@ -94,14 +108,16 @@ async function main() {
   });
 
   console.log(`Task ${taskId} created successfullly, claiming`);
-  await queue.claimTask(taskId, 0, {
+  const claim = await queue.claimTask(taskId, 0, {
     workerGroup: 'docker-worker',
     workerId: 'docker-worker'
   });
 
   const lz4Stat = fs.statSync(lz4ImagePath);
   const lz4FileSizeInMB = lz4Stat.size / (1024*1024);
+  const timeoutId = scheduleReclaim(queue, claim);
   console.log(`Uploading lz4 image, size = ${lz4FileSizeInMB} MB`);
+
   await uploadToS3(
     queue,
     taskId,
@@ -117,8 +133,10 @@ async function main() {
     {}
   );
 
-  queue.reportCompleted(taskId, 0);
-  console.log(`Artifact uploaded successfully`);
+  clearTimeout(timeoutId);
+  await queue.reportCompleted(taskId, 0);
+  const status = (await queue.status(taskId)).status;
+  console.log(`Task ${taskId} exited with status "${status.runs[0].state}"`);
 }
 
 main().catch(err => console.log(err.stack));
