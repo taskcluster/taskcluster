@@ -5,6 +5,52 @@ description: |
   Note that the `storageType` property is referenced in the request as well.
 type:               object
 oneOf:
+  - title: "Blob Artifact Response"
+    description: |
+      Response to a request for creating a new blob artifact
+    properties:
+      storageType:
+        description: |
+          Artifact storage type, in this case `'blob'`
+        type: string
+        enum:
+          - blob
+      expires:
+        description: |
+          Date-time after which the signed `requests` no longer work
+        type: string
+        format: date-time
+      requests:
+        description: |
+          A list of generalized HTTP requests which must be run to upload the
+          artifact.
+        type: array
+        items:
+          type: object
+          properties:
+            url:
+              description: URL of request
+              type: string
+            method:
+              description: HTTP 1.1 method of request
+              type: string
+              enum:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+                - HEAD
+                - PATCH
+            headers:
+              description: Headers of request
+              type: object
+              # Add something to ensure that all values are strings!
+    additionalProperties: false
+    requiredProperties:
+      - requests
+      - storageType
+      - expires
   - title:          "S3 Artifact Response"
     description: |
       Response to a request for a signed PUT URL that will allow you to
