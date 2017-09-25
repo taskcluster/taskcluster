@@ -1,5 +1,6 @@
 import hawk from 'hawk';
 
+const JSON_CONTENT = /^(application\/(json|x-javascript)|text\/(x-)?javascript|x-json)(;.*)?$/;
 const defaults = {
   credentials: 'omit',
   retries: 5,
@@ -12,20 +13,21 @@ const defaults = {
   }
 };
 
-const handleResponse = response => response
-    .json()
-    .then((json) => {
-      if (response.ok) {
-        return json;
-      }
+const handleResponse = response => Promise
+  .resolve(response)
+  .then(() => (JSON_CONTENT.test(response.headers.get('Content-Type')) ? response.json() : null))
+  .then((json) => {
+    if (response.ok) {
+      return json;
+    }
 
-      const message = json.message ? json.message.split('---')[0] : response.statusText;
+    const message = json.message ? json.message.split('---')[0] : response.statusText;
 
-      return Promise.reject(Object.assign(new Error(message), {
-        response,
-        body: json
-      }));
-    });
+    return Promise.reject(Object.assign(new Error(message), {
+      response,
+      body: json
+    }));
+  });
 
 export default (url, opts = {}) => {
   const options = { ...defaults, ...opts, headers: { ...defaults.headers, ...opts.headers } };
