@@ -53,7 +53,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 		errored,
 		func(task *TaskRun) error {
 			ter := queue.TaskExceptionRequest{Reason: string(reason)}
-			tsr, err := Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
+			tsr, err := task.Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
 			if err != nil {
 				log.Printf("Not able to report exception for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -73,7 +73,7 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 	return tsm.updateStatus(
 		failed,
 		func(task *TaskRun) error {
-			tsr, err := Queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
+			tsr, err := task.Queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report failed completion for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -94,7 +94,7 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 		succeeded,
 		func(task *TaskRun) error {
 			log.Print("Command finished successfully!")
-			tsr, err := Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
+			tsr, err := task.Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report successful completion for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -114,7 +114,7 @@ func (tsm *TaskStatusManager) Reclaim() error {
 		reclaimed,
 		func(task *TaskRun) error {
 			log.Printf("Reclaiming task %v...", task.TaskID)
-			tcrsp, err := Queue.ReclaimTask(task.TaskID, fmt.Sprintf("%d", task.RunID))
+			tcrsp, err := task.Queue.ReclaimTask(task.TaskID, fmt.Sprintf("%d", task.RunID))
 
 			// check if an error occurred...
 			if err != nil {
