@@ -7,6 +7,7 @@ var Promise         = require('promise');
 var http            = require('http');
 var sslify          = require('express-sslify');
 var hsts            = require('hsts');
+var csp             = require('content-security-policy');
 
 /** Notify LocalApp if running under this */
 var notifyLocalAppInParentProcess = function(port) {
@@ -55,10 +56,11 @@ var createServer = function() {
 /** Create express application
  * options:
  * {
- *   port:          8080,           // Port to run the server on
- *   env:           'development',  // 'development' or 'production'
- *   forceSSL:      false,          // Force redirect to SSL or return 403
- *   trustProxy:    false           // Trust the proxy that forwarded for SSL
+ *   port:                  8080,           // Port to run the server on
+ *   env:                   'development',  // 'development' or 'production'
+ *   forceSSL:              false,          // Force redirect to SSL or return 403
+ *   trustProxy:            false,          // Trust the proxy that forwarded for SSL
+ *   contentSecurityPolicy: true,           // Send CSP (default true!)
  * }
  *
  * Returns an express application with extra methods:
@@ -93,6 +95,19 @@ var app = function(options) {
       force:true,
     }));
   }
+
+  if (options.contentSecurityPolicy) {
+    // if you're loading HTML from an API, you're doing it wrong..
+    app.use(csp.getCSP({
+      'default-src': csp.SRC_NONE,
+      'frame-ancestors': csp.SRC_NONE,
+      'base-uri': csp.SRC_NONE,
+      'report-uri': '/__cspreport__',
+    }));
+  }
+
+  // keep cheap security vuln scanners happy..
+  app.disable('x-powered-by');
 
   // Middleware for development
   if (app.get('env') == 'development') {
