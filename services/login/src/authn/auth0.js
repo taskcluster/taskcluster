@@ -46,6 +46,12 @@ class Auth0Login {
       });
     });
 
+    // similarly, but use the hosted lock to temporarily allow LDAP
+    router.get('/login-temp', (req, res) => {
+      req.session['auth0-local'] = 1;
+      res.redirect('/auth0/callback');
+    });
+
     // this path will either handle a callback from the lock in the Jade
     // template, or a callback from the hosted lock (allowing LDAP login).  In
     // either case, req.user has been set up already.
