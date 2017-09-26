@@ -669,7 +669,7 @@ api.declare({
     'upload flow.  As the final step for both multi and single part artifacts,',
     'the `present` entity field will be set to `true` to reflect that the',
     'artifact is now present and a message published to pulse.  NOTE: This',
-    'endpoint *must* be called for all artifacts of storageType \'blob\''
+    'endpoint *must* be called for all artifacts of storageType \'blob\'',
   ].join(' '),
 }, async function(req, res) {
   let taskId      = req.params.taskId;
