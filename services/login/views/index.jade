@@ -59,6 +59,18 @@ html(lang='en')
         hr
         p
           | Choose the best sign-in option for you from the options below.
+        if showAuth0
+          div.row.login-option
+            div.col-md-4
+              form(action='/auth0/login-temp', method='post')
+                button.btn.btn-block.btn-primary(type='submit')
+                  i.glyphicon.glyphicon-log-in
+                  | &nbsp;Sign-in with Auth0
+            div.col-md-8
+              p
+                | If you have a&nbsp;
+                b Mozilla LDAP Account
+                | , please try the Auth0 sign-in, as Okta will be disabled next week.
         div.row.login-option
           div.col-md-4
             form(action='/sso/login', method='post')
