@@ -670,7 +670,7 @@ api.declare({
     'the `present` entity field will be set to `true` to reflect that the',
     'artifact is now present and a message published to pulse.  NOTE: This',
     'endpoint *must* be called for all artifacts of storageType \'blob\'',
-  ].join(' '),
+  ].join('\n'),
 }, async function(req, res) {
   let taskId      = req.params.taskId;
   let runId       = parseInt(req.params.runId, 10);
