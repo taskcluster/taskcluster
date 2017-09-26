@@ -47,7 +47,7 @@ class Auth0Login {
     });
 
     // similarly, but use the hosted lock to temporarily allow LDAP
-    router.get('/login-temp', (req, res) => {
+    router.post('/login-temp', (req, res) => {
       req.session['auth0-local'] = 1;
       res.redirect('/auth0/callback');
     });
