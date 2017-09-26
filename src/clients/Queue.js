@@ -313,7 +313,15 @@ export default class Queue extends Client {
     return this.request(this.createArtifact.entry, args);
   }
 
-  // This endpoint finalises an upload done through the blob `storageType`. The queue will ensure that the task/run is still allowing artifacts to be uploaded.  For single-part S3 blob artifacts, this endpoint will simply ensure the artifact is present in S3.  For multipart S3 artifacts, the endpoint will perform the commit step of the multipart upload flow.  As the final step for both multi and single part artifacts, the `present` entity field will be set to `true` to reflect that the artifact is now present and a message published to pulse.  NOTE: This endpoint *must* be called for all artifacts of storageType 'blob'
+  // This endpoint finalises an upload done through the blob `storageType`.
+  // The queue will ensure that the task/run is still allowing artifacts
+  // to be uploaded.  For single-part S3 blob artifacts, this endpoint
+  // will simply ensure the artifact is present in S3.  For multipart S3
+  // artifacts, the endpoint will perform the commit step of the multipart
+  // upload flow.  As the final step for both multi and single part artifacts,
+  // the `present` entity field will be set to `true` to reflect that the
+  // artifact is now present and a message published to pulse.  NOTE: This
+  // endpoint *must* be called for all artifacts of storageType 'blob'
   completeArtifact(...args) {
     this.validate(this.completeArtifact.entry, args);
     return this.request(this.completeArtifact.entry, args);
