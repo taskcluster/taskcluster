@@ -27,6 +27,7 @@ The configuration (here `cfg.server`) has the following options:
  * `env`: either 'development' or 'production'
  * `forceSSL`: true to redirect to https using sslify; set to true for production
  * `trustProxy`: trust headers from the proxy; set to true for production
+ * `contentSecurityPolicy`: include a CSP header with default-src: none; *default is true*
 
 The resulting object is an express application, configured with the standard
 TaskCluster microservice settings.  It should have an API object added to it,
