@@ -16,3 +16,4 @@ build
 .test
 yarn-error.log
 packer-artifacts.json
+worker-types-backup.json

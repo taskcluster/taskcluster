@@ -217,7 +217,9 @@ folders.
   - deploy/deploy.json : A generated file (created by running
     [deploy/bin/build](/deploy/bin/build) ) or running `make -C deploy`
     this file contains all the variables needed to deploy the
-    application
+    application. The script
+    [deploy/bin/import-docker-worker-secrets](/deploy/bin/import-docker-worker-secrets)
+    generates the file from [password store](http://passwordstore.org/).
 
   - deploy/target : Contains the final files to be uploaded when creating the
     AMI all template values have been subsituted... It is useful to
@@ -226,6 +228,19 @@ folders.
   - [deploy/bin/build](/deploy/bin/build) : The script responsible for
     invoking packer with the correct arguments and creating the
     artifacts which need to be uploaded to the AMI)
+
+  - [deploy/bin/update-worker-types.js](/deploy/bin/update-worker-types.js) :
+    after running `deploy/bin/build app`, run this script to update
+    [aws-provisioner](https://tools.taskcluster.net/aws-provisioner/) with
+    the new AMIs. It creates a backup file with current worker-types configuration
+    and kills the worker-types running instances. It requires node 8.5.0+.
+
+  - [deploy/bin/rollback-worker-types.js](/deploy/bin/rollback-worker-types.js) :
+    Given the backup file, this scripts rolls back the worker type configuration.
+    It requires node 8.5.0+.
+
+If eveything is alright, all should you do to deploy docker-worker is to run
+[release.sh](/release.sh).
 
 ### Block-Device Mapping
 The AMI built with packer will mount all available instances storage under

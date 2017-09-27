@@ -48,6 +48,7 @@
     "got": "^6.5.0",
     "iptables": "^0.0.4",
     "json-templater": "^1.1.0",
+    "jsonfile": "^4.0.0",
     "koa": "^0.19.1",
     "koa-json": "^1.1.1",
     "koa-router": "^4.3.2",
