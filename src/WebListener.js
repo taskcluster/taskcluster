@@ -1,18 +1,12 @@
-import emitter from './vendor/mitt';
+import Emitter from './emitter';
 import { v4 } from './utils';
-
-const READY_STATE = {
-  CONNECTING: 0,
-  OPEN: 1,
-  CLOSING: 2,
-  CLOSED: 4
-};
 
 export default class WebListener {
   constructor(options) {
-    this.emitter = emitter();
+    this.emitter = new Emitter();
     this.options = {
       baseUrl: 'wss://events.taskcluster.net/v1',
+      reconnectInterval: 5000,
       ...options
     };
 
@@ -21,16 +15,26 @@ export default class WebListener {
   }
 
   on(eventName, handler) {
-    this.emitter.on(eventName, handler);
-    return this;
+    return this.emitter.on(eventName, handler);
   }
 
   off(eventName, handler) {
-    this.emitter.off(eventName, handler);
-    return this;
+    return this.emitter.off(eventName, handler);
+  }
+
+  isOpen() {
+    return this.socket && this.socket.readyState === WebSocket.OPEN;
+  }
+
+  isConnected() {
+    return this.socket && this.socket.readyState !== WebSocket.CLOSED;
   }
 
   async connect() {
+    if (this.isConnected()) {
+      return Promise.resolve();
+    }
+
     const { baseUrl } = this.options;
     const socketUrl = baseUrl.endsWith('/') ? `${baseUrl}listen/websocket` : `${baseUrl}/listen/websocket`;
 
@@ -53,26 +57,38 @@ export default class WebListener {
     const awaitingBindings = Promise.all(this._bindings.map(binding => this._send('bind', binding)));
 
     const isReady = new Promise((resolve, reject) => {
-      const once = () => {
-        this.off('ready', resolve);
-        this.off('error', reject);
-        this.off('close', reject);
+      const offReady = this.on('ready', resolve);
+      const offError = this.on('error', reject);
+      const offClose = this.on('close', reject);
+      const unbindAll = () => {
+        offReady();
+        offError();
+        offClose();
       };
 
-      this.on('ready', resolve);
-      this.on('ready', once);
-      this.on('error', reject);
-      this.on('error', once);
-      this.on('close', reject);
-      this.on('close', once);
+      this.on('ready', unbindAll);
+      this.on('error', unbindAll);
+      this.on('close', unbindAll);
     });
 
     // When all bindings have been bound, we're just waiting for 'ready'
-    return awaitingBindings.then(() => isReady);
+    return awaitingBindings
+      .then(() => {
+        clearInterval(this.connectInterval);
+        this.connectInterval = setInterval(() => {
+          if (!this.isConnected()) {
+            this
+              .connect()
+              .then(() => this.emitter.emit('reconnect'));
+          }
+        }, this.options.reconnectInterval);
+
+        return isReady;
+      });
   }
 
   _send(method, options) {
-    if (!this.socket || this.socket.readyState !== READY_STATE.OPEN) {
+    if (!this.isOpen()) {
       throw new Error('Cannot send message if socket is not OPEN');
     }
 
@@ -134,34 +150,29 @@ export default class WebListener {
 
   handleError = () => this.emitter.emit('error', new Error('WebSocket error'));
 
-  handleClose = () => this.emitter.emit('close');
+  handleClose = () => {
+    this.emitter.emit('close');
+  };
 
   bind(binding) {
     // Store the binding so we can connect, if not already there
     this._bindings.push(binding);
 
     // If already open send the bind request
-    return this.socket && this.socket.readyState === READY_STATE.OPEN ?
+    return this.isOpen() ?
       this._send('bind', binding) :
       Promise.resolve();
   }
 
   close() {
-    if (!this.socket || this.socket.readyState === READY_STATE.CLOSED) {
+    if (!this.isConnected()) {
       return Promise.resolve();
     }
 
     return new Promise((resolve) => {
+      clearInterval(this.connectInterval);
       this.emitter.on('close', resolve);
       this.socket.close();
     });
-  }
-
-  resume() {
-    return this.connect();
-  }
-
-  pause() {
-    return this.close();
   }
 }

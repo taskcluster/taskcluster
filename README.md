@@ -150,15 +150,157 @@ This replaces any given options with new values.
 
 ### Web Listener
 
-Listening to Pulse Events can be done using a `WebListener`. The WebListener will
-connect to `events.taskcluster.net` using a WebSocket.
+Many Taskcluster components publish messages about current events to Pulse. The JSON
+reference object also contains metadata about declared Pulse exchanges and their routing
+key construction. This is designed to make it easy to construct routing key patterns and
+parse routing keys from incoming messages.
+
+The following example creates a listener by creating a `WebListener`, as well as creating
+a `QueueEvents` instance which we use to find the exchange and create a routing pattern to
+listen for the completion of a specific task. The `taskCompleted` method will construct
+a routing key pattern by using `*` or `#` for missing entries, depending on whether or not
+they are single-word or multi-key entries.
+
+By default the `WebListener` will connect to `events.taskcluster.net` using a WebSocket.
 
 ```js
-import { WebListener } from 'taskcluster-client-web';
+import { QueueEvents, WebListener } from 'taskcluster-client-web';
 
+const queueEvents = new QueueEvents();
 const listener = new WebListener({
-  baseUrl: 'wss://host' // defaults to: wss://events.taskcluster.net/v1
+  credentials: {
+    username: '...', // Pulse username from pulse guardian
+    password: '...' // Pulse password from pulse guardian
+  }
 });
+
+// This binds to taskCompleted events from the queue
+// that match routing key pattern:
+// 'primary.<myTaskId>.*.*.*.*.*.#'
+listener.bind(queueEvents.taskCompleted({ taskId: '<myTaskId>' }));
+
+// Create an event handler to react to messages
+listener.on('message', (message) => {
+  message.exchange; // Exchange from which message came
+  message.payload; // Documented on docs.taskcluster.net
+  message.routingKey; // Message routing key in string format
+  message.routing.taskId; // Element from parsed routing key
+  message.routing.runId; // ...
+  message.redelivered; // True if message has been nack'ed and requeued
+  message.routes; // List of CC'ed routes, without the `route.` prefix
+});
+
+// Connect the listener
+listener
+  .connect()
+  .then(() => {
+    // Listener is connected and listening for messages)
+  })
+```
+
+To bind to a custom routing-key like the task-specific routes that messages from
+the queue are CC'ed to, just provide the desired routing key to the method for
+exchange.
+
+```js
+const rawRoutingPattern = 'route.task.specific.routing.key';
+
+listener.bind(queueEvents.taskCompleted(rawRoutingPattern));
+```
+
+The `WebListener` accepts a few options for modifying its operation:
+
+```js
+new WebListener({
+  // This is the default value
+  baseUrl: 'wss://events.taskcluster.net/v1',
+  
+  // By default the WebSocket will attempt to
+  // reconnect every 5 seconds in case of disconnection
+  reconnectInterval: 5000
+})
+```
+
+The `WebListener` emits several events which can be reacted to using the `on` method:
+
+```js
+listener.on(eventName, handler)
+```
+
+The `handler` is a function to be invoked every time a particular `eventName` event occurs, and can
+receive a JSON-parsed payload or error as an argument.
+
+The `eventName` should correspond to one of the possible events the listener emits:
+
+| `event` | Description |
+| --- | --- |
+| `ready` | A socket connection has been established and can start transmitting messages. |
+| `message` | A message has been received from the service. The message will be parsed from JSON or be null and provided to the event handler. |
+| `bind` | The service has accepted a request to respond to a routing pattern. The response will be parsed from JSON or be null and provided to the event handler. |
+| `error` | A problem occurred while connecting or receiving a message. Can return metadata about the error or an `Error` instance to the event handler. |
+| `close` | The socket was disconnected. May occur more than once to account for reconnects. |
+| `reconnect` | The socket was re-connected after experiencing a `close`. |
+
+The return value of `on()` is a function which can be used to automatically unbind the event.
+
+```js
+const removeListener = listener.on('close', () => console.log('CLOSED!'));
+
+// ...
+
+removeListener(); // The previous close event is no longer bound
+```
+
+You may also use the `off()` method to manually unbind a handler from an event.
+
+```js
+const handleClose = () => console.log('CLOSE!');
+
+listener.on('close', handleClose);
+
+// ...
+
+listener.off('close', handleClose);
+```
+
+The unbinding can also be done internally to the handler that is bound, allowing a
+handler to unbind itself if necessary. The easiest technique for doing this is to
+use a named function expression:
+
+```js
+listener.on('close', function handler() {
+  listener.off('close', handler);
+  // ...
+});
+```
+
+Once the `WebListener` has established a connection, it will check every 5
+seconds to ensure the listener is still connected. To make the listener close
+its connect and halt reconnection attempts, call `close()`.
+
+```js
+const listener = new WebListener();
+
+// ...
+
+listener
+  .close()
+  .then(() => {
+    // listener has disconnected and will not attempt
+    // to reconnect
+  });
+```
+
+For convenience, there are also some methods to determine the status of the socket connection:
+
+```js
+const listener = new WebListener();
+
+// This will return a Boolean based on whether the socket connection is in the OPEN state.
+listener.isOpen();
+
+// This will return a Boolean based on whether the socket connection is currently connected.
+listener.isConnected();
 ```
 
 ## Documentation
@@ -525,6 +667,7 @@ several other scripts for maintenance:
 - `yarn list-clients`: Print a list of client APIs built into taskcluster-client-web based on the API reference.
 - `yarn show-client <client>`: Print the detailed schema information for a particular client, e.g. `yarm show Auth`.
 - `yarn test`: Run the test suites.
+- `yarn lint`: Manually lint the source code of the repo.
 
 ## License
 
