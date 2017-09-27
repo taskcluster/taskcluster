@@ -7,6 +7,7 @@ let Intree = require('./intree');
 let data = require('./data');
 let _ = require('lodash');
 let Promise = require('bluebird');
+let Ajv = require('ajv');
 let taskcluster = require('taskcluster-client');
 let config = require('typed-env-config');
 let monitor = require('taskcluster-lib-monitor');
@@ -38,6 +39,11 @@ let load = loader({
       prefix: 'github/v1/',
       aws: cfg.aws,
     }),
+  },
+
+  ajv: {
+    requires: [],
+    setup: () => new Ajv(),
   },
 
   docs: {
@@ -112,9 +118,9 @@ let load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher', 'Builds', 'OwnersDirectory'],
-    setup: ({cfg, monitor, validator, github, publisher, Builds, OwnersDirectory}) => api.setup({
-      context:          {publisher, cfg, github, Builds, OwnersDirectory, monitor: monitor.prefix('api-context')},
+    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher', 'Builds', 'OwnersDirectory', 'ajv'],
+    setup: ({cfg, monitor, validator, github, publisher, Builds, OwnersDirectory, ajv}) => api.setup({
+      context:          {publisher, cfg, github, Builds, OwnersDirectory, monitor: monitor.prefix('api-context'), ajv},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          process.env.NODE_ENV === 'production',
       baseUrl:          cfg.server.publicUrl + '/v1',
