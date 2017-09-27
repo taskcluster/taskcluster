@@ -20,6 +20,8 @@ notifications:
     - 'Change view : %{compare_url}'
     - 'Build details : %{build_url}'
     - 'Commit message : %{commit_message}'
+
+## NOTE: This does not work!  Not sure why.  babel-compile is not found.
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
