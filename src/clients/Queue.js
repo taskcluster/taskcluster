@@ -26,6 +26,7 @@ export default class Queue extends Client {
     this.reportFailed.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/failed',query:[],args:['taskId','runId'],name:'reportFailed',stability:'stable',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],output:true}; // eslint-disable-line
     this.reportException.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/exception',query:[],args:['taskId','runId'],name:'reportException',stability:'stable',scopes:[['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>'],['queue:resolve-task:<taskId>/<runId>']],input:true,output:true}; // eslint-disable-line
     this.createArtifact.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'createArtifact',stability:'stable',scopes:[['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>'],['queue:create-artifact:<taskId>/<runId>']],input:true,output:true}; // eslint-disable-line
+    this.completeArtifact.entry = {type:'function',method:'put',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'completeArtifact',stability:'experimental',scopes:[['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>'],['queue:create-artifact:<taskId>/<runId>']],input:true}; // eslint-disable-line
     this.getArtifact.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'getArtifact',stability:'stable',scopes:[['queue:get-artifact:<name>']]}; // eslint-disable-line
     this.getLatestArtifact.entry = {type:'function',method:'get',route:'/task/<taskId>/artifacts/<name>',query:[],args:['taskId','name'],name:'getLatestArtifact',stability:'stable',scopes:[['queue:get-artifact:<name>']]}; // eslint-disable-line
     this.listArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts',query:['continuationToken','limit'],args:['taskId','runId'],name:'listArtifacts',stability:'experimental',output:true}; // eslint-disable-line
@@ -37,7 +38,7 @@ export default class Queue extends Client {
     this.listWorkerTypes.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types',query:['continuationToken','limit'],args:['provisionerId'],name:'listWorkerTypes',stability:'experimental',output:true}; // eslint-disable-line
     this.getWorkerType.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'getWorkerType',stability:'experimental',output:true}; // eslint-disable-line
     this.declareWorkerType.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'declareWorkerType',stability:'experimental',scopes:[['queue:declare-worker-type:<provisionerId>/<workerType>#<property>']],input:true,output:true}; // eslint-disable-line
-    this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true}; // eslint-disable-line
+    this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit','disabled'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true}; // eslint-disable-line
     this.getWorker.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'getWorker',stability:'experimental',output:true}; // eslint-disable-line
     this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',scopes:[['queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>']],input:true,output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
@@ -255,17 +256,27 @@ export default class Queue extends Client {
   // expiration point. This features makes it feasible to upload large
   // intermediate artifacts from data processing applications, as the
   // artifacts can be set to expire a few days later.
-  // We currently support 4 different `storageType`s, each storage type have
+  // We currently support 3 different `storageType`s, each storage type have
   // slightly different features and in some cases difference semantics.
-  // **S3 artifacts**, is useful for static files which will be stored on S3.
-  // When creating an S3 artifact the queue will return a pre-signed URL
-  // to which you can do a `PUT` request to upload your artifact. Note
-  // that `PUT` request **must** specify the `content-length` header and
-  // **must** give the `content-type` header the same value as in the request
-  // to `createArtifact`.
-  // **Azure artifacts**, are stored in _Azure Blob Storage_ service, which
-  // given the consistency guarantees and API interface offered by Azure is
-  // more suitable for artifacts that will be modified during the execution
+  // We also have 2 deprecated `storageType`s which are only maintained for
+  // backwards compatiability and should not be used in new implementations
+  // **Blob artifacts**, are useful for storing large files.  Currently, these
+  // are all stored in S3 but there are facilities for adding support for other
+  // backends in futre.  A call for this type of artifact must provide information
+  // about the file which will be uploaded.  This includes sha256 sums and sizes.
+  // This method will return a list of general form HTTP requests which are signed
+  // by AWS S3 credentials managed by the Queue.  Once these requests are completed
+  // the list of `ETag` values returned by the requests must be passed to the
+  // queue `completeArtifact` method
+  // **S3 artifacts**, DEPRECATED is useful for static files which will be
+  // stored on S3. When creating an S3 artifact the queue will return a
+  // pre-signed URL to which you can do a `PUT` request to upload your
+  // artifact. Note that `PUT` request **must** specify the `content-length`
+  // header and **must** give the `content-type` header the same value as in
+  // the request to `createArtifact`.
+  // **Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+  // which given the consistency guarantees and API interface offered by Azure
+  // is more suitable for artifacts that will be modified during the execution
   // of the task. For example docker-worker has a feature that persists the
   // task log to Azure Blob Storage every few seconds creating a somewhat
   // live log. A request to create an Azure artifact will return a URL
@@ -300,6 +311,20 @@ export default class Queue extends Client {
   createArtifact(...args) {
     this.validate(this.createArtifact.entry, args);
     return this.request(this.createArtifact.entry, args);
+  }
+
+  // This endpoint finalises an upload done through the blob `storageType`.
+  // The queue will ensure that the task/run is still allowing artifacts
+  // to be uploaded.  For single-part S3 blob artifacts, this endpoint
+  // will simply ensure the artifact is present in S3.  For multipart S3
+  // artifacts, the endpoint will perform the commit step of the multipart
+  // upload flow.  As the final step for both multi and single part artifacts,
+  // the `present` entity field will be set to `true` to reflect that the
+  // artifact is now present and a message published to pulse.  NOTE: This
+  // endpoint *must* be called for all artifacts of storageType 'blob'
+  completeArtifact(...args) {
+    this.validate(this.completeArtifact.entry, args);
+    return this.request(this.completeArtifact.entry, args);
   }
 
   // Get artifact by `<name>` from a specific run.
@@ -436,7 +461,9 @@ export default class Queue extends Client {
     return this.request(this.declareWorkerType.entry, args);
   }
 
-  // Get a list of all active workerGroup/workerId of a workerType.
+  // Get a list of all active workers of a workerType.
+  // `listWorkers` allows a response to be filtered by the `disabled` property.
+  // To filter the query, you should call the end-point with `disabled` as a query-string option.
   // The response is paged. If this end-point returns a `continuationToken`, you
   // should call the end-point again with the `continuationToken` as a query-string
   // option. By default this end-point will list up to 1000 workers in a single
