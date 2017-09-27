@@ -264,7 +264,7 @@ suite('api', () => {
     assert.equal(comment.body, 'Task failed here');
   });
 
-  test('pull request comment where integraiton lacks permission', async function() {
+  test('pull request comment where integration lacks permission', async function() {
     try {
       await helper.github.createComment('abc123', 'no-permission', 1, {body: 'x'});
     } catch (e) {
