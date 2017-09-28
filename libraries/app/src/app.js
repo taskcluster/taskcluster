@@ -68,6 +68,9 @@ var createServer = function() {
  */
 var app = function(options) {
   assert(options,                           'options are required');
+  _.defaults(options, {
+    contentSecurityPolicy: true,
+  });
   assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env == 'development' ||
          options.env == 'production',       'env must be production or development');
