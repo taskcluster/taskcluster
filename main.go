@@ -3,19 +3,17 @@ package main
 import (
 	"crypto/tls"
 	"encoding/base64"
-	log "github.com/sirupsen/logrus"
+	"log/syslog"
 	"net/http"
 	"os"
 
+	log "github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
+
 	"github.com/gorilla/websocket"
+	mozlog "github.com/mozilla-services/go-mozlogrus"
 	"github.com/taskcluster/webhooktunnel/whproxy"
 )
-
-var logger = &log.Logger{
-	Out:       os.Stdout,
-	Formatter: new(log.TextFormatter),
-	Level:     log.DebugLevel,
-}
 
 // starts proxy on a random port on the system
 func main() {
@@ -24,6 +22,25 @@ func main() {
 	hostname := os.Getenv("HOSTNAME")
 	if hostname == "" {
 		panic("hostname required")
+	}
+
+	logger := log.New()
+
+	if env := os.Getenv("ENV"); env == "production" {
+		// add mozlog formatter
+		logger.Formatter = &mozlog.MozLogFormatter{
+			LoggerName: "webhookproxy",
+		}
+
+		// add syslog hook if addr is provided
+		syslogAddr := os.Getenv("SYSLOG_ADDR")
+		if syslogAddr != "" {
+			hook, err := lSyslog.NewSyslogHook("udp", syslogAddr, syslog.LOG_DEBUG, "proxy")
+			if err != nil {
+				panic(err)
+			}
+			logger.Hooks.Add(hook)
+		}
 	}
 
 	// Load secrets
@@ -40,7 +57,7 @@ func main() {
 	tlsCert, _ := base64.StdEncoding.DecodeString(tlsCertEnc)
 	cert, err := tls.X509KeyPair([]byte(tlsCert), []byte(tlsKey))
 	if err != nil {
-		logger.Printf("tls error: %v", err)
+		logger.Error(err.Error())
 		useTLS = false
 		// assume tls * cert
 		domainHosted = false
@@ -78,7 +95,10 @@ func main() {
 	defer func() {
 		_ = server.Close()
 	}()
-	logger.Printf("starting server on %s, host: %s", server.Addr, hostname)
+	logger.WithFields(log.Fields{
+		"server-addr": server.Addr,
+		"hostname":    hostname,
+	}).Infof("starting server")
 
 	// create tls config and serve
 	if useTLS {

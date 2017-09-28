@@ -14,6 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/webhooktunnel/util"
 	"github.com/taskcluster/webhooktunnel/wsmux"
+
+	"github.com/sirupsen/logrus"
+	nullLog "github.com/sirupsen/logrus/hooks/test"
 )
 
 const (
@@ -27,7 +30,7 @@ type Config struct {
 	Upgrader websocket.Upgrader
 
 	// Logger is used to log proxy events. Refer util.Logger.
-	Logger util.Logger
+	Logger *logrus.Logger
 
 	// JWTSecretA and JWTSecretB are used by the proxy to verify JWTs from Clients.
 	JWTSecretA []byte
@@ -46,7 +49,7 @@ type proxy struct {
 	m               sync.RWMutex
 	pool            map[string]*wsmux.Session
 	upgrader        websocket.Upgrader
-	logger          util.Logger
+	logger          *logrus.Logger
 	onSessionRemove func(string)
 	jwtSecretA      []byte
 	jwtSecretB      []byte
@@ -136,7 +139,8 @@ func newProxy(conf Config) (*proxy, error) {
 	}
 
 	if p.logger == nil {
-		p.logger = &util.NilLogger{}
+		logger, _ := nullLog.NewNullLogger()
+		p.logger = logger
 	}
 
 	return p, nil
@@ -411,20 +415,18 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 }
 
 // proxy logging utilities
-const (
-	fmtString      = "[PROXY] INFO: id=%s remote_ip=%s "
-	fmtErrorString = "[PROXY] ERROR: id=%s remote_ip=%s "
-)
 
 // NOTE: cannot use logrus methods
 func (p *proxy) logf(id string, remoteAddr string, format string, v ...interface{}) {
-	args := []interface{}{id, remoteAddr}
-	args = append(args, v...)
-	p.logger.Printf(fmtString+format, args...)
+	p.logger.WithFields(logrus.Fields{
+		"tunnel-id":   id,
+		"remote-addr": remoteAddr,
+	}).Printf(format, v...)
 }
 
 func (p *proxy) logerrorf(id string, remoteAddr string, format string, v ...interface{}) {
-	args := []interface{}{id, remoteAddr}
-	args = append(args, v...)
-	p.logger.Printf(fmtErrorString+format, args...)
+	p.logger.WithFields(logrus.Fields{
+		"tunnel-id":   id,
+		"remote-addr": remoteAddr,
+	}).Errorf(format, v...)
 }
