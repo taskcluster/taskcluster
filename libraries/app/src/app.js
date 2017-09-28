@@ -82,7 +82,9 @@ var app = function(options) {
 
   // ForceSSL if required suggested
   if (options.forceSSL) {
-    app.use(sslify.HTTPS(options.trustProxy));
+    app.use(sslify.HTTPS({
+      trustProtoHeader: options.trustProxy,
+    }));
   }
 
   // When we force SSL, we also want to set the HSTS header file correctly.  We
