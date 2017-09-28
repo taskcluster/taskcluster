@@ -1,5 +1,4 @@
 Defaults:
-  showAuth0:          !env:bool SHOW_AUTH0
   app:
     authenticators:
       - auth0

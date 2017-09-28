@@ -196,7 +196,6 @@ let load = loader({
           session: req.session,
           auth0_domain: cfg.auth0.domain,
           auth0_client_id: cfg.auth0.clientId,
-          showAuth0: cfg.showAuth0,
         });
       });
 
