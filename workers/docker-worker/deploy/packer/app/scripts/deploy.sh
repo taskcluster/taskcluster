@@ -27,7 +27,7 @@ cd $target
 tar xzf $docker_worker_source -C $target --strip-components=1
 sudo chown -R $USER:$USER /home/ubuntu/docker_worker
 
-sudo npm install -g babel-cli yarn
+sudo npm install -g babel-cli yarn@1.0.2
 
 yarn install --frozen-lockfile
 yarn build
