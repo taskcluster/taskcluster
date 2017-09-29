@@ -41,7 +41,6 @@
     "passport": "^0.4.0",
     "passport-auth0": "0.6.0",
     "passport-local": "^1.0.0",
-    "passport-saml": "^0.15.0",
     "source-map-support": "^0.4.2",
     "superagent": "^3.5.2",
     "taskcluster-client": "^2.5.2",
