@@ -4,7 +4,7 @@ Defaults:
       - auth0
     authorizers:
       - ldap
-      # - mozillians -- causing crashes - https://bugzilla.mozilla.org/show_bug.cgi?id=1404606
+      - mozillians
     cookieSecrets: !env:list COOKIE_SECRETS
     allowedRedirectHosts:
       - localhost
