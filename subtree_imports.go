@@ -4,6 +4,7 @@ package main
 // alphabetical order.
 
 import _ "github.com/taskcluster/taskcluster-cli/apis"
+import _ "github.com/taskcluster/taskcluster-cli/cmds/completions"
 import _ "github.com/taskcluster/taskcluster-cli/cmds/config"
 import _ "github.com/taskcluster/taskcluster-cli/cmds/from-now"
 import _ "github.com/taskcluster/taskcluster-cli/cmds/group"
