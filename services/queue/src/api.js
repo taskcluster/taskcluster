@@ -2478,7 +2478,7 @@ api.declare({
       workerType,
       workerGroup,
       workerId,
-      recentTasks: Entity.types.SlugIdArray.create(),
+      recentTasks: [],
       expires: expires || taskcluster.fromNow('1 day'),
       disabled: false,
       firstClaim: new Date(),

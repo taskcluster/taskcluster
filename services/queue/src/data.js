@@ -892,6 +892,30 @@ let Worker = Entity.configure({
 
     return item;
   },
+}).configure({
+  version:            4,
+  properties: {
+    provisionerId:    Entity.types.String,
+    workerType:       Entity.types.String,
+    workerGroup:      Entity.types.String,
+    workerId:         Entity.types.String,
+    /**
+     * List of objects with properties:
+     * - taskId
+     * - runId
+     * See JSON schema for documentation.
+     */
+    recentTasks:      Entity.types.JSON,
+    disabled:         Entity.types.Boolean,
+    // the time at which this worker should no longer be displayed
+    expires:          Entity.types.Date,
+    firstClaim:       Entity.types.Date,
+  },
+  migrate(item) {
+    item.recentTasks = [];
+
+    return item;
+  },
 });
 
 /**
@@ -920,7 +944,7 @@ Worker.prototype.json = function() {
     workerId:         this.workerId,
     workerGroup:      this.workerGroup,
     disabled:         this.disabled,
-    recentTasks:      this.recentTasks.toArray(),
+    recentTasks:      this.recentTasks,
     expires:          this.expires.toJSON(),
     firstClaim:       this.firstClaim.toJSON(),
   };
