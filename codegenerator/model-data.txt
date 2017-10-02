@@ -1,4 +1,4 @@
-Generated: 1506966362
+Generated: 1506979414
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7891,14 +7891,31 @@ Properties
           TypeName               = 'FirstTaskClaimed'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim'
         Property 'latestTask' =
-          Description            = 'Unique task identifier, this is UUID encoded as
-          [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-          stripped of `=` padding.
+          Description            = 'The most recent claimed task
           '
-          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
-          Title                  = 'Most Recent Claimed Task Identifier'
-          Type                   = 'string'
-          TypeName               = 'MostRecentClaimedTaskIdentifier'
+          Properties
+            Property 'runId' =
+              Description            = 'Id of this task run, `run-id`s always starts from `0`
+              '
+              Maximum                = '1000'
+              Minimum                = '0'
+              Title                  = 'Run Identifier'
+              Type                   = 'integer'
+              TypeName               = 'RunIdentifier'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId'
+            Property 'taskId' =
+              Description            = 'Unique task identifier, this is UUID encoded as
+              [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+              stripped of `=` padding.
+              '
+              Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+              Title                  = 'Task Identifier'
+              Type                   = 'string'
+              TypeName               = 'TaskIdentifier'
+              SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId'
+          Title                  = 'Most Recent Task'
+          Type                   = 'object'
+          TypeName               = 'MostRecentTask'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask'
         Property 'workerGroup' =
           Description            = 'Identifier for the worker group containing this worker.
@@ -10199,17 +10216,31 @@ Properties
     TypeName               = 'ProvisionerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId'
   Property 'recentTasks' =
-    Description            = '20 most recent task Ids claimed by the worker.
+    Description            = 'List of 20 most recent tasks claimed by the worker.
     '
     Items
-      Description            = 'Unique task identifier, this is UUID encoded as
-      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-      stripped of `=` padding.
-      '
-      Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
-      Title                  = 'Task Identifiers'
-      Type                   = 'string'
-      TypeName               = 'TaskIdentifiers'
+      Properties
+        Property 'runId' =
+          Description            = 'Id of this task run, `run-id`s always starts from `0`
+          '
+          Maximum                = '1000'
+          Minimum                = '0'
+          Title                  = 'Run Identifier'
+          Type                   = 'integer'
+          TypeName               = 'RunIdentifier'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId'
+        Property 'taskId' =
+          Description            = 'Unique task identifier, this is UUID encoded as
+          [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+          stripped of `=` padding.
+          '
+          Pattern                = '^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$'
+          Title                  = 'Task Identifier'
+          Type                   = 'string'
+          TypeName               = 'TaskIdentifier'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/taskId'
+      Type                   = 'object'
+      TypeName               = 'RecentTasksEntry'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items'
     Title                  = 'Recent Tasks'
     Type                   = 'array'

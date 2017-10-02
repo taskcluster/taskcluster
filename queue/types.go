@@ -720,14 +720,28 @@ type (
 			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim
 			FirstClaim tcclient.Time `json:"firstClaim,omitempty"`
 
-			// Unique task identifier, this is UUID encoded as
-			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-			// stripped of `=` padding.
-			//
-			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			// The most recent claimed task
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
-			LatestTask string `json:"latestTask,omitempty"`
+			LatestTask struct {
+
+				// Id of this task run, `run-id`s always starts from `0`
+				//
+				// Mininum:    0
+				// Maximum:    1000
+				//
+				// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
+				RunID int `json:"runId,omitempty"`
+
+				// Unique task identifier, this is UUID encoded as
+				// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+				// stripped of `=` padding.
+				//
+				// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+				//
+				// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId
+				TaskID string `json:"taskId,omitempty"`
+			} `json:"latestTask,omitempty"`
 
 			// Identifier for the worker group containing this worker.
 			//
@@ -1926,10 +1940,28 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
-		// 20 most recent task Ids claimed by the worker.
+		// List of 20 most recent tasks claimed by the worker.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks
-		RecentTasks []string `json:"recentTasks"`
+		RecentTasks []struct {
+
+			// Id of this task run, `run-id`s always starts from `0`
+			//
+			// Mininum:    0
+			// Maximum:    1000
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId
+			RunID int `json:"runId,omitempty"`
+
+			// Unique task identifier, this is UUID encoded as
+			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+			// stripped of `=` padding.
+			//
+			// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/taskId
+			TaskID string `json:"taskId,omitempty"`
+		} `json:"recentTasks"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
