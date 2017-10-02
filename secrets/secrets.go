@@ -36,7 +36,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 27 Sep 2017 at 00:23:00 UTC. The code was generated
+// Mon, 2 Oct 2017 at 17:46:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -128,14 +128,29 @@ func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*u
 	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
 }
 
-// List the names of all secrets that you would have access to read. In
-// other words, secret name `<X>` will only be returned if a) a secret
-// with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
+// List the names of all secrets.
+//
+// By default this end-point will try to return up to 1000 secret names in one
+// request. But it **may return less**, even if more tasks are available.
+// It may also return a `continuationToken` even though there are no more
+// results. However, you can only be sure to have seen all results if you
+// keep calling `listTaskGroup` with the last `continuationToken` until you
+// get a result without a `continuationToken`.
+//
+// If you are not interested in listing all the members at once, you may
+// use the query-string option `limit` to return fewer.
 //
 // See https://docs.taskcluster.net/reference/core/secrets/api-docs#list
-func (mySecrets *Secrets) List() (*SecretsList, error) {
+func (mySecrets *Secrets) List(continuationToken, limit string) (*SecretsList, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	cd := tcclient.Client(*mySecrets)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), v)
 	return responseObject.(*SecretsList), err
 }
 
