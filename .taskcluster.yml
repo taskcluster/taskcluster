@@ -30,7 +30,7 @@ tasks:
           cd repo &&
           git config advice.detachedHead false &&
           git checkout {{event.head.sha}} &&
-          export DOCS_PROJECT=taskcluster-client-go DOCS_TIER=liberaries DOCS_FOLDER=docs DOCS_README=README.md &&
+          export DOCS_PROJECT=taskcluster-client-go DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
           upload-project-docs
     metadata:
       name: "taskcluster-client-go docs upload"
