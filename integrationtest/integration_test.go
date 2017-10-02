@@ -27,7 +27,7 @@ func TestFindLatestLinux64DebugBuild(t *testing.T) {
 	creds := &tcclient.Credentials{}
 	Index := index.New(creds)
 	Queue := queue.New(creds)
-	itr, err := Index.FindTask("gecko.v1.mozilla-inbound.latest.linux.linux64.debug")
+	itr, err := Index.FindTask("gecko.v2.mozilla-inbound.latest.firefox.linux64-debug")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
