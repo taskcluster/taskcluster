@@ -361,6 +361,7 @@ type (
 		// success: Build/Test executed without error or failure
 		// canceled: The job was cancelled by a user
 		// unknown: When the job is not yet completed
+		// superseded: When a job has been superseded by another job
 		//
 		// Possible values:
 		//   * "success"
@@ -368,6 +369,7 @@ type (
 		//   * "exception"
 		//   * "canceled"
 		//   * "unknown"
+		//   * "superseded"
 		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/result
 		Result string `json:"result,omitempty"`

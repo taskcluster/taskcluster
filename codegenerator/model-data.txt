@@ -1,4 +1,4 @@
-Generated: 1506979414
+Generated: 1507051593
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -12224,8 +12224,9 @@ Properties
     success: Build/Test executed without error or failure
     canceled: The job was cancelled by a user
     unknown: When the job is not yet completed
+    superseded: When a job has been superseded by another job
     '
-    Enum                   = '[success fail exception canceled unknown]'
+    Enum                   = '[success fail exception canceled unknown superseded]'
     Title                  = 'result'
     Type                   = 'string'
     TypeName               = 'Result'
