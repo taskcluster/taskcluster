@@ -62,6 +62,43 @@ suite('handle exception job', () => {
     assert.deepEqual(actual, expected);
   });
 
+  test('superseded message', async () => {
+    let actual;
+    handler.publishJobMessage = (pushInfo, job) => {
+      actual = job;
+    };
+
+    let scheduled = new Date();
+    let started = new Date();
+    let resolved = new Date();
+    started.setMinutes(started.getMinutes() + 5)
+    resolved.setMinutes(resolved.getMinutes() + 10)
+
+    status.status.runs[0] = {
+      runId: 0,
+      state: 'exception',
+      reasonCreated: 'scheduled',
+      reasonResolved: 'superseded',
+      scheduled: scheduled.toISOString(),
+      started: started.toISOString(),
+      resolved: resolved.toISOString()
+    };
+
+    expected.state = 'completed';
+    expected.result = 'superseded';
+    expected.timeStarted = started.toISOString();
+    expected.timeCompleted = resolved.toISOString();
+    expected.logs = [
+      {
+        name: "builds-4h",
+        url: "https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log"
+      }
+    ];
+
+    let job = await handler.handleTaskException(pushInfo, task, status);
+    assert.deepEqual(actual, expected);
+  });
+
   test('do not publish when reason created is exception', async () => {
     let actual;
     handler.publishJobMessage = (pushInfo, job) => {

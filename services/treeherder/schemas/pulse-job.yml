@@ -171,6 +171,7 @@ properties:
       success: Build/Test executed without error or failure
       canceled: The job was cancelled by a user
       unknown: When the job is not yet completed
+      superseded: When a job has been superseded by another job
     type: "string"
     enum:
       - success
@@ -178,6 +179,7 @@ properties:
       - exception
       - canceled
       - unknown
+      - superseded
   jobKind:
     type: "string"
     default: "other"
