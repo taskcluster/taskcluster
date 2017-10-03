@@ -240,7 +240,9 @@ folders.
     It requires node 8.5.0+.
 
 If eveything is alright, all should you do to deploy docker-worker is to run
-[release.sh](/release.sh).
+[release.sh](/release.sh). You need the
+[secrets](ssh://gitolite3@git-internal.mozilla.org/taskcluster/secrets.git)
+repo configured.
 
 ### Block-Device Mapping
 The AMI built with packer will mount all available instances storage under

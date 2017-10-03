@@ -2,6 +2,10 @@ const tc = require('taskcluster-client');
 const promiseRetry = require('promise-retry');
 const AWS = require('aws-sdk');
 const _ = require('lodash');
+const amis = _.flatten(_.map(
+  require('../../docker-worker-amis.json'),
+  v => _.map(v)
+));
 
 class WorkerType {
   constructor(client, name) {
@@ -55,7 +59,9 @@ module.exports = {
   killInstances(workerType) {
     return workerType.state().then(state => {
       return Promise.all(_.map(
-        _.groupBy(state.instances, 'region'),
+        // The filter call here is only to kill instances running
+        // the AMIs we are rolling back
+        _.groupBy(state.instances.filter(i => amis.includes(i.ami)), 'region'),
         (instances, region) => {
           const ec2 = new AWS.EC2({ region });
           return ec2.terminateInstances({

@@ -43,6 +43,9 @@ cmd_app() {
     --exclude='./.DS_Store' \
     --exclude='./vagrant/' \
     --exclude='app.box' \
+    --exclude='./worker-types-backup.json' \
+    --exclude='./docker-worker-amis.json' \
+    --exclude='./packer-artifacts.json' \
     -zcvf $docker_worker_tgz .
   mv $docker_worker_tgz docker-worker.tgz
   local git_rev=$(git rev-parse --verify HEAD)

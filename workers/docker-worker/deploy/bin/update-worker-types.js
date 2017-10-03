@@ -7,7 +7,7 @@ const utils = require('./worker_type_utils');
 const _ = require('lodash');
 
 /*
- * Write worker-types configuration to a json file
+ * Backup worker-types regions config
  */
 function backupWorkerTypes(client) {
   console.log('Creating worker-types backup file.');
@@ -20,7 +20,9 @@ function backupWorkerTypes(client) {
   return Promise.all(workerTypes).then(
     result => new Promise((resolve, reject) => jsonfile.writeFile(
       'worker-types-backup.json',
-      result,
+      result
+        .map(({workerType, regions}) => ({ [workerType]: regions }))
+        .reduce((o, w) => _.merge(o, w), {}),
       { spaces: 2 },
       err => err ? reject(err) : resolve()
     ))
