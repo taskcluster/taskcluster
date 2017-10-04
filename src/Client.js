@@ -215,7 +215,7 @@ export default class Client {
     }
 
     const url = this.buildUrl(method, ...args);
-    const credentials = this.credentialAgent ?
+    const credentials = this.options.credentialAgent ?
       await this.options.credentialAgent.getCredentials() :
       this.options.credentials;
 
