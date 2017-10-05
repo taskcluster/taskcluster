@@ -29,7 +29,7 @@ func main() {
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
 	mySecrets = secrets.New(tcCreds)
-	s, err := mySecrets.List()
+	s, err := mySecrets.List("", "")
 	if err != nil {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
