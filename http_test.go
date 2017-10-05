@@ -225,7 +225,7 @@ func TestContentTypeHeader(t *testing.T) {
 		Authenticate: false,
 	}
 
-	// Three following calls should all return an error if Content-Type is set
+	// Three following calls should have no Content-Header set since request body is empty
 	// 1) calling APICall with a nil payload
 	_, cs, err := client.APICall(nil, "GET", "/whatever", nil, nil)
 	if err != nil {
