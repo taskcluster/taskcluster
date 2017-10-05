@@ -228,34 +228,34 @@ func TestContentTypeHeader(t *testing.T) {
 	// 1) calling APICall with a nil payload
 	_, cs, err := client.APICall(nil, "GET", "/whatever", nil, nil)
 	if err != nil {
-		t.Error("Unexpected error: %s", err)
+		t.Errorf("Unexpected error: %s", err)
 	}
 	if ct := cs.HTTPResponseBody; ct != "" {
-		t.Error("Expected no Content-Type header, but got '%v'", ct)
+		t.Errorf("Expected no Content-Type header, but got '%v'", ct)
 	}
 	// 2) calling Request with nil body
 	cs, err = client.Request(nil, "GET", "/whatever", nil)
 	if err != nil {
-		t.Error("Unexpected error: %s", err)
+		t.Errorf("Unexpected error: %s", err)
 	}
 	if ct := cs.HTTPResponseBody; ct != "" {
-		t.Error("Expected no Content-Type header, but got '%v'", ct)
+		t.Errorf("Expected no Content-Type header, but got '%v'", ct)
 	}
 	// 3) calling Request with array of 0 bytes for body
 	cs, err = client.Request([]byte{}, "GET", "/whatever", nil)
 	if err != nil {
-		t.Error("Unexpected error: %s", err)
+		t.Errorf("Unexpected error: %s", err)
 	}
 	if ct := cs.HTTPResponseBody; ct != "" {
-		t.Error("Expected no Content-Type header, but got '%v'", ct)
+		t.Errorf("Expected no Content-Type header, but got '%v'", ct)
 	}
 
 	// This tests that given a payload > 0 bytes, Content-Type is set
 	cs, err = client.Request([]byte("{}"), "PUT", "/whatever", nil)
 	if err != nil {
-		t.Error("Unexpected error: %s", err)
+		t.Errorf("Unexpected error: %s", err)
 	}
 	if ct := cs.HTTPResponseBody; ct != "application/json" {
-		t.Error("Expected Content-Type application/json header, but got '%v'", ct)
+		t.Errorf("Expected Content-Type application/json header, but got '%v'", ct)
 	}
 }
