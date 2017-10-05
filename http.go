@@ -99,7 +99,9 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		if err != nil {
 			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), client.BaseURL, err)
 		}
-		callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
+		if len(rawPayload) > 0 {
+			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
+		}
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
 		if client.Authenticate {

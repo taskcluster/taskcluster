@@ -210,3 +210,39 @@ func TestRequestWithContext(t *testing.T) {
 		t.Fatalf("Was expecting a *tcclient.APICallException but got %T %v", e, e)
 	}
 }
+
+// Make sure Content-Type is only set if there is a payload
+func TestRequestNoPayload(t *testing.T) {
+	// this server will return HTTP 400 status code if Content-Type header is set
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Content-Type") != "" {
+			w.WriteHeader(400)
+			return
+		}
+		w.WriteHeader(200)
+		w.Write([]byte(`{"value": "hello world"}`))
+	}))
+	defer s.Close()
+	client := Client{
+		BaseURL:      s.URL,
+		Authenticate: false,
+	}
+
+	// Three following calls should all return an error if Content-Type is set
+	// 1) calling APICall with a nil payload
+	var result interface{}
+	_, _, err := client.APICall(nil, "GET", "/whatever", &result, nil)
+	if err != nil {
+		t.Error("Unexpected error:", err)
+	}
+	// 2) calling Request with nil body
+	_, err = client.Request(nil, "GET", "/whatever", nil)
+	if err != nil {
+		t.Error("Unexpected error:", err)
+	}
+	// 3) calling Request with array of 0 bytes for body
+	_, err = client.Request([]byte{}, "GET", "/whatever", nil)
+	if err != nil {
+		t.Error("Unexpected error:", err)
+	}
+}
