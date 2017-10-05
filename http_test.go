@@ -213,7 +213,8 @@ func TestRequestWithContext(t *testing.T) {
 
 // Make sure Content-Type is only set if there is a payload
 func TestContentTypeHeader(t *testing.T) {
-	// this server will return HTTP 400 status code if Content-Type header is set
+	// This mock service just returns the value of the Content-Type request
+	// header in the response body so we can check what value it had.
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Write([]byte(r.Header.Get("Content-Type")))
