@@ -212,15 +212,11 @@ func TestRequestWithContext(t *testing.T) {
 }
 
 // Make sure Content-Type is only set if there is a payload
-func TestRequestNoPayload(t *testing.T) {
+func TestContentTypeHeader(t *testing.T) {
 	// this server will return HTTP 400 status code if Content-Type header is set
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "" {
-			w.WriteHeader(400)
-			return
-		}
 		w.WriteHeader(200)
-		w.Write([]byte(`{"value": "hello world"}`))
+		w.Write([]byte(r.Header.Get("Content-Type")))
 	}))
 	defer s.Close()
 	client := Client{
@@ -230,19 +226,36 @@ func TestRequestNoPayload(t *testing.T) {
 
 	// Three following calls should all return an error if Content-Type is set
 	// 1) calling APICall with a nil payload
-	var result interface{}
-	_, _, err := client.APICall(nil, "GET", "/whatever", &result, nil)
+	_, cs, err := client.APICall(nil, "GET", "/whatever", nil, nil)
 	if err != nil {
-		t.Error("Unexpected error:", err)
+		t.Error("Unexpected error: %s", err)
+	}
+	if ct := cs.HTTPResponseBody; ct != "" {
+		t.Error("Expected no Content-Type header, but got '%v'", ct)
 	}
 	// 2) calling Request with nil body
-	_, err = client.Request(nil, "GET", "/whatever", nil)
+	cs, err = client.Request(nil, "GET", "/whatever", nil)
 	if err != nil {
-		t.Error("Unexpected error:", err)
+		t.Error("Unexpected error: %s", err)
+	}
+	if ct := cs.HTTPResponseBody; ct != "" {
+		t.Error("Expected no Content-Type header, but got '%v'", ct)
 	}
 	// 3) calling Request with array of 0 bytes for body
-	_, err = client.Request([]byte{}, "GET", "/whatever", nil)
+	cs, err = client.Request([]byte{}, "GET", "/whatever", nil)
 	if err != nil {
-		t.Error("Unexpected error:", err)
+		t.Error("Unexpected error: %s", err)
+	}
+	if ct := cs.HTTPResponseBody; ct != "" {
+		t.Error("Expected no Content-Type header, but got '%v'", ct)
+	}
+
+	// This tests that given a payload > 0 bytes, Content-Type is set
+	cs, err = client.Request([]byte("{}"), "PUT", "/whatever", nil)
+	if err != nil {
+		t.Error("Unexpected error: %s", err)
+	}
+	if ct := cs.HTTPResponseBody; ct != "application/json" {
+		t.Error("Expected Content-Type application/json header, but got '%v'", ct)
 	}
 }
