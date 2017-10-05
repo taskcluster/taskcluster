@@ -196,7 +196,7 @@ func TestRequestWithContext(t *testing.T) {
 	}
 
 	// Make a call and cancel
-	time.AfterFunc(1*time.Second, cancel)
+	time.AfterFunc(100*time.Millisecond, cancel)
 	_, _, err = c.APICall(nil, "GET", "/whatever", &result, nil)
 	if err == nil {
 		t.Fatal("Should have had a cancel error")
