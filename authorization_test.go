@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -80,9 +81,14 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		"queue:route:tc-treeherder.mozilla-inbound.*",
 		"queue:route:tc-treeherder-stage.mozilla-inbound.*",
 		"queue:scheduler-id:go-test-test-scheduler",
+		"queue:get-artifact:SampleArtifacts/_/X.txt",
 	}
 
-	tempScopesJSON := `["auth:azure-table:read-write:fakeaccount/DuMmYtAbLe","queue:create-task:high:win-provisioner/win2008-worker","queue:get-artifact:private/build/sources.xml","queue:route:tc-treeherder.mozilla-inbound.*","queue:route:tc-treeherder-stage.mozilla-inbound.*","queue:scheduler-id:go-test-test-scheduler"]`
+	tempScopesBytes, err := json.Marshal(tempScopes)
+	if err != nil {
+		t.Fatal("Bug in test")
+	}
+	tempScopesJSON := string(tempScopesBytes)
 
 	tempCredsClientId := "garbage/" + slugid.Nice()
 	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
@@ -130,11 +136,13 @@ func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode in
 	if err != nil {
 		t.Fatalf("Could not read response body: %v", err)
 	}
-	// make sure we get at least a few bytes of a response body...
-	// even http 303 should have some body, see
+	// Make sure we get at least a few bytes of a response body...
+	// Even HTTP 303 should have some body, see
 	// https://tools.ietf.org/html/rfc7231#section-6.4.4
-	if len(respBody) < 20 {
-		t.Error("Expected a response body (at least 20 bytes), but get less (or none).")
+	// TestRetrievePrivateArtifact retrieves an artifact with
+	// 14 bytes, so let's set that as minimum.
+	if len(respBody) < 14 {
+		t.Error("Expected a response body (at least 14 bytes), but get less (or none).")
 		t.Logf("Headers: %s", res.Header())
 		t.Logf("Response received:\n%s", string(respBody))
 	}
@@ -452,4 +460,35 @@ func TestInvalidEndpoint(t *testing.T) {
 	}
 	testWithTempCreds(t, test, 404)
 	testWithPermCreds(t, test, 404)
+}
+
+func TestRetrievePrivateArtifact(t *testing.T) {
+	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+
+		// Test setup
+		routes := Routes{
+			Client: tcclient.Client{
+				Authenticate: true,
+				Credentials:  creds,
+			},
+		}
+
+		// See https://github.com/taskcluster/generic-worker/blob/c91adbc9fc65c28b3c9e76da1fb0f7f84a69eebf/testdata/tasks/KTBKfEgxR5GdfIIREQIvFQ.json
+		req, err := http.NewRequest(
+			"GET",
+			"http://localhost:60024/queue/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts%2F_%2FX.txt",
+			nil,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res := httptest.NewRecorder()
+
+		// Function to test
+		routes.RootHandler(res, req)
+
+		return res
+	}
+	testWithPermCreds(t, test, 200)
+	testWithTempCreds(t, test, 200)
 }
