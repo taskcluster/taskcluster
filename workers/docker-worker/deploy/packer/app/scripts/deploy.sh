@@ -39,10 +39,10 @@ sudo modprobe snd-aloop
 sudo depmod
 
 # Pull images used for sidecar containers
-docker pull taskcluster/taskcluster-proxy:4.0.0
+docker pull taskcluster/taskcluster-proxy:4.0.1
 docker pull taskcluster/livelog:v4
 docker pull taskcluster/dind-service:v4.0
 docker pull taskcluster/relengapi-proxy:2.0.1
 
 # Export the images as a tarball to load when insances are initialized
-docker save taskcluster/taskcluster-proxy:4.0.0 taskcluster/livelog:v4 taskcluster/dind-service:v4.0 taskcluster/relengapi-proxy:2.0.1 > /home/ubuntu/docker_worker/docker_worker_images.tar
+docker save taskcluster/taskcluster-proxy:4.0.1 taskcluster/livelog:v4 taskcluster/dind-service:v4.0 taskcluster/relengapi-proxy:2.0.1 > /home/ubuntu/docker_worker/docker_worker_images.tar
