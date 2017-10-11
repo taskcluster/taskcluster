@@ -2810,9 +2810,9 @@ morgan@~1.7.0:
     on-finished "~2.3.0"
     on-headers "~1.0.1"
 
-mozillians-client@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/mozillians-client/-/mozillians-client-0.1.2.tgz#2063dd477ca899aaaba3e3d4466576252163ad12"
+mozillians-client@0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/mozillians-client/-/mozillians-client-0.1.3.tgz#4e34802745d0aca944fe54a1aba0894254914be1"
   dependencies:
     babel-runtime "^5.8.25"
     lodash "^3.10.1"

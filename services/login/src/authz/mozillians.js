@@ -14,7 +14,12 @@ class MozilliansAuthorizer {
     assert(options.cfg.mozillians.allowedGroups,
         'options.cfg.mozillians.allowedGroups is required');
 
-    this.mozillians = new Mozillians(options.cfg.mozillians.apiKey);
+    this.mozillians = new Mozillians(options.cfg.mozillians.apiKey, {
+      // note that this retries on transient errors only
+      retries: 5,
+      delayFactor: 100,
+      maxDelay: 30 * 1000,
+    });
     this.allowedGroups = options.cfg.mozillians.allowedGroups;
 
     // trust email, and ldap-authenticated users
