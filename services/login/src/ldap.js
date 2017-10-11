@@ -16,12 +16,13 @@ class LDAPClient {
       tlsOptions.port = port;
     }
 
-    this.client = ldap.createClient({
+    this.client = null;
+    this.createClientArgs = {
       url: cfg.url,
       tlsOptions,
       timeout: 10 * 1000,
       reconnect: true,
-    });
+    };
 
     /* This promise acts as a lock; pending = locked, fulfilled = unlocked.  It
      * is never rejected. */
@@ -41,6 +42,10 @@ class LDAPClient {
     while (true) {
       attempts++;
       try {
+        if (!this.client) {
+          this.client = ldap.createClient(this.createClientArgs);
+        }
+
         /* do a little dance here to make sure that we see exceptions inside
          * this promise, but the lock promise is not rejected */
         await new Promise((accept, reject) => {
@@ -54,7 +59,8 @@ class LDAPClient {
           debug('error performing LDAP operation; failing', err);
           throw err;
         } else {
-          debug('error performing LDAP operation; retrying', err);
+          debug('error performing LDAP operation; retrying (with fresh connection)', err);
+          this.client = null;
         }
       }
     }
