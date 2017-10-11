@@ -20,5 +20,5 @@ fi
 
 deploy/bin/import-docker-worker-secrets
 deploy/bin/build app
-deploy/bin/update-worker-types.js
+deploy/bin/update-worker-types.js $*
 rm -f /tmp/docker-worker*

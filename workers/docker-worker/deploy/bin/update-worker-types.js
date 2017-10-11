@@ -1,15 +1,30 @@
 #!/usr/bin/env node
 
-const workerTypesList = require('../etc/worker-types.json');
+const workerTypesListProd = require('../etc/worker-types.json');
+const workerTypesListTest = require('../etc/worker-types-test.json');
 const amis = require('../../docker-worker-amis.json');
 const jsonfile = require('jsonfile');
 const utils = require('./worker_type_utils');
 const _ = require('lodash');
+const program = require('commander');
+
+program
+  .option('--no-backup', "Don't generate the backup file.")
+  .option('-t, --test', "Update only test worker types.")
+  .parse(process.argv);
+
+const workerTypesList = program.test
+  ? workerTypesListTest
+  : workerTypesListProd;
 
 /*
  * Backup worker-types regions config
  */
 function backupWorkerTypes(client) {
+  if (!program.backup) {
+    return Promise.resolve();
+  }
+
   console.log('Creating worker-types backup file.');
   const names = _.flatten(_.map(workerTypesList, v => v));
   const workerTypes = names.map(name => {

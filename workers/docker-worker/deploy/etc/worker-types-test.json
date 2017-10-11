@@ -1,0 +1,10 @@
+{
+  "hvm-builder": [
+    "ami-test"
+  ],
+  "hvm-builder-trusted": [
+  ],
+  "pv-builder": [
+    "ami-test-pv"
+  ]
+}
