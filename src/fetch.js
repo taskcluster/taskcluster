@@ -30,7 +30,7 @@ const handleResponse = response => Promise
   });
 
 export default (url, opts = {}) => {
-  const options = { ...defaults, ...opts, headers: { ...defaults.headers, ...opts.headers } };
+  const options = { ...defaults, ...opts, headers: { ...(opts.body && defaults.headers), ...opts.headers } };
   const { delayFactor, randomizationFactor, maxDelay, retries } = options;
 
   if (typeof options.credentials !== 'string') {
