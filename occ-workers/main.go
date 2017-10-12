@@ -150,18 +150,6 @@ func fetchRegion(workerType string, region string, secret RelOpsWorkerTypeSecret
 		&ec2.DescribeInstancesInput{
 			Filters: []*ec2.Filter{
 				{
-					Name: aws.String("tag:WorkerType"),
-					Values: []*string{
-						aws.String("aws-provisioner-v1/" + workerType),
-					},
-				},
-				{
-					Name: aws.String("tag:Owner"),
-					Values: []*string{
-						aws.String("aws-provisioner-v1"),
-					},
-				},
-				{
 					Name: aws.String("tag:Name"),
 					Values: []*string{
 						aws.String(workerType),
