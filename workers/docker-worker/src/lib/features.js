@@ -17,6 +17,7 @@ import RelengAPIProxy from './features/releng_api_proxy';
 import DockerSave from './features/docker_save';
 import Interactive from './features/interactive.js';
 import BalrogVPNProxy from './features/balrog_vpn_proxy';
+import BalrogStageVPNProxy from './features/balrog_stage_vpn_proxy';
 
 const features = {
   localLiveLog: {
@@ -70,6 +71,15 @@ const features = {
                  'tunnel to production balrog update server.',
     defaults: false,
     module: BalrogVPNProxy
+  },
+
+  balrogStageVPNProxy: {
+    title: 'Balrog stage proxy service',
+    description: 'The Balrog stage proxy feature allows tasks to make requests to ' +
+                 'http://balrog which is a proxied connection through a vpn ' +
+                 'tunnel to the stage balrog update server.',
+    defaults: false,
+    module: BalrogStageVPNProxy
   },
 
   dind: {
