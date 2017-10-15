@@ -1,3 +1,4 @@
+// Package completions implements command completion support.
 package completions
 
 import (

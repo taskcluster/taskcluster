@@ -1,3 +1,4 @@
+// Package shell implements the shell command.
 package shell
 
 import (

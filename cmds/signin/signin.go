@@ -1,3 +1,4 @@
+// Package signin implements the signin command.
 package signin
 
 import (

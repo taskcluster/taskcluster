@@ -1,3 +1,4 @@
+// Package group implements the group interaction subcommands.
 package group
 
 import (

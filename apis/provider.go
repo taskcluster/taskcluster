@@ -1,6 +1,4 @@
 //go:generate go run _codegen/fetch-apis.go
-
-// Package apis implements all the API CommandProviders.
 package apis
 
 import (

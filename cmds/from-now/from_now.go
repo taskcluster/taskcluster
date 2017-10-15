@@ -1,3 +1,4 @@
+// Package fromNow implements the from-now command.
 package fromNow
 
 import (
