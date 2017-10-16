@@ -28,14 +28,14 @@ Example:
 }
 ```
 
-The worker appends the `taskid` of the task it has received from the queue (the "initial taskId") as a query argument, `?taskId=<taskId>`.
+The worker appends the `taskId` of the task it has received from the queue (the "initial taskId") as a query argument, `?taskId=<taskId>`.
 The service is free to interpret the URL path in any way.
 
-The supserseder returns a list of `taskid`s, including the initial `taskid`, in the `supersedes` property of the response body.
+The supserseder returns a list of `taskId`s, including the initial `taskId`, in the `supersedes` property of the response body.
 The list is sorted such that each task supersedes all tasks appearing earlier in the list.
 The worker will attempt to claim each task, and execute the highest-indexed task for which `claimTask` succeeds -- this task becomes the primary task.
 
-Continuing the example, given an initial `taskid` of `E5SBRfo-RfOIxh0V4187Qg`, the foo-coalescer service might respond with
+Continuing the example, given an initial `taskId` of `E5SBRfo-RfOIxh0V4187Qg`, the foo-coalescer service might respond with
 
 ```js
 {
