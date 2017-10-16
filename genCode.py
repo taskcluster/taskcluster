@@ -81,7 +81,7 @@ def createStaticClient(name, api, genAsync=False):
     for opt in copiedOptions:
         if api.get(opt):
             lines.append('        "%s": "%s"' % (opt, api[opt]))
-    
+
     lines.extend(['    }', ''])
 
     # We need to build up some information about how the functions work
@@ -115,7 +115,7 @@ def createStaticClient(name, api, genAsync=False):
                 if entry.get('input'):
                     ds = '%s\n\nThis method takes input: ``%s``' % (ds, entry['input'])
                 if entry.get('output'):
-                    ds = '%s\n\nThis method takes output: ``%s``' % (ds, entry['output'])
+                    ds = '%s\n\nThis method gives output: ``%s``' % (ds, entry['output'])
                 if entry.get('stability'):
                     ds = '%s\n\nThis method is ``%s``' % (ds, entry['stability'])
 
@@ -165,19 +165,32 @@ def createStaticClient(name, api, genAsync=False):
                 for key in entry['routingKey']:
                     ds += '\n\n * %s: %s%s' % (key.get('name'), key.get('summary', ''), ' (required)' if key['required'] else '')
 
-                lines.append(cleanDocstring(ds, indent=4))
-
-            lines.extend([
-                '    def %s(self, *args, **kwargs):' % entry['name'],
-                '        return self._makeTopicExchange(%s, *args, **kwargs)' % repr(exRef),
-                ''
-            ])
-
+            lines.append('    def %s(self, *args, **kwargs):' % entry['name'])
+            lines.append(cleanDocstring(ds, indent=8))
+            lines.append('        ref = {')
+            for refK, refV in sorted(six.iteritems(exRef)):
+                if refK == 'routingKey':
+                    lines.append('            \'routingKey\': [')
+                    for routingKey in refV:
+                        lines.append('                {')
+                        for routingK, routingV in sorted(six.iteritems(routingKey)):
+                            if routingK in ('name', 'constant', 'multipleWords'): 
+                                lines.append('                    \'%s\': %s,' % (routingK, pprint.pformat(routingV)))
+                        lines.append('                },')
+                    lines.append('            ],')
+                else:
+                    lines.append('            \'%s\': %s,' % (refK, pprint.pformat(refV)))
+            lines.append('        }')
+            lines.append('        return self._makeTopicExchange(ref, *args, **kwargs)')
+            lines.append('')
 
     lines.append('    funcinfo = {')
-    items = functionInfo.iteritems() if six.PY2 else functionInfo.items()
-    for funcname, ref in sorted(items):
-        lines.append('        "%s": %s,' % (funcname, pprint.pformat(ref, indent=12)))
+
+    for funcname, ref in sorted(six.iteritems(functionInfo)):
+        lines.append('        "%s": {' % funcname)
+        for keyname, keyvalue in sorted(six.iteritems(ref)):
+            lines.append('            \'%s\': %s,' % (keyname, pprint.pformat(keyvalue)))
+        lines.append('        },')
     lines.append('    }')
 
     lines.extend([
@@ -192,7 +205,7 @@ def createStaticClient(name, api, genAsync=False):
             name
         ]),
         '',
-    ]) 
+    ])
 
     # Join the lines, then re-split them because some embedded new lines need
     # to be addressed
@@ -204,7 +217,7 @@ def createStaticClient(name, api, genAsync=False):
 
     # Build the final string
     return '\n'.join(lines)
-    
+
 
 # List of files which we've created for the build and release system's
 # consumption

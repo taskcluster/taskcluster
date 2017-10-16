@@ -60,17 +60,8 @@ class AsyncBaseClient(BaseClient):
         """ This function is used to dispatch calls to other functions
         for a given API Reference entry"""
 
-        payload = None
-        _args = list(args)
-        _kwargs = copy.deepcopy(kwargs)
-
-        if 'input' in entry:
-            if len(args) > 0:
-                payload = _args.pop()
-            else:
-                raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
-        apiArgs = self._processArgs(entry, *_args, **_kwargs)
-        route = self._subArgsInRoute(entry, apiArgs)
+        routeParams, payload, query = self._processArgs(entry, *args, **kwargs)
+        route = self._subArgsInRoute(entry, routeParams)
         log.debug('Route is: %s', route)
 
         return await self._makeHttpRequest(entry['method'], route, payload)

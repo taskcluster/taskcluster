@@ -13,6 +13,7 @@ import calendar
 import requests
 import time
 import six
+import warnings
 from six.moves import urllib
 
 import mohawk
@@ -163,8 +164,10 @@ class BaseClient(object):
         if not entry:
             raise exceptions.TaskclusterFailure(
                 'Requested method "%s" not found in API Reference' % methodName)
-        apiArgs = self._processArgs(entry, *args, **kwargs)
-        route = self._subArgsInRoute(entry, apiArgs)
+        routeParams, _, query = self._processArgs(entry, *args, **kwargs)
+        route = self._subArgsInRoute(entry, routeParams)
+        if query:
+            route += '?' + urllib.parse.urlencode(query)
         return self.options['baseUrl'] + '/' + route
 
     def buildSignedUrl(self, methodName, *args, **kwargs):
@@ -219,12 +222,18 @@ class BaseClient(object):
             raise exceptions.TaskclusterFailure('Did not receive a bewit')
 
         u = urllib.parse.urlparse(requestUrl)
+
+        qs = u.query
+        if qs:
+            qs += '&'
+        qs += 'bewit=%s' % bewit
+
         return urllib.parse.urlunparse((
             u.scheme,
             u.netloc,
             u.path,
             u.params,
-            u.query + 'bewit=%s' % bewit,
+            qs,
             u.fragment,
         ))
 
@@ -232,49 +241,106 @@ class BaseClient(object):
         """ This function is used to dispatch calls to other functions
         for a given API Reference entry"""
 
-        payload = None
-        _args = list(args)
-        _kwargs = copy.deepcopy(kwargs)
-
-        if 'input' in entry:
-            if len(args) > 0:
-                payload = _args.pop()
-            else:
-                raise exceptions.TaskclusterFailure('Payload is required as last positional arg')
-        apiArgs = self._processArgs(entry, *_args, **_kwargs)
-        route = self._subArgsInRoute(entry, apiArgs)
+        routeParams, payload, query = self._processArgs(entry, *args, **kwargs)
+        route = self._subArgsInRoute(entry, routeParams)
+        if query:
+            route += '?' + urllib.parse.urlencode(query)
         log.debug('Route is: %s', route)
 
         return self._makeHttpRequest(entry['method'], route, payload)
 
-    def _processArgs(self, entry, *args, **kwargs):
-        """ Take the list of required arguments, positional arguments
-        and keyword arguments and return a dictionary which maps the
-        value of the given arguments to the required parameters.
-
-        Keyword arguments will overwrite positional arguments.
+    def _processArgs(self, entry, *_args, **_kwargs):
+        """ Figure out, given an entry, positional and keyword arguments, what
+        the query-string options, payload and api arguments are.
         """
 
+        # We need the args to be a list so we can mutate them
+        args = list(_args)
+        kwargs = copy.deepcopy(_kwargs)
+        log.debug(args)
+        log.debug(kwargs)
+
         reqArgs = entry['args']
-        data = {}
+        routeParams = {}
+
+        query = {}
+        payload = None
+        kwApiArgs = {}
+
+        # There are three formats for calling methods:
+        #   1. method(v1, v1, payload)
+        #   2. method(payload, k1=v1, k2=v2)
+        #   3. method(payload=payload, query=query, params={k1: v1, k2: v2})
+        if len(kwargs) == 0:
+            if 'input' in entry and len(args) == len(reqArgs) + 1:
+                payload = args.pop()
+            if len(args) != len(reqArgs):
+                log.debug(args)
+                log.debug(reqArgs)
+                raise exceptions.TaskclusterFailure('Incorrect number of positional arguments')
+            log.debug('Using method(v1, v2, payload) calling convention')
+        else:
+            # We're considering kwargs which are the api route parameters to be
+            # called 'flat' because they're top level keys.  We're special
+            # casing calls which have only api-arg kwargs and possibly a payload
+            # value and handling them directly.
+            isFlatKwargs = True
+            if len(kwargs) == len(reqArgs):
+                for arg in reqArgs:
+                    if not kwargs.get(arg, False):
+                        isFlatKwargs = False
+                        break
+                if 'input' in entry and len(args) != 1:
+                    isFlatKwargs = False
+                if not 'input' in entry and len(args) != 0:
+                    isFlatKwargs = False
+                else:
+                    pass # We're using payload=, query= and param=
+            else:
+                isFlatKwargs = False
+
+            # Now we're going to handle the two types of kwargs.  The first is
+            # 'flat' ones, which are where the api params
+            if isFlatKwargs:
+                if 'input' in entry:
+                    payload = args.pop()
+                kwApiArgs = kwargs
+                log.debug('Using method(payload, k1=v1, k2=v2) calling convention')
+                warnings.warn(
+                    "The method(payload, k1=v1, k2=v2) calling convention will soon be deprecated",
+                    PendingDeprecationWarning
+                )
+            else:
+                kwApiArgs = kwargs.get('params', {})
+                payload = kwargs.get('payload', None)
+                query = kwargs.get('query', {})
+                log.debug('Using method(payload=payload, query=query, params={k1: v1, k2: v2}) calling convention')
+
+        if 'input' in entry and type(payload) == type(None):
+            raise exceptions.TaskclusterFailure('Payload is required')
 
         # These all need to be rendered down to a string, let's just check that
         # they are up front and fail fast
-        for arg in list(args) + [kwargs[x] for x in kwargs]:
+        for arg in args:
             if not isinstance(arg, six.string_types) and not isinstance(arg, int):
                 raise exceptions.TaskclusterFailure(
-                    'Arguments "%s" to %s is not a string or int' % (arg, entry['name']))
+                    'Positional arg "%s" to %s is not a string or int' % (arg, entry['name']))
 
-        if len(args) > 0 and len(kwargs) > 0:
+        for name, arg in six.iteritems(kwApiArgs):
+            if not isinstance(arg, six.string_types) and not isinstance(arg, int):
+                raise exceptions.TaskclusterFailure(
+                    'KW arg "%s: %s" to %s is not a string or int' % (name, arg, entry['name']))
+
+        if len(args) > 0 and len(kwApiArgs) > 0:
             raise exceptions.TaskclusterFailure('Specify either positional or key word arguments')
 
         # We know for sure that if we don't give enough arguments that the call
         # should fail.  We don't yet know if we should fail because of two many
         # arguments because we might be overwriting positional ones with kw ones
-        if len(reqArgs) > len(args) + len(kwargs):
+        if len(reqArgs) > len(args) + len(kwApiArgs):
             raise exceptions.TaskclusterFailure(
                 '%s takes %d args, only %d were given' % (
-                    entry['name'], len(reqArgs), len(args) + len(kwargs)))
+                    entry['name'], len(reqArgs), len(args) + len(kwApiArgs)))
 
         # We also need to error out when we have more positional args than required
         # because we'll need to go through the lists of provided and required args
@@ -287,31 +353,31 @@ class BaseClient(object):
         i = 0
         for arg in args:
             log.debug('Found a positional argument: %s', arg)
-            data[reqArgs[i]] = arg
+            routeParams[reqArgs[i]] = arg
             i += 1
 
-        log.debug('After processing positional arguments, we have: %s', data)
+        log.debug('After processing positional arguments, we have: %s', routeParams)
 
-        data.update(kwargs)
+        routeParams.update(kwApiArgs)
 
-        log.debug('After keyword arguments, we have: %s', data)
+        log.debug('After keyword arguments, we have: %s', routeParams)
 
-        if len(reqArgs) != len(data):
+        if len(reqArgs) != len(routeParams):
             errMsg = '%s takes %s args, %s given' % (
                 entry['name'],
                 ','.join(reqArgs),
-                data.keys())
+                routeParams.keys())
             log.error(errMsg)
             raise exceptions.TaskclusterFailure(errMsg)
 
         for reqArg in reqArgs:
-            if reqArg not in data:
+            if reqArg not in routeParams:
                 errMsg = '%s requires a "%s" argument which was not provided' % (
                     entry['name'], reqArg)
                 log.error(errMsg)
                 raise exceptions.TaskclusterFailure(errMsg)
 
-        return data
+        return routeParams, payload, query
 
     def _subArgsInRoute(self, entry, args):
         """ Given a route like "/task/<taskId>/artifacts" and a mapping like

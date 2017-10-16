@@ -96,30 +96,35 @@ class TestSubArgsInRoute(ClientTest):
 class TestProcessArgs(ClientTest):
 
     def test_no_args(self):
-        self.assertEqual({}, self.client._processArgs({'args': [], 'name': 'test'}))
+        self.assertEqual(({}, None, {}), self.client._processArgs({'args': [], 'name': 'test'}))
+
+    def test_finds_payload(self):
+        expected = ({}, {'a': 123}, {})
+        actual = self.client._processArgs({'args': [], 'name': 'test', 'input': True}, {'a': 123})
+        self.assertEqual(expected, actual)
 
     def test_positional_args_only(self):
         expected = {'test': 'works', 'test2': 'still works'}
         entry = {'args': ['test', 'test2'], 'name': 'test'}
         actual = self.client._processArgs(entry, 'works', 'still works')
-        self.assertEqual(expected, actual)
+        self.assertEqual((expected, None, {}), actual)
 
     def test_keyword_args_only(self):
         expected = {'test': 'works', 'test2': 'still works'}
         entry = {'args': ['test', 'test2'], 'name': 'test'}
         actual = self.client._processArgs(entry, test2='still works', test='works')
-        self.assertEqual(expected, actual)
+        self.assertEqual((expected, None, {}), actual)
 
     def test_int_args(self):
         expected = {'test': 'works', 'test2': 42}
         entry = {'args': ['test', 'test2'], 'name': 'test'}
         actual = self.client._processArgs(entry, 'works', 42)
-        self.assertEqual(expected, actual)
+        self.assertEqual((expected, None, {}), actual)
 
     def test_keyword_and_positional(self):
         entry = {'args': ['test'], 'name': 'test'}
         with self.assertRaises(exc.TaskclusterFailure):
-            self.client._processArgs(entry, 'broken', test='works')
+            self.client._processArgs(entry, ['broken'], test='works')
 
     def test_invalid_not_enough_args(self):
         with self.assertRaises(exc.TaskclusterFailure):
@@ -155,6 +160,65 @@ class TestProcessArgs(ClientTest):
         with self.assertRaises(exc.TaskclusterFailure):
             self.client._processArgs({'args': ['test'], 'name': 'test'}, {'john': 'ford'})
 
+    def test_calling_convention_1_without_payload(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2)
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, None)
+        self.assertEqual(query, {})
+
+    def test_calling_convention_1_with_payload(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test', 'input': True}, 1, 2, {'A': 123})
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, {'A': 123})
+        self.assertEqual(query, {})
+
+    def test_calling_convention_2_without_payload(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, k1=1, k2=2)
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, None)
+        self.assertEqual(query, {})
+
+    def test_calling_convention_2_with_payload(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test', 'input': True}, {'A': 123}, k1=1, k2=2)
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, {'A': 123})
+        self.assertEqual(query, {})
+
+    def test_calling_convention_3_without_payload_without_query(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2})
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, None)
+        self.assertEqual(query, {})
+
+    def test_calling_convention_3_with_payload_without_query(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, payload={'A': 123})
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, {'A': 123})
+        self.assertEqual(query, {})
+
+    def test_calling_convention_3_with_payload_with_query(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, payload={'A': 123}, query={'B': 456})
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, {'A': 123})
+        self.assertEqual(query, {'B': 456})
+
+    def test_calling_convention_3_without_payload_with_query(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, query={'B': 456})
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, None)
+        self.assertEqual(query, {'B': 456})
+
+
+    def test_calling_convention_3_with_positional_arguments_with_payload_with_query(self):
+        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, query={'B': 456}, payload={'A': 123})
+        self.assertEqual(params, {'k1': 1, 'k2': 2})
+        self.assertEqual(payload, {'A': 123})
+        self.assertEqual(query, {'B': 456})
+
+
+    def test_calling_convention_3_with_positional_arguments_which_are_same_as_param_kwarg_dict_values_with_payload_with_query(self):
+        with self.assertRaises(exc.TaskclusterFailure):
+            params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, params={'k1': 1, 'k2': 2}, query={'B': 456}, payload={'A': 123})
 
 # This could probably be done better with Mock
 class ObjWithDotJson(object):
@@ -454,6 +518,19 @@ class TestBuildUrl(ClientTest):
         expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1'
         actual = self.client.buildUrl('two_args_no_input', arg0='arg0', arg1='arg1')
         self.assertEqual(expected, actual)
+
+    def test_build_url_query_string(self):
+        expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1?qs0=1'
+        actual = self.client.buildUrl(
+            'two_args_no_input',
+            params={
+                'arg0': 'arg0',
+                'arg1': 'arg1'
+            },
+            query={'qs0': 1}
+        )
+        self.assertEqual(expected, actual)
+
 
     def test_fails_to_build_url_for_missing_method(self):
         with self.assertRaises(exc.TaskclusterFailure):
