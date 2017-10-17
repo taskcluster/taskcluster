@@ -60,7 +60,7 @@ class AsyncBaseClient(BaseClient):
         """ This function is used to dispatch calls to other functions
         for a given API Reference entry"""
 
-        routeParams, payload, query = self._processArgs(entry, *args, **kwargs)
+        routeParams, payload, query, _, _ = self._processArgs(entry, *args, **kwargs)
         route = self._subArgsInRoute(entry, routeParams)
         log.debug('Route is: %s', route)
 

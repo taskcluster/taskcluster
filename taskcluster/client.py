@@ -164,7 +164,7 @@ class BaseClient(object):
         if not entry:
             raise exceptions.TaskclusterFailure(
                 'Requested method "%s" not found in API Reference' % methodName)
-        routeParams, _, query = self._processArgs(entry, *args, **kwargs)
+        routeParams, _, query, _, _ = self._processArgs(entry, *args, **kwargs)
         route = self._subArgsInRoute(entry, routeParams)
         if query:
             route += '?' + urllib.parse.urlencode(query)
@@ -241,13 +241,29 @@ class BaseClient(object):
         """ This function is used to dispatch calls to other functions
         for a given API Reference entry"""
 
-        routeParams, payload, query = self._processArgs(entry, *args, **kwargs)
+        x = self._processArgs(entry, *args, **kwargs)
+        routeParams, payload, query, paginationHandler, paginationLimit = x
         route = self._subArgsInRoute(entry, routeParams)
-        if query:
-            route += '?' + urllib.parse.urlencode(query)
-        log.debug('Route is: %s', route)
 
-        return self._makeHttpRequest(entry['method'], route, payload)
+        # TODO: Check for limit being in the Query of the api ref
+        if paginationLimit and 'limit' in entry.get('query', []):
+            query['limit'] = paginationLimit
+
+        if query:
+            _route = route + '?' + urllib.parse.urlencode(query)
+        else:
+            _route = route
+        response = self._makeHttpRequest(entry['method'], _route, payload)
+
+        if paginationHandler:
+            paginationHandler(response)
+            while response.get('continuationToken'):
+                query['continuationToken'] = response['continuationToken']
+                _route = route + '?' + urllib.parse.urlencode(query)
+                response = self._makeHttpRequest(entry['method'], _route, payload)
+                paginationHandler(response)
+        else:
+            return response
 
     def _processArgs(self, entry, *_args, **_kwargs):
         """ Figure out, given an entry, positional and keyword arguments, what
@@ -266,6 +282,9 @@ class BaseClient(object):
         query = {}
         payload = None
         kwApiArgs = {}
+
+        paginationHandler = None
+        paginationLimit = None
 
         # There are three formats for calling methods:
         #   1. method(v1, v1, payload)
@@ -314,6 +333,8 @@ class BaseClient(object):
                 kwApiArgs = kwargs.get('params', {})
                 payload = kwargs.get('payload', None)
                 query = kwargs.get('query', {})
+                paginationHandler = kwargs.get('paginationHandler', None)
+                paginationLimit = kwargs.get('paginationLimit', None)
                 log.debug('Using method(payload=payload, query=query, params={k1: v1, k2: v2}) calling convention')
 
         if 'input' in entry and type(payload) == type(None):
@@ -377,7 +398,7 @@ class BaseClient(object):
                 log.error(errMsg)
                 raise exceptions.TaskclusterFailure(errMsg)
 
-        return routeParams, payload, query
+        return routeParams, payload, query, paginationHandler, paginationLimit
 
     def _subArgsInRoute(self, entry, args):
         """ Given a route like "/task/<taskId>/artifacts" and a mapping like

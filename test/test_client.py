@@ -96,10 +96,10 @@ class TestSubArgsInRoute(ClientTest):
 class TestProcessArgs(ClientTest):
 
     def test_no_args(self):
-        self.assertEqual(({}, None, {}), self.client._processArgs({'args': [], 'name': 'test'}))
+        self.assertEqual(({}, None, {}, None, None), self.client._processArgs({'args': [], 'name': 'test'}))
 
     def test_finds_payload(self):
-        expected = ({}, {'a': 123}, {})
+        expected = ({}, {'a': 123}, {}, None, None)
         actual = self.client._processArgs({'args': [], 'name': 'test', 'input': True}, {'a': 123})
         self.assertEqual(expected, actual)
 
@@ -107,19 +107,19 @@ class TestProcessArgs(ClientTest):
         expected = {'test': 'works', 'test2': 'still works'}
         entry = {'args': ['test', 'test2'], 'name': 'test'}
         actual = self.client._processArgs(entry, 'works', 'still works')
-        self.assertEqual((expected, None, {}), actual)
+        self.assertEqual((expected, None, {}, None, None), actual)
 
     def test_keyword_args_only(self):
         expected = {'test': 'works', 'test2': 'still works'}
         entry = {'args': ['test', 'test2'], 'name': 'test'}
         actual = self.client._processArgs(entry, test2='still works', test='works')
-        self.assertEqual((expected, None, {}), actual)
+        self.assertEqual((expected, None, {}, None, None), actual)
 
     def test_int_args(self):
         expected = {'test': 'works', 'test2': 42}
         entry = {'args': ['test', 'test2'], 'name': 'test'}
         actual = self.client._processArgs(entry, 'works', 42)
-        self.assertEqual((expected, None, {}), actual)
+        self.assertEqual((expected, None, {}, None, None), actual)
 
     def test_keyword_and_positional(self):
         entry = {'args': ['test'], 'name': 'test'}
@@ -161,64 +161,72 @@ class TestProcessArgs(ClientTest):
             self.client._processArgs({'args': ['test'], 'name': 'test'}, {'john': 'ford'})
 
     def test_calling_convention_1_without_payload(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2)
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2)
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, None)
         self.assertEqual(query, {})
 
     def test_calling_convention_1_with_payload(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test', 'input': True}, 1, 2, {'A': 123})
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test', 'input': True}, 1, 2, {'A': 123})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
         self.assertEqual(query, {})
 
     def test_calling_convention_2_without_payload(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, k1=1, k2=2)
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, k1=1, k2=2)
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, None)
         self.assertEqual(query, {})
 
     def test_calling_convention_2_with_payload(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test', 'input': True}, {'A': 123}, k1=1, k2=2)
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test', 'input': True}, {'A': 123}, k1=1, k2=2)
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
         self.assertEqual(query, {})
 
     def test_calling_convention_3_without_payload_without_query(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2})
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, None)
         self.assertEqual(query, {})
 
     def test_calling_convention_3_with_payload_without_query(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, payload={'A': 123})
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, payload={'A': 123})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
         self.assertEqual(query, {})
 
     def test_calling_convention_3_with_payload_with_query(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, payload={'A': 123}, query={'B': 456})
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, payload={'A': 123}, query={'B': 456})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
         self.assertEqual(query, {'B': 456})
 
     def test_calling_convention_3_without_payload_with_query(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, query={'B': 456})
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, params={'k1': 1, 'k2': 2}, query={'B': 456})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, None)
         self.assertEqual(query, {'B': 456})
 
 
     def test_calling_convention_3_with_positional_arguments_with_payload_with_query(self):
-        params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, query={'B': 456}, payload={'A': 123})
+        params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, query={'B': 456}, payload={'A': 123})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
         self.assertEqual(query, {'B': 456})
 
+    def test_calling_convention_3_with_pagination(self):
+        a = lambda x: x
+        _, _, _, ph, _ = self.client._processArgs({
+            'args': ['k1', 'k2'],
+            'name': 'test',
+            'query': ['continuationToken', 'limit'],
+        }, 1, 2, paginationHandler=a)
+        self.assertIs(ph, a)
 
     def test_calling_convention_3_with_positional_arguments_which_are_same_as_param_kwarg_dict_values_with_payload_with_query(self):
         with self.assertRaises(exc.TaskclusterFailure):
-            params, payload, query = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, params={'k1': 1, 'k2': 2}, query={'B': 456}, payload={'A': 123})
+            params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, params={'k1': 1, 'k2': 2}, query={'B': 456}, payload={'A': 123})
 
 # This could probably be done better with Mock
 class ObjWithDotJson(object):
