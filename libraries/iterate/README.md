@@ -32,6 +32,7 @@ i = new Iterate({
   },
 });
 
+// starting the iterator will invoke the handler immediately
 i.start();
 
 i.on(`stopped`, () => {
