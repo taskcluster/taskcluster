@@ -266,15 +266,13 @@ class BaseClient(object):
             return response
 
     def _processArgs(self, entry, *_args, **_kwargs):
-        """ Figure out, given an entry, positional and keyword arguments, what
+        """ Given an entry, positional and keyword arguments, figure out what
         the query-string options, payload and api arguments are.
         """
 
         # We need the args to be a list so we can mutate them
         args = list(_args)
         kwargs = copy.deepcopy(_kwargs)
-        log.debug(args)
-        log.debug(kwargs)
 
         reqArgs = entry['args']
         routeParams = {}
