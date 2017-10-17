@@ -10,7 +10,7 @@ import (
 func main() {
 	source, err := apis.GenerateServices("http://references.taskcluster.net/manifest.json", "services", "schemas")
 	if err != nil {
-		log.Fatalln("error: go fmt, code generation failed: ", err)
+		log.Fatalln("error: code generation failed: ", err)
 	}
 
 	if err := ioutil.WriteFile("services.go", source, 0664); err != nil {

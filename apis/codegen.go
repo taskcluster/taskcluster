@@ -14,6 +14,8 @@ import (
 	"github.com/taskcluster/taskcluster-cli/apis/definitions"
 )
 
+// GenerateServices returns a generated go file containing the definition of
+// all taskcluster services and endpoints listed in the given manifest.
 func GenerateServices(manifestURL, servicesVar, schemasVar string) ([]byte, error) {
 	// synchronization objects
 	mutex := &sync.Mutex{}

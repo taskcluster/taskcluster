@@ -1,3 +1,5 @@
+// Package definitions implements the definition of the Service and Entry structs.
+
 package definitions
 
 // Service definition.

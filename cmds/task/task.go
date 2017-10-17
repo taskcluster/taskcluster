@@ -1,3 +1,4 @@
+// Package task  implements the task subcommands.
 package task
 
 import (

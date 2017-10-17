@@ -1,3 +1,4 @@
+// Package root defines the root of the application command tree.
 package root
 
 import "github.com/spf13/cobra"

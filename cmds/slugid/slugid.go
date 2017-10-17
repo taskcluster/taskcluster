@@ -1,3 +1,4 @@
+// Package slugid implements the slugid subcommands.
 package slugid
 
 import (

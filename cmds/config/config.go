@@ -1,3 +1,4 @@
+// Package configCmd implements the config subcommands.
 package configCmd
 
 import (
@@ -16,9 +17,9 @@ var (
 	// Command holds the `taskcluster config` command definition
 	// we attach `taskcluster config [...]` subcommands on it
 	Command = &cobra.Command{
-		Use: "config",
+		Use:   "config",
 		Short: "Get/set taskcluster CLI configuration options.",
-		RunE: cmdConfig,
+		RunE:  cmdConfig,
 	}
 )
 
