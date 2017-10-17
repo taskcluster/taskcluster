@@ -40,7 +40,7 @@ class Hooks(BaseClient):
 
         This endpoint will return a list of all hook groups with at least one hook.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json``
 
         This method is ``experimental``
         """
@@ -54,7 +54,7 @@ class Hooks(BaseClient):
         This endpoint will return a list of all the hook definitions within a
         given hook group.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json``
 
         This method is ``experimental``
         """
@@ -68,7 +68,7 @@ class Hooks(BaseClient):
         This endpoint will return the hook definition for the given `hookGroupId`
         and hookId.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
 
         This method is ``experimental``
         """
@@ -82,7 +82,7 @@ class Hooks(BaseClient):
         This endpoint will return the current status of the hook.  This represents a
         snapshot in time and may vary from one call to the next.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/hook-status.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-status.json``
 
         This method is ``experimental``
         """
@@ -96,7 +96,7 @@ class Hooks(BaseClient):
         This endpoint will return the schedule and next scheduled creation time
         for the given hook.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/hook-schedule.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-schedule.json``
 
         This method is ``deprecated``
         """
@@ -116,7 +116,7 @@ class Hooks(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/hooks/v1/create-hook-request.json``
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
 
         This method is ``experimental``
         """
@@ -132,7 +132,7 @@ class Hooks(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/hooks/v1/create-hook-request.json``
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
 
         This method is ``experimental``
         """
@@ -158,7 +158,7 @@ class Hooks(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-payload.json``
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
 
         This method is ``experimental``
         """
@@ -172,7 +172,7 @@ class Hooks(BaseClient):
         Retrieve a unique secret token for triggering the specified hook. This
         token can be deactivated with `resetTriggerToken`.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json``
 
         This method is ``experimental``
         """
@@ -186,7 +186,7 @@ class Hooks(BaseClient):
         Reset the token for triggering a given hook. This invalidates token that
         may have been issued via getTriggerToken with a new token.
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json``
 
         This method is ``experimental``
         """
@@ -201,7 +201,7 @@ class Hooks(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-payload.json``
 
-        This method takes output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
+        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
 
         This method is ``experimental``
         """
@@ -221,86 +221,112 @@ class Hooks(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "createHook": {           'args': ['hookGroupId', 'hookId'],
+        "createHook": {
+            'args': ['hookGroupId', 'hookId'],
             'input': 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json',
             'method': 'put',
             'name': 'createHook',
             'output': 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json',
             'route': '/hooks/<hookGroupId>/<hookId>',
-            'stability': 'experimental'},
-        "getHookSchedule": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'experimental',
+        },
+        "getHookSchedule": {
+            'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getHookSchedule',
             'output': 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json',
             'route': '/hooks/<hookGroupId>/<hookId>/schedule',
-            'stability': 'deprecated'},
-        "getHookStatus": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'deprecated',
+        },
+        "getHookStatus": {
+            'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getHookStatus',
             'output': 'http://schemas.taskcluster.net/hooks/v1/hook-status.json',
             'route': '/hooks/<hookGroupId>/<hookId>/status',
-            'stability': 'experimental'},
-        "getTriggerToken": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'experimental',
+        },
+        "getTriggerToken": {
+            'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getTriggerToken',
             'output': 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
-            'stability': 'experimental'},
-        "hook": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'experimental',
+        },
+        "hook": {
+            'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'hook',
             'output': 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json',
             'route': '/hooks/<hookGroupId>/<hookId>',
-            'stability': 'experimental'},
-        "listHookGroups": {           'args': [],
+            'stability': 'experimental',
+        },
+        "listHookGroups": {
+            'args': [],
             'method': 'get',
             'name': 'listHookGroups',
             'output': 'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json',
             'route': '/hooks',
-            'stability': 'experimental'},
-        "listHooks": {           'args': ['hookGroupId'],
+            'stability': 'experimental',
+        },
+        "listHooks": {
+            'args': ['hookGroupId'],
             'method': 'get',
             'name': 'listHooks',
             'output': 'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json',
             'route': '/hooks/<hookGroupId>',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
+            'stability': 'experimental',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
-        "removeHook": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'stable',
+        },
+        "removeHook": {
+            'args': ['hookGroupId', 'hookId'],
             'method': 'delete',
             'name': 'removeHook',
             'route': '/hooks/<hookGroupId>/<hookId>',
-            'stability': 'experimental'},
-        "resetTriggerToken": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'experimental',
+        },
+        "resetTriggerToken": {
+            'args': ['hookGroupId', 'hookId'],
             'method': 'post',
             'name': 'resetTriggerToken',
             'output': 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
-            'stability': 'experimental'},
-        "triggerHook": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'experimental',
+        },
+        "triggerHook": {
+            'args': ['hookGroupId', 'hookId'],
             'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json',
             'method': 'post',
             'name': 'triggerHook',
             'output': 'http://schemas.taskcluster.net/hooks/v1/task-status.json',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger',
-            'stability': 'experimental'},
-        "triggerHookWithToken": {           'args': ['hookGroupId', 'hookId', 'token'],
+            'stability': 'experimental',
+        },
+        "triggerHookWithToken": {
+            'args': ['hookGroupId', 'hookId', 'token'],
             'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json',
             'method': 'post',
             'name': 'triggerHookWithToken',
             'output': 'http://schemas.taskcluster.net/hooks/v1/task-status.json',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger/<token>',
-            'stability': 'experimental'},
-        "updateHook": {           'args': ['hookGroupId', 'hookId'],
+            'stability': 'experimental',
+        },
+        "updateHook": {
+            'args': ['hookGroupId', 'hookId'],
             'input': 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json',
             'method': 'post',
             'name': 'updateHook',
             'output': 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json',
             'route': '/hooks/<hookGroupId>/<hookId>',
-            'stability': 'experimental'},
+            'stability': 'experimental',
+        },
     }
 
 

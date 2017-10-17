@@ -25,24 +25,44 @@ class PurgeCacheEvents(AsyncBaseClient):
         "exchangePrefix": "exchange/taskcluster-purge-cache/v1/"
     }
 
-    """
-    Purge Cache Messages
-
-    When a cache purge is requested  a message will be posted on this
-    exchange with designated `provisionerId` and `workerType` in the
-    routing-key and the name of the `cacheFolder` as payload
-
-    This exchange outputs: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#``This exchange takes the following keys:
-
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
-
-     * provisionerId: `provisionerId` under which to purge cache. (required)
-
-     * workerType: `workerType` for which to purge cache. (required)
-    """
-
     def purgeCache(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'purge-cache', 'name': 'purgeCache', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` under which to purge cache.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` for which to purge cache.'}], 'schema': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#'}, *args, **kwargs)
+        """
+        Purge Cache Messages
+
+        When a cache purge is requested  a message will be posted on this
+        exchange with designated `provisionerId` and `workerType` in the
+        routing-key and the name of the `cacheFolder` as payload
+
+        This exchange outputs: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#``This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+
+         * provisionerId: `provisionerId` under which to purge cache. (required)
+
+         * workerType: `workerType` for which to purge cache. (required)
+        """
+
+        ref = {
+            'exchange': 'purge-cache',
+            'name': 'purgeCache',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     funcinfo = {
     }

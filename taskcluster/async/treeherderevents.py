@@ -26,23 +26,42 @@ class TreeherderEvents(AsyncBaseClient):
         "exchangePrefix": "exchange/taskcluster-treeherder/v1/"
     }
 
-    """
-    Job Messages
-
-    When a task run is scheduled or resolved, a message is posted to
-    this exchange in a Treeherder consumable format.
-
-    This exchange outputs: ``http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#``This exchange takes the following keys:
-
-     * destination: destination (required)
-
-     * project: project (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
-
     def jobs(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'jobs', 'name': 'jobs', 'routingKey': [{'multipleWords': False, 'name': 'destination', 'required': True, 'summary': 'destination'}, {'multipleWords': False, 'name': 'project', 'required': True, 'summary': 'project'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#'}, *args, **kwargs)
+        """
+        Job Messages
+
+        When a task run is scheduled or resolved, a message is posted to
+        this exchange in a Treeherder consumable format.
+
+        This exchange outputs: ``http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#``This exchange takes the following keys:
+
+         * destination: destination (required)
+
+         * project: project (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'jobs',
+            'name': 'jobs',
+            'routingKey': [
+                {
+                    'multipleWords': False,
+                    'name': 'destination',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'project',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     funcinfo = {
     }

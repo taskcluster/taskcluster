@@ -47,7 +47,7 @@ class Login(BaseClient):
         monitor this expiration and refresh the credentials if necessary, by calling
         this endpoint again, if they have expired.
 
-        This method takes output: ``http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json``
 
         This method is ``experimental``
         """
@@ -67,17 +67,21 @@ class Login(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "oidcCredentials": {           'args': ['provider'],
+        "oidcCredentials": {
+            'args': ['provider'],
             'method': 'get',
             'name': 'oidcCredentials',
             'output': 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json',
             'route': '/oidc-credentials/<provider>',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
+            'stability': 'experimental',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
+            'stability': 'stable',
+        },
     }
 
 

@@ -56,7 +56,7 @@ class AwsProvisioner(AsyncBaseClient):
         there may be running EC2 instances for deleted worker types that are not
         included here.  The list is unordered.
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#``
 
         This method is ``stable``
         """
@@ -93,7 +93,7 @@ class AwsProvisioner(AsyncBaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#``
 
         This method is ``stable``
         """
@@ -118,7 +118,7 @@ class AwsProvisioner(AsyncBaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#``
 
         This method is ``stable``
         """
@@ -135,7 +135,7 @@ class AwsProvisioner(AsyncBaseClient):
         If the worker type definition has not been changed, the date
         should be identical as it is the same stored value.
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#``
 
         This method is ``stable``
         """
@@ -152,7 +152,7 @@ class AwsProvisioner(AsyncBaseClient):
         use the results of this method to submit date to the update
         method.
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#``
 
         This method is ``stable``
         """
@@ -188,7 +188,7 @@ class AwsProvisioner(AsyncBaseClient):
         not include worker types which are left overs from a deleted worker
         type definition but are still running in AWS.
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#``
 
         This method is ``stable``
         """
@@ -225,7 +225,7 @@ class AwsProvisioner(AsyncBaseClient):
         or else the secrets will be visible to any process which can access the
         user data associated with the instance.
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#``
 
         This method is ``stable``
         """
@@ -273,7 +273,7 @@ class AwsProvisioner(AsyncBaseClient):
 
         **This API end-point is experimental and may be subject to change without warning.**
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#``
 
         This method is ``experimental``
         """
@@ -306,7 +306,7 @@ class AwsProvisioner(AsyncBaseClient):
 
         **Warning** this api end-point is **not stable**.
 
-        This method takes output: ``http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#``
 
         This method is ``experimental``
         """
@@ -326,93 +326,123 @@ class AwsProvisioner(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "backendStatus": {           'args': [],
+        "backendStatus": {
+            'args': [],
             'method': 'get',
             'name': 'backendStatus',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#',
             'route': '/backend-status',
-            'stability': 'experimental'},
-        "createSecret": {           'args': ['token'],
+            'stability': 'experimental',
+        },
+        "createSecret": {
+            'args': ['token'],
             'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#',
             'method': 'put',
             'name': 'createSecret',
             'route': '/secret/<token>',
-            'stability': 'stable'},
-        "createWorkerType": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "createWorkerType": {
+            'args': ['workerType'],
             'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',
             'method': 'put',
             'name': 'createWorkerType',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#',
             'route': '/worker-type/<workerType>',
-            'stability': 'stable'},
-        "getLaunchSpecs": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "getLaunchSpecs": {
+            'args': ['workerType'],
             'method': 'get',
             'name': 'getLaunchSpecs',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#',
             'route': '/worker-type/<workerType>/launch-specifications',
-            'stability': 'experimental'},
-        "getSecret": {           'args': ['token'],
+            'stability': 'experimental',
+        },
+        "getSecret": {
+            'args': ['token'],
             'method': 'get',
             'name': 'getSecret',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#',
             'route': '/secret/<token>',
-            'stability': 'stable'},
-        "instanceStarted": {           'args': ['instanceId', 'token'],
+            'stability': 'stable',
+        },
+        "instanceStarted": {
+            'args': ['instanceId', 'token'],
             'method': 'get',
             'name': 'instanceStarted',
             'route': '/instance-started/<instanceId>/<token>',
-            'stability': 'stable'},
-        "listWorkerTypeSummaries": {           'args': [],
+            'stability': 'stable',
+        },
+        "listWorkerTypeSummaries": {
+            'args': [],
             'method': 'get',
             'name': 'listWorkerTypeSummaries',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#',
             'route': '/list-worker-type-summaries',
-            'stability': 'stable'},
-        "listWorkerTypes": {           'args': [],
+            'stability': 'stable',
+        },
+        "listWorkerTypes": {
+            'args': [],
             'method': 'get',
             'name': 'listWorkerTypes',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#',
             'route': '/list-worker-types',
-            'stability': 'stable'},
-        "ping": {           'args': [],
+            'stability': 'stable',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
-        "removeSecret": {           'args': ['token'],
+            'stability': 'stable',
+        },
+        "removeSecret": {
+            'args': ['token'],
             'method': 'delete',
             'name': 'removeSecret',
             'route': '/secret/<token>',
-            'stability': 'stable'},
-        "removeWorkerType": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "removeWorkerType": {
+            'args': ['workerType'],
             'method': 'delete',
             'name': 'removeWorkerType',
             'route': '/worker-type/<workerType>',
-            'stability': 'stable'},
-        "state": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "state": {
+            'args': ['workerType'],
             'method': 'get',
             'name': 'state',
             'route': '/state/<workerType>',
-            'stability': 'stable'},
-        "updateWorkerType": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "updateWorkerType": {
+            'args': ['workerType'],
             'input': 'http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#',
             'method': 'post',
             'name': 'updateWorkerType',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#',
             'route': '/worker-type/<workerType>/update',
-            'stability': 'stable'},
-        "workerType": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "workerType": {
+            'args': ['workerType'],
             'method': 'get',
             'name': 'workerType',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#',
             'route': '/worker-type/<workerType>',
-            'stability': 'stable'},
-        "workerTypeLastModified": {           'args': ['workerType'],
+            'stability': 'stable',
+        },
+        "workerTypeLastModified": {
+            'args': ['workerType'],
             'method': 'get',
             'name': 'workerTypeLastModified',
             'output': 'http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#',
             'route': '/worker-type-last-modified/<workerType>',
-            'stability': 'stable'},
+            'stability': 'stable',
+        },
     }
 
 

@@ -20,59 +20,119 @@ class AwsProvisionerEvents(AsyncBaseClient):
         "exchangePrefix": "exchange/taskcluster-aws-provisioner/v1/"
     }
 
-    """
-    WorkerType Created Message
-
-    When a new `workerType` is created a message will be published to this
-    exchange.
-
-    This exchange outputs: ``http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#``This exchange takes the following keys:
-
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
-
-     * workerType: WorkerType that this message concerns. (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
-
     def workerTypeCreated(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'worker-type-created', 'name': 'workerTypeCreated', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': 'WorkerType that this message concerns.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'}, *args, **kwargs)
+        """
+        WorkerType Created Message
 
-    """
-    WorkerType Updated Message
+        When a new `workerType` is created a message will be published to this
+        exchange.
 
-    When a `workerType` is updated a message will be published to this
-    exchange.
+        This exchange outputs: ``http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * workerType: WorkerType that this message concerns. (required)
 
-     * workerType: WorkerType that this message concerns. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'worker-type-created',
+            'name': 'workerTypeCreated',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def workerTypeUpdated(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'worker-type-updated', 'name': 'workerTypeUpdated', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': 'WorkerType that this message concerns.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'}, *args, **kwargs)
+        """
+        WorkerType Updated Message
 
-    """
-    WorkerType Removed Message
+        When a `workerType` is updated a message will be published to this
+        exchange.
 
-    When a `workerType` is removed a message will be published to this
-    exchange.
+        This exchange outputs: ``http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * workerType: WorkerType that this message concerns. (required)
 
-     * workerType: WorkerType that this message concerns. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'worker-type-updated',
+            'name': 'workerTypeUpdated',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def workerTypeRemoved(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'worker-type-removed', 'name': 'workerTypeRemoved', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': 'WorkerType that this message concerns.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#'}, *args, **kwargs)
+        """
+        WorkerType Removed Message
+
+        When a `workerType` is removed a message will be published to this
+        exchange.
+
+        This exchange outputs: ``http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#``This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+
+         * workerType: WorkerType that this message concerns. (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'worker-type-removed',
+            'name': 'workerTypeRemoved',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     funcinfo = {
     }

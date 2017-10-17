@@ -47,10 +47,14 @@ The REST API methods are documented on
 [http://docs.taskcluster.net/](http://docs.taskcluster.net/)
 
 ## Query-String arguments
-Query string arguments are currently unsupported with this client.  The
-documentation below on the various methods might make reference to query string
-parameters, but there is no way at present to specify those options using this
-client.
+Query string arguments are now supported.  In order to use them, you can call
+a method like this:
+
+```python
+queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g', query={'continuationToken': outcome.get('continuationToken')})
+```
+
+These query-string arguments are only supported using this calling convention
 
 ## Sync vs Async
 
@@ -94,26 +98,13 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     index.ping()
     ```
 
-* Keyword arguments for API methods are supported.  The javascript client
-  accepts only positional arguments.  You may use either positional arguments
-  or keyword, never both.  If the method requires an input payload, you must
-  specify it as the last positional argument.  If you are using keyword
-  arguments, the payload is the first argument.
-
+* There are four calling conventions for methods:
+  
     ```python
-    import taskcluster
-    api = taskcluster.api()
-    api.method('1', '2', '3', {'data': 'here'})
-    ```
-    Assuming apiMethod has a route of `/method/<arg1>/<arg2>/<arg3>`,
-    this will result in a call to `/method/pie/2/3`
-
-    The same call can be achieved using keyword arguments of:
-
-    ```python
-    import taskcluster
-    api = taskcluster.api()
-    api.method({'data': 'here'}, arg1='1', arg2='2', arg3='3')
+    client.method(v1, v1, payload)
+    client.method(payload, k1=v1, k2=v2)
+    client.method(payload=payload, query=query, params={k1: v1, k2: v2})
+    client.method(v1, v2, payload=payload, query=query)
     ```
 
 * Options for the topic exchange methods can be in the form of either a single
@@ -127,25 +118,39 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     qEvt.taskCompleted(taskId='atask')
     ```
 
-* Method Payloads are specified through the `payload` keyword passed to the API
-  method.  When using positional arguments, it's the last argument.  When using
-  keyword arguments, the payload is the first and only positional argument
+## Pagination
+There are two ways to accomplish pagination easily with the python client.  The first is 
+to implement pagination in your code:
+```python
+import taskcluster
+queue = taskcluster.Queue()
+i = 0
+tasks = 0
+outcome = queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g')
+while outcome.get('continuationToken'):
+    print('Response %d gave us %d more tasks' % (i, len(outcome['tasks'])))
+    if outcome.get('continuationToken'):
+        outcome = queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g', query={'continuationToken': outcome.get('continuationToken')})
+    i += 1
+    tasks += len(outcome.get('tasks', []))
+print('Task Group %s has %d tasks' % (outcome['taskGroupId'], tasks))
+```
 
-    ```python
-    from taskcluster import client
-    index = client.index()
-    index.listNamespaces('mozilla-central', payload={'continuationToken': 'a_token'})
-    ```
+There's also an experimental feature to support built in automatic pagination
+in the sync client.  This feature allows passing a callback as the
+'paginationHandler' keyword-argument.  This function will be passed the
+response body of the API method as its sole positional arugment.  
 
-Logging is set up in `taskcluster/__init__.py`.  If the special `DEBUG_TASKCLUSTER_CLIENT`
-environment variable is set, the `__init__.py` module will set the `logging` module's level
-for its logger to `logging.DEBUG` and if there are no existing handlers, add a
-`logging.StreamHandler()` instance.  This is meant to assist those who do not wish to bother
-figuring out how to configure the python logging module but do want debug messages
+## Logging
+Logging is set up in `taskcluster/__init__.py`.  If the special
+`DEBUG_TASKCLUSTER_CLIENT` environment variable is set, the `__init__.py`
+module will set the `logging` module's level for its logger to `logging.DEBUG`
+and if there are no existing handlers, add a `logging.StreamHandler()`
+instance.  This is meant to assist those who do not wish to bother figuring out
+how to configure the python logging module but do want debug messages
 
 
 ## Scopes
-
 The `scopeMatch(assumedScopes, requiredScopeSets)` function determines
 whether one or more of a set of required scopes are satisfied by the assumed
 scopes, taking *-expansion into account.  This is useful for making local

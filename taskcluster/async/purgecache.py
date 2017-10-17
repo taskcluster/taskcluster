@@ -50,7 +50,7 @@ class PurgeCache(AsyncBaseClient):
         endpoint that is specific to their workerType and
         provisionerId.
 
-        This method takes output: ``http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#``
+        This method gives output: ``http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#``
 
         This method is ``experimental``
         """
@@ -65,7 +65,7 @@ class PurgeCache(AsyncBaseClient):
         a certain time. This is safe to be used in automation from
         workers.
 
-        This method takes output: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#``
+        This method gives output: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#``
 
         This method is ``experimental``
         """
@@ -85,31 +85,39 @@ class PurgeCache(AsyncBaseClient):
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "allPurgeRequests": {           'args': [],
+        "allPurgeRequests": {
+            'args': [],
             'method': 'get',
             'name': 'allPurgeRequests',
             'output': 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/purge-cache/list',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
+            'stability': 'experimental',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
-        "purgeCache": {           'args': ['provisionerId', 'workerType'],
+            'stability': 'stable',
+        },
+        "purgeCache": {
+            'args': ['provisionerId', 'workerType'],
             'input': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#',
             'method': 'post',
             'name': 'purgeCache',
             'route': '/purge-cache/<provisionerId>/<workerType>',
-            'stability': 'experimental'},
-        "purgeRequests": {           'args': ['provisionerId', 'workerType'],
+            'stability': 'experimental',
+        },
+        "purgeRequests": {
+            'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'purgeRequests',
             'output': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#',
             'query': ['since'],
             'route': '/purge-cache/<provisionerId>/<workerType>',
-            'stability': 'experimental'},
+            'stability': 'experimental',
+        },
     }
 
 

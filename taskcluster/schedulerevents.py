@@ -44,143 +44,335 @@ class SchedulerEvents(BaseClient):
         "exchangePrefix": "exchange/taskcluster-scheduler/v1/"
     }
 
-    """
-    Task-Graph Running Message
-
-    When a task-graph is submitted it immediately starts running and a
-    message is posted on this exchange to indicate that a task-graph have
-    been submitted.
-
-    This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#``This exchange takes the following keys:
-
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
-
-     * taskId: Always takes the value `_`
-
-     * runId: Always takes the value `_`
-
-     * workerGroup: Always takes the value `_`
-
-     * workerId: Always takes the value `_`
-
-     * provisionerId: Always takes the value `_`
-
-     * workerType: Always takes the value `_`
-
-     * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
-
-     * taskGraphId: Identifier for the task-graph this message concerns (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
-
     def taskGraphRunning(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-graph-running', 'name': 'taskGraphRunning', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'provisionerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerType', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'}, {'multipleWords': False, 'name': 'taskGraphId', 'required': True, 'summary': 'Identifier for the task-graph this message concerns'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#'}, *args, **kwargs)
+        """
+        Task-Graph Running Message
 
-    """
-    Task-Graph Extended Message
+        When a task-graph is submitted it immediately starts running and a
+        message is posted on this exchange to indicate that a task-graph have
+        been submitted.
 
-    When a task-graph is extended, that is additional tasks is added to the
-    task-graph, a message is posted on this exchange. This is useful if you
-    are monitoring a task-graph and what to track states of the individual
-    tasks in the task-graph.
+        This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * taskId: Always takes the value `_`
 
-     * taskId: Always takes the value `_`
+         * runId: Always takes the value `_`
 
-     * runId: Always takes the value `_`
+         * workerGroup: Always takes the value `_`
 
-     * workerGroup: Always takes the value `_`
+         * workerId: Always takes the value `_`
 
-     * workerId: Always takes the value `_`
+         * provisionerId: Always takes the value `_`
 
-     * provisionerId: Always takes the value `_`
+         * workerType: Always takes the value `_`
 
-     * workerType: Always takes the value `_`
+         * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
 
-     * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
+         * taskGraphId: Identifier for the task-graph this message concerns (required)
 
-     * taskGraphId: Identifier for the task-graph this message concerns (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'task-graph-running',
+            'name': 'taskGraphRunning',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGraphId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskGraphExtended(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-graph-extended', 'name': 'taskGraphExtended', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'provisionerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerType', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'}, {'multipleWords': False, 'name': 'taskGraphId', 'required': True, 'summary': 'Identifier for the task-graph this message concerns'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#'}, *args, **kwargs)
+        """
+        Task-Graph Extended Message
 
-    """
-    Task-Graph Blocked Message
+        When a task-graph is extended, that is additional tasks is added to the
+        task-graph, a message is posted on this exchange. This is useful if you
+        are monitoring a task-graph and what to track states of the individual
+        tasks in the task-graph.
 
-    When a task is completed unsuccessfully and all reruns have been
-    attempted, the task-graph will not complete successfully and it's
-    declared to be _blocked_, by some task that consistently completes
-    unsuccessfully.
+        This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#``This exchange takes the following keys:
 
-    When a task-graph becomes blocked a messages is posted to this exchange.
-    The message features the `taskId` of the task that caused the task-graph
-    to become blocked.
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-    This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#``This exchange takes the following keys:
+         * taskId: Always takes the value `_`
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * runId: Always takes the value `_`
 
-     * taskId: Always takes the value `_`
+         * workerGroup: Always takes the value `_`
 
-     * runId: Always takes the value `_`
+         * workerId: Always takes the value `_`
 
-     * workerGroup: Always takes the value `_`
+         * provisionerId: Always takes the value `_`
 
-     * workerId: Always takes the value `_`
+         * workerType: Always takes the value `_`
 
-     * provisionerId: Always takes the value `_`
+         * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
 
-     * workerType: Always takes the value `_`
+         * taskGraphId: Identifier for the task-graph this message concerns (required)
 
-     * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * taskGraphId: Identifier for the task-graph this message concerns (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'task-graph-extended',
+            'name': 'taskGraphExtended',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGraphId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskGraphBlocked(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-graph-blocked', 'name': 'taskGraphBlocked', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'provisionerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerType', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'}, {'multipleWords': False, 'name': 'taskGraphId', 'required': True, 'summary': 'Identifier for the task-graph this message concerns'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#'}, *args, **kwargs)
+        """
+        Task-Graph Blocked Message
 
-    """
-    Task-Graph Finished Message
+        When a task is completed unsuccessfully and all reruns have been
+        attempted, the task-graph will not complete successfully and it's
+        declared to be _blocked_, by some task that consistently completes
+        unsuccessfully.
 
-    When all tasks of a task-graph have completed successfully, the
-    task-graph is declared to be finished, and a message is posted to this
-    exchange.
+        When a task-graph becomes blocked a messages is posted to this exchange.
+        The message features the `taskId` of the task that caused the task-graph
+        to become blocked.
 
-    This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#``This exchange takes the following keys:
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * taskId: Always takes the value `_`
+         * taskId: Always takes the value `_`
 
-     * runId: Always takes the value `_`
+         * runId: Always takes the value `_`
 
-     * workerGroup: Always takes the value `_`
+         * workerGroup: Always takes the value `_`
 
-     * workerId: Always takes the value `_`
+         * workerId: Always takes the value `_`
 
-     * provisionerId: Always takes the value `_`
+         * provisionerId: Always takes the value `_`
 
-     * workerType: Always takes the value `_`
+         * workerType: Always takes the value `_`
 
-     * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
+         * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
 
-     * taskGraphId: Identifier for the task-graph this message concerns (required)
+         * taskGraphId: Identifier for the task-graph this message concerns (required)
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'task-graph-blocked',
+            'name': 'taskGraphBlocked',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGraphId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskGraphFinished(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-graph-finished', 'name': 'taskGraphFinished', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'provisionerId', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'workerType', 'required': False, 'summary': 'Always takes the value `_`'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': 'Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.'}, {'multipleWords': False, 'name': 'taskGraphId', 'required': True, 'summary': 'Identifier for the task-graph this message concerns'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#'}, *args, **kwargs)
+        """
+        Task-Graph Finished Message
+
+        When all tasks of a task-graph have completed successfully, the
+        task-graph is declared to be finished, and a message is posted to this
+        exchange.
+
+        This exchange outputs: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#``This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+
+         * taskId: Always takes the value `_`
+
+         * runId: Always takes the value `_`
+
+         * workerGroup: Always takes the value `_`
+
+         * workerId: Always takes the value `_`
+
+         * provisionerId: Always takes the value `_`
+
+         * workerType: Always takes the value `_`
+
+         * schedulerId: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production. (required)
+
+         * taskGraphId: Identifier for the task-graph this message concerns (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'task-graph-finished',
+            'name': 'taskGraphFinished',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGraphId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     funcinfo = {
     }

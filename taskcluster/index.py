@@ -118,7 +118,7 @@ class Index(BaseClient):
         Find a task by index path, returning the highest-rank task with that path. If no
         task exists for the given path, this API end-point will respond with a 404 status.
 
-        This method takes output: ``http://schemas.taskcluster.net/index/v1/indexed-task-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/index/v1/indexed-task-response.json#``
 
         This method is ``stable``
         """
@@ -139,7 +139,7 @@ class Index(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#``
 
         This method is ``stable``
         """
@@ -163,7 +163,7 @@ class Index(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/index/v1/list-tasks-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/index/v1/list-tasks-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/index/v1/list-tasks-response.json#``
 
         This method is ``stable``
         """
@@ -182,7 +182,7 @@ class Index(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/index/v1/insert-task-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/index/v1/indexed-task-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/index/v1/indexed-task-response.json#``
 
         This method is ``stable``
         """
@@ -226,43 +226,55 @@ class Index(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "findArtifactFromTask": {           'args': ['indexPath', 'name'],
+        "findArtifactFromTask": {
+            'args': ['indexPath', 'name'],
             'method': 'get',
             'name': 'findArtifactFromTask',
             'route': '/task/<indexPath>/artifacts/<name>',
-            'stability': 'stable'},
-        "findTask": {           'args': ['indexPath'],
+            'stability': 'stable',
+        },
+        "findTask": {
+            'args': ['indexPath'],
             'method': 'get',
             'name': 'findTask',
             'output': 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#',
             'route': '/task/<indexPath>',
-            'stability': 'stable'},
-        "insertTask": {           'args': ['namespace'],
+            'stability': 'stable',
+        },
+        "insertTask": {
+            'args': ['namespace'],
             'input': 'http://schemas.taskcluster.net/index/v1/insert-task-request.json#',
             'method': 'put',
             'name': 'insertTask',
             'output': 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#',
             'route': '/task/<namespace>',
-            'stability': 'stable'},
-        "listNamespaces": {           'args': ['namespace'],
+            'stability': 'stable',
+        },
+        "listNamespaces": {
+            'args': ['namespace'],
             'input': 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#',
             'method': 'post',
             'name': 'listNamespaces',
             'output': 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#',
             'route': '/namespaces/<namespace>',
-            'stability': 'stable'},
-        "listTasks": {           'args': ['namespace'],
+            'stability': 'stable',
+        },
+        "listTasks": {
+            'args': ['namespace'],
             'input': 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#',
             'method': 'post',
             'name': 'listTasks',
             'output': 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#',
             'route': '/tasks/<namespace>',
-            'stability': 'stable'},
-        "ping": {           'args': [],
+            'stability': 'stable',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
+            'stability': 'stable',
+        },
     }
 
 

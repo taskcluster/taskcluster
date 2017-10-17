@@ -65,7 +65,7 @@ class Auth(BaseClient):
         Get a list of all clients.  With `prefix`, only clients for which
         it is a prefix of the clientId are returned.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/list-clients-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/list-clients-response.json#``
 
         This method is ``stable``
         """
@@ -78,7 +78,7 @@ class Auth(BaseClient):
 
         Get information about a single client.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -104,7 +104,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/create-client-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/create-client-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/create-client-response.json#``
 
         This method is ``stable``
         """
@@ -122,7 +122,7 @@ class Auth(BaseClient):
         There is no way to retrieve an existing `accessToken`, so if you loose it
         you must reset the accessToken to acquire it again.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/create-client-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/create-client-response.json#``
 
         This method is ``stable``
         """
@@ -141,7 +141,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/create-client-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -158,7 +158,7 @@ class Auth(BaseClient):
         This is typically used by identity providers to re-enable clients that
         had been disabled when the corresponding identity's scopes changed.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -174,7 +174,7 @@ class Auth(BaseClient):
         This is typically used by identity providers to disable clients when the
         corresponding identity's scopes no longer satisfy the client's scopes.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-client-response.json#``
 
         This method is ``stable``
         """
@@ -200,7 +200,7 @@ class Auth(BaseClient):
         Get a list of all roles, each role object also includes the list of
         scopes it expands to.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/list-roles-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/list-roles-response.json#``
 
         This method is ``stable``
         """
@@ -214,7 +214,7 @@ class Auth(BaseClient):
         Get information about a single role, including the set of scopes that the
         role expands to.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
 
         This method is ``stable``
         """
@@ -234,7 +234,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/create-role-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
 
         This method is ``stable``
         """
@@ -252,7 +252,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/create-role-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
 
         This method is ``stable``
         """
@@ -280,7 +280,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
 
         This method is ``stable``
         """
@@ -295,7 +295,7 @@ class Auth(BaseClient):
         of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
         and roles).
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
 
         This method is ``stable``
         """
@@ -372,7 +372,7 @@ class Auth(BaseClient):
         For details on the format returned by EC2 metadata service see:
         [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#``
 
         This method is ``stable``
         """
@@ -385,7 +385,7 @@ class Auth(BaseClient):
 
         Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#``
 
         This method is ``stable``
         """
@@ -398,7 +398,7 @@ class Auth(BaseClient):
 
         Retrieve a list of all tables in an account.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#``
 
         This method is ``stable``
         """
@@ -416,7 +416,7 @@ class Auth(BaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         table if it doesn't already exist.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#``
 
         This method is ``stable``
         """
@@ -434,7 +434,7 @@ class Auth(BaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         container if it doesn't already exist.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#``
 
         This method is ``stable``
         """
@@ -453,7 +453,7 @@ class Auth(BaseClient):
         initial team configured for this component. Contact a Sentry admin
         to have the project transferred to a team you have access to if needed
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#``
 
         This method is ``stable``
         """
@@ -468,7 +468,7 @@ class Auth(BaseClient):
 
         The token is valid for 24 hours, clients should refresh after expiration.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#``
 
         This method is ``stable``
         """
@@ -482,7 +482,7 @@ class Auth(BaseClient):
         Get temporary `token` and `id` for connecting to webhooktunnel
         The token is valid for 96 hours, clients should refresh after expiration.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#``
 
         This method is ``stable``
         """
@@ -502,7 +502,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#``
 
         This method is ``stable``
         """
@@ -527,7 +527,7 @@ class Auth(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#``
 
         This method is ``stable``
         """
@@ -554,7 +554,7 @@ class Auth(BaseClient):
         This method may later be extended to allow specification of client and
         required scopes via query arguments.
 
-        This method takes output: ``http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#``
 
         This method is ``stable``
         """
@@ -574,175 +574,229 @@ class Auth(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "authenticateHawk": {           'args': [],
+        "authenticateHawk": {
+            'args': [],
             'input': 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#',
             'method': 'post',
             'name': 'authenticateHawk',
             'output': 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#',
             'route': '/authenticate-hawk',
-            'stability': 'stable'},
-        "awsS3Credentials": {           'args': ['level', 'bucket', 'prefix'],
+            'stability': 'stable',
+        },
+        "awsS3Credentials": {
+            'args': ['level', 'bucket', 'prefix'],
             'method': 'get',
             'name': 'awsS3Credentials',
             'output': 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#',
             'query': ['format'],
             'route': '/aws/s3/<level>/<bucket>/<prefix>',
-            'stability': 'stable'},
-        "azureAccounts": {           'args': [],
+            'stability': 'stable',
+        },
+        "azureAccounts": {
+            'args': [],
             'method': 'get',
             'name': 'azureAccounts',
             'output': 'http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#',
             'route': '/azure/accounts',
-            'stability': 'stable'},
-        "azureBlobSAS": {           'args': ['account', 'container', 'level'],
+            'stability': 'stable',
+        },
+        "azureBlobSAS": {
+            'args': ['account', 'container', 'level'],
             'method': 'get',
             'name': 'azureBlobSAS',
             'output': 'http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#',
             'route': '/azure/<account>/containers/<container>/<level>',
-            'stability': 'stable'},
-        "azureTableSAS": {           'args': ['account', 'table', 'level'],
+            'stability': 'stable',
+        },
+        "azureTableSAS": {
+            'args': ['account', 'table', 'level'],
             'method': 'get',
             'name': 'azureTableSAS',
             'output': 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#',
             'route': '/azure/<account>/table/<table>/<level>',
-            'stability': 'stable'},
-        "azureTables": {           'args': ['account'],
+            'stability': 'stable',
+        },
+        "azureTables": {
+            'args': ['account'],
             'method': 'get',
             'name': 'azureTables',
             'output': 'http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/tables',
-            'stability': 'stable'},
-        "client": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "client": {
+            'args': ['clientId'],
             'method': 'get',
             'name': 'client',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#',
             'route': '/clients/<clientId>',
-            'stability': 'stable'},
-        "createClient": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "createClient": {
+            'args': ['clientId'],
             'input': 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#',
             'method': 'put',
             'name': 'createClient',
             'output': 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#',
             'route': '/clients/<clientId>',
-            'stability': 'stable'},
-        "createRole": {           'args': ['roleId'],
+            'stability': 'stable',
+        },
+        "createRole": {
+            'args': ['roleId'],
             'input': 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#',
             'method': 'put',
             'name': 'createRole',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#',
             'route': '/roles/<roleId>',
-            'stability': 'stable'},
-        "currentScopes": {           'args': [],
+            'stability': 'stable',
+        },
+        "currentScopes": {
+            'args': [],
             'method': 'get',
             'name': 'currentScopes',
             'output': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
             'route': '/scopes/current',
-            'stability': 'stable'},
-        "deleteClient": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "deleteClient": {
+            'args': ['clientId'],
             'method': 'delete',
             'name': 'deleteClient',
             'route': '/clients/<clientId>',
-            'stability': 'stable'},
-        "deleteRole": {           'args': ['roleId'],
+            'stability': 'stable',
+        },
+        "deleteRole": {
+            'args': ['roleId'],
             'method': 'delete',
             'name': 'deleteRole',
             'route': '/roles/<roleId>',
-            'stability': 'stable'},
-        "disableClient": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "disableClient": {
+            'args': ['clientId'],
             'method': 'post',
             'name': 'disableClient',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#',
             'route': '/clients/<clientId>/disable',
-            'stability': 'stable'},
-        "enableClient": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "enableClient": {
+            'args': ['clientId'],
             'method': 'post',
             'name': 'enableClient',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#',
             'route': '/clients/<clientId>/enable',
-            'stability': 'stable'},
-        "expandScopes": {           'args': [],
+            'stability': 'stable',
+        },
+        "expandScopes": {
+            'args': [],
             'input': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
             'method': 'get',
             'name': 'expandScopes',
             'output': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
             'route': '/scopes/expand',
-            'stability': 'stable'},
-        "listClients": {           'args': [],
+            'stability': 'stable',
+        },
+        "listClients": {
+            'args': [],
             'method': 'get',
             'name': 'listClients',
             'output': 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#',
             'query': ['prefix'],
             'route': '/clients/',
-            'stability': 'stable'},
-        "listRoles": {           'args': [],
+            'stability': 'stable',
+        },
+        "listRoles": {
+            'args': [],
             'method': 'get',
             'name': 'listRoles',
             'output': 'http://schemas.taskcluster.net/auth/v1/list-roles-response.json#',
             'route': '/roles/',
-            'stability': 'stable'},
-        "ping": {           'args': [],
+            'stability': 'stable',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
-        "resetAccessToken": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "resetAccessToken": {
+            'args': ['clientId'],
             'method': 'post',
             'name': 'resetAccessToken',
             'output': 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#',
             'route': '/clients/<clientId>/reset',
-            'stability': 'stable'},
-        "role": {           'args': ['roleId'],
+            'stability': 'stable',
+        },
+        "role": {
+            'args': ['roleId'],
             'method': 'get',
             'name': 'role',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#',
             'route': '/roles/<roleId>',
-            'stability': 'stable'},
-        "sentryDSN": {           'args': ['project'],
+            'stability': 'stable',
+        },
+        "sentryDSN": {
+            'args': ['project'],
             'method': 'get',
             'name': 'sentryDSN',
             'output': 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#',
             'route': '/sentry/<project>/dsn',
-            'stability': 'stable'},
-        "statsumToken": {           'args': ['project'],
+            'stability': 'stable',
+        },
+        "statsumToken": {
+            'args': ['project'],
             'method': 'get',
             'name': 'statsumToken',
             'output': 'http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#',
             'route': '/statsum/<project>/token',
-            'stability': 'stable'},
-        "testAuthenticate": {           'args': [],
+            'stability': 'stable',
+        },
+        "testAuthenticate": {
+            'args': [],
             'input': 'http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#',
             'method': 'post',
             'name': 'testAuthenticate',
             'output': 'http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#',
             'route': '/test-authenticate',
-            'stability': 'stable'},
-        "testAuthenticateGet": {           'args': [],
+            'stability': 'stable',
+        },
+        "testAuthenticateGet": {
+            'args': [],
             'method': 'get',
             'name': 'testAuthenticateGet',
             'output': 'http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#',
             'route': '/test-authenticate-get/',
-            'stability': 'stable'},
-        "updateClient": {           'args': ['clientId'],
+            'stability': 'stable',
+        },
+        "updateClient": {
+            'args': ['clientId'],
             'input': 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#',
             'method': 'post',
             'name': 'updateClient',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#',
             'route': '/clients/<clientId>',
-            'stability': 'stable'},
-        "updateRole": {           'args': ['roleId'],
+            'stability': 'stable',
+        },
+        "updateRole": {
+            'args': ['roleId'],
             'input': 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#',
             'method': 'post',
             'name': 'updateRole',
             'output': 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#',
             'route': '/roles/<roleId>',
-            'stability': 'stable'},
-        "webhooktunnelToken": {           'args': [],
+            'stability': 'stable',
+        },
+        "webhooktunnelToken": {
+            'args': [],
             'method': 'get',
             'name': 'webhooktunnelToken',
             'output': 'http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#',
             'route': '/webhooktunnel',
-            'stability': 'stable'},
+            'stability': 'stable',
+        },
     }
 
 

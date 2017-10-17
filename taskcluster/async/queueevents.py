@@ -66,288 +66,648 @@ class QueueEvents(AsyncBaseClient):
         "exchangePrefix": "exchange/taskcluster-queue/v1/"
     }
 
-    """
-    Task Defined Messages
-
-    When a task is created or just defined a message is posted to this
-    exchange.
-
-    This message exchange is mainly useful when tasks are scheduled by a
-    scheduler that uses `defineTask` as this does not make the task
-    `pending`. Thus, no `taskPending` message is published.
-    Please, note that messages are also published on this exchange if defined
-    using `createTask`.
-
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-defined-message.json#``This exchange takes the following keys:
-
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
-
-     * taskId: `taskId` for the task this message concerns (required)
-
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
-
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
-
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
-
-     * provisionerId: `provisionerId` this task is targeted at. (required)
-
-     * workerType: `workerType` this task must run on. (required)
-
-     * schedulerId: `schedulerId` this task was created by. (required)
-
-     * taskGroupId: `taskGroupId` this task was created in. (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
-
     def taskDefined(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-defined', 'name': 'taskDefined', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#'}, *args, **kwargs)
+        """
+        Task Defined Messages
 
-    """
-    Task Pending Messages
+        When a task is created or just defined a message is posted to this
+        exchange.
 
-    When a task becomes `pending` a message is posted to this exchange.
+        This message exchange is mainly useful when tasks are scheduled by a
+        scheduler that uses `defineTask` as this does not make the task
+        `pending`. Thus, no `taskPending` message is published.
+        Please, note that messages are also published on this exchange if defined
+        using `createTask`.
 
-    This is useful for workers who doesn't want to constantly poll the queue
-    for new tasks. The queue will also be authority for task states and
-    claims. But using this exchange workers should be able to distribute work
-    efficiently and they would be able to reduce their polling interval
-    significantly without affecting general responsiveness.
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-defined-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-pending-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * taskId: `taskId` for the task this message concerns (required)
 
-     * taskId: `taskId` for the task this message concerns (required)
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
 
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
 
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
 
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
+         * provisionerId: `provisionerId` this task is targeted at. (required)
 
-     * provisionerId: `provisionerId` this task is targeted at. (required)
+         * workerType: `workerType` this task must run on. (required)
 
-     * workerType: `workerType` this task must run on. (required)
+         * schedulerId: `schedulerId` this task was created by. (required)
 
-     * schedulerId: `schedulerId` this task was created by. (required)
+         * taskGroupId: `taskGroupId` this task was created in. (required)
 
-     * taskGroupId: `taskGroupId` this task was created in. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'task-defined',
+            'name': 'taskDefined',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskPending(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-pending', 'name': 'taskPending', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': True, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'}, *args, **kwargs)
+        """
+        Task Pending Messages
 
-    """
-    Task Running Messages
+        When a task becomes `pending` a message is posted to this exchange.
 
-    Whenever a task is claimed by a worker, a run is started on the worker,
-    and a message is posted on this exchange.
+        This is useful for workers who doesn't want to constantly poll the queue
+        for new tasks. The queue will also be authority for task states and
+        claims. But using this exchange workers should be able to distribute work
+        efficiently and they would be able to reduce their polling interval
+        significantly without affecting general responsiveness.
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-running-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-pending-message.json#``This exchange takes the following keys:
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * taskId: `taskId` for the task this message concerns (required)
+         * taskId: `taskId` for the task this message concerns (required)
 
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task. (required)
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
 
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
 
-     * provisionerId: `provisionerId` this task is targeted at. (required)
+         * provisionerId: `provisionerId` this task is targeted at. (required)
 
-     * workerType: `workerType` this task must run on. (required)
+         * workerType: `workerType` this task must run on. (required)
 
-     * schedulerId: `schedulerId` this task was created by. (required)
+         * schedulerId: `schedulerId` this task was created by. (required)
 
-     * taskGroupId: `taskGroupId` this task was created in. (required)
+         * taskGroupId: `taskGroupId` this task was created in. (required)
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'task-pending',
+            'name': 'taskPending',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskRunning(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-running', 'name': 'taskRunning', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': True, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': True, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': True, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'}, *args, **kwargs)
+        """
+        Task Running Messages
 
-    """
-    Artifact Creation Messages
+        Whenever a task is claimed by a worker, a run is started on the worker,
+        and a message is posted on this exchange.
 
-    Whenever the `createArtifact` end-point is called, the queue will create
-    a record of the artifact and post a message on this exchange. All of this
-    happens before the queue returns a signed URL for the caller to upload
-    the actual artifact with (pending on `storageType`).
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-running-message.json#``This exchange takes the following keys:
 
-    This means that the actual artifact is rarely available when this message
-    is posted. But it is not unreasonable to assume that the artifact will
-    will become available at some point later. Most signatures will expire in
-    30 minutes or so, forcing the uploader to call `createArtifact` with
-    the same payload again in-order to continue uploading the artifact.
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-    However, in most cases (especially for small artifacts) it's very
-    reasonable assume the artifact will be available within a few minutes.
-    This property means that this exchange is mostly useful for tools
-    monitoring task evaluation. One could also use it count number of
-    artifacts per task, or _index_ artifacts though in most cases it'll be
-    smarter to index artifacts after the task in question have completed
-    successfully.
+         * taskId: `taskId` for the task this message concerns (required)
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#``This exchange takes the following keys:
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * taskId: `taskId` for the task this message concerns (required)
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * provisionerId: `provisionerId` this task is targeted at. (required)
 
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task. (required)
+         * workerType: `workerType` this task must run on. (required)
 
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * schedulerId: `schedulerId` this task was created by. (required)
 
-     * provisionerId: `provisionerId` this task is targeted at. (required)
+         * taskGroupId: `taskGroupId` this task was created in. (required)
 
-     * workerType: `workerType` this task must run on. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * schedulerId: `schedulerId` this task was created by. (required)
-
-     * taskGroupId: `taskGroupId` this task was created in. (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'task-running',
+            'name': 'taskRunning',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def artifactCreated(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'artifact-created', 'name': 'artifactCreated', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': True, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': True, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': True, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#'}, *args, **kwargs)
+        """
+        Artifact Creation Messages
 
-    """
-    Task Completed Messages
+        Whenever the `createArtifact` end-point is called, the queue will create
+        a record of the artifact and post a message on this exchange. All of this
+        happens before the queue returns a signed URL for the caller to upload
+        the actual artifact with (pending on `storageType`).
 
-    When a task is successfully completed by a worker a message is posted
-    this exchange.
-    This message is routed using the `runId`, `workerGroup` and `workerId`
-    that completed the task. But information about additional runs is also
-    available from the task status structure.
+        This means that the actual artifact is rarely available when this message
+        is posted. But it is not unreasonable to assume that the artifact will
+        will become available at some point later. Most signatures will expire in
+        30 minutes or so, forcing the uploader to call `createArtifact` with
+        the same payload again in-order to continue uploading the artifact.
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-completed-message.json#``This exchange takes the following keys:
+        However, in most cases (especially for small artifacts) it's very
+        reasonable assume the artifact will be available within a few minutes.
+        This property means that this exchange is mostly useful for tools
+        monitoring task evaluation. One could also use it count number of
+        artifacts per task, or _index_ artifacts though in most cases it'll be
+        smarter to index artifacts after the task in question have completed
+        successfully.
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#``This exchange takes the following keys:
 
-     * taskId: `taskId` for the task this message concerns (required)
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * taskId: `taskId` for the task this message concerns (required)
 
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task. (required)
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task. (required)
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * provisionerId: `provisionerId` this task is targeted at. (required)
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * workerType: `workerType` this task must run on. (required)
+         * provisionerId: `provisionerId` this task is targeted at. (required)
 
-     * schedulerId: `schedulerId` this task was created by. (required)
+         * workerType: `workerType` this task must run on. (required)
 
-     * taskGroupId: `taskGroupId` this task was created in. (required)
+         * schedulerId: `schedulerId` this task was created by. (required)
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+         * taskGroupId: `taskGroupId` this task was created in. (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'artifact-created',
+            'name': 'artifactCreated',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskCompleted(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-completed', 'name': 'taskCompleted', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': True, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': True, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': True, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'}, *args, **kwargs)
+        """
+        Task Completed Messages
 
-    """
-    Task Failed Messages
+        When a task is successfully completed by a worker a message is posted
+        this exchange.
+        This message is routed using the `runId`, `workerGroup` and `workerId`
+        that completed the task. But information about additional runs is also
+        available from the task status structure.
 
-    When a task ran, but failed to complete successfully a message is posted
-    to this exchange. This is same as worker ran task-specific code, but the
-    task specific code exited non-zero.
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-completed-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-failed-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * taskId: `taskId` for the task this message concerns (required)
 
-     * taskId: `taskId` for the task this message concerns (required)
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task. (required)
 
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
+         * provisionerId: `provisionerId` this task is targeted at. (required)
 
-     * provisionerId: `provisionerId` this task is targeted at. (required)
+         * workerType: `workerType` this task must run on. (required)
 
-     * workerType: `workerType` this task must run on. (required)
+         * schedulerId: `schedulerId` this task was created by. (required)
 
-     * schedulerId: `schedulerId` this task was created by. (required)
+         * taskGroupId: `taskGroupId` this task was created in. (required)
 
-     * taskGroupId: `taskGroupId` this task was created in. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'task-completed',
+            'name': 'taskCompleted',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskFailed(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-failed', 'name': 'taskFailed', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'}, *args, **kwargs)
+        """
+        Task Failed Messages
 
-    """
-    Task Exception Messages
+        When a task ran, but failed to complete successfully a message is posted
+        to this exchange. This is same as worker ran task-specific code, but the
+        task specific code exited non-zero.
 
-    Whenever Taskcluster fails to run a message is posted to this exchange.
-    This happens if the task isn't completed before its `deadlìne`,
-    all retries failed (i.e. workers stopped responding), the task was
-    canceled by another entity, or the task carried a malformed payload.
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-failed-message.json#``This exchange takes the following keys:
 
-    The specific _reason_ is evident from that task status structure, refer
-    to the `reasonResolved` property for the last run.
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-exception-message.json#``This exchange takes the following keys:
+         * taskId: `taskId` for the task this message concerns (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
 
-     * taskId: `taskId` for the task this message concerns (required)
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
 
-     * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
 
-     * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+         * provisionerId: `provisionerId` this task is targeted at. (required)
 
-     * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
+         * workerType: `workerType` this task must run on. (required)
 
-     * provisionerId: `provisionerId` this task is targeted at. (required)
+         * schedulerId: `schedulerId` this task was created by. (required)
 
-     * workerType: `workerType` this task must run on. (required)
+         * taskGroupId: `taskGroupId` this task was created in. (required)
 
-     * schedulerId: `schedulerId` this task was created by. (required)
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
 
-     * taskGroupId: `taskGroupId` this task was created in. (required)
-
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+        ref = {
+            'exchange': 'task-failed',
+            'name': 'taskFailed',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskException(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-exception', 'name': 'taskException', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskId', 'required': True, 'summary': '`taskId` for the task this message concerns'}, {'multipleWords': False, 'name': 'runId', 'required': False, 'summary': '`runId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerGroup', 'required': False, 'summary': '`workerGroup` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'workerId', 'required': False, 'summary': '`workerId` of latest run for the task, `_` if no run is exists for the task.'}, {'multipleWords': False, 'name': 'provisionerId', 'required': True, 'summary': '`provisionerId` this task is targeted at.'}, {'multipleWords': False, 'name': 'workerType', 'required': True, 'summary': '`workerType` this task must run on.'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` this task was created by.'}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` this task was created in.'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'}, *args, **kwargs)
+        """
+        Task Exception Messages
 
-    """
-    Task Group Resolved Messages
+        Whenever Taskcluster fails to run a message is posted to this exchange.
+        This happens if the task isn't completed before its `deadlìne`,
+        all retries failed (i.e. workers stopped responding), the task was
+        canceled by another entity, or the task carried a malformed payload.
 
-    A message is published on task-group-resolved whenever all submitted
-    tasks (whether scheduled or unscheduled) for a given task group have
-    been resolved, regardless of whether they resolved as successful or
-    not. A task group may be resolved multiple times, since new tasks may
-    be submitted against an already resolved task group.
+        The specific _reason_ is evident from that task status structure, refer
+        to the `reasonResolved` property for the last run.
 
-    This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#``This exchange takes the following keys:
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-exception-message.json#``This exchange takes the following keys:
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
-     * taskGroupId: `taskGroupId` for the task-group this message concerns (required)
+         * taskId: `taskId` for the task this message concerns (required)
 
-     * schedulerId: `schedulerId` for the task-group this message concerns (required)
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
 
-     * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-    """
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
+
+         * provisionerId: `provisionerId` this task is targeted at. (required)
+
+         * workerType: `workerType` this task must run on. (required)
+
+         * schedulerId: `schedulerId` this task was created by. (required)
+
+         * taskGroupId: `taskGroupId` this task was created in. (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'task-exception',
+            'name': 'taskException',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'runId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerGroup',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'provisionerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'workerType',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def taskGroupResolved(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'task-group-resolved', 'name': 'taskGroupResolved', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."}, {'multipleWords': False, 'name': 'taskGroupId', 'required': True, 'summary': '`taskGroupId` for the task-group this message concerns'}, {'multipleWords': False, 'name': 'schedulerId', 'required': True, 'summary': '`schedulerId` for the task-group this message concerns'}, {'multipleWords': True, 'name': 'reserved', 'required': False, 'summary': 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'}], 'schema': 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'}, *args, **kwargs)
+        """
+        Task Group Resolved Messages
+
+        A message is published on task-group-resolved whenever all submitted
+        tasks (whether scheduled or unscheduled) for a given task group have
+        been resolved, regardless of whether they resolved as successful or
+        not. A task group may be resolved multiple times, since new tasks may
+        be submitted against an already resolved task group.
+
+        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#``This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+
+         * taskGroupId: `taskGroupId` for the task-group this message concerns (required)
+
+         * schedulerId: `schedulerId` for the task-group this message concerns (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            'exchange': 'task-group-resolved',
+            'name': 'taskGroupResolved',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'taskGroupId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'schedulerId',
+                },
+                {
+                    'multipleWords': True,
+                    'name': 'reserved',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     funcinfo = {
     }

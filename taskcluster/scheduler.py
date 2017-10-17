@@ -99,7 +99,7 @@ class Scheduler(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/scheduler/v1/task-graph.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#``
 
         This method is ``experimental``
         """
@@ -126,7 +126,7 @@ class Scheduler(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#``
 
-        This method takes output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#``
 
         This method is ``experimental``
         """
@@ -143,7 +143,7 @@ class Scheduler(BaseClient):
 
         **Note**, that `finished` implies successfully completion.
 
-        This method takes output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json``
 
         This method is ``experimental``
         """
@@ -161,7 +161,7 @@ class Scheduler(BaseClient):
         If you want more detailed information use the `inspectTaskGraph`
         end-point instead.
 
-        This method takes output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json``
 
         This method is ``experimental``
         """
@@ -185,7 +185,7 @@ class Scheduler(BaseClient):
         as we do not promise it will remain fully backward compatible in
         the future.
 
-        This method takes output: ``http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json``
 
         This method is ``experimental``
         """
@@ -209,7 +209,7 @@ class Scheduler(BaseClient):
         as we do not promise it will remain fully backward compatible in
         the future.
 
-        This method takes output: ``http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json``
 
         This method is ``experimental``
         """
@@ -230,49 +230,63 @@ class Scheduler(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "createTaskGraph": {           'args': ['taskGraphId'],
+        "createTaskGraph": {
+            'args': ['taskGraphId'],
             'input': 'http://schemas.taskcluster.net/scheduler/v1/task-graph.json#',
             'method': 'put',
             'name': 'createTaskGraph',
             'output': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#',
             'route': '/task-graph/<taskGraphId>',
-            'stability': 'experimental'},
-        "extendTaskGraph": {           'args': ['taskGraphId'],
+            'stability': 'experimental',
+        },
+        "extendTaskGraph": {
+            'args': ['taskGraphId'],
             'input': 'http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#',
             'method': 'post',
             'name': 'extendTaskGraph',
             'output': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#',
             'route': '/task-graph/<taskGraphId>/extend',
-            'stability': 'experimental'},
-        "info": {           'args': ['taskGraphId'],
+            'stability': 'experimental',
+        },
+        "info": {
+            'args': ['taskGraphId'],
             'method': 'get',
             'name': 'info',
             'output': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json',
             'route': '/task-graph/<taskGraphId>/info',
-            'stability': 'experimental'},
-        "inspect": {           'args': ['taskGraphId'],
+            'stability': 'experimental',
+        },
+        "inspect": {
+            'args': ['taskGraphId'],
             'method': 'get',
             'name': 'inspect',
             'output': 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json',
             'route': '/task-graph/<taskGraphId>/inspect',
-            'stability': 'experimental'},
-        "inspectTask": {           'args': ['taskGraphId', 'taskId'],
+            'stability': 'experimental',
+        },
+        "inspectTask": {
+            'args': ['taskGraphId', 'taskId'],
             'method': 'get',
             'name': 'inspectTask',
             'output': 'http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json',
             'route': '/task-graph/<taskGraphId>/inspect/<taskId>',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
+            'stability': 'experimental',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'experimental'},
-        "status": {           'args': ['taskGraphId'],
+            'stability': 'experimental',
+        },
+        "status": {
+            'args': ['taskGraphId'],
             'method': 'get',
             'name': 'status',
             'output': 'http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json',
             'route': '/task-graph/<taskGraphId>/status',
-            'stability': 'experimental'},
+            'stability': 'experimental',
+        },
     }
 
 

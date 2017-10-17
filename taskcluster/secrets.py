@@ -60,7 +60,7 @@ class Secrets(BaseClient):
         scope necessary to get the secret, the call will fail with a 403 code
         regardless of whether the secret exists.
 
-        This method takes output: ``http://schemas.taskcluster.net/secrets/v1/secret.json#``
+        This method gives output: ``http://schemas.taskcluster.net/secrets/v1/secret.json#``
 
         This method is ``stable``
         """
@@ -75,7 +75,7 @@ class Secrets(BaseClient):
         other words, secret name `<X>` will only be returned if a) a secret
         with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
 
-        This method takes output: ``http://schemas.taskcluster.net/secrets/v1/secret-list.json#``
+        This method gives output: ``http://schemas.taskcluster.net/secrets/v1/secret-list.json#``
 
         This method is ``stable``
         """
@@ -95,34 +95,44 @@ class Secrets(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "get": {           'args': ['name'],
+        "get": {
+            'args': ['name'],
             'method': 'get',
             'name': 'get',
             'output': 'http://schemas.taskcluster.net/secrets/v1/secret.json#',
             'route': '/secret/<name>',
-            'stability': 'stable'},
-        "list": {           'args': [],
+            'stability': 'stable',
+        },
+        "list": {
+            'args': [],
             'method': 'get',
             'name': 'list',
             'output': 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#',
             'route': '/secrets',
-            'stability': 'stable'},
-        "ping": {           'args': [],
+            'stability': 'stable',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
-        "remove": {           'args': ['name'],
+            'stability': 'stable',
+        },
+        "remove": {
+            'args': ['name'],
             'method': 'delete',
             'name': 'remove',
             'route': '/secret/<name>',
-            'stability': 'stable'},
-        "set": {           'args': ['name'],
+            'stability': 'stable',
+        },
+        "set": {
+            'args': ['name'],
             'input': 'http://schemas.taskcluster.net/secrets/v1/secret.json#',
             'method': 'put',
             'name': 'set',
             'route': '/secret/<name>',
-            'stability': 'stable'},
+            'stability': 'stable',
+        },
     }
 
 

@@ -48,7 +48,7 @@ class Github(BaseClient):
         Taskcluster. Can be filtered on various git-specific
         fields.
 
-        This method takes output: ``http://schemas.taskcluster.net/github/v1/build-list.json#``
+        This method gives output: ``http://schemas.taskcluster.net/github/v1/build-list.json#``
 
         This method is ``experimental``
         """
@@ -74,7 +74,7 @@ class Github(BaseClient):
         Returns any repository metadata that is
         useful within Taskcluster related services.
 
-        This method takes output: ``http://schemas.taskcluster.net/github/v1/repository.json``
+        This method gives output: ``http://schemas.taskcluster.net/github/v1/repository.json``
 
         This method is ``experimental``
         """
@@ -138,55 +138,67 @@ class Github(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "badge": {           'args': ['owner', 'repo', 'branch'],
+        "badge": {
+            'args': ['owner', 'repo', 'branch'],
             'method': 'get',
             'name': 'badge',
             'route': '/repository/<owner>/<repo>/<branch>/badge.svg',
-            'stability': 'experimental'},
-        "builds": {           'args': [],
+            'stability': 'experimental',
+        },
+        "builds": {
+            'args': [],
             'method': 'get',
             'name': 'builds',
             'output': 'http://schemas.taskcluster.net/github/v1/build-list.json#',
-            'query': [           'continuationToken',
-                                 'limit',
-                                 'organization',
-                                 'repository',
-                                 'sha'],
+            'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha'],
             'route': '/builds',
-            'stability': 'experimental'},
-        "createComment": {           'args': ['owner', 'repo', 'number'],
+            'stability': 'experimental',
+        },
+        "createComment": {
+            'args': ['owner', 'repo', 'number'],
             'input': 'http://schemas.taskcluster.net/github/v1/create-comment.json',
             'method': 'post',
             'name': 'createComment',
             'route': '/repository/<owner>/<repo>/issues/<number>/comments',
-            'stability': 'experimental'},
-        "createStatus": {           'args': ['owner', 'repo', 'sha'],
+            'stability': 'experimental',
+        },
+        "createStatus": {
+            'args': ['owner', 'repo', 'sha'],
             'input': 'http://schemas.taskcluster.net/github/v1/create-status.json',
             'method': 'post',
             'name': 'createStatus',
             'route': '/repository/<owner>/<repo>/statuses/<sha>',
-            'stability': 'experimental'},
-        "githubWebHookConsumer": {           'args': [],
+            'stability': 'experimental',
+        },
+        "githubWebHookConsumer": {
+            'args': [],
             'method': 'post',
             'name': 'githubWebHookConsumer',
             'route': '/github',
-            'stability': 'experimental'},
-        "latest": {           'args': ['owner', 'repo', 'branch'],
+            'stability': 'experimental',
+        },
+        "latest": {
+            'args': ['owner', 'repo', 'branch'],
             'method': 'get',
             'name': 'latest',
             'route': '/repository/<owner>/<repo>/<branch>/latest',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
+            'stability': 'experimental',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
-        "repository": {           'args': ['owner', 'repo'],
+            'stability': 'stable',
+        },
+        "repository": {
+            'args': ['owner', 'repo'],
             'method': 'get',
             'name': 'repository',
             'output': 'http://schemas.taskcluster.net/github/v1/repository.json',
             'route': '/repository/<owner>/<repo>',
-            'stability': 'experimental'},
+            'stability': 'experimental',
+        },
     }
 
 

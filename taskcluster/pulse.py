@@ -31,7 +31,7 @@ class Pulse(BaseClient):
 
         Get an overview of the Rabbit cluster.
 
-        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json``
+        This method gives output: ``http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json``
 
         This method is ``experimental``
         """
@@ -48,7 +48,7 @@ class Pulse(BaseClient):
         `continuationToken` will be returned, which can be given in the next
         request. For the initial request, do not provide continuation.
 
-        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json``
 
         This method is ``experimental``
         """
@@ -62,7 +62,7 @@ class Pulse(BaseClient):
         Get public information about a single namespace. This is the same information
         as returned by `listNamespaces`.
 
-        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/namespace.json``
+        This method gives output: ``http://schemas.taskcluster.net/pulse/v1/namespace.json``
 
         This method is ``experimental``
         """
@@ -84,7 +84,7 @@ class Pulse(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/pulse/v1/namespace-request.json``
 
-        This method takes output: ``http://schemas.taskcluster.net/pulse/v1/namespace-response.json``
+        This method gives output: ``http://schemas.taskcluster.net/pulse/v1/namespace-response.json``
 
         This method is ``experimental``
         """
@@ -104,37 +104,47 @@ class Pulse(BaseClient):
         return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
-        "claimNamespace": {           'args': ['namespace'],
+        "claimNamespace": {
+            'args': ['namespace'],
             'input': 'http://schemas.taskcluster.net/pulse/v1/namespace-request.json',
             'method': 'post',
             'name': 'claimNamespace',
             'output': 'http://schemas.taskcluster.net/pulse/v1/namespace-response.json',
             'route': '/namespace/<namespace>',
-            'stability': 'experimental'},
-        "listNamespaces": {           'args': [],
+            'stability': 'experimental',
+        },
+        "listNamespaces": {
+            'args': [],
             'method': 'get',
             'name': 'listNamespaces',
             'output': 'http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json',
             'query': ['limit', 'continuation'],
             'route': '/namespaces',
-            'stability': 'experimental'},
-        "namespace": {           'args': ['namespace'],
+            'stability': 'experimental',
+        },
+        "namespace": {
+            'args': ['namespace'],
             'method': 'get',
             'name': 'namespace',
             'output': 'http://schemas.taskcluster.net/pulse/v1/namespace.json',
             'route': '/namespace/<namespace>',
-            'stability': 'experimental'},
-        "overview": {           'args': [],
+            'stability': 'experimental',
+        },
+        "overview": {
+            'args': [],
             'method': 'get',
             'name': 'overview',
             'output': 'http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json',
             'route': '/overview',
-            'stability': 'experimental'},
-        "ping": {           'args': [],
+            'stability': 'experimental',
+        },
+        "ping": {
+            'args': [],
             'method': 'get',
             'name': 'ping',
             'route': '/ping',
-            'stability': 'stable'},
+            'stability': 'stable',
+        },
     }
 
 

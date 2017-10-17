@@ -25,64 +25,128 @@ class GithubEvents(AsyncBaseClient):
         "exchangePrefix": "exchange/taskcluster-github/v1/"
     }
 
-    """
-    GitHub Pull Request Event
-
-    When a GitHub pull request event is posted it will be broadcast on this
-    exchange with the designated `organization` and `repository`
-    in the routing-key along with event specific metadata in the payload.
-
-    This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#``This exchange takes the following keys:
-
-     * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
-
-     * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
-
-     * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
-
-     * action: The GitHub `action` which triggered an event. See for possible values see the payload actions property. (required)
-    """
-
     def pullRequest(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'pull-request', 'name': 'pullRequest', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': 'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.'}, {'multipleWords': False, 'name': 'organization', 'required': True, 'summary': 'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'}, {'multipleWords': False, 'name': 'repository', 'required': True, 'summary': 'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'}, {'multipleWords': False, 'name': 'action', 'required': True, 'summary': 'The GitHub `action` which triggered an event. See for possible values see the payload actions property.'}], 'schema': 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'}, *args, **kwargs)
+        """
+        GitHub Pull Request Event
 
-    """
-    GitHub push Event
+        When a GitHub pull request event is posted it will be broadcast on this
+        exchange with the designated `organization` and `repository`
+        in the routing-key along with event specific metadata in the payload.
 
-    When a GitHub push event is posted it will be broadcast on this
-    exchange with the designated `organization` and `repository`
-    in the routing-key along with event specific metadata in the payload.
+        This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-push-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
+         * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
 
-     * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+         * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
 
-     * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
-    """
+         * action: The GitHub `action` which triggered an event. See for possible values see the payload actions property. (required)
+        """
+
+        ref = {
+            'exchange': 'pull-request',
+            'name': 'pullRequest',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'organization',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'repository',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'action',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def push(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'push', 'name': 'push', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': 'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.'}, {'multipleWords': False, 'name': 'organization', 'required': True, 'summary': 'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'}, {'multipleWords': False, 'name': 'repository', 'required': True, 'summary': 'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'}], 'schema': 'http://schemas.taskcluster.net/github/v1/github-push-message.json#'}, *args, **kwargs)
+        """
+        GitHub push Event
 
-    """
-    GitHub release Event
+        When a GitHub push event is posted it will be broadcast on this
+        exchange with the designated `organization` and `repository`
+        in the routing-key along with event specific metadata in the payload.
 
-    When a GitHub release event is posted it will be broadcast on this
-    exchange with the designated `organization` and `repository`
-    in the routing-key along with event specific metadata in the payload.
+        This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-push-message.json#``This exchange takes the following keys:
 
-    This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-release-message.json#``This exchange takes the following keys:
+         * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
-     * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
+         * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
 
-     * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+         * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+        """
 
-     * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
-    """
+        ref = {
+            'exchange': 'push',
+            'name': 'push',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'organization',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'repository',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/github/v1/github-push-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     def release(self, *args, **kwargs):
-        return self._makeTopicExchange({'exchange': 'release', 'name': 'release', 'routingKey': [{'constant': 'primary', 'multipleWords': False, 'name': 'routingKeyKind', 'required': True, 'summary': 'Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.'}, {'multipleWords': False, 'name': 'organization', 'required': True, 'summary': 'The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'}, {'multipleWords': False, 'name': 'repository', 'required': True, 'summary': 'The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.'}], 'schema': 'http://schemas.taskcluster.net/github/v1/github-release-message.json#'}, *args, **kwargs)
+        """
+        GitHub release Event
+
+        When a GitHub release event is posted it will be broadcast on this
+        exchange with the designated `organization` and `repository`
+        in the routing-key along with event specific metadata in the payload.
+
+        This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-release-message.json#``This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
+
+         * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+
+         * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+        """
+
+        ref = {
+            'exchange': 'release',
+            'name': 'release',
+            'routingKey': [
+                {
+                    'constant': 'primary',
+                    'multipleWords': False,
+                    'name': 'routingKeyKind',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'organization',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'repository',
+                },
+            ],
+            'schema': 'http://schemas.taskcluster.net/github/v1/github-release-message.json#',
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
 
     funcinfo = {
     }
