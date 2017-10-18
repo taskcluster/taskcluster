@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import logging
-import copy
 import hashlib
 import hmac
 import datetime
@@ -60,11 +59,29 @@ class AsyncBaseClient(BaseClient):
         """ This function is used to dispatch calls to other functions
         for a given API Reference entry"""
 
-        routeParams, payload, query, _, _ = self._processArgs(entry, *args, **kwargs)
+        x = self._processArgs(entry, *args, **kwargs)
+        routeParams, payload, query, paginationHandler, paginationLimit = x
         route = self._subArgsInRoute(entry, routeParams)
-        log.debug('Route is: %s', route)
 
-        return await self._makeHttpRequest(entry['method'], route, payload)
+        # TODO: Check for limit being in the Query of the api ref
+        if paginationLimit and 'limit' in entry.get('query', []):
+            query['limit'] = paginationLimit
+
+        if query:
+            _route = route + '?' + urllib.parse.urlencode(query)
+        else:
+            _route = route
+        response = await self._makeHttpRequest(entry['method'], _route, payload)
+
+        if paginationHandler:
+            paginationHandler(response)
+            while response.get('continuationToken'):
+                query['continuationToken'] = response['continuationToken']
+                _route = route + '?' + urllib.parse.urlencode(query)
+                response = await self._makeHttpRequest(entry['method'], _route, payload)
+                paginationHandler(response)
+        else:
+            return response
 
     async def _makeHttpRequest(self, method, route, payload):
         """ Make an HTTP Request for the API endpoint.  This method wraps
