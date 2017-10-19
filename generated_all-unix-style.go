@@ -87,7 +87,7 @@ type (
 		//
 		// Mininum:    1
 		// Maximum:    86400
-		MaxRunTime int `json:"maxRunTime"`
+		MaxRunTime int64 `json:"maxRunTime"`
 
 		// Directories and/or files to be mounted
 		Mounts []Mount `json:"mounts,omitempty"`
