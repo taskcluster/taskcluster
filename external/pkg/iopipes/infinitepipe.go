@@ -16,7 +16,6 @@ type InfinitePipeWriter struct {
 	m      sync.Mutex
 	buffer []byte
 	closed bool
-	broken bool
 	tell   chan<- bool
 }
 
@@ -68,7 +67,6 @@ func (r *InfinitePipeReader) Close() error {
 	r.m.Lock()
 	defer r.m.Unlock()
 	r.closed = true
-	r.broken = true
 	r.c.Broadcast()
 	return nil
 }
@@ -100,10 +98,6 @@ func (w *InfinitePipeWriter) Write(p []byte) (int, error) {
 func (w *InfinitePipeWriter) Close() error {
 	w.m.Lock()
 	defer w.m.Unlock()
-
-	if w.closed && w.broken {
-		return io.ErrClosedPipe
-	}
 
 	w.closed = true
 	w.c.Broadcast()

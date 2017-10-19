@@ -22,14 +22,13 @@ type DrainingPipeWriter struct {
 	buffer   []byte
 	draining bool
 	closed   bool
-	broken   bool
 	tell     chan<- bool
 	capacity int
 }
 
-// DrainingPipe is similar to ioext.AsyncPipe() except that writes will always
-// succeed. Data will be added to an internal buffer that can grow bigger than
-// the specified capacity.
+// DrainingPipe is similar to io.Pipe() except that writes will always
+// succeed (including the first write that overfills the buffer). Data will be
+// added to an internal buffer that can grow bigger than the specified capacity.
 // Additionally, you may supply a channel tell that will be told whenever
 // the draining channel has been emptied, so that more bytes can be requested
 // to be written.
@@ -83,7 +82,6 @@ func (r *DrainingPipeReader) Close() error {
 	r.m.Lock()
 	defer r.m.Unlock()
 	r.closed = true
-	r.broken = true
 	r.c.Broadcast()
 	return nil
 }
@@ -123,10 +121,6 @@ func (w *DrainingPipeWriter) Write(p []byte) (int, error) {
 func (w *DrainingPipeWriter) Close() error {
 	w.m.Lock()
 	defer w.m.Unlock()
-
-	if w.closed && w.broken {
-		return io.ErrClosedPipe
-	}
 
 	w.closed = true
 	w.c.Broadcast()
