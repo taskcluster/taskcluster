@@ -8,7 +8,7 @@ import (
 
 // ErrPipeFull is returned from DrainingPipeWriter.Write if the pipes capacity has
 // been reached.
-var ErrPipeFull = errors.New("The internal pipe buffer have reached its capacity")
+var ErrPipeFull = errors.New("The pipe buffer has reached it's capacity. Writes will block until drained.")
 
 // DrainingPipeReader is a reading side of an DrainingPipe, similar to io.PipeReader.
 type DrainingPipeReader struct {
@@ -34,6 +34,9 @@ type DrainingPipeWriter struct {
 // to be written.
 //
 // This pipe kind is useful when implementing simple congestion control.
+//
+// N.B. The Writer end of this pipe will not work with io.Copy because it
+// returns an error when the pipe is full (but the pipe is still valid).
 func DrainingPipe(capacity int, tell chan<- bool) (*DrainingPipeReader, *DrainingPipeWriter) {
 	w := &DrainingPipeWriter{
 		tell:     tell,

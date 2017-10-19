@@ -16,7 +16,6 @@ type InfinitePipeWriter struct {
 	m      sync.Mutex
 	buffer []byte
 	closed bool
-	tell   chan<- bool
 }
 
 // InfinitePipe is similar to io.Pipe() except that writes will always
@@ -26,10 +25,8 @@ type InfinitePipeWriter struct {
 // to be written.
 //
 // This pipe kind is useful when implementing simple congestion control.
-func InfinitePipe(tell chan<- bool) (*InfinitePipeReader, *InfinitePipeWriter) {
-	w := &InfinitePipeWriter{
-		tell: tell,
-	}
+func InfinitePipe() (*InfinitePipeReader, *InfinitePipeWriter) {
+	w := &InfinitePipeWriter{}
 	w.c.L = &w.m
 	return &InfinitePipeReader{w}, w
 }
@@ -53,10 +50,6 @@ func (r *InfinitePipeReader) Read(p []byte) (int, error) {
 	var err error
 	if r.closed && len(r.buffer) == 0 {
 		err = io.EOF
-		if r.tell != nil {
-			close(r.tell)
-			r.tell = nil
-		}
 	}
 
 	return n, err

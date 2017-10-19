@@ -94,7 +94,7 @@ func Dial(socketURL string, command []string, tty bool) (*ShellClient, error) {
 
 // New creates a new v1 ShellClient from an existing websocket.
 func New(ws *websocket.Conn) *ShellClient {
-	stdinReader, stdin := iopipes.InfinitePipe(nil)
+	stdinReader, stdin := iopipes.InfinitePipe()
 	outputChan := make(chan bool)
 	stdout, stdoutWriter := iopipes.DrainingPipe(MaxOutstandingBytes, outputChan)
 	stderr, stderrWriter := iopipes.DrainingPipe(MaxOutstandingBytes, outputChan)
