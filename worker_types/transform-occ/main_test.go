@@ -2,6 +2,14 @@ package main
 
 import "testing"
 
+func TestFilenameFromURL(t *testing.T) {
+	actual := FilenameFromURL("https://go.microsoft.com/fwlink/p/?LinkID=698771", ".exe")
+	expected := "sdksetup.exe"
+	if actual != expected {
+		t.Fatalf("Expected filename was '%v' but got '%v'", expected, actual)
+	}
+}
+
 func TestCyclicDependency(t *testing.T) {
 
 	_, err := OrderComponents(

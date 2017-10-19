@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	pkgurl "net/url"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -77,7 +79,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	downloadCount := 0
 
 	fmt.Println(`<powershell>`)
 	fmt.Println(``)
@@ -123,21 +124,21 @@ func main() {
 		case "EnvironmentVariableUniquePrepend":
 			fmt.Printf(`[Environment]::SetEnvironmentVariable("%s", "%s;%%%s%%", "%s")`+"\n", c.Name, strings.Join(c.Values, ";"), c.Name, c.Target)
 		case "ExeInstall":
-			fmt.Printf(`$client.DownloadFile("%s", "C:\binaries\%v.exe")`+"\n", c.URL, downloadCount)
-			fmt.Printf(`Start-Process "C:\binaries\%v.exe" -ArgumentList "%s" -Wait -NoNewWindow`+"\n", downloadCount, PSEscape(strings.Join(c.Arguments, " ")))
-			downloadCount++
+			filename := FilenameFromURL(c.URL, ".exe")
+			fmt.Printf(`$client.DownloadFile("%s", "C:\binaries\%v")`+"\n", c.URL, filename)
+			fmt.Printf(`Start-Process "C:\binaries\%v" -ArgumentList "%s" -Wait -NoNewWindow`+"\n", filename, PSEscape(strings.Join(c.Arguments, " ")))
 		case "FileDownload":
 			fmt.Printf(`$client.DownloadFile("%s", "%s")`+"\n", c.Source, c.Target)
 		case "FirewallRule":
 			fmt.Printf(`New-NetFirewallRule -DisplayName "%v (%v %v %v): %v" -Direction %v -LocalPort %v -Protocol %v -Action %v`+"\n", c.ComponentName, c.Protocol, c.LocalPort, c.Direction, c.Action, c.Direction, c.LocalPort, c.Protocol, c.Action)
 		case "MsiInstall":
-			fmt.Printf(`$client.DownloadFile("%v", "C:\binaries\%v.msi")`+"\n", c.URL, downloadCount)
-			fmt.Printf(`Start-Process "msiexec" -ArgumentList "/i C:\binaries\%v.msi /quiet" -Wait -NoNewWindow`+"\n", downloadCount)
-			downloadCount++
+			filename := FilenameFromURL(c.URL, ".msi")
+			fmt.Printf(`$client.DownloadFile("%v", "C:\binaries\%v")`+"\n", c.URL, filename)
+			fmt.Printf(`Start-Process "msiexec" -ArgumentList "/i C:\binaries\%v /quiet" -Wait -NoNewWindow`+"\n", filename)
 		case "MsuInstall":
-			fmt.Printf(`$client.DownloadFile("%v", "C:\binaries\%v.msu")`+"\n", c.URL, downloadCount)
-			fmt.Printf(`Start-Process "wusa" -ArgumentList "C:\binaries\%v.msu /quiet /norestart" -Wait -NoNewWindow`+"\n", downloadCount)
-			downloadCount++
+			filename := FilenameFromURL(c.URL, ".msu")
+			fmt.Printf(`$client.DownloadFile("%v", "C:\binaries\%v")`+"\n", c.URL, filename)
+			fmt.Printf(`Start-Process "wusa" -ArgumentList "C:\binaries\%v /quiet /norestart" -Wait -NoNewWindow`+"\n", filename)
 		case "RegistryKeySet":
 			fmt.Printf(`New-Item -Path "%v" -Force`+"\n", PSPath(c.Key+`\`+c.ValueName))
 		case "RegistryValueSet":
@@ -149,9 +150,9 @@ func main() {
 		case "WindowsFeatureInstall":
 			fmt.Printf(`Install-WindowsFeature %v`+"\n", c.Name)
 		case "ZipInstall":
+			filename := FilenameFromURL(c.URL, ".zip")
 			fmt.Printf(`New-Item -ItemType Directory -Force -Path "%v"`+"\n", c.Destination)
-			fmt.Printf(`Extract-ZIPFile -File "C:\binaries\%v.zip" -Destination "%v" -Url "%v"`+"\n", downloadCount, c.Destination, c.URL)
-			downloadCount++
+			fmt.Printf(`Extract-ZIPFile -File "C:\binaries\%v" -Destination "%v" -Url "%v"`+"\n", filename, c.Destination, c.URL)
 		default:
 			log.Fatalf("Do not know how to convert component type '%v' into raw powershell code", c.ComponentType)
 		}
@@ -165,6 +166,30 @@ func main() {
 	fmt.Println("shutdown -s")
 	fmt.Println("")
 	fmt.Println("</powershell>")
+}
+
+func FilenameFromURL(url string, extension string) (filename string) {
+	// Follow redirects to reach the target url
+	client := http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			url = req.URL.String()
+			return nil
+		},
+	}
+	_, err := client.Head(url)
+	if err != nil {
+		log.Fatal("Could not reach URL " + url)
+	}
+	filename = path.Base(url)
+	unescaped, err := pkgurl.QueryUnescape(filename)
+	if err == nil {
+		filename = unescaped
+	}
+	if strings.HasSuffix(filename, extension) {
+		return
+	}
+	filename += extension
+	return
 }
 
 // PSPath takes a fully qualified registry path, and returns the powershell path representation.
