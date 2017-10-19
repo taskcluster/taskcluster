@@ -102,7 +102,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/limit
-		Limit int `json:"limit,omitempty"`
+		Limit int64 `json:"limit,omitempty"`
 	}
 
 	// Response from a request to list namespaces within a given namespace.
@@ -163,7 +163,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/limit
-		Limit int `json:"limit,omitempty"`
+		Limit int64 `json:"limit,omitempty"`
 	}
 
 	// Representation of an indexed task.

@@ -467,7 +467,7 @@ type (
 		// Maximum:    65535
 		//
 		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/port
-		Port int `json:"port"`
+		Port int64 `json:"port"`
 
 		// Resource the request operates on including querystring. This is the
 		// string that follows the HTTP method.

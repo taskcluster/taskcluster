@@ -48,7 +48,7 @@ type (
 		// Maximum:    10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/installationId
-		InstallationID int `json:"installationId"`
+		InstallationID int64 `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//
@@ -100,7 +100,7 @@ type (
 		// Max length: 10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/installationId
-		InstallationID int `json:"installationId"`
+		InstallationID int64 `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//
@@ -152,7 +152,7 @@ type (
 		// Maximum:    10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/installationId
-		InstallationID int `json:"installationId"`
+		InstallationID int64 `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//

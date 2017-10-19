@@ -36,7 +36,7 @@ type (
 		Project string `json:"project"`
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[2]/properties/pullRequestID
-		PullRequestID int `json:"pullRequestID,omitempty"`
+		PullRequestID int64 `json:"pullRequestID,omitempty"`
 
 		// Min length: 40
 		// Max length: 40
@@ -62,7 +62,7 @@ type (
 		Project string `json:"project"`
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
-		PushLogID int `json:"pushLogID,omitempty"`
+		PushLogID int64 `json:"pushLogID,omitempty"`
 
 		// Syntax:     ^[0-9a-f]+$
 		// Min length: 40
@@ -93,7 +93,7 @@ type (
 		Project string `json:"project"`
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pushLogID
-		PushLogID int `json:"pushLogID,omitempty"`
+		PushLogID int64 `json:"pushLogID,omitempty"`
 
 		// Syntax:     ^[0-9a-f]+$
 		// Min length: 40
@@ -135,12 +135,12 @@ type (
 			// Mininum:    1
 			//
 			// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkCount
-			ChunkCount int `json:"chunkCount,omitempty"`
+			ChunkCount int64 `json:"chunkCount,omitempty"`
 
 			// Mininum:    1
 			//
 			// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkId
-			ChunkID int `json:"chunkId,omitempty"`
+			ChunkID int64 `json:"chunkId,omitempty"`
 
 			// Min length: 1
 			// Max length: 100
@@ -276,18 +276,18 @@ type (
 					// Mininum:    0
 					//
 					// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
-					Linenumber int `json:"linenumber,omitempty"`
+					Linenumber int64 `json:"linenumber,omitempty"`
 				} `json:"errors,omitempty"`
 
 				// Mininum:    0
 				//
 				// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished
-				LineFinished int `json:"lineFinished"`
+				LineFinished int64 `json:"lineFinished"`
 
 				// Mininum:    0
 				//
 				// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted
-				LineStarted int `json:"lineStarted"`
+				LineStarted int64 `json:"lineStarted"`
 
 				// Min length: 1
 				// Max length: 255
@@ -383,7 +383,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/retryId
-		RetryID int `json:"retryId,omitempty"`
+		RetryID int64 `json:"retryId,omitempty"`
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/runMachine
 		RunMachine Machine `json:"runMachine,omitempty"`
@@ -416,7 +416,7 @@ type (
 		// Maximum:    3
 		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/tier
-		Tier int `json:"tier,omitempty"`
+		Tier int64 `json:"tier,omitempty"`
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeCompleted
 		TimeCompleted tcclient.Time `json:"timeCompleted,omitempty"`
@@ -430,7 +430,7 @@ type (
 		// Message version
 		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 	}
 
 	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine

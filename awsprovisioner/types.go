@@ -556,19 +556,19 @@ type (
 	WorkerTypeSummary struct {
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/maxCapacity
-		MaxCapacity int `json:"maxCapacity"`
+		MaxCapacity int64 `json:"maxCapacity"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/minCapacity
-		MinCapacity int `json:"minCapacity"`
+		MinCapacity int64 `json:"minCapacity"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/pendingCapacity
-		PendingCapacity int `json:"pendingCapacity"`
+		PendingCapacity int64 `json:"pendingCapacity"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/requestedCapacity
-		RequestedCapacity int `json:"requestedCapacity"`
+		RequestedCapacity int64 `json:"requestedCapacity"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/runningCapacity
-		RunningCapacity int `json:"runningCapacity"`
+		RunningCapacity int64 `json:"runningCapacity"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#/properties/workerType
 		WorkerType string `json:"workerType"`

@@ -109,7 +109,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength
-		ContentLength int `json:"contentLength"`
+		ContentLength int64 `json:"contentLength"`
 
 		// The complete SHA256 value of the entire artifact.  This must be the
 		// SHA256 of the file which is to be uploaded.  For single part uploads,
@@ -173,7 +173,7 @@ type (
 			// Mininum:    0
 			//
 			// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size
-			Size int `json:"size,omitempty"`
+			Size int64 `json:"size,omitempty"`
 		} `json:"parts,omitempty"`
 
 		// Artifact storage type, in this case `'blob'`
@@ -191,7 +191,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength
-		TransferLength int `json:"transferLength,omitempty"`
+		TransferLength int64 `json:"transferLength,omitempty"`
 
 		// This is the sha256 of the bytes transfered across the wire to the
 		// backing datastore.  If specified, it represents the
@@ -220,7 +220,7 @@ type (
 		// Maximum:    32
 		//
 		// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/tasks
-		Tasks int `json:"tasks"`
+		Tasks int64 `json:"tasks"`
 
 		// Identifier for group that worker claiming the task is a part of.
 		//
@@ -300,7 +300,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId
-			RunID int `json:"runId"`
+			RunID int64 `json:"runId"`
 
 			// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/status
 			Status TaskStatusStructure `json:"status"`
@@ -361,7 +361,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/pendingTasks
-		PendingTasks int `json:"pendingTasks"`
+		PendingTasks int64 `json:"pendingTasks"`
 
 		// Unique identifier for the provisioner
 		//
@@ -775,7 +775,7 @@ type (
 				// Maximum:    1000
 				//
 				// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-				RunID int `json:"runId,omitempty"`
+				RunID int64 `json:"runId,omitempty"`
 
 				// Unique task identifier, this is UUID encoded as
 				// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
@@ -1237,7 +1237,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -1420,7 +1420,7 @@ type (
 		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
-		Retries int `json:"retries,omitempty"`
+		Retries int64 `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
@@ -1626,7 +1626,7 @@ type (
 		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/retries
-		Retries int `json:"retries"`
+		Retries int64 `json:"retries"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		//
@@ -1787,7 +1787,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -1861,7 +1861,7 @@ type (
 		// Maximum:    999
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
-		RetriesLeft int `json:"retriesLeft"`
+		RetriesLeft int64 `json:"retriesLeft"`
 
 		// List of runs, ordered so that index `i` has `runId == i`
 		//
@@ -1917,7 +1917,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
-			RunID int `json:"runId"`
+			RunID int64 `json:"runId"`
 
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
@@ -2083,7 +2083,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId
-			RunID int `json:"runId,omitempty"`
+			RunID int64 `json:"runId,omitempty"`
 
 			// Unique task identifier, this is UUID encoded as
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and

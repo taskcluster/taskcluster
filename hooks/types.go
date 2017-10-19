@@ -309,7 +309,7 @@ type (
 			// Maximum:    999
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/retriesLeft
-			RetriesLeft int `json:"retriesLeft"`
+			RetriesLeft int64 `json:"retriesLeft"`
 
 			// List of runs, ordered so that index `i` has `runId == i`
 			//
@@ -363,7 +363,7 @@ type (
 				// Maximum:    1000
 				//
 				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/runId
-				RunID int `json:"runId"`
+				RunID int64 `json:"runId"`
 
 				// Date-time at which this run was scheduled, ie. when the run was
 				// created in state `pending`.
@@ -571,7 +571,7 @@ type (
 		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/retries
-		Retries int `json:"retries,omitempty"`
+		Retries int64 `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for

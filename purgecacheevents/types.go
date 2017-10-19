@@ -30,7 +30,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 
 		// `workerType` we wish to purge cache for.
 		//

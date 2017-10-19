@@ -57,7 +57,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -68,7 +68,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which the run with the created
 		// artifacted is running.
@@ -102,7 +102,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -113,7 +113,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which this run ran.
 		//
@@ -149,7 +149,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 	}
 
 	// Message reporting that Taskcluster have failed to run a task.
@@ -164,7 +164,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/runId
-		RunID int `json:"runId,omitempty"`
+		RunID int64 `json:"runId,omitempty"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -175,7 +175,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which the last attempt of the task
 		// ran. Not provided, if `deadline` was exceeded before a run was started.
@@ -210,7 +210,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -221,7 +221,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which this run ran.
 		//
@@ -271,7 +271,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#/properties/version
-		Version int `json:"version,omitempty"`
+		Version int64 `json:"version,omitempty"`
 	}
 
 	// Message reporting that a task is now pending
@@ -285,7 +285,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -296,7 +296,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 	}
 
 	// Message reporting that a given run of a task have started
@@ -310,7 +310,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/runId
-		RunID int `json:"runId"`
+		RunID int64 `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -327,7 +327,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/version
-		Version int `json:"version"`
+		Version int64 `json:"version"`
 
 		// Identifier for the worker-group within which this run started.
 		//
@@ -383,7 +383,7 @@ type (
 		// Maximum:    999
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
-		RetriesLeft int `json:"retriesLeft"`
+		RetriesLeft int64 `json:"retriesLeft"`
 
 		// List of runs, ordered so that index `i` has `runId == i`
 		//
@@ -439,7 +439,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
-			RunID int `json:"runId"`
+			RunID int64 `json:"runId"`
 
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
