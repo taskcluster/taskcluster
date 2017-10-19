@@ -129,3 +129,28 @@ max-task-dependencies: 100
 dependency-relation:
   - all-completed
   - all-resolved
+
+# Description of actions. They are defined on the provisioner
+action-description: |
+  Actions are defined on the provisioner. When an action is triggered,
+  it will use the `url` and `context` property to construct the URL and
+  perform a `POST` request. Note that the request will be signed with the
+  user's Taskcluster credentials.
+
+# Description of the action context
+action-context-description: |
+  Actions have a "context" that is one of provisioner, worker-type,
+  or worker, indicating which it applies to. `context` is used to construct
+  the query string of the `POST` request.
+  If `context='worker'`, the query string will be
+  `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+  If `context='worker-type'`, the query string will be
+  `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+  If `context='provisioner'`, the query string will be
+  `?provisionerId=${PROVISIONER_ID}`.
+
+# Description of the url property in an action.
+action-url-description: |
+  When an action is triggered, the `url`
+  and `context` property are used to make the `POST` request.
+  The request needs to be signed with the user's Taskcluster credentials.

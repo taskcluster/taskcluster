@@ -33,6 +33,7 @@ suite('provisioners and worker-types', () => {
       lastDateActive: new Date(),
       description: 'test-provisioner',
       stability: 'experimental',
+      actions: [],
     };
 
     await Provisioner.create(provisioner);
@@ -43,6 +44,7 @@ suite('provisioners and worker-types', () => {
     assert(result.provisioners[0].provisionerId === provisioner.provisionerId, 'expected prov1');
     assert(result.provisioners[0].description === provisioner.description, 'expected description');
     assert(result.provisioners[0].stability === provisioner.stability, 'expected stability');
+    assert(result.provisioners[0].actions.length === 0, 'expected no actions');
   });
 
   test('provisioner seen creates and updates a provisioner', async () => {
@@ -67,6 +69,7 @@ suite('provisioners and worker-types', () => {
       lastDateActive: new Date(),
       description: 'test-prov',
       stability: 'experimental',
+      actions: [],
     });
     await helper.expireWorkerInfo();
 
@@ -356,6 +359,7 @@ suite('provisioners and worker-types', () => {
       lastDateActive: new Date(),
       description: 'test-provisioner',
       stability: 'experimental',
+      actions: [],
     };
 
     await Provisioner.create(provisioner);
@@ -365,6 +369,7 @@ suite('provisioners and worker-types', () => {
     assert(result.provisionerId === provisioner.provisionerId, `expected ${provisioner.provisionerId}`);
     assert(result.description === provisioner.description, `expected ${provisioner.description}`);
     assert(result.stability === provisioner.stability, `expected ${provisioner.stability}`);
+    assert(result.actions.length === 0, 'expected no actions');
     assert(new Date(result.expires).getTime() === provisioner.expires.getTime(), `expected ${provisioner.expires}`);
   });
 
@@ -377,10 +382,18 @@ suite('provisioners and worker-types', () => {
       lastDateActive: new Date(),
       description: 'test-provisioner',
       stability: 'experimental',
+      actions: [],
     });
 
     const updateProps = {
       description: 'desc-provisioner',
+      actions: [{
+        name: 'kill',
+        title: 'Kill Provisioner',
+        context: 'provisioner',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove provisioner desc-provisioner',
+      }],
     };
 
     await helper.queue.declareProvisioner(provisioner.provisionerId, updateProps);
@@ -390,7 +403,45 @@ suite('provisioners and worker-types', () => {
     assert(result.provisionerId === provisioner.provisionerId, `expected ${provisioner.provisionerId}`);
     assert(result.description === updateProps.description, `expected ${updateProps.description}`);
     assert(result.stability === provisioner.stability, `expected ${provisioner.stability}`);
+    assert(result.actions[0].url === updateProps.actions[0].url, `expected action url ${updateProps.actions[0].url}`);
     assert(new Date(result.expires).getTime() === provisioner.expires.getTime(), `expected ${provisioner.expires}`);
+  });
+
+  test('queue.declareProvisioner adds two actions to a provisioner', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+
+    const provisioner = await Provisioner.create({
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    });
+
+    const actionOne = {
+      name: 'kill',
+      title: 'Kill Provisioner',
+      context: 'provisioner',
+      url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+      description: 'Remove provisioner desc-provisioner',
+    };
+
+    const actionTwo = {
+      name: 'reboot',
+      title: 'Reboot Provisioner',
+      context: 'provisioner',
+      url: 'https://hardware-provisioner.mozilla-releng.net/v1/reboot',
+      description: 'Reboot provisioner desc-provisioner',
+    };
+
+    await helper.queue.declareProvisioner(provisioner.provisionerId, {actions: [actionOne, actionTwo]});
+
+    const result = await helper.queue.getProvisioner(provisioner.provisionerId);
+
+    assert(result.actions.length === 2, 'expected 2 actions');
+    assert(result.actions[0].url === actionOne.url, `expected url to be ${actionOne.url}`);
+    assert(result.actions[1].url === actionTwo.url, `expected url to be ${actionTwo.url}`);
   });
 
   test('worker-type lastDateActive updates', async () => {
@@ -440,6 +491,7 @@ suite('provisioners and worker-types', () => {
       lastDateActive: new Date(),
       description: 'test-prov',
       stability: 'experimental',
+      actions: [],
     };
 
     await Provisioner.create(prov);
