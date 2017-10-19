@@ -25,8 +25,8 @@ md C:\binaries
 md "C:\log"
 
 # NxLog: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\0.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\0.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\nxlog-ce-2.9.1716.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://papertrailapp.com/tools/papertrail-bundle.pem", "C:\Program Files\nxlog\cert\papertrail-bundle.pem")
@@ -39,23 +39,23 @@ Set-Service "nxlog" -StartupType Automatic -Status Running
 
 # ProcessExplorer: Maintenance Toolchain - not essential for building firefox
 New-Item -ItemType Directory -Force -Path "C:\ProcessExplorer"
-Extract-ZIPFile -File "C:\binaries\1.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
+Extract-ZIPFile -File "C:\binaries\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
 
 # ProcessMonitor: Maintenance Toolchain - not essential for building firefox
 New-Item -ItemType Directory -Force -Path "C:\ProcessMonitor"
-Extract-ZIPFile -File "C:\binaries\2.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
+Extract-ZIPFile -File "C:\binaries\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
 
 # GpgForWin: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\3.exe")
-Start-Process "C:\binaries\3.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\gpg4win-2.3.0.exe")
+Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\4.exe")
-Start-Process "C:\binaries\4.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\7z1602.exe")
+Start-Process "C:\binaries\7z1602.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20Setup.exe", "C:\binaries\5.exe")
-Start-Process "C:\binaries\5.exe" -ArgumentList "/VERYSILENT /NORESTART /TASKS=`"contextentry`"" -Wait -NoNewWindow
+$client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20Setup.exe", "C:\binaries\Sublime Text Build 3114 Setup.exe")
+Start-Process "C:\binaries\Sublime Text Build 3114 Setup.exe" -ArgumentList "/VERYSILENT /NORESTART /TASKS=`"contextentry`"" -Wait -NoNewWindow
 
 # SublimeText3_PackagesFolder: Maintenance Toolchain - not essential for building firefox
 md "C:\Users\Administrator\AppData\Roaming\Sublime Text 3\Packages"
@@ -76,8 +76,8 @@ Start-Process "fsutil.exe" -ArgumentList "behavior set disablelastaccess 1" -Wai
 cmd /c mklink "C:\home" "C:\Users"
 
 # MozillaBuildSetup: Base Firefox on Windows build requirement
-$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-2.2.0.exe", "C:\binaries\6.exe")
-Start-Process "C:\binaries\6.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
+$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-2.2.0.exe", "C:\binaries\MozillaBuildSetup-2.2.0.exe")
+Start-Process "C:\binaries\MozillaBuildSetup-2.2.0.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
 
 # msys_home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
@@ -92,8 +92,8 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Python\PythonCore\2.7\PythonPath" -Name "(
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
 # Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1390271
-$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x86.msi", "C:\binaries\7.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\7.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x86.msi", "C:\binaries\mercurial-4.3.3-x86.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.3.3-x86.msi /quiet" -Wait -NoNewWindow
 
 # MercurialConfig: Required by clonebundle and share hg extensions
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini", "C:\Program Files\Mercurial\Mercurial.ini")

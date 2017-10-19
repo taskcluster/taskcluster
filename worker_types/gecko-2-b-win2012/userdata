@@ -25,8 +25,8 @@ md C:\binaries
 md "C:\log"
 
 # NxLog: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\0.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\0.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\nxlog-ce-2.9.1716.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://papertrailapp.com/tools/papertrail-bundle.pem", "C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem")
@@ -42,23 +42,23 @@ Get-WmiObject Win32_Volume -Filter "IndexingEnabled=$true" | Set-WmiInstance -Ar
 
 # ProcessExplorer: Maintenance Toolchain - not essential for building firefox
 New-Item -ItemType Directory -Force -Path "C:\ProcessExplorer"
-Extract-ZIPFile -File "C:\binaries\1.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
+Extract-ZIPFile -File "C:\binaries\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" -Url "https://download.sysinternals.com/files/ProcessExplorer.zip"
 
 # ProcessMonitor: Maintenance Toolchain - not essential for building firefox
 New-Item -ItemType Directory -Force -Path "C:\ProcessMonitor"
-Extract-ZIPFile -File "C:\binaries\2.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
+Extract-ZIPFile -File "C:\binaries\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
 
 # GpgForWin: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\3.exe")
-Start-Process "C:\binaries\3.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\gpg4win-2.3.0.exe")
+Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\4.exe")
-Start-Process "C:\binaries\4.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\7z1514-x64.exe")
+Start-Process "C:\binaries\7z1514-x64.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe", "C:\binaries\5.exe")
-Start-Process "C:\binaries\5.exe" -ArgumentList "/VERYSILENT /NORESTART /TASKS=`"contextentry`"" -Wait -NoNewWindow
+$client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe", "C:\binaries\Sublime Text Build 3114 x64 Setup.exe")
+Start-Process "C:\binaries\Sublime Text Build 3114 x64 Setup.exe" -ArgumentList "/VERYSILENT /NORESTART /TASKS=`"contextentry`"" -Wait -NoNewWindow
 
 # SublimeText3_PackagesFolder: Maintenance Toolchain - not essential for building firefox
 md "C:\Users\Administrator\AppData\Roaming\Sublime Text 3\Packages"
@@ -91,48 +91,48 @@ Start-Process "msiexec.exe" -ArgumentList "/passive /uninstall {F0C3E5D1-1ADE-32
 Start-Process "msiexec.exe" -ArgumentList "/passive /uninstall {1D8E6291-B0D5-35EC-8441-6616F567A0F7}" -Wait -NoNewWindow
 
 # DXSDK_Jun10: Provides D3D compilers required by 32 bit builds
-$client.DownloadFile("http://download.microsoft.com/download/A/E/7/AE743F1F-632B-4809-87A9-AA1BB3458E31/DXSDK_Jun10.exe", "C:\binaries\6.exe")
-Start-Process "C:\binaries\6.exe" -ArgumentList "/U" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/A/E/7/AE743F1F-632B-4809-87A9-AA1BB3458E31/DXSDK_Jun10.exe", "C:\binaries\DXSDK_Jun10.exe")
+Start-Process "C:\binaries\DXSDK_Jun10.exe" -ArgumentList "/U" -Wait -NoNewWindow
 
 # vcredist_vs2010_x86: Required by yasm (c:/mozilla-build/yasm/yasm.exe)
-$client.DownloadFile("http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe", "C:\binaries\7.exe")
-Start-Process "C:\binaries\7.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2010_x86-install.log" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/C/6/D/C6D0FD4E-9E53-4897-9B91-836EBA2AACD3/vcredist_x86.exe", "C:\binaries\vcredist_x86.exe")
+Start-Process "C:\binaries\vcredist_x86.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2010_x86-install.log" -Wait -NoNewWindow
 
 # vcredist_vs2010_x64: Required by yasm (c:/mozilla-build/yasm/yasm.exe)
-$client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe", "C:\binaries\8.exe")
-Start-Process "C:\binaries\8.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2010_x64-install.log" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe", "C:\binaries\vcredist_x64.exe")
+Start-Process "C:\binaries\vcredist_x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2010_x64-install.log" -Wait -NoNewWindow
 
 # vcredist_vs2013_x86: Required by rustc (tooltool artefact)
-$client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe", "C:\binaries\9.exe")
-Start-Process "C:\binaries\9.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2013_x86-install.log" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe", "C:\binaries\vcredist_x86.exe")
+Start-Process "C:\binaries\vcredist_x86.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2013_x86-install.log" -Wait -NoNewWindow
 
 # vcredist_vs2013_x64: Required by rustc (tooltool artefact)
-$client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe", "C:\binaries\10.exe")
-Start-Process "C:\binaries\10.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2013_x64-install.log" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe", "C:\binaries\vcredist_x64.exe")
+Start-Process "C:\binaries\vcredist_x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2013_x64-install.log" -Wait -NoNewWindow
 
 # vcredist_vs2015_x86: Required by rustc (tooltool artefact)
-$client.DownloadFile("http://download.microsoft.com/download/f/3/9/f39b30ec-f8ef-4ba3-8cb4-e301fcf0e0aa/vc_redist.x86.exe", "C:\binaries\11.exe")
-Start-Process "C:\binaries\11.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x86-install.log" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/f/3/9/f39b30ec-f8ef-4ba3-8cb4-e301fcf0e0aa/vc_redist.x86.exe", "C:\binaries\vc_redist.x86.exe")
+Start-Process "C:\binaries\vc_redist.x86.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x86-install.log" -Wait -NoNewWindow
 
 # vcredist_vs2015_x64: Required by rustc (tooltool artefact)
-$client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\binaries\12.exe")
-Start-Process "C:\binaries\12.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x64-install.log" -Wait -NoNewWindow
+$client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\binaries\vc_redist.x64.exe")
+Start-Process "C:\binaries\vc_redist.x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x64-install.log" -Wait -NoNewWindow
 
 # WindowsSDK10Setup
-$client.DownloadFile("https://go.microsoft.com/fwlink/p/?LinkID=698771", "C:\binaries\13.exe")
-Start-Process "C:\binaries\13.exe" -ArgumentList "/features + /quiet /norestart /ceip off /log C:\log\windowssdk10setup.log" -Wait -NoNewWindow
+$client.DownloadFile("https://go.microsoft.com/fwlink/p/?LinkID=698771", "C:\binaries\sdksetup.exe")
+Start-Process "C:\binaries\sdksetup.exe" -ArgumentList "/features + /quiet /norestart /ceip off /log C:\log\windowssdk10setup.log" -Wait -NoNewWindow
 
 # BinScope: https://dxr.mozilla.org/mozilla-central/search?q=BinScope&redirect=false&case=false
-$client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/FirefoxBuildResources/BinScope_x64.msi", "C:\binaries\14.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\14.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/FirefoxBuildResources/BinScope_x64.msi", "C:\binaries\BinScope_x64.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\BinScope_x64.msi /quiet" -Wait -NoNewWindow
 
 # MozillaBuildSetup: Base Firefox on Windows build requirement
-$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-2.2.0.exe", "C:\binaries\15.exe")
-Start-Process "C:\binaries\15.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
+$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-2.2.0.exe", "C:\binaries\MozillaBuildSetup-2.2.0.exe")
+Start-Process "C:\binaries\MozillaBuildSetup-2.2.0.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
 
 # NsisInstall: Bug 1236624 - NSIS 3.01
-$client.DownloadFile("http://downloads.sourceforge.net/project/nsis/NSIS%203/3.01/nsis-3.01-setup.exe?r=http%3A%2F%2Fnsis.sourceforge.net%2FDownload&ts=1484218481&use_mirror=kent", "C:\binaries\16.exe")
-Start-Process "C:\binaries\16.exe" -ArgumentList "/S /D=C:\mozilla-build\nsis-3.01" -Wait -NoNewWindow
+$client.DownloadFile("http://downloads.sourceforge.net/project/nsis/NSIS%203/3.01/nsis-3.01-setup.exe?r=http%3A%2F%2Fnsis.sourceforge.net%2FDownload&ts=1484218481&use_mirror=kent", "C:\binaries\nsis-3.01-setup.exe")
+Start-Process "C:\binaries\nsis-3.01-setup.exe" -ArgumentList "/S /D=C:\mozilla-build\nsis-3.01" -Wait -NoNewWindow
 
 # makensis_301: https://bugzilla.mozilla.org/show_bug.cgi?id=1236624#c53
 cmd /c mklink "C:\mozilla-build\nsis-3.01\makensis-3.01.exe" "C:\mozilla-build\nsis-3.01\makensis.exe"
@@ -147,8 +147,8 @@ cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
 # Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1390271
-$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x64.msi", "C:\binaries\17.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\17.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x64.msi", "C:\binaries\mercurial-4.3.3-x64.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.3.3-x64.msi /quiet" -Wait -NoNewWindow
 
 # MercurialConfig: Required by clonebundle and share hg extensions
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini", "C:\Program Files\Mercurial\Mercurial.ini")
