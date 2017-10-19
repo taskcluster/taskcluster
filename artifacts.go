@@ -472,7 +472,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	}
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
-	e := json.Unmarshal(json.RawMessage(*parsp), resp)
+	e := json.Unmarshal(*parsp, resp)
 	if e != nil {
 		panic(e)
 	}
