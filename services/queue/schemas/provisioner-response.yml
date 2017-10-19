@@ -39,10 +39,49 @@ properties:
       of when the provisioner was last seen active.
     type:         string
     format:       date-time
-additionalProperties: true
+  actions:
+    type:         array
+    items:
+      type:       object
+      title:      Actions
+      description: {$const: action-description}
+      properties:
+        name:
+          title:  "Name"
+          description: |
+            Short names for things like logging/error messages.
+          type:   string
+        title:
+          title:  "Title"
+          description: |
+            Appropriate title for any sort of Modal prompt.
+        context:
+          title:  "Context"
+          description: {$const: action-context-description}
+          type:   string
+          enum:   ["provisioner", "worker-type", "worker"]
+        url:
+          title:  "URL"
+          description: {$const: action-url-description}
+          type:    string
+          format:  uri
+        description:
+          title:   "Description"
+          description: |
+            Description of the provisioner.
+          type:    string
+      additionalProperties: false
+      required:
+        - name
+        - title
+        - context
+        - url
+        - description
+additionalProperties: false
 required:
   - provisionerId
   - description
+  - actions
   - stability
   - expires
   - lastDateActive

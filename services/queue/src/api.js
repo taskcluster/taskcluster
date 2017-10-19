@@ -2134,7 +2134,7 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
-  const {stability, description, expires} = req.body;
+  const {stability, description, expires, actions} = req.body;
   let result;
 
   const prov = await this.Provisioner.load({provisionerId}, true);
@@ -2151,6 +2151,7 @@ api.declare({
     result =  await prov.modify((entity) => {
       entity.stability = stability || entity.stability;
       entity.description = description || entity.description;
+      entity.actions = actions || entity.actions;
       entity.expires = new Date(expires || entity.expires);
     });
   } else {
@@ -2160,6 +2161,7 @@ api.declare({
       lastDateActive: new Date(),
       description: description || '',
       stability: stability || 'experimental',
+      actions: actions || [],
     });
   }
 
