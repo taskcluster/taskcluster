@@ -47,7 +47,7 @@ oneOf:
               type: object
               # Add something to ensure that all values are strings!
     additionalProperties: false
-    requiredProperties:
+    required:
       - requests
       - storageType
       - expires
