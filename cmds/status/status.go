@@ -27,6 +27,7 @@ var (
 	validArgs         []string
 	cache             = Cache()
 	pingURLsCachePath = filepath.Join("cmds", "status", "pingURLs.json")
+	red               = color.New(color.FgRed)
 	magenta           = color.New(color.FgMagenta)
 	yellow            = color.New(color.FgYellow)
 	green             = color.New(color.FgGreen)
@@ -255,14 +256,19 @@ outer:
 
 func respbody(service string) error {
 	var servstat PingResponse
+	fmt.Fprintf(os.Stderr, "%v\n", service)
 	err := objectFromJSONURL(pingURLs[service], &servstat)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "Bad (!= 200) status code") {
+			red.Fprintf(os.Stderr, "\t%v\n", err)
+			return nil
+		}
 		return err
 	}
 	if servstat.Alive {
-		living := "Alive"
-		fmt.Fprintf(os.Stderr, "      %v\n", service)
-		green.Fprintf(os.Stderr, "      %v\n", living)
+		green.Fprintln(os.Stderr, "\tAlive")
+	} else {
+		yellow.Fprintln(os.Stderr, "\tDead")
 	}
 
 	return nil
@@ -275,7 +281,7 @@ func status(cmd *cobra.Command, args []string) error {
 	for _, service := range args {
 		err := respbody(service)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 	return nil
