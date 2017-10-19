@@ -292,7 +292,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 	case "number":
 		typ = "float64"
 	case "integer":
-		typ = "int"
+		typ = "int64"
 	case "boolean":
 		typ = "bool"
 	// json type string maps to go type string, so only need to test case of when
