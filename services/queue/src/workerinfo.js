@@ -95,6 +95,7 @@ class WorkerInfo {
           description: '',
           stability: 'experimental',
           lastDateActive: new Date(),
+          actions: [],
         });
       }));
     }

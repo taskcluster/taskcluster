@@ -25,4 +25,50 @@ properties:
       deleted by the queue.
     type:         string
     format:       date-time
+  actions:
+    type:         array
+    items:
+      type:       object
+      title:      Actions
+      description: |
+        Actions are defined on the provisioner. When an action is triggered,
+        it will use the `url` and `context` property to construct the URL and
+        perform a `POST` request. Note that the request will be signed with the
+        user's Taskcluster credentials.
+        If `url='https://hardware-provisioner.mozilla-releng.net/v1/power-cycle'`
+        and `context=‘worker-type’` for instance, the constructed URL will be
+        `'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+        In other words, `url` handles the path name and `context` constructs the query string.
+      properties:
+        name:
+          title:  "Name"
+          description: |
+            Short names for things like logging/error messages.
+          type: string
+        title:
+          title:  "Title"
+          description: |
+            Appropriate title for any sort of Modal prompt.
+        context:
+          title:  "Context"
+          description: {$const: action-context-description}
+          type:   string
+          enum:   ["provisioner", "worker-type", "worker"]
+        url:
+          title:  "URL"
+          description: {$const: action-url-description}
+          type:   string
+          format: uri
+        description:
+          title:  "Description"
+          description: |
+            Description of the provisioner.
+          type:   string
+      additionalProperties: false
+      required:
+        - name
+        - title
+        - context
+        - url
+        - description
 additionalProperties: false
