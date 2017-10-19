@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
+	v1client "github.com/taskcluster/taskcluster-cli/external/pkg/docker-exec-ws"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-worker/engines"
@@ -83,7 +84,11 @@ func Execute(cmd *cobra.Command, args []string) error {
 
 	switch redirectURL.Query().Get("v") {
 	case "1":
-		return errors.New("the shell client doens't yet support v1 shells")
+		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
+		shell, err = v1client.Dial(sockURL.String(), []string{"bash"}, tty)
+		if err != nil {
+			return fmt.Errorf("could not create the shell client: %v", err)
+		}
 	case "2":
 		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
 		shell, err = v2client.Dial(sockURL.String(), []string{"bash"}, tty)
