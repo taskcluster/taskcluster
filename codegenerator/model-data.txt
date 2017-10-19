@@ -1,4 +1,4 @@
-Generated: 1508426626
+Generated: 1508433884
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -8918,6 +8918,7 @@ OneOf
         Type                   = 'string'
         TypeName               = 'StorageType'
         SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType'
+    Required               = '[requests storageType expires]'
     Title                  = 'Blob Artifact Response'
     Type HAS NOT BEEN SET!!!
     TypeName               = 'BlobArtifactResponse'
@@ -9100,6 +9101,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'StorageType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType'
+Required               = '[requests storageType expires]'
 Title                  = 'Blob Artifact Response'
 Type HAS NOT BEEN SET!!!
 TypeName               = 'BlobArtifactResponse'
