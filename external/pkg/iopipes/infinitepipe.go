@@ -1,4 +1,4 @@
-package v1
+package iopipes
 
 import (
 	"io"
@@ -20,9 +20,8 @@ type InfinitePipeWriter struct {
 	tell   chan<- bool
 }
 
-// InfinitePipe is similar to ioext.AsyncPipe() except that writes will always
-// succeed. Data will be added to an internal buffer that can grow bigger than
-// the specified capacity.
+// InfinitePipe is similar to io.Pipe() except that writes will always
+// succeed. Data will be added to an internal buffer that will always grow.
 // Additionally, you may supply a channel tell that will be told whenever
 // the Infinite channel has been emptied, so that more bytes can be requested
 // to be written.

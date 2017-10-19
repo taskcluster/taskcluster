@@ -1,4 +1,4 @@
-package v1
+package dockerExecWS
 
 import (
 	"encoding/binary"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/taskcluster/taskcluster-cli/external/pkg/iopipes"
 	"github.com/taskcluster/taskcluster-worker/plugins/interactive/shellconsts"
 	"github.com/taskcluster/taskcluster-worker/runtime/atomics"
 )
@@ -43,9 +44,9 @@ type ShellClient struct {
 	stdin        io.WriteCloser
 	stdinReader  io.ReadCloser
 	stdout       io.ReadCloser
-	stdoutWriter *DrainingPipeWriter
+	stdoutWriter *iopipes.DrainingPipeWriter
 	stderr       io.ReadCloser
-	stderrWriter *DrainingPipeWriter
+	stderrWriter *iopipes.DrainingPipeWriter
 }
 
 // Dial will built a proper shell websocket URL, connect to the server and return an initialized shell client.
@@ -93,10 +94,10 @@ func Dial(socketURL string, command []string, tty bool) (*ShellClient, error) {
 
 // New creates a new v1 ShellClient from an existing websocket.
 func New(ws *websocket.Conn) *ShellClient {
-	stdinReader, stdin := InfinitePipe(nil)
+	stdinReader, stdin := iopipes.InfinitePipe(nil)
 	outputChan := make(chan bool)
-	stdout, stdoutWriter := DrainingPipe(MaxOutstandingBytes, outputChan)
-	stderr, stderrWriter := DrainingPipe(MaxOutstandingBytes, outputChan)
+	stdout, stdoutWriter := iopipes.DrainingPipe(MaxOutstandingBytes, outputChan)
+	stderr, stderrWriter := iopipes.DrainingPipe(MaxOutstandingBytes, outputChan)
 
 	s := &ShellClient{
 		ws:      ws,
@@ -185,13 +186,13 @@ func (s *ShellClient) resumeClient() {
 // pauseServer lets the server know that we aren't ready to receive messages.
 func (s *ShellClient) pauseServer() error {
 	fmt.Fprintln(os.Stderr, "Pausing server")
-	return s.send([]byte{MessageTypePause})
+	return s.send([]byte{messageTypePause})
 }
 
 // resumeServer lets the server know that we are ready to receive messages.
 func (s *ShellClient) resumeServer() error {
 	fmt.Fprintln(os.Stderr, "Resuming server")
-	return s.send([]byte{MessageTypeResume})
+	return s.send([]byte{messageTypeResume})
 }
 
 func (s *ShellClient) writeMessages() {
@@ -205,7 +206,7 @@ func (s *ShellClient) writeMessages() {
 		r := io.LimitReader(s.stdinReader, MaxOutstandingBytes)
 
 		m := make([]byte, 1+MaxOutstandingBytes)
-		m[0] = StreamStdin
+		m[0] = streamStdin
 
 		data := m[1:]
 		n, err := r.Read(data)
@@ -258,14 +259,14 @@ func (s *ShellClient) receiveMessages() {
 		}
 
 		switch msgType {
-		case MessageTypePause:
+		case messageTypePause:
 			s.pauseClient()
-		case MessageTypeResume:
+		case messageTypeResume:
 			s.resumeClient()
-		case StreamStdout:
+		case streamStdout:
 			_, err := s.stdoutWriter.Write(msgData)
 			if err != nil {
-				if err == ErrPipeFull {
+				if err == iopipes.ErrPipeFull {
 					// this isn't a "real" error condition, but we use it to signal that
 					// data should be buffered.
 					s.pauseServer()
@@ -277,10 +278,10 @@ func (s *ShellClient) receiveMessages() {
 					})
 				}
 			}
-		case StreamStderr:
+		case streamStderr:
 			_, err := s.stderrWriter.Write(msgData)
 			if err != nil {
-				if err == ErrPipeFull {
+				if err == iopipes.ErrPipeFull {
 					// this isn't a "real" error condition, but we use it to signal that
 					// data should be buffered.
 					s.pauseServer()
@@ -292,18 +293,18 @@ func (s *ShellClient) receiveMessages() {
 					})
 				}
 			}
-		case MessageTypeStopped:
+		case messageTypeStopped:
 			s.complete.Do(func() {
 				s.success = false
 				s.err = fmt.Errorf("Remote process terminated with error code %v", msgData[0])
 				s.dispose()
 			})
-		case MessageTypeShutdown:
+		case messageTypeShutdown:
 			s.complete.Do(func() {
 				s.dispose()
 			})
 			return
-		case MessageTypeError:
+		case messageTypeError:
 			// nothing.
 		}
 	}
@@ -333,7 +334,7 @@ func (s *ShellClient) StderrPipe() io.ReadCloser {
 // remote shell.
 func (s *ShellClient) SetSize(columns, rows uint16) error {
 	m := make([]byte, 5)
-	m[0] = MessageTypeResize
+	m[0] = messageTypeResize
 	binary.LittleEndian.PutUint16(m[1:], columns)
 	binary.LittleEndian.PutUint16(m[3:], rows)
 
