@@ -588,7 +588,7 @@ type (
 				//
 				// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/actions/items/properties/url
 				URL string `json:"url"`
-			} `json:"actions,omitempty"`
+			} `json:"actions"`
 
 			// Description of the provisioner.
 			//
@@ -669,6 +669,48 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#
 	ListWorkerTypesResponse struct {
 
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions
+		Actions []struct {
+
+			// Actions have a "context" that is one of provisioner, worker-type,
+			// or worker, indicating which it applies to. `context` is used to construct
+			// the query string of the `POST` request.
+			// If `context='worker'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+			// If `context='worker-type'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+			// If `context='provisioner'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}`.
+			//
+			// Possible values:
+			//   * "worker-type"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/context
+			Context string `json:"context"`
+
+			// Description of the provisioner.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/description
+			Description string `json:"description"`
+
+			// Short names for things like logging/error messages.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/name
+			Name string `json:"name"`
+
+			// Appropriate title for any sort of Modal prompt.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/title
+			Title json.RawMessage `json:"title"`
+
+			// When an action is triggered, the `url`
+			// and `context` property are used to make the `POST` request.
+			// The request needs to be signed with the user's Taskcluster credentials.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/url
+			URL string `json:"url"`
+		} `json:"actions"`
+
 		// Opaque `continuationToken` to be given as query-string option to get the
 		// next set of worker-types in the provisioner.
 		// This property is only present if another request is necessary to fetch all
@@ -736,6 +778,48 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#
 	ListWorkersResponse struct {
+
+		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions
+		Actions []struct {
+
+			// Actions have a "context" that is one of provisioner, worker-type,
+			// or worker, indicating which it applies to. `context` is used to construct
+			// the query string of the `POST` request.
+			// If `context='worker'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+			// If `context='worker-type'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+			// If `context='provisioner'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}`.
+			//
+			// Possible values:
+			//   * "worker"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/context
+			Context string `json:"context"`
+
+			// Description of the provisioner.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/description
+			Description string `json:"description"`
+
+			// Short names for things like logging/error messages.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/name
+			Name string `json:"name"`
+
+			// Appropriate title for any sort of Modal prompt.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/title
+			Title json.RawMessage `json:"title"`
+
+			// When an action is triggered, the `url`
+			// and `context` property are used to make the `POST` request.
+			// The request needs to be signed with the user's Taskcluster credentials.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/url
+			URL string `json:"url"`
+		} `json:"actions"`
 
 		// Opaque `continuationToken` to be given as query-string option to get the
 		// next set of workers in the worker-type.
@@ -2048,6 +2132,48 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#
 	WorkerResponse struct {
 
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions
+		Actions []struct {
+
+			// Actions have a "context" that is one of provisioner, worker-type,
+			// or worker, indicating which it applies to. `context` is used to construct
+			// the query string of the `POST` request.
+			// If `context='worker'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+			// If `context='worker-type'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+			// If `context='provisioner'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}`.
+			//
+			// Possible values:
+			//   * "worker"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/context
+			Context string `json:"context"`
+
+			// Description of the provisioner.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description
+			Description string `json:"description"`
+
+			// Short names for things like logging/error messages.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name
+			Name string `json:"name"`
+
+			// Appropriate title for any sort of Modal prompt.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/title
+			Title json.RawMessage `json:"title"`
+
+			// When an action is triggered, the `url`
+			// and `context` property are used to make the `POST` request.
+			// The request needs to be signed with the user's Taskcluster credentials.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url
+			URL string `json:"url"`
+		} `json:"actions"`
+
 		// Disabling a worker allows the machine to remain alive but not accept jobs.
 		// Enabling a worker on the other hand will resume accepting jobs.
 		//
@@ -2159,6 +2285,48 @@ type (
 	//
 	// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#
 	WorkerTypeResponse struct {
+
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions
+		Actions []struct {
+
+			// Actions have a "context" that is one of provisioner, worker-type,
+			// or worker, indicating which it applies to. `context` is used to construct
+			// the query string of the `POST` request.
+			// If `context='worker'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+			// If `context='worker-type'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+			// If `context='provisioner'`, the query string will be
+			// `?provisionerId=${PROVISIONER_ID}`.
+			//
+			// Possible values:
+			//   * "worker-type"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/context
+			Context string `json:"context"`
+
+			// Description of the provisioner.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/description
+			Description string `json:"description"`
+
+			// Short names for things like logging/error messages.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/name
+			Name string `json:"name"`
+
+			// Appropriate title for any sort of Modal prompt.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/title
+			Title json.RawMessage `json:"title"`
+
+			// When an action is triggered, the `url`
+			// and `context` property are used to make the `POST` request.
+			// The request needs to be signed with the user's Taskcluster credentials.
+			//
+			// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/url
+			URL string `json:"url"`
+		} `json:"actions"`
 
 		// Description of the worker-type.
 		//

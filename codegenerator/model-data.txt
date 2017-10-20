@@ -1,4 +1,4 @@
-Generated: 1508433884
+Generated: 1508505804
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7835,7 +7835,7 @@ Properties
           Type                   = 'string'
           TypeName               = 'Stability'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/stability'
-      Required               = '[provisionerId description stability expires lastDateActive]'
+      Required               = '[provisionerId description stability expires lastDateActive actions]'
       Title                  = 'Provisioner Information'
       Type                   = 'object'
       TypeName               = 'ProvisionerInformation'
@@ -7919,6 +7919,70 @@ Description            = 'Response from a `listWorkers` request.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#'
 Properties
+  Property 'actions' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Actions are defined on the provisioner. When an action is triggered,
+      it will use the `url` and `context` property to construct the URL and
+      perform a `POST` request. Note that the request will be signed with the
+      user's Taskcluster credentials.
+      '
+      Properties
+        Property 'context' =
+          Description            = 'Actions have a "context" that is one of provisioner, worker-type,
+          or worker, indicating which it applies to. `context` is used to construct
+          the query string of the `POST` request.
+          If `context='worker'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+          If `context='worker-type'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+          If `context='provisioner'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}`.
+          '
+          Enum                   = '[worker]'
+          Title                  = 'Context'
+          Type                   = 'string'
+          TypeName               = 'Context'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/context'
+        Property 'description' =
+          Description            = 'Description of the provisioner.
+          '
+          Title                  = 'Description'
+          Type                   = 'string'
+          TypeName               = 'Description'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/description'
+        Property 'name' =
+          Description            = 'Short names for things like logging/error messages.
+          '
+          Title                  = 'Name'
+          Type                   = 'string'
+          TypeName               = 'Name'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/name'
+        Property 'title' =
+          Description            = 'Appropriate title for any sort of Modal prompt.
+          '
+          Title                  = 'Title'
+          Type HAS NOT BEEN SET!!!
+          TypeName               = 'Title'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/title'
+        Property 'url' =
+          Description            = 'When an action is triggered, the `url`
+          and `context` property are used to make the `POST` request.
+          The request needs to be signed with the user's Taskcluster credentials.
+          '
+          Format                 = 'uri'
+          Title                  = 'URL'
+          Type                   = 'string'
+          TypeName               = 'URL'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/url'
+      Required               = '[name title context url description]'
+      Title                  = 'Actions'
+      Type                   = 'object'
+      TypeName               = 'Actions1'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items'
+    Type                   = 'array'
+    TypeName               = 'Actions'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions'
   Property 'continuationToken' =
     Description            = 'Opaque `continuationToken` to be given as query-string option to get the
     next set of workers in the worker-type.
@@ -8006,7 +8070,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'WorkersFromAWorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers'
-Required               = '[workers]'
+Required               = '[workers actions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Workers Response'
 Type                   = 'object'
@@ -8021,6 +8085,70 @@ Description            = 'Response from a `listWorkerTypes` request.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#'
 Properties
+  Property 'actions' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Actions are defined on the provisioner. When an action is triggered,
+      it will use the `url` and `context` property to construct the URL and
+      perform a `POST` request. Note that the request will be signed with the
+      user's Taskcluster credentials.
+      '
+      Properties
+        Property 'context' =
+          Description            = 'Actions have a "context" that is one of provisioner, worker-type,
+          or worker, indicating which it applies to. `context` is used to construct
+          the query string of the `POST` request.
+          If `context='worker'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+          If `context='worker-type'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+          If `context='provisioner'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}`.
+          '
+          Enum                   = '[worker-type]'
+          Title                  = 'Context'
+          Type                   = 'string'
+          TypeName               = 'Context'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/context'
+        Property 'description' =
+          Description            = 'Description of the provisioner.
+          '
+          Title                  = 'Description'
+          Type                   = 'string'
+          TypeName               = 'Description'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/description'
+        Property 'name' =
+          Description            = 'Short names for things like logging/error messages.
+          '
+          Title                  = 'Name'
+          Type                   = 'string'
+          TypeName               = 'Name'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/name'
+        Property 'title' =
+          Description            = 'Appropriate title for any sort of Modal prompt.
+          '
+          Title                  = 'Title'
+          Type HAS NOT BEEN SET!!!
+          TypeName               = 'Title'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/title'
+        Property 'url' =
+          Description            = 'When an action is triggered, the `url`
+          and `context` property are used to make the `POST` request.
+          The request needs to be signed with the user's Taskcluster credentials.
+          '
+          Format                 = 'uri'
+          Title                  = 'URL'
+          Type                   = 'string'
+          TypeName               = 'URL'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/url'
+      Required               = '[name title context url description]'
+      Title                  = 'Actions'
+      Type                   = 'object'
+      TypeName               = 'Actions1'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items'
+    Type                   = 'array'
+    TypeName               = 'Actions'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions'
   Property 'continuationToken' =
     Description            = 'Opaque `continuationToken` to be given as query-string option to get the
     next set of worker-types in the provisioner.
@@ -8100,7 +8228,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'WorkerTypesFromTheProvisioner'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes'
-Required               = '[workerTypes]'
+Required               = '[workerTypes actions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Worker-Types Response'
 Type                   = 'object'
@@ -10380,6 +10508,70 @@ Description            = 'Response containing information about a worker.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
 Properties
+  Property 'actions' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Actions are defined on the provisioner. When an action is triggered,
+      it will use the `url` and `context` property to construct the URL and
+      perform a `POST` request. Note that the request will be signed with the
+      user's Taskcluster credentials.
+      '
+      Properties
+        Property 'context' =
+          Description            = 'Actions have a "context" that is one of provisioner, worker-type,
+          or worker, indicating which it applies to. `context` is used to construct
+          the query string of the `POST` request.
+          If `context='worker'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+          If `context='worker-type'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+          If `context='provisioner'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}`.
+          '
+          Enum                   = '[worker]'
+          Title                  = 'Context'
+          Type                   = 'string'
+          TypeName               = 'Context'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/context'
+        Property 'description' =
+          Description            = 'Description of the provisioner.
+          '
+          Title                  = 'Description'
+          Type                   = 'string'
+          TypeName               = 'Description'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description'
+        Property 'name' =
+          Description            = 'Short names for things like logging/error messages.
+          '
+          Title                  = 'Name'
+          Type                   = 'string'
+          TypeName               = 'Name'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name'
+        Property 'title' =
+          Description            = 'Appropriate title for any sort of Modal prompt.
+          '
+          Title                  = 'Title'
+          Type HAS NOT BEEN SET!!!
+          TypeName               = 'Title'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/title'
+        Property 'url' =
+          Description            = 'When an action is triggered, the `url`
+          and `context` property are used to make the `POST` request.
+          The request needs to be signed with the user's Taskcluster credentials.
+          '
+          Format                 = 'uri'
+          Title                  = 'URL'
+          Type                   = 'string'
+          TypeName               = 'URL'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url'
+      Required               = '[name title context url description]'
+      Title                  = 'Actions'
+      Type                   = 'object'
+      TypeName               = 'Actions1'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items'
+    Type                   = 'array'
+    TypeName               = 'Actions'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions'
   Property 'disabled' =
     Description            = 'Disabling a worker allows the machine to remain alive but not accept jobs.
     Enabling a worker on the other hand will resume accepting jobs.
@@ -10476,7 +10668,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerTypeName'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType'
-Required               = '[provisionerId workerType workerGroup workerId recentTasks expires disabled firstClaim]'
+Required               = '[provisionerId workerType workerGroup workerId recentTasks expires disabled firstClaim actions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker Response'
 Type                   = 'object'
@@ -10491,6 +10683,70 @@ Description            = 'Response to a worker-type request from a provisioner.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
 Properties
+  Property 'actions' =
+    Items
+      Additional Properties  = 'false'
+      Description            = 'Actions are defined on the provisioner. When an action is triggered,
+      it will use the `url` and `context` property to construct the URL and
+      perform a `POST` request. Note that the request will be signed with the
+      user's Taskcluster credentials.
+      '
+      Properties
+        Property 'context' =
+          Description            = 'Actions have a "context" that is one of provisioner, worker-type,
+          or worker, indicating which it applies to. `context` is used to construct
+          the query string of the `POST` request.
+          If `context='worker'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}&workerGroup=${WORKER_GROUP}&workerId=${WORKER_ID}`.
+          If `context='worker-type'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}&workerType=${WORKER_TYPE}`.
+          If `context='provisioner'`, the query string will be
+          `?provisionerId=${PROVISIONER_ID}`.
+          '
+          Enum                   = '[worker-type]'
+          Title                  = 'Context'
+          Type                   = 'string'
+          TypeName               = 'Context'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/context'
+        Property 'description' =
+          Description            = 'Description of the provisioner.
+          '
+          Title                  = 'Description'
+          Type                   = 'string'
+          TypeName               = 'Description'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/description'
+        Property 'name' =
+          Description            = 'Short names for things like logging/error messages.
+          '
+          Title                  = 'Name'
+          Type                   = 'string'
+          TypeName               = 'Name'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/name'
+        Property 'title' =
+          Description            = 'Appropriate title for any sort of Modal prompt.
+          '
+          Title                  = 'Title'
+          Type HAS NOT BEEN SET!!!
+          TypeName               = 'Title'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/title'
+        Property 'url' =
+          Description            = 'When an action is triggered, the `url`
+          and `context` property are used to make the `POST` request.
+          The request needs to be signed with the user's Taskcluster credentials.
+          '
+          Format                 = 'uri'
+          Title                  = 'URL'
+          Type                   = 'string'
+          TypeName               = 'URL'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/url'
+      Required               = '[name title context url description]'
+      Title                  = 'Actions'
+      Type                   = 'object'
+      TypeName               = 'Actions1'
+      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items'
+    Type                   = 'array'
+    TypeName               = 'Actions'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions'
   Property 'description' =
     Description            = 'Description of the worker-type.
     '
@@ -10546,7 +10802,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerTypeName'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType'
-Required               = '[workerType provisionerId description stability expires lastDateActive]'
+Required               = '[workerType provisionerId description stability expires lastDateActive actions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker-type Response'
 Type                   = 'object'
