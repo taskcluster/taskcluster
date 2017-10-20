@@ -187,7 +187,7 @@ func FilenameFromURL(url string, extension string) (filename string) {
 	if err == nil {
 		filename = unescaped
 	}
-	if strings.HasSuffix(filename, extension) {
+	if strings.HasSuffix(strings.ToLower(filename), strings.ToLower(extension)) {
 		return
 	}
 	filename += extension
