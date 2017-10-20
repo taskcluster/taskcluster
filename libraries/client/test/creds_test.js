@@ -1,10 +1,9 @@
 suite('client credential handling', function() {
-  var base            = require('taskcluster-base');
   var taskcluster     = require('../');
   var assert          = require('assert');
   var path            = require('path');
   var debug           = require('debug')('test:client');
-  var request         = require('superagent-promise');
+  var request         = require('superagent');
   var _               = require('lodash');
 
   // This suite exercises the credential-handling functionality of the client
@@ -35,9 +34,9 @@ suite('client credential handling', function() {
         clientScopes: [],
         requiredScopes: [],
       }), {
-      clientId: 'tester',
-      scopes: [],
-    });
+        clientId: 'tester',
+        scopes: [],
+      });
   });
 
   test('bad authentication', async () => {
@@ -64,17 +63,17 @@ suite('client credential handling', function() {
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:specific'],
       }), {
-      clientId: 'tester',
-      scopes: ['scopes:specific'],
-    });
+        clientId: 'tester',
+        scopes: ['scopes:specific'],
+      });
   });
 
   test('authorizedScopes, insufficient', async () => {
     await expectError(client({
-        authorizedScopes: ['scopes:something-else'],
+      authorizedScopes: ['scopes:something-else'],
     }).testAuthenticate({
-        clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:specific'],
+      clientScopes: ['scopes:*'],
+      requiredScopes: ['scopes:specific'],
     }), 'InsufficientScopes');
   });
 
@@ -92,9 +91,9 @@ suite('client credential handling', function() {
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:specific'],
       }), {
-      clientId: 'tester',
-      scopes: ['scopes:specific'],
-    });
+        clientId: 'tester',
+        scopes: ['scopes:specific'],
+      });
   });
 
   test('unnamed temporary credentials, insufficient', async () => {
@@ -107,8 +106,8 @@ suite('client credential handling', function() {
       },
     });
     await expectError(client({credentials}).testAuthenticate({
-        clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:specific'],
+      clientScopes: ['scopes:*'],
+      requiredScopes: ['scopes:specific'],
     }), 'InsufficientScopes');
   });
 
@@ -122,8 +121,8 @@ suite('client credential handling', function() {
       },
     });
     await expectError(client({credentials}).testAuthenticate({
-        clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:specific'],
+      clientScopes: ['scopes:*'],
+      requiredScopes: ['scopes:specific'],
     }), 'AuthenticationFailed');
   });
 
@@ -138,15 +137,15 @@ suite('client credential handling', function() {
       },
     });
     assert.equal(credentials.clientId, 'my-temp-cred',
-                 "temp cred name doesn't appear as clientId");
+                 'temp cred name doesn\'t appear as clientId');
     assert.deepEqual(
       await client({credentials}).testAuthenticate({
         clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
         requiredScopes: ['scopes:specific'],
       }), {
-      clientId: 'my-temp-cred',
-      scopes: ['scopes:specific'],
-    });
+        clientId: 'my-temp-cred',
+        scopes: ['scopes:specific'],
+      });
   });
 
   test('temporary credentials, authorizedScopes', async () => {
@@ -166,9 +165,9 @@ suite('client credential handling', function() {
         clientScopes: ['scopes:*'],
         requiredScopes: ['scopes:subcategory:specific'],
       }), {
-      clientId: 'tester',
-      scopes: ['scopes:subcategory:specific'],
-    });
+        clientId: 'tester',
+        scopes: ['scopes:subcategory:specific'],
+      });
   });
 
   test('temporary credentials, authorizedScopes, insufficient', async () => {
@@ -181,12 +180,12 @@ suite('client credential handling', function() {
       },
     });
     await expectError(client({
-        credentials,
-        authorizedScopes: ['scopes:subcategory:wrong-scope'],
-      }).testAuthenticate({
-        clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:subcategory:specific'],
-      }), 'InsufficientScopes');
+      credentials,
+      authorizedScopes: ['scopes:subcategory:wrong-scope'],
+    }).testAuthenticate({
+      clientScopes: ['scopes:*'],
+      requiredScopes: ['scopes:subcategory:specific'],
+    }), 'InsufficientScopes');
   });
 
   test('temporary credentials, authorizedScopes, bad authentication', async () => {
@@ -199,12 +198,12 @@ suite('client credential handling', function() {
       },
     });
     await expectError(client({
-        credentials,
-        authorizedScopes: ['scopes:subcategory:specific'],
-      }).testAuthenticate({
-        clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:subcategory:specific'],
-      }), 'AuthenticationFailed');
+      credentials,
+      authorizedScopes: ['scopes:subcategory:specific'],
+    }).testAuthenticate({
+      clientScopes: ['scopes:*'],
+      requiredScopes: ['scopes:subcategory:specific'],
+    }), 'AuthenticationFailed');
   });
 
   test('named temporary credentials, authorizedScopes', async () => {
@@ -218,7 +217,7 @@ suite('client credential handling', function() {
       },
     });
     assert.equal(credentials.clientId, 'my-temp-cred',
-                 "temp cred name doesn't appear as clientId");
+                 'temp cred name doesn\'t appear as clientId');
     assert.deepEqual(
       await client({
         credentials,
@@ -227,22 +226,21 @@ suite('client credential handling', function() {
         clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
         requiredScopes: ['scopes:specific'],
       }), {
-      clientId: 'my-temp-cred',
-      scopes: ['scopes:specific', 'scopes:another'],
-    });
+        clientId: 'my-temp-cred',
+        scopes: ['scopes:specific', 'scopes:another'],
+      });
   });
 
   let getJson = async function(url) {
-    let res = await request.get(url).end();
+    let res = await request.get(url);
     return res.body;
   };
 
   test('buildSignedUrl', async () => {
     let cl = client();
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
-    assert((await request.get(url).end()).ok);
+    assert((await request.get(url)).ok);
   });
-
 
   test('buildSignedUrl authorizedScopes', async () => {
     let cl = client({
@@ -251,7 +249,7 @@ suite('client credential handling', function() {
         accessToken:  'no-secret',
       },
       authorizedScopes: ['test:authenticate-get', 'test:foo'],
-    })
+    });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
                      ['test:authenticate-get', 'test:foo']);
@@ -264,9 +262,9 @@ suite('client credential handling', function() {
         accessToken:  'no-secret',
       },
       authorizedScopes: ['test:get'],  // no test:authenticate-get
-    })
+    });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
-    await request.get(url).end().then(() => assert(false), err => {
+    await request.get(url).then(() => assert(false), err => {
       assert(err.response.statusCode === 403);
     });
   });
@@ -281,7 +279,7 @@ suite('client credential handling', function() {
       },
     });
     let cl = client({
-      credentials: tempCreds
+      credentials: tempCreds,
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
@@ -298,12 +296,12 @@ suite('client credential handling', function() {
       },
     });
     let cl = client({
-      credentials: tempCreds
+      credentials: tempCreds,
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet, {
       expiration: 600,
     });
-    assert((await request.get(url).end()).ok);
+    assert((await request.get(url)).ok);
   });
 
   test('buildSignedUrl with temporary credentials (expired)', async () => {
@@ -316,12 +314,12 @@ suite('client credential handling', function() {
       },
     });
     let cl = client({
-      credentials: tempCreds
+      credentials: tempCreds,
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet, {
       expiration: -600, // This seems to work, not sure how long it will work...
     });
-    await request.get(url).end().then(() => assert(false), err => {
+    await request.get(url).then(() => assert(false), err => {
       assert(err.response.statusCode === 401);
     });
   });
@@ -380,9 +378,9 @@ suite('client credential handling', function() {
           clientScopes: [],
           requiredScopes: [],
         }), {
-        clientId: 'tester',
-        scopes: [],
-      });
+          clientId: 'tester',
+          scopes: [],
+        });
     });
   });
 });

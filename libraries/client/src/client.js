@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var request     = require('superagent-promise');
+var request     = require('superagent');
 var debug       = require('debug')('taskcluster-client');
 var _           = require('lodash');
 var assert      = require('assert');
@@ -19,7 +19,7 @@ var querystring = require('querystring');
 var AGENT_OPTIONS = {
   maxSockets:       50,
   maxFreeSockets:   0,
-  keepAlive:        false
+  keepAlive:        false,
 };
 
 /**
@@ -29,7 +29,7 @@ var AGENT_OPTIONS = {
  */
 var DEFAULT_AGENTS = {
   http:   new http.Agent(AGENT_OPTIONS),
-  https:  new https.Agent(AGENT_OPTIONS)
+  https:  new https.Agent(AGENT_OPTIONS),
 };
 
 // Exports agents, consumers can provide their own default agents and tests
@@ -42,7 +42,7 @@ var _defaultOptions = {
   credentials: {
     clientId:     process.env.TASKCLUSTER_CLIENT_ID,
     accessToken:  process.env.TASKCLUSTER_ACCESS_TOKEN,
-    certificate:  process.env.TASKCLUSTER_CERTIFICATE
+    certificate:  process.env.TASKCLUSTER_CERTIFICATE,
   },
   // Request time out (defaults to 30 seconds)
   timeout:        30 * 1000,
@@ -94,9 +94,9 @@ var makeRequest = function(client, method, url, payload, query) {
       credentials: {
         id:         client._options.credentials.clientId,
         key:        client._options.credentials.accessToken,
-        algorithm:  'sha256'
+        algorithm:  'sha256',
       },
-      ext:          client._extData
+      ext:          client._extData,
     });
     req.set('Authorization', header.field);
   }
@@ -104,7 +104,6 @@ var makeRequest = function(client, method, url, payload, query) {
   // Return request
   return req;
 };
-
 
 /**
  * Create a client class from a JSON reference, and an optional `name`, which is
@@ -135,7 +134,7 @@ var makeRequest = function(client, method, url, payload, query) {
  * `baseUrl` and `exchangePrefix` defaults to values from reference.
  */
 exports.createClient = function(reference, name) {
-  if (!name || typeof(name) !== 'string') {
+  if (!name || typeof name !== 'string') {
     name = 'Unknown';
   }
 
@@ -143,19 +142,19 @@ exports.createClient = function(reference, name) {
   var Client = function(options) {
     this._options = _.defaults({}, options || {}, {
       baseUrl:          reference.baseUrl        || '',
-      exchangePrefix:   reference.exchangePrefix || ''
+      exchangePrefix:   reference.exchangePrefix || '',
     }, _defaultOptions);
 
     // Remove possible trailing slash from baseUrl
-    this._options.baseUrl = this._options.baseUrl.replace(/\/$/, '')
+    this._options.baseUrl = this._options.baseUrl.replace(/\/$/, '');
 
     if (this._options.stats) {
-      throw new Error("options.stats is now deprecated! Use options.monitor instead.");
+      throw new Error('options.stats is now deprecated! Use options.monitor instead.');
     }
 
     if (this._options.randomizationFactor < 0 ||
         this._options.randomizationFactor >= 1) {
-      throw new Error("options.randomizationFactor must be between 0 and 1!");
+      throw new Error('options.randomizationFactor must be between 0 and 1!');
     }
 
     // Shortcut for which default agent to use...
@@ -188,14 +187,13 @@ exports.createClient = function(reference, name) {
       if (this._options.credentials.certificate) {
         ext.certificate = this._options.credentials.certificate;
         // Parse as JSON if it's a string
-        if (typeof(ext.certificate) === 'string') {
+        if (typeof ext.certificate === 'string') {
           try {
             ext.certificate = JSON.parse(ext.certificate);
-          }
-          catch(err) {
-            debug("Failed to parse credentials.certificate, err: %s, JSON: %j",
+          } catch (err) {
+            debug('Failed to parse credentials.certificate, err: %s, JSON: %j',
                   err, err);
-            throw new Error("JSON.parse(): Failed for configured certificate");
+            throw new Error('JSON.parse(): Failed for configured certificate');
           }
         }
       }
@@ -237,18 +235,18 @@ exports.createClient = function(reference, name) {
       // Validate number of arguments
       var N = args.length;
       if (N != nb_args && (optKeys.length === 0 || N != nb_args + 1)) {
-        throw new Error("Function " + entry.name + " takes " + nb_args +
-                        " arguments, but was given " + N +
-                        " arguments");
+        throw new Error('Function ' + entry.name + ' takes ' + nb_args +
+                        ' arguments, but was given ' + N +
+                        ' arguments');
       }
       // Substitute parameters into route
       var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
         var index = entry.args.indexOf(arg);
         if (index !== -1) {
           var param = args[index];
-          if (typeof(param) !== 'string' && typeof(param) !== 'number') {
-            throw new Error("URL parameter " + arg + " must be a string, but " +
-                            "we received a: " + typeof(param));
+          if (typeof param !== 'string' && typeof param !== 'number') {
+            throw new Error('URL parameter ' + arg + ' must be a string, but ' +
+                            'we received a: ' + typeof param);
           }
           return encodeURIComponent(param);
         }
@@ -266,8 +264,8 @@ exports.createClient = function(reference, name) {
       if (query) {
         _.keys(query).forEach(function(key) {
           if (!_.includes(optKeys, key)) {
-            throw new Error("Function " + entry.name + " takes options: " +
-                            optKeys.join(', ') + " but was given " + key);
+            throw new Error('Function ' + entry.name + ' takes options: ' +
+                            optKeys.join(', ') + ' but was given ' + key);
           }
         });
       }
@@ -285,7 +283,7 @@ exports.createClient = function(reference, name) {
       var retryRequest = function() {
         // Send request
         var sendRequest = function() {
-          debug("Calling: %s, retry: %s", entry.name, attempts - 1);
+          debug('Calling: %s, retry: %s', entry.name, attempts - 1);
           // Make request and handle response or error
           return makeRequest(
             that,
@@ -293,17 +291,17 @@ exports.createClient = function(reference, name) {
             url,
             payload,
             query
-          ).end().then(function(res) {
+          ).then(function(res) {
             // If request was successful, accept the result
-            debug("Success calling: %s, (%s retries)",
+            debug('Success calling: %s, (%s retries)',
                   entry.name, attempts - 1);
             if (monitor) {
               var d = process.hrtime(start);
               monitor.measure([entry.name, 'success'], d[0] * 1000 + d[1] / 1000000);
               monitor.count([entry.name, 'success']);
             }
-            if(!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
-              debug("Empty response from server: call: %s, method: %s",entry.name,entry.method);
+            if (!_.includes(res.headers['content-type'], 'application/json') || !res.body) {
+              debug('Empty response from server: call: %s, method: %s', entry.name, entry.method);
               return undefined;
             }
             return res.body;
@@ -313,21 +311,21 @@ exports.createClient = function(reference, name) {
             if (res) {
               // Decide if we should retry
               if (attempts <= that._options.retries &&
-                  500 <= res.status &&  // Check if it's a 5xx error
+                  res.status >= 500 &&  // Check if it's a 5xx error
                   res.status < 600) {
-                debug("Error calling: %s now retrying, info: %j",
+                debug('Error calling: %s now retrying, info: %j',
                       entry.name, res.body);
                 return retryRequest();
               }
               // If not retrying, construct error object and reject
-              debug("Error calling: %s NOT retrying!, info: %j",
+              debug('Error calling: %s NOT retrying!, info: %j',
                     entry.name, res.body);
-              var message = "Unknown Server Error";
+              var message = 'Unknown Server Error';
               if (res.status === 401) {
-                message = "Authentication Error";
+                message = 'Authentication Error';
               }
               if (res.status === 500) {
-                message = "Internal Server Error";
+                message = 'Internal Server Error';
               }
               err = new Error(res.body.message || message);
               err.body = res.body;
@@ -348,11 +346,11 @@ exports.createClient = function(reference, name) {
 
             // Decide if we should retry
             if (attempts <= that._options.retries) {
-              debug("Request error calling %s (retrying), err: %s, JSON: %s",
+              debug('Request error calling %s (retrying), err: %s, JSON: %s',
                     entry.name, err, err);
               return retryRequest();
             }
-            debug("Request error calling %s NOT retrying!, err: %s, JSON: %s",
+            debug('Request error calling %s NOT retrying!, err: %s, JSON: %s',
                   entry.name, err, err);
             if (monitor) {
               var d = process.hrtime(start);
@@ -361,7 +359,7 @@ exports.createClient = function(reference, name) {
             }
             throw err;
           });
-        }
+        };
 
         // Increment attempt count, but track how many we had before.
         attempts += 1;
@@ -377,7 +375,7 @@ exports.createClient = function(reference, name) {
           delay = Math.pow(2, attempts - 1) * that._options.delayFactor;
           // Apply randomization factor
           var rf = that._options.randomizationFactor;
-          delay = delay * (Math.random() * 2 * rf + 1 - rf);
+          delay *= Math.random() * 2 * rf + 1 - rf;
           // Always limit with a maximum delay
           delay = Math.min(delay, that._options.maxDelay);
           // Sleep then send the request
@@ -402,7 +400,7 @@ exports.createClient = function(reference, name) {
   }).forEach(function(entry) {
     // Create function for routing-key pattern construction
     Client.prototype[entry.name] = function(routingKeyPattern) {
-      if (typeof(routingKeyPattern) !== 'string') {
+      if (typeof routingKeyPattern !== 'string') {
         // Allow for empty routing key patterns
         if (routingKeyPattern === undefined ||
             routingKeyPattern === null) {
@@ -410,7 +408,7 @@ exports.createClient = function(reference, name) {
         }
         // Check that the routing key pattern is an object
         assert(routingKeyPattern instanceof Object,
-               "routingKeyPattern must be an object");
+               'routingKeyPattern must be an object');
 
         // Construct routingkey pattern as string from reference
         routingKeyPattern = entry.routingKey.map(function(key) {
@@ -421,21 +419,21 @@ exports.createClient = function(reference, name) {
             value =  key.constant;
           }
           // If number convert to string
-          if (typeof(value) === 'number') {
+          if (typeof value === 'number') {
             return '' + value;
           }
           // Validate string and return
-          if (typeof(value) === 'string') {
+          if (typeof value === 'string') {
             // Check for multiple words
             assert(key.multipleWords || value.indexOf('.') === -1,
-                   "routingKey pattern '" + value + "' for " + key.name +
-                   " cannot contain dots as it does not hold multiple words");
+                   'routingKey pattern \'' + value + '\' for ' + key.name +
+                   ' cannot contain dots as it does not hold multiple words');
             return value;
           }
           // Check that we haven't got an invalid value
           assert(value === null || value === undefined,
-                "Value: '" + value + "' is not supported as routingKey "+
-                "pattern for " + key.name);
+                'Value: \'' + value + '\' is not supported as routingKey '+
+                'pattern for ' + key.name);
           // Return default pattern for entry not being matched
           return key.multipleWords ? '#' : '*';
         }).join('.');
@@ -445,7 +443,7 @@ exports.createClient = function(reference, name) {
       return {
         exchange:             this._options.exchangePrefix + entry.exchange,
         routingKeyPattern:    routingKeyPattern,
-        routingKeyReference:  _.cloneDeep(entry.routingKey)
+        routingKeyReference:  _.cloneDeep(entry.routingKey),
       };
     };
   });
@@ -454,143 +452,142 @@ exports.createClient = function(reference, name) {
   // input parameters
   Client.prototype.buildUrl = function() {
       // Convert arguments to actual array
-      var args = Array.prototype.slice.call(arguments);
-      if (args.length == 0) {
-        throw new Error("buildUrl(method, arg1, arg2, ...) takes a least one " +
-                        "argument!");
-      }
+    var args = Array.prototype.slice.call(arguments);
+    if (args.length == 0) {
+      throw new Error('buildUrl(method, arg1, arg2, ...) takes a least one ' +
+                        'argument!');
+    }
       // Find the method
-      var method = args.shift();
-      var entry  = method.entryReference;
-      if (!entry || entry.type !== 'function') {
-        throw new Error("method in buildUrl(method, arg1, arg2, ...) must be " +
-                        "an API method from the same object!");
-      }
+    var method = args.shift();
+    var entry  = method.entryReference;
+    if (!entry || entry.type !== 'function') {
+      throw new Error('method in buildUrl(method, arg1, arg2, ...) must be ' +
+                        'an API method from the same object!');
+    }
 
       // Get the query-string options taken
-      var optKeys = entry.query || [];
-      var supportsOpts = (optKeys.length !== 0);
+    var optKeys = entry.query || [];
+    var supportsOpts = optKeys.length !== 0;
 
-      debug("build url for: " + entry.name);
+    debug('build url for: ' + entry.name);
       // Validate number of arguments
-      var N = entry.args.length;
-      if (args.length !== N && (!supportsOpts || args.length !== N + 1)) {
-        throw new Error("Function " + entry.name + "buildUrl() takes " +
-                        (N + 1) + " arguments, but was given " +
-                        (args.length + 1) + " arguments");
-      }
+    var N = entry.args.length;
+    if (args.length !== N && (!supportsOpts || args.length !== N + 1)) {
+      throw new Error('Function ' + entry.name + 'buildUrl() takes ' +
+                        (N + 1) + ' arguments, but was given ' +
+                        (args.length + 1) + ' arguments');
+    }
 
       // Substitute parameters into route
-      var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
-        var index = entry.args.indexOf(arg);
-        if (index !== -1) {
-          var param = args[index];
-          if (typeof(param) !== 'string' && typeof(param) !== 'number') {
-            throw new Error("URL parameter " + arg + " must be a string, but " +
-                            "we received a: " + typeof(param));
-          }
-          return encodeURIComponent(param);
+    var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
+      var index = entry.args.indexOf(arg);
+      if (index !== -1) {
+        var param = args[index];
+        if (typeof param !== 'string' && typeof param !== 'number') {
+          throw new Error('URL parameter ' + arg + ' must be a string, but ' +
+                            'we received a: ' + typeof param);
         }
-        return text; // Preserve original
-      });
+        return encodeURIComponent(param);
+      }
+      return text; // Preserve original
+    });
 
       // Find query string options (if present)
-      var query = args[N] || '';
-      if (query) {
-        _.keys(query).forEach(function(key) {
-          if (!_.includes(optKeys, key)) {
-            throw new Error("Function " + entry.name + " takes options: " +
-                            optKeys.join(', ') + " but was given " + key);
-          }
-        });
-
-        query = querystring.stringify(query);
-        if (query.length > 0) {
-          query = '?' + query;
+    var query = args[N] || '';
+    if (query) {
+      _.keys(query).forEach(function(key) {
+        if (!_.includes(optKeys, key)) {
+          throw new Error('Function ' + entry.name + ' takes options: ' +
+                            optKeys.join(', ') + ' but was given ' + key);
         }
-      }
-
-      return this._options.baseUrl + endpoint + query;
-    };
-
-    // Utility function to construct a bewit URL for GET requests
-    Client.prototype.buildSignedUrl = function() {
-      // Convert arguments to actual array
-      var args = Array.prototype.slice.call(arguments);
-      if (args.length == 0) {
-        throw new Error("buildSignedUrl(method, arg1, arg2, ..., [options]) " +
-                        "takes a least one argument!");
-      }
-
-      // Find method and reference entry
-      var method = args[0];
-      var entry  = method.entryReference;
-      if (entry.method !== 'get') {
-        throw new Error("buildSignedUrl only works for GET requests");
-      }
-
-      // Default to 15 minutes before expiration
-      var expiration = 15 * 60;
-
-      // Check if method supports query-string options
-      var supportsOpts = ((entry.query || []).length !== 0)
-
-      // if longer than method + args, then we have options too
-      var N = entry.args.length + 1;
-      if (supportsOpts) {
-        N += 1;
-      }
-      if (args.length > N) {
-        // Get request options
-        var options = args.pop();
-
-        // Get expiration from options
-        expiration = options.expiration || expiration;
-
-        // Complain if expiration isn't a number
-        if (typeof(expiration) !== 'number') {
-          throw new Error("options.expiration must be a number");
-        }
-      }
-
-      // Build URL
-      var requestUrl = this.buildUrl.apply(this, args);
-
-      // Check that we have credentials
-      if (!this._options.credentials.clientId) {
-        throw new Error("credentials must be given");
-      }
-      if (!this._options.credentials.accessToken) {
-        throw new Error("accessToken must be given");
-      }
-
-      // Create bewit (this is messed up, function differs in browser)
-      var bewit = (hawk.client.getBewit || hawk.client.bewit)(requestUrl, {
-        credentials:    {
-          id:         this._options.credentials.clientId,
-          key:        this._options.credentials.accessToken,
-          algorithm:  'sha256'
-        },
-        ttlSec:         expiration,
-        ext:            this._extData
       });
 
-      // Add bewit to requestUrl
-      var urlParts = url.parse(requestUrl);
-      if (urlParts.search) {
-        urlParts.search += "&bewit=" + bewit;
-      } else {
-        urlParts.search = "?bewit=" + bewit;
+      query = querystring.stringify(query);
+      if (query.length > 0) {
+        query = '?' + query;
       }
+    }
+
+    return this._options.baseUrl + endpoint + query;
+  };
+
+    // Utility function to construct a bewit URL for GET requests
+  Client.prototype.buildSignedUrl = function() {
+      // Convert arguments to actual array
+    var args = Array.prototype.slice.call(arguments);
+    if (args.length == 0) {
+      throw new Error('buildSignedUrl(method, arg1, arg2, ..., [options]) ' +
+                        'takes a least one argument!');
+    }
+
+      // Find method and reference entry
+    var method = args[0];
+    var entry  = method.entryReference;
+    if (entry.method !== 'get') {
+      throw new Error('buildSignedUrl only works for GET requests');
+    }
+
+      // Default to 15 minutes before expiration
+    var expiration = 15 * 60;
+
+      // Check if method supports query-string options
+    var supportsOpts = (entry.query || []).length !== 0;
+
+      // if longer than method + args, then we have options too
+    var N = entry.args.length + 1;
+    if (supportsOpts) {
+      N += 1;
+    }
+    if (args.length > N) {
+        // Get request options
+      var options = args.pop();
+
+        // Get expiration from options
+      expiration = options.expiration || expiration;
+
+        // Complain if expiration isn't a number
+      if (typeof expiration !== 'number') {
+        throw new Error('options.expiration must be a number');
+      }
+    }
+
+      // Build URL
+    var requestUrl = this.buildUrl.apply(this, args);
+
+      // Check that we have credentials
+    if (!this._options.credentials.clientId) {
+      throw new Error('credentials must be given');
+    }
+    if (!this._options.credentials.accessToken) {
+      throw new Error('accessToken must be given');
+    }
+
+      // Create bewit (this is messed up, function differs in browser)
+    var bewit = (hawk.client.getBewit || hawk.client.bewit)(requestUrl, {
+      credentials:    {
+        id:         this._options.credentials.clientId,
+        key:        this._options.credentials.accessToken,
+        algorithm:  'sha256',
+      },
+      ttlSec:         expiration,
+      ext:            this._extData,
+    });
+
+      // Add bewit to requestUrl
+    var urlParts = url.parse(requestUrl);
+    if (urlParts.search) {
+      urlParts.search += '&bewit=' + bewit;
+    } else {
+      urlParts.search = '?bewit=' + bewit;
+    }
 
       // Return formatted URL
-      return url.format(urlParts);
-    };
+    return url.format(urlParts);
+  };
 
   // Return client class
   return Client;
 };
-
 
 // Load data from apis.js
 var apis = require('./apis');
@@ -631,7 +628,7 @@ exports.config = function(options) {
  * Returns an object on the form: {clientId, accessToken, certificate}
  */
 exports.createTemporaryCredentials = function(options) {
-  assert(options, "options are required");
+  assert(options, 'options are required');
 
   // Get now as default value for start
   var now = new Date();
@@ -640,34 +637,34 @@ exports.createTemporaryCredentials = function(options) {
   // Set default options
   options = _.defaults({}, options, {
     start:      now,
-    scopes:     []
+    scopes:     [],
   }, _defaultOptions);
 
   // Validate options
-  assert(options.credentials,             "options.credentials is required");
+  assert(options.credentials,             'options.credentials is required');
   assert(options.credentials.clientId,
-         "options.credentials.clientId is required");
+         'options.credentials.clientId is required');
   assert(options.credentials.accessToken,
-         "options.credentials.accessToken is required");
+         'options.credentials.accessToken is required');
   assert(options.credentials.certificate === undefined ||
          options.credentials.certificate === null,
-         "temporary credentials cannot be used to make new temporary " +
-         "credentials; ensure that options.credentials.certificate is null");
-  assert(options.start instanceof Date,   "options.start must be a Date");
-  assert(options.expiry instanceof Date,  "options.expiry must be a Date");
-  assert(options.scopes instanceof Array, "options.scopes must be an array");
+         'temporary credentials cannot be used to make new temporary ' +
+         'credentials; ensure that options.credentials.certificate is null');
+  assert(options.start instanceof Date,   'options.start must be a Date');
+  assert(options.expiry instanceof Date,  'options.expiry must be a Date');
+  assert(options.scopes instanceof Array, 'options.scopes must be an array');
   options.scopes.forEach(function(scope) {
-    assert(typeof(scope) === 'string',
-           "options.scopes must be an array of strings");
+    assert(typeof scope === 'string',
+           'options.scopes must be an array of strings');
   });
   assert(options.expiry.getTime() - options.start.getTime() <=
-         31 * 24 * 60 * 60 * 1000, "Credentials cannot span more than 31 days");
+         31 * 24 * 60 * 60 * 1000, 'Credentials cannot span more than 31 days');
 
   var isNamed = !!options.clientId;
 
   if (isNamed) {
     assert(options.clientId !== options.credentials.clientId,
-          "Credential issuer must be different from the name");
+          'Credential issuer must be different from the name');
   }
 
   // Construct certificate
@@ -677,7 +674,7 @@ exports.createTemporaryCredentials = function(options) {
     start:      options.start.getTime(),
     expiry:     options.expiry.getTime(),
     seed:       slugid.v4() + slugid.v4(),
-    signature:  null  // generated later
+    signature:  null,  // generated later
   };
   if (isNamed) {
     cert.issuer = options.credentials.clientId;
@@ -710,7 +707,7 @@ exports.createTemporaryCredentials = function(options) {
   return {
     clientId:     isNamed ? options.clientId : options.credentials.clientId,
     accessToken:  accessToken,
-    certificate:  JSON.stringify(cert)
+    certificate:  JSON.stringify(cert),
   };
 };
 
@@ -742,9 +739,9 @@ exports.credentialInformation = function(credentials) {
 
   // distinguish permacreds from temporary creds
   if (credentials.certificate) {
-    result.type = "temporary";
+    result.type = 'temporary';
     var cert;
-    if (typeof credentials.certificate === "string") {
+    if (typeof credentials.certificate === 'string') {
       try {
         cert = JSON.parse(credentials.certificate);
       } catch (err) {
@@ -761,7 +758,7 @@ exports.credentialInformation = function(credentials) {
       issuer = cert.issuer;
     }
   } else {
-    result.type = "permanent";
+    result.type = 'permanent';
   }
 
   var anonClient = new exports.Auth();

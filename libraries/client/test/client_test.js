@@ -1,122 +1,121 @@
 suite('client requests/responses', function() {
-  var base            = require('taskcluster-base');
   var taskcluster     = require('../');
   var assert          = require('assert');
   var path            = require('path');
   var debug           = require('debug')('test:client');
-  var request         = require('superagent-promise');
   var _               = require('lodash');
   var nock            = require('nock');
+  var _monitor        = require('taskcluster-lib-monitor');
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
   // and implemented via Nock.
   var reference = {
     version: 0,
-    $schema: "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-    title: "Fake API",
-    description: "Fake API",
-    baseUrl: "https://fake.taskcluster.net/v1",
+    $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+    title: 'Fake API',
+    description: 'Fake API',
+    baseUrl: 'https://fake.taskcluster.net/v1',
     entries: [
       {
-        type: "function",
-        method: "get",
-        route: "/get-test",
+        type: 'function',
+        method: 'get',
+        route: '/get-test',
         query: [],
         args: [],
-        name: "get",
-        stability: "experimental",
-        title: "Test Get",
-        description: "Place we can call to test GET",
+        name: 'get',
+        stability: 'experimental',
+        title: 'Test Get',
+        description: 'Place we can call to test GET',
         scopes: [],
       },
       {
-        type: "function",
-        method: "post",
-        route: "/post-test",
+        type: 'function',
+        method: 'post',
+        route: '/post-test',
         query: [],
         args: [],
-        name: "post",
-        stability: "experimental",
-        title: "Test Post",
-        description: "Place we can call to test POST",
+        name: 'post',
+        stability: 'experimental',
+        title: 'Test Post',
+        description: 'Place we can call to test POST',
         scopes: [],
-        input: "http://schemas.taskcluster.net/nothing.json"
+        input: 'http://schemas.taskcluster.net/nothing.json',
       },
       {
-        type: "function",
-        method: "post",
-        route: "/post-param/<param>",
+        type: 'function',
+        method: 'post',
+        route: '/post-param/<param>',
         query: [],
         args: ['param'],
-        name: "postParam",
-        stability: "experimental",
-        title: "Test Post Param",
-        description: "Place we can call to test POST with params",
+        name: 'postParam',
+        stability: 'experimental',
+        title: 'Test Post Param',
+        description: 'Place we can call to test POST with params',
         scopes: [],
-        input: "http://schemas.taskcluster.net/nothing.json"
+        input: 'http://schemas.taskcluster.net/nothing.json',
       },
       {
-        type: "function",
-        method: "post",
-        route: "/post-param-query/<param>",
+        type: 'function',
+        method: 'post',
+        route: '/post-param-query/<param>',
         query: ['option'],
         args: ['param'],
-        name: "postParamQuery",
-        stability: "experimental",
-        title: "Test Post Param Query",
-        description: "Place we can call to test POST with params and a query",
+        name: 'postParamQuery',
+        stability: 'experimental',
+        title: 'Test Post Param Query',
+        description: 'Place we can call to test POST with params and a query',
         scopes: [],
-        input: "http://schemas.taskcluster.net/nothing.json"
+        input: 'http://schemas.taskcluster.net/nothing.json',
       },
       {
-        type: "function",
-        method: "get",
-        route: "/url-param/<param>/list",
+        type: 'function',
+        method: 'get',
+        route: '/url-param/<param>/list',
         query: [],
         args: ['param'],
-        name: "param",
-        stability: "experimental",
-        title: "Test Params",
-        description: "Place we can call to test url parameters",
+        name: 'param',
+        stability: 'experimental',
+        title: 'Test Params',
+        description: 'Place we can call to test url parameters',
         scopes: [],
       },
       {
-        type: "function",
-        method: "get",
-        route: "/url-param2/<param1>/<param2>/list",
+        type: 'function',
+        method: 'get',
+        route: '/url-param2/<param1>/<param2>/list',
         query: [],
         args: ['param1', 'param2'],
-        name: "param2",
-        stability: "experimental",
-        title: "Test Params",
-        description: "Place we can call to test url parameters",
+        name: 'param2',
+        stability: 'experimental',
+        title: 'Test Params',
+        description: 'Place we can call to test url parameters',
         scopes: [],
       },
       {
-        type: "function",
-        method: "get",
-        route: "/query/test",
+        type: 'function',
+        method: 'get',
+        route: '/query/test',
         query: ['option'],
         args: [],
-        name: "query",
-        stability: "experimental",
-        title: "Test Query string options",
-        description: "Place we can call to test query string",
+        name: 'query',
+        stability: 'experimental',
+        title: 'Test Query string options',
+        description: 'Place we can call to test query string',
         scopes: [],
       },
       {
-        type: "function",
-        method: "get",
-        route: "/param-query/<param>",
+        type: 'function',
+        method: 'get',
+        route: '/param-query/<param>',
         query: ['option'],
         args: ['param'],
-        name: "paramQuery",
-        stability: "experimental",
-        title: "Test Query string options with params",
-        description: "Place we can call to test query string with params",
+        name: 'paramQuery',
+        stability: 'experimental',
+        title: 'Test Query string options with params',
+        description: 'Place we can call to test query string with params',
         scopes: [],
-      }
+      },
     ],
   };
 
@@ -136,20 +135,20 @@ suite('client requests/responses', function() {
   });
 
   let insufficientScopesError = {
-    code: "InsufficientScopes",
-    message: "You do not have sufficient scopes.",
+    code: 'InsufficientScopes',
+    message: 'You do not have sufficient scopes.',
     requestInfo: {},
     details: {},
   };
 
   let authFailedError = {
-    code: "AuthorizationFailed",
-    message: "Authorization Failed",
+    code: 'AuthorizationFailed',
+    message: 'Authorization Failed',
     error: {
-      info: "None of the scope-sets was satisfied",
-      scopesets: [["gotta-get:foo"]],
-      scopes: []
-    }
+      info: 'None of the scope-sets was satisfied',
+      scopesets: [['gotta-get:foo']],
+      scopes: [],
+    },
   };
 
   let expectError = (promise, code) => {
@@ -162,7 +161,7 @@ suite('client requests/responses', function() {
 
   test('Simple GET', async () => {
     nock('https://fake.taskcluster.net').get('/v1/get-test')
-      .reply(200, {})
+      .reply(200, {});
     await client.get();
   });
 
@@ -218,10 +217,10 @@ suite('client requests/responses', function() {
   test('GET with missing parameter, but query options', async () => {
     try {
       await client.paramQuery({option: 42});
-    } catch(err) {
+    } catch (err) {
       return;
     }
-    assert(false, "Expected an error");
+    assert(false, 'Expected an error');
   });
 
   test('GET without query options (for supported method)', async () => {
@@ -263,21 +262,21 @@ suite('client requests/responses', function() {
 
   test('GET public resource', async () => {
     nock('https://fake.taskcluster.net').get('/v1/get-test')
-      .reply(200, {})
+      .reply(200, {});
     let c = new Fake();
     await c.get();
   });
 
   test('GET public resource with query-string', async () => {
     nock('https://fake.taskcluster.net').get('/v1/query/test?option=31')
-      .reply(200, {})
+      .reply(200, {});
     let c = new Fake();
     await c.query({option: 31});
   });
 
   test('GET public resource no query-string (supported method)', async () => {
     nock('https://fake.taskcluster.net').get('/v1/query/test')
-      .reply(200, {})
+      .reply(200, {});
     let c = new Fake();
     await c.query();
   });
@@ -285,7 +284,7 @@ suite('client requests/responses', function() {
   test('POST with payload', async () => {
     nock('https://fake.taskcluster.net')
       .post('/v1/post-test', {hello: 'world'})
-      .reply(200, {reply: 'hi'})
+      .reply(200, {reply: 'hi'});
     let result = await client.post({hello: 'world'});
     assert.deepEqual(result, {reply: 'hi'});
   });
@@ -302,7 +301,7 @@ suite('client requests/responses', function() {
       .post('/v1/post-param-query/test?option=32', {hello: 'world'})
       .reply(200, {});
     await client.postParamQuery('test', {hello: 'world'}, {
-      option: 32
+      option: 32,
     });
   });
 
@@ -321,7 +320,7 @@ suite('client requests/responses', function() {
   });
 
   test('Report stats', async () => {
-    let monitor = await base.monitor({
+    let monitor = await _monitor({
       project: 'tc-client',
       credentials: {},
       mock: true,
@@ -329,19 +328,19 @@ suite('client requests/responses', function() {
     let client = new Fake({
       credentials: {
         clientId:     'tester',
-        accessToken:  'secret'
+        accessToken:  'secret',
       },
       monitor,
     });
     // Inspect the credentials
     nock('https://fake.taskcluster.net').get('/v1/get-test')
-      .reply(200, {})
+      .reply(200, {});
     await client.get();
     assert(_.keys(monitor.counts).length > 0);
   });
 
   test('Report stats (unauthorized)', async () => {
-    let monitor = await base.monitor({
+    let monitor = await _monitor({
       project: 'tc-client',
       credentials: {},
       mock: true,
@@ -349,7 +348,7 @@ suite('client requests/responses', function() {
     let client = new Fake({
       credentials: {
         clientId:     'tester',
-        accessToken:  'wrong'
+        accessToken:  'wrong',
       },
       monitor,
     });
@@ -361,7 +360,7 @@ suite('client requests/responses', function() {
   });
 
   let assertBewitUrl = function(url, expected) {
-    url = url.replace(/bewit=[^&]*/, "bewit=XXX");
+    url = url.replace(/bewit=[^&]*/, 'bewit=XXX');
     assert.equal(url, expected);
   };
 
@@ -374,7 +373,7 @@ suite('client requests/responses', function() {
 
   test('BuildSignedUrl', async () => {
     let url = client.buildSignedUrl(client.get);
-    assertBewitUrl(url, "https://fake.taskcluster.net/v1/get-test?bewit=XXX");
+    assertBewitUrl(url, 'https://fake.taskcluster.net/v1/get-test?bewit=XXX');
   });
 
   test('BuildUrl with parameter', async () => {
@@ -384,7 +383,7 @@ suite('client requests/responses', function() {
 
   test('BuildSignedUrl with parameter', async () => {
     let url = client.buildSignedUrl(client.param, 'test');
-    assertBewitUrl(url, "https://fake.taskcluster.net/v1/url-param/test/list?bewit=XXX");
+    assertBewitUrl(url, 'https://fake.taskcluster.net/v1/url-param/test/list?bewit=XXX');
   });
 
   test('BuildUrl with two parameters', async () => {
