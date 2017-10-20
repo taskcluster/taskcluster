@@ -12,53 +12,91 @@ properties:
     items:
       type:         object
       properties:
-          workerGroup:
-                    description: |
-                      Identifier for the worker group containing this worker.
-                    type:         string
-                    minLength:    {$const: identifier-min-length}
-                    maxLength:    {$const: identifier-max-length}
-                    pattern:      {$const: identifier-pattern}
-          workerId:
-                    description: |
-                      Identifier for this worker (unique within this worker group).
-                    type:         string
-                    minLength:    {$const: identifier-min-length}
-                    maxLength:    {$const: identifier-max-length}
-                    pattern:      {$const: identifier-pattern}
-          disabled:
-                    title:        "Worker Disabled"
-                    description: |
-                      Disabling a worker allows the machine to remain alive but not accept jobs.
-                      Enabling a worker on the other hand will resume accepting jobs.
-                    type:         "boolean"
-          firstClaim:
-                    title:        "First task claimed"
-                    description: |
-                      Date of the first time this worker claimed a task.
-                    type:         string
-                    format:       date-time
-          latestTask:
-              title:          "Most Recent Task"
+        workerGroup:
+          description: |
+            Identifier for the worker group containing this worker.
+          type:         string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
+        workerId:
+          description: |
+            Identifier for this worker (unique within this worker group).
+          type:         string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
+        disabled:
+          title:        "Worker Disabled"
+          description: |
+            Disabling a worker allows the machine to remain alive but not accept jobs.
+            Enabling a worker on the other hand will resume accepting jobs.
+          type:         "boolean"
+        firstClaim:
+          title:        "First task claimed"
+          description: |
+            Date of the first time this worker claimed a task.
+          type:         string
+          format:       date-time
+        latestTask:
+          title:          "Most Recent Task"
+          description: |
+            The most recent claimed task
+          type:       object
+          properties:
+            taskId:
+              title:            "Task Identifier"
               description: |
-                The most recent claimed task
-              type:       object
-              properties:
-                taskId:
-                  title:            "Task Identifier"
-                  description: |
-                    Unique task identifier, this is UUID encoded as
-                    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-                    stripped of `=` padding.
-                  type:             string
-                  pattern:          {$const: slugid-pattern}
-                runId:
-                  title:            "Run Identifier"
-                  description: |
-                    Id of this task run, `run-id`s always starts from `0`
-                  type:             integer
-                  minimum:          {$const: min-run-id}
-                  maximum:          {$const: max-run-id}
+                Unique task identifier, this is UUID encoded as
+                [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                stripped of `=` padding.
+              type:             string
+              pattern:          {$const: slugid-pattern}
+            runId:
+              title:            "Run Identifier"
+              description: |
+                Id of this task run, `run-id`s always starts from `0`
+              type:             integer
+              minimum:          {$const: min-run-id}
+              maximum:          {$const: max-run-id}
+      additionalProperties: false
+  actions:
+    type:         array
+    items:
+      type:       object
+      title:      Actions
+      description: {$const: action-description}
+      properties:
+        name:
+          title:  "Name"
+          description: |
+            Short names for things like logging/error messages.
+          type:   string
+        title:
+          title:  "Title"
+          description: |
+            Appropriate title for any sort of Modal prompt.
+        context:
+          title:  "Context"
+          description: {$const: action-context-description}
+          type:   string
+          enum:   ["worker"]
+        url:
+          title:  "URL"
+          description: {$const: action-url-description}
+          type:    string
+          format:  uri
+        description:
+          title:   "Description"
+          description: |
+            Description of the provisioner.
+          type:    string
+      required:
+        - name
+        - title
+        - context
+        - url
+        - description
       additionalProperties: false
   continuationToken:
     type:           string
@@ -74,3 +112,4 @@ properties:
 additionalProperties: false
 required:
  - workers
+ - actions
