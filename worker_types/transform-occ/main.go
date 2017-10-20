@@ -63,6 +63,8 @@ func main() {
 		log.Fatal("Please specify a single workerType, e.g. `transform-occ gecko-1-b-win2012`")
 	}
 	workerType := os.Args[1]
+	log.SetFlags(0)
+	log.SetPrefix("ERROR: " + workerType + ": ")
 	resp, err := http.Get("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/" + workerType + ".json")
 	if err != nil {
 		panic(err)
