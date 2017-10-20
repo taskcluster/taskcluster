@@ -115,5 +115,5 @@ func (suite *FakeServerSuite) TestRunCancel() {
 	args := []string{fakeGroupID}
 	runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal(string(buf.Bytes()), "cancelling task ANnmjMocTymeTID0tlNJAw\n")
+	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", buf.String())
 }

@@ -70,7 +70,7 @@ func (suite *FakeServerSuite) TestRunCancelCommand() {
 	args := []string{fakeTaskID}
 	runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal(string(buf.Bytes()), "cancelled 'cancelled'\n")
+	suite.Equal("cancelled 'cancelled'\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunRerunCommand() {
@@ -81,7 +81,7 @@ func (suite *FakeServerSuite) TestRunRerunCommand() {
 	args := []string{fakeTaskID}
 	runRerun(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal(string(buf.Bytes()), "running 'running'\n")
+	suite.Equal("running 'running'\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunCompleteCommand() {
@@ -92,5 +92,5 @@ func (suite *FakeServerSuite) TestRunCompleteCommand() {
 	args := []string{fakeTaskID}
 	runComplete(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal(string(buf.Bytes()), "completed 'completed'\n")
+	suite.Equal("completed 'completed'\n", buf.String())
 }

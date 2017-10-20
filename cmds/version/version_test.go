@@ -23,5 +23,5 @@ func TestVersionCommand(t *testing.T) {
 
 	printVersion(cmd, nil)
 
-	assert.Contains(string(buf.Bytes()), VersionNumber, "VersionNumber not found in version output")
+	assert.Contains(buf.String(), VersionNumber, "VersionNumber not found in version output")
 }
