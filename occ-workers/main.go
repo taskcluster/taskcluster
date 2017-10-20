@@ -95,20 +95,39 @@ func main() {
 	workerTypeBuffers := []*bytes.Buffer{}
 	for _, name := range s.Secrets {
 		if strings.HasPrefix(name, secretsPrefix) {
-			wg.Add(1)
-			b := &bytes.Buffer{}
-			workerTypeBuffers = append(workerTypeBuffers, b)
 			workerType := name[len(secretsPrefix):]
-			go func(workerType, name string, b *bytes.Buffer) {
-				defer wg.Done()
-				fetchWorkerType(workerType, name, b)
-			}(workerType, name, b)
+			if shouldInclude(workerType) {
+				wg.Add(1)
+				b := &bytes.Buffer{}
+				workerTypeBuffers = append(workerTypeBuffers, b)
+				go func(workerType, name string, b *bytes.Buffer) {
+					defer wg.Done()
+					fetchWorkerType(workerType, name, b)
+				}(workerType, name, b)
+			}
 		}
 	}
 	wg.Wait()
 	for _, b := range workerTypeBuffers {
 		fmt.Print(b.String())
 	}
+}
+
+func shouldInclude(workerType string) bool {
+	// os.Args[0] is program name ("occ-workers"). No other args means run
+	// against all worker types.
+	if len(os.Args) <= 1 {
+		return true
+	}
+	// Worker types have been specified on command line, therefore only allow
+	// workerType if it is included in program args. Avoid `for range`
+	// construct as we are skipping first element os.Args[0].
+	for i := 1; i < len(os.Args); i++ {
+		if os.Args[i] == workerType {
+			return true
+		}
+	}
+	return false
 }
 
 func fetchWorkerType(workerType, name string, out *bytes.Buffer) {
