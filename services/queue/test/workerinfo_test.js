@@ -103,6 +103,51 @@ suite('provisioners and worker-types', () => {
     assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
   });
 
+  test('queue.listWorkerTypes returns actions with the right context', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+
+    const provisioner = {
+      provisionerId: 'prov-B',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [{
+        name: 'kill',
+        title: 'Kill Provisioner',
+        context: 'provisioner',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove provisioner prov-B',
+      }, {
+        name: 'kill',
+        title: 'Kill Worker Type',
+        context: 'worker-type',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove worker type',
+      }],
+    };
+
+    const wType = {
+      provisionerId: 'prov-B',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-worker-type',
+      stability: 'experimental',
+    };
+
+    await Provisioner.create(provisioner);
+    await WorkerType.create(wType);
+
+    const result = await helper.queue.listWorkerTypes('prov-B');
+
+    assert(result.workerTypes.length === 1, 'expected workerTypes');
+    assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
+    assert(result.actions.length === 1, 'expected 1 action');
+    assert(result.actions[0].context === 'worker-type', 'expected action with context worker-type');
+  });
+
   test('list worker-types (limit and continuationToken)', async () => {
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
     const expires = new Date('3017-07-29');
@@ -201,6 +246,57 @@ suite('provisioners and worker-types', () => {
     assert(
       new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`
     );
+  });
+
+  test('queue.listWorkers returns actions with the right context', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov-B';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+
+    const provisioner = {
+      provisionerId,
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [{
+        name: 'kill',
+        title: 'Kill Provisioner',
+        context: 'provisioner',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove provisioner prov-B',
+      }, {
+        name: 'kill',
+        title: 'Kill Worker',
+        context: 'worker',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove worker',
+      }],
+    };
+
+    const worker = {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks: [],
+      expires: new Date('3017-07-29'),
+      disabled: false,
+      firstClaim: new Date(),
+    };
+
+    await Provisioner.create(provisioner);
+    await Worker.create(worker);
+
+    const result = await helper.queue.listWorkers(provisionerId, workerType);
+
+    assert(result.workers.length === 1, 'expected workers');
+    assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
+    assert(result.actions.length === 1, 'expected 1 action');
+    assert(result.actions[0].context === 'worker', 'expected action with context worker');
   });
 
   test('queue.listWorkers returns filtered workers', async () => {
@@ -322,6 +418,50 @@ suite('provisioners and worker-types', () => {
     assert(result.description === wType.description, `expected ${wType.description}`);
     assert(result.stability === wType.stability, `expected ${wType.stability}`);
     assert(new Date(result.expires).getTime() === wType.expires.getTime(), `expected ${wType.expires}`);
+  });
+
+  test('queue.getWorkerType returns actions with the right context', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+
+    const provisioner = {
+      provisionerId: 'prov-B',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [{
+        name: 'kill',
+        title: 'Kill Provisioner',
+        context: 'provisioner',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove provisioner prov-B',
+      }, {
+        name: 'kill',
+        title: 'Kill Worker Type',
+        context: 'worker-type',
+        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle',
+        description: 'Remove worker type',
+      }],
+    };
+
+    const wType = {
+      provisionerId: 'prov-B',
+      workerType: 'gecko-b-2-linux',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-worker-type',
+      stability: 'experimental',
+    };
+
+    await Provisioner.create(provisioner);
+    await WorkerType.create(wType);
+
+    const result = await helper.queue.getWorkerType(wType.provisionerId, wType.workerType);
+
+    assert(result.workerType === wType.workerType, `expected ${wType.workerType}`);
+    assert(result.actions.length === 1, 'expected 1 action');
+    assert(result.actions[0].context === 'worker-type', 'expected action with context worker-type');
   });
 
   test('queue.declareWorkerType updates a worker-type', async () => {
@@ -631,8 +771,7 @@ suite('provisioners and worker-types', () => {
   });
 
   test('queue.getWorker returns 20 most recent taskIds', async () => {
-    const Worker = await helper.load('Worker', helper.loadOptions);
-    const provisionerId = 'no-provisioner';
+    const provisionerId = 'no-provisioner-2';
     const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';

@@ -2227,9 +2227,16 @@ api.declare({
   const provisionerId = req.params.provisionerId;
   const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  const workerTypes = await this.WorkerType.scan({provisionerId}, {continuation, limit});
+  const [workerTypes, provisioner] = await Promise.all([
+    this.WorkerType.scan({provisionerId}, {continuation, limit}),
+    this.Provisioner.load({provisionerId}, true),
+  ]);
+
+  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker-type') : [];
+
   const result = {
     workerTypes: workerTypes.entries.map(workerType => workerType.json()),
+    actions: actions || [],
   };
 
   if (workerTypes.continuation) {
@@ -2253,11 +2260,14 @@ api.declare({
 }, async function(req, res) {
   const {provisionerId, workerType} = req.params;
 
-  const wType = await this.WorkerType.load({
-    provisionerId,
-    workerType,
-    expires: Entity.op.greaterThan(new Date()),
-  });
+  const [wType, provisioner] = await Promise.all([
+    this.WorkerType.load({
+      provisionerId,
+      workerType,
+      expires: Entity.op.greaterThan(new Date()),
+    }),
+    this.Provisioner.load({provisionerId}, true),
+  ]);
 
   if (!wType) {
     return res.reportError('ResourceNotFound',
@@ -2268,7 +2278,9 @@ api.declare({
     );
   }
 
-  return res.reply(wType.json());
+  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker-type') : [];
+
+  return res.reply(Object.assign({}, wType.json(), {actions}));
 });
 
 /** Update a worker-type */
@@ -2326,7 +2338,10 @@ api.declare({
     });
   }
 
-  return res.reply(result.json());
+  const prov = await this.Provisioner.load({provisionerId}, true);
+  const actions = prov ? prov.actions.filter(action => action.context === 'worker-type') : [];
+
+  return res.reply(Object.assign({}, result.json(), {actions}));
 });
 
 /** List all active workerGroup/workerId of a workerType */
@@ -2370,7 +2385,12 @@ api.declare({
     workerQuery.disabled = JSON.parse(disabled);
   }
 
-  const workers = await this.Worker.scan(workerQuery, {continuation, limit});
+  const [workers, provisioner] = await Promise.all([
+    await this.Worker.scan(workerQuery, {continuation, limit}),
+    await this.Provisioner.load({provisionerId}, true),
+  ]);
+
+  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker') : [];
 
   const result = {
     workers: workers.entries.map(worker => {
@@ -2382,6 +2402,7 @@ api.declare({
         disabled: worker.disabled,
       };
     }),
+    actions: actions || [],
   };
 
   if (workers.continuation) {
@@ -2405,13 +2426,16 @@ api.declare({
 }, async function(req, res) {
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
 
-  const worker = await this.Worker.load({
-    provisionerId,
-    workerType,
-    workerGroup,
-    workerId,
-    expires: Entity.op.greaterThan(new Date()),
-  });
+  const [worker, provisioner] = await Promise.all([
+    await this.Worker.load({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      expires: Entity.op.greaterThan(new Date()),
+    }),
+    await this.Provisioner.load({provisionerId}, true),
+  ]);
 
   if (!worker) {
     return res.reportError('ResourceNotFound',
@@ -2426,7 +2450,9 @@ api.declare({
     );
   }
 
-  return res.reply(worker.json());
+  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker') : [];
+
+  return res.reply(Object.assign({}, worker.json(), {actions}));
 });
 
 // /** Update a worker */
@@ -2487,5 +2513,8 @@ api.declare({
     });
   }
 
-  return res.reply(result.json());
+  const prov = await this.Provisioner.load({provisionerId}, true);
+  const actions = prov ? prov.actions.filter(action => action.context === 'worker') : [];
+
+  return res.reply(Object.assign({}, result.json(), {actions}));
 });
