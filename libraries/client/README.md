@@ -1,6 +1,8 @@
 # TaskCluster Client
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-client.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-client)
-_A taskcluster client library for node.js._
+[![Node Dependencies Status](https://david-dm.org/taskcluster/taskcluster-client.svg)](https://david-dm.org/taskcluster/taskcluster-client)
+[![npm](https://img.shields.io/npm/v/taskcluster-client.svg?maxAge=2592000)](https://www.npmjs.com/package/taskcluster-client)
+[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 This client library is generated from the auto-generated API reference.
 You can create a Client class from a JSON reference object at runtime using
