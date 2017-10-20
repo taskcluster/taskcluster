@@ -1,4 +1,4 @@
 --ui tdd
 --timeout 90s
 --reporter spec
---compilers js:babel/register
+--requires source-map-support/register
