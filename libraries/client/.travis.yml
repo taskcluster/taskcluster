@@ -30,8 +30,10 @@ notifications:
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
+  skip_cleanup: true
   api_key:
     secure: mjmYXnJpyyV4d1yi/N15K+//4WB1V28+PSBRXojTQ21CjxvsWV4Wj0t8tWc9nGl9vopGL23z1E6fRDx3+fG1e+NLwGoi48RuYQcuX7UrEF7wML2gENFqj2ScHVADb8JcrDpEwj154pG4XU75v5syqX/ILj94VwnKpj8JnCUZi+k=
   on:
     tags: true
     repo: taskcluster/taskcluster-client
+    node: '8'

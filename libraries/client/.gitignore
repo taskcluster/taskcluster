@@ -1,4 +1,6 @@
 lib/
+.test/
+npm-debug.log
 /node_modules/
 /taskcluster-client.conf.json
 /taskcluster-client.js
