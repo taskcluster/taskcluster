@@ -1,5 +1,3 @@
-"use strict";
-
 var parseTime = require('./parsetime');
 var slugid    = require('slugid');
 
