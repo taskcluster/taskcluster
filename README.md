@@ -1,5 +1,7 @@
 # taskcluster-base-go
-<img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
+
+[![logo](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)
+
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-base-go.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-base-go)
 [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-base-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-base-go)
 [![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-base-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-base-go?branch=master)
