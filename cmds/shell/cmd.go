@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
-	v1client "github.com/taskcluster/taskcluster-cli/external/pkg/docker-exec-ws"
+	v1client "github.com/taskcluster/taskcluster-cli/pkg/docker-exec-ws"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-worker/engines"
