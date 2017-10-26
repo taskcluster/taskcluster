@@ -26,7 +26,7 @@ import (
 var (
 	// Command is the root of the shell sub-tree.
 	Command = &cobra.Command{
-		Use:   "shell <taskId>",
+		Use:   "shell <taskId> [-- command to execute]",
 		Short: "Connect to the shell of a running interactive task.",
 		RunE:  Execute,
 	}
@@ -82,16 +82,24 @@ func Execute(cmd *cobra.Command, args []string) error {
 	var shell engines.Shell
 	tty := isatty.IsTerminal(os.Stdout.Fd())
 
+	command := []string{}
+	if len(args) > 1 {
+		command = args[1:]
+	}
+
 	switch redirectURL.Query().Get("v") {
 	case "1":
+		if len(command) == 0 {
+			command = []string{"bash"}
+		}
 		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
-		shell, err = v1client.Dial(sockURL.String(), []string{"bash"}, tty)
+		shell, err = v1client.Dial(sockURL.String(), command, tty)
 		if err != nil {
 			return fmt.Errorf("could not create the shell client: %v", err)
 		}
 	case "2":
 		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
-		shell, err = v2client.Dial(sockURL.String(), []string{"bash"}, tty)
+		shell, err = v2client.Dial(sockURL.String(), command, tty)
 		if err != nil {
 			return fmt.Errorf("could not create the shell client: %v", err)
 		}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"sync"
 	"time"
 
@@ -168,7 +167,6 @@ func (s *ShellClient) pauseClient() {
 	s.cPause.L.Lock()
 	defer s.cPause.L.Unlock()
 
-	fmt.Fprintln(os.Stderr, "Pausing client")
 	s.paused = true
 	s.cPause.Broadcast()
 }
@@ -178,20 +176,17 @@ func (s *ShellClient) resumeClient() {
 	s.cPause.L.Lock()
 	defer s.cPause.L.Unlock()
 
-	fmt.Fprintln(os.Stderr, "Resuming client")
 	s.paused = false
 	s.cPause.Broadcast()
 }
 
 // pauseServer lets the server know that we aren't ready to receive messages.
 func (s *ShellClient) pauseServer() error {
-	fmt.Fprintln(os.Stderr, "Pausing server")
 	return s.send([]byte{messageTypePause})
 }
 
 // resumeServer lets the server know that we are ready to receive messages.
 func (s *ShellClient) resumeServer() error {
-	fmt.Fprintln(os.Stderr, "Resuming server")
 	return s.send([]byte{messageTypeResume})
 }
 
@@ -208,6 +203,7 @@ func (s *ShellClient) writeMessages() {
 		m := make([]byte, 1+MaxOutstandingBytes)
 		m[0] = streamStdin
 
+		// data overlaps m, so they share the same backing array.
 		data := m[1:]
 		n, err := r.Read(data)
 		if err != nil {
@@ -343,6 +339,11 @@ func (s *ShellClient) SetSize(columns, rows uint16) error {
 
 // Abort will forcibly disconnect and terminate the shell client.
 func (s *ShellClient) Abort() error {
+	s.complete.Do(func() {
+		s.success = true
+		s.send([]byte{messageTypeEnd})
+		s.dispose()
+	})
 	return nil
 }
 
