@@ -15,6 +15,7 @@ import (
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
 const fakeRunID = "0"
 const fakeGroupID = "e4WPAAeSdaSdKxeWzDCBA"
+const badGroupID = "AAAAAAAAAAAAAAAAAAAAA"
 
 type FakeServerSuite struct {
 	suite.Suite
@@ -90,7 +91,12 @@ func listTaskGroupHandler(w http.ResponseWriter, _ *http.Request) {
 			            "resolved": "2017-03-29T15:53:27.562Z"
 			          }
 			        ]
-			      }
+			      },
+						"task": {
+						  "metadata": {
+							  "name": "test-framework-task/opt"
+							}
+						}
 			    }
 			  ]
 			}`
@@ -102,7 +108,6 @@ func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
 	cmd.SetOutput(buf)
-	cmd.Flags().Bool("force", true, "")
 
 	return buf, cmd
 }
@@ -110,10 +115,79 @@ func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 func (suite *FakeServerSuite) TestRunCancel() {
 	// set up to run a command and capture output
 	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("force", true, "")
 
 	// run the command
 	args := []string{fakeGroupID}
 	runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", buf.String())
+	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", string(buf.Bytes()))
+}
+
+func (suite *FakeServerSuite) TestRunStatus() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	// run the command
+	args := []string{fakeGroupID}
+	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal("pending: 1\n", string(buf.Bytes()))
+}
+
+func (suite *FakeServerSuite) TestRunStatusBadGroupId() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	// run the command
+	args := []string{badGroupID}
+	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal("", string(buf.Bytes()))
+}
+
+func (suite *FakeServerSuite) TestRunListAll() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("all", true, "")
+
+	// run the command
+	args := []string{fakeGroupID}
+	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", string(buf.Bytes()))
+}
+
+func (suite *FakeServerSuite) TestRunListPending() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("pending", true, "")
+
+	// run the command
+	args := []string{fakeGroupID}
+	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", string(buf.Bytes()))
+}
+
+func (suite *FakeServerSuite) TestRunListWrongFilter() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("completed", true, "")
+
+	// run the command
+	args := []string{fakeGroupID}
+	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal("", string(buf.Bytes()))
+}
+
+func (suite *FakeServerSuite) TestRunListBadGraphId() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+	cmd.Flags().Bool("pending", true, "")
+
+	// run the command
+	args := []string{badGroupID}
+	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
+
+	suite.Equal("", string(buf.Bytes()))
 }
