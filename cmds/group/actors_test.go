@@ -121,7 +121,7 @@ func (suite *FakeServerSuite) TestRunCancel() {
 	args := []string{fakeGroupID}
 	runCancel(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", string(buf.Bytes()))
+	suite.Equal("cancelling task ANnmjMocTymeTID0tlNJAw\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunStatus() {
@@ -141,7 +141,7 @@ func (suite *FakeServerSuite) TestRunStatusBadGroupId() {
 	args := []string{badGroupID}
 	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("", string(buf.Bytes()))
+	suite.Equal("", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunListAll() {
@@ -153,7 +153,7 @@ func (suite *FakeServerSuite) TestRunListAll() {
 	args := []string{fakeGroupID}
 	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", string(buf.Bytes()))
+	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunListPending() {
@@ -165,7 +165,7 @@ func (suite *FakeServerSuite) TestRunListPending() {
 	args := []string{fakeGroupID}
 	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", string(buf.Bytes()))
+	suite.Equal("ANnmjMocTymeTID0tlNJAw test-framework-task/opt pending\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunListWrongFilter() {
@@ -177,7 +177,7 @@ func (suite *FakeServerSuite) TestRunListWrongFilter() {
 	args := []string{fakeGroupID}
 	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("", string(buf.Bytes()))
+	suite.Equal("", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunListBadGraphId() {
@@ -189,5 +189,5 @@ func (suite *FakeServerSuite) TestRunListBadGraphId() {
 	args := []string{badGroupID}
 	runList(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("", string(buf.Bytes()))
+	suite.Equal("", buf.String())
 }
