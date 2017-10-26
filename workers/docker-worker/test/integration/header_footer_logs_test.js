@@ -1,6 +1,6 @@
-import assert from 'assert';
-import testworker from '../post_task';
-import cmd from './helper/cmd';
+const assert = require('assert');
+const testworker = require('../post_task');
+const cmd = require('./helper/cmd');
 
 suite('Header/Footer logs', () => {
   test('Unsuccessful task', async () => {

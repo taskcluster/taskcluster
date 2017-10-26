@@ -1,11 +1,11 @@
-import { ZSTD_TASK_ID } from './image_artifacts.js';
-import fs from 'fs';
-import { spawn } from 'child_process';
-import path from 'path';
-import mime from 'mime';
-import taskcluster from 'taskcluster-client';
-import uploadToS3 from '../../build/lib/upload_to_s3';
-import artifactDownload from '../../build/lib/util/artifact_download';
+const { ZSTD_TASK_ID } = require('./image_artifacts.js');
+const fs = require('fs');
+const { spawn } = require('child_process');
+const path = require('path');
+const mime = require('mime');
+const taskcluster = require('taskcluster-client');
+const uploadToS3 = require('../../src/lib/upload_to_s3');
+const artifactDownload = require('../../src/lib/util/artifact_download');
 
 function removeFile(filename) {
   try {

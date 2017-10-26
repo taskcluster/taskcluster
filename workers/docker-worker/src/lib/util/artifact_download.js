@@ -1,9 +1,9 @@
-import crypto from 'crypto';
-import Debug from 'debug';
-import request from 'request';
-import fs from 'mz/fs';
-import sleep from '../util/sleep';
-import { fmtLog, fmtErrorLog } from '../log';
+const crypto = require('crypto');
+const Debug = require('debug');
+const request = require('request');
+const fs = require('mz/fs');
+const sleep = require('../util/sleep');
+const { fmtLog, fmtErrorLog } = require('../log');
 
 const RETRY_CONFIG = {
   maxAttempts: 5,
@@ -21,7 +21,7 @@ let debug = new Debug('artifactDownload');
  * @param {String} artifactPath - Path to find the artifact for a given task
  * @param {String} destination - Path to store the file locally
  */
-export default async function(queue, stream, taskId, artifactPath, destination, retryConfig=RETRY_CONFIG) {
+module.exports = async function(queue, stream, taskId, artifactPath, destination, retryConfig=RETRY_CONFIG) {
   let {maxAttempts, delayFactor, randomizationFactor} = retryConfig;
   let artifactUrl = queue.buildSignedUrl(
       queue.getLatestArtifact,

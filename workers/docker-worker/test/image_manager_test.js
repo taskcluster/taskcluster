@@ -1,15 +1,15 @@
-import assert from 'assert';
-import dockerUtils from 'dockerode-process/utils';
-import ImageManager from '../build/lib/docker/image_manager';
-import Docker from '../build/lib/docker';
-import {Index} from 'taskcluster-client';
-import base from 'taskcluster-base';
-import {createHash} from 'crypto';
-import slugid from 'slugid';
-import {createLogger} from '../build/lib/log';
-import {NAMESPACE, TASK_ID} from './fixtures/image_artifacts';
-import taskcluster from 'taskcluster-client';
-import monitoring from 'taskcluster-lib-monitor';
+const assert = require('assert');
+const dockerUtils = require('dockerode-process/utils');
+const ImageManager = require('../src/lib/docker/image_manager');
+const Docker = require('../src/lib/docker');
+const {Index} = require('taskcluster-client');
+const base = require('taskcluster-base');
+const {createHash} = require('crypto');
+const slugid = require('slugid');
+const {createLogger} = require('../src/lib/log');
+const {NAMESPACE, TASK_ID} = require('./fixtures/image_artifacts');
+const taskcluster = require('taskcluster-client');
+const monitoring = require('taskcluster-lib-monitor');
 
 let docker = Docker();
 let monitor;

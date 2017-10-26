@@ -1,7 +1,7 @@
-import assert from 'assert';
-import IndexedImage from './indexed_image';
-import TaskImage from './artifact_image';
-import DockerImage from './docker_image';
+const assert = require('assert');
+const IndexedImage = require('./indexed_image');
+const TaskImage = require('./artifact_image');
+const DockerImage = require('./docker_image');
 
 const IMAGE_HANDLERS = {
   'indexed-image': IndexedImage,
@@ -15,7 +15,7 @@ const IMAGE_HANDLERS = {
  * that only one download of an image happens at a time.  Parallel downloads/loading
  * of docker images has been problematic.
  */
-export default class ImageManager {
+class ImageManager {
   /*
    * @param {Object} runtime - Runtime object that's typically created by the worker.
    *                           Requires a logging and docker instance.
@@ -108,3 +108,5 @@ export default class ImageManager {
     return new IMAGE_HANDLERS[image.type](this.runtime, image, stream, task, scopes);
   }
 }
+
+module.exports = ImageManager;

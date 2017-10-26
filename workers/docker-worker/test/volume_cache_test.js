@@ -1,17 +1,17 @@
-import assert from 'assert';
-import devnull from 'dev-null';
-import VolumeCache from '../build/lib/volume_cache';
-import GarbageCollector from '../build/lib/gc';
-import {createLogger} from '../build/lib/log';
-import Debug from 'debug';
-import Docker from '../build/lib/docker';
-import dockerUtils from 'dockerode-process/utils';
-import waitForEvent from '../build/lib/wait_for_event';
-import fs from 'fs';
-import path from 'path';
-import rmrf from 'rimraf';
-import cmd from './integration/helper/cmd';
-import monitoring from 'taskcluster-lib-monitor';
+const assert = require('assert');
+const devnull = require('dev-null');
+const VolumeCache = require('../src/lib/volume_cache');
+const GarbageCollector = require('../src/lib/gc');
+const {createLogger} = require('../src/lib/log');
+const Debug = require('debug');
+const Docker = require('../src/lib/docker');
+const dockerUtils = require('dockerode-process/utils');
+const waitForEvent = require('../src/lib/wait_for_event');
+const fs = require('fs');
+const path = require('path');
+const rmrf = require('rimraf');
+const cmd = require('./integration/helper/cmd');
+const monitoring = require('taskcluster-lib-monitor');
 
 let debug = Debug('volumeCacheTest');
 let docker = Docker();
@@ -125,6 +125,7 @@ suite('volume cache test', function () {
       log: debug,
       docker: docker,
       interval: 2 * 1000,
+      monitor: monitor,
       taskListener: { availableCapacity: async () => { return 0; } }
     });
 
@@ -220,8 +221,8 @@ suite('volume cache test', function () {
     var instance3 = await cache.get(cacheName);
     assert.notEqual(instance3.key !== instance1.key);
 
-    await cache.release(instance2);
-    await cache.release(instance3);
+    await cache.release(instance2.key);
+    await cache.release(instance3.key);
 
     cache.purge(cacheName, futurePurgeDate);
 

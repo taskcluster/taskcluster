@@ -1,13 +1,13 @@
-import assert from 'assert';
-import slugid from 'slugid';
+const assert = require('assert');
+const slugid = require('slugid');
 
-import cmd from './helper/cmd';
-import Docker from '../../build/lib/docker';
-import DockerWorker from '../dockerworker';
-import Registry from './helper/docker_registry';
-import * as settings from '../settings';
-import TestWorker from '../testworker';
-import {removeImage} from '../../build/lib/util/remove_image';
+const cmd = require('./helper/cmd');
+const Docker = require('../../src/lib/docker');
+const DockerWorker = require('../dockerworker');
+const Registry = require('./helper/docker_registry');
+const settings = require('../settings');
+const TestWorker = require('../testworker');
+const {removeImage} = require('../../src/lib/util/remove_image');
 
 const CREDENTIALS = {
   username: 'testuser',

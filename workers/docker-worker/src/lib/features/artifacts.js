@@ -4,20 +4,20 @@ deals with the extract of both single and multiple artifacts from the docker
 container.
 */
 
-import _ from 'lodash';
-import mime from 'mime';
-import tarStream from 'tar-stream';
-import Debug from 'debug';
-import Promise from 'promise';
-import assert from 'assert';
+const _ = require('lodash');
+const mime = require('mime');
+const tarStream = require('tar-stream');
+const Debug = require('debug');
+const Promise = require('promise');
+const assert = require('assert');
 
-import {fmtLog, fmtErrorLog} from '../log';
-import uploadToS3 from '../upload_to_s3';
-import waitForEvent from '../wait_for_event';
+const {fmtLog, fmtErrorLog} = require('../log');
+const uploadToS3 = require('../upload_to_s3');
+const waitForEvent = require('../wait_for_event');
 
 let debug = Debug('docker-worker:middleware:artifact_extractor');
 
-export default class Artifacts {
+class Artifacts {
   constructor() {
     this.featureName = 'artifactHandler';
   }
@@ -218,3 +218,5 @@ export default class Artifacts {
     }
   }
 }
+
+module.exports = Artifacts;

@@ -1,11 +1,11 @@
-import assert from 'assert';
-import Debug from 'debug';
-import fs from 'fs-ext';
-import Promise from 'promise';
+const assert = require('assert');
+const Debug = require('debug');
+const fs = require('fs-ext');
+const Promise = require('promise');
 
 let debug = Debug('docker-worker:lib:shared_file_lock');
 
-export default class SharedFileLock {
+class SharedFileLock {
   /* This acts as a semaphore which locks a file if one or more locks
    * are acquired on this object until they are released.
    *
@@ -53,3 +53,5 @@ export default class SharedFileLock {
     debug('released; count is %s', this.count);
   }
 }
+
+module.exports = SharedFileLock;

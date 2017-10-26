@@ -1,10 +1,10 @@
-import assert from 'assert';
-import testworker from '../post_task';
-import Docker from '../../build/lib/docker';
-import cmd from './helper/cmd';
-import {ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, NAMESPACE} from '../fixtures/image_artifacts';
-import {createHash} from 'crypto';
-import {removeImage} from '../../build/lib/util/remove_image';
+const assert = require('assert');
+const testworker = require('../post_task');
+const Docker = require('../../src/lib/docker');
+const cmd = require('./helper/cmd');
+const {ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, NAMESPACE} = require('../fixtures/image_artifacts');
+const {createHash} = require('crypto');
+const {removeImage} = require('../../src/lib/util/remove_image');
 
 let docker = Docker();
 

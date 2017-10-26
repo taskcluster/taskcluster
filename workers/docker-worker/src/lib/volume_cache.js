@@ -6,7 +6,7 @@ var mkdirp = require('mkdirp');
 var rmrf = require('rimraf');
 var taskcluster = require('taskcluster-client');
 var uuid = require('uuid');
-import _ from 'lodash';
+var _ = require('lodash');
 
 var KEY_DELIMITER = '::';
 
@@ -47,7 +47,7 @@ will be indexed based on timestamps and reused in the order of most recently use
 @constructor
 @param {Object} configuration settings for the volume cache manager
 */
-export default class VolumeCache {
+class VolumeCache {
   constructor(config) {
     this.config = config;
     this.rootCachePath = config.cache.volumeCachePath;
@@ -312,3 +312,5 @@ export default class VolumeCache {
     }
   }
 }
+
+module.exports = VolumeCache;

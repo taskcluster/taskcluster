@@ -1,7 +1,7 @@
-import waitForEvent from '../../build/lib/wait_for_event';
-import * as settings from '../settings';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const waitForEvent = require('../../src/lib/wait_for_event');
+const settings = require('../settings');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('Aliveness check', function() {
   // Ensure we don't leave behind our test configurations.

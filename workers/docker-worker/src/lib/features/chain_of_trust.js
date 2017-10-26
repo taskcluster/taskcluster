@@ -4,19 +4,19 @@
  * consumers can validate the environment that the task ran in and what was
  * produce. This artifact is then (openpgp) signed.
  */
-import crypto from 'crypto';
-import stream from 'stream';
-import * as openpgp from 'openpgp';
-import Debug from 'debug';
-import fs from 'mz/fs'
-import streamClosed from '../stream_closed';
-import temporary from 'temporary';
-import uploadToS3 from '../upload_to_s3';
-import zlib from 'zlib';
+const crypto = require('crypto');
+const stream = require('stream');
+const openpgp = require('openpgp');
+const Debug = require('debug');
+const fs = require('mz/fs');
+const streamClosed = require('../stream_closed');
+const temporary = require('temporary');
+const uploadToS3 = require('../upload_to_s3');
+const zlib = require('zlib');
 
 let debug = Debug('taskcluster-docker-worker:features:cot');
 
-export default class ChainOfTrust {
+class ChainOfTrust {
   constructor() {
     this.featureName = 'chainOfTrust';
   }
@@ -116,3 +116,5 @@ export default class ChainOfTrust {
   }
 
 }
+
+module.exports = ChainOfTrust;

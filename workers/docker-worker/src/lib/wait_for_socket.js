@@ -1,5 +1,4 @@
-import Promise from 'promise';
-import fs from 'fs';
+const fs = require('fs');
 
 /** Wait for a unix domain socket to be available */
 let waitForSocket = async (path, timeout) => {

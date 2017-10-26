@@ -6,17 +6,17 @@
  * box for common docker flows.
  */
 
-import waitForSocket from '../wait_for_socket';
-import slugid from 'slugid';
-import rmrf from 'rimraf';
-import path from 'path';
-import fs from 'fs';
+const waitForSocket = require('../wait_for_socket');
+const slugid = require('slugid');
+const rmrf = require('rimraf');
+const path = require('path');
+const fs = require('fs');
 let debug = require('debug')('docker-worker:features:dind');
 
 // Maximum time to wait for dind-service to be ready
 const INIT_TIMEOUT = 30 * 1000;
 
-export default class DockerInDocker {
+class DockerInDocker {
   constructor() {
     this.featureName = 'dind';
     // dind-service container
@@ -95,3 +95,4 @@ export default class DockerInDocker {
   }
 }
 
+module.exports = DockerInDocker;

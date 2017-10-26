@@ -1,5 +1,5 @@
-import Debug from 'debug';
-import assert from 'assert';
+const Debug = require('debug');
+const assert = require('assert');
 
 const MAX_MESSAGES_PER_REQUEST = 32;
 
@@ -28,7 +28,7 @@ let debug = Debug('taskcluster-docker-worker:queueService');
  * }
  *
  */
-export default class TaskQueue {
+class TaskQueue {
   constructor(config) {
     assert(config.workerId, 'Worker ID is required');
     assert(config.workerType, 'Worker type is required');
@@ -72,3 +72,5 @@ export default class TaskQueue {
     return result.tasks;
   }
 }
+
+module.exports = TaskQueue;

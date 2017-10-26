@@ -1,8 +1,8 @@
-import assert from 'assert';
-import cmd from './helper/cmd';
-import expires from './helper/expires';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const assert = require('assert');
+const cmd = require('./helper/cmd');
+const expires = require('./helper/expires');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('taskcluster proxy', () => {
 

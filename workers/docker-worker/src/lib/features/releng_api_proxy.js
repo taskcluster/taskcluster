@@ -3,7 +3,7 @@ This module handles the creation of the "relengapi" proxy container which
 allows tasks to talk directly to releng api over a http proxy which
 grants a particular permission level based on the task scopes.
 */
-import waitForPort from '../wait_for_port';
+const waitForPort = require('../wait_for_port');
 
 // Alias used to link the proxy.
 const ALIAS = 'relengapi';
@@ -13,7 +13,7 @@ const ALIAS = 'relengapi';
 // should it take this long.
 const INIT_TIMEOUT = 30000;
 
-export default class RelengAPIProxy {
+class RelengAPIProxy {
   constructor () {
     this.featureName = 'relengAPIProxy';
     /**
@@ -83,3 +83,5 @@ export default class RelengAPIProxy {
     task.runtime.gc.removeContainer(this.container.id);
   }
 }
+
+module.exports = RelengAPIProxy;

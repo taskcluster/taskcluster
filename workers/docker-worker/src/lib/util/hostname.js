@@ -1,7 +1,7 @@
-import assert from 'assert';
-import statelessDNSServer from 'stateless-dns-server';
+const assert = require('assert');
+const statelessDNSServer = require('stateless-dns-server');
 
-export default function getHostname(config, expires) {
+module.exports = function getHostname(config, expires) {
   let statelessConfig = config.statelessHostname || {};
   if (!statelessConfig || !statelessConfig.enabled) {
     return config.host;

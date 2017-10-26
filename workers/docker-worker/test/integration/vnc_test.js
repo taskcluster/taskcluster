@@ -1,17 +1,17 @@
-import assert from 'assert';
-import base from 'taskcluster-base';
-import cmd from './helper/cmd';
-import crypto from 'crypto';
-import Debug from 'debug';
-import DockerWorker from '../dockerworker';
-import https from 'https';
-import TestWorker from '../testworker';
-import Promise from 'promise';
-import * as settings from '../settings';
-import slugid from 'slugid';
-import URL from 'url';
-import got from 'got';
-import WebSocket from 'ws';
+const assert = require('assert');
+const base = require('taskcluster-base');
+const cmd = require('./helper/cmd');
+const crypto = require('crypto');
+const Debug = require('debug');
+const DockerWorker = require('../dockerworker');
+const https = require('https');
+const TestWorker = require('../testworker');
+const Promise = require('promise');
+const settings = require('../settings');
+const slugid = require('slugid');
+const URL = require('url');
+const got = require('got');
+const WebSocket = require('ws');
 
 suite('interactive vnc', () => {
   let debug = Debug('docker-worker:test:vnc');
@@ -50,7 +50,7 @@ suite('interactive vnc', () => {
           resolve(res);
         }).end();
       });
-      assert(res.statusCode === 303);
+      assert.equal(res.statusCode, 303, `Artifact returned code ${res.statusCode}`);
       return URL.parse(res.headers.location, true).query;
     };
     let signedUrl = queue.buildSignedUrl(

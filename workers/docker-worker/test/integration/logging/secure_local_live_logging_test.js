@@ -1,11 +1,11 @@
-import https from 'https';
-import slugid from 'slugid';
-import url from 'url';
+const https = require('https');
+const slugid = require('slugid');
+const url = require('url');
 
-import DockerWorker from '../../dockerworker';
-import * as settings from '../../settings';
-import TestWorker from '../../testworker';
-import waitForEvent from '../../../build/lib/wait_for_event';
+const DockerWorker = require('../../dockerworker');
+const settings = require('../../settings');
+const TestWorker = require('../../testworker');
+const waitForEvent = require('../../../src/lib/wait_for_event');
 
 suite('secure local live logging', () => {
   let worker;

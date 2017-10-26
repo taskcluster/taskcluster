@@ -12,8 +12,6 @@ docker-worker.crt
 docker-worker.conf.json
 *.box
 docker-worker.tgz
-build
-.test
 yarn-error.log
 packer-artifacts.json
 worker-types-backup.json

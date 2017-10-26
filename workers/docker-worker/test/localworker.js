@@ -3,7 +3,7 @@ var Promise = require('promise');
 var spawn = require('child_process').spawn;
 
 /** Binary to launch inorder to get a worker instance running */
-const BINARY = __dirname + '/../bin/worker.js';
+const BINARY = __dirname + '/../src/bin/worker.js';
 
 function eventPromise(listener, event) {
   return new Promise(function(accept, reject) {
@@ -14,7 +14,7 @@ function eventPromise(listener, event) {
 }
 
 /** Wrapper for a process with a local worker with given workerType */
-export default class LocalWorker {
+class LocalWorker {
   constructor(provisionerId, workerType, workerId) {
     this.provisionerId = provisionerId;
     this.workerType = workerType;
@@ -68,3 +68,5 @@ export default class LocalWorker {
     }
   }
 }
+
+module.exports = LocalWorker;

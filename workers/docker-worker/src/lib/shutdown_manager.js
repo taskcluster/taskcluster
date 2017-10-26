@@ -1,10 +1,10 @@
-import { EventEmitter } from 'events';
-import { spawn }  from 'child_process';
-import Debug from 'debug'
+const { EventEmitter } = require('events');
+const { spawn } = require('child_process');
+const Debug = require('debug');
 
 let debug = Debug('docker-worker:shutdown_manager');
 
-export default class ShutdownManager extends EventEmitter {
+class ShutdownManager extends EventEmitter {
   constructor(host, config) {
     super();
     this.idleTimeout = null;
@@ -112,3 +112,4 @@ export default class ShutdownManager extends EventEmitter {
   }
 }
 
+module.exports = ShutdownManager;

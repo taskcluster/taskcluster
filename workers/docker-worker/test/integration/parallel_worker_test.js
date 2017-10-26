@@ -1,9 +1,9 @@
-import waitForEvent from '../../build/lib/wait_for_event';
-import * as settings from '../settings';
-import cmd from './helper/cmd';
-import slugid from 'slugid';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const waitForEvent = require('../../src/lib/wait_for_event');
+const settings = require('../settings');
+const cmd = require('./helper/cmd');
+const slugid = require('slugid');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('Parallel workers', () => {
   // Ensure we don't leave behind our test configurations.

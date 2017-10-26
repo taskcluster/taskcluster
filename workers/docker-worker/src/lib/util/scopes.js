@@ -1,5 +1,5 @@
-import scopeUtils from 'taskcluster-lib-scopes';
-import taskcluster from 'taskcluster-client';
+const scopeUtils = require('taskcluster-lib-scopes');
+const taskcluster = require('taskcluster-client');
 
 /**
  * Do the taskScopes satisfy all of the scopes for the given resources?
@@ -12,10 +12,12 @@ import taskcluster from 'taskcluster-client';
  * @param {object or array} resources
  * @param {array} taskScopes
  */
-export async function hasPrefixedScopes(prefix, resources, taskScopes=[]) {
-  let auth = new taskcluster.Auth();
-  let expandedScopes = await auth.expandScopes({scopes:taskScopes});
-  let neededScopes = Object.keys(resources).map((r) => { return prefix + r; });
+module.exports = {
+  async hasPrefixedScopes(prefix, resources, taskScopes=[]) {
+    let auth = new taskcluster.Auth();
+    let expandedScopes = await auth.expandScopes({scopes:taskScopes});
+    let neededScopes = Object.keys(resources).map((r) => { return prefix + r; });
 
-  return scopeUtils.scopeMatch(expandedScopes.scopes, [neededScopes]);
+    return scopeUtils.scopeMatch(expandedScopes.scopes, [neededScopes]);
+  }
 }

@@ -1,7 +1,7 @@
-import Debug from 'debug';
-import taskcluster from 'taskcluster-client';
+const Debug = require('debug');
+const taskcluster = require('taskcluster-client');
 
-import ArtifactImage from './artifact_image';
+const ArtifactImage = require('./artifact_image');
 
 let debug = Debug('docker-worker:indexedImage');
 

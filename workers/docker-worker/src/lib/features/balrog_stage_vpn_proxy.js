@@ -1,8 +1,8 @@
-import assert from 'assert';
-import Debug from 'debug';
-import { scopeMatch } from 'taskcluster-base/utils';
-import request from 'superagent-promise';
-import waitForPort from '../wait_for_port';
+const assert = require('assert');
+const Debug = require('debug');
+const { scopeMatch } = require('taskcluster-base/utils');
+const request = require('superagent-promise');
+const waitForPort = require('../wait_for_port');
 
 let debug = Debug('taskcluster-docker-worker:features:balrogStageVPNProxy');
 
@@ -31,7 +31,7 @@ async function sleep(duration) {
   return new Promise(accept => setTimeout(accept, duration));
 }
 
-export default class BalrogStageVPNProxy {
+class BalrogStageVPNProxy {
   constructor () {
     this.featureName = 'balrogStageVPNProxy';
     /**
@@ -136,3 +136,5 @@ export default class BalrogStageVPNProxy {
     task.runtime.gc.removeContainer(this.container.id);
   }
 }
+
+module.exports = BalrogStageVPNProxy;

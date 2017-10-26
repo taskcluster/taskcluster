@@ -1,10 +1,10 @@
-import assert from 'assert';
-import slugid from 'slugid';
+const assert = require('assert');
+const slugid = require('slugid');
 
-import cmd from './helper/cmd';
-import expires from './helper/expires';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const cmd = require('./helper/cmd');
+const expires = require('./helper/expires');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('use dind-service', () => {
   let worker;

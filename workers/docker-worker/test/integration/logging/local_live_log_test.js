@@ -1,11 +1,11 @@
-import request from 'superagent-promise';
-import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+const request = require('superagent-promise');
+const slugid = require('slugid');
+const taskcluster = require('taskcluster-client');
 
-import cmd from '../helper/cmd';
-import DockerWorker from '../../dockerworker';
-import TestWorker from '../../testworker';
-import waitForEvent from '../../../build/lib/wait_for_event';
+const cmd = require('../helper/cmd');
+const DockerWorker = require('../../dockerworker');
+const TestWorker = require('../../testworker');
+const waitForEvent = require('../../../src/lib/wait_for_event');
 
 suite('live logging', () => {
   let worker;

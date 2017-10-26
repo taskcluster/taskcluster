@@ -1,11 +1,11 @@
-import assert from 'assert';
-import getArtifact from './helper/get_artifact';
-import cmd from './helper/cmd';
-import expires from './helper/expires';
-import testworker from '../post_task';
-import TestWorker from '../testworker';
-import DockerWorker from '../dockerworker';
-import iptables from 'iptables';
+const assert = require('assert');
+const getArtifact = require('./helper/get_artifact');
+const cmd = require('./helper/cmd');
+const expires = require('./helper/expires');
+const testworker = require('../post_task');
+const TestWorker = require('../testworker');
+const DockerWorker = require('../dockerworker');
+const iptables = require('iptables');
 
 suite('artifact extration tests', () => {
   teardown(() => {

@@ -1,6 +1,6 @@
-import assert from 'assert';
-import * as subject from '../build/lib/host/test';
-import * as settings from './settings';
+const assert = require('assert');
+const subject = require('../src/lib/host/test');
+const settings = require('./settings');
 
 suite('test host', () => {
   setup(settings.cleanup);

@@ -4,20 +4,20 @@ enabled/disabled at will... This module defines the list of features and which
 module is responsible for handling them.
 */
 
-import _ from 'lodash';
-import assert from 'assert';
-import TaskclusterLogs from './features/local_live_log';
-import ArtifactUpload from './features/artifacts';
-import AllowPtrace from './features/allow_ptrace';
-import ChainOfTrust from './features/chain_of_trust';
-import BulkLog from './features/bulk_log';
-import TaskclusterProxy from './features/taskcluster_proxy';
-import Dind from './features/dind';
-import RelengAPIProxy from './features/releng_api_proxy';
-import DockerSave from './features/docker_save';
-import Interactive from './features/interactive.js';
-import BalrogVPNProxy from './features/balrog_vpn_proxy';
-import BalrogStageVPNProxy from './features/balrog_stage_vpn_proxy';
+const _ = require('lodash');
+const assert = require('assert');
+const TaskclusterLogs = require('./features/local_live_log');
+const ArtifactUpload = require('./features/artifacts');
+const AllowPtrace = require('./features/allow_ptrace');
+const ChainOfTrust = require('./features/chain_of_trust');
+const BulkLog = require('./features/bulk_log');
+const TaskclusterProxy = require('./features/taskcluster_proxy');
+const Dind = require('./features/dind');
+const RelengAPIProxy = require('./features/releng_api_proxy');
+const DockerSave = require('./features/docker_save');
+const Interactive = require('./features/interactive.js');
+const BalrogVPNProxy = require('./features/balrog_vpn_proxy');
+const BalrogStageVPNProxy = require('./features/balrog_stage_vpn_proxy');
 
 const features = {
   localLiveLog: {

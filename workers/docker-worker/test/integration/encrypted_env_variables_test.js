@@ -1,13 +1,13 @@
-import assert from 'assert';
-import devnull from 'dev-null';
-import Docker from '../../build/lib/docker';
-import dockerUtils from 'dockerode-process/utils';
-import fs from 'fs';
-import * as openpgp from 'openpgp';
-import testworker from '../post_task';
-import * as settings from '../settings';
-import slugid from 'slugid';
-import waitForEvent from '../../build/lib/wait_for_event';
+const assert = require('assert');
+const devnull = require('dev-null');
+const Docker = require('../../src/lib/docker');
+const dockerUtils = require('dockerode-process/utils');
+const fs = require('fs');
+const openpgp = require('openpgp');
+const testworker = require('../post_task');
+const settings = require('../settings');
+const slugid = require('slugid');
+const waitForEvent = require('../../src/lib/wait_for_event');
 
 var docker = Docker();
 
@@ -21,7 +21,7 @@ suite('encrypted private env variables', () => {
 
   setup(async () =>{
     settings.configure({
-      dockerWorkerPrivateKey: '/worker/.test/docker-worker-priv.pem'
+      dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
     });
 
     var pubKeyArmored = fs.readFileSync('test\/docker-worker.pem', 'ascii');

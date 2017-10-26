@@ -1,6 +1,6 @@
 suite('Reclaimer', function() {
   var assert = require('assert');
-  var Reclaimer = require('../build/lib/task').Reclaimer;
+  var Reclaimer = require('../src/lib/task').Reclaimer;
   var fakeRuntime, fakeTask;
   var reclaims;
   var taskAction;

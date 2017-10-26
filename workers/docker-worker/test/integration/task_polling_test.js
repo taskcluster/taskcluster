@@ -1,10 +1,10 @@
-import assert from 'assert';
-import base from 'taskcluster-base';
-import cmd from './helper/cmd';
-import DockerWorker from '../dockerworker';
-import * as settings from '../settings';
-import TestWorker from '../testworker';
-import waitForEvent from '../../build/lib/wait_for_event';
+const assert = require('assert');
+const base = require('taskcluster-base');
+const cmd = require('./helper/cmd');
+const DockerWorker = require('../dockerworker');
+const settings = require('../settings');
+const TestWorker = require('../testworker');
+const waitForEvent = require('../../src/lib/wait_for_event');
 
 let worker;
 suite('Task Polling', () => {

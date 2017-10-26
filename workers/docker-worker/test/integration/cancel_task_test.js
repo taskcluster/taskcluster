@@ -1,9 +1,9 @@
-import assert from 'assert';
-import slugid from 'slugid';
-import * as settings from '../settings';
-import taskcluster from 'taskcluster-client';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const assert = require('assert');
+const slugid = require('slugid');
+const settings = require('../settings');
+const taskcluster = require('taskcluster-client');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('Cancel Task', () => {
   test('cancel', async () => {

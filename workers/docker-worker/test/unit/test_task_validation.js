@@ -1,9 +1,9 @@
-import assert from 'assert';
-import base from 'taskcluster-base';
-import path from 'path';
-import _ from 'lodash';
+const assert = require('assert');
+const base = require('taskcluster-base');
+const path = require('path');
+const _ = require('lodash');
 
-import { PAYLOAD_SCHEMA } from '../../build/lib/task.js';
+const { PAYLOAD_SCHEMA } = require('../../src/lib/task.js');
 
 suite('Task validation', async function() {
   before(async function() {

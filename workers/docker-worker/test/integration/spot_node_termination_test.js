@@ -1,15 +1,15 @@
-import fs from 'fs';
-import slugid from 'slugid';
-import co from 'co';
-import taskcluster from 'taskcluster-client';
-import Docker from '../../build/lib/docker';
-import dockerUtils from 'dockerode-process/utils';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
-import * as settings from '../settings';
-import getArtifact from './helper/get_artifact';
-import sleep from '../../build/lib/util/sleep';
-import waitForEvent from '../../build/lib/wait_for_event';
+const fs = require('fs');
+const slugid = require('slugid');
+const co = require('co');
+const taskcluster = require('taskcluster-client');
+const Docker = require('../../src/lib/docker');
+const dockerUtils = require('dockerode-process/utils');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
+const settings = require('../settings');
+const getArtifact = require('./helper/get_artifact');
+const sleep = require('../../src/lib/util/sleep');
+const waitForEvent = require('../../src/lib/wait_for_event');
 
 suite('Spot Node Termination', () => {
   let IMAGE = 'taskcluster/test-ubuntu:latest';

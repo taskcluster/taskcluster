@@ -1,11 +1,11 @@
-import assert from 'assert';
-import waitForEvent from '../../build/lib/wait_for_event';
-import * as settings from '../settings';
-import cmd from './helper/cmd';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
-import taskcluster from 'taskcluster-client';
-import expires from './helper/expires';
+const assert = require('assert');
+const waitForEvent = require('../../src/lib/wait_for_event');
+const settings = require('../settings');
+const cmd = require('./helper/cmd');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
+const taskcluster = require('taskcluster-client');
+const expires = require('./helper/expires');
 
 suite('Reclaiming task', () => {
   // Ensure we don't leave behind our test configurations.

@@ -4,7 +4,7 @@ set -e -v -x
 
 sudo ln -s /vagrant /worker
 
-NODE_VERSION=v6.9.1
+NODE_VERSION=v8.6.0
 DOCKER_VERSION=1.12.6-0~ubuntu-trusty
 
 # Kernels < 3.13.0.77 and > 3.13.0.71 have an AUFS bug which can cause docker

@@ -1,13 +1,13 @@
-import assert from 'assert';
-import devnull from 'dev-null';
-import waitForEvent from '../../build/lib/wait_for_event';
-import * as settings from '../settings';
-import cmd from './helper/cmd';
-import Docker from '../../build/lib/docker';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
-import ImageManager from '../../build/lib/docker/image_manager';
-import {createLogger} from '../../build/lib/log';
+const assert = require('assert');
+const devnull = require('dev-null');
+const waitForEvent = require('../../src/lib/wait_for_event');
+const settings = require('../settings');
+const cmd = require('./helper/cmd');
+const Docker = require('../../src/lib/docker');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
+const ImageManager = require('../../src/lib/docker/image_manager');
+const {createLogger} = require('../../src/lib/log');
 
 let docker = Docker();
 
@@ -96,7 +96,8 @@ suite('Capacity', () => {
       assert.equal(taskRes.run.state, 'completed');
       assert.equal(taskRes.run.reasonResolved, 'completed');
     });
-    assert.ok(end < sleep * CAPACITY,
+    // Add 10 more seconds to count for external factors slowing down task execution
+    assert.ok(end < sleep * CAPACITY + 10,
       `tasks ran in parallel. Duration ${end} seconds > expected ${sleep * CAPACITY}`);
   });
 });

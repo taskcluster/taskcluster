@@ -1,7 +1,7 @@
-import assert from 'assert';
+const assert = require('assert');
 
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('container startup', () => {
   let worker;

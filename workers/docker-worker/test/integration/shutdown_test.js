@@ -1,9 +1,9 @@
-import assert from 'assert';
-import waitForEvent from '../../build/lib/wait_for_event';
-import * as settings from '../settings';
-import cmd from './helper/cmd';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const assert = require('assert');
+const waitForEvent = require('../../src/lib/wait_for_event');
+const settings = require('../settings');
+const cmd = require('./helper/cmd');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('Shutdown on idle', () => {
   var worker;

@@ -1,16 +1,16 @@
-import devnull from 'dev-null';
-import dockerUtils from 'dockerode-process/utils';
-import path from 'path';
-import slugid from 'slugid';
+const devnull = require('dev-null');
+const dockerUtils = require('dockerode-process/utils');
+const path = require('path');
+const slugid = require('slugid');
 
-import waitForEvent from '../../../build/lib/wait_for_event';
-import sleep from '../../../build/lib/util/sleep';
-import {removeImage} from '../../../build/lib/util/remove_image';
+const waitForEvent = require('../../../src/lib/wait_for_event');
+const sleep = require('../../../src/lib/util/sleep');
+const {removeImage} = require('../../../src/lib/util/remove_image');
 
 // Registry proxy image...
 const DOCKER_IMAGE = 'registry:2';
 
-export default class Registry {
+class Registry {
   constructor(docker) {
     this.docker = docker;
   }
@@ -144,3 +144,5 @@ export default class Registry {
     return newImageName + ':' + tag;
   }
 }
+
+module.exports = Registry;

@@ -3,8 +3,8 @@ This module handles the creation of the "taskcluster" proxy container which
 allows tasks to talk directly to taskcluster services over a http proxy which
 grants a particular permission level based on the task scopes.
 */
-import waitForPort from '../wait_for_port';
-import http from 'http';
+const waitForPort = require('../wait_for_port');
+const http = require('http');
 
 // Alias used to link the proxy.
 const ALIAS = 'taskcluster';
@@ -13,7 +13,7 @@ const ALIAS = 'taskcluster';
 // time for some retries to happen before giving up.
 const INIT_TIMEOUT = 90000;
 
-export default class TaskclusterProxy {
+class TaskclusterProxy {
   constructor () {
     this.featureName = 'taskclusterProxy';
     /**
@@ -128,3 +128,5 @@ export default class TaskclusterProxy {
     task.runtime.gc.removeContainer(this.container.id);
   }
 }
+
+module.exports = TaskclusterProxy;

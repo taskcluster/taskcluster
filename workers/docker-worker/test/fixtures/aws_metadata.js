@@ -2,8 +2,8 @@
 Stub for the aws metadata server.
 */
 
-import koa from 'koa';
-import slugid from 'slugid';
+const koa = require('koa');
+const slugid = require('slugid');
 
 let app = koa();
 
@@ -59,7 +59,7 @@ function route(context) {
   }
 }
 
-export default app.use(function* () {
+module.exports = app.use(function* () {
   let data = route(this);
   this.body = data;
 });

@@ -1,6 +1,6 @@
 suite('test lib/util/scopes', function() {
   var co = require('co');
-  var scopes = require('../build/lib/util/scopes');
+  var scopes = require('../src/lib/util/scopes');
   var fakeVolumeCache = {get: function(n) { return '/caches/' + n; }};
 
   [

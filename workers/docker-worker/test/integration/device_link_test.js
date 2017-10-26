@@ -1,9 +1,9 @@
-import assert from 'assert';
-import * as settings from '../settings';
-import TestWorker from '../testworker';
-import DockerWorker from '../dockerworker';
-import cmd from './helper/cmd';
-import waitForEvent from '../../build/lib/wait_for_event';
+const assert = require('assert');
+const settings = require('../settings');
+const TestWorker = require('../testworker');
+const DockerWorker = require('../dockerworker');
+const cmd = require('./helper/cmd');
+const waitForEvent = require('../../src/lib/wait_for_event');
 
 suite('device linking within containers', () => {
 
@@ -123,8 +123,6 @@ suite('device linking within containers', () => {
   });
 
   test('host capacity adjusted when device capacity is less than worker capacity', async () => {
-    // XXX: This could change, right now the vagrant image has 8 video devices, and 30 audio
-    // Adjusted running capacity should be the lowest device capacity, 8 in this case.
     settings.configure({
       capacity: 50,
       deviceManagement: {
@@ -165,9 +163,15 @@ suite('device linking within containers', () => {
       'Task not resolved as complete'
     );
 
+    const message = result[1].message;
+    const possibleMessages = Array.from(
+      new Array(50).slice(1),
+      (x, i) => `Adjusted Host Capacity: ${i}`
+    );
+
     assert.ok(
-      result[1].message.includes('Adjusted Host Capacity: 8'),
-      'Worker should just capacity based on the number of devices that could be found'
+      possibleMessages.some(x => message.includes(x)),
+      `Worker should just capacity based on the number of devices that could be found:\n${message}`
     );
   });
 });

@@ -1,14 +1,14 @@
-import crypto from 'crypto';
-import assert from 'assert';
-import Docker from '../../lib/docker';
-import fs from 'mz/fs';
-import getArtifact from './helper/get_artifact';
-import cmd from './helper/cmd';
-import expires from './helper/expires';
-import testworker from '../post_task';
-import * as openpgp from 'openpgp';
-import {removeImage} from '../../lib/util/remove_image';
-import {TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH} from '../fixtures/image_artifacts';
+const crypto = require('crypto');
+const assert = require('assert');
+const Docker = require('../../src/lib/docker');
+const fs = require('mz/fs');
+const getArtifact = require('./helper/get_artifact');
+const cmd = require('./helper/cmd');
+const expires = require('./helper/expires');
+const testworker = require('../post_task');
+const openpgp = require('openpgp');
+const {removeImage} = require('../../src/lib/util/remove_image');
+const {TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH} = require('../fixtures/image_artifacts');
 
 let docker = Docker();
 

@@ -1,18 +1,18 @@
-import {createHash} from 'crypto';
-import Debug from 'debug';
-import fs from 'mz/fs';
-import { spawn } from 'child_process';
-import slugid from 'slugid';
-import {Transform} from 'stream';
-import path from 'path';
-import tarfs from 'tar-fs';
-import taskcluster from 'taskcluster-client';
-import {scopeMatch} from 'taskcluster-base/utils';
+const {createHash} = require('crypto');
+const Debug = require('debug');
+const fs = require('mz/fs');
+const { spawn } = require('child_process');
+const slugid = require('slugid');
+const {Transform} = require('stream');
+const path = require('path');
+const tarfs = require('tar-fs');
+const taskcluster = require('taskcluster-client');
+const {scopeMatch} = require('taskcluster-base/utils');
 
-import {makeDir, removeDir} from '../util/fs';
-import {fmtLog, fmtErrorLog} from '../log';
-import downloadArtifact from '../util/artifact_download';
-import sleep from '../util/sleep';
+const {makeDir, removeDir} = require('../util/fs');
+const {fmtLog, fmtErrorLog} = require('../log');
+const downloadArtifact = require('../util/artifact_download');
+const sleep = require('../util/sleep');
 
 let debug = Debug('docker-worker:artifactImage');
 
@@ -59,7 +59,7 @@ async function decompressZstdFile(inputFile) {
 /*
  * Image manager for task artifact images.
  */
-export default class ArtifactImage {
+class ArtifactImage {
   /*
    * @param {Object}  runtime       - Runtime object
    * @param {Object}  imageDetails  - Type, namespace, and path object
@@ -313,3 +313,5 @@ export default class ArtifactImage {
     return editedTarballPath;
   }
 }
+
+module.exports = ArtifactImage;

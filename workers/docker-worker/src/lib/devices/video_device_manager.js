@@ -1,11 +1,11 @@
-import Debug from 'debug';
-import fs from 'fs';
+const Debug = require('debug');
+const fs = require('fs');
 
 let debug = Debug('taskcluster-docker-worker:devices:videoManager');
 
 const BASE_DIR = '/dev';
 
-export default class VideoDeviceManager {
+class VideoDeviceManager {
   constructor() {
     this.devices = this.buildDeviceList();
   }
@@ -81,3 +81,5 @@ class VideoDevice {
   }
 
 }
+
+module.exports = VideoDeviceManager;

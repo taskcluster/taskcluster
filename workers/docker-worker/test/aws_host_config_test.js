@@ -1,9 +1,9 @@
-import app from './fixtures/aws_metadata';
-import http from 'http';
-import * as awsConfig from '../build/lib/host/aws';
-import assert from 'assert';
-import taskcluster from 'taskcluster-client';
-import request from 'superagent-promise';
+const app = require('./fixtures/aws_metadata');
+const http = require('http');
+const awsConfig = require('../src/lib/host/aws');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const request = require('superagent-promise');
 
 let server;
 let url;
@@ -60,7 +60,7 @@ suite('configuration/aws', () => {
       workerGroup: 'us-west-2',
       instanceId: 'i-123456',
       instanceType: 'c3.xlarge',
-      region: 'us-west-2',
+      region: 'us-west-2d',
       capacity: 1,
       publicIp: '22.33.44.252',
       billingCycleInterval: 120*60,

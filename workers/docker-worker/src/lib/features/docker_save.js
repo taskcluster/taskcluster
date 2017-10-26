@@ -1,13 +1,12 @@
-import Debug from 'debug';
-import fs from 'mz/fs';
-import path from 'path';
-import Promise from 'promise';
-import tar from 'tar-fs';
-import taskcluster from 'taskcluster-client';
-import slugid from 'slugid';
-import uploadToS3 from '../upload_to_s3';
-import waitForEvent from '../wait_for_event';
-import zlib from 'zlib';
+const Debug = require('debug');
+const fs = require('mz/fs');
+const path = require('path');
+const tar = require('tar-fs');
+const taskcluster = require('taskcluster-client');
+const slugid = require('slugid');
+const uploadToS3 = require('../upload_to_s3');
+const waitForEvent = require('../wait_for_event');
+const zlib = require('zlib');
 
 let debug = Debug('docker-worker:features:docker-save');
 
@@ -15,7 +14,7 @@ function createImageName(taskId, runId) {
   return `${taskId.toLowerCase().replace('_', '-')}-${runId}`;
 }
 
-export default class DockerSave {
+class DockerSave {
   constructor() {
     this.featureName = 'dockerSave';
   }
@@ -32,10 +31,12 @@ export default class DockerSave {
     let image = task.runtime.docker.getImage(`${imageName}:latest`);
     let imgStream = await image.get();
     let zipStream = zlib.createGzip();
-    imgStream.pipe(zipStream).pipe(fs.createWriteStream(pathname));
     await new Promise((accept, reject) => {
-      zipStream.on('end', accept);
+      const output = fs.createWriteStream(pathname);
       zipStream.on('error', reject);
+      zipStream.on('end', accept);
+      output.on('error', reject);
+      imgStream.pipe(zipStream).pipe(output);
     });
 
     let stat = await fs.stat(pathname);
@@ -67,10 +68,12 @@ export default class DockerSave {
     //temporary path for saved file
     let pathname = path.join(task.runtime.dockerVolume, slugid.v4() + '.tar');
     let zipStream = tar.pack(cache.cacheLocation, { dereference: true }).pipe(zlib.createGzip());
-    zipStream.pipe(fs.createWriteStream(pathname));
     await new Promise((accept, reject) => {
+      const output = fs.createWriteStream(pathname);
       zipStream.on('end', accept);
       zipStream.on('error', reject);
+      output.on('error', reject);
+      zipStream.pipe(output);
     });
     let expiration = taskcluster.fromNow(task.runtime.dockerSave.expiration);
     expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
@@ -111,3 +114,5 @@ export default class DockerSave {
     }
   }
 }
+
+module.exports = DockerSave;

@@ -1,10 +1,10 @@
-import assert from 'assert';
-import Debug from 'debug';
-import os from 'os';
+const assert = require('assert');
+const Debug = require('debug');
+const os = require('os');
 
 let debug = Debug('taskcluster-docker-worker:devices:cpuDeviceManager');
 
-export default class CpuDeviceManager {
+class CpuDeviceManager {
   constructor() {
     this.devices = this.buildDeviceList();
   }
@@ -72,3 +72,5 @@ class CpuDevice {
   }
 
 }
+
+module.exports = CpuDeviceManager;

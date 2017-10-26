@@ -1,6 +1,6 @@
-import assert from 'assert';
-import DockerWorker from '../dockerworker';
-import TestWorker from '../testworker';
+const assert = require('assert');
+const DockerWorker = require('../dockerworker');
+const TestWorker = require('../testworker');
 
 suite('retry intermittent tasks', () => {
   let worker;

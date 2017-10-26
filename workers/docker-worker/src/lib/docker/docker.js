@@ -1,8 +1,10 @@
-import DockerAPI from 'dockerode-promise';
-import dockerOpts from 'dockerode-options';
+const DockerAPI = require('dockerode-promise');
+const dockerOpts = require('dockerode-options');
 
-export default class Docker extends DockerAPI {
+class Docker extends DockerAPI {
   constructor() {
     super(dockerOpts);
   }
 }
+
+module.exports = Docker;

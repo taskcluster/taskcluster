@@ -5,15 +5,15 @@
  * to a file artifact with the entirety of the task output.
  */
 
-import Debug from 'debug';
-import http from 'http';
-import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
-import URL from 'url';
+const Debug = require('debug');
+const http = require('http');
+const slugid = require('slugid');
+const taskcluster = require('taskcluster-client');
+const URL = require('url');
 
-import BulkLog from './bulk_log';
-import waitForPort from '../wait_for_port';
-import getLogsLocationsFromTask from './logs_location.js';
+const BulkLog = require('./bulk_log');
+const waitForPort = require('../wait_for_port');
+const getLogsLocationsFromTask = require('./logs_location.js');
 
 
 // Maximum time to wait for the put socket to become available.
@@ -22,7 +22,7 @@ const INIT_TIMEOUT = 2000;
 let debug = Debug('taskcluster-docker-worker:features:local_live_log');
 
 // Alias used to link the proxy.
-export default class TaskclusterLogs {
+class TaskclusterLogs {
   constructor() {
     this.featureName = 'localLiveLog';
     /**
@@ -213,3 +213,5 @@ export default class TaskclusterLogs {
     task.runtime.gc.removeContainer(this.container.id);
   }
 }
+
+module.exports = TaskclusterLogs;

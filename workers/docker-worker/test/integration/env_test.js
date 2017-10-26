@@ -1,5 +1,5 @@
-import assert from 'assert';
-import testworker from '../post_task';
+const assert = require('assert');
+const testworker = require('../post_task');
 
 suite('setting env variables', () => {
   test('echo env variable', async () => {

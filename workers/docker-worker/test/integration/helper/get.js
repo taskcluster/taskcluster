@@ -1,6 +1,6 @@
-import request from 'superagent-promise';
+const request = require('superagent-promise');
 
-export default async (url) => {
+module.exports = async (url) => {
   try {
     let response = await request.get(url).end();
     return response.text;

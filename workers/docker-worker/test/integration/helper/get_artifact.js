@@ -1,5 +1,5 @@
-import Debug from 'debug';
-import get from './get';
+const Debug = require('debug');
+const get = require('./get');
 
 let debug = Debug('test:helper:getArtifact');
 
@@ -10,7 +10,7 @@ Fetch the contents of a single artifact.
 @param {String} path path to fetch artifact from.
 @return {String} full contents of the artifact.
 */
-export default async (result, path) => {
+module.exports = async (result, path) => {
   let taskId = result.taskId;
   let runId = result.runId;
 

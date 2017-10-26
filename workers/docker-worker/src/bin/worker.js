@@ -1,21 +1,21 @@
-import 'source-map-support/register'
-import reportHostMetrics from '../lib/stats/host_metrics';
-import fs from 'fs';
-import os from 'os';
-import program from 'commander';
-import taskcluster from 'taskcluster-client';
-import base from 'taskcluster-base';
-import {createLogger} from '../lib/log';
-import Debug from 'debug';
-import _ from 'lodash';
-import monitoring from 'taskcluster-lib-monitor';
-import Runtime from '../lib/runtime';
-import TaskListener from '../lib/task_listener';
-import ShutdownManager from '../lib/shutdown_manager';
-import GarbageCollector from '../lib/gc';
-import VolumeCache from '../lib/volume_cache';
-import PrivateKey from '../lib/private_key';
-import ImageManager from '../lib/docker/image_manager';
+require('source-map-support/register');
+const reportHostMetrics = require('../lib/stats/host_metrics');
+const fs = require('fs');
+const os = require('os');
+const program = require('commander');
+const taskcluster = require('taskcluster-client');
+const base = require('taskcluster-base');
+const createLogger = require('../lib/log').createLogger;
+const Debug = require('debug');
+const _ = require('lodash');
+const monitoring = require('taskcluster-lib-monitor');
+const Runtime = require('../lib/runtime');
+const TaskListener = require('../lib/task_listener');
+const ShutdownManager = require('../lib/shutdown_manager');
+const GarbageCollector = require('../lib/gc');
+const VolumeCache = require('../lib/volume_cache');
+const PrivateKey = require('../lib/private_key');
+const ImageManager = require('../lib/docker/image_manager');
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -92,6 +92,10 @@ program.parse(process.argv);
 
 // Main.
 (async () => {
+  process.on('unhandledRejection', (reason, p) => {
+    console.error(`Unhandled rejection at ${p}.\n${reason.stack || reason}`);
+  });
+
   var profile = program.args[0];
 
   if (!profile) {

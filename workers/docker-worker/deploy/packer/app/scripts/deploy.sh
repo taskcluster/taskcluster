@@ -27,10 +27,9 @@ cd $target
 tar xzf $docker_worker_source -C $target --strip-components=1
 sudo chown -R $USER:$USER /home/ubuntu/docker_worker
 
-sudo npm install -g babel-cli yarn@1.0.2
+sudo npm install -g yarn@1.0.2
 
 yarn install --frozen-lockfile
-yarn build
 
 # Initialize video and sound loopback modules
 sudo modprobe v4l2loopback

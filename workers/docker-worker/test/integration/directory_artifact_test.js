@@ -1,12 +1,12 @@
-import assert from 'assert';
-import testworker from '../post_task';
-import getArtifact from './helper/get_artifact';
-import cmd from './helper/cmd';
-import expires from './helper/expires';
-import TestWorker from '../testworker';
-import DockerWorker from '../dockerworker';
-import iptables from 'iptables';
-import _ from 'lodash';
+const assert = require('assert');
+const testworker = require('../post_task');
+const getArtifact = require('./helper/get_artifact');
+const cmd = require('./helper/cmd');
+const expires = require('./helper/expires');
+const TestWorker = require('../testworker');
+const DockerWorker = require('../dockerworker');
+const iptables = require('iptables');
+const _ = require('lodash');
 
 suite('Directory artifact', function() {
   teardown(() => {

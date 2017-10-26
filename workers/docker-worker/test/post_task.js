@@ -1,7 +1,7 @@
-import TestWorker from './testworker';
-import DockerWorker from './dockerworker';
+const TestWorker = require('./testworker');
+const DockerWorker = require('./dockerworker');
 
-export default async (payload, taskId) => {
+module.exports = async (payload, taskId) => {
   let worker = new TestWorker(DockerWorker);
 
   await worker.launch();

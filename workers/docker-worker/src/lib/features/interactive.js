@@ -1,22 +1,21 @@
-import assert from 'assert';
-import Debug from 'debug';
-import {DockerExecServer} from 'docker-exec-websocket-server';
-import fs from 'mz/fs';
-import http from 'http';
-import https from 'https';
-import path from 'path';
-import Promise from 'promise';
-import slugid from 'slugid';
-import SharedFileLock from '../shared_file_lock';
-import url from 'url';
-import wsStream from 'websocket-stream';
-import ws from 'ws';
-import devnull from 'dev-null';
-import streams from 'memory-streams';
-import waitForSocket from '../wait_for_socket';
-import net from 'net';
-import rmrf from 'rimraf';
-import express from 'express';
+const assert = require('assert');
+const Debug = require('debug');
+const {DockerExecServer} = require('docker-exec-websocket-server');
+const fs = require('mz/fs');
+const http = require('http');
+const https = require('https');
+const path = require('path');
+const slugid = require('slugid');
+const SharedFileLock = require('../shared_file_lock');
+const url = require('url');
+const wsStream = require('websocket-stream');
+const ws = require('ws');
+const devnull = require('dev-null');
+const streams = require('memory-streams');
+const waitForSocket = require('../wait_for_socket');
+const net = require('net');
+const rmrf = require('rimraf');
+const express = require('express');
 
 let debug = Debug('docker-worker:features:interactive');
 
@@ -115,7 +114,7 @@ let OpenDisplay = async (container, display, socketFolder, argv = [], name) => {
 };
 
 
-export default class WebsocketServer {
+class WebsocketServer {
   constructor () {
     this.featureName = 'dockerInteractive';
     this.path = '/' + slugid.v4() + '/shell.sock';
@@ -406,3 +405,5 @@ export default class WebsocketServer {
     });
   }
 }
+
+module.exports = WebsocketServer;

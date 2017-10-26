@@ -1,20 +1,20 @@
-import Debug from 'debug';
-import crypto from 'crypto';
-import https from 'https';
-import url from 'url';
-import fs from 'mz/fs';
-import temporary from 'temporary';
-import promiseRetry from 'promise-retry';
-import { createLogger } from './log';
-import _ from 'lodash';
-import waitForEvent from './wait_for_event';
+const Debug = require('debug');
+const crypto = require('crypto');
+const https = require('https');
+const url = require('url');
+const fs = require('mz/fs');
+const temporary = require('temporary');
+const promiseRetry = require('promise-retry');
+const { createLogger } = require('./log');
+const _ = require('lodash');
+const waitForEvent = require('./wait_for_event');
 
 var log = createLogger({source: "uploadToS3"});
 let debug = Debug('taskcluster-docker-worker:uploadToS3');
 
 // Upload an S3 artifact to the queue for the given taskId/runId.  Source can be
 // a string or a stream.
-export default async function uploadToS3 (
+module.exports = async function uploadToS3 (
   queue,
   taskId,
   runId,

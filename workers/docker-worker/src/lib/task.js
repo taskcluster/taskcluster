@@ -2,32 +2,32 @@
  * Handler of individual tasks beginning after the task is claimed and ending
  * with posting task results.
  */
-import Debug from 'debug';
-import DockerProc from 'dockerode-process';
-import util from 'util';
-import uuid from 'uuid';
-import { PassThrough } from 'stream';
-import States from './states';
-import fs from "mz/fs";
-import child_process from "mz/child_process";
-import taskcluster from 'taskcluster-client';
-import base from 'taskcluster-base';
-import promiseRetry from 'promise-retry';
+const Debug = require('debug');
+const DockerProc = require('dockerode-process');
+const util = require('util');
+const uuid = require('uuid');
+const { PassThrough } = require('stream');
+const States = require('./states');
+const fs = require("mz/fs");
+const child_process = require("mz/child_process");
+const taskcluster = require('taskcluster-client');
+const base = require('taskcluster-base');
+const promiseRetry = require('promise-retry');
 
-import features from './features';
-import getHostname from './util/hostname';
-import { fmtLog, fmtErrorLog } from './log';
-import { hasPrefixedScopes } from './util/scopes';
-import { scopeMatch } from 'taskcluster-base/utils';
-import { validatePayload } from './util/validate_schema';
-import waitForEvent from './wait_for_event';
-import uploadToS3 from './upload_to_s3';
-import _ from 'lodash';
-import EventEmitter from 'events';
+const features = require('./features');
+const getHostname = require('./util/hostname');
+const { fmtLog, fmtErrorLog } = require('./log');
+const { hasPrefixedScopes } = require('./util/scopes');
+const { scopeMatch } = require('taskcluster-base/utils');
+const { validatePayload } = require('./util/validate_schema');
+const waitForEvent = require('./wait_for_event');
+const uploadToS3 = require('./upload_to_s3');
+const _ = require('lodash');
+const EventEmitter = require('events');
 
 let debug = new Debug('runTask');
 
-export const PAYLOAD_SCHEMA =
+const PAYLOAD_SCHEMA =
   'http://schemas.taskcluster.net/docker-worker/v1/payload.json#';
 
 // TODO probably a terrible error message, look at making it better later
@@ -159,7 +159,7 @@ async function buildDeviceBindings(devices, taskScopes) {
   return deviceBindings;
 }
 
-export class Reclaimer {
+class Reclaimer {
   constructor(runtime, task, primaryClaim, claim) {
     this.runtime = runtime;
     this.task = task;
@@ -272,7 +272,7 @@ export class Reclaimer {
   }
 }
 
-export class Task extends EventEmitter {
+class Task extends EventEmitter {
   /**
   @param {Object} runtime global runtime.
   @param {Object} task for this instance.
@@ -1029,4 +1029,10 @@ export class Task extends EventEmitter {
       credentials: credentials,
     });
   }
+}
+
+module.exports = {
+  PAYLOAD_SCHEMA,
+  Reclaimer,
+  Task
 }

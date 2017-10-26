@@ -57,12 +57,12 @@ tasks:
       - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+        taskcluster/worker-ci@sha256:125150396fbac3b0e8caf5880ebf10fc952bc2357d1509e9a6bee6872838fa5e
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && yarn build && ./build.sh &&
-          ./.test/docker-worker-test --this-chunk 1 --total-chunks 5
+          yarn install --frozen-lockfile && ./build.sh &&
+          ./test/docker-worker-test --this-chunk 1 --total-chunks 5
       capabilities:
         privileged: true
         devices:
@@ -98,12 +98,12 @@ tasks:
       - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+        taskcluster/worker-ci@sha256:125150396fbac3b0e8caf5880ebf10fc952bc2357d1509e9a6bee6872838fa5e
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && yarn build && ./build.sh &&
-          ./.test/docker-worker-test --this-chunk 2 --total-chunks 5
+          yarn install --frozen-lockfile && ./build.sh &&
+          ./test/docker-worker-test --this-chunk 2 --total-chunks 5
       capabilities:
         privileged: true
         devices:
@@ -139,12 +139,12 @@ tasks:
       - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+        taskcluster/worker-ci@sha256:125150396fbac3b0e8caf5880ebf10fc952bc2357d1509e9a6bee6872838fa5e
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && yarn build && ./build.sh &&
-          ./.test/docker-worker-test --this-chunk 3 --total-chunks 5
+          yarn install --frozen-lockfile && ./build.sh &&
+          ./test/docker-worker-test --this-chunk 3 --total-chunks 5
       capabilities:
         privileged: true
         devices:
@@ -180,12 +180,12 @@ tasks:
       - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+        taskcluster/worker-ci@sha256:125150396fbac3b0e8caf5880ebf10fc952bc2357d1509e9a6bee6872838fa5e
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && yarn build && ./build.sh &&
-          ./.test/docker-worker-test --this-chunk 4 --total-chunks 5
+          yarn install --frozen-lockfile && ./build.sh &&
+          ./test/docker-worker-test --this-chunk 4 --total-chunks 5
       capabilities:
         privileged: true
         devices:
@@ -221,12 +221,12 @@ tasks:
       - 'secrets:get:repo:github.com/taskcluster/docker-worker:pulse-creds'
     payload:
       image: >-
-        taskcluster/worker-ci@sha256:87266692cbbeddaeb2751ff0cc69a72328841d252253e437e814105110ac6a91
+        taskcluster/worker-ci@sha256:125150396fbac3b0e8caf5880ebf10fc952bc2357d1509e9a6bee6872838fa5e
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && yarn build && ./build.sh &&
-          ./.test/docker-worker-test --this-chunk 5 --total-chunks 5
+          yarn install --frozen-lockfile && ./build.sh &&
+          ./test/docker-worker-test --this-chunk 5 --total-chunks 5
       capabilities:
         privileged: true
         devices:

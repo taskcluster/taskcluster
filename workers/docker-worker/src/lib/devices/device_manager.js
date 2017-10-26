@@ -1,8 +1,8 @@
-import Debug from 'debug';
+const Debug = require('debug');
 
-import VideoDeviceManager from './video_device_manager';
-import AudioDeviceManager from './audio_device_manager';
-import CpuDeviceManager from './cpu_device_manager';
+const VideoDeviceManager = require('./video_device_manager');
+const AudioDeviceManager = require('./audio_device_manager');
+const CpuDeviceManager = require('./cpu_device_manager');
 
 let debug = Debug('taskcluster-docker-worker:deviceManager');
 
@@ -13,7 +13,7 @@ const DEVICE_MANAGERS = {
 };
 
 
-export default class DeviceManager {
+class DeviceManager {
   constructor(config) {
     this.config = config;
     this.managers = this.initializeDeviceManagers();
@@ -49,3 +49,5 @@ export default class DeviceManager {
     return Math.min(...devices);
   }
 }
+
+module.exports = DeviceManager;

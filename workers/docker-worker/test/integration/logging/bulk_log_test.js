@@ -1,6 +1,6 @@
-import assert from 'assert';
-import testworker from '../../post_task';
-import getArtifact from '../helper/get_artifact';
+const assert = require('assert');
+const testworker = require('../../post_task');
+const getArtifact = require('../helper/get_artifact');
 
 suite('logging to artifact', () => {
   test('artifact logger', async () => {

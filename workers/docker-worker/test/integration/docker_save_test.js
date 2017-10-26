@@ -1,17 +1,17 @@
-import assert from 'assert';
-import base from 'taskcluster-base'
-import Docker from 'dockerode-promise';
-import dockerOpts from 'dockerode-options';
-import DockerWorker from '../dockerworker';
-import fs from 'mz/fs';
-import https from 'https';
-import request from 'superagent-promise';
-import * as settings from '../settings';
-import tar from 'tar-fs';
-import TestWorker from '../testworker';
-import waitForEvent from '../../build/lib/wait_for_event';
-import Debug from 'debug';
-import {removeImage} from '../../build/lib/util/remove_image';
+const assert = require('assert');
+const base = require('taskcluster-base');
+const Docker = require('dockerode-promise');
+const dockerOpts = require('dockerode-options');
+const DockerWorker = require('../dockerworker');
+const fs = require('mz/fs');
+const https = require('https');
+const request = require('superagent-promise');
+const settings = require('../settings');
+const tar = require('tar-fs');
+const TestWorker = require('../testworker');
+const waitForEvent = require('../../src/lib/wait_for_event');
+const Debug = require('debug');
+const {removeImage} = require('../../src/lib/util/remove_image');
 
 let debug = Debug('docker-worker:test:docker-save-test');
 
@@ -44,9 +44,8 @@ suite('use docker-save', () => {
       }
     });
 
-    assert(result.run.state === 'completed', 'task should be successful');
-    assert(result.run.reasonResolved === 'completed',
-                 'task should be successful');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     let taskId = result.taskId;
     let runId = result.runId;
@@ -55,8 +54,13 @@ suite('use docker-save', () => {
 
     //superagent means no zlib required
     let res = await request.get(url).end();
-    res.pipe(fs.createWriteStream('/tmp/dockerload.tar'));
-    await waitForEvent(res, 'end');
+    const tarStream = fs.createWriteStream('/tmp/dockerload.tar');
+    await new Promise((accept, reject) => {
+      res.on('end', accept);
+      res.on('error', reject);
+      tarStream.on('error', reject);
+      res.pipe(tarStream);
+    });
     //make sure it finishes unzipping
     await base.testing.sleep(2000);
 
@@ -109,9 +113,8 @@ suite('use docker-save', () => {
       }
     });
 
-    assert(result.run.state === 'completed', 'task should be successful');
-    assert(result.run.reasonResolved === 'completed',
-                 'task should be successful');
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     let taskId = result.taskId;
     let runId = result.runId;
@@ -121,13 +124,17 @@ suite('use docker-save', () => {
     //superagent means no zlib required
     let res = await request.get(url).end();
     let tarStream = tar.extract('/tmp/cacheload');
-    res.pipe(tarStream);
-    await waitForEvent(res, 'end');
+    await new Promise((accept, reject) => {
+      res.on('end', accept);
+      res.on('error', reject);
+      tarStream.on('error', reject);
+      res.pipe(tarStream);
+    });
     //so the tar actually finishes extracting; tarStream doesn't have an end event
     await base.testing.sleep(1000);
 
     let testStr = await fs.readFile('/tmp/cacheload/test.log', {encoding: 'utf-8'});
-    assert(testStr == 'testString\n');
+    assert.equal(testStr, 'testString\n');
 
     //cleanup temp folder
     await fs.unlink('/tmp/cacheload/test.log');

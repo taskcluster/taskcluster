@@ -3,21 +3,21 @@
  * this automatically generated workerType and listens for the task completion
  * event.
  */
-import devnull from 'dev-null';
-import slugid from 'slugid';
-import request from 'superagent-promise';
-import Debug from 'debug';
-import waitForEvent from '../build/lib/wait_for_event';
-import split from 'split2';
-import getArtifact from './integration/helper/get_artifact';
-import Task from 'taskcluster-task-factory/task';
-import Graph from 'taskcluster-task-factory/graph';
-import LocalWorker from './localworker';
-import taskcluster from 'taskcluster-client';
-import base from 'taskcluster-base';
-import Promise from 'promise';
-import {EventEmitter} from 'events';
-import getLogsLocationsFromTask from '../build/lib/features/logs_location.js';
+const devnull = require('dev-null');
+const slugid = require('slugid');
+const request = require('superagent-promise');
+const Debug = require('debug');
+const waitForEvent = require('../src/lib/wait_for_event');
+const split = require('split2');
+const getArtifact = require('./integration/helper/get_artifact');
+const Task = require('taskcluster-task-factory/task');
+const Graph = require('taskcluster-task-factory/graph');
+const LocalWorker = require('./localworker');
+const taskcluster = require('taskcluster-client');
+const base = require('taskcluster-base');
+const Promise = require('promise');
+const {EventEmitter} = require('events');
+const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js');
 
 let queueEvents = new taskcluster.QueueEvents();
 let debug = Debug('docker-worker:test:testworker');
@@ -27,7 +27,7 @@ const PROVISIONER_ID = 'no-provisioning-nope';
 
 const DEFAULT_WORKER_PREFIX = 'dummy-worker';
 
-export default class TestWorker extends EventEmitter {
+class TestWorker extends EventEmitter {
   constructor(Worker, workerType, workerId) {
     super();
     var config = base.config({
@@ -211,3 +211,5 @@ export default class TestWorker extends EventEmitter {
     return await this.fetchTaskStats(task, runId);
   }
 }
+
+module.exports = TestWorker;

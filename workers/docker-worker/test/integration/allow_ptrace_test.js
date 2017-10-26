@@ -1,16 +1,16 @@
-import assert from 'assert';
-import base from 'taskcluster-base'
-import Docker from 'dockerode-promise';
-import dockerOpts from 'dockerode-options';
-import DockerWorker from '../dockerworker';
-import fs from 'mz/fs';
-import https from 'https';
-import request from 'superagent-promise';
-import * as settings from '../settings';
-import tar from 'tar-fs';
-import TestWorker from '../testworker';
-import waitForEvent from '../../build/lib/wait_for_event';
-import Debug from 'debug';
+const assert = require('assert');
+const base  = require('taskcluster-base');
+const Docker = require('dockerode-promise');
+const dockerOpts = require('dockerode-options');
+const DockerWorker = require('../dockerworker');
+const fs = require('mz/fs');
+const https = require('https');
+const request = require('superagent-promise');
+const settings = require('../settings');
+const tar = require('tar-fs');
+const TestWorker = require('../testworker');
+const waitForEvent = require('../../src/lib/wait_for_event');
+const Debug = require('debug');
 
 let debug = Debug('docker-worker:test:allow-ptrace-test');
 

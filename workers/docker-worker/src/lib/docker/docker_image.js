@@ -1,8 +1,8 @@
-import Debug from 'debug';
-import dockerUtils from 'dockerode-process/utils';
-import parseImage from 'docker-image-parser';
-import { scopeMatch } from 'taskcluster-base/utils';
-import sleep from '../util/sleep';
+const Debug = require('debug');
+const dockerUtils = require('dockerode-process/utils');
+const parseImage = require('docker-image-parser');
+const { scopeMatch } = require('taskcluster-base/utils');
+const sleep = require('../util/sleep');
 
 let debug = Debug('docker-worker:dockerImage');
 
@@ -18,7 +18,7 @@ const RETRY_CONFIG = {
   randomizationFactor: 0.25
 };
 
-export default class DockerImage {
+class DockerImage {
   constructor(runtime, imageDetails, stream, task, scopes=[]) {
     this.runtime = runtime;
     this.imageName = imageDetails.name;
@@ -204,3 +204,5 @@ export default class DockerImage {
     return result;
   }
 }
+
+module.exports = DockerImage;

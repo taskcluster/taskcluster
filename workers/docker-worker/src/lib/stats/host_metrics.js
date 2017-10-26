@@ -1,5 +1,5 @@
-import diskspace from 'diskspace';
-import os from 'os';
+const diskspace = require('diskspace');
+const os = require('os');
 
 function getCPUStats() {
   let totalTimes = {};
@@ -15,7 +15,7 @@ function getCPUStats() {
   return totalTimes;
 }
 
-export default function (config) {
+module.exports = function (config) {
   let stats = config.stats;
   let dockerVolume = config.dockerVolume;
 

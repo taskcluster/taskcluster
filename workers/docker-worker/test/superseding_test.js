@@ -1,7 +1,7 @@
-import TaskListener from '../build/lib/task_listener';
-import assert from 'assert';
-import nock from 'nock';
-import Debug from 'debug';
+const TaskListener = require('../src/lib/task_listener');
+const assert = require('assert');
+const nock = require('nock');
+const Debug = require('debug');
 
 var fakeLog = Debug('fakeRuntime.log');
 

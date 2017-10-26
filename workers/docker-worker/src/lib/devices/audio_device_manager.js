@@ -1,11 +1,11 @@
-import Debug from 'debug';
-import fs from 'fs';
+const Debug = require('debug');
+const fs = require('fs');
 
 let debug = Debug('taskcluster-docker-worker:devices:audioManager');
 
 const BASE_DIR = '/dev/snd';
 
-export default class AudioDeviceManager {
+class AudioDeviceManager {
   constructor() {
     this.devices = this.buildDeviceList();
   }
@@ -99,3 +99,5 @@ class AudioDevice {
   }
 
 }
+
+module.exports = AudioDeviceManager;

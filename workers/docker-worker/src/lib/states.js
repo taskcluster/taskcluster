@@ -30,7 +30,7 @@ Each "state" in the lifetime is a well defined function:
 @constructor
 @param {Array[Object]} hooks for handling states in the task lifecycle.
 */
-export default class States {
+class States {
   constructor(hooks) {
     assert.ok(Array.isArray(hooks), 'hooks is an array');
     this.hooks = hooks;
@@ -158,3 +158,5 @@ export default class States {
     return this._invoke('killed', task);
   }
 }
+
+module.exports = States;

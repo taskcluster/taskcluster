@@ -1,16 +1,16 @@
-import assert from 'assert';
-import base from 'taskcluster-base';
-import cmd from './helper/cmd';
-import crypto from 'crypto';
-import Debug from 'debug';
-import {DockerExecClient} from 'docker-exec-websocket-server';
-import DockerWorker from '../dockerworker';
-import https from 'https';
-import TestWorker from '../testworker';
-import Promise from 'promise';
-import * as settings from '../settings';
-import slugid from 'slugid';
-import URL from 'url';
+const assert = require('assert');
+const base = require('taskcluster-base');
+const cmd = require('./helper/cmd');
+const crypto = require('crypto');
+const Debug = require('debug');
+const {DockerExecClient} = require('docker-exec-websocket-server');
+const DockerWorker = require('../dockerworker');
+const https = require('https');
+const TestWorker = require('../testworker');
+const Promise = require('promise');
+const settings = require('../settings');
+const slugid = require('slugid');
+const URL = require('url');
 
 suite('use docker exec websocket server', () => {
   let debug = Debug('docker-worker:test:interactive');
@@ -178,7 +178,7 @@ suite('use docker exec websocket server', () => {
       }
     };
     debug('posting to queue');
-    worker.postToQueue(task, taskId);
+    const p = worker.postToQueue(task, taskId);
 
     let url = await getArtifact(worker.queue, taskId);
 
@@ -204,14 +204,12 @@ suite('use docker exec websocket server', () => {
     //should still be alive here, even though it was dead here last time
     //This is because cat is still alive
     let status = await worker.queue.status(taskId);
-    assert(status.status.state === 'running', 'stopped early!');
+    assert.equal(status.status.state, 'running', 'stopped early!');
     
-
     client.close();
-    await base.testing.sleep(expTime * 1000 + 3000);
-    //should be dead here
-    status = await worker.queue.status(taskId);
-    assert(status.status.state === 'completed', 'hanging after client closed');
+
+    const result = await p;
+    assert.equal(result.run.state, 'completed', 'hanging after client closed');
 
     assert(connected, 'interactive session failed to connect');
   });
