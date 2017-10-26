@@ -136,7 +136,9 @@ func buildExecutor(entry definitions.Entry, configKey string) func(*cobra.Comman
 		fs := cmd.LocalFlags()
 		for _, opt := range entry.Query {
 			if val, err := fs.GetString(opt); err == nil {
-				query[opt] = val
+				if val != "" {
+					query[opt] = val
+				}
 			} else {
 				return err
 			}
