@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	isatty "github.com/mattn/go-isatty"
@@ -90,7 +91,25 @@ func Execute(cmd *cobra.Command, args []string) error {
 	switch redirectURL.Query().Get("v") {
 	case "1":
 		if len(command) == 0 {
-			command = []string{"bash"}
+			// Default command for v1
+			// as defined in https://github.com/taskcluster/taskcluster-tools/blob/edb67d523a8302313b1046448d7cbfda33c6d196/src/views/Shell/Shell.js#L7-L24
+			command = []string{
+				"sh", "-c",
+				strings.Join([]string{
+					"if [ -f \"/etc/taskcluster-motd\" ]; then cat /etc/taskcluster-motd; fi;",
+					"if [ -z \"$TERM\" ]; then export TERM=xterm; fi;",
+					"if [ -z \"$HOME\" ]; then export HOME=/root; fi;",
+					"if [ -z \"$USER\" ]; then export USER=root; fi;",
+					"if [ -z \"$LOGNAME\" ]; then export LOGNAME=root; fi;",
+					"if [ -z `which \"$SHELL\"` ]; then export SHELL=bash; fi;",
+					"if [ -z `which \"$SHELL\"` ]; then export SHELL=sh; fi;",
+					"if [ -z `which \"$SHELL\"` ]; then export SHELL=\"/.taskclusterutils/busybox sh\"; fi;",
+					"SPAWN=\"$SHELL\";",
+					"if [ \"$SHELL\" = \"bash\" ]; then SPAWN=\"bash -li\"; fi;",
+					"if [ -f \"/bin/taskcluster-interactive-shell\" ]; then SPAWN=\"/bin/taskcluster-interactive-shell\"; fi;",
+					"exec $SPAWN;",
+				}, ""),
+			}
 		}
 		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
 		shell, err = v1client.Dial(sockURL.String(), command, tty)
