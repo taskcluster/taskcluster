@@ -131,7 +131,7 @@ func (suite *FakeServerSuite) TestRunStatus() {
 	args := []string{fakeGroupID}
 	runStatus(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
-	suite.Equal("pending: 1\n", string(buf.Bytes()))
+	suite.Equal("pending: 1\n", buf.String())
 }
 
 func (suite *FakeServerSuite) TestRunStatusBadGroupId() {
