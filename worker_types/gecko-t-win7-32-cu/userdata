@@ -108,7 +108,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 [Environment]::SetEnvironmentVariable("MOZILLABUILD", "C:\mozilla-build", "Machine")
 
 # env_PATH
-[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files\Mercurial;C:\mozilla-build\7zip;C:\mozilla-build\info-zip;C:\mozilla-build\kdiff3;C:\mozilla-build\moztools-x64\bin;C:\mozilla-build\mozmake;C:\mozilla-build\msys\bin;C:\mozilla-build\msys\local\bin;C:\mozilla-build\nsis-3.0b3;C:\mozilla-build\nsis-2.46u;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\mozilla-build\upx391w;C:\mozilla-build\wget;C:\mozilla-build\yasm;%PATH%", "Machine")
+[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files\Mercurial;C:\mozilla-build\7zip;C:\mozilla-build\info-zip;C:\mozilla-build\kdiff3;C:\mozilla-build\moztools-x64\bin;C:\mozilla-build\mozmake;C:\mozilla-build\msys\bin;C:\mozilla-build\msys\local\bin;C:\mozilla-build\nsis-3.0b3;C:\mozilla-build\nsis-2.46u;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\mozilla-build\upx391w;C:\mozilla-build\wget;C:\mozilla-build\yasm;C:\Windows\System32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Program Files\Microsoft Windows Performance Toolkit;C:\ProgramData\chocolatey\bin", "Machine")
 
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
@@ -123,7 +123,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.2.2/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.2.3/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe", "C:\generic-worker\livelog.exe")
@@ -203,27 +203,6 @@ Start-Process "xcopy" -ArgumentList "C:\Windows\Temp\carbon\Carbon C:\Windows\Sy
 # GrantEveryoneSeCreateSymbolicLinkPrivilege: Bug 1316329 - support creation of symlinks by task users
 Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}`"" -Wait -NoNewWindow
 
-# GrantGenericWorkerSeAssignPrimaryTokenPrivilege: Bug 1303455 - grant SeAssignPrimaryTokenPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeAssignPrimaryTokenPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeIncreaseQuotaPrivilege: Bug 1303455 - grant SeIncreaseQuotaPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseQuotaPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeIncreaseBasePriorityPrivilege: Bug 1312383 - grant SeIncreaseBasePriorityPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseBasePriorityPrivilege}`"" -Wait -NoNewWindow
-
-# reg_PythonCpuPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions" -Name "CpuPriorityClass" -Value "0x00000006" -PropertyType Dword -Force
-
-# reg_PythonIoPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions" -Name "IoPriority" -Value "0x00000002" -PropertyType Dword -Force
-
-# reg_MercurialCpuPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions" -Name "CpuPriorityClass" -Value "0x00000006" -PropertyType Dword -Force
-
-# reg_MercurialIoPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions" -Name "IoPriority" -Value "0x00000002" -PropertyType Dword -Force
-
 # MozillaMaintenanceDir: Working directory for Mozilla Maintenance Service installation
 md "C:\dsc\MozillaMaintenance"
 
@@ -235,6 +214,9 @@ $client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/blob/mas
 
 # maintenanceservice_install
 Start-Process "C:\dsc\MozillaMaintenance\maintenanceservice_installer.exe" -ArgumentList "/s" -Wait -NoNewWindow
+
+# MaintenanceServiceAcessRights: See https://bugzilla.mozilla.org/show_bug.cgi?id=1067756#c21
+Start-Process "icacls.exe" -ArgumentList "`"C:\Program Files\Mozilla Maintenance Service`" /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
 # MozFakeCA_cer
 $client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true", "C:\dsc\MozillaMaintenance\MozFakeCA.cer")
@@ -290,14 +272,20 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d3
 # reg_Mozilla_MaintenanceService_3932ecacee736d366d6436db0f55bce4_2_publisherLink
 New-ItemProperty -Path "HKLM:SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4\2" -Name "publisherLink" -Value "" -PropertyType String -Force
 
-# GrantGenericWorkerMozillaRegistryWriteAccess: Bug 1353889 - Grant GenericWorker account write access to Mozilla registry key
-Start-Process "powershell" -ArgumentList "-command `"& {& (Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla').SetAccessRule(New-Object System.Security.AccessControl.RegistryAccessRule ('.\GenericWorker', 'FullControl', 'Allow'))}`"; `"& {& ((Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla') | Set-Acl -Path 'HKLM:\SOFTWARE\Mozilla')}`"" -Wait -NoNewWindow
+# GrantEveryoneMozillaRegistryWriteAccess: Bug 1353889 - Grant all users account write access to Mozilla registry key
+Start-Process "powershell" -ArgumentList "-command `"& {& (Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla').SetAccessRule(New-Object System.Security.AccessControl.RegistryAccessRule ('Everyone', 'FullControl', 'Allow'))}`"; `"& {& ((Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla') | Set-Acl -Path 'HKLM:\SOFTWARE\Mozilla')}`"" -Wait -NoNewWindow
 
 # KmsIn
 New-NetFirewallRule -DisplayName "KmsIn (TCP 1688 Inbound): Allow" -Direction Inbound -LocalPort 1688 -Protocol TCP -Action Allow
 
 # KmsOut
 New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction Outbound -LocalPort 1688 -Protocol TCP -Action Allow
+
+# nircmd
+$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe", "C:\Windows\System32\nircmd.exe")
+
+# nircmdc
+$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmdc.exe", "C:\Windows\System32\nircmdc.exe")
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
