@@ -8,7 +8,7 @@ import (
 
 // ErrPipeFull is returned from DrainingPipeWriter.Write if the pipes capacity has
 // been reached.
-var ErrPipeFull = errors.New("The pipe buffer has reached it's capacity. Writes will block until drained.")
+var ErrPipeFull = errors.New("the pipe buffer has reached capacity - pipe is in draining mode")
 
 // DrainingPipeReader is a reading side of an DrainingPipe, similar to io.PipeReader.
 type DrainingPipeReader struct {
