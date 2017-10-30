@@ -44,14 +44,16 @@ i.on(`stopped`, () => {
 The constructor for the `Iterate` class takes an object.  The object interprets
 the following properties:
 
-* `maxIterationTime`: the absolute upper bounds for an iteration interval.
-  This time is exclusive of the time we wait between iterations.
+* `maxIterationTime`: the absolute upper bounds for an iteration interval, in
+  seconds.  This time is exclusive of the time we wait between iterations.
 * `watchDog`: this is the number of seconds to wait inside the iteration
-  before marking as a failure.  This object has `.touch()` to mark when
-  progress is made and should be reset and `.stop()` in case you really
-  don`t care about it
+  before marking as a failure.
 * `handler`: promise returning function which contains work to execute.
-  Is passed in a watchdog and state object reference
+  Is passed in a `watchDog` and a `state` object reference.  The `watchDog`
+  object has `.touch()` to mark when progress is made and should be reset and a
+  `.stop()` in case you really don't care about it.  The state object is
+  initially empty but can be used to persist information between calls to the
+  handler.
 * `waitTime`: number of seconds between the conclusion of one iteration
   and commencement of another.
 * `maxIterations` (optional, default infinite): Complete up to this many
