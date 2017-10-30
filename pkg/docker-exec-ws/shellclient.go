@@ -232,6 +232,7 @@ func (s *ShellClient) writeMessages() {
 func (s *ShellClient) receiveMessages() {
 	for {
 		// Get the latest message from the websocket
+		s.ws.SetReadDeadline(time.Now().Add(readTimeout))
 		t, msg, err := s.ws.ReadMessage()
 		if err != nil {
 			s.complete.Do(func() {
@@ -294,6 +295,7 @@ func (s *ShellClient) receiveMessages() {
 				s.err = fmt.Errorf("Remote process terminated with error code %v", msgData[0])
 				s.dispose()
 			})
+			return
 		case messageTypeShutdown:
 			s.complete.Do(func() {
 				s.dispose()
