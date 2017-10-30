@@ -65,10 +65,8 @@ func Dial(socketURL string, command []string, tty bool) (*ShellClient, error) {
 		u.Scheme = "wss"
 	} // Set command arguments overwriting any existing querystring values
 	q.Del("command")
-	if len(command) > 0 {
-		for _, arg := range command {
-			q.Add("command", arg)
-		}
+	for _, arg := range command {
+		q.Add("command", arg)
 	}
 
 	// Set tty true or false
