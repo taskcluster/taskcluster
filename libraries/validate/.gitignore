@@ -1,5 +1,6 @@
 /user-config.yml
 lib/
+rendered_schemas/
 
 # Logs
 logs
