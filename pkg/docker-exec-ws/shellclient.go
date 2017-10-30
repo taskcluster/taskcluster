@@ -115,10 +115,11 @@ func New(ws *websocket.Conn) *ShellClient {
 
 	// This function unblocks the stream when an output pipe gets drained.
 	go func() {
+	loop:
 		for {
 			select {
 			case <-s.done:
-				break
+				break loop
 			case <-outputChan:
 				s.resumeServer()
 			}
