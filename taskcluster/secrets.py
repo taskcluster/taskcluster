@@ -71,9 +71,17 @@ class Secrets(BaseClient):
         """
         List Secrets
 
-        List the names of all secrets that you would have access to read. In
-        other words, secret name `<X>` will only be returned if a) a secret
-        with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
+        List the names of all secrets.
+
+        By default this end-point will try to return up to 1000 secret names in one
+        request. But it **may return less**, even if more tasks are available.
+        It may also return a `continuationToken` even though there are no more
+        results. However, you can only be sure to have seen all results if you
+        keep calling `listTaskGroup` with the last `continuationToken` until you
+        get a result without a `continuationToken`.
+
+        If you are not interested in listing all the members at once, you may
+        use the query-string option `limit` to return fewer.
 
         This method gives output: ``http://schemas.taskcluster.net/secrets/v1/secret-list.json#``
 
@@ -108,6 +116,7 @@ class Secrets(BaseClient):
             'method': 'get',
             'name': 'list',
             'output': 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#',
+            'query': ['continuationToken', 'limit'],
             'route': '/secrets',
             'stability': 'stable',
         },

@@ -13,7 +13,5 @@ from .purgecache import PurgeCache  # NOQA
 from .purgecacheevents import PurgeCacheEvents  # NOQA
 from .queue import Queue  # NOQA
 from .queueevents import QueueEvents  # NOQA
-from .scheduler import Scheduler  # NOQA
-from .schedulerevents import SchedulerEvents  # NOQA
 from .secrets import Secrets  # NOQA
 from .treeherderevents import TreeherderEvents  # NOQA

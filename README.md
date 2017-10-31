@@ -99,7 +99,7 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     ```
 
 * There are four calling conventions for methods:
-  
+
     ```python
     client.method(v1, v1, payload)
     client.method(payload, k1=v1, k2=v2)
@@ -119,7 +119,7 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     ```
 
 ## Pagination
-There are two ways to accomplish pagination easily with the python client.  The first is 
+There are two ways to accomplish pagination easily with the python client.  The first is
 to implement pagination in your code:
 ```python
 import taskcluster
@@ -139,7 +139,7 @@ print('Task Group %s has %d tasks' % (outcome['taskGroupId'], tasks))
 There's also an experimental feature to support built in automatic pagination
 in the sync client.  This feature allows passing a callback as the
 'paginationHandler' keyword-argument.  This function will be passed the
-response body of the API method as its sole positional arugment.  
+response body of the API method as its sole positional arugment.
 
 ## Logging
 Logging is set up in `taskcluster/__init__.py`.  If the special
@@ -3054,19 +3054,30 @@ expiration point. This features makes it feasible to upload large
 intermediate artifacts from data processing applications, as the
 artifacts can be set to expire a few days later.
 
-We currently support 4 different `storageType`s, each storage type have
+We currently support 3 different `storageType`s, each storage type have
 slightly different features and in some cases difference semantics.
+We also have 2 deprecated `storageType`s which are only maintained for
+backwards compatiability and should not be used in new implementations
 
-**S3 artifacts**, is useful for static files which will be stored on S3.
-When creating an S3 artifact the queue will return a pre-signed URL
-to which you can do a `PUT` request to upload your artifact. Note
-that `PUT` request **must** specify the `content-length` header and
-**must** give the `content-type` header the same value as in the request
-to `createArtifact`.
+**Blob artifacts**, are useful for storing large files.  Currently, these
+are all stored in S3 but there are facilities for adding support for other
+backends in futre.  A call for this type of artifact must provide information
+about the file which will be uploaded.  This includes sha256 sums and sizes.
+This method will return a list of general form HTTP requests which are signed
+by AWS S3 credentials managed by the Queue.  Once these requests are completed
+the list of `ETag` values returned by the requests must be passed to the
+queue `completeArtifact` method
 
-**Azure artifacts**, are stored in _Azure Blob Storage_ service, which
-given the consistency guarantees and API interface offered by Azure is
-more suitable for artifacts that will be modified during the execution
+**S3 artifacts**, DEPRECATED is useful for static files which will be
+stored on S3. When creating an S3 artifact the queue will return a
+pre-signed URL to which you can do a `PUT` request to upload your
+artifact. Note that `PUT` request **must** specify the `content-length`
+header and **must** give the `content-type` header the same value as in
+the request to `createArtifact`.
+
+**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+which given the consistency guarantees and API interface offered by Azure
+is more suitable for artifacts that will be modified during the execution
 of the task. For example docker-worker has a feature that persists the
 task log to Azure Blob Storage every few seconds creating a somewhat
 live log. A request to create an Azure artifact will return a URL
@@ -3122,6 +3133,36 @@ queue.createArtifact(payload, taskId='value', runId='value', name='value') # -> 
 # Async call
 await asyncQueue.createArtifact(taskId, runId, name, payload) # -> result
 await asyncQueue.createArtifact(payload, taskId='value', runId='value', name='value') # -> result
+```
+
+#### Complete Artifact
+This endpoint finalises an upload done through the blob `storageType`.
+The queue will ensure that the task/run is still allowing artifacts
+to be uploaded.  For single-part S3 blob artifacts, this endpoint
+will simply ensure the artifact is present in S3.  For multipart S3
+artifacts, the endpoint will perform the commit step of the multipart
+upload flow.  As the final step for both multi and single part artifacts,
+the `present` entity field will be set to `true` to reflect that the
+artifact is now present and a message published to pulse.  NOTE: This
+endpoint *must* be called for all artifacts of storageType 'blob'
+
+
+
+Takes the following arguments:
+
+  * `taskId`
+  * `runId`
+  * `name`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#)
+
+```python
+# Sync calls
+queue.completeArtifact(taskId, runId, name, payload) # -> None`
+queue.completeArtifact(payload, taskId='value', runId='value', name='value') # -> None
+# Async call
+await asyncQueue.completeArtifact(taskId, runId, name, payload) # -> None
+await asyncQueue.completeArtifact(payload, taskId='value', runId='value', name='value') # -> None
 ```
 
 #### Get Artifact from Run
@@ -3274,6 +3315,61 @@ queue.listProvisioners() # -> result`
 await asyncQueue.listProvisioners() # -> result
 ```
 
+#### Get an active provisioner
+Get an active provisioner.
+
+The term "provisioner" is taken broadly to mean anything with a provisionerId.
+This does not necessarily mean there is an associated service performing any
+provisioning activity.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/provisioner-response.json#)
+
+```python
+# Sync calls
+queue.getProvisioner(provisionerId) # -> result`
+queue.getProvisioner(provisionerId='value') # -> result
+# Async call
+await asyncQueue.getProvisioner(provisionerId) # -> result
+await asyncQueue.getProvisioner(provisionerId='value') # -> result
+```
+
+#### Update a provisioner
+Declare a provisioner, supplying some details about it.
+
+`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
+possessed. For example, a request to update the `aws-provisioner-v1`
+provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
+`queue:declare-provisioner:aws-provisioner-v1#description`.
+
+The term "provisioner" is taken broadly to mean anything with a provisionerId.
+This does not necessarily mean there is an associated service performing any
+provisioning activity.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/provisioner-response.json#)
+
+```python
+# Sync calls
+queue.declareProvisioner(provisionerId, payload) # -> result`
+queue.declareProvisioner(payload, provisionerId='value') # -> result
+# Async call
+await asyncQueue.declareProvisioner(provisionerId, payload) # -> result
+await asyncQueue.declareProvisioner(payload, provisionerId='value') # -> result
+```
+
 #### Get Number of Pending Tasks
 Get an approximate number of pending tasks for the given `provisionerId`
 and `workerType`.
@@ -3326,8 +3422,60 @@ await asyncQueue.listWorkerTypes(provisionerId) # -> result
 await asyncQueue.listWorkerTypes(provisionerId='value') # -> result
 ```
 
-#### Get a list of all active workerGroup/workerId of a workerType
-Get a list of all active workerGroup/workerId of a workerType.
+#### Get a worker-type
+Get a worker-type from a provisioner.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/workertype-response.json#)
+
+```python
+# Sync calls
+queue.getWorkerType(provisionerId, workerType) # -> result`
+queue.getWorkerType(provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncQueue.getWorkerType(provisionerId, workerType) # -> result
+await asyncQueue.getWorkerType(provisionerId='value', workerType='value') # -> result
+```
+
+#### Update a worker-type
+Declare a workerType, supplying some details about it.
+
+`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
+possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
+provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
+`queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/workertype-response.json#)
+
+```python
+# Sync calls
+queue.declareWorkerType(provisionerId, workerType, payload) # -> result`
+queue.declareWorkerType(payload, provisionerId='value', workerType='value') # -> result
+# Async call
+await asyncQueue.declareWorkerType(provisionerId, workerType, payload) # -> result
+await asyncQueue.declareWorkerType(payload, provisionerId='value', workerType='value') # -> result
+```
+
+#### Get a list of all active workers of a workerType
+Get a list of all active workers of a workerType.
+
+`listWorkers` allows a response to be filtered by the `disabled` property.
+To filter the query, you should call the end-point with `disabled` as a query-string option.
 
 The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
@@ -3350,6 +3498,57 @@ queue.listWorkers(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncQueue.listWorkers(provisionerId, workerType) # -> result
 await asyncQueue.listWorkers(provisionerId='value', workerType='value') # -> result
+```
+
+#### Get a worker-type
+Get a worker from a worker-type.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+  * `workerGroup`
+  * `workerId`
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/worker-response.json#)
+
+```python
+# Sync calls
+queue.getWorker(provisionerId, workerType, workerGroup, workerId) # -> result`
+queue.getWorker(provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
+# Async call
+await asyncQueue.getWorker(provisionerId, workerType, workerGroup, workerId) # -> result
+await asyncQueue.getWorker(provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
+```
+
+#### Declare a worker
+Declare a worker, supplying some details about it.
+
+`declareWorker` allows updating one or more properties of a worker as long as the required scopes are
+possessed.
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+  * `workerGroup`
+  * `workerId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/update-worker-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/worker-response.json#)
+
+```python
+# Sync calls
+queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result`
+queue.declareWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
+# Async call
+await asyncQueue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
+await asyncQueue.declareWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
 ```
 
 #### Ping Server
@@ -3521,361 +3720,6 @@ if this corner case is of concern to you.
 
 
 
-### Methods in `taskcluster.Scheduler`
-```python
-import asyncio # Only for async 
-// Create Scheduler client instance
-import taskcluster
-import taskcluster.async
-
-scheduler = taskcluster.Scheduler(options)
-# Below only for async instances, assume already in coroutine
-loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncScheduler = taskcluster.async.Scheduler(options, session=session)
-```
-The task-graph scheduler, typically available at
-`scheduler.taskcluster.net`, is responsible for accepting task-graphs and
-scheduling tasks for evaluation by the queue as their dependencies are
-satisfied.
-
-This document describes API end-points offered by the task-graph
-scheduler. These end-points targets the following audience:
- * Post-commit hooks, that wants to submit task-graphs for testing,
- * End-users, who wants to execute a set of dependent tasks, and
- * Tools, that wants to inspect the state of a task-graph.
-#### Create new task-graph
-Create a new task-graph, the `status` of the resulting JSON is a
-task-graph status structure, you can find the `taskGraphId` in this
-structure.
-
-**Referencing required tasks**, it is possible to reference other tasks
-in the task-graph that must be completed successfully before a task is
-scheduled. You just specify the `taskId` in the list of `required` tasks.
-See the example below, where the second task requires the first task.
-```js
-{
-  ...
-  tasks: [
-    {
-      taskId:     "XgvL0qtSR92cIWpcwdGKCA",
-      requires:   [],
-      ...
-    },
-    {
-      taskId:     "73GsfK62QNKAk2Hg1EEZTQ",
-      requires:   ["XgvL0qtSR92cIWpcwdGKCA"],
-      task: {
-        payload: {
-          env: {
-            DEPENDS_ON:  "XgvL0qtSR92cIWpcwdGKCA"
-          }
-          ...
-        }
-        ...
-      },
-      ...
-    }
-  ]
-}
-```
-
-**The `schedulerId` property**, defaults to the `schedulerId` of this
-scheduler in production that is `"task-graph-scheduler"`. This
-property must be either undefined or set to `"task-graph-scheduler"`,
-otherwise the task-graph will be rejected.
-
-**The `taskGroupId` property**, defaults to the `taskGraphId` of the
-task-graph submitted, and if provided much be the `taskGraphId` of
-the task-graph. Otherwise the task-graph will be rejected.
-
-**Task-graph scopes**, a task-graph is assigned a set of scopes, just
-like tasks. Tasks within a task-graph cannot have scopes beyond those
-the task-graph has. The task-graph scheduler will execute all requests
-on behalf of a task-graph using the set of scopes assigned to the
-task-graph. Thus, if you are submitting tasks to `my-worker-type` under
-`my-provisioner` it's important that your task-graph has the scope
-required to define tasks for this `provisionerId` and `workerType`.
-(`queue:define-task:..` or `queue:create-task:..`; see the queue for
-details on scopes required). Note, the task-graph does not require
-permissions to schedule the tasks (`queue:schedule-task:..`), as this is
-done with scopes provided by the task-graph scheduler.
-
-**Task-graph specific routing-keys**, using the `taskGraph.routes`
-property you may define task-graph specific routing-keys. If a task-graph
-has a task-graph specific routing-key: `<route>`, then the poster will
-be required to posses the scope `scheduler:route:<route>`. And when the
-an AMQP message about the task-graph is published the message will be
-CC'ed with the routing-key: `route.<route>`. This is useful if you want
-another component to listen for completed tasks you have posted.
-
-
-
-Takes the following arguments:
-
-  * `taskGraphId`
-
-Required [input schema](http://schemas.taskcluster.net/scheduler/v1/task-graph.json#)
-
-Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#)
-
-```python
-# Sync calls
-scheduler.createTaskGraph(taskGraphId, payload) # -> result`
-scheduler.createTaskGraph(payload, taskGraphId='value') # -> result
-# Async call
-await asyncScheduler.createTaskGraph(taskGraphId, payload) # -> result
-await asyncScheduler.createTaskGraph(payload, taskGraphId='value') # -> result
-```
-
-#### Extend existing task-graph
-Add a set of tasks to an existing task-graph. The request format is very
-similar to the request format for creating task-graphs. But `routes`
-key, `scopes`, `metadata` and `tags` cannot be modified.
-
-**Referencing required tasks**, just as when task-graphs are created,
-each task has a list of required tasks. It is possible to reference
-all `taskId`s within the task-graph.
-
-**Safety,** it is only _safe_ to call this API end-point while the
-task-graph being modified is still running. If the task-graph is
-_finished_ or _blocked_, this method will leave the task-graph in this
-state. Hence, it is only truly _safe_ to call this API end-point from
-within a task in the task-graph being modified.
-
-
-
-Takes the following arguments:
-
-  * `taskGraphId`
-
-Required [input schema](http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#)
-
-Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#)
-
-```python
-# Sync calls
-scheduler.extendTaskGraph(taskGraphId, payload) # -> result`
-scheduler.extendTaskGraph(payload, taskGraphId='value') # -> result
-# Async call
-await asyncScheduler.extendTaskGraph(taskGraphId, payload) # -> result
-await asyncScheduler.extendTaskGraph(payload, taskGraphId='value') # -> result
-```
-
-#### Task Graph Status
-Get task-graph status, this will return the _task-graph status
-structure_. which can be used to check if a task-graph is `running`,
-`blocked` or `finished`.
-
-**Note**, that `finished` implies successfully completion.
-
-
-
-Takes the following arguments:
-
-  * `taskGraphId`
-
-Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json)
-
-```python
-# Sync calls
-scheduler.status(taskGraphId) # -> result`
-scheduler.status(taskGraphId='value') # -> result
-# Async call
-await asyncScheduler.status(taskGraphId) # -> result
-await asyncScheduler.status(taskGraphId='value') # -> result
-```
-
-#### Task Graph Information
-Get task-graph information, this includes the _task-graph status
-structure_, along with `metadata` and `tags`, but not information
-about all tasks.
-
-If you want more detailed information use the `inspectTaskGraph`
-end-point instead.
-
-
-
-Takes the following arguments:
-
-  * `taskGraphId`
-
-Required [output schema](http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json)
-
-```python
-# Sync calls
-scheduler.info(taskGraphId) # -> result`
-scheduler.info(taskGraphId='value') # -> result
-# Async call
-await asyncScheduler.info(taskGraphId) # -> result
-await asyncScheduler.info(taskGraphId='value') # -> result
-```
-
-#### Inspect Task Graph
-Inspect a task-graph, this returns all the information the task-graph
-scheduler knows about the task-graph and the state of its tasks.
-
-**Warning**, some of these fields are borderline internal to the
-task-graph scheduler and we may choose to change or make them internal
-later. Also note that note all of the information is formalized yet.
-The JSON schema will be updated to reflect formalized values, we think
-it's safe to consider the values stable.
-
-Take these considerations into account when using the API end-point,
-as we do not promise it will remain fully backward compatible in
-the future.
-
-
-
-Takes the following arguments:
-
-  * `taskGraphId`
-
-Required [output schema](http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json)
-
-```python
-# Sync calls
-scheduler.inspect(taskGraphId) # -> result`
-scheduler.inspect(taskGraphId='value') # -> result
-# Async call
-await asyncScheduler.inspect(taskGraphId) # -> result
-await asyncScheduler.inspect(taskGraphId='value') # -> result
-```
-
-#### Inspect Task from a Task-Graph
-Inspect a task from a task-graph, this returns all the information the
-task-graph scheduler knows about the specific task.
-
-**Warning**, some of these fields are borderline internal to the
-task-graph scheduler and we may choose to change or make them internal
-later. Also note that note all of the information is formalized yet.
-The JSON schema will be updated to reflect formalized values, we think
-it's safe to consider the values stable.
-
-Take these considerations into account when using the API end-point,
-as we do not promise it will remain fully backward compatible in
-the future.
-
-
-
-Takes the following arguments:
-
-  * `taskGraphId`
-  * `taskId`
-
-Required [output schema](http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json)
-
-```python
-# Sync calls
-scheduler.inspectTask(taskGraphId, taskId) # -> result`
-scheduler.inspectTask(taskGraphId='value', taskId='value') # -> result
-# Async call
-await asyncScheduler.inspectTask(taskGraphId, taskId) # -> result
-await asyncScheduler.inspectTask(taskGraphId='value', taskId='value') # -> result
-```
-
-#### Ping Server
-Documented later...
-
-**Warning** this api end-point is **not stable**.
-
-
-```python
-# Sync calls
-scheduler.ping() # -> None`
-# Async call
-await asyncScheduler.ping() # -> None
-```
-
-
-
-
-### Exchanges in `taskcluster.SchedulerEvents`
-```python
-// Create SchedulerEvents client instance
-import taskcluster
-schedulerEvents = taskcluster.SchedulerEvents(options)
-```
-The scheduler, typically available at `scheduler.taskcluster.net` is
-responsible for accepting task-graphs and schedule tasks on the queue as
-their dependencies are completed successfully.
-
-This document describes the AMQP exchanges offered by the scheduler,
-which allows third-party listeners to monitor task-graph submission and
-resolution. These exchanges targets the following audience:
- * Reporters, who displays the state of task-graphs or emails people on
-   failures, and
- * End-users, who wants notification of completed task-graphs
-
-**Remark**, the task-graph scheduler will require that the `schedulerId`
-for tasks is set to the `schedulerId` for the task-graph scheduler. In
-production the `schedulerId` is typically `"task-graph-scheduler"`.
-Furthermore, the task-graph scheduler will also require that
-`taskGroupId` is equal to the `taskGraphId`.
-
-Combined these requirements ensures that `schedulerId` and `taskGroupId`
-have the same position in the routing keys for the queue exchanges.
-See queue documentation for details on queue exchanges. Hence, making
-it easy to listen for all tasks in a given task-graph.
-
-Note that routing key entries 2 through 7 used for exchanges on the
-task-graph scheduler is hardcoded to `_`. This is done to preserve
-positional equivalence with exchanges offered by the queue.
-#### Task-Graph Running Message
- * `schedulerEvents.taskGraphRunning(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `taskId` Description: Always takes the value `_`
-   * `runId` Description: Always takes the value `_`
-   * `workerGroup` Description: Always takes the value `_`
-   * `workerId` Description: Always takes the value `_`
-   * `provisionerId` Description: Always takes the value `_`
-   * `workerType` Description: Always takes the value `_`
-   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Task-Graph Extended Message
- * `schedulerEvents.taskGraphExtended(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `taskId` Description: Always takes the value `_`
-   * `runId` Description: Always takes the value `_`
-   * `workerGroup` Description: Always takes the value `_`
-   * `workerId` Description: Always takes the value `_`
-   * `provisionerId` Description: Always takes the value `_`
-   * `workerType` Description: Always takes the value `_`
-   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Task-Graph Blocked Message
- * `schedulerEvents.taskGraphBlocked(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `taskId` Description: Always takes the value `_`
-   * `runId` Description: Always takes the value `_`
-   * `workerGroup` Description: Always takes the value `_`
-   * `workerId` Description: Always takes the value `_`
-   * `provisionerId` Description: Always takes the value `_`
-   * `workerType` Description: Always takes the value `_`
-   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-#### Task-Graph Finished Message
- * `schedulerEvents.taskGraphFinished(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `taskId` Description: Always takes the value `_`
-   * `runId` Description: Always takes the value `_`
-   * `workerGroup` Description: Always takes the value `_`
-   * `workerId` Description: Always takes the value `_`
-   * `provisionerId` Description: Always takes the value `_`
-   * `workerType` Description: Always takes the value `_`
-   * `schedulerId` is required  Description: Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production.
-   * `taskGraphId` is required  Description: Identifier for the task-graph this message concerns
-   * `reserved` Description: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
-
-
-
-
 ### Methods in `taskcluster.Secrets`
 ```python
 import asyncio # Only for async 
@@ -3959,9 +3803,17 @@ await asyncSecrets.get(name='value') # -> result
 ```
 
 #### List Secrets
-List the names of all secrets that you would have access to read. In
-other words, secret name `<X>` will only be returned if a) a secret
-with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
+List the names of all secrets.
+
+By default this end-point will try to return up to 1000 secret names in one
+request. But it **may return less**, even if more tasks are available.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `listTaskGroup` with the last `continuationToken` until you
+get a result without a `continuationToken`.
+
+If you are not interested in listing all the members at once, you may
+use the query-string option `limit` to return fewer.
 
 
 Required [output schema](http://schemas.taskcluster.net/secrets/v1/secret-list.json#)

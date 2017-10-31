@@ -391,19 +391,30 @@ class Queue(BaseClient):
         intermediate artifacts from data processing applications, as the
         artifacts can be set to expire a few days later.
 
-        We currently support 4 different `storageType`s, each storage type have
+        We currently support 3 different `storageType`s, each storage type have
         slightly different features and in some cases difference semantics.
+        We also have 2 deprecated `storageType`s which are only maintained for
+        backwards compatiability and should not be used in new implementations
 
-        **S3 artifacts**, is useful for static files which will be stored on S3.
-        When creating an S3 artifact the queue will return a pre-signed URL
-        to which you can do a `PUT` request to upload your artifact. Note
-        that `PUT` request **must** specify the `content-length` header and
-        **must** give the `content-type` header the same value as in the request
-        to `createArtifact`.
+        **Blob artifacts**, are useful for storing large files.  Currently, these
+        are all stored in S3 but there are facilities for adding support for other
+        backends in futre.  A call for this type of artifact must provide information
+        about the file which will be uploaded.  This includes sha256 sums and sizes.
+        This method will return a list of general form HTTP requests which are signed
+        by AWS S3 credentials managed by the Queue.  Once these requests are completed
+        the list of `ETag` values returned by the requests must be passed to the
+        queue `completeArtifact` method
 
-        **Azure artifacts**, are stored in _Azure Blob Storage_ service, which
-        given the consistency guarantees and API interface offered by Azure is
-        more suitable for artifacts that will be modified during the execution
+        **S3 artifacts**, DEPRECATED is useful for static files which will be
+        stored on S3. When creating an S3 artifact the queue will return a
+        pre-signed URL to which you can do a `PUT` request to upload your
+        artifact. Note that `PUT` request **must** specify the `content-length`
+        header and **must** give the `content-type` header the same value as in
+        the request to `createArtifact`.
+
+        **Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service
+        which given the consistency guarantees and API interface offered by Azure
+        is more suitable for artifacts that will be modified during the execution
         of the task. For example docker-worker has a feature that persists the
         task log to Azure Blob Storage every few seconds creating a somewhat
         live log. A request to create an Azure artifact will return a URL
@@ -448,6 +459,27 @@ class Queue(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["createArtifact"], *args, **kwargs)
+
+    def completeArtifact(self, *args, **kwargs):
+        """
+        Complete Artifact
+
+        This endpoint finalises an upload done through the blob `storageType`.
+        The queue will ensure that the task/run is still allowing artifacts
+        to be uploaded.  For single-part S3 blob artifacts, this endpoint
+        will simply ensure the artifact is present in S3.  For multipart S3
+        artifacts, the endpoint will perform the commit step of the multipart
+        upload flow.  As the final step for both multi and single part artifacts,
+        the `present` entity field will be set to `true` to reflect that the
+        artifact is now present and a message published to pulse.  NOTE: This
+        endpoint *must* be called for all artifacts of storageType 'blob'
+
+        This method takes input: ``http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["completeArtifact"], *args, **kwargs)
 
     def getArtifact(self, *args, **kwargs):
         """
@@ -567,6 +599,47 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listProvisioners"], *args, **kwargs)
 
+    def getProvisioner(self, *args, **kwargs):
+        """
+        Get an active provisioner
+
+        Get an active provisioner.
+
+        The term "provisioner" is taken broadly to mean anything with a provisionerId.
+        This does not necessarily mean there is an associated service performing any
+        provisioning activity.
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/provisioner-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["getProvisioner"], *args, **kwargs)
+
+    def declareProvisioner(self, *args, **kwargs):
+        """
+        Update a provisioner
+
+        Declare a provisioner, supplying some details about it.
+
+        `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
+        possessed. For example, a request to update the `aws-provisioner-v1`
+        provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
+        `queue:declare-provisioner:aws-provisioner-v1#description`.
+
+        The term "provisioner" is taken broadly to mean anything with a provisionerId.
+        This does not necessarily mean there is an associated service performing any
+        provisioning activity.
+
+        This method takes input: ``http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#``
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/provisioner-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["declareProvisioner"], *args, **kwargs)
+
     def pendingTasks(self, *args, **kwargs):
         """
         Get Number of Pending Tasks
@@ -604,11 +677,47 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listWorkerTypes"], *args, **kwargs)
 
+    def getWorkerType(self, *args, **kwargs):
+        """
+        Get a worker-type
+
+        Get a worker-type from a provisioner.
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/workertype-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["getWorkerType"], *args, **kwargs)
+
+    def declareWorkerType(self, *args, **kwargs):
+        """
+        Update a worker-type
+
+        Declare a workerType, supplying some details about it.
+
+        `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
+        possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
+        provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
+        `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
+
+        This method takes input: ``http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#``
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/workertype-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["declareWorkerType"], *args, **kwargs)
+
     def listWorkers(self, *args, **kwargs):
         """
-        Get a list of all active workerGroup/workerId of a workerType
+        Get a list of all active workers of a workerType
 
-        Get a list of all active workerGroup/workerId of a workerType.
+        Get a list of all active workers of a workerType.
+
+        `listWorkers` allows a response to be filtered by the `disabled` property.
+        To filter the query, you should call the end-point with `disabled` as a query-string option.
 
         The response is paged. If this end-point returns a `continuationToken`, you
         should call the end-point again with the `continuationToken` as a query-string
@@ -621,6 +730,37 @@ class Queue(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["listWorkers"], *args, **kwargs)
+
+    def getWorker(self, *args, **kwargs):
+        """
+        Get a worker-type
+
+        Get a worker from a worker-type.
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/worker-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["getWorker"], *args, **kwargs)
+
+    def declareWorker(self, *args, **kwargs):
+        """
+        Declare a worker
+
+        Declare a worker, supplying some details about it.
+
+        `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
+        possessed.
+
+        This method takes input: ``http://schemas.taskcluster.net/queue/v1/update-worker-request.json#``
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/worker-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["declareWorker"], *args, **kwargs)
 
     def ping(self, *args, **kwargs):
         """
@@ -661,6 +801,14 @@ class Queue(BaseClient):
             'route': '/claim-work/<provisionerId>/<workerType>',
             'stability': 'stable',
         },
+        "completeArtifact": {
+            'args': ['taskId', 'runId', 'name'],
+            'input': 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#',
+            'method': 'put',
+            'name': 'completeArtifact',
+            'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
+            'stability': 'experimental',
+        },
         "createArtifact": {
             'args': ['taskId', 'runId', 'name'],
             'input': 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#',
@@ -678,6 +826,33 @@ class Queue(BaseClient):
             'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
             'route': '/task/<taskId>',
             'stability': 'stable',
+        },
+        "declareProvisioner": {
+            'args': ['provisionerId'],
+            'input': 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#',
+            'method': 'put',
+            'name': 'declareProvisioner',
+            'output': 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#',
+            'route': '/provisioners/<provisionerId>',
+            'stability': 'experimental',
+        },
+        "declareWorker": {
+            'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+            'input': 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#',
+            'method': 'put',
+            'name': 'declareWorker',
+            'output': 'http://schemas.taskcluster.net/queue/v1/worker-response.json#',
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
+        "declareWorkerType": {
+            'args': ['provisionerId', 'workerType'],
+            'input': 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#',
+            'method': 'put',
+            'name': 'declareWorkerType',
+            'output': 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#',
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
+            'stability': 'experimental',
         },
         "defineTask": {
             'args': ['taskId'],
@@ -701,6 +876,30 @@ class Queue(BaseClient):
             'name': 'getLatestArtifact',
             'route': '/task/<taskId>/artifacts/<name>',
             'stability': 'stable',
+        },
+        "getProvisioner": {
+            'args': ['provisionerId'],
+            'method': 'get',
+            'name': 'getProvisioner',
+            'output': 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#',
+            'route': '/provisioners/<provisionerId>',
+            'stability': 'experimental',
+        },
+        "getWorker": {
+            'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+            'method': 'get',
+            'name': 'getWorker',
+            'output': 'http://schemas.taskcluster.net/queue/v1/worker-response.json#',
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
+            'stability': 'experimental',
+        },
+        "getWorkerType": {
+            'args': ['provisionerId', 'workerType'],
+            'method': 'get',
+            'name': 'getWorkerType',
+            'output': 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#',
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
+            'stability': 'experimental',
         },
         "listArtifacts": {
             'args': ['taskId', 'runId'],
@@ -761,7 +960,7 @@ class Queue(BaseClient):
             'method': 'get',
             'name': 'listWorkers',
             'output': 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#',
-            'query': ['continuationToken', 'limit'],
+            'query': ['continuationToken', 'limit', 'disabled'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
         },
