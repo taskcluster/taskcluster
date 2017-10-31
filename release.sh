@@ -81,7 +81,7 @@ make clean
 make update
 
 # Test that the unit tests and linter work
-make
+tox
 
 # Version number
 # Avoid sed -i to be mac compatible
