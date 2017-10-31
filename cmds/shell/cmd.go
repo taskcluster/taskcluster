@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	isatty "github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
+	v1client "github.com/taskcluster/taskcluster-cli/pkg/docker-exec-ws"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-worker/engines"
@@ -25,7 +27,7 @@ import (
 var (
 	// Command is the root of the shell sub-tree.
 	Command = &cobra.Command{
-		Use:   "shell <taskId>",
+		Use:   "shell <taskId> [-- command to execute]",
 		Short: "Connect to the shell of a running interactive task.",
 		RunE:  Execute,
 	}
@@ -81,12 +83,42 @@ func Execute(cmd *cobra.Command, args []string) error {
 	var shell engines.Shell
 	tty := isatty.IsTerminal(os.Stdout.Fd())
 
+	command := []string{}
+	if len(args) > 1 {
+		command = args[1:]
+	}
+
 	switch redirectURL.Query().Get("v") {
 	case "1":
-		return errors.New("the shell client doens't yet support v1 shells")
+		if len(command) == 0 {
+			// Default command for v1
+			// as defined in https://github.com/taskcluster/taskcluster-tools/blob/edb67d523a8302313b1046448d7cbfda33c6d196/src/views/Shell/Shell.js#L7-L24
+			command = []string{
+				"sh", "-c",
+				strings.Join([]string{
+					"if [ -f \"/etc/taskcluster-motd\" ]; then cat /etc/taskcluster-motd; fi;",
+					"if [ -z \"$TERM\" ]; then export TERM=xterm; fi;",
+					"if [ -z \"$HOME\" ]; then export HOME=/root; fi;",
+					"if [ -z \"$USER\" ]; then export USER=root; fi;",
+					"if [ -z \"$LOGNAME\" ]; then export LOGNAME=root; fi;",
+					"if [ -z `which \"$SHELL\"` ]; then export SHELL=bash; fi;",
+					"if [ -z `which \"$SHELL\"` ]; then export SHELL=sh; fi;",
+					"if [ -z `which \"$SHELL\"` ]; then export SHELL=\"/.taskclusterutils/busybox sh\"; fi;",
+					"SPAWN=\"$SHELL\";",
+					"if [ \"$SHELL\" = \"bash\" ]; then SPAWN=\"bash -li\"; fi;",
+					"if [ -f \"/bin/taskcluster-interactive-shell\" ]; then SPAWN=\"/bin/taskcluster-interactive-shell\"; fi;",
+					"exec $SPAWN;",
+				}, ""),
+			}
+		}
+		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
+		shell, err = v1client.Dial(sockURL.String(), command, tty)
+		if err != nil {
+			return fmt.Errorf("could not create the shell client: %v", err)
+		}
 	case "2":
 		sockURL, _ = url.Parse(redirectURL.Query().Get("socketUrl"))
-		shell, err = v2client.Dial(sockURL.String(), []string{"bash"}, tty)
+		shell, err = v2client.Dial(sockURL.String(), command, tty)
 		if err != nil {
 			return fmt.Errorf("could not create the shell client: %v", err)
 		}

@@ -11,3 +11,4 @@ _test
 # Binaries
 /taskcluster
 /build
+/_upload_release/upload
