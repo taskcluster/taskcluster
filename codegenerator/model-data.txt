@@ -1,4 +1,4 @@
-Generated: 1509463414
+Generated: 1509477804
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7098,7 +7098,7 @@ Entry 31    =
     Entry Query        = '[]'
     Entry Name        = 'declareWorker'
     Entry Stability   = 'experimental'
-    Entry Scopes      = '[[queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>]]'
+    Entry Scopes      = '[[queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>]]'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
     Entry Title       = 'Declare a worker'
