@@ -309,10 +309,10 @@ class BaseClient(object):
                         break
                 if 'input' in entry and len(args) != 1:
                     isFlatKwargs = False
-                if not 'input' in entry and len(args) != 0:
+                if 'input' not in entry and len(args) != 0:
                     isFlatKwargs = False
                 else:
-                    pass # We're using payload=, query= and param=
+                    pass  # We're using payload=, query= and param=
             else:
                 isFlatKwargs = False
 
@@ -335,7 +335,7 @@ class BaseClient(object):
                 paginationLimit = kwargs.get('paginationLimit', None)
                 log.debug('Using method(payload=payload, query=query, params={k1: v1, k2: v2}) calling convention')
 
-        if 'input' in entry and type(payload) == type(None):
+        if 'input' in entry and isinstance(payload, type(None)):
             raise exceptions.TaskclusterFailure('Payload is required')
 
         # These all need to be rendered down to a string, let's just check that

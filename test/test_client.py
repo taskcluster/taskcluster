@@ -208,7 +208,6 @@ class TestProcessArgs(ClientTest):
         self.assertEqual(payload, None)
         self.assertEqual(query, {'B': 456})
 
-
     def test_calling_convention_3_with_positional_arguments_with_payload_with_query(self):
         params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, query={'B': 456}, payload={'A': 123})
         self.assertEqual(params, {'k1': 1, 'k2': 2})
@@ -227,6 +226,7 @@ class TestProcessArgs(ClientTest):
     def test_calling_convention_3_with_positional_arguments_which_are_same_as_param_kwarg_dict_values_with_payload_with_query(self):
         with self.assertRaises(exc.TaskclusterFailure):
             params, payload, query, _, _ = self.client._processArgs({'args': ['k1', 'k2'], 'name': 'test'}, 1, 2, params={'k1': 1, 'k2': 2}, query={'B': 456}, payload={'A': 123})
+
 
 # This could probably be done better with Mock
 class ObjWithDotJson(object):
@@ -538,7 +538,6 @@ class TestBuildUrl(ClientTest):
             query={'qs0': 1}
         )
         self.assertEqual(expected, actual)
-
 
     def test_fails_to_build_url_for_missing_method(self):
         with self.assertRaises(exc.TaskclusterFailure):
