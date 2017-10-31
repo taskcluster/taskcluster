@@ -2157,7 +2157,7 @@ api.declare({
   } else {
     result = await this.Provisioner.create({
       provisionerId,
-      expires: expires || taskcluster.fromNow('5 days'),
+      expires: new Date(expires || taskcluster.fromNow('5 days')),
       lastDateActive: new Date(),
       description: description || '',
       stability: stability || 'experimental',
@@ -2331,7 +2331,7 @@ api.declare({
     result = await this.WorkerType.create({
       provisionerId,
       workerType,
-      expires: expires || taskcluster.fromNow('5 days'),
+      expires: new Date(expires || taskcluster.fromNow('5 days')),
       lastDateActive: new Date(),
       description: description || '',
       stability: stability || 'experimental',
@@ -2507,7 +2507,7 @@ api.declare({
       workerGroup,
       workerId,
       recentTasks: [],
-      expires: expires || taskcluster.fromNow('1 day'),
+      expires: new Date(expires || taskcluster.fromNow('1 day')),
       disabled: false,
       firstClaim: new Date(),
     });
