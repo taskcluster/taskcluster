@@ -24,11 +24,16 @@ exports.validateScopeSets = function(scopesets) {
   }), msg);
 };
 
+function validateScopePatterns(scopePatterns) {
+  assert(scopePatterns instanceof Array && scopePatterns.every((scope) => {
+    return typeof scope === 'string';
+  }), 'scopes must be an array of strings');
+}
+
 /**
  * Auxiliary function to check if scopePatterns satisfies a scope-set
  *
- * Note that scope-set is an array of arrays of strings on negation-free
- * disjunctive normal form. For example:
+ * Note that scopesets is an array of arrays of strings. For example:
  *  [['a', 'b'], ['c']]
  *
  * Is satisfied if either,
@@ -39,9 +44,8 @@ exports.validateScopeSets = function(scopesets) {
  */
 exports.scopeMatch = function(scopePatterns, scopesets) {
   exports.validateScopeSets(scopesets);
-  assert(scopePatterns instanceof Array && scopePatterns.every(function(scope) {
-    return typeof scope === 'string';
-  }), 'scopes must be an array of strings');
+  validateScopePatterns(scopePatterns);
+
   return scopesets.some(function(scopeset) {
     return scopeset.every(function(scope) {
       return scopePatterns.some(function(pattern) {
@@ -56,3 +60,11 @@ exports.scopeMatch = function(scopePatterns, scopesets) {
     });
   });
 };
+
+/**
+ * Finds scope intersections between two scope sets.
+ */
+exports.scopeIntersection = (scopeset1, scopeset2) => [
+  ...scopeset1.filter(s => exports.scopeMatch(scopeset2, [[s]])),
+  ...scopeset2.filter(s => exports.scopeMatch(scopeset1, [[s]])),
+].filter((v, i, a) => a.indexOf(v) === i);
