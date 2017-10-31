@@ -21,6 +21,7 @@ deploy:
   email: taskcluster-accounts@mozilla.com
   api_key:
     secure: WPPkav0SvGq5qKaBSVjwORqg0v4SOamCWVYmr1yWhVrXyYlrxzyzQ3UKn3SYL43t3Bx6jD/tVH7bNh/7LYTuKD0jLtX8uE/+2/PtLzsEqniptOyXA+O45D4c/U4Np3whByfjN0utMmxfTJLw4EgvJiJY9OAkhzt/gePiI8ocqjtTnoR31hYLK0aIrYOJBbzJcHW5snD0N93PIdqDO6QyZjCoGI/HFJAJ4KdAwNdUqhTNIne+mImqLBFLDtUt6QePTmIdp+CKovBx1T+lSK2CGiraBiYYyf8m9Wd5EgOrz9VFRIHRrQ3xHj7tWIi9nARmCrJukxxTpTKUOAh32hU8s5+GJw07nH6+AOC41/D0WiUtX/KRn9nKy5oDu7gZevuC7k3OkJ8DdmNhvuU+SiFaajYmwgHWfvAo3E+Hb7ZVunGGCkd480q3EEGGiLDKTH4/vYDuGarp4ATwBw82yNDUmzuSznwaYxPb7TCaPIlYgJQWJo5sT5nU5VT9otFLzCPg1w3h5Kg2BAQq/dDrwApXkFKhpXqggTVnK1RAXtu03y6SMYYCCoRFV+wpT7w7ilbUbxZfbVWg1vAnNzCdCjTE9588Zy24Sfyw8yuOC2AMb/9JkHeYuU+Xd/k5PFvfeM8n6H4BFJbrgsVLYVe3NOVy3r/T0J9FKX/DIR8SebVaP9k=
+  skip_cleanup: true
   on:
     tags: true
     repo: taskcluster/taskcluster-lib-scopes
