@@ -2463,7 +2463,7 @@ api.declare({
   stability:  API.stability.experimental,
   scopes:     [
     [
-      'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>',
+      'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
     ],
   ],
   deferAuth:  true,
