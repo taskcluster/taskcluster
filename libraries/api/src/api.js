@@ -797,6 +797,11 @@ API.prototype.router = function(options) {
     });
   }
 
+  router.use(function(req, res, next) {
+    res.header('Cache-Control', 'no-store no-cache must-revalidate');
+    next();
+  });
+
   // Add entries to router
   _.concat(this._entries, [ping]).forEach(entry => {
     // Route pattern
