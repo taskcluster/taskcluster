@@ -1,9 +1,9 @@
 language: node_js
 sudo: false
 node_js:
-  - 5
-  - 6
-  - 7
+- 5
+- 6
+- 7
 addons:
   apt:
     sources:
@@ -20,7 +20,7 @@ deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
   api_key:
-    secure: WPPkav0SvGq5qKaBSVjwORqg0v4SOamCWVYmr1yWhVrXyYlrxzyzQ3UKn3SYL43t3Bx6jD/tVH7bNh/7LYTuKD0jLtX8uE/+2/PtLzsEqniptOyXA+O45D4c/U4Np3whByfjN0utMmxfTJLw4EgvJiJY9OAkhzt/gePiI8ocqjtTnoR31hYLK0aIrYOJBbzJcHW5snD0N93PIdqDO6QyZjCoGI/HFJAJ4KdAwNdUqhTNIne+mImqLBFLDtUt6QePTmIdp+CKovBx1T+lSK2CGiraBiYYyf8m9Wd5EgOrz9VFRIHRrQ3xHj7tWIi9nARmCrJukxxTpTKUOAh32hU8s5+GJw07nH6+AOC41/D0WiUtX/KRn9nKy5oDu7gZevuC7k3OkJ8DdmNhvuU+SiFaajYmwgHWfvAo3E+Hb7ZVunGGCkd480q3EEGGiLDKTH4/vYDuGarp4ATwBw82yNDUmzuSznwaYxPb7TCaPIlYgJQWJo5sT5nU5VT9otFLzCPg1w3h5Kg2BAQq/dDrwApXkFKhpXqggTVnK1RAXtu03y6SMYYCCoRFV+wpT7w7ilbUbxZfbVWg1vAnNzCdCjTE9588Zy24Sfyw8yuOC2AMb/9JkHeYuU+Xd/k5PFvfeM8n6H4BFJbrgsVLYVe3NOVy3r/T0J9FKX/DIR8SebVaP9k=
+    secure: W6i5vtf8PWnem+N0lg8JwbguzsSkLZMwGsQxiKvUvVeuKpeLK0+E+0S8npFPGHJbo9iKCYnVr3tsoty5Zgtap0Vq6YYbP98Kdul2vO+8Kp3Vq2VqFISe0eaHKKq1blYCjM3kV1enfhLfccgU4D+YG+mZMpPT0/MOXcfN5dA5WRusCifoXOqBGoRaDGzEm6npFCzls9git5nGGzz3AuR++HR6lOrIRaiWeClW14BOtNQhbBMreQwS8db8+PTEwdGaUHp+3Fvx93U3qa0sf12a5hXwf/6Tt8wH1a/GiYpdLGYEJjxdbHgUV2HWI+mGaHGFMgj+lswRUygP1bh0jjyKCPBjqGm7B4QgnNHTRAzaVK6e9rftKfnI8svI5j4MWfeq43mUQxoXSJrMoIyN46wNlEN4Yh08NWldbi8U6ZaE0JYO+x1OShXs4JqoSjY3NzFuO/ImBhDCrJ5wldBk2hIIzsOMp+/+u06aCC/jci9xaFrflQHdYDxBqrNRi3lhQI3/b9PMtiC6jgHN/ecljo5Qfb+7zB9nQtUIbE23va6zVTWvokJn//ECx7hyU8ByuaJS+bi1BlluD0HFOHQOWiwZ68RaBmm+xbuN1Dug0cLXyDcy+ku3Mrdk/UX30OVzFA95WMSAc3etOJm6WMYdBPoipaXHVrgGbv5g/Uoqmo8AxE8=
   skip_cleanup: true
   on:
     tags: true
