@@ -182,6 +182,27 @@ suite("api/route", function() {
       });
   });
 
+  test("cache header", function() {
+    var url = 'http://localhost:23525/single-param/Hello';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.ok, "Request failed");
+        assert(res.header['cache-control'] === "no-store no-cache must-revalidate", "Got wrong header");
+      });
+  });
+
+  test("cache header on 404s", function() {
+    var url = 'http://localhost:23525/unknown';
+    return request
+      .get(url)
+      .end()
+      .then(function(res) {
+        assert(res.header['cache-control'] === "no-store no-cache must-revalidate", "Got wrong header");
+      });
+  });
+
   test("reference", function() {
     var ref = api.reference({baseUrl: 'http://localhost:23243'});
     ref.entries.forEach(function(entry) {
