@@ -113,6 +113,10 @@ var app = function(options) {
 
   // keep cheap security vuln scanners happy..
   app.disable('x-powered-by');
+  app.use((req, res, next) => {
+    res.setHeader('x-content-type-options', 'nosniff');
+    next();
+  });
 
   // Middleware for development
   if (app.get('env') == 'development') {
