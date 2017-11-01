@@ -14,8 +14,8 @@
     "eslintconfig",
     "taskcluster"
   ],
-  "devDependencies": {
-    "babel-eslint": "^6.0.2",
-    "eslint": "^2.8.0"
+  "devDependencies": {},
+  "dependencies": {
+    "eslint": "^4.10.0"
   }
 }
