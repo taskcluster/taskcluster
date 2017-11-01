@@ -22,6 +22,7 @@ properties:
             the artifact.
           type:         string
           enum:
+            - blob
             - s3
             - azure
             - reference
