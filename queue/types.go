@@ -472,6 +472,7 @@ type (
 			// the artifact.
 			//
 			// Possible values:
+			//   * "blob"
 			//   * "s3"
 			//   * "azure"
 			//   * "reference"

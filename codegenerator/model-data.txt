@@ -1,4 +1,4 @@
-Generated: 1509477804
+Generated: 1509560703
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7610,7 +7610,7 @@ Properties
           Description            = 'This is the `storageType` for the request that was used to create
           the artifact.
           '
-          Enum                   = '[s3 azure reference error]'
+          Enum                   = '[blob s3 azure reference error]'
           Title                  = 'Artifact Storage-Type'
           Type                   = 'string'
           TypeName               = 'ArtifactStorageType'
