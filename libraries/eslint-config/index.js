@@ -1,16 +1,13 @@
 module.exports = {
-  // https://medium.com/@dan_abramov/lint-like-it-s-2015-6987d44c5b48
-  "parser": "babel-eslint",
-
   "env": {
     "node": true,
     "mocha": true,
-    "es6": true,
   },
 
-  "plugins": [
-    "taskcluster"
-  ],
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "sourceType": "module",
+  },
 
   "rules": {
     "max-len": [2, 120, 2],
@@ -21,9 +18,10 @@ module.exports = {
     "no-multiple-empty-lines": [2, { "max": 1} ],
     "no-nested-ternary": 2,
     "quote-props": [2, "as-needed"],
+    "guard-for-in": 2,
     "keyword-spacing": [2, {"before": true, "after": true, "overrides": {}}],
     "space-before-blocks": 2,
-    "space-before-function-paren": [2, "never"],
+    "space-before-function-paren": [2, {"anonymous": "never", "named": "never", "asyncArrow": "always"}],
     "object-curly-spacing": [2, "never"],
     "array-bracket-spacing": [2, "never"],
     "computed-property-spacing": [2, "never"],
@@ -46,7 +44,6 @@ module.exports = {
     "new-cap": 0,
     "comma-spacing": [2, {"before": false, "after": true}],
     "comma-dangle": [2, "always-multiline"],
-    "taskcluster/no-for-in": 2
   }
 }
 
