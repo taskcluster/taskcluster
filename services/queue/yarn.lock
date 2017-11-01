@@ -2741,9 +2741,9 @@ regjsparser@^0.1.4:
   dependencies:
     jsesc "~0.5.0"
 
-remotely-signed-s3@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/remotely-signed-s3/-/remotely-signed-s3-2.0.0.tgz#37a202a55974299f5f77aab0d0430ceb755298a7"
+remotely-signed-s3@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/remotely-signed-s3/-/remotely-signed-s3-3.0.0.tgz#e02ac2e9c742089522eba92167d23c998a62d140"
   dependencies:
     aws4 "^1.6.0"
     babel-runtime "^6.23.0"

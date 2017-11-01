@@ -45,7 +45,9 @@ oneOf:
             headers:
               description: Headers of request
               type: object
-              # Add something to ensure that all values are strings!
+              additionalProperties:
+                type:
+                  string
     additionalProperties: false
     required:
       - requests
