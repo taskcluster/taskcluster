@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-06/schema#",
     "title": "Task Definition Response",
     "description": "Definition of a task that can be scheduled\n",
     "type": "object",
