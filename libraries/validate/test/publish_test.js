@@ -11,7 +11,7 @@ suite('Publish Tests', () => {
   let validate = null;
   let mockdir = path.join(os.tmpdir(), 'tc-lib-validate', 'buckets');
 
-  suiteSetup(async () => {
+  before(async () => {
     debug('Using tmpdir: ' + mockdir);
     awsMock.config.basePath = mockdir;
     rimraf.sync(mockdir);
@@ -34,11 +34,11 @@ suite('Publish Tests', () => {
     });
   });
 
-  suiteTeardown(() => {
+  after(() => {
     rimraf.sync(mockdir);
   });
 
-  test('schemas are uploaded', (done) => {
+  test('schemas are uploaded', async () => {
     let shoulds = [
       'auto-named-schema',
       'yaml-test-schema',
@@ -52,10 +52,10 @@ suite('Publish Tests', () => {
         Key: 'test/v1/' + key + '.json',
       }, (err, data) => {
         if (err) {
-          done(err);
+          return err;
         }
       });
     }
-    done();
+    return;
   });
 });

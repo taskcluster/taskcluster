@@ -1,14 +1,19 @@
 {
-  "$schema":      "http://json-schema.org/draft-04/schema#",
-  "title":        "test json schema",
-  "type":         "object",
-  "properties": {
-    "reference":       {"$ref": "http://localhost:1203/test-schema.json#"},
-    "tid": {
-      "type":           "string",
-      "format":         "date-time"
-    }
-  },
-  "additionalProperties":   false,
-  "required": ["reference", "tid"]
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "test json schema",
+    "type": "object",
+    "properties": {
+        "reference": {
+            "$ref": "http://localhost:1203/test-schema.json#"
+        },
+        "tid": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "reference",
+        "tid"
+    ]
 }
