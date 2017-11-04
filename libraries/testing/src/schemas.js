@@ -1,4 +1,3 @@
-"use strict";
 
 var _             = require('lodash');
 var assert        = require('assert');
@@ -27,12 +26,12 @@ var path          = require('path');
  */
 var schemas = function(options) {
   options = _.defaults({}, options, {
-    schemaPrefix:     ''  // Defaults to no schema prefix
+    schemaPrefix:     '',  // Defaults to no schema prefix
   });
 
   // Validate options
-  assert(options.validator, "Options must be given for validator");
-  assert(options.cases instanceof Array, "Array of cases must be given");
+  assert(options.validator, 'Options must be given for validator');
+  assert(options.cases instanceof Array, 'Array of cases must be given');
 
   var validate = null;
   setup(async function() {
@@ -58,15 +57,15 @@ var schemas = function(options) {
       var error = validate(json, schema);
 
       // Test errors
-      if(testCase.success) {
+      if (testCase.success) {
         if (error !== null) {
-          debug("Errors: %j", error);
+          debug('Errors: %j', error);
         }
         assert(error === null,
-               "Schema doesn't match test for " + testCase.path);
+          'Schema doesn\'t match test for ' + testCase.path);
       } else {
         assert(error !== null,
-               "Schema matches unexpectedly test for " + testCase.path);
+          'Schema matches unexpectedly test for ' + testCase.path);
       }
     });
   });

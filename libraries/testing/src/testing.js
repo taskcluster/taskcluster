@@ -1,4 +1,3 @@
-"use strict";
 
 var Promise       = require('promise');
 
@@ -7,7 +6,7 @@ exports.schemas              = require('./schemas');
 exports.fakeauth             = require('./fakeauth');
 
 exports.createMockAuthServer = () => {
-  throw new Error("No longer available; use fakeauth instead");
+  throw new Error('No longer available; use fakeauth instead');
 };
 
 /** Return promise that is resolved in `delay` ms */
