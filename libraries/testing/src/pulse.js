@@ -1,4 +1,3 @@
-"use strict";
 
 var childProcess  = require('child_process');
 var Promise       = require('promise');
@@ -65,19 +64,18 @@ var PulseTestReceiver = function(credentials, mocha) {
   });
 };
 
-
 PulseTestReceiver.prototype.listenFor = function(name, binding) {
   // Check that the `name` haven't be used before in this test. Remember
   // that we reset this._promisedMessages beforeEach() test in mocha.
   if (this._promisedMessages[name] !== undefined) {
-    throw new Error("name: '" + name + "' have already been used in this test");
+    throw new Error('name: \'' + name + '\' have already been used in this test');
   }
 
   // Create new listener using the existing PulseConnection, so no new TCP
   // connection is opened, it just creates an AMQP channel within the existing
   // TCP connection, this is much faster.
   var listener = new taskcluster.PulseListener({
-    connection:     this._connection
+    connection:     this._connection,
   });
 
   // Add listener to list so we can cleanup later
@@ -96,17 +94,16 @@ PulseTestReceiver.prototype.listenFor = function(name, binding) {
   // Start listening
   return listener.bind(binding).then(function() {
     return listener.resume().then(function() {
-      debug("Started listening for: %s", name);
+      debug('Started listening for: %s', name);
     });
   });
 };
 
-
 PulseTestReceiver.prototype.waitFor = function(name) {
   // Check that the `name` have been used with listenFor in this test
   if (this._promisedMessages[name] === undefined) {
-    throw new Error("listenFor has not been called with name: '" + name + "'" +
-                    " in this test!");
+    throw new Error('listenFor has not been called with name: \'' + name + '\'' +
+                    ' in this test!');
   }
   // Otherwise we just return the promise
   return this._promisedMessages[name];

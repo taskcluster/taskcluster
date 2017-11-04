@@ -7,38 +7,38 @@ var debug   = require('debug')('base:test:authserver_mock');
 // Clients hardcoded into this server
 var _clients = {
   'test-client': {
-      clientId:     'test-client',
-      accessToken:  'test-token',
-      scopes:       ['auth:credentials'],
-      expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+    clientId:     'test-client',
+    accessToken:  'test-token',
+    scopes:       ['auth:credentials'],
+    expires:      new Date(2092, 0, 0, 0, 0, 0, 0),
   },
   'delegating-client': {
-      clientId:     'delegating-client',
-      accessToken:  'test-token',
-      scopes:       ['auth:can-delegate'],
-      expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+    clientId:     'delegating-client',
+    accessToken:  'test-token',
+    scopes:       ['auth:can-delegate'],
+    expires:      new Date(2092, 0, 0, 0, 0, 0, 0),
   },
-  'rockstar': {
+  rockstar: {
     clientId:     'rockstar',
     accessToken:  'groupie',
     scopes:       ['*'],
-    expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
+    expires:      new Date(2092, 0, 0, 0, 0, 0, 0),
   },
-  'nobody': {
+  nobody: {
     clientId:     'nobody',
     accessToken:  'nerd',
     scopes:       ['another-irrelevant-scope'],
-    expires:      new Date(2092, 0, 0, 0, 0, 0, 0)
-  }
+    expires:      new Date(2092, 0, 0, 0, 0, 0, 0),
+  },
 };
 
 /** Create mock authentication API */
 var api = new API({
-  title:        "Authentication Mock Server",
+  title:        'Authentication Mock Server',
   description: [
-    "Server that simulates an instance of the taskcluster\n" +
-    "authentication server"
-  ].join('\n')
+    'Server that simulates an instance of the taskcluster\n' +
+    'authentication server',
+  ].join('\n'),
 });
 
 /** Create interface for returning a response */
@@ -47,14 +47,14 @@ api.declare({
   route:        '/client/:clientId/credentials',
   name:         'getCredentials',
   scopes:       [['auth:credentials']],
-  title:        "Get Credentials",
-  description:  "Get credentials... mock..."
+  title:        'Get Credentials',
+  description:  'Get credentials... mock...',
 }, function(req, res) {
   var client = _clients[req.params.clientId];
   if (client) {
     res.status(200).json(client);
   } else {
-    res.status(404).json({error: "ClientId not found"});
+    res.status(404).json({error: 'ClientId not found'});
   }
 });
 
@@ -82,12 +82,12 @@ var clientLoader = function(clientId) {
 var mockAuthServer = function(options) {
   // Set default options
   options = _.defaults({}, options, {
-    port:       1201
+    port:       1201,
   });
 
   // Create validator
   return base.validator({
-    publish:  false
+    publish:  false,
   }).then(function(validator) {
     // Create express application
     var app = express();
@@ -95,7 +95,7 @@ var mockAuthServer = function(options) {
     // Create API router
     var router = api.router({
       validator:      validator,
-      clientLoader:   clientLoader
+      clientLoader:   clientLoader,
     });
     // Mount router
     app.use(router);

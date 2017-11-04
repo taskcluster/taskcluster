@@ -1,6 +1,6 @@
 {
-  "id":           "http://localhost:1234/case1.json#",
-  "$schema":      "http://json-schema.org/draft-04/schema#",
+  "$id":           "http://localhost:1234/case1.json#",
+  "$schema":      "http://json-schema.org/draft-06/schema#",
   "title":        "test json schema",
   "type":         "object",
   "properties": {
