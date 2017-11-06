@@ -1,0 +1,6 @@
+---
+defaults:
+  referenceTestBucket: !env REFERENCE_TEST_BUCKET
+  aws:
+    accessKeyId: !env AWS_ACCESS_KEY_ID
+    secretAccessKey: !env AWS_SECRET_ACCESS_KEY
