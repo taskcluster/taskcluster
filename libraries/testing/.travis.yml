@@ -1,7 +1,7 @@
 env:
   global:
   - CXX=g++-4.8
-  - DEBUG='* -superagent -express:* -mocha:* -babel'
+  - DEBUG='* -superagent -express:* -mocha:* -babel -eslint*'
 language: node_js
 addons:
   apt:
@@ -14,6 +14,7 @@ node_js:
 - '5'
 - '6'
 - '7'
+- '8'
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094
@@ -32,6 +33,7 @@ notifications:
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
+  skip_cleanup: true
   api_key:
     secure: LDw9OOj13EiQ81O1yM8BfIpUDkuJxwK2CJFfkdTcjRz2f6bprlWYaBvZQKkmZWqEQejvCKujvtwoRMZ9IMkd5Cu08f0JL893sXbjIzHLWBf0k7Q/OYS/uLIaxhL/tXuE4pyf8F1QxInm867EKYfyKx9i1WYB683cwkxDnb8UxXsbxRpMUjOUkRIvqZWrcRvDqGnCqqcooagh97cSMIRk3nl/BxOoOfevNJdNdEQYcEuVShc0P2K7a5wF35Hsx+SDkbINvIWmhEAEQUoKkml5X7c2M3oOELl5KNN5UWukpihnYQBmvQOiKKM183Q2JxpTw0KXMBxoKM2af1mBh8vtCRAfLlETXlvVp97J0WXlOHt7/AaFzbcmkorNxYSGtintLqyONajhfVK7Rbl/L4GUMYQgeKE1L8q0u/uWgvHRFAGZEVa2F/oFyyAI1cmrU6mJkvoiiF4TDiY7vm95RNj2V9dCOIK3Gmwiy54BXyEqJqZfHTZL9vbCVlB2T5yaVKHK7dKoSG4M8RlGYzL6pogLLzpsBBo4slgZ7iO17vjOIqrMJhvIRrJ0aIkqekw538PZvWzOT0pn4Ex2i5LDsBwpZOkt8OmdPO95zn8GcFG+8DlAm/5cf26gssjUmvK9JtL31OXPfzzEhOB7lv7foEZu17SJTyiECHyK1A0PXpuiuwM=
   on:
