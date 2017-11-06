@@ -1,12 +1,12 @@
 {
   "name": "taskcluster-lib-testing",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-testing",
   "license": "MPL-2.0",
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "prepublish": "npm run compile", 
+    "prepublish": "npm run compile",
     "lint": "eslint src/*.js test/*.js",
     "pretest": "yarn lint && npm run compile",
     "test": "mocha test/*_test.js"
