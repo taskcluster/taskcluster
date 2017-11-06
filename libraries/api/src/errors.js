@@ -35,13 +35,13 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
       if (cleanPayload) {
         payload = cleanPayload(payload);
       }
-      if (status === undefined || typeof(message) !== 'string') {
+      if (status === undefined || typeof message !== 'string') {
         message = 'Internal error, unknown error code: ' + code + '\n' +
                   (message || 'Missing message!');
         code = 'InternalServerError';
         status = 500;
         if (monitor) {
-          let err = new Error(message)
+          let err = new Error(message);
           err.badMessage = message;
           err.badCode = code;
           err.details = details;
@@ -56,17 +56,17 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
       };
       message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
         let value = details.hasOwnProperty(key) ? details[key] : text;
-        if (typeof(value) !== 'string') {
+        if (typeof value !== 'string') {
           return JSON.stringify(value, null, 2);
         }
         return value;
       }) + [
-        '\n----',
-        'method:     ' + method,
-        'errorCode:  ' + code,
-        'statusCode: ' + status,
-        'time:       ' + requestInfo.time,
-      ].join('\n');
+          '\n----',
+          'method:     ' + method,
+          'errorCode:  ' + code,
+          'statusCode: ' + status,
+          'time:       ' + requestInfo.time,
+        ].join('\n');
       res.status(status).json({code, message, requestInfo});
     };
     res.reportInternalError = (err, tags = {}) => {
@@ -77,7 +77,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
         {incidentId}
       );
       debug(
-        "Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s",
+        'Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s',
         req.url, err, err, incidentId, err.stack
       );
       if (monitor) {

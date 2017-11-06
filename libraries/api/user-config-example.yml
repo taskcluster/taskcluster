@@ -1,0 +1,6 @@
+---
+defaults:
+  referenceTestBucket: "..."
+  aws:
+    accessKeyId: "..."
+    secretAccessKey: "..."

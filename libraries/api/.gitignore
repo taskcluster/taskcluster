@@ -1,3 +1,4 @@
+/user-config.yml
 /taskcluster-base-test.conf.json
 node_modules/
 .vagrant/
