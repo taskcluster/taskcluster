@@ -33,7 +33,7 @@ export const setupServer = async ({api, monitor}) => {
     var server = app.listen(23525);
     server.once('listening', function() {
       runningServer = server;
-      accept(server)
+      accept(server);
     });
     server.once('error', reject);
   });
