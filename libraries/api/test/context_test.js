@@ -1,4 +1,4 @@
-suite("API (context)", function() {
+suite('API (context)', function() {
   var validator       = require('taskcluster-lib-validate');
   var makeApp         = require('taskcluster-lib-app');
   var subject         = require('../');
@@ -8,19 +8,19 @@ suite("API (context)", function() {
   var slugid          = require('slugid');
   var path            = require('path');
 
-  test("Provides context", async () => {
+  test('Provides context', async () => {
     // Create test api
     var api = new subject({
-      title:        "Test Api",
-      description:  "Another test api"
+      title:        'Test Api',
+      description:  'Another test api',
     });
 
     api.declare({
       method:   'get',
       route:    '/context/',
       name:     'getContext',
-      title:    "Test End-Point",
-      description:  "Place we can call to test something",
+      title:    'Test End-Point',
+      description:  'Place we can call to test something',
     }, function(req, res) {
       res.status(200).json({myProp: this.myProp});
     });
@@ -28,13 +28,13 @@ suite("API (context)", function() {
     var value = slugid.v4();
     let validate = await validator({
       folder:         path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/'
+      baseUrl:        'http://localhost:4321/',
     });
     var router = api.router({
       validator:  validate,
       context: {
-        myProp: value
-      }
+        myProp: value,
+      },
     });
 
     var app = makeApp({
@@ -53,7 +53,7 @@ suite("API (context)", function() {
       .end()
       .then(function(res) {
         assert(res.body.myProp === value);
-      }).then(function () {
+      }).then(function() {
         return server.terminate();
       }, function(err) {
         return server.terminate().then(function() {
@@ -62,51 +62,51 @@ suite("API (context)", function() {
       });
   });
 
-  test("Context properties can be required", async () => {
+  test('Context properties can be required', async () => {
     // Create test api
     var api = new subject({
-      title:        "Test Api",
-      description:  "Another test api",
-      context:      ['prop1', 'prop2']
+      title:        'Test Api',
+      description:  'Another test api',
+      context:      ['prop1', 'prop2'],
     });
 
     var value = slugid.v4();
     let validate = await validator({
       folder:         path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/'
+      baseUrl:        'http://localhost:4321/',
     });
     try {
       api.router({
         validator:  validate,
         context: {
-          prop1: "value1"
-        }
+          prop1: 'value1',
+        },
       });
     } catch (err) {
       return; // expected error
     }
-    assert(false, "Expected an error!");
+    assert(false, 'Expected an error!');
   });
 
-  test("Context properties can provided", async () => {
+  test('Context properties can provided', async () => {
     // Create test api
     var api = new subject({
-      title:        "Test Api",
-      description:  "Another test api",
-      context:      ['prop1', 'prop2']
+      title:        'Test Api',
+      description:  'Another test api',
+      context:      ['prop1', 'prop2'],
     });
 
     var value = slugid.v4();
     let validate = await validator({
       folder:         path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/'
+      baseUrl:        'http://localhost:4321/',
     });
     api.router({
       validator:  validate,
       context: {
-        prop1: "value1",
-        prop2: "value2"
-      }
+        prop1: 'value1',
+        prop2: 'value2',
+      },
     });
   });
 });

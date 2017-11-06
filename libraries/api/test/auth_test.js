@@ -1,6 +1,5 @@
-suite("api/auth", function() {
-  require('superagent-hawk')(require('superagent'));
-  var request         = require('superagent-promise');
+suite('api/auth', function() {
+  var request         = require('superagent-hawk')(require('superagent'));
   var assert          = require('assert');
   var Promise         = require('promise');
   var validator       = require('taskcluster-lib-validate');
@@ -20,17 +19,17 @@ suite("api/auth", function() {
 
   // Create test api
   var api = new subject({
-    title:        "Test Api",
-    description:  "Another test api"
+    title:        'Test Api',
+    description:  'Another test api',
   });
 
   api.declare({
     method:       'get',
     route:        '/test-static-scope',
     name:         'testStaticScopes',
-    title:        "Test End-Point",
+    title:        'Test End-Point',
     scopes:       [['service:magic']],
-    description:  "Place we can call to test something",
+    description:  'Place we can call to test something',
   }, function(req, res) {
     res.status(200).json({ok: true});
   });
@@ -39,9 +38,9 @@ suite("api/auth", function() {
     method:       'get',
     route:        '/scopes',
     name:         'getScopes',
-    title:        "Test End-Point",
+    title:        'Test End-Point',
     scopes:       [['service:magic']],
-    description:  "Place we can call to test something",
+    description:  'Place we can call to test something',
   }, async function(req, res) {
     res.status(200).json({
       scopes: await req.scopes(),
@@ -55,15 +54,15 @@ suite("api/auth", function() {
     method:       'get',
     route:        '/test-scopes',
     name:         'testScopes',
-    title:        "Test End-Point",
+    title:        'Test End-Point',
     scopes:       [['service:<param>']],
     deferAuth:    true,
-    description:  "Place we can call to test something",
+    description:  'Place we can call to test something',
   }, function(req, res) {
-    if(req.satisfies({
-      param:      'myfolder/resource'
+    if (req.satisfies({
+      param:      'myfolder/resource',
     })) {
-      res.status(200).json("OK");
+      res.status(200).json('OK');
     }
   });
 
@@ -72,11 +71,11 @@ suite("api/auth", function() {
     method:       'get',
     route:        '/test-no-auth',
     name:         'testNoAuth',
-    title:        "Test End-Point",
-    description:  "Place we can call to test something",
+    title:        'Test End-Point',
+    description:  'Place we can call to test something',
   }, async function(req, res) {
-    assert.equal((await req.clientId()), 'auth-failed:no-auth');
-    res.status(200).json("OK");
+    assert.equal(await req.clientId(), 'auth-failed:no-auth');
+    res.status(200).json('OK');
   });
 
   // Declare a method we can test dynamic authorization
@@ -84,28 +83,28 @@ suite("api/auth", function() {
     method:       'get',
     route:        '/test-dyn-auth',
     name:         'testDynAuth',
-    title:        "Test End-Point",
-    description:  "Place we can call to test something",
+    title:        'Test End-Point',
+    description:  'Place we can call to test something',
   }, function(req, res) {
-    if(req.satisfies([req.body.scopes])) {
-      return res.status(200).json("OK");
+    if (req.satisfies([req.body.scopes])) {
+      return res.status(200).json('OK');
     }
   });
 
   // Create a mock authentication server
   setup(async () => {
     testing.fakeauth.start({
-      "test-client": ['service:magic'],
-      "rockstar":    ['*'],
-      "nobody":      ['another-irrelevant-scope'],
-      "param":       ['service:myfolder/resource'],
+      'test-client': ['service:magic'],
+      rockstar:    ['*'],
+      nobody:      ['another-irrelevant-scope'],
+      param:       ['service:myfolder/resource'],
     });
 
     // Create router
     var router = api.router({
       validator:      await validator({
         folder:         path.join(__dirname, 'schemas'),
-        baseUrl:        'http://localhost:4321/'
+        baseUrl:        'http://localhost:4321/',
       }),
     });
 
@@ -129,152 +128,146 @@ suite("api/auth", function() {
     await _apiServer.terminate();
   });
 
-
-  test("request with static scope", function() {
+  test('request with static scope', function() {
     var url = 'http://localhost:23526/test-static-scope';
     return request
       .get(url)
       .hawk({
         id:           'test-client',
         key:          'test-token',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       })
-      .end()
       .then(function(res) {
-        assert(res.ok,               "Request failed");
-        assert(res.body.ok === true, "Got result");
+        assert(res.ok,               'Request failed');
+        assert(res.body.ok === true, 'Got result');
       });
   });
 
-  test("request with static scope - fail no scope", function() {
+  test('request with static scope - fail no scope', function() {
     var url = 'http://localhost:23526/test-static-scope';
     return request
       .get(url)
       .hawk({
         id:           'nobody',
         key:          'test-token',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       })
-      .end()
-      .then(function(res) {
-        assert(res.status === 403, "Request didn't fail");
+      .then(res => assert(false, 'request didn\'t fail'))
+      .catch(function(res) {
+        assert(res.status === 403, 'Request didn\'t fail');
       });
   });
 
-  test("static-scope with authorizedScopes", function() {
+  test('static-scope with authorizedScopes', function() {
     var url = 'http://localhost:23526/test-static-scope';
     return request
       .get(url)
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          authorizedScopes:    ['service:magic']
-        })).toString('base64')
+          authorizedScopes:    ['service:magic'],
+        })).toString('base64'),
       })
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(res.body);
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });
 
-  test("static-scope with authorizedScopes (star)", function() {
+  test('static-scope with authorizedScopes (star)', function() {
     var url = 'http://localhost:23526/test-static-scope';
     return request
       .get(url)
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          authorizedScopes:    ['service:ma*']
-        })).toString('base64')
+          authorizedScopes:    ['service:ma*'],
+        })).toString('base64'),
       })
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(res.body);
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });
 
-  test("static-scope with authorizedScopes (too strict)", function() {
+  test('static-scope with authorizedScopes (too strict)', function() {
     var url = 'http://localhost:23526/test-static-scope';
     return request
       .get(url)
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          authorizedScopes:    ['some-irrelevant-scope']
-        })).toString('base64')
+          authorizedScopes:    ['some-irrelevant-scope'],
+        })).toString('base64'),
       })
-      .end()
-      .then(function(res) {
-        assert(res.status === 403, "Request didn't fail as expected");
+      .then(res => assert(false, 'request didn\'t fail'))
+      .catch(function(res) {
+        assert(res.status === 403, 'Request didn\'t fail as expected');
       });
   });
 
   // Test parameterized scopes
-  test("Parameterized scopes", function() {
+  test('Parameterized scopes', function() {
     var url = 'http://localhost:23526/test-scopes';
     return request
       .get(url)
       .hawk({
         id:           'param',
         key:          '--',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       })
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(JSON.stringify(res.body));
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });
 
   // Test that we can't cheat parameterized scopes
-  test("Can't cheat parameterized scopes", function() {
+  test('Can\'t cheat parameterized scopes', function() {
     var url = 'http://localhost:23526/test-scopes';
     return request
       .get(url)
       .hawk({
         id:           'nobody',
         key:          'test-token',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       })
-      .end()
-      .then(function(res) {
-        assert(res.status === 403, "Request didn't fail");
+      .then(res => assert(false, 'request didn\'t fail'))
+      .catch(function(res) {
+        assert(res.status === 403, 'Request didn\'t fail');
       });
   });
 
   // Test without authentication
-  test("Without authentication", function() {
+  test('Without authentication', function() {
     var url = 'http://localhost:23526/test-no-auth';
     return request
       .get(url)
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(JSON.stringify(res.body));
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });
 
   // Test with dynamic authentication
-  test("With dynamic authentication", function() {
+  test('With dynamic authentication', function() {
     var url = 'http://localhost:23526/test-dyn-auth';
     return request
       .get(url)
@@ -284,24 +277,23 @@ suite("api/auth", function() {
           'got-all/hello/*',
           'got-all/',
           'got-all/*',
-          'got-only/this'
-        ]
+          'got-only/this',
+        ],
       })
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       })
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(JSON.stringify(res.body));
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });
 
-  test("With dynamic authentication (authorizedScopes)", function() {
+  test('With dynamic authentication (authorizedScopes)', function() {
     var url = 'http://localhost:23526/test-dyn-auth';
     return request
       .get(url)
@@ -312,24 +304,23 @@ suite("api/auth", function() {
           'got-all/',
           'got-all/*',
           'got-only/this',
-        ]
+        ],
       })
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          authorizedScopes:    ['got-all/*', 'got-only/this']
-        })).toString('base64')
+          authorizedScopes:    ['got-all/*', 'got-only/this'],
+        })).toString('base64'),
       })
-      .end()
       .then(function(res) {
-        assert(res.ok, "Request failed");
+        assert(res.ok, 'Request failed');
       });
   });
 
-  test("With dynamic authentication (miss scoped)", function() {
+  test('With dynamic authentication (miss scoped)', function() {
     var url = 'http://localhost:23526/test-dyn-auth';
     return request
       .get(url)
@@ -340,68 +331,67 @@ suite("api/auth", function() {
           'got-all/',
           'got-all/*',
           'got-only/this',
-          'got-*'
-        ]
+          'got-*',
+        ],
       })
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          authorizedScopes:    ['got-all/*', 'got-only/this']
-        })).toString('base64')
+          authorizedScopes:    ['got-all/*', 'got-only/this'],
+        })).toString('base64'),
       })
-      .end()
-      .then(function(res) {
-        assert(res.status === 403, "Request didn't fail");
+      .then(res => assert(false, 'request didn\'t fail'))
+      .catch(function(res) {
+        assert(res.status === 403, 'Request didn\'t fail');
       });
   });
 
-  test("With dynamic authentication (miss scoped again)", function() {
+  test('With dynamic authentication (miss scoped again)', function() {
     var url = 'http://localhost:23526/test-dyn-auth';
     return request
       .get(url)
       .send({
         scopes: [
           'got-only/this*',
-        ]
+        ],
       })
       .hawk({
         id:           'rockstar',
         key:          'groupie',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          authorizedScopes:    ['got-only/this']
-        })).toString('base64')
+          authorizedScopes:    ['got-only/this'],
+        })).toString('base64'),
       })
-      .end()
-      .then(function(res) {
-        assert(res.status === 403, "Request didn't fail");
+      .then(res => assert(false, 'request didn\'t fail'))
+      .catch(function(res) {
+        assert(res.status === 403, 'Request didn\'t fail');
       });
   });
 
-  test("request scopes from caller", function() {
+  test('request scopes from caller', function() {
     var url = 'http://localhost:23526/scopes';
     return request
       .get(url)
       .hawk({
         id:           'test-client',
         key:          'test-token',
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       })
-      .end()
       .then(function(res) {
-        assert(res.ok, "Request failed");
-        assert(res.body.scopes.length === 1, "wrong number of scopes");
-        assert(res.body.scopes[0] === 'service:magic', "failed scopes");
-        assert(res.body.clientId == 'test-client', "bad clientId");
-        assert(/\d{4}-\d{2}-\d{2}.*/.test(res.body.expires), "bad expires");
+        assert(res.ok, 'Request failed');
+        assert(res.body.scopes.length === 1, 'wrong number of scopes');
+        assert(res.body.scopes[0] === 'service:magic', 'failed scopes');
+        assert(res.body.clientId == 'test-client', 'bad clientId');
+        assert(/\d{4}-\d{2}-\d{2}.*/.test(res.body.expires), 'bad expires');
       });
   });
 
-  test("static-scope with temporary credentials (star scope)", function() {
+  test('static-scope with temporary credentials (star scope)', function() {
     var url = 'http://localhost:23526/test-static-scope';
     var expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 5);
@@ -412,7 +402,7 @@ suite("api/auth", function() {
       start:            new Date().getTime(),
       expiry:           expiry.getTime(),
       seed:             slugid.v4() + slugid.v4(),
-      signature:        null
+      signature:        null,
     };
 
     var key = 'groupie';
@@ -445,22 +435,21 @@ suite("api/auth", function() {
       .hawk({
         id:           'rockstar',
         key:          tempKey,
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          certificate:  certificate
-        })).toString('base64')
+          certificate:  certificate,
+        })).toString('base64'),
       })
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(res.body);
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });
 
-  test("static-scope with temporary credentials (exact scope)", function() {
+  test('static-scope with temporary credentials (exact scope)', function() {
     var url = 'http://localhost:23526/test-static-scope';
     var expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 5);
@@ -471,7 +460,7 @@ suite("api/auth", function() {
       start:            new Date().getTime(),
       expiry:           expiry.getTime(),
       seed:             slugid.v4() + slugid.v4(),
-      signature:        null
+      signature:        null,
     };
 
     var key = 'groupie';
@@ -504,17 +493,16 @@ suite("api/auth", function() {
       .hawk({
         id:           'rockstar',
         key:          tempKey,
-        algorithm:    'sha256'
+        algorithm:    'sha256',
       }, {
         ext: new Buffer(JSON.stringify({
-          certificate:  certificate
-        })).toString('base64')
+          certificate:  certificate,
+        })).toString('base64'),
       })
-      .end()
       .then(function(res) {
-        if(!res.ok) {
+        if (!res.ok) {
           console.log(res.body);
-          assert(false, "Request failed");
+          assert(false, 'Request failed');
         }
       });
   });

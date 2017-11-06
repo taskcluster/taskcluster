@@ -1,9 +1,6 @@
-"use strict";
-
 var express       = require('express');
 var Debug         = require('debug');
 var Promise       = require('promise');
-var uuid          = require('uuid');
 var hawk          = require('hawk');
 var aws           = require('aws-sdk');
 var assert        = require('assert');
@@ -11,11 +8,8 @@ var _             = require('lodash');
 var bodyParser    = require('body-parser');
 var path          = require('path');
 var fs            = require('fs');
-require('superagent-hawk')(require('superagent'));
-var request       = require('superagent-promise');
 var scopes        = require('taskcluster-lib-scopes');
 var crypto        = require('crypto');
-var cryptiles     = require('cryptiles');
 var taskcluster   = require('taskcluster-client');
 var Ajv           = require('ajv');
 var errors        = require('./errors');
@@ -32,14 +26,14 @@ var ping = {
   title:    'Ping Server',
   description: [
     'Respond without doing anything.',
-    'This endpoint is used to check that the service is up.'
+    'This endpoint is used to check that the service is up.',
   ].join('\n'),
   handler: function(req, res) {
     res.status(200).json({
       alive:    true,
-      uptime:   process.uptime()
+      uptime:   process.uptime(),
     });
-  }
+  },
 };
 
 var debug = Debug('api');
@@ -71,8 +65,8 @@ var parameterValidator = function(options) {
   // Validate options
   _.forIn(options, function(pattern, param) {
     assert(pattern instanceof RegExp || pattern instanceof Function,
-           "Pattern given for param: '" + param + "' must be a RegExp or " +
-           "a function");
+      'Pattern given for param: \'' + param + '\' must be a RegExp or ' +
+           'a function');
   });
   return function(req, res, next) {
     var errors = [];
@@ -81,16 +75,16 @@ var parameterValidator = function(options) {
       if (pattern instanceof RegExp) {
         if (!pattern.test(val)) {
           errors.push(
-            "URL parameter '" + param + "' given as '" + val + "' must match " +
-            "regular expression: '" + pattern.toString() + "'"
+            'URL parameter \'' + param + '\' given as \'' + val + '\' must match ' +
+            'regular expression: \'' + pattern.toString() + '\''
           );
         }
       } else if (pattern instanceof Function) {
         var msg = pattern(val);
-        if (typeof(msg) === 'string') {
+        if (typeof msg === 'string') {
           errors.push(
-            "URL parameter '" + param + "' given  as '" + val +  "' is not " +
-            "valid: " + msg
+            'URL parameter \'' + param + '\' given  as \'' + val +  '\' is not ' +
+            'valid: ' + msg
           );
         }
       }
@@ -98,7 +92,7 @@ var parameterValidator = function(options) {
     if (errors.length > 0) {
       return res.reportError(
         'InvalidRequestArguments',
-        "Invalid URL patterns:\n" + errors.join('\n'),
+        'Invalid URL patterns:\n' + errors.join('\n'),
         {errors}
       );
     }
@@ -132,10 +126,10 @@ var schema = function(validate, options) {
       if (!typeis(req, 'application/json')) {
         return res.reportError(
           'MalformedPayload',
-          "Payload must be JSON with content-type: application/json " +
-          "got content-type: {{contentType}}", {
-          contentType: (req.headers['content-type'] || null),
-        });
+          'Payload must be JSON with content-type: application/json ' +
+          'got content-type: {{contentType}}', {
+            contentType: req.headers['content-type'] || null,
+          });
       }
       var error = validate(req.body, options.input);
       if (error) {
@@ -143,7 +137,7 @@ var schema = function(validate, options) {
         return res.reportError(
           'InputValidationError',
           error,
-        {schema: options.input});
+          {schema: options.input});
       }
     }
     // Add a reply method sending JSON replies, this will always reply with HTTP
@@ -151,7 +145,7 @@ var schema = function(validate, options) {
     res.reply = function(json) {
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
-      if(options.output !== undefined && !options.skipOutputValidation &&
+      if (options.output !== undefined && !options.skipOutputValidation &&
          options.output !== 'blob') {
         var error = validate(json, options.output);
         if (error) {
@@ -171,7 +165,6 @@ var schema = function(validate, options) {
     next();
   };
 };
-
 
 /**
  * Validate query-string against query.
@@ -205,7 +198,7 @@ let queryValidator = function(options = {}) {
         }
       } else {
         let msg = pattern(value);
-        if (typeof(msg) === 'string') {
+        if (typeof msg === 'string') {
           errors.push('Query-string parameter: ' + key + '="' + value +
                       '" is not valid, error: ' + msg);
         }
@@ -239,19 +232,19 @@ let queryValidator = function(options = {}) {
  */
 var nonceManager = function(options) {
   options = _.defaults({}, options || {}, {
-    size:               250
+    size:               250,
   });
   var nextnonce = 0;
   var N = options.size;
   var noncedb = new Array(N);
-  for(var i = 0; i < N; i++) {
+  for (var i = 0; i < N; i++) {
     noncedb[i] = {nonce: null, ts: null};
   }
   return function(nonce, ts, cb) {
     for (var i = 0; i < N; i++) {
       if (noncedb[i].nonce === nonce && noncedb[i].ts === ts) {
-        debug("CRITICAL: Replay attack detected!");
-        return cb(new Error("Signature already used"));
+        debug('CRITICAL: Replay attack detected!');
+        return cb(new Error('Signature already used'));
       }
     }
     noncedb[nextnonce].nonce  = nonce;
@@ -282,7 +275,7 @@ var nonceManager = function(options) {
  * `remoteAuthentication`.
  */
 var createRemoteSignatureValidator = function(options) {
-  assert(options.authBaseUrl, "options.authBaseUrl is required");
+  assert(options.authBaseUrl, 'options.authBaseUrl is required');
   var auth = new taskcluster.Auth({
     baseUrl: options.authBaseUrl,
     credentials: {}, // We do this to avoid sending auth headers to authenticateHawk
@@ -362,7 +355,7 @@ var createRemoteSignatureValidator = function(options) {
  */
 var remoteAuthentication = function(options, entry) {
   assert(options.signatureValidator instanceof Function,
-         "Expected options.signatureValidator to be a function!");
+    'Expected options.signatureValidator to be a function!');
   // Returns promise for object on the form:
   //   {status, message, scopes, scheme, hash}
   // scopes, scheme, hash are only present if status isn't auth-failed
@@ -376,9 +369,9 @@ var remoteAuthentication = function(options, entry) {
         req.query && req.query.bewit) {
       return Promise.resolve({
         status:   'auth-failed',
-        message:  "Cannot use two authentication schemes at once " +
-                  "this request has both bewit in querystring and " +
-                  "and 'authorization' header"
+        message:  'Cannot use two authentication schemes at once ' +
+                  'this request has both bewit in querystring and ' +
+                  'and \'authorization\' header',
       });
     }
 
@@ -388,7 +381,7 @@ var remoteAuthentication = function(options, entry) {
       return Promise.resolve({
         status: 'no-auth',
         scheme: 'none',
-        scopes: []
+        scopes: [],
       });
     }
 
@@ -397,7 +390,7 @@ var remoteAuthentication = function(options, entry) {
     // Find port, overwrite if forwarded by reverse proxy
     var port = host.port;
     if (req.headers['x-forwarded-port'] !== undefined) {
-      port = parseInt(req.headers['x-forwarded-port']);
+      port = parseInt(req.headers['x-forwarded-port'], 10);
     }
 
     // Send input to signatureValidator (auth server or local validator)
@@ -405,30 +398,30 @@ var remoteAuthentication = function(options, entry) {
       method:           req.method.toLowerCase(),
       resource:         req.originalUrl,
       host:             host.name,
-      port:             parseInt(port),
-      authorization:    req.headers.authorization
+      port:             parseInt(port, 10),
+      authorization:    req.headers.authorization,
     }, options));
   };
 
   return function(req, res, next) {
     return authenticate(req).then(function(result) {
       // Validate request hash if one is provided
-      if (typeof(result.hash) === 'string' && result.scheme === 'hawk') {
+      if (typeof result.hash === 'string' && result.scheme === 'hawk') {
         var hash = hawk.crypto.calculatePayloadHash(
           new Buffer(req.text, 'utf-8'),
           'sha256',
           req.headers['content-type']
         );
-        if (!cryptiles.fixedTimeComparison(result.hash, hash)) {
+        if (!crypto.timingSafeEqual(result.hash, hash)) {
           // create a fake auth-failed result with the failed hash
           result = {
             status: 'auth-failed',
             message:
-              "Invalid payload hash: {{hash}}\n" +
-              "Computed payload hash: {{computedHash}}\n" +
-              "This happens when your request carries a signed hash of the " +
-              "payload and the hash doesn't match the hash we've computed " +
-              "on the server-side.",
+              'Invalid payload hash: {{hash}}\n' +
+              'Computed payload hash: {{computedHash}}\n' +
+              'This happens when your request carries a signed hash of the ' +
+              'payload and the hash doesn\'t match the hash we\'ve computed ' +
+              'on the server-side.',
             computedHash: hash,
           };
         }
@@ -476,7 +469,7 @@ var remoteAuthentication = function(options, entry) {
         if (!(scopesets instanceof Array)) {
           var params = scopesets;
           scopesets = _.cloneDeepWith(entry.scopes, function(scope) {
-            if(typeof(scope) === 'string') {
+            if (typeof scope === 'string') {
               return scope.replace(/<([^>]+)>/g, function(match, param) {
                 var value = params[param];
                 return value === undefined ? match : value;
@@ -494,14 +487,14 @@ var remoteAuthentication = function(options, entry) {
         }
         if (!retval && !noReply) {
           res.reportError('InsufficientScopes', [
-            "You do not have sufficient scopes. This request requires you",
-            "to have one of the following sets of scopes:",
-            "{{scopesets}}",
-            "",
-            "You only have the scopes:",
-            "{{scopes}}",
-            "",
-            "In other words you are missing scopes from one of the options:"
+            'You do not have sufficient scopes. This request requires you',
+            'to have one of the following sets of scopes:',
+            '{{scopesets}}',
+            '',
+            'You only have the scopes:',
+            '{{scopes}}',
+            '',
+            'In other words you are missing scopes from one of the options:',
           ].concat(scopesets.map((set, index) => {
             let missing = set.filter(scope => {
               return !scopes.scopeMatch(result.scopes, [[scope]]);
@@ -532,7 +525,7 @@ var remoteAuthentication = function(options, entry) {
  * Errors are reported as internal errors with `name` as API method name.
  */
 var handle = function(handler, context, name) {
-  assert(handler, "No handler is provided");
+  assert(handler, 'No handler is provided');
   return function(req, res) {
     Promise.resolve(null).then(function() {
       return handler.call(context, req, res);
@@ -566,7 +559,7 @@ var handle = function(handler, context, name) {
  */
 var API = function(options) {
   ['title', 'description'].forEach(function(key) {
-    assert(options[key], "Option '" + key + "' must be provided");
+    assert(options[key], 'Option \'' + key + '\' must be provided');
   });
   this._options = _.defaults({
     errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
@@ -577,8 +570,8 @@ var API = function(options) {
     errorCodes:     {},
   });
   _.forEach(this._options.errorCodes, (value, key) => {
-    assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key)
-    assert(typeof(value) === 'number', 'Expected HTTP status code to be int');
+    assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key);
+    assert(typeof value === 'number', 'Expected HTTP status code to be int');
   });
   this._entries = [];
 };
@@ -619,7 +612,7 @@ var stability = {
    *  - API end-points used in critical production.
    *  - APIs so widely used that refactoring would be hard.
    */
-  stable:           'stable'
+  stable:           'stable',
 };
 
 // List of valid stability-levels
@@ -674,15 +667,15 @@ var STABILITY_LEVELS = _.values(stability);
  */
 API.prototype.declare = function(options, handler) {
   ['name', 'method', 'route', 'title', 'description'].forEach(function(key) {
-    assert(options[key], "Option '" + key + "' must be provided");
+    assert(options[key], 'Option \'' + key + '\' must be provided');
   });
   // Default to experimental API end-points
   if (!options.stability) {
     options.stability = stability.experimental;
   }
   assert(STABILITY_LEVELS.indexOf(options.stability) !== -1,
-         "options.stability must be a valid stability-level, " +
-         "see base.API.stability for valid options");
+    'options.stability must be a valid stability-level, ' +
+         'see base.API.stability for valid options');
   options.params = _.defaults({}, options.params || {}, this._options.params);
   options.query = options.query || {};
   _.forEach(options.query, (value, key) => {
@@ -731,7 +724,7 @@ API.prototype.router = function(options) {
     context:              {},
     nonceManager:         nonceManager(),
     signatureValidator:   createRemoteSignatureValidator({
-      authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL
+      authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL,
     }),
     raven:                null,
   });
@@ -739,20 +732,20 @@ API.prototype.router = function(options) {
   // Validate context
   this._options.context.forEach(function(property) {
     assert(options.context[property] !== undefined,
-           "Context must have declared property: '" + property + "'");
+      'Context must have declared property: \'' + property + '\'');
   });
 
   // Authentication strategy (default to remote authentication)
   var authStrategy = function(entry) {
     return remoteAuthentication({
-      signatureValidator: options.signatureValidator
+      signatureValidator: options.signatureValidator,
     }, entry);
   };
 
   // Create caching authentication strategy if possible
   if (options.clientLoader || options.credentials) {
-    throw new Error("options.clientLoader and options.credentials are no longer " +
-                    "supported; use remote signature validation");
+    throw new Error('options.clientLoader and options.credentials are no longer ' +
+                    'supported; use remote signature validation');
   }
 
   if (options.drain || options.component || options.raven) {
@@ -783,7 +776,7 @@ API.prototype.router = function(options) {
         'PUT',
         'DELETE',
         'TRACE',
-        'CONNECT'
+        'CONNECT',
       ].join(','));
       res.header('Access-Control-Request-Method', '*');
       res.header('Access-Control-Allow-Headers',  [
@@ -791,7 +784,7 @@ API.prototype.router = function(options) {
         'Content-Type',
         'Authorization',
         'Accept',
-        'Origin'
+        'Origin',
       ].join(','));
       next();
     });
@@ -814,26 +807,26 @@ API.prototype.router = function(options) {
     // Add authentication, schema validation and handler
     middleware.push(
       errors.BuildReportErrorMethod(
-        entry.name, this._options.errorCodes, (monitor || options.raven),
+        entry.name, this._options.errorCodes, monitor || options.raven,
         entry.cleanPayload
       ),
       bodyParser.text({
         limit:          options.inputLimit,
-        type:           'application/json'
+        type:           'application/json',
       }), function(req, res, next) {
         // Use JSON middleware, and add hack to store text as req.text
-        if (typeof(req.body) === 'string' && req.body !== '') {
+        if (typeof req.body === 'string' && req.body !== '') {
           req.text = req.body;
           try {
             req.body = JSON.parse(req.text);
             if (!(req.body instanceof Object)) {
-              throw new Error("Must be an object or array");
+              throw new Error('Must be an object or array');
             }
           } catch (err) {
             return res.reportError(
-              'MalformedPayload', "Failed to parse JSON: {{errMsg}}", {
-                errMsg: err.message
-            });
+              'MalformedPayload', 'Failed to parse JSON: {{errMsg}}', {
+                errMsg: err.message,
+              });
           }
         } else {
           req.text = '';
@@ -856,7 +849,6 @@ API.prototype.router = function(options) {
   return router;
 };
 
-
 /**
  * Construct API reference as JSON
  *
@@ -866,11 +858,11 @@ API.prototype.router = function(options) {
  * }
  */
 API.prototype.reference = function(options) {
-  assert(options,         "Options is required");
-  assert(options.baseUrl, "A 'baseUrl' must be provided");
+  assert(options,         'Options is required');
+  assert(options.baseUrl, 'A \'baseUrl\' must be provided');
   var reference = {
     version:            0,
-    '$schema':          'http://schemas.taskcluster.net/base/v1/' +
+    $schema:          'http://schemas.taskcluster.net/base/v1/' +
                         'api-reference.json#',
     title:              this._options.title,
     description:        this._options.description,
@@ -896,7 +888,7 @@ API.prototype.reference = function(options) {
         name:           entry.name,
         stability:      entry.stability,
         title:          entry.title,
-        description:    entry.description
+        description:    entry.description,
       };
       if (entry.scopes) {
         retval.scopes = entry.scopes;
@@ -908,7 +900,7 @@ API.prototype.reference = function(options) {
         retval.output = entry.output;
       }
       return retval;
-    })
+    }),
   };
 
   var ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
@@ -920,11 +912,11 @@ API.prototype.reference = function(options) {
   var refSchema = 'http://schemas.taskcluster.net/base/v1/api-reference.json#';
   var valid = validate(reference, refSchema);
   if (!valid) {
-    debug("API.references(): Failed to validate against schema, errors: %j " +
-          "reference: %j", validate.errors, reference);
-    debug("Reference:\n%s", JSON.stringify(reference, null, 2));
-    debug("Errors:\n%s", JSON.stringify(validate.errors, null, 2));
-    throw new Error("API.references(): Failed to validate against schema");
+    debug('API.references(): Failed to validate against schema, errors: %j ' +
+          'reference: %j', validate.errors, reference);
+    debug('Reference:\n%s', JSON.stringify(reference, null, 2));
+    debug('Errors:\n%s', JSON.stringify(validate.errors, null, 2));
+    throw new Error('API.references(): Failed to validate against schema');
   }
 
   return reference;
@@ -950,11 +942,11 @@ API.prototype.reference = function(options) {
 API.prototype.publish = function(options) {
   // Provide default options
   options = _.defaults({}, options, {
-    referenceBucket:    'references.taskcluster.net'
+    referenceBucket:    'references.taskcluster.net',
   });
   // Check that required options are provided
   ['baseUrl', 'referencePrefix', 'aws'].forEach(function(key) {
-    assert(options[key], "Option '" + key + "' must be provided");
+    assert(options[key], 'Option \'' + key + '\' must be provided');
   });
   // Create S3 object
   var s3 = new aws.S3(options.aws);
@@ -963,7 +955,7 @@ API.prototype.publish = function(options) {
     Bucket:           options.referenceBucket,
     Key:              options.referencePrefix,
     Body:             JSON.stringify(this.reference(options), undefined, 2),
-    ContentType:      'application/json'
+    ContentType:      'application/json',
   }).promise();
 };
 

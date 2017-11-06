@@ -1,7 +1,7 @@
 env:
   global:
   - CXX=g++-4.8
-  - DEBUG='* -superagent -express:* -mocha:* -babel'
+  - DEBUG='* -superagent -express:* -mocha:* -babel -eslint'
 language: node_js
 sudo: false
 addons:
@@ -11,13 +11,10 @@ addons:
     packages:
     - g++-4.8
 node_js:
-- '0.12'
 - '4'
 - '6'
 - '7'
-before_install:
-- openssl aes-256-cbc -K $encrypted_438b1cd9e4e0_key -iv $encrypted_438b1cd9e4e0_iv
-  -in taskcluster-base-test.conf.json.enc -out taskcluster-base-test.conf.json -d
+- '8'
 notifications:
   irc:
     channels:
@@ -32,6 +29,7 @@ notifications:
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
+  skip_cleanup: true
   api_key:
     secure: y8nQYBS0JMxxBa6q31t9gBSrxiLaGZy9bKl4RlsUlSYlg3aO4bq8wn7gMSR9On1xS/jLJxDD9GNTBy8fUbV0K/4JfTXac3ymSHVUaxhebXFd2pykMf38Ee/5UVZp1a3JUXhRdSz9syeqGzAct7MrTQRsXaSBmcUw9lOd/KqcrtSd6kxqgaJeRTxYmJbB9NUjaJTBHpJ3bGKlqDirRbW9/ndwBs4t/h49bhwxCmhAjyc+Eu98Uk3kSfaY2K+lYj5fG283zW8JVASfBY3Yn44GbDmBRcQu8QSzYHZPsQWKjc8fJAG9S0I849+pW+5u8JQIVY9UsVrRhd89v1KBFxVMrBkJMSPxU16Due+jTcC7ZVHL15oCLSiuxUbW7ezdijkiFQANkg3KmDbuJeCmCTq/gZadLWMrMIvuf4hgWaVeQxj5Cdu5o68etRU73ccOjKu8QNttg6hegjNO3JEmgQLtfNW15y635Y694W9n/OwpOIa2yNtVh+iVOLEMbW6/KW4z8aN0bltV6xQ1PdpYukIj73MKm+Afaf9jC5vTke2p3zQrCL6g2X2D12OKqv/YrVwVzS96RUfOQGX7gq4TCkiaJSpULrMwqRlDDozl2AWEE4fGK47Z0duUxpXp24+aYRrHWcITzyjkPZgHrllqvOtTvC8x7Zxtvnh56FUpT7WuqpQ=
   on:
