@@ -7,8 +7,9 @@
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
     "prepublish": "npm run compile",
-    "pretest": "npm run compile",
-    "test": "mocha .test/lint.js .test/*_test.js"
+    "lint": "eslint src/*.js test/*.js",
+    "pretest": "yarn lint && npm run compile",
+    "test": "mocha .test/*_test.js"
   },
   "files": [
     "src",
@@ -19,28 +20,26 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-app.git"
   },
   "dependencies": {
-    "babel-runtime": "^6.0.14",
+    "babel-runtime": "^6.26.0",
     "content-security-policy": "^0.3.0",
-    "debug": "^2.2.0",
-    "express": "4.13.4",
-    "express-sslify": "1.0.1",
-    "hsts": "^1.0.0",
-    "lodash": "4.13.1",
-    "morgan-debug": "^1.0.0",
-    "promise": "^7.0.4"
+    "debug": "^3.1.0",
+    "express": "4.16.2",
+    "express-sslify": "1.2.0",
+    "hsts": "^2.1.0",
+    "lodash": "4.17.4",
+    "morgan": "^1.9.0",
+    "morgan-debug": "^2.0.0",
+    "promise": "^8.0.1"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
-    "babel-core": "^6.9.0",
-    "babel-eslint": "^6.0.4",
-    "babel-preset-taskcluster": "^2.3.0",
-    "eslint": "^2.10.2",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.2",
-    "mocha": "2.5.3",
-    "mocha-eslint": "^4.1.0",
-    "source-map-support": "^0.4.0",
-    "superagent": "3.5.1"
+    "babel-core": "^6.26.0",
+    "babel-preset-taskcluster": "^3.0.0",
+    "eslint": "^4.10.0",
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "4.0.1",
+    "source-map-support": "^0.5.0",
+    "superagent": "3.8.0"
   },
   "main": "./lib/app.js"
 }

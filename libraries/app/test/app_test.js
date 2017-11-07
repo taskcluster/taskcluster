@@ -25,8 +25,8 @@ suite('app', function() {
     var server = await app.createServer();
     var res = await request.get('http://localhost:1459/test');
     assert(res.ok, 'Got response');
-    assert(res.text == 'Okay this works', 'Got the right text');
-    assert(res.headers['strict-transport-security'] === 'max-age=7776000');
+    assert.equal(res.text, 'Okay this works', 'Got the right text');
+    assert.equal(res.headers['strict-transport-security'], 'max-age=7776000000; includeSubDomains');
     return server.terminate();
   });
 });
