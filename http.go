@@ -43,7 +43,7 @@ type CallSummary struct {
 }
 
 func (cs *CallSummary) String() string {
-	return fmt.Sprintf("\nCALL SUMMARY\n============\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
+	return fmt.Sprintf("\nCALL SUMMARY\n============\n%s %s\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.HTTPRequest.Method, cs.HTTPRequest.URL, cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
 }
 
 type APICall struct {
