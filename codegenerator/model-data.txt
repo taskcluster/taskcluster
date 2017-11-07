@@ -1,4 +1,4 @@
-Generated: 1509560703
+Generated: 1510060992
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9018,6 +9018,10 @@ OneOf
         Items
           Properties
             Property 'headers' =
+              Additional Properties  = 'Type                   = 'string'
+              TypeName               = ''
+              SourceURL              = ''
+              '
               Description            = 'Headers of request'
               Type                   = 'object'
               TypeName               = 'Headers'
@@ -9201,6 +9205,10 @@ Properties
     Items
       Properties
         Property 'headers' =
+          Additional Properties  = 'Type                   = 'string'
+          TypeName               = ''
+          SourceURL              = ''
+          '
           Description            = 'Headers of request'
           Type                   = 'object'
           TypeName               = 'Headers'
