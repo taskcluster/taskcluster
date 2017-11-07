@@ -519,39 +519,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       // TODO: Figure out how to set the ETag as a header on this response
       return res.redirect(303, await this.s3Controller.generateGetUrl(getOpts));
     } else if (artifact.details.bucket === this.publicBlobBucket) {
-      let region = this.regionResolver.getRegion(req);
-
-      // Let's find and figure out whether to skip caches
-      let skipCacheHeader = (req.headers['x-taskcluster-skip-cache'] || '').toLowerCase();
-      if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
-        skipCacheHeader = true;
-      } else {
-        skipCacheHeader = false;
-      }
-
-      let canonicalUrl = await this.s3Controller.generateGetUrl(getOpts);
-
-      if (region === artifact.details.region || skipCacheHeader) {
-        return res.redirect(303, canonicalUrl);
-      } else if (!region) {
-        // TODO: Change this so we munge the URL into a cloud-front URL This is
-        // not part of the following else if block because this is where the
-        // cloud-front smarts might end up living
-        return res.redirect(303, canonicalUrl);
-      } else {
-        let cloudMirrorPath = [
-          'v1',
-          'redirect',
-          's3',
-          region,
-          encodeURIComponent(canonicalUrl),
-        ].join('/');
-        return res.redirect(303, urllib.format({
-          protocol: 'https:',
-          host: this.cloudMirrorHost,
-          pathname: cloudMirrorPath,
-        }));
-      }
+      return res.redirect(303, await this.s3Controller.generateGetUrl(getOpts));
     } else {
       throw new Error('Using a bucket we should not');
     }
