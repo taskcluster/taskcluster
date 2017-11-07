@@ -20,24 +20,36 @@ import (
 func init() {
 	cmd := &cobra.Command{
 		Use:   "signin",
-		Short: "Obtain temporary credentials from login.taskcluster.net.",
-		Long: `The command 'taskcluster signin' will open your web-browser to
-login.taskcluster.net where you can sign-in and obtain temporary
-credentials.
+		Short: "Get Taskcluster credentials and export to the shell",
+		Long: `The command 'taskcluster signin', run on a desktop system, will use
+your browser to get Taskcluster credentials for use with other commands.
 
-Once signed in, you can click the 'Grant Access' button which
-will redirect you to localhost where this command will be listening
-and save the temporary credentials to local configuration file.`,
+Use it like this:
+
+$ eval ` + "`taskcluster signin`" + `
+
+You might make this easy to use with an alias in ~/.bashrc:
+
+alias tc-signin="eval ` + "`taskcluster signin`" + `"
+
+This will set environment variables in your shell session containing the credentials.
+Note that the JS and Python client recognize the same environment variables, so any
+tools using those libraries can also benefit from this signin method.`,
+
 		RunE: cmdSignin,
 	}
+	cmd.Flags().Bool("csh", false, "Output csh-style environment variables (default is Bourne shell)")
+	cmd.Flags().StringP("name", "n", "cli", "Name of the credential to create/reset.")
+	cmd.Flags().String("expires", "1d", "Lifetime for this client (keep it short to avoid risk from accidental disclosure).")
+	cmd.Flags().StringArrayP("scope", "s", []string{"*"}, "(can be repeated) Scopes for this client (limit this to avoid risk from accidental disclosure).")
 	cmd.Flags().IntP("port", "p", 0, "Port to use; defaults to random ephemeral port.")
 
 	root.Command.AddCommand(cmd)
 
 	config.RegisterOptions("signin", map[string]config.OptionDefinition{
-		"loginUrl": config.OptionDefinition{
-			Description: "URL for the login service.",
-			Default:     "https://login.taskcluster.net",
+		"toolsUrl": config.OptionDefinition{
+			Description: "URL for the tools service.",
+			Default:     "https://tools.taskcluster.net",
 			Validate: func(value interface{}) error {
 				if _, ok := value.(string); !ok {
 					return errors.New("Must be a string")
@@ -50,7 +62,7 @@ and save the temporary credentials to local configuration file.`,
 
 func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Load configuration
-	fmt.Fprintln(cmd.OutOrStdout(), "Starting")
+	fmt.Fprintln(cmd.OutOrStderr(), "Starting")
 
 	// Find port, choose 0 meaning random port, if none
 	port, _ := cmd.Flags().GetInt("port")
@@ -65,36 +77,26 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	var serr error
 	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
-		config.Configuration["config"]["clientId"] = qs.Get("clientId")
-		config.Configuration["config"]["accessToken"] = qs.Get("accessToken")
-		config.Configuration["config"]["certificate"] = qs.Get("certificate")
-
-		serr = config.Save(config.Configuration)
-		if serr == nil {
-			fmt.Fprintln(cmd.OutOrStdout(), "Credentials saved in configuration file.")
+		csh, _ := cmd.Flags().GetBool("csh")
+		if csh {
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '" + qs.Get("clientId") + "'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '" + qs.Get("accessToken") + "'")
+		} else {
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='" + qs.Get("clientId") + "'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='" + qs.Get("accessToken") + "'")
 		}
+		fmt.Fprintln(cmd.OutOrStderr(), "Credentials output as environment variables")
 
-		title := "Successful"
-		result := "You have successfully signed in."
-		if serr != nil {
-			title = "Failed"
-			result = "Failed to save credentials!"
-		}
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`
 			<!doctype html>
 			<html>
 				<head>
-					<title>Sign-In ` + title + `</title>
-					<script>
-						// Close the window after 500ms
-						setTimeout(function() {
-							window.close();
-						}, 500);
-					</script>
+					<title>Sign-In Successful</title>
 				</head>
 				<body>
-					<h1>` + result + `.</h1>
+					<h1>You have successfully signed in</h1>
+					<p>You may now close this window.</p>
 				</body>
 			</html>
 		`))
@@ -111,17 +113,23 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Construct URL for login service and open it
-	target := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
-	description := url.QueryEscape(
-		`Login and click the "Grant Access" button to transfer
-		temporary credentials to the taskcluster CLI client`,
-	)
-	loginURL := config.Configuration["signin"]["loginUrl"].(string)
-	loginURL += "/?target=" + url.QueryEscape(target) + "&description=" + description
+	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
+	description := url.QueryEscape("Temporary client for use on the command line")
+	loginURL := config.Configuration["signin"]["toolsUrl"].(string) + "/auth/clients/new";
+	name, _ := cmd.Flags().GetString("name")
+	loginURL += "?name=" + url.QueryEscape(name)
+	loginURL += "&description=" + description
+	scopes, _ := cmd.Flags().GetStringArray("scope")
+	for i := range scopes {
+		loginURL += "&scope=" + scopes[i]
+	}
+	expires, _ := cmd.Flags().GetString("expires")
+	loginURL += "&expires=" + url.QueryEscape(expires)
+	loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
 
 	// Open browser
-	fmt.Fprintln(cmd.OutOrStdout(), "Listening for a callback on: "+target)
-	fmt.Fprintln(cmd.OutOrStdout(), "Opening URL: "+loginURL)
+	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
+	fmt.Fprintln(cmd.OutOrStderr(), "Opening URL: "+loginURL)
 	browser.OpenURL(loginURL)
 
 	// Start serving
