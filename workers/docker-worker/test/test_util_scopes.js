@@ -11,8 +11,8 @@ suite('test lib/util/scopes', function() {
     ['starScope',   'pfx:', { vol1: '/vol1', vol2: '/vol2' }, ['pfx:*'], true],
     ['noResources', 'pfx:', {}, [], true],
   ].forEach((t)=> {
-    test(t[0], function() {
-        assert.equal(scopes.hasPrefixedScopes(t[1], t[2], t[3]), t[4]);
+    test(t[0], async function() {
+        assert.equal(await scopes.hasPrefixedScopes(t[1], t[2], t[3]), t[4]);
     });
   });
 });
