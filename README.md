@@ -28,8 +28,8 @@ course.
  * [linux-386](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/linux-386/taskcluster)
  * [linux-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/linux-amd64/taskcluster)
  * [openbsd-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/openbsd-amd64/taskcluster)
- * [windows-386](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-386/taskcluster)
- * [windows-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-amd64/taskcluster)
+ * [windows-386](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-386/taskcluster.exe)
+ * [windows-amd64](https://index.taskcluster.net/v1/task/project.taskcluster.taskcluster-cli.latest/artifacts/public/windows-amd64/taskcluster.exe)
 
 ## Development
 
