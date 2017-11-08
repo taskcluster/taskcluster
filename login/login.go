@@ -41,32 +41,46 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
+const (
+	DefaultBaseURL = "https://login.taskcluster.net/v1"
+)
+
 type Login tcclient.Client
 
-// Returns a pointer to Login, configured to run against production.  If you
-// wish to point at a different API endpoint url, set BaseURL to the preferred
-// url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored).
+// New returns a Login client, configured to run against production. Pass in
+// nil to load credentials from TASKCLUSTER_* environment variables. The
+// returned client is mutable, so returned settings can be altered.
 //
-// For example:
-//  creds := &tcclient.Credentials{
-//  	ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  myLogin, err := login.New(nil)                           // credentials loaded from TASKCLUSTER_* env vars
+//  if err != nil {
+//      // handle malformed credentials...
 //  }
-//  myLogin := login.New(creds)                              // set credentials
-//  myLogin.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myLogin.BaseURL = "http://localhost:1234/api/Login/v1"   // alternative API endpoint (production by default)
 //  data, err := myLogin.OidcCredentials(.....)              // for example, call the OidcCredentials(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Login {
+//
+// If authentication is not required, use NewNoAuth() instead.
+func New(credentials *tcclient.Credentials) (*Login, error) {
+	if credentials == nil {
+		credentials = tcclient.CredentialsFromEnvVars()
+	}
+	err := credentials.Validate()
 	myLogin := Login(tcclient.Client{
 		Credentials:  credentials,
-		BaseURL:      "https://login.taskcluster.net/v1",
+		BaseURL:      DefaultBaseURL,
 		Authenticate: true,
+	})
+	return &myLogin, err
+}
+
+// NewNoAuth returns a Login client with authentication disabled. This is
+// useful when calling taskcluster APIs that do not require authorization.
+func NewNoAuth() *Login {
+	myLogin := Login(tcclient.Client{
+		BaseURL:      DefaultBaseURL,
+		Authenticate: false,
 	})
 	return &myLogin
 }

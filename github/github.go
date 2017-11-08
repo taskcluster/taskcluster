@@ -48,32 +48,46 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
+const (
+	DefaultBaseURL = "https://github.taskcluster.net/v1"
+)
+
 type Github tcclient.Client
 
-// Returns a pointer to Github, configured to run against production.  If you
-// wish to point at a different API endpoint url, set BaseURL to the preferred
-// url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored).
+// New returns a Github client, configured to run against production. Pass in
+// nil to load credentials from TASKCLUSTER_* environment variables. The
+// returned client is mutable, so returned settings can be altered.
 //
-// For example:
-//  creds := &tcclient.Credentials{
-//  	ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  myGithub, err := github.New(nil)                           // credentials loaded from TASKCLUSTER_* env vars
+//  if err != nil {
+//      // handle malformed credentials...
 //  }
-//  myGithub := github.New(creds)                              // set credentials
-//  myGithub.Authenticate = false                              // disable authentication (creds above are now ignored)
 //  myGithub.BaseURL = "http://localhost:1234/api/Github/v1"   // alternative API endpoint (production by default)
 //  err := myGithub.GithubWebHookConsumer(.....)               // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Github {
+//
+// If authentication is not required, use NewNoAuth() instead.
+func New(credentials *tcclient.Credentials) (*Github, error) {
+	if credentials == nil {
+		credentials = tcclient.CredentialsFromEnvVars()
+	}
+	err := credentials.Validate()
 	myGithub := Github(tcclient.Client{
 		Credentials:  credentials,
-		BaseURL:      "https://github.taskcluster.net/v1",
+		BaseURL:      DefaultBaseURL,
 		Authenticate: true,
+	})
+	return &myGithub, err
+}
+
+// NewNoAuth returns a Github client with authentication disabled. This is
+// useful when calling taskcluster APIs that do not require authorization.
+func NewNoAuth() *Github {
+	myGithub := Github(tcclient.Client{
+		BaseURL:      DefaultBaseURL,
+		Authenticate: false,
 	})
 	return &myGithub
 }

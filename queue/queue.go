@@ -49,32 +49,46 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
+const (
+	DefaultBaseURL = "https://queue.taskcluster.net/v1"
+)
+
 type Queue tcclient.Client
 
-// Returns a pointer to Queue, configured to run against production.  If you
-// wish to point at a different API endpoint url, set BaseURL to the preferred
-// url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored).
+// New returns a Queue client, configured to run against production. Pass in
+// nil to load credentials from TASKCLUSTER_* environment variables. The
+// returned client is mutable, so returned settings can be altered.
 //
-// For example:
-//  creds := &tcclient.Credentials{
-//  	ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  myQueue, err := queue.New(nil)                           // credentials loaded from TASKCLUSTER_* env vars
+//  if err != nil {
+//      // handle malformed credentials...
 //  }
-//  myQueue := queue.New(creds)                              // set credentials
-//  myQueue.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
 //  data, err := myQueue.Task(.....)                         // for example, call the Task(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Queue {
+//
+// If authentication is not required, use NewNoAuth() instead.
+func New(credentials *tcclient.Credentials) (*Queue, error) {
+	if credentials == nil {
+		credentials = tcclient.CredentialsFromEnvVars()
+	}
+	err := credentials.Validate()
 	myQueue := Queue(tcclient.Client{
 		Credentials:  credentials,
-		BaseURL:      "https://queue.taskcluster.net/v1",
+		BaseURL:      DefaultBaseURL,
 		Authenticate: true,
+	})
+	return &myQueue, err
+}
+
+// NewNoAuth returns a Queue client with authentication disabled. This is
+// useful when calling taskcluster APIs that do not require authorization.
+func NewNoAuth() *Queue {
+	myQueue := Queue(tcclient.Client{
+		BaseURL:      DefaultBaseURL,
+		Authenticate: false,
 	})
 	return &myQueue
 }

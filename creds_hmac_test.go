@@ -59,7 +59,7 @@ func testCreds(t *testing.T, tc *TempCredsTestCase) {
 	}
 	cert.Start = start.UnixNano() / 1e6
 	cert.Expiry = expiry.UnixNano() / 1e6
-	cert.updateSignature(permCreds.AccessToken, tempCreds.ClientID)
+	cert.Sign(permCreds.AccessToken, tempCreds.ClientID)
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
 		t.Fatalf("Could not convert updated certificate into a string: %s", err)
