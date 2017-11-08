@@ -140,8 +140,11 @@ func NewQueue(t *testing.T) (myQueue *queue.Queue) {
 		AccessToken: config.AccessToken,
 		Certificate: config.Certificate,
 	}
-	myQueue = queue.New(creds)
-
+	var err error
+	myQueue, err = queue.New(creds)
+	if err != nil {
+		t.Fatalf("Invalid credentials: %v", err)
+	}
 	return
 }
 
