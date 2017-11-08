@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +20,9 @@ import (
 
 // Credentials represents the set of credentials required to access protected Taskcluster HTTP APIs.
 type Credentials struct {
-	ClientID    string `json:"clientId"`
+	// ClientID must conform to ^[A-Za-z0-9@/:.+|_-]+$
+	ClientID string `json:"clientId"`
+	// AccessToken must conform to ^[a-zA-Z0-9_-]{22,66}$
 	AccessToken string `json:"accessToken"`
 	// Certificate used only for temporary credentials
 	Certificate string `json:"certificate"`
@@ -32,6 +36,11 @@ type Credentials struct {
 	// See https://docs.taskcluster.net/manual/apis/authorized-scopes
 	AuthorizedScopes []string `json:"authorizedScopes"`
 }
+
+var (
+	RegExpClientID    *regexp.Regexp = regexp.MustCompile(`^[A-Za-z0-9@/:.+|_-]+$`)
+	RegExpAccessToken *regexp.Regexp = regexp.MustCompile(`^[a-zA-Z0-9_-]{22,66}$`)
+)
 
 func (creds *Credentials) String() string {
 	return fmt.Sprintf(
@@ -49,13 +58,9 @@ func (creds *Credentials) String() string {
 type Client struct {
 	Credentials *Credentials
 	// The URL of the API endpoint to hit.
-	// Use "https://auth.taskcluster.net/v1" for production.
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with BaseURL set to production.
+	// For example, "https://auth.taskcluster.net/v1" for production auth service.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	// Please note calling auth.New(clientId string, accessToken string) is an
-	// alternative way to create an Auth object with Authenticate set to true.
 	Authenticate bool
 	// HTTPClient is a ReducedHTTPClient to be used for the http call instead of
 	// the DefaultHTTPClient.
@@ -109,14 +114,14 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID stri
 		Start:     start.UnixNano() / 1e6,
 		Expiry:    expiry.UnixNano() / 1e6,
 		Seed:      slugid.V4() + slugid.V4(),
-		Signature: "", // gets set in updateSignature() method below
+		Signature: "", // gets set in Sign() method below
 	}
 	// include the issuer iff this is a named credential
 	if tempClientID != "" {
 		cert.Issuer = permaCreds.ClientID
 	}
 
-	cert.updateSignature(permaCreds.AccessToken, tempClientID)
+	cert.Sign(permaCreds.AccessToken, tempClientID)
 
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
@@ -147,7 +152,7 @@ func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration
 	return permaCreds.CreateNamedTemporaryCredentials("", duration, scopes...)
 }
 
-func (cert *Certificate) updateSignature(accessToken string, tempClientID string) (err error) {
+func (cert *Certificate) Sign(accessToken string, tempClientID string) (err error) {
 	lines := []string{"version:" + strconv.Itoa(cert.Version)}
 	// iff this is a named credential, include clientId and issuer
 	if cert.Issuer != "" {
@@ -189,9 +194,84 @@ func generateTemporaryAccessToken(permAccessToken, seed string) (tempAccessToken
 // certificate has been specified but cannot be parsed, an error is returned,
 // and cert is an empty certificate (rather than nil).
 func (creds *Credentials) Cert() (cert *Certificate, err error) {
-	if creds.Certificate != "" {
-		cert = new(Certificate)
-		err = json.Unmarshal([]byte(creds.Certificate), cert)
+	if creds.Certificate == "" {
+		return
 	}
+	cert = new(Certificate)
+	err = json.Unmarshal([]byte(creds.Certificate), cert)
 	return
+}
+
+// Validate performs a sanity check of the given certificate and returns an
+// error if it is able to determine that the certificate is not malformed,
+// expired, or for any other reason invalid. Note, it does not perform any
+// network transactions against any live services, it only performs sanity
+// checks that can be executed locally. If cert is nil, an error is returned.
+func (cert *Certificate) Validate() error {
+	if cert == nil {
+		return fmt.Errorf("nil certificate does not pass certificate validation")
+	}
+	if cert.Version < 1 {
+		return fmt.Errorf("Certificate version less than 1: %v", cert.Version)
+	}
+	now := time.Now().UnixNano() / 1e6
+	if now < cert.Start {
+		return fmt.Errorf("Certificate validity starts in the future (now = %v; start = %v)", now, cert.Start)
+	}
+	if now > cert.Expiry {
+		return fmt.Errorf("Certificate has expired (now = %v; expiry = %v)", now, cert.Expiry)
+	}
+	if durationMillis := cert.Expiry - cert.Start; durationMillis > 31*24*60*60*1000 {
+		return fmt.Errorf("Certificate is valid for more than 31 days (%v milliseconds)", durationMillis)
+	}
+	if len(cert.Seed) < 44 {
+		return fmt.Errorf("Certificate seed not at least 44 bytes: '%v'", cert.Seed)
+	}
+	if _, err := base64.StdEncoding.DecodeString(cert.Signature); err != nil {
+		return fmt.Errorf("Certificate signature is not valid base64 content: %v", err)
+	}
+	return nil
+}
+
+// CredentialsFromEnvVars creates and returns Taskcluster credentials
+// initialised from the values of environment variables:
+//  TASKCLUSTER_CLIENT_ID
+//  TASKCLUSTER_ACCESS_TOKEN
+//  TASKCLUSTER_CERTIFICATE
+// No validation is performed on the loaded values, and unset environment
+// variables will result in empty string values.
+func CredentialsFromEnvVars() *Credentials {
+	return &Credentials{
+		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+	}
+}
+
+// Validate performs local lexical validation of creds to ensure the
+// credentials are syntactically valid and returns a non-nil error if they are
+// not. No authentication is performed, so a call to Validate with invalid
+// credentials that are syntactically valid will not return an error.
+func (creds *Credentials) Validate() error {
+	if creds == nil {
+		return fmt.Errorf("Nil credentials are not valid")
+	}
+	// Special case: see https://docs.taskcluster.net/reference/platform/taskcluster-auth/references/api#testAuthenticate
+	if creds.ClientID == "tester" && creds.AccessToken == "no-secret" {
+		return nil
+	}
+	if !RegExpClientID.MatchString(creds.ClientID) {
+		return fmt.Errorf("Client ID %v does not match regular expression %v", creds.ClientID, RegExpAccessToken)
+	}
+	if !RegExpAccessToken.MatchString(creds.AccessToken) {
+		return fmt.Errorf("Access Token does not match regular expression %v", RegExpAccessToken)
+	}
+	cert, err := creds.Cert()
+	if err != nil {
+		return fmt.Errorf("Certificate for client ID %v is invalid: %v", creds.ClientID, err)
+	}
+	if cert != nil {
+		return cert.Validate()
+	}
+	return nil
 }

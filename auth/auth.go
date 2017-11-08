@@ -79,32 +79,46 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
+const (
+	DefaultBaseURL = "https://auth.taskcluster.net/v1"
+)
+
 type Auth tcclient.Client
 
-// Returns a pointer to Auth, configured to run against production.  If you
-// wish to point at a different API endpoint url, set BaseURL to the preferred
-// url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored).
+// New returns an Auth client, configured to run against production. Pass in
+// nil to load credentials from TASKCLUSTER_* environment variables. The
+// returned client is mutable, so returned settings can be altered.
 //
-// For example:
-//  creds := &tcclient.Credentials{
-//  	ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  myAuth, err := auth.New(nil)                           // credentials loaded from TASKCLUSTER_* env vars
+//  if err != nil {
+//      // handle malformed credentials...
 //  }
-//  myAuth := auth.New(creds)                              // set credentials
-//  myAuth.Authenticate = false                            // disable authentication (creds above are now ignored)
 //  myAuth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
 //  data, err := myAuth.ListClients(.....)                 // for example, call the ListClients(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Auth {
+//
+// If authentication is not required, use NewNoAuth() instead.
+func New(credentials *tcclient.Credentials) (*Auth, error) {
+	if credentials == nil {
+		credentials = tcclient.CredentialsFromEnvVars()
+	}
+	err := credentials.Validate()
 	myAuth := Auth(tcclient.Client{
 		Credentials:  credentials,
-		BaseURL:      "https://auth.taskcluster.net/v1",
+		BaseURL:      DefaultBaseURL,
 		Authenticate: true,
+	})
+	return &myAuth, err
+}
+
+// NewNoAuth returns an Auth client with authentication disabled. This is
+// useful when calling taskcluster APIs that do not require authorization.
+func NewNoAuth() *Auth {
+	myAuth := Auth(tcclient.Client{
+		BaseURL:      DefaultBaseURL,
+		Authenticate: false,
 	})
 	return &myAuth
 }

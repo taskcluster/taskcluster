@@ -3,7 +3,6 @@ package auth_test
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -15,13 +14,18 @@ func Example_scopes() {
 	// Note: the API call we will make doesn't need credentials as it supplies public information.
 	// However, for the purpose of demonstrating the general case, this is how you can provide
 	// credentials for API calls that require them.
-	myAuth := auth.New(
+	myAuth, err := auth.New(
 		&tcclient.Credentials{
-			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+			ClientID:    "SOME-CLIENT-ID",
+			AccessToken: "SOME-WELL-FORMED-ACCESS-TOKEN",
 		},
 	)
+
+	// Handle any errors...
+	if err != nil {
+		log.Printf("Error occurred: %s", err)
+		return
+	}
 
 	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
 	resp, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
@@ -48,12 +52,9 @@ func Example_updateClient() {
 	// In this example we will connect to a local auth server running on
 	// localhost with authentication disabled. This would also work for
 	// connecting to a local taskcluster-proxy instance.
-	myAuth := auth.New(
-		&tcclient.Credentials{},
-	)
+	myAuth := auth.NewNoAuth()
 
-	// Disable authentication and set target url to localhost url...
-	myAuth.Authenticate = false
+	// Set target url to localhost url...
 	myAuth.BaseURL = "http://localhost:60024/v1"
 
 	// Update client id "b2g-power-tests" with new description and expiry...

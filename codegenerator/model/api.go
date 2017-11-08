@@ -117,40 +117,46 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
+const (
+	DefaultBaseURL = "` + api.BaseURL + `"
+)
+
 type ` + api.apiDef.Name + ` tcclient.Client
 
-// Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
-// wish to point at a different API endpoint url, set BaseURL to the preferred
-// url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored).
+// New returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client, configured to run against production. Pass in
+// nil to load credentials from TASKCLUSTER_* environment variables. The
+// returned client is mutable, so returned settings can be altered.
 //
 `
-	content += "// For example:\n"
-	content += "//  creds := &tcclient.Credentials{\n"
-	content += "//  	ClientID:    os.Getenv(\"TASKCLUSTER_CLIENT_ID\"),\n"
-	content += "//  	AccessToken: os.Getenv(\"TASKCLUSTER_ACCESS_TOKEN\"),\n"
-	content += "//  	Certificate: os.Getenv(\"TASKCLUSTER_CERTIFICATE\"),\n"
-	content += "//  }\n"
-
 	// Here we want to add spaces between commands and comments, such that the comments line up, e.g.:
 	//
-	//  myQueue := queue.New(creds)                             // set credentials
-	//  myQueue.Authenticate = false                            // disable authentication (creds above are now ignored)
-	//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"  // alternative API endpoint (production by default)
-	//  data, err := myQueue.Task(.....)                        // for example, call the Task(.....) API endpoint (described further down)...
+	//  myQueue, credsError := queue.New(nil)                    // credentials loaded from TASKCLUSTER_* environment variables
+	//  if credsError != nil {
+	//      // handle malformed credentials...
+	//  }
+	//  myQueue.Authenticate = false                             // disable authentication (creds above are now ignored)
+	//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
+	//  data, err := myQueue.Task(.....)                         // for example, call the Task(.....) API endpoint (described further down)...
 	//
 	// We do this by generating the code, then calculating the max length of one of the code lines,
 	// and then padding with spaces based on max line length and adding comments.
 
 	commentedSection := [][]string{
 		{
-			"//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(creds)",
-			"// set credentials",
+			"//  " + exampleVarName + ", err := " + api.apiDef.PackageName + ".New(nil)",
+			"// credentials loaded from TASKCLUSTER_* env vars",
 		},
 		{
-			"//  " + exampleVarName + ".Authenticate = false",
-			"// disable authentication (creds above are now ignored)",
+			"//  if err != nil {",
+			"",
+		},
+		{
+			"//      // handle malformed credentials...",
+			"",
+		},
+		{
+			"//  }",
+			"",
 		},
 		{
 			"//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"",
@@ -169,21 +175,42 @@ type ` + api.apiDef.Name + ` tcclient.Client
 		}
 	}
 	for _, j := range commentedSection {
-		content += j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n"
+		if len(j[1]) > 0 {
+			content += j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n"
+		} else {
+			content += j[0] + "\n"
+		}
 	}
 
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
-	content += "func New(credentials *tcclient.Credentials) *" + api.apiDef.Name + " {\n"
+	content += "//\n"
+	content += "// If authentication is not required, use NewNoAuth() instead.\n"
+	content += "func New(credentials *tcclient.Credentials) (*" + api.apiDef.Name + ", error) {\n"
+	content += "\tif credentials == nil {\n"
+	content += "\t\tcredentials = tcclient.CredentialsFromEnvVars()\n"
+	content += "\t}\n"
+	content += "\terr := credentials.Validate()\n"
 	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.Client{\n"
 	content += "\t\tCredentials: credentials,\n"
-	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
+	content += "\t\tBaseURL: DefaultBaseURL,\n"
 	content += "\t\tAuthenticate: true,\n"
 	content += "\t})\n"
-	content += "\treturn &" + exampleVarName + "\n"
+	content += "\treturn &" + exampleVarName + ", err\n"
 	content += "}\n"
 	content += "\n"
+	content += `// NewNoAuth returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client with authentication disabled. This is
+// useful when calling taskcluster APIs that do not require authorization.
+func NewNoAuth() *` + api.apiDef.Name + ` {
+	` + exampleVarName + ` := ` + api.apiDef.Name + `(tcclient.Client{
+		BaseURL:      DefaultBaseURL,
+		Authenticate: false,
+	})
+	return &` + exampleVarName + `
+}
+
+`
 	for _, entry := range api.Entries {
 		content += entry.generateAPICode(apiName)
 	}

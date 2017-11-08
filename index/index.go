@@ -132,32 +132,46 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
+const (
+	DefaultBaseURL = "https://index.taskcluster.net/v1"
+)
+
 type Index tcclient.Client
 
-// Returns a pointer to Index, configured to run against production.  If you
-// wish to point at a different API endpoint url, set BaseURL to the preferred
-// url. Authentication can be disabled (for example if you wish to use the
-// taskcluster-proxy) by setting Authenticate to false (in which case creds is
-// ignored).
+// New returns an Index client, configured to run against production. Pass in
+// nil to load credentials from TASKCLUSTER_* environment variables. The
+// returned client is mutable, so returned settings can be altered.
 //
-// For example:
-//  creds := &tcclient.Credentials{
-//  	ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-//  	AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-//  	Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+//  myIndex, err := index.New(nil)                           // credentials loaded from TASKCLUSTER_* env vars
+//  if err != nil {
+//      // handle malformed credentials...
 //  }
-//  myIndex := index.New(creds)                              // set credentials
-//  myIndex.Authenticate = false                             // disable authentication (creds above are now ignored)
 //  myIndex.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
 //  data, err := myIndex.FindTask(.....)                     // for example, call the FindTask(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Index {
+//
+// If authentication is not required, use NewNoAuth() instead.
+func New(credentials *tcclient.Credentials) (*Index, error) {
+	if credentials == nil {
+		credentials = tcclient.CredentialsFromEnvVars()
+	}
+	err := credentials.Validate()
 	myIndex := Index(tcclient.Client{
 		Credentials:  credentials,
-		BaseURL:      "https://index.taskcluster.net/v1",
+		BaseURL:      DefaultBaseURL,
 		Authenticate: true,
+	})
+	return &myIndex, err
+}
+
+// NewNoAuth returns an Index client with authentication disabled. This is
+// useful when calling taskcluster APIs that do not require authorization.
+func NewNoAuth() *Index {
+	myIndex := Index(tcclient.Client{
+		BaseURL:      DefaultBaseURL,
+		Authenticate: false,
 	})
 	return &myIndex
 }

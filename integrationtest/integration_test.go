@@ -24,9 +24,8 @@ import (
 // Note, no credentials are needed, so this can be run even on travis-ci.org,
 // for example.
 func TestFindLatestLinux64DebugBuild(t *testing.T) {
-	creds := &tcclient.Credentials{}
-	Index := index.New(creds)
-	Queue := queue.New(creds)
+	Index := index.NewNoAuth()
+	Queue := queue.NewNoAuth()
 	itr, err := Index.FindTask("gecko.v2.mozilla-inbound.latest.firefox.linux64-debug")
 	if err != nil {
 		t.Fatalf("%v\n", err)
@@ -71,7 +70,10 @@ func permaCreds(t *testing.T) *tcclient.Credentials {
 // Tests whether it is possible to define a task against the production Queue.
 func TestDefineTask(t *testing.T) {
 	permaCreds := permaCreds(t)
-	myQueue := queue.New(permaCreds)
+	myQueue, err := queue.New(permaCreds)
+	if err != nil {
+		t.Fatalf("%v\n", err)
+	}
 
 	taskID := slugid.Nice()
 	taskGroupID := slugid.Nice()
@@ -207,7 +209,10 @@ func TestDefineTask(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
-	myQueue = queue.New(tempCreds)
+	myQueue, err = queue.New(tempCreds)
+	if err != nil {
+		t.Fatalf("%v\n", err)
+	}
 	_, err = myQueue.CancelTask(taskID)
 	if err != nil {
 		t.Fatalf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
