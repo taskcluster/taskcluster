@@ -54,9 +54,11 @@ class TaskQueue {
    * @param {Array} claims
    */
   async claimWork(capacity) {
+    capacity = Math.min(capacity, MAX_MESSAGES_PER_REQUEST);
     debug(`polling for ${capacity} tasks`);
+
     let result = await this.queue.claimWork(this.provisionerId, this.workerType, {
-      tasks: Math.min(capacity, MAX_MESSAGES_PER_REQUEST),
+      tasks: capacity,
       workerGroup: this.workerGroup,
       workerId: this.workerId
     });
