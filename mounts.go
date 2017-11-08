@@ -144,7 +144,7 @@ func (feature *MountsFeature) Initialise() error {
 	// if err != nil {
 	// 	return fmt.Errorf("Could not empty downloads dir %v when initialising mounts feature - error: %v", config.DownloadsDir, err)
 	// }
-	pc = purgecache.New(&tcclient.Credentials{})
+	pc = purgecache.NewNoAuth()
 	return nil
 }
 

@@ -126,11 +126,14 @@ func (tsm *TaskStatusManager) Reclaim() error {
 
 			task.TaskReclaimResponse = *tcrsp
 			// Don't need a mutex here, since tsm.updateStatus is already mutex-protected
-			task.Queue = queue.New(&tcclient.Credentials{
+			task.Queue, err = queue.New(&tcclient.Credentials{
 				ClientID:    tcrsp.Credentials.ClientID,
 				AccessToken: tcrsp.Credentials.AccessToken,
 				Certificate: tcrsp.Credentials.Certificate,
 			})
+			if err != nil {
+				log.Printf("SERIOUS BUG: invalid credentials in queue claim response body: %v", err)
+			}
 			log.Printf("Reclaimed task %v successfully.", task.TaskID)
 			return nil
 		},

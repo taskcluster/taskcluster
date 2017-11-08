@@ -14,13 +14,17 @@ func ReportCrashToSentry(r interface{}) {
 		log.Println("No sentry project defined, not reporting to sentry")
 		return
 	}
-	Auth := auth.New(
+	Auth, err := auth.New(
 		&tcclient.Credentials{
 			ClientID:    config.ClientID,
 			AccessToken: config.AccessToken,
 			Certificate: config.Certificate,
 		},
 	)
+	if err != nil {
+		log.Printf("WARNING: Invalid taskcluster credentials: %v", err)
+		return
+	}
 	res, err := Auth.SentryDSN(config.SentryProject)
 	if err != nil {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)

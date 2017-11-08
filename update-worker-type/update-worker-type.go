@@ -13,6 +13,7 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 	"github.com/taskcluster/taskcluster-client-go/secrets"
 )
 
@@ -34,17 +35,13 @@ func main() {
 	workerType := filepath.Base(absFile)
 	secretName := "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/" + workerType
 
-	tcCreds := &tcclient.Credentials{
-		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+	awsProv, err := awsprovisioner.New(nil)
+	if err != nil {
+		log.Fatalf("Invalid credentials: %v", err)
 	}
+	cdv := tcclient.Client(*awsProv)
+	cd := &cdv
 
-	cd := &tcclient.Client{
-		Credentials:  tcCreds,
-		BaseURL:      "https://aws-provisioner.taskcluster.net/v1",
-		Authenticate: true,
-	}
 	var wt map[string]interface{}
 	_, _, err = cd.APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), &wt, nil)
 	if err != nil {
@@ -109,7 +106,10 @@ func main() {
 		log.Printf("WARNING: not updating all AMIs for worker type %v - only %v of %v", workerType, newAMICount, len(regions))
 	}
 
-	mySecrets := secrets.New(tcCreds)
+	mySecrets, err := secrets.New(nil)
+	if err != nil {
+		log.Fatalf("Invalid credentials: %v", err)
+	}
 
 	secBytes, err := json.Marshal(sshSecret)
 	if err != nil {

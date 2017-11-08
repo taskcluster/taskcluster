@@ -16,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/secrets"
 )
 
@@ -25,18 +24,17 @@ var mySecrets *secrets.Secrets
 const secretsPrefix = "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/"
 
 func main() {
-	tcCreds := &tcclient.Credentials{
-		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+	var err error
+	mySecrets, err = secrets.New(nil)
+	if err != nil {
+		log.Fatalf("Invalid credentials: %v", err)
 	}
-	mySecrets = secrets.New(tcCreds)
 	s, err := mySecrets.List("", "")
 	if err != nil {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
 	if len(s.Secrets) == 0 {
-		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", tcCreds.ClientID)
+		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", mySecrets.Credentials.ClientID)
 	}
 	var wg sync.WaitGroup
 	workerTypeBuffers := []*bytes.Buffer{}

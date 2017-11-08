@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"os"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
@@ -18,14 +16,10 @@ const (
 )
 
 func main() {
-	prov := awsprovisioner.New(
-		&tcclient.Credentials{
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		},
-	)
-
+	prov, err := awsprovisioner.New(nil)
+	if err != nil {
+		panic(err)
+	}
 	workerTypes, err := prov.ListWorkerTypes()
 	if err != nil {
 		panic(err)

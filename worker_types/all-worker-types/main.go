@@ -7,18 +7,14 @@ import (
 	"os"
 	"path/filepath"
 
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
 func main() {
-	prov := awsprovisioner.New(
-		&tcclient.Credentials{
-			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
-	)
+	prov, err := awsprovisioner.New(nil)
+	if err != nil {
+		panic(err)
+	}
 
 	allWorkerTypes, err := prov.ListWorkerTypes()
 	if err != nil {

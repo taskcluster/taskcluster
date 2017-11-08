@@ -530,8 +530,16 @@ func RunWorker() (exitCode ExitCode) {
 		Certificate: config.Certificate,
 	}
 	// Queue is the object we will use for accessing queue api
-	Queue = queue.New(creds)
-	Provisioner = awsprovisioner.New(creds)
+	Queue, err = queue.New(creds)
+	if err != nil {
+		log.Print("Invalid taskcluster credentials!!!")
+		panic(err)
+	}
+	Provisioner, err = awsprovisioner.New(creds)
+	if err != nil {
+		log.Print("Invalid taskcluster credentials!!!")
+		panic(err)
+	}
 
 	err = initialiseFeatures()
 	if err != nil {
@@ -645,13 +653,16 @@ func FindAndRunTask() bool {
 
 	for _, taskResponse := range resp.Tasks {
 		taskFound = true
-		taskQueue := queue.New(
+		taskQueue, err := queue.New(
 			&tcclient.Credentials{
 				ClientID:    taskResponse.Credentials.ClientID,
 				AccessToken: taskResponse.Credentials.AccessToken,
 				Certificate: taskResponse.Credentials.Certificate,
 			},
 		)
+		if err != nil {
+			log.Printf("SERIOUS BUG: invalid credentials from queue for task %v", taskResponse.Status.TaskID)
+		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
@@ -846,6 +857,8 @@ func (task *TaskRun) Log(message string) {
 		for _, line := range strings.Split(message, "\n") {
 			task.logWriter.Write([]byte("[taskcluster " + tcclient.Time(time.Now()).String() + "] " + line + "\n"))
 		}
+	} else {
+		log.Print("Unloggable task log message (no task log writer): " + message)
 	}
 }
 
@@ -1040,7 +1053,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		if feature.IsEnabled(task.Payload.Features) {
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.New(nil))
+			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.NewNoAuth())
 			if scopeValidationErr != nil {
 				// presumably we couldn't expand assume:* scopes due to auth
 				// service unavailability

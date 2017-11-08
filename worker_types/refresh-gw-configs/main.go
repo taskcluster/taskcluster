@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
@@ -30,13 +28,10 @@ type OCCManifest struct {
 }
 
 func main() {
-	prov := awsprovisioner.New(
-		&tcclient.Credentials{
-			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
-	)
+	prov, err := awsprovisioner.New(nil)
+	if err != nil {
+		panic(err)
+	}
 
 	allWorkerTypes, err := prov.ListWorkerTypes()
 	if err != nil {
