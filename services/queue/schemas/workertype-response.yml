@@ -72,7 +72,12 @@ properties:
           title:  "URL"
           description: {$const: action-url-description}
           type:    string
-          format:  uri
+        method:
+          title:  "Method"
+          description: |
+            Method to indicate the desired action to be performed for a given resource.
+          type:   string
+          enum:   ["POST", "PUT", "DELETE", "PATCH"]
         description:
           title:   "Description"
           description: |
@@ -83,6 +88,7 @@ properties:
         - title
         - context
         - url
+        - method
         - description
       additionalProperties: false
 additionalProperties: false
