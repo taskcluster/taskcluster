@@ -39,9 +39,9 @@ Depending on the action's `context`, substitute the following parameters in the 
 
 | `context`   | Path parameters                                                  |
 |-------------|------------------------------------------------------------------|
-| provisioner | \<provisionerId\>                                                |
-| worker-type | \<provisionerId\>, \<workerType\>                                |
-| worker      | \<provisionerId\>, \<workerType\>, \<workerGroup\>, \<workerId\> |
+| provisioner | `<provisionerId>`                                                |
+| worker-type | `<provisionerId>`, `<workerType>`                                |
+| worker      | `<provisionerId>`, `<workerType>`, `<workerGroup>`, `<workerId>` |
   
 _Example:_
 

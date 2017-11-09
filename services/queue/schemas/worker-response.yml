@@ -103,7 +103,6 @@ properties:
           title:  "URL"
           description: {$const: action-url-description}
           type:    string
-          format:  uri
         description:
           title:   "Description"
           description: |
@@ -114,6 +113,7 @@ properties:
         - title
         - context
         - url
+        - method
         - description
       additionalProperties: false
 additionalProperties: false
