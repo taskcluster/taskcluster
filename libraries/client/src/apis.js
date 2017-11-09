@@ -616,7 +616,7 @@ module.exports = {
   "AwsProvisioner": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://aws-provisioner.taskcluster.net/v1",
+      "baseUrl": "https://staging-aws-provisioner.herokuapp.com/v1",
       "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskcluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
       "entries": [
         {
@@ -973,7 +973,7 @@ module.exports = {
           "type": "topic-exchange"
         }
       ],
-      "exchangePrefix": "exchange/taskcluster-aws-provisioner/v1/",
+      "exchangePrefix": "exchange/taskcluster-aws-provisioner-staging/v1/",
       "title": "AWS Provisioner Pulse Exchanges",
       "version": 0
     },
@@ -2299,7 +2299,7 @@ module.exports = {
             "runId",
             "name"
           ],
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 4 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\n\n**S3 artifacts**, is useful for static files which will be stored on S3.\nWhen creating an S3 artifact the queue will return a pre-signed URL\nto which you can do a `PUT` request to upload your artifact. Note\nthat `PUT` request **must** specify the `content-length` header and\n**must** give the `content-type` header the same value as in the request\nto `createArtifact`.\n\n**Azure artifacts**, are stored in _Azure Blob Storage_ service, which\ngiven the consistency guarantees and API interface offered by Azure is\nmore suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 3 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\nWe also have 2 deprecated `storageType`s which are only maintained for\nbackwards compatiability and should not be used in new implementations\n\n**Blob artifacts**, are useful for storing large files.  Currently, these\nare all stored in S3 but there are facilities for adding support for other\nbackends in futre.  A call for this type of artifact must provide information\nabout the file which will be uploaded.  This includes sha256 sums and sizes.\nThis method will return a list of general form HTTP requests which are signed\nby AWS S3 credentials managed by the Queue.  Once these requests are completed\nthe list of `ETag` values returned by the requests must be passed to the\nqueue `completeArtifact` method\n\n**S3 artifacts**, DEPRECATED is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service\nwhich given the consistency guarantees and API interface offered by Azure\nis more suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
           "input": "http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",
@@ -2318,6 +2318,32 @@ module.exports = {
           ],
           "stability": "stable",
           "title": "Create Artifact",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId",
+            "runId",
+            "name"
+          ],
+          "description": "This endpoint finalises an upload done through the blob `storageType`.\nThe queue will ensure that the task/run is still allowing artifacts\nto be uploaded.  For single-part S3 blob artifacts, this endpoint\nwill simply ensure the artifact is present in S3.  For multipart S3\nartifacts, the endpoint will perform the commit step of the multipart\nupload flow.  As the final step for both multi and single part artifacts,\nthe `present` entity field will be set to `true` to reflect that the\nartifact is now present and a message published to pulse.  NOTE: This\nendpoint *must* be called for all artifacts of storageType 'blob'",
+          "input": "http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#",
+          "method": "put",
+          "name": "completeArtifact",
+          "query": [
+          ],
+          "route": "/task/<taskId>/runs/<runId>/artifacts/<name>",
+          "scopes": [
+            [
+              "queue:create-artifact:<name>",
+              "assume:worker-id:<workerGroup>/<workerId>"
+            ],
+            [
+              "queue:create-artifact:<taskId>/<runId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Complete Artifact",
           "type": "function"
         },
         {
@@ -2524,17 +2550,18 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
-          "description": "Get a list of all active workerGroup/workerId of a workerType.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by the `disabled` property.\nTo filter the query, you should call the end-point with `disabled` as a query-string option.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkers",
           "output": "http://schemas.taskcluster.net/queue/v1/list-workers-response.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "disabled"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "stability": "experimental",
-          "title": "Get a list of all active workerGroup/workerId of a workerType",
+          "title": "Get a list of all active workers of a workerType",
           "type": "function"
         },
         {
@@ -2572,7 +2599,7 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>",
           "scopes": [
             [
-              "queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>"
+              "queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>"
             ]
           ],
           "stability": "experimental",
@@ -3142,416 +3169,6 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/queue/v1/exchanges.json"
   },
-  "Scheduler": {
-    "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://scheduler.taskcluster.net/v1",
-      "description": "The task-graph scheduler, typically available at\n`scheduler.taskcluster.net`, is responsible for accepting task-graphs and\nscheduling tasks for evaluation by the queue as their dependencies are\nsatisfied.\n\nThis document describes API end-points offered by the task-graph\nscheduler. These end-points targets the following audience:\n * Post-commit hooks, that wants to submit task-graphs for testing,\n * End-users, who wants to execute a set of dependent tasks, and\n * Tools, that wants to inspect the state of a task-graph.",
-      "entries": [
-        {
-          "args": [
-            "taskGraphId"
-          ],
-          "description": "Create a new task-graph, the `status` of the resulting JSON is a\ntask-graph status structure, you can find the `taskGraphId` in this\nstructure.\n\n**Referencing required tasks**, it is possible to reference other tasks\nin the task-graph that must be completed successfully before a task is\nscheduled. You just specify the `taskId` in the list of `required` tasks.\nSee the example below, where the second task requires the first task.\n```js\n{\n  ...\n  tasks: [\n    {\n      taskId:     \"XgvL0qtSR92cIWpcwdGKCA\",\n      requires:   [],\n      ...\n    },\n    {\n      taskId:     \"73GsfK62QNKAk2Hg1EEZTQ\",\n      requires:   [\"XgvL0qtSR92cIWpcwdGKCA\"],\n      task: {\n        payload: {\n          env: {\n            DEPENDS_ON:  \"XgvL0qtSR92cIWpcwdGKCA\"\n          }\n          ...\n        }\n        ...\n      },\n      ...\n    }\n  ]\n}\n```\n\n**The `schedulerId` property**, defaults to the `schedulerId` of this\nscheduler in production that is `\"task-graph-scheduler\"`. This\nproperty must be either undefined or set to `\"task-graph-scheduler\"`,\notherwise the task-graph will be rejected.\n\n**The `taskGroupId` property**, defaults to the `taskGraphId` of the\ntask-graph submitted, and if provided much be the `taskGraphId` of\nthe task-graph. Otherwise the task-graph will be rejected.\n\n**Task-graph scopes**, a task-graph is assigned a set of scopes, just\nlike tasks. Tasks within a task-graph cannot have scopes beyond those\nthe task-graph has. The task-graph scheduler will execute all requests\non behalf of a task-graph using the set of scopes assigned to the\ntask-graph. Thus, if you are submitting tasks to `my-worker-type` under\n`my-provisioner` it's important that your task-graph has the scope\nrequired to define tasks for this `provisionerId` and `workerType`.\n(`queue:define-task:..` or `queue:create-task:..`; see the queue for\ndetails on scopes required). Note, the task-graph does not require\npermissions to schedule the tasks (`queue:schedule-task:..`), as this is\ndone with scopes provided by the task-graph scheduler.\n\n**Task-graph specific routing-keys**, using the `taskGraph.routes`\nproperty you may define task-graph specific routing-keys. If a task-graph\nhas a task-graph specific routing-key: `<route>`, then the poster will\nbe required to posses the scope `scheduler:route:<route>`. And when the\nan AMQP message about the task-graph is published the message will be\nCC'ed with the routing-key: `route.<route>`. This is useful if you want\nanother component to listen for completed tasks you have posted.",
-          "input": "http://schemas.taskcluster.net/scheduler/v1/task-graph.json#",
-          "method": "put",
-          "name": "createTaskGraph",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#",
-          "route": "/task-graph/<taskGraphId>",
-          "scopes": [
-            [
-              "scheduler:create-task-graph"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Create new task-graph",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskGraphId"
-          ],
-          "description": "Add a set of tasks to an existing task-graph. The request format is very\nsimilar to the request format for creating task-graphs. But `routes`\nkey, `scopes`, `metadata` and `tags` cannot be modified.\n\n**Referencing required tasks**, just as when task-graphs are created,\neach task has a list of required tasks. It is possible to reference\nall `taskId`s within the task-graph.\n\n**Safety,** it is only _safe_ to call this API end-point while the\ntask-graph being modified is still running. If the task-graph is\n_finished_ or _blocked_, this method will leave the task-graph in this\nstate. Hence, it is only truly _safe_ to call this API end-point from\nwithin a task in the task-graph being modified.",
-          "input": "http://schemas.taskcluster.net/scheduler/v1/extend-task-graph-request.json#",
-          "method": "post",
-          "name": "extendTaskGraph",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json#",
-          "route": "/task-graph/<taskGraphId>/extend",
-          "scopes": [
-            [
-              "scheduler:extend-task-graph:<taskGraphId>"
-            ]
-          ],
-          "stability": "experimental",
-          "title": "Extend existing task-graph",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskGraphId"
-          ],
-          "description": "Get task-graph status, this will return the _task-graph status\nstructure_. which can be used to check if a task-graph is `running`,\n`blocked` or `finished`.\n\n**Note**, that `finished` implies successfully completion.",
-          "method": "get",
-          "name": "status",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-status-response.json",
-          "route": "/task-graph/<taskGraphId>/status",
-          "stability": "experimental",
-          "title": "Task Graph Status",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskGraphId"
-          ],
-          "description": "Get task-graph information, this includes the _task-graph status\nstructure_, along with `metadata` and `tags`, but not information\nabout all tasks.\n\nIf you want more detailed information use the `inspectTaskGraph`\nend-point instead.",
-          "method": "get",
-          "name": "info",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/task-graph-info-response.json",
-          "route": "/task-graph/<taskGraphId>/info",
-          "stability": "experimental",
-          "title": "Task Graph Information",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskGraphId"
-          ],
-          "description": "Inspect a task-graph, this returns all the information the task-graph\nscheduler knows about the task-graph and the state of its tasks.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
-          "method": "get",
-          "name": "inspect",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-response.json",
-          "route": "/task-graph/<taskGraphId>/inspect",
-          "stability": "experimental",
-          "title": "Inspect Task Graph",
-          "type": "function"
-        },
-        {
-          "args": [
-            "taskGraphId",
-            "taskId"
-          ],
-          "description": "Inspect a task from a task-graph, this returns all the information the\ntask-graph scheduler knows about the specific task.\n\n**Warning**, some of these fields are borderline internal to the\ntask-graph scheduler and we may choose to change or make them internal\nlater. Also note that note all of the information is formalized yet.\nThe JSON schema will be updated to reflect formalized values, we think\nit's safe to consider the values stable.\n\nTake these considerations into account when using the API end-point,\nas we do not promise it will remain fully backward compatible in\nthe future.",
-          "method": "get",
-          "name": "inspectTask",
-          "output": "http://schemas.taskcluster.net/scheduler/v1/inspect-task-graph-task-response.json",
-          "route": "/task-graph/<taskGraphId>/inspect/<taskId>",
-          "stability": "experimental",
-          "title": "Inspect Task from a Task-Graph",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Documented later...\n\n**Warning** this api end-point is **not stable**.",
-          "method": "get",
-          "name": "ping",
-          "route": "/ping",
-          "stability": "experimental",
-          "title": "Ping Server",
-          "type": "function"
-        }
-      ],
-      "title": "Task-Graph Scheduler API Documentation",
-      "version": 0
-    },
-    "referenceUrl": "http://references.taskcluster.net/scheduler/v1/api.json"
-  },
-  "SchedulerEvents": {
-    "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "description": "The scheduler, typically available at `scheduler.taskcluster.net` is\nresponsible for accepting task-graphs and schedule tasks on the queue as\ntheir dependencies are completed successfully.\n\nThis document describes the AMQP exchanges offered by the scheduler,\nwhich allows third-party listeners to monitor task-graph submission and\nresolution. These exchanges targets the following audience:\n * Reporters, who displays the state of task-graphs or emails people on\n   failures, and\n * End-users, who wants notification of completed task-graphs\n\n**Remark**, the task-graph scheduler will require that the `schedulerId`\nfor tasks is set to the `schedulerId` for the task-graph scheduler. In\nproduction the `schedulerId` is typically `\"task-graph-scheduler\"`.\nFurthermore, the task-graph scheduler will also require that\n`taskGroupId` is equal to the `taskGraphId`.\n\nCombined these requirements ensures that `schedulerId` and `taskGroupId`\nhave the same position in the routing keys for the queue exchanges.\nSee queue documentation for details on queue exchanges. Hence, making\nit easy to listen for all tasks in a given task-graph.\n\nNote that routing key entries 2 through 7 used for exchanges on the\ntask-graph scheduler is hardcoded to `_`. This is done to preserve\npositional equivalence with exchanges offered by the queue.",
-      "entries": [
-        {
-          "description": "When a task-graph is submitted it immediately starts running and a\nmessage is posted on this exchange to indicate that a task-graph have\nbeen submitted.",
-          "exchange": "task-graph-running",
-          "name": "taskGraphRunning",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "runId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerGroup",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "provisionerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "schedulerId",
-              "required": true,
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskGraphId",
-              "required": true,
-              "summary": "Identifier for the task-graph this message concerns"
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-running-message.json#",
-          "title": "Task-Graph Running Message",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "When a task-graph is extended, that is additional tasks is added to the\ntask-graph, a message is posted on this exchange. This is useful if you\nare monitoring a task-graph and what to track states of the individual\ntasks in the task-graph.",
-          "exchange": "task-graph-extended",
-          "name": "taskGraphExtended",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "runId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerGroup",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "provisionerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "schedulerId",
-              "required": true,
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskGraphId",
-              "required": true,
-              "summary": "Identifier for the task-graph this message concerns"
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-extended-message.json#",
-          "title": "Task-Graph Extended Message",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "When a task is completed unsuccessfully and all reruns have been\nattempted, the task-graph will not complete successfully and it's\ndeclared to be _blocked_, by some task that consistently completes\nunsuccessfully.\n\nWhen a task-graph becomes blocked a messages is posted to this exchange.\nThe message features the `taskId` of the task that caused the task-graph\nto become blocked.",
-          "exchange": "task-graph-blocked",
-          "name": "taskGraphBlocked",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "runId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerGroup",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "provisionerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "schedulerId",
-              "required": true,
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskGraphId",
-              "required": true,
-              "summary": "Identifier for the task-graph this message concerns"
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-blocked-message.json#",
-          "title": "Task-Graph Blocked Message",
-          "type": "topic-exchange"
-        },
-        {
-          "description": "When all tasks of a task-graph have completed successfully, the\ntask-graph is declared to be finished, and a message is posted to this\nexchange.",
-          "exchange": "task-graph-finished",
-          "name": "taskGraphFinished",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "runId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerGroup",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "provisionerId",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": false,
-              "summary": "Always takes the value `_`"
-            },
-            {
-              "multipleWords": false,
-              "name": "schedulerId",
-              "required": true,
-              "summary": "Identifier for the task-graphs scheduler managing the task-graph this message concerns. Usually `task-graph-scheduler` in production."
-            },
-            {
-              "multipleWords": false,
-              "name": "taskGraphId",
-              "required": true,
-              "summary": "Identifier for the task-graph this message concerns"
-            },
-            {
-              "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
-            }
-          ],
-          "schema": "http://schemas.taskcluster.net/scheduler/v1/task-graph-finished-message.json#",
-          "title": "Task-Graph Finished Message",
-          "type": "topic-exchange"
-        }
-      ],
-      "exchangePrefix": "exchange/taskcluster-scheduler/v1/",
-      "title": "Scheduler AMQP Exchanges",
-      "version": 0
-    },
-    "referenceUrl": "http://references.taskcluster.net/scheduler/v1/exchanges.json"
-  },
   "Secrets": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
@@ -3620,11 +3237,13 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "List the names of all secrets that you would have access to read. In\nother words, secret name `<X>` will only be returned if a) a secret\nwith name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.",
+          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "list",
           "output": "http://schemas.taskcluster.net/secrets/v1/secret-list.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/secrets",
           "stability": "stable",

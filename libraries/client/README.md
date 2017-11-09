@@ -236,7 +236,7 @@ var auth = new taskcluster.Auth(options);
 ### Methods in `taskcluster.AwsProvisioner`
 ```js
 // Create AwsProvisioner client instance with default baseUrl:
-//  - https://aws-provisioner.taskcluster.net/v1
+//  - https://staging-aws-provisioner.herokuapp.com/v1
 var awsProvisioner = new taskcluster.AwsProvisioner(options);
 ```
  * `awsProvisioner.listWorkerTypeSummaries() : result`
@@ -369,6 +369,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.reportFailed(taskId, runId) : result`
  * `queue.reportException(taskId, runId, payload) : result`
  * `queue.createArtifact(taskId, runId, name, payload) : result`
+ * `queue.completeArtifact(taskId, runId, name, payload) : void`
  * `queue.getArtifact(taskId, runId, name) : void`
  * `queue.getLatestArtifact(taskId, name) : void`
  * `queue.listArtifacts(taskId, runId, [options]) : result`
@@ -385,20 +386,6 @@ var queue = new taskcluster.Queue(options);
  * `queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) : result`
  * `queue.ping() : void`
 
-### Methods in `taskcluster.Scheduler`
-```js
-// Create Scheduler client instance with default baseUrl:
-//  - https://scheduler.taskcluster.net/v1
-var scheduler = new taskcluster.Scheduler(options);
-```
- * `scheduler.createTaskGraph(taskGraphId, payload) : result`
- * `scheduler.extendTaskGraph(taskGraphId, payload) : result`
- * `scheduler.status(taskGraphId) : result`
- * `scheduler.info(taskGraphId) : result`
- * `scheduler.inspect(taskGraphId) : result`
- * `scheduler.inspectTask(taskGraphId, taskId) : result`
- * `scheduler.ping() : void`
-
 ### Methods in `taskcluster.Secrets`
 ```js
 // Create Secrets client instance with default baseUrl:
@@ -408,7 +395,7 @@ var secrets = new taskcluster.Secrets(options);
  * `secrets.set(name, payload) : void`
  * `secrets.remove(name) : void`
  * `secrets.get(name) : result`
- * `secrets.list() : result`
+ * `secrets.list([options]) : result`
  * `secrets.ping() : void`
 
 ### Exchanges in `taskcluster.AuthEvents`
@@ -427,7 +414,7 @@ var authEvents = new taskcluster.AuthEvents(options);
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
 ```js
 // Create AwsProvisionerEvents client instance with default exchangePrefix:
-//  - exchange/taskcluster-aws-provisioner/v1/
+//  - exchange/taskcluster-aws-provisioner-staging/v1/
 var awsProvisionerEvents = new taskcluster.AwsProvisionerEvents(options);
 ```
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) : binding-info`
@@ -466,17 +453,6 @@ var queueEvents = new taskcluster.QueueEvents(options);
  * `queueEvents.taskFailed(routingKeyPattern) : binding-info`
  * `queueEvents.taskException(routingKeyPattern) : binding-info`
  * `queueEvents.taskGroupResolved(routingKeyPattern) : binding-info`
-
-### Exchanges in `taskcluster.SchedulerEvents`
-```js
-// Create SchedulerEvents client instance with default exchangePrefix:
-//  - exchange/taskcluster-scheduler/v1/
-var schedulerEvents = new taskcluster.SchedulerEvents(options);
-```
- * `schedulerEvents.taskGraphRunning(routingKeyPattern) : binding-info`
- * `schedulerEvents.taskGraphExtended(routingKeyPattern) : binding-info`
- * `schedulerEvents.taskGraphBlocked(routingKeyPattern) : binding-info`
- * `schedulerEvents.taskGraphFinished(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.TreeherderEvents`
 ```js
