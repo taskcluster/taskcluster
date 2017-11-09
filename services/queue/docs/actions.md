@@ -37,11 +37,11 @@ is used by the front-end to know where to display the action.
 To trigger an action, use the action's `url` and `method` properties to make a request to it.
 Depending on the action's `context`, substitute the following parameters in the `url`:
 
-| `context`   | Path parameters                                          |
-|-------------|----------------------------------------------------------|
-| provisioner | <provisionerId>                                          |
-| worker-type | <provisionerId>, <workerType>                            |
-| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
+| `context`   | Path parameters                                                  |
+|-------------|------------------------------------------------------------------|
+| provisioner | \<provisionerId\>                                                |
+| worker-type | \<provisionerId\>, \<workerType\>                                |
+| worker      | \<provisionerId\>, \<workerType\>, \<workerGroup\>, \<workerId\> |
   
 _Example:_
 
