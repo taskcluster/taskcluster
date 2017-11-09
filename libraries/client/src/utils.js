@@ -21,8 +21,8 @@ var fromNow = function(offset, reference) {
 
   var retval = new Date(
     reference.getTime()
-//    + offset.years * 365 * 24 * 60 * 60 * 1000
- //   + offset.month  * 30 * 24 * 60 * 60 * 1000
+    //    + offset.years * 365 * 24 * 60 * 60 * 1000
+    //   + offset.month  * 30 * 24 * 60 * 60 * 1000
     + offset.weeks   * 7 * 24 * 60 * 60 * 1000
     + offset.days        * 24 * 60 * 60 * 1000
     + offset.hours            * 60 * 60 * 1000
