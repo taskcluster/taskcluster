@@ -88,7 +88,7 @@ func main() {
 	if arguments["--task-id"] != nil {
 		taskId := arguments["--task-id"].(string)
 		log.Printf("taskId: '%v'", taskId)
-		myQueue := queue.New(new(tcclient.Credentials))
+		myQueue := queue.NewNoAuth()
 
 		// Fetch the task to get the scopes we should be using...
 		task, err := myQueue.Task(taskId)
