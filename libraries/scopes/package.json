@@ -7,8 +7,9 @@
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
     "prepublish": "npm run compile",
-    "pretest": "npm run compile",
-    "test": "mocha .test/lint.js .test/*_test.js"
+    "lint": "eslint src/*.js test/*.js",
+    "pretest": "yarn lint && npm run compile",
+    "test": "mocha test/*_test.js"
   },
   "main": "./lib/scopes",
   "files": [
@@ -19,16 +20,14 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-scopes.git"
   },
   "dependencies": {
-    "babel-runtime": "^6.0.0"
+    "babel-runtime": "^6.26.0"
   },
   "devDependencies": {
     "babel-compile": "^2.0.0",
-    "babel-eslint": "^6.0.0",
     "babel-preset-taskcluster": "^3.0.0",
-    "eslint": "^3.17.1",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.0",
-    "mocha": "2.5.3",
-    "mocha-eslint": "^2.0.1"
+    "eslint": "^4.10.0",
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "4.0.1",
+    "mocha-eslint": "^4.1.0"
   }
 }
