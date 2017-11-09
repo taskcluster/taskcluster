@@ -1,5 +1,5 @@
-import assert from 'assert';
-import utils from '../lib/scopes.js';
+const assert = require('assert');
+const utils = require('../lib/scopes.js');
 
 suite('validScope', function() {
   test('Normal-looking scopes are OK', function() {
