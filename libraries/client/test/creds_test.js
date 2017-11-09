@@ -137,7 +137,7 @@ suite('client credential handling', function() {
       },
     });
     assert.equal(credentials.clientId, 'my-temp-cred',
-                 'temp cred name doesn\'t appear as clientId');
+      'temp cred name doesn\'t appear as clientId');
     assert.deepEqual(
       await client({credentials}).testAuthenticate({
         clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
@@ -217,7 +217,7 @@ suite('client credential handling', function() {
       },
     });
     assert.equal(credentials.clientId, 'my-temp-cred',
-                 'temp cred name doesn\'t appear as clientId');
+      'temp cred name doesn\'t appear as clientId');
     assert.deepEqual(
       await client({
         credentials,
@@ -252,7 +252,7 @@ suite('client credential handling', function() {
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
-                     ['test:authenticate-get', 'test:foo']);
+      ['test:authenticate-get', 'test:foo']);
   });
 
   test('buildSignedUrl authorizedScopes (unauthorized)', async () => {
@@ -283,7 +283,7 @@ suite('client credential handling', function() {
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
-                     ['test:authenticate-get', 'test:bar']);
+      ['test:authenticate-get', 'test:bar']);
   });
 
   test('buildSignedUrl with temporary credentials and expiration', async () => {
