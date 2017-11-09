@@ -22,7 +22,7 @@ var saveApis = function() {
   // Create content
   // Use json-stable-stringify rather than JSON.stringify to guarantee
   // consistent ordering (see http://bugzil.la/1200519)
-  var content = "module.exports = " + stringify(apis, {
+  var content = "/* eslint-disable */\nmodule.exports = " + stringify(apis, {
     space: '  '
   }) + ";";
   fs.writeFileSync(apis_js, content, {encoding: 'utf-8'});

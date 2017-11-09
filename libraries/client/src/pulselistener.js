@@ -239,14 +239,14 @@ util.inherits(PulseListener, events.EventEmitter);
  */
 PulseListener.prototype.bind = function(binding) {
   assert(typeof binding.exchange === 'string',
-         'Can\'t bind to unspecified exchange!');
+    'Can\'t bind to unspecified exchange!');
   assert(typeof binding.routingKeyPattern === 'string',
-         'routingKeyPattern is required!');
+    'routingKeyPattern is required!');
   this._bindings.push(binding);
   if (!this._fake && this._channel) {
     debug('Binding %s to %s with pattern \'%s\'',
-          this._queueName || 'exclusive queue',
-          binding.exchange, binding.routingKeyPattern);
+      this._queueName || 'exclusive queue',
+      binding.exchange, binding.routingKeyPattern);
     return this._channel.bindQueue(
       this._queueName,
       binding.exchange,
@@ -322,8 +322,8 @@ PulseListener.prototype.connect = function() {
     that._channel = channel;
     return Promise.all(that._bindings.map(function(binding) {
       debug('Binding %s to %s with pattern %s',
-            that._queueName || 'exclusive queue',
-            binding.exchange, binding.routingKeyPattern);
+        that._queueName || 'exclusive queue',
+        binding.exchange, binding.routingKeyPattern);
       return channel.bindQueue(
         that._queueName,
         binding.exchange,
@@ -472,7 +472,7 @@ PulseListener.prototype._handle = function(msg) {
       // In short people can assume this is present in most cases, and if they
       // assume this we get the error at a level where they can handle it.
       debug('Failed to parse routingKey: %s for %s with err: %s, as JSON: %j',
-            message.routingKey, message.exchange, err, err, err.stack);
+        message.routingKey, message.exchange, err, err, err.stack);
     }
   }
 
@@ -489,13 +489,13 @@ PulseListener.prototype._handle = function(msg) {
     }
   }).then(null, function(err) {
     debug('Failed to process message %j from %s with error: %s, as JSON: %j',
-          message, message.exchange, err, err, err.stack);
+      message, message.exchange, err, err, err.stack);
     if (that._fake) {
       return;
     }
     if (message.redelivered) {
       debug('Nack (without requeueing) message %j from %s',
-            message, message.exchange);
+        message, message.exchange);
       return that._channel.nack(msg, false, false);
     } else {
       // Nack and requeue
