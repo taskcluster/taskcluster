@@ -39,7 +39,6 @@ class CommandPromise {
 
 }
 
-
 /**
  * The Iterate Class.  See README.md for explanation of constructor
  * arguments and events that are emitted
@@ -87,13 +86,13 @@ class Iterate extends events.EventEmitter {
     if (this.dmsConfig) {
       assert(typeof this.dmsConfig === 'object', 'dms config must be object');
       assert(typeof this.dmsConfig.snitchUrl === 'string',
-          'dms config must have snitchUrl as string');
+        'dms config must have snitchUrl as string');
       assert(typeof this.dmsConfig.apiKey === 'string',
-          'dms config must have apiKey as string');
+        'dms config must have apiKey as string');
     }
 
     assert(!opts.monitor || typeof opts.monitor === 'object',
-           'monitor should be an object from taskcluster-lib-monitor if given');
+      'monitor should be an object from taskcluster-lib-monitor if given');
     this.monitor = opts.monitor;
 
     // We add the times together since we're always going to have the watch dog
@@ -138,14 +137,14 @@ class Iterate extends events.EventEmitter {
       watchDog.start();
       // Note that we're using a watch dog for the maxIterationTime guarding.
       let value = await Promise.race([
-          new Promise((res, rej) => {
-            setTimeout(() => {
-              debug(`handler lost race to timeout ${this.maxIterationTime}ms`);
-              rej(new Error('Iteration exceeded maximum time allowed'));
-            }, this.maxIterationTime);
-          }),
-          watchDogRejector.promise(),
-          this.handler(watchDog, this.sharedState),
+        new Promise((res, rej) => {
+          setTimeout(() => {
+            debug(`handler lost race to timeout ${this.maxIterationTime}ms`);
+            rej(new Error('Iteration exceeded maximum time allowed'));
+          }, this.maxIterationTime);
+        }),
+        watchDogRejector.promise(),
+        this.handler(watchDog, this.sharedState),
       ]);
       watchDog.stop();
 
@@ -200,21 +199,19 @@ class Iterate extends events.EventEmitter {
 
     if (this.failures.length >= this.maxFailures) {
       this.__emitFatalError();
+    } else if (this.keepGoing) {
+      debug('scheduling next iteration');
+      this.currentIteration++;
+      this.currentTimeout = setTimeout(async () => {
+        try {
+          await this.iterate();
+        } catch (err) {
+          console.error(err.stack || err);
+        }
+      }, this.waitTime);
     } else {
-      if (this.keepGoing) {
-        debug('scheduling next iteration');
-        this.currentIteration++;
-        this.currentTimeout = setTimeout(async () => {
-          try {
-            await this.iterate();
-          } catch (err) {
-            console.error(err.stack || err);
-          }
-        }, this.waitTime);
-      } else {
-        this.stop();
-        this.emit('stopped');
-      }
+      this.stop();
+      this.emit('stopped');
     }
   }
 
@@ -231,7 +228,7 @@ class Iterate extends events.EventEmitter {
             username: this.dmsConfig.apiKey,
             password: '',
             sendImmediately: true,
-          }
+          },
         });
         debug('hit deadman\'s snitch');
       } catch (err) {
