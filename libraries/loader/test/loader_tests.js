@@ -21,8 +21,8 @@ describe('component loader', () => {
       test: {
         setup: () => {
           return a;
-        }
-      }
+        },
+      },
     });
 
     assume(await load('test')).equals(a);
@@ -36,12 +36,12 @@ describe('component loader', () => {
         requires: ['dep'],
         setup: deps => {
           return deps.dep;
-        }
-      }
+        },
+      },
     }, ['dep']);
 
     assume(await load('test', {
-      dep: a
+      dep: a,
     })).equals(a);
   });
 
@@ -50,13 +50,13 @@ describe('component loader', () => {
       test: {
         requires: [],
         setup: () => {
-          return "Hello World";
-        }
-      }
+          return 'Hello World';
+        },
+      },
     }, []);
 
     assume(await load('test', {
-      test: 'Mocking Hello World'
+      test: 'Mocking Hello World',
     })).equals('Mocking Hello World');
   });
 
@@ -67,13 +67,13 @@ describe('component loader', () => {
           requires: ['dep'],
           setup: deps => {
             return deps.dep;
-          }
-        }
+          },
+        },
       });
     } catch (e) {
       return; // Ignore expected error
     }
-    assert(false, "Expected an error");
+    assert(false, 'Expected an error');
   });
 
   it('different loaders should have independent components', async () => {
@@ -99,8 +99,8 @@ describe('component loader', () => {
       test: {
         setup: () => {
           return {a: 1};
-        }
-      }
+        },
+      },
     });
 
     assume(await load('test')).does.not.equal(await load('test'));
@@ -115,15 +115,15 @@ describe('component loader', () => {
         setup: () => {
           called = true;
           return a;
-        }
+        },
       },
       base: {
         requires: ['dep'],
         setup: async deps => {
           assume(a).equal(deps.dep);
           return deps.dep;
-        }
-      }
+        },
+      },
     });
 
     assume(called).is.false();
@@ -135,8 +135,8 @@ describe('component loader', () => {
     let load = subject({
       base: {
         requires: [],
-        setup: () => {}
-      }
+        setup: () => {},
+      },
     });
 
     try {
@@ -147,28 +147,27 @@ describe('component loader', () => {
       }
       return; // Ignore expected error
     }
-    assert(false, 'Expected an exception')
+    assert(false, 'Expected an exception');
   });
-
 
   it('should detect and bail on cyclic dependency', async () => {
     try {
       let load = subject({
         dep1: {
           requires: ['dep2'],
-          setup: () => true
+          setup: () => true,
         },
         dep2: {
           requires: ['dep3'],
-          setup: () => true
+          setup: () => true,
         },
         dep3: {
           requires: ['dep1'],
-          setup: () => true
+          setup: () => true,
         },
         base: {
           requires: ['dep1'],
-          setup: () => true
+          setup: () => true,
         },
       });
     } catch (e) {
@@ -177,7 +176,7 @@ describe('component loader', () => {
       }
       return;
     }
-    assert(false, "Expected an exception");
+    assert(false, 'Expected an exception');
   });
 
   it('should load different types of static dependencies', async () => {
@@ -189,7 +188,7 @@ describe('component loader', () => {
       object: {setup: () => a},
       number: {setup: () => 123.456},
       promise: {setup: () => Promise.resolve(b)},
-      func: {setup: ()=> () => { return c }},
+      func: {setup: ()=> () => { return c; }},
       base: {
         requires: ['string', 'object', 'number', 'promise', 'func'],
         setup: async deps => {
@@ -209,29 +208,29 @@ describe('component loader', () => {
     let load = subject({
       dep1: {
         requires: ['dep2', 'dep3'],
-        setup: () => true
+        setup: () => true,
       },
       dep2: {
         requires: ['dep4'],
-        setup: () => true
+        setup: () => true,
       },
       dep3: {
         requires: ['dep4'],
-        setup: () => true
+        setup: () => true,
       },
       dep4: {
         requires: [],
-        setup: () => true
+        setup: () => true,
       },
       staticDep1: {
-        setup: () => 'john'
+        setup: () => 'john',
       },
       base: {
         requires: ['dep1', 'staticDep1'],
         setup: async deps => {
           assume(await deps.staticDep1).equals('john');
           return true;
-        }
+        },
       },
     });
 
@@ -257,14 +256,14 @@ describe('component loader', () => {
         setup: () => true,
       },
       staticDep1: {
-        setup: () => 'john'
+        setup: () => 'john',
       },
       base: {
         requires: ['dep1', 'staticDep1'],
         setup: async deps => {
           assume(await deps.staticDep1).equals('john');
           return true;
-        }
+        },
       },
       otherBase: {
         requires: ['dep5', 'dep6'],
@@ -310,12 +309,12 @@ describe('component loader', () => {
         requires: ['dep'],
         setup: deps => {
           return deps.dep;
-        }
-      }
+        },
+      },
     }, ['dep']);
 
     await load('graphviz', {
-      dep: a
+      dep: a,
     });
   });
 
@@ -331,14 +330,14 @@ describe('component loader', () => {
       }
       return;
     }
-    assert(false, "Expected an error");
+    assert(false, 'Expected an error');
   });
 
   // We want to splatter bad component definitions against our component
   // validator
   let badDef = [
     ['def that is a string', 'this ought to fail'],
-    ['def with non-func setup property', { setup: 'hi' }],
+    ['def with non-func setup property', {setup: 'hi'}],
     ['def with missing setup property', {}],
     ['def with requires that is not array', {
       setup: () => {},
@@ -408,7 +407,7 @@ describe('component loader', () => {
         setup: d => {
           orderCalled.push('base');
           return d.dep1;
-        }
+        },
       },
 
     });

@@ -4,7 +4,6 @@ let Promise = require('promise');
 let _ = require('lodash');
 let TopoSort = require('topo-sort');
 
-
 // see babel issue 2215
 function includes(a, v) {
   if (a.indexOf(v) === -1) {
@@ -13,12 +12,11 @@ function includes(a, v) {
   return true;
 }
 
-
 /** Validate component definition */
 function validateComponent(def, name) {
-  let e = "Invalid component definition: " + name;
+  let e = 'Invalid component definition: ' + name;
   // Check that it's an object
-  if (typeof(def) !== 'object' && def !== null && def !== undefined) {
+  if (typeof def !== 'object' && def !== null && def !== undefined) {
     throw new Error(e + ' must be an object, null or undefined');
   }
   // Check that is object has a setup function
@@ -31,7 +29,7 @@ function validateComponent(def, name) {
       throw new Error(e + ' if present, requires must be array');
     }
     // Check that all entries in def.requires are strings
-    if (!def.requires.every(entry => typeof(entry) === 'string')) {
+    if (!def.requires.every(entry => typeof entry === 'string')) {
       throw new Error(e + ' all items in requires must be strings');
     }
   }
@@ -142,7 +140,7 @@ function loader(componentDirectory, virtualComponents = []) {
   // Check for undefined components
   _.forEach(componentDirectory, (def, name) => {
     validateComponent(def, name);
-    for(let dep of def.requires || []) {
+    for (let dep of def.requires || []) {
       if (!componentDirectory[dep] && !includes(virtualComponents, dep)) {
         throw new Error('Cannot require undefined component: ' + dep);
       }
@@ -164,7 +162,7 @@ function loader(componentDirectory, virtualComponents = []) {
     throw new Error('graphviz is reserved for an internal component');
   }
   componentDirectory.graphviz = {
-    setup: () => renderGraph(componentDirectory, topoSorted)
+    setup: () => renderGraph(componentDirectory, topoSorted),
   };
   // Add dump-dot target, which will print to terminal (useful for debugging)
   if (componentDirectory['dump-dot'] ||
@@ -172,7 +170,7 @@ function loader(componentDirectory, virtualComponents = []) {
     throw new Error('dump-dot is reserved for an internal component');
   }
   componentDirectory['dump-dot'] = {
-    setup: () => console.log(renderGraph(componentDirectory, topoSorted))
+    setup: () => console.log(renderGraph(componentDirectory, topoSorted)),
   };
 
   return function(target, options = {}) {
@@ -211,7 +209,7 @@ function loader(componentDirectory, virtualComponents = []) {
         let requires = def.requires || [];
         return loaded[target] = Promise.all(requires.map(load)).then(deps => {
           let ctx = {};
-          for(let i = 0; i < deps.length; i++) {
+          for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
           }
           return def.setup.call(null, ctx);
