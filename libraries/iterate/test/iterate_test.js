@@ -31,7 +31,7 @@ class IterateEvents {
     let dl = () => { // dl === dump list
       return `\nExpected: ${JSON.stringify(this.expectedOrder, null, 2)}` +
         `\nActual: ${JSON.stringify(this.orderOfEmission, null, 2)}`;
-    }
+    };
 
     if (this.orderOfEmission.length !== this.expectedOrder.length) {
       return f(new Error(`order emitted differs in length from expectation ${dl()}`));
@@ -88,7 +88,6 @@ describe('Iterate', () => {
       monitor,
     });
 
-
     i.on('error', err => {
       done(err);
     });
@@ -126,9 +125,8 @@ describe('Iterate', () => {
         debug('iterate!');
         iterations++;
         return 1;
-      }
+      },
     });
-
 
     i.on('error', err => {
       done(err);
@@ -167,7 +165,7 @@ describe('Iterate', () => {
           setTimeout(res, 6000);
         });
 
-      }
+      },
     });
 
     i.start();
@@ -188,7 +186,7 @@ describe('Iterate', () => {
             return res();
           }, 5000);
         });
-      }
+      },
     });
 
     i.on('error', err => {
@@ -211,7 +209,7 @@ describe('Iterate', () => {
       handler: async (watchdog, state) => {
         watchdog.stop();
         return 1;
-      }
+      },
     });
 
     i.start();
@@ -236,7 +234,7 @@ describe('Iterate', () => {
         return new Promise((res, rej) => {
           rej(new Error('hi'));
         });
-      }
+      },
     });
 
     i.start();
@@ -248,8 +246,6 @@ describe('Iterate', () => {
     });
 
   });
-
-
 
   it('should cause uncaughtException when error event is unhandled', done => {
     let iterations = 0;
@@ -263,7 +259,7 @@ describe('Iterate', () => {
     let origListeners = process.listeners('uncaughtException');
     process.removeAllListeners('uncaughtException');
 
-    let uncaughtHandler = function (err) {
+    let uncaughtHandler = function(err) {
       process.removeAllListeners('uncaughtException');
       for (let listener of origListeners) {
         process.on('uncaughtException', listener);
@@ -284,7 +280,7 @@ describe('Iterate', () => {
         return new Promise((res, rej) => {
           rej(new Error('hi'));
         });
-      }
+      },
     });
 
     i.start();
@@ -319,9 +315,8 @@ describe('Iterate', () => {
         debug('iterate!');
         iterations++;
         return 1;
-      }
+      },
     });
-
 
     i.on('error', err => {
       done(err);
@@ -353,7 +348,7 @@ describe('Iterate', () => {
         debug('iterate!');
         iterations++;
         return 1;
-      }
+      },
     });
 
     i.on('error', err => {
@@ -365,7 +360,7 @@ describe('Iterate', () => {
       'iteration-start',
       'iteration-success',
       'iteration-complete',
-      'stopped'
+      'stopped',
     ]);
 
     i.on('stopped', () => {
@@ -391,7 +386,7 @@ describe('Iterate', () => {
         debug('iterate!');
         iterations++;
         return 1;
-      }
+      },
     });
 
     i.on('error', err => {
@@ -404,11 +399,11 @@ describe('Iterate', () => {
       'iteration-success',
       'iteration-complete',
       'completed',
-      'stopped'
+      'stopped',
     ]);
 
     i.on('error', err => {
-      done(err)
+      done(err);
     });
 
     i.on('stopped', () => {
@@ -437,7 +432,7 @@ describe('Iterate', () => {
           debug('iterate!');
           iterations++;
           throw new Error('hi');
-        }
+        },
       });
 
       let events = new IterateEvents(i, [
@@ -473,7 +468,7 @@ describe('Iterate', () => {
           debug('iterate!');
           iterations++;
           throw new Error('hi');
-        }
+        },
       });
 
       let events = new IterateEvents(i, [
@@ -507,7 +502,7 @@ describe('Iterate', () => {
         waitTime: 1,
         handler: async (watchdog, state) => {
           return true;
-        }
+        },
       });
 
       let events = new IterateEvents(i, [
@@ -542,7 +537,7 @@ describe('Iterate', () => {
           return new Promise((res, rej) => {
             setTimeout(res, 3000);
           });
-        }
+        },
       });
 
       let events = new IterateEvents(i, [
@@ -578,7 +573,7 @@ describe('Iterate', () => {
           return new Promise((res, rej) => {
             setTimeout(res, 6000);
           });
-        }
+        },
       });
 
       let events = new IterateEvents(i, [
@@ -616,7 +611,7 @@ describe('Iterate', () => {
           } else {
             return 'odd, so working';
           }
-        }
+        },
       });
 
       let events = new IterateEvents(i, [
@@ -648,10 +643,10 @@ describe('Iterate', () => {
       });
 
       i.on('error', err => {
-        done(err)
+        done(err);
       });
 
       i.start();
     });
   });
-})
+});

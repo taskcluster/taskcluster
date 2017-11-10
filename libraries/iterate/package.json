@@ -5,33 +5,35 @@
   "main": "lib/iterate.js",
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "prepublish": "npm run compile",
-    "test": "npm run compile && mocha .test/*_test.js"
+    "lint": "eslint src/*.js test/*.js",
+    "prepare": "yarn compile",
+    "test": "yarn compile && mocha .test/*_test.js"
   },
   "repository": {
-     "type": "git",
-     "url": "https://github.com/taskcluster/taskcluster-lib-iterate.git"
-   },
+    "type": "git",
+    "url": "https://github.com/taskcluster/taskcluster-lib-iterate.git"
+  },
   "keywords": [
     "taskcluster"
   ],
   "author": "John Ford <jhford@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "babel-runtime": "^6.9.2",
-    "bluebird": "^3.4.1",
-    "debug": "^2.2.0",
+    "babel-runtime": "^6.26.0",
+    "bluebird": "^3.5.1",
+    "debug": "^3.1.0",
     "lodash": "^4.13.1",
-    "request": "^2.73.0",
-    "request-promise": "^3.0.0"
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
+    "assume": "^1.5.2",
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0",
-    "assume": "^1.4.1",
-    "mocha": "^2.5.3",
-    "sinon": "^1.17.4",
-    "source-map-support": "^0.4.1",
-    "taskcluster-lib-monitor": "^3.1.0"
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "^4.0.1",
+    "sinon": "^4.1.2",
+    "source-map-support": "^0.5.0",
+    "taskcluster-lib-monitor": "^4.6.3"
   }
 }
