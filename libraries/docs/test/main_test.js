@@ -141,7 +141,7 @@ suite('End to End', () => {
       'docs/example.md',
       'docs/nested/nested-example.md',
     ];
-    assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, doc.tgz);
   });
 
   test('tarball contains schemas and metadata', async function() {
@@ -152,9 +152,10 @@ suite('End to End', () => {
     let shoulds = [
       'schemas/foo.json',
       'schemas/bar.json',
+      'docs/documenting-non-services.md',
       'docs/format.md',
     ];
-    assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, doc.tgz);
   });
 
   test('tarball contains references and metadata', async function() {
@@ -165,9 +166,10 @@ suite('End to End', () => {
     let shoulds = [
       'references/api.json',
       'references/events.json',
+      'docs/documenting-non-services.md',
       'docs/format.md',
     ];
-    assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, doc.tgz);
   });
 
   test('tarball contains only metadata', async function() {
@@ -175,9 +177,10 @@ suite('End to End', () => {
       tier,
     });
     let shoulds = [
+      'docs/documenting-non-services.md',
       'docs/format.md',
     ];
-    assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, doc.tgz);
   });
 
   test('download tarball contains project', async function() {
