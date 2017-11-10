@@ -1,9 +1,8 @@
 language: node_js
 sudo: false
 node_js:
-- '0.12'
 - '7'
-- stable
+- '8'
 notifications:
   irc:
     channels:
@@ -18,6 +17,7 @@ notifications:
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
+  skip_cleanup: true
   api_key:
     secure: LGhwEeb/KJ+hR61kBHtN8laff9bc9gkklfPlflHc5HcE/9gOZHEyLT03lhXEehabKE5+UqQvnqIdXQXfNMtHWy7jdGtl4+/5Lp0gRezEPnSl5av/DsisMe1LZx3Derw5HhdKRtTM33Q/np5KEWShBZ3B2vvwKCxlh5QWsJgijqxvtGyBjKXLF/ofJUN34YnpSyqRWOve+r+Qr5zrdPqmX3/oNnrZrVKJ8zgHZJ/VaYAjYPPK+e4H9HORRYNwDrIP5g9iOcQ/6hIiO/0v6nl0I1LWU07vO2S1E72duXO5uhFIm+8+FuiuSDmFJozO3k2vg513glivyRFHl+puKqKvDOSvNzOI2HkV767uNSqeRVdNAzc90FSaHNldeNhYX84Rz1h/1KkzS6Cj3T53up66SRULW8LWM5yHL/pCvazrixgvSP+otlTx8ErBW61QzNj4kwsdia+FPSJm8GoOsXKaFSXYNeqPHvwOLN+PHQ0cSOp0OY6kHTkOce1/cxsfjhgqkjaCin0cC/mX8QRKBUJQrBciah6z4xbBv/iw8uHnDRABWMf1uQEqnxJZ+OyUKSorydYXCH11hWq/2kc0NHB93wG/+n3NIS8cWTClZ2E8krdtKTEEHfknQjNPg+ZuYI0xDjKyj/6Y8b89WqeS7+h8nZ/vYaBva9mtaHLoJqzYPnw=
   on:
