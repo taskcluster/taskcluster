@@ -45,7 +45,7 @@ suite('Audit Logs', () => {
     records = {};
   });
 
-  test('should write logs on explicit flush', async function () {
+  test('should write logs on explicit flush', async function() {
     let subject = {test: 123};
     monitor.log(subject);
     await monitor.flush();
@@ -53,12 +53,12 @@ suite('Audit Logs', () => {
     assert.deepEqual(records[logName].map(JSON.parse)[0], subject);
   });
 
-  test('should not write 0 logs on flush', async function () {
+  test('should not write 0 logs on flush', async function() {
     await monitor.flush();
     assert.equal(records[logName].length, 0);
   });
 
-  test('should write logs with newlines in them', async function () {
+  test('should write logs with newlines in them', async function() {
     let subject = {test: 'abc\n123'};
     monitor.log(subject);
     await monitor.flush();
@@ -66,7 +66,7 @@ suite('Audit Logs', () => {
     assert.deepEqual(records[logName].map(JSON.parse)[0], subject);
   });
 
-  test('should write logs on 500 records', async function () {
+  test('should write logs on 500 records', async function() {
     let subjects = _.range(5302).map(i => ({foo: i}));
     subjects.forEach(subject => monitor.log(subject));
     await monitor.flush();
@@ -74,7 +74,7 @@ suite('Audit Logs', () => {
     assert.deepEqual(records[logName].map(JSON.parse), subjects);
   });
 
-  test('should write logs on too many bytes', async function () {
+  test('should write logs on too many bytes', async function() {
     // This should get the records to be over 4MB in total
     let subjects = _.range(250).map(i => ({foo: i, bar: _.repeat('#', 16000)}));
     subjects.forEach(subject => monitor.log(subject));
@@ -83,7 +83,7 @@ suite('Audit Logs', () => {
     assert.deepEqual(records[logName].map(JSON.parse), subjects);
   });
 
-  test('should write logs on timeout', async function () {
+  test('should write logs on timeout', async function() {
     let subject = {test: 1000, timerthing: true};
     monitor.log(subject);
     await testing.poll(async () => {
@@ -98,7 +98,7 @@ suite('Audit Logs', () => {
     });
   });
 
-  test('should eventually stop trying to resubmit', async function () {
+  test('should eventually stop trying to resubmit', async function() {
     AWS.restore('Firehose', 'putRecord');
     AWS.mock('Firehose', 'putRecord', (params, callback) => {
       return callback({statusCode: 500, message: 'uh oh!', retryable: true}, null);
@@ -110,7 +110,7 @@ suite('Audit Logs', () => {
     assert(closed, 'Failed to reject permanently failing submission.');
   });
 
-  test('should resubmit all on error', async function () {
+  test('should resubmit all on error', async function() {
     let tried = false;
     AWS.restore('Firehose', 'putRecord');
     AWS.mock('Firehose', 'putRecord', (params, callback) => {
@@ -132,7 +132,7 @@ suite('Audit Logs', () => {
     });
   });
 
-  test('should resubmit all on error even with multiple chunks', async function () {
+  test('should resubmit all on error even with multiple chunks', async function() {
     let tried = false;
     let submissions = 0;
     AWS.restore('Firehose', 'putRecord');

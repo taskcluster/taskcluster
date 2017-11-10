@@ -22,7 +22,7 @@ suite('Sentry', () => {
     authmock.teardown();
   });
 
-  test('should log to sentry', async function (done) {
+  test('should log to sentry', function(done) {
 
     let sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
@@ -37,19 +37,14 @@ suite('Sentry', () => {
         done();
       });
 
-    setTimeout(function() {
-      sentryScope.done();
-    }, 2000);
-
-    let results = await Promise.all([
+    Promise.all([
       monitor.reportError('create sentry error test'),
       monitor.reportError('another time'),
       monitor.captureError('this is the same as reportError'),
-    ]);
-    assert.deepEqual(results, [true, true, true]);
+    ]).then(results => assert.deepEqual(results, [true, true, true]));
   });
 
-  test('should handle sentry error', async function (done) {
+  test('should handle sentry error', async function() {
 
     let sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
@@ -58,11 +53,7 @@ suite('Sentry', () => {
         debug('called Sentry, returned 500');
       });
 
-    setTimeout(function() {
-      sentryScope.done();
-    }, 2000);
-
-    done(assert.equal(false, await monitor.reportError('stranger things')));
+    assert.equal(false, await monitor.reportError('stranger things'));
   });
 
 });

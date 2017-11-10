@@ -33,7 +33,7 @@ suite('Statsum', () => {
     authmock.teardown();
   });
 
-  test('should have written', async function (done) {
+  test('should have written', async function() {
     monitor.count('testing', 10);
     await monitor.flush();
 
@@ -42,8 +42,7 @@ suite('Statsum', () => {
     await pre.flush();
 
     if (!statsumScope.isDone()) {
-      done(new Error('Error! Did not call' + statsumScope.pendingMocks()));
+      return new Error('Error! Did not call' + statsumScope.pendingMocks());
     }
-    done();
   });
 });
