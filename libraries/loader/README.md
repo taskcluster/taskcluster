@@ -4,7 +4,7 @@ This library provides a means of loading application "components", each of
 which can depend on other components.  This makes application startup more
 modular and flexible.  It also enables dependency injection during tests.
 
-It is used to run all TaskCluster microservices.
+It is used to run all Taskcluster microservices.
 
 ## Components
 
