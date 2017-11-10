@@ -7,6 +7,7 @@ suite('Uncaught Errors', () => {
   let path = require('path');
   let fork = require('child_process').fork;
   let _ = require('lodash');
+  let Promise = require('bluebird');
 
   let monitor = null;
 
@@ -23,7 +24,7 @@ suite('Uncaught Errors', () => {
     authmock.teardown();
   });
 
-  test('should report unhandled rejections', async function(done) {
+  test('should report unhandled rejections', function(done) {
 
     let sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
@@ -33,18 +34,16 @@ suite('Uncaught Errors', () => {
         done();
       });
 
-    setTimeout(function() {
-      sentryScope.done();
-    }, 2000);
-
-    throw new Error('This should hopefully bubble up to the top!');
+    Promise.resolve().then(() => {
+      throw new Error('This should hopefully bubble up to the top!');
+    });
   });
 
   // These tests needs to take place in an external function that we
   // fork to avoid issues with uncaught exceptions and mocha and
   // our process.exit behavior.
 
-  test('should report uncaught exceptions', async function(done) {
+  test('should report uncaught exceptions', function(done) {
 
     let proc = fork(
       path.resolve(__dirname, './should_exit_with_error.js'),
@@ -81,7 +80,7 @@ suite('Uncaught Errors', () => {
     });
   });
 
-  test('should exit no matter what', async function(done) {
+  test('should exit no matter what', function(done) {
 
     let proc = fork(
       path.resolve(__dirname, './should_exit_with_error.js'),
