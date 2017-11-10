@@ -45,17 +45,17 @@ let assert = require('assert');
  * `undefined`, so it can fall-back to defaults from previous config file.
  */
 let config = (options = {}) => {
-  assert(options instanceof Object, "Options must be an object!");
+  assert(options instanceof Object, 'Options must be an object!');
   options = _.defaults({}, options, {
     files: [
       'config.yml',
-      'user-config.yml'
+      'user-config.yml',
     ],
     profile:  process.env.NODE_ENV || undefined,
-    env:      process.env
+    env:      process.env,
   });
-  assert(options.files instanceof Array, "Expected an array of files");
-  assert(typeof(options.env) === 'object', "Expected env to be an object");
+  assert(options.files instanceof Array, 'Expected an array of files');
+  assert(typeof options.env === 'object', 'Expected env to be an object');
 
   // Create a YAML type that loads from environment variable
   let createType = (name, typeName, deserialize) => {
@@ -65,7 +65,7 @@ let config = (options = {}) => {
       kind: 'scalar',
       // Accepts any string on the form [A-Z0-9_]+
       resolve(data) {
-        return typeof(data) === 'string' && /^[A-Z0-9_]+$/.test(data);
+        return typeof data === 'string' && /^[A-Z0-9_]+$/.test(data);
       },
       // Deserialize the data, in the case we read the environment variable
       construct(data) {
@@ -75,34 +75,34 @@ let config = (options = {}) => {
         } catch (err) {
           // Print a warning, if the environment variable is present
           if (value !== undefined) {
-            console.log("base.config: Warning failed to load %s from " +
-                        "environment variable '%s'", typeName, data);
+            console.log('base.config: Warning failed to load %s from ' +
+                        'environment variable \'%s\'', typeName, data);
           }
           return undefined;
         }
-      }
+      },
     });
   };
 
   // Construct YAML schema
   const YAML_SCHEMA = yaml.Schema.create(yaml.JSON_SCHEMA, [
     createType('!env', 'string', val => {
-      assert(typeof(val) === 'string');
+      assert(typeof val === 'string');
       return val;
     }),
     createType('!env:string', 'string', val => {
-      assert(typeof(val) === 'string');
+      assert(typeof val === 'string');
       return val;
     }),
     createType('!env:number', 'number', val => {
-      assert(typeof(val) === 'string');
+      assert(typeof val === 'string');
       return parseFloat(val);
     }),
     createType('!env:flag', 'flag', val => {
-      return typeof(val) === 'string';
+      return typeof val === 'string';
     }),
     createType('!env:bool', 'boolean', val => {
-      assert(typeof(val) === 'string');
+      assert(typeof val === 'string');
       if (/^true$/i.test(val)) {
         return true;
       }
@@ -112,20 +112,20 @@ let config = (options = {}) => {
       return undefined;
     }),
     createType('!env:json', 'json', val => {
-      assert(typeof(val) === 'string');
+      assert(typeof val === 'string');
       return JSON.parse(val);
     }),
     createType('!env:list', 'list', val => {
-      assert(typeof(val) === 'string');
+      assert(typeof val === 'string');
       return (val.match(/'[^']*'|"[^"]*"|[^ \t]+/g) || []).map(entry =>{
         let n = entry.length;
-        if ((entry[0] === "'" && entry[n - 1] === "'") ||
-            (entry[0] === '"' && entry[n - 1] === '"')) {
+        if (entry[0] === '\'' && entry[n - 1] === '\'' ||
+            entry[0] === '"' && entry[n - 1] === '"') {
           return entry.substring(1, n - 1);
         }
         return entry;
       });
-    })
+    }),
   ]);
 
   // Load files and parse YAML files
@@ -139,9 +139,9 @@ let config = (options = {}) => {
     } catch (err) {
       // Don't print error, if the file is just missing
       if (err.code !== 'ENOENT') {
-        debug("Failed to load: %s, err: %s", file, err, err.stack);
+        debug('Failed to load: %s, err: %s', file, err, err.stack);
       } else {
-        debug("Config file missing: %s", file);
+        debug('Config file missing: %s', file);
       }
       continue;
     }
@@ -150,24 +150,24 @@ let config = (options = {}) => {
     try {
       data = yaml.safeLoad(data, {
         filename: file,
-        schema: YAML_SCHEMA
+        schema: YAML_SCHEMA,
       });
     } catch (err) {
-      debug("Failed to parse YAML from %s, err: %s",
-            file, err.toString(), err.stack);
-      throw new Error("Can't parse YAML from: " + file + " " + err.toString());
+      debug('Failed to parse YAML from %s, err: %s',
+        file, err.toString(), err.stack);
+      throw new Error('Can\'t parse YAML from: ' + file + ' ' + err.toString());
     }
     // Add defaults to list of configurations if present
     if (data.defaults) {
-      assert(typeof(data.defaults) === 'object',
-             "'defaults' must be an object");
+      assert(typeof data.defaults === 'object',
+        '\'defaults\' must be an object');
       cfgs.unshift(data.defaults);
     }
 
     // Add profile to list of configurations, if it is given
     if (options.profile && data[options.profile]) {
       let profile = data[options.profile];
-      assert(typeof(profile) === 'object', "profile must be an object");
+      assert(typeof profile === 'object', 'profile must be an object');
       cfgs.unshift(profile);
     }
   }
