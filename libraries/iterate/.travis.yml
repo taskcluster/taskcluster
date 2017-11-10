@@ -1,11 +1,8 @@
 language: node_js
 sudo: false
 node_js:
-- '0.12'
-- '4'
-- '5'
-- stable
 - '7'
+- '8'
 addons:
   apt:
     sources:
@@ -19,6 +16,7 @@ env:
 deploy:
   provider: npm
   email: taskcluster-accounts@mozilla.com
+  skip_cleanup: true
   api_key:
     secure: YMIVeaeEkT7uvbv8mMsUiRe0AywSN7vzAGdy/nssXPKTetxZ9W9d9gXEUor9P/giE7koNlPFofCayQwFe4+jCkAKLVRhObjhcNVLD1V9esKbIXFjeBY91nM+3B44atC7D3m8Pa9/jg88CGkMOWDz0kyWvDCMXa67Ovw2g1O5SgXxwz5AoTJdN81ugVn/77Mi2jFaQU6PxLXE7ZA74E5NsDVrleBiqtpj0709CrRaaFshpIDIve+KsqTVsoGCTpmRzUKzokv/Q2gqFccAvJQOYbE+Jr5+pgfbXG9Eplux8hGda5T8qfVcsoYWoCFssj/02S/KXhZAroka2DSD+dledMdaHY5UyKM6VeywVfkOwloWrCnAkdP+PLUyuAyGV7BsVmwEJKVSdxrzn0WX5w+WPdrJwPw/6+YgB4Nig8RZWtZWlOBnFLwEeqof6azOCfYxnljjbyQXraZP4VvWA4QI7Tny+KSAh3E6LPpL+9IhGgnIkx9NHsQE5Mx1+k1jXX6edoRZa6v5Bjj6n5QWAxzcPmfcOJzALD3UagR4h50+lqjZAj5HyuNWWKFipVqybO7NQV11y6EimhxZ7j+sSHqLfc9JGhw0etxUiJDX30YcP7j3vTB5gCF8dur+tVj6mlrjhNtPciyYKf24uFwvj6plG33MZfu8ZPJ+rvtf0NiRoX4=
   on:
