@@ -13,7 +13,7 @@ View the changelog on the [releases page](https://github.com/taskcluster/taskclu
 Requirements
 ------------
 
-This is tested on and should run on any of node `{4, 5, 6, 7}`.
+This is tested on and should run on any of node `{7, 8}`.
 
 Operation
 ---------
