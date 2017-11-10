@@ -6,9 +6,10 @@
   "license": "MPL-2.0",
   "scripts": {
     "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "prepublish": "npm run compile",
-    "pretest": "npm run compile",
-    "test": "mocha .test/lint.js .test/*_test.js"
+    "lint": "eslint src/*.js test/*.js",
+    "prepublish": "yarn compile",
+    "pretest": "yarn lint && yarn compile",
+    "test": "mocha .test/*_test.js"
   },
   "files": [
     "lib"
@@ -19,29 +20,25 @@
   },
   "dependencies": {
     "aws-sdk": "^2.30.0",
-    "babel-runtime": "^6.0.0",
-    "bluebird": "^3.5.0",
-    "debug": "^2.2.0",
+    "babel-runtime": "^6.26.0",
+    "bluebird": "^3.5.1",
+    "debug": "^3.1.0",
     "lodash": "^4.5.1",
-    "promise": "^7.0.4",
-    "raven": "^1.1.1",
+    "raven": "^2.2.1",
     "statsum": "^0.5.1",
-    "taskcluster-client": "^1.0.1",
+    "taskcluster-client": "^3.0.3",
     "usage": "^0.7.1"
   },
   "devDependencies": {
-    "aws-sdk-mock": "^1.6.1",
+    "aws-sdk-mock": "^1.7.0",
     "babel-compile": "^2.0.0",
-    "babel-eslint": "^6.0.0",
     "babel-preset-taskcluster": "^3.0.0",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.0",
-    "mocha": "2.5.3",
-    "mocha-eslint": "^2.0.1",
-    "mock-aws-s3": "^2.1.0",
-    "nock": "^8.0.0",
-    "source-map-support": "^0.4.0",
-    "taskcluster-lib-testing": "^1.0.0"
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "4.0.1",
+    "mock-aws-s3": "^2.6.0",
+    "nock": "^9.0.28",
+    "source-map-support": "^0.5.0",
+    "taskcluster-lib-testing": "^2.0.2"
   },
   "main": "./lib/index.js"
 }

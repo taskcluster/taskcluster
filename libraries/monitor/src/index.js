@@ -45,7 +45,7 @@ async function monitor(options) {
   });
   assert(options.authBaseUrl || options.credentials || options.statsumToken && options.sentryDSN ||
          options.mock,
-         'Must provide taskcluster credentials or authBaseUrl or sentryDSN and statsumToken');
+  'Must provide taskcluster credentials or authBaseUrl or sentryDSN and statsumToken');
   assert(options.project, 'Must provide a project name!');
 
   // Return mock monitor, if mocking

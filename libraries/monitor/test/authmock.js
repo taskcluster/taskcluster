@@ -1,5 +1,4 @@
 let debug = require('debug')('test');
-let testing = require('taskcluster-lib-testing');
 let nock = require('nock');
 
 let testclients = {
@@ -7,7 +6,6 @@ let testclients = {
 };
 
 exports.setup = () => {
-  testing.fakeauth.start(testclients);
   let date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
   nock('https://auth.taskcluster.net')
     .persist()

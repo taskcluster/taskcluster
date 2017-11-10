@@ -61,7 +61,7 @@ suite('MockMonitor', () => {
     assert.throws(() => monitor.measure('a', {b: 2}), Error);
   });
 
-  test('should monitor resource usage', async function () {
+  test('should monitor resource usage', async function() {
     let stopMonitor = monitor.resources('testing', 1/500);
     return testing.poll(async () => {
       assert.notEqual(monitor.measures['mm.process.testing.cpu'], undefined);
