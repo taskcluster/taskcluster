@@ -58,6 +58,7 @@ func TestAppDataNotShared(t *testing.T) {
 	}
 }
 
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1360539
 // Test we don't get weird error:
 //  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
