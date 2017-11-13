@@ -2241,6 +2241,17 @@ type (
 			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description
 			Description string `json:"description"`
 
+			// Method to indicate the desired action to be performed for a given resource.
+			//
+			// Possible values:
+			//   * "POST"
+			//   * "PUT"
+			//   * "DELETE"
+			//   * "PATCH"
+			//
+			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/method
+			Method string `json:"method"`
+
 			// Short names for things like logging/error messages.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name

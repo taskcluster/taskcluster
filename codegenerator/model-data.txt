@@ -1,4 +1,4 @@
-Generated: 1510258986
+Generated: 1510583004
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10620,6 +10620,14 @@ Properties
           Type                   = 'string'
           TypeName               = 'Description'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description'
+        Property 'method' =
+          Description            = 'Method to indicate the desired action to be performed for a given resource.
+          '
+          Enum                   = '[POST PUT DELETE PATCH]'
+          Title                  = 'Method'
+          Type                   = 'string'
+          TypeName               = 'Method'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/method'
         Property 'name' =
           Description            = 'Short names for things like logging/error messages.
           '
@@ -10646,12 +10654,11 @@ Properties
           
           _Note: The request needs to be signed with the user's Taskcluster credentials._
           '
-          Format                 = 'uri'
           Title                  = 'URL'
           Type                   = 'string'
           TypeName               = 'URL'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url'
-      Required               = '[name title context url description]'
+      Required               = '[name title context url method description]'
       Title                  = 'Actions'
       Type                   = 'object'
       TypeName               = 'Actions1'
