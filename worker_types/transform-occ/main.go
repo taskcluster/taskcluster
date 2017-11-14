@@ -39,10 +39,24 @@ type (
 		Target      string         `json:"Target"`
 		URL         string         `json:"Url"`
 		Value       string         `json:"Value"`
-		ValueData   string         `json:"ValueData"`
-		ValueName   string         `json:"ValueName"`
-		ValueType   string         `json:"ValueType"`
-		Values      []string       `json:"Values"`
+		// Using 'string' type for ValueData is broken for win10 worker types
+		// at the moment which are sometimes storing an int rather than a
+		// string. Conversion to a hex did not work - see
+		// https://github.com/mozilla-releng/OpenCloudConfig/pull/108 and
+		// https://github.com/mozilla-releng/OpenCloudConfig/commit/801ef77f468b7e6bc5778a7e231f196af17fee65
+		// for details. The ValueData is used in OCC components
+		// RegistryValueSet and RegistryKeySet which are essentially wrappers
+		// around
+		// https://docs.microsoft.com/en-us/powershell/dsc/registryresource .
+		// Need to experiment if these docs are correct and evaluate if
+		// string/[]string/something else is really required. Also need to make
+		// sure "Hex" property is respected in "RegistryKeySet" and
+		// "RegistryValueSet" and find out why it was failing prior to
+		// https://github.com/mozilla-releng/OpenCloudConfig/commit/801ef77f468b7e6bc5778a7e231f196af17fee65
+		ValueData interface{} `json:"ValueData"`
+		ValueName string      `json:"ValueName"`
+		ValueType string      `json:"ValueType"`
+		Values    []string    `json:"Values"`
 	}
 	ComponentKey struct {
 		ComponentName string `json:"ComponentName"`
