@@ -293,9 +293,6 @@ New-NetFirewallRule -DisplayName "KmsIn (TCP 1688 Inbound): Allow" -Direction In
 # KmsOut
 New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction Outbound -LocalPort 1688 -Protocol TCP -Action Allow
 
-# reg_DisableTouchEvents: Bug 1382988 - Disable touch events
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Wisp\Touch" -Name "TouchGate" -Value "0x00000000" -PropertyType Dword -Force
-
 # nircmd
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe", "C:\Windows\System32\nircmd.exe")
 
@@ -303,7 +300,10 @@ $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmdc.exe", "C:\Windows\System32\nircmdc.exe")
 
 # reg_DisableNewAppAlert: Bug 1373551 - prevent dialog to confirm file association
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "0x00000001" -PropertyType Dword -Force
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "1" -PropertyType Dword -Force
+
+# reg_NewNetworkWindowOff: https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58
+New-Item -Path "HKLM:System\CurrentControlSet\Control\Network\NewNetworkWindowOff" -Force
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

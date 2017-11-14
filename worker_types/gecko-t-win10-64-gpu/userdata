@@ -309,17 +309,11 @@ Start-Process "C:\binaries\369.95-quadro-grid-desktop-notebook-win10-64bit-inter
 # NvidiaK520DriverInstall: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
 Start-Process "C:\NVIDIA\369.95\setup.exe" -ArgumentList "/s" -Wait -NoNewWindow
 
-# reg_DisableTouchEvents: Bug 1382988 - Disable touch events
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Wisp\Touch" -Name "TouchGate" -Value "0x00000000" -PropertyType Dword -Force
-
 # nircmd
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe", "C:\Windows\System32\nircmd.exe")
 
 # nircmdc
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmdc.exe", "C:\Windows\System32\nircmdc.exe")
-
-# AssocTxtfileNotepad: Bug 1373551 - associate text files with notepad
-Start-Process "ftype" -ArgumentList "txtfile=`"C:\Windows\System32\Notepad.exe`" `"%1`"" -Wait -NoNewWindow
 
 # UltraVNC: VNC Server - not essential for building firefox
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/UltraVnc/UltraVnc_10962_x64.msi", "C:\binaries\UltraVnc_10962_x64.msi")
@@ -329,7 +323,10 @@ Start-Process "msiexec" -ArgumentList "/i C:\binaries\UltraVnc_10962_x64.msi /qu
 New-NetFirewallRule -DisplayName "Vnc_In (TCP 5900 Inbound): Allow" -Direction Inbound -LocalPort 5900 -Protocol TCP -Action Allow
 
 # reg_DisableNewAppAlert: Bug 1373551 - prevent dialog to confirm file association
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "0x00000001" -PropertyType Dword -Force
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "1" -PropertyType Dword -Force
+
+# reg_NewNetworkWindowOff: https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58
+New-Item -Path "HKLM:System\CurrentControlSet\Control\Network\NewNetworkWindowOff" -Force
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
