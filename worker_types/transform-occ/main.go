@@ -67,19 +67,19 @@ func main() {
 	log.SetPrefix("ERROR: " + workerType + ": ")
 	resp, err := http.Get("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Manifest/" + workerType + ".json")
 	if err != nil {
-		panic(err)
+		log.Fatalf("%v", err)
 	}
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
 	var o OCCManifest
 	err = dec.Decode(&o)
 	if err != nil {
-		panic(err)
+		log.Fatalf("%v", err)
 	}
 
 	orderedComponents, err := OrderComponents(o.Components)
 	if err != nil {
-		panic(err)
+		log.Fatalf("%v", err)
 	}
 
 	fmt.Println(`<powershell>`)
