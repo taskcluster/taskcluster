@@ -4,7 +4,7 @@ suite('API (context)', function() {
   var subject         = require('../');
   var assert          = require('assert');
   var Promise         = require('promise');
-  var request         = require('superagent-promise');
+  var request         = require('superagent');
   var slugid          = require('slugid');
   var path            = require('path');
 
@@ -50,7 +50,6 @@ suite('API (context)', function() {
 
     await request
       .get('http://localhost:60872/v1/context')
-      .end()
       .then(function(res) {
         assert(res.body.myProp === value);
       }).then(function() {
