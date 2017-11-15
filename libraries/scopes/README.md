@@ -1,9 +1,9 @@
-TaskCluster Scopes Utilities
+Taskcluster Scopes Utilities
 ============================
 
 Simple utilities to validate scopes, scope-sets, and scope-set satisfiability.
 
-For information on scopes, see [the TaskCluster documentation](https://docs.taskcluster.net/manual/integrations/apis/scopes).
+For information on scopes, see [the Taskcluster documentation](https://docs.taskcluster.net/manual/integrations/apis/scopes).
 
 ## Usage
 
