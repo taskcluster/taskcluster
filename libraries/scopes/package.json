@@ -9,9 +9,9 @@
     "prepublish": "npm run compile",
     "lint": "eslint src/*.js test/*.js",
     "pretest": "yarn lint && npm run compile",
-    "test": "mocha test/*_test.js"
+    "test": "mocha .test/*_test.js"
   },
-  "main": "./lib/scopes",
+  "main": "./lib/index",
   "files": [
     "lib"
   ],
@@ -27,6 +27,7 @@
     "babel-preset-taskcluster": "^3.0.0",
     "eslint": "^4.10.0",
     "eslint-config-taskcluster": "^3.0.0",
+    "lodash": "^4.17.4",
     "mocha": "4.0.1",
     "mocha-eslint": "^4.1.0"
   }
