@@ -94,7 +94,8 @@ an environment very similar to the one docker-worker runs in production.
 1. Install [VirtualBox](https://www.virtualbox.org/)
 2. Install [Vagrant](https://www.vagrantup.com/)
 3. Install vagrant-reload by running `vagrant plugin install vagrant-reload`
-4. Within the root of the repo, run `vagrant up`
+4. Create temporary Taskcluster credentials running `eval $(taskcluster-cli signin --scope $(cat scopes.txt))`
+5. Within the root of the repo, run `vagrant up`
 
 *** Note: If TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME, PULSE_PASSWORD are configured within the virtual environment if available locally when building ***
 
@@ -106,20 +107,9 @@ an environment very similar to the one docker-worker runs in production.
 4. `./build.sh` # Builds some of the test images that are required
 5. `yarn install --frozen-lockfile` # Installs all the necessary node modules
 
+Note: taskcluster-cli is available at https://github.com/taskcluster/taskcluster-cli/releases
+
 #### Running Tests
-
-The following set of scopes are needed for running the test suites:
-
-* queue:create-task:no-provisioning-nope/dummy-type-*
-* queue:claim-work:no-provisioning-nope/*
-* queue:claim-task
-* queue:resolve-task
-* queue:create-artifact:public/*
-* queue:get-artifact:private/docker-worker-tests/*
-* queue:cancel-task
-* assume:worker-type:no-provisioning-nope/dummy-type-*
-* assume:scheduler-id:docker-worker-tests/*
-* assume:worker-id:random-local-worker/dummy-worker-*
 
 1. Either all the tests can be run, but running `yarn test` or `./test/test.sh`, however, under most circumstances one only wants to run a single test suite
 2. For individual test files, run `./node_modules/mocha/bin/mocha --bail .test/<file>`
