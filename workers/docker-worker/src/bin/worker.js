@@ -1,4 +1,12 @@
 require('source-map-support/register');
+
+// If we passed --require async-dump command line option, set up a timer
+// to dump ongoing async IO operations every 5 seconds
+if (global.asyncDump) {
+  console.log('Installing async hook...');
+  setInterval(global.asyncDump, 5000);
+}
+
 const reportHostMetrics = require('../lib/stats/host_metrics');
 const fs = require('fs');
 const os = require('os');

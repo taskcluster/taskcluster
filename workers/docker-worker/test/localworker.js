@@ -3,7 +3,8 @@ var Promise = require('promise');
 var spawn = require('child_process').spawn;
 
 /** Binary to launch inorder to get a worker instance running */
-const BINARY = __dirname + '/../src/bin/worker.js';
+const BINARY = 'node';
+const STARTUP_SCRIPT = __dirname + '/../src/bin/worker.js';
 
 function eventPromise(listener, event) {
   return new Promise(function(accept, reject) {
@@ -43,8 +44,14 @@ class LocalWorker {
         '--worker-type', this.workerType,
         '--worker-group', 'jonasfj-local-worker',
         '--worker-id', this.workerId,
-        'test'
       ];
+
+      if (global.asyncDump) {
+        args.concat(['--require', '../src/lib/async-dump']);
+      }
+
+      args.push(STARTUP_SCRIPT);
+      args.push('test');
 
       // Launch worker process.
       var proc = this.process = spawn('babel-node', args, {
