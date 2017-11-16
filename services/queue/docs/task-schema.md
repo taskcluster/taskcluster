@@ -7,6 +7,7 @@ ejs:          true
 superagent:   true
 docref:       true
 title:        "Task Schema"
+order: 100
 ---
 
 # Task Definition
