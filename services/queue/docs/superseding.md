@@ -1,5 +1,6 @@
 ---
 title: Superseding
+order: 40
 ---
 
 In many cases, executing some tasks in the queue can render others unnecessary.
