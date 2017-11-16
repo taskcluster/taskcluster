@@ -37,7 +37,7 @@ func TestCommandGeneration(t *testing.T) {
 
 	// find subcommand, set its output
 	subCmd, _, err := cmd.Find([]string{"test", "test"})
-	assert.NoError(err, fmt.Sprintf("could not find subcommand, error: %s", err))
+	assert.NoError(err, "could not find subcommand, error: %s", err)
 
 	buf := &bytes.Buffer{}
 	subCmd.SetOutput(buf)
@@ -51,10 +51,21 @@ func TestCommandGeneration(t *testing.T) {
 	assert.NoError(err, fmt.Sprintf("error executing command: %s", err))
 
 	// the server will reply 'true' if the request is what was expected
-	// currently the server always replies true when getting a request, any request
+	// The provider should not be adding the "key" query parameter as we did not
+	// provide a value for it.
 	expected := "true"
 	actual := buf.String()
 	assert.Equal(expected, actual, "request sent to test server was invalid, replied: %s", actual)
+
+	// Here we test that the "key" query parameter is indeed added to the API call
+	// by getting the API to play back the value it received
+	val := "AKJSD@5$Tshdasdau09ih293ubdks"
+	cmd.SetArgs([]string{"test", "test", "--key", val})
+	buf.Reset()
+	err = cmd.Execute()
+	assert.NoError(err, "error executing command: %s", err)
+	actual = buf.String()
+	assert.Equal(val, actual, "request sent to test server was invalid, replied: %s", actual)
 }
 
 // the code from which we generate the test command
@@ -74,7 +85,7 @@ var servicesTest = map[string]definitions.Service{
 				Method:      "get",
 				Route:       "/test",
 				Args:        []string{},
-				Query:       []string{},
+				Query:       []string{"key"},
 				Input:       "",
 				Output:      "",
 			},
@@ -92,9 +103,14 @@ func apiServer() *httptest.Server {
 }
 
 // apiHandler checks that the received request is valid, and replies
-func apiHandler(w http.ResponseWriter, _ *http.Request) {
-	// currently, we only check whether we receive a request or not, so we simply reply true
-	io.WriteString(w, "true")
-	// when we add more tests, we might want to verify the request we received was right
-	// in this case, we might want to reply with more elaborated answers
+func apiHandler(w http.ResponseWriter, r *http.Request) {
+	// If the "key" parameter is not present, we simply return "true"
+	// However, if the "key" parameter is present, we echo back the value given.
+	query := r.URL.Query()
+
+	if _, ok := query["key"]; ok {
+		io.WriteString(w, query.Get("key"))
+	} else {
+		io.WriteString(w, "true")
+	}
 }
