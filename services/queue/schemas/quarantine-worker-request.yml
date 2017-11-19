@@ -1,0 +1,16 @@
+$schema:  http://json-schema.org/draft-04/schema#
+title:          "Quarantine Worker Request"
+description: |
+  Request to update a worker's quarantineUntil property.
+type:           object
+properties:
+  quarantineUntil:
+    title:      "Worker Quarantine"
+    description: |
+      Quarantining a worker allows the machine to remain alive but not accept jobs.
+      Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+      Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+      somewhere in the past).
+    type:       ["string", "null"]
+    format:     date-time
+additionalProperties: false
