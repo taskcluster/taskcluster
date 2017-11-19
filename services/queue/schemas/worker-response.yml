@@ -66,12 +66,15 @@ properties:
       deleted by the queue.
     type:         string
     format:       date-time
-  disabled:
-    title:        "Worker Disabled"
+  quarantineUntil:
+    title:        "Worker Quarantine"
     description: |
-      Disabling a worker allows the machine to remain alive but not accept jobs.
-      Enabling a worker on the other hand will resume accepting jobs.
-    type:         "boolean"
+      Quarantining a worker allows the machine to remain alive but not accept jobs.
+      Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+      Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+      somewhere in the past).
+    type:         ["string", "null"]
+    format:       date-time
   firstClaim:
     title:        "First task claimed"
     description: |
@@ -130,6 +133,6 @@ required:
   - workerId
   - recentTasks
   - expires
-  - disabled
+  - quarantineUntil
   - firstClaim
   - actions

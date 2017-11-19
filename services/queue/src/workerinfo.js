@@ -145,7 +145,7 @@ class WorkerInfo {
           workerId,
           expires,
           recentTasks: [],
-          disabled: false,
+          quarantineUntil: new Date(),
           firstClaim: new Date(),
         });
       }));
@@ -179,7 +179,7 @@ class WorkerInfo {
       workerId,
     }, true);
 
-    if (!tasks.length || !worker || worker.disabled) {
+    if (!tasks.length || !worker || worker.quarantineUntil.getTime() > new Date().getTime()) {
       return;
     }
 
