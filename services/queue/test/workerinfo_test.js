@@ -229,7 +229,7 @@ suite('provisioners and worker-types', () => {
       workerId,
       recentTasks: [],
       expires: new Date('3017-07-29'),
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     };
 
@@ -243,7 +243,7 @@ suite('provisioners and worker-types', () => {
     assert(result.workers.length === 1, 'expected workers');
     assert(result.workers[0].workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
     assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
-    assert(result.workers[0].disabled === worker.disabled, `expected ${worker.disabled}`);
+    assert(result.workers[0].quarantineUntil === null, 'expected quarantineUntil to be null');
     assert(result.workers[0].latestTask.taskId === taskId2, `expected ${taskId2}`);
     assert(
       new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`
@@ -288,7 +288,7 @@ suite('provisioners and worker-types', () => {
       workerId,
       recentTasks: [],
       expires: new Date('3017-07-29'),
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     };
 
@@ -317,14 +317,19 @@ suite('provisioners and worker-types', () => {
       workerId,
       recentTasks: [],
       expires: new Date('3017-07-29'),
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     };
 
     await Worker.create(worker);
 
-    const result = await helper.queue.listWorkers(provisionerId, workerType, {disabled: false});
-    const result2 = await helper.queue.listWorkers(provisionerId, workerType, {disabled: true});
+    const result = await helper.queue.listWorkers(
+      provisionerId, workerType, {quarantined: false}
+    );
+
+    const result2 = await helper.queue.listWorkers(
+      provisionerId, workerType, {quarantined: true}
+    );
 
     assert(result.workers.length === 1, 'expected 1 worker');
     assert(result2.workers.length === 0, 'expected no worker');
@@ -343,7 +348,7 @@ suite('provisioners and worker-types', () => {
       workerId: 'my-worker1',
       recentTasks: [],
       expires,
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     };
 
@@ -392,7 +397,7 @@ suite('provisioners and worker-types', () => {
       workerId: 'my-worker',
       recentTasks: [],
       expires: new Date('1017-07-29'),
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     });
     await helper.expireWorkerInfo();
@@ -400,6 +405,39 @@ suite('provisioners and worker-types', () => {
     const result = await helper.queue.listWorkers(provisionerId, workerType);
 
     assert(result.workers.length === 0, 'expected no workers');
+  });
+
+  test('queue.quarantineWorker quarantines a worker', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const provisionerId = 'prov2';
+    const workerType = 'gecko-b-2-linux';
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker';
+    const quarantineUntil = new Date();
+
+    await Worker.create({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      recentTasks: [],
+      expires: new Date('3017-07-29'),
+      quarantineUntil,
+      firstClaim: new Date(),
+    });
+
+    const update = {
+      quarantineUntil: taskcluster.fromNowJSON('5 days'),
+    };
+
+    await helper.queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, update);
+
+    const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+
+    assert(
+      result.quarantineUntil === update.quarantineUntil,
+      `expected quarantineUntil to be ${update.quarantineUntil}`
+    );
   });
 
   test('queue.getWorkerType returns a worker-type', async () => {
@@ -686,7 +724,7 @@ suite('provisioners and worker-types', () => {
       workerId,
       recentTasks,
       expires: new Date('3017-07-29'),
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     };
 
@@ -719,7 +757,7 @@ suite('provisioners and worker-types', () => {
       workerId: 'my-worker',
       recentTasks: [{taskId, runId: 0}],
       expires: new Date('3017-07-29'),
-      disabled: false,
+      quarantineUntil: new Date(),
       firstClaim: new Date(),
     });
 
@@ -742,6 +780,36 @@ suite('provisioners and worker-types', () => {
     assert(result.recentTasks[0].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected 0');
     assert(new Date(result.expires).getTime() === updateProps.expires.getTime(), `expected ${updateProps.expires}`);
+  });
+
+  test('queue.declareWorker cannot update quarantineUntil', async () => {
+    const Worker = await helper.load('Worker', helper.loadOptions);
+    const taskId = slugid.v4();
+
+    const worker = await Worker.create({
+      provisionerId: 'prov1',
+      workerType: 'gecko-b-2-linux',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      recentTasks: [{taskId, runId: 0}],
+      expires: new Date('3017-07-29'),
+      quarantineUntil: new Date(),
+      firstClaim: new Date(),
+    });
+
+    const updateProps = {
+      quarantineUntil: new Date('3000-01-01'),
+    };
+
+    try {
+      await helper.queue.declareWorker(
+        worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps
+      );
+
+      assert(false, 'expected to not be able to update quarantineUntil');
+    } catch (error) {
+      assert(error, 'expected an error');
+    }
   });
 
   test('queue.claimWork adds a task to a worker', async () => {
@@ -780,7 +848,7 @@ suite('provisioners and worker-types', () => {
   });
 
   test('queue.getWorker returns 20 most recent taskIds', async () => {
-    const provisionerId = 'no-provisioner-2';
+    const provisionerId = 'no-provisioner';
     const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
@@ -819,71 +887,5 @@ suite('provisioners and worker-types', () => {
     for (let i =0; i < 20; i++) {
       assert(recentTasks[i].taskId === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
     }
-  });
-
-  test('disable/enable a worker', async () => {
-    const Worker = await helper.load('Worker', helper.loadOptions);
-    const provisionerId = 'prov1';
-    const workerType = 'gecko-b-2-linux';
-    const workerGroup = 'my-worker-group';
-    const workerId = 'my-worker';
-    const taskId = slugid.v4();
-    const taskId2 = slugid.v4();
-    let result;
-
-    const worker = {
-      provisionerId,
-      workerType,
-      workerGroup,
-      workerId,
-      recentTasks: [],
-      expires: new Date('3017-07-29'),
-      disabled: false,
-      firstClaim: new Date(),
-    };
-
-    const makeTask = async taskId => {
-      await helper.queue.createTask(taskId, {
-        provisionerId,
-        workerType,
-        priority: 'normal',
-        created: taskcluster.fromNowJSON(),
-        deadline: taskcluster.fromNowJSON('30 min'),
-        payload: {},
-        metadata: {
-          name:           'Unit testing task',
-          description:    'Task created during unit tests',
-          owner:          'haali@mozilla.com',
-          source:         'https://github.com/taskcluster/taskcluster-queue',
-        },
-      });
-    };
-
-    await Worker.create(worker);
-    // Disable worker
-    await helper.queue.declareWorker(provisionerId, workerType, workerGroup, workerId, {disabled: true});
-    makeTask(taskId);
-    await helper.queue.claimWork(provisionerId, workerType, {
-      workerGroup,
-      workerId,
-      tasks: 1,
-    });
-
-    result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
-
-    assert(result.recentTasks.length === 0, 'expected to have 0 tasks');
-
-    // Enable worker
-    await helper.queue.declareWorker(provisionerId, workerType, workerGroup, workerId, {disabled: false});
-    makeTask(taskId2);
-    await helper.queue.claimWork(provisionerId, workerType, {
-      workerGroup,
-      workerId,
-      tasks: 1,
-    });
-
-    result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
-
-    assert(result.recentTasks.length === 1, 'expected to have 1 task');
   });
 });
