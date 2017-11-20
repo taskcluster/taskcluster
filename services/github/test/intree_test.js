@@ -43,13 +43,25 @@ suite('intree config', () => {
    *              }
    * count:       number of tasks to expect
    * expected:    {}, keys=>values expected to exist in the compiled config
+   * shouldError: if you want intree to throw an exception, set this to true
    **/
-  let buildConfigTest = function(testName, configPath, params, expected, count=-1) {
+  let buildConfigTest = function(testName, configPath, params, expected, count=-1, shouldError=false) {
     test(testName, async () => {
       params.config = fs.readFileSync(configPath);
       params.schema = 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#';
       params.validator = helper.validator;
-      let config = helper.intree(params);
+      let config;
+      try {
+        config = helper.intree(params);
+      } catch (e) {
+        if (shouldError) {
+          return;
+        }
+        throw e;
+      }
+      if (shouldError) {
+        throw new Error('This intree call should have failed!');
+      }
       if (count > 0) {
         assert.equal(config.tasks.length, count);
       }
@@ -176,4 +188,14 @@ suite('intree config', () => {
     },
     {},
     0);
+
+  buildConfigTest(
+    'Unicode branch names are not allowed',
+    configPath + 'taskcluster.single.yml',
+    {
+      payload: buildMessage({details: {'event.base.repo.branch': '🌱', 'event.type': 'push'}}),
+    },
+    {},
+    0,
+    true);
 });

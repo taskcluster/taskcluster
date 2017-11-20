@@ -18,7 +18,7 @@ tasks:
           - push
     payload:
       maxRunTime: 3600
-      image: "node:6"
+      image: "node:8"
       env:
         DEBUG: "* -babel* -mocha* -nock* -express* -body-parser* -morgan -eslint* -follow-redirects"
         QUEUE_BASE_URL: 'taskcluster/queue/v1'

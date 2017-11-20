@@ -46,8 +46,8 @@
   },
   "engine-strict": true,
   "engines": {
-    "node": "6.11.1",
-    "yarn": "0.21.3"
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
   },
   "devDependencies": {
     "fs-extra": "^2.0.0",
