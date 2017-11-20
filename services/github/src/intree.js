@@ -5,6 +5,9 @@ let tc = require('taskcluster-client');
 let jparam = require('json-parameterization');
 let _ = require('lodash');
 
+// Assert that only scope-valid characters are in branches
+const branchTest = /^[\x20-\x7e]*$/;
+
 module.exports = {};
 
 /**
@@ -13,6 +16,13 @@ module.exports = {};
  **/
 function completeInTreeConfig(config, payload) {
   config.scopes = [];
+  if (!branchTest.test(payload.details['event.base.repo.branch'] || '')) {
+    throw new Error('Cannot have unicode in branch names!');
+  }
+  if (!branchTest.test(payload.details['event.head.repo.branch'] || '')) {
+    throw new Error('Cannot have unicode in branch names!');
+  }
+
   if (payload.details['event.type'].startsWith('pull_request')) {
     config.scopes = [
       `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
