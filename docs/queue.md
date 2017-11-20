@@ -181,6 +181,11 @@ queue.getWorker(provisionerId, workerType, workerGroup, workerId)
 ```
 
 ```js
+// queue.quarantineWorker :: (provisionerId -> workerType -> workerGroup -> workerId -> payload) -> Promise Result
+queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload)
+```
+
+```js
 // queue.declareWorker :: (provisionerId -> workerType -> workerGroup -> workerId -> payload) -> Promise Result
 queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload)
 ```

@@ -38,9 +38,10 @@ export default class Queue extends Client {
     this.listWorkerTypes.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types',query:['continuationToken','limit'],args:['provisionerId'],name:'listWorkerTypes',stability:'experimental',output:true}; // eslint-disable-line
     this.getWorkerType.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'getWorkerType',stability:'experimental',output:true}; // eslint-disable-line
     this.declareWorkerType.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'declareWorkerType',stability:'experimental',scopes:[['queue:declare-worker-type:<provisionerId>/<workerType>#<property>']],input:true,output:true}; // eslint-disable-line
-    this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit','disabled'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true}; // eslint-disable-line
+    this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit','quarantined'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true}; // eslint-disable-line
     this.getWorker.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'getWorker',stability:'experimental',output:true}; // eslint-disable-line
-    this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',scopes:[['queue:declare-worker:<provisionerId>/<workerType>/<workerGroup><workerId>#<property>']],input:true,output:true}; // eslint-disable-line
+    this.quarantineWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'quarantineWorker',stability:'experimental',scopes:[['queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>']],input:true,output:true}; // eslint-disable-line
+    this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',scopes:[['queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>']],input:true,output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
@@ -462,8 +463,9 @@ export default class Queue extends Client {
   }
 
   // Get a list of all active workers of a workerType.
-  // `listWorkers` allows a response to be filtered by the `disabled` property.
-  // To filter the query, you should call the end-point with `disabled` as a query-string option.
+  // `listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
+  // To filter the query, you should call the end-point with `quarantined` as a query-string option with a
+  // true or false value.
   // The response is paged. If this end-point returns a `continuationToken`, you
   // should call the end-point again with the `continuationToken` as a query-string
   // option. By default this end-point will list up to 1000 workers in a single
@@ -477,6 +479,12 @@ export default class Queue extends Client {
   getWorker(...args) {
     this.validate(this.getWorker.entry, args);
     return this.request(this.getWorker.entry, args);
+  }
+
+  // Quarantine a worker
+  quarantineWorker(...args) {
+    this.validate(this.quarantineWorker.entry, args);
+    return this.request(this.quarantineWorker.entry, args);
   }
 
   // Declare a worker, supplying some details about it.
