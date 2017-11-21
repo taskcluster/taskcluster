@@ -1,3 +1,3 @@
-web: node lib/main server
-worker: node lib/main worker
-sync: node lib/main syncInstallations
+web: node src/main server
+worker: node src/main worker
+sync: node src/main syncInstallations
