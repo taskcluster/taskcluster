@@ -484,8 +484,8 @@ api.declare({
       // so return that on to the user
       if (e.code == 403) {
         return res.reportError('ForbiddenByGithub',
-            'Operation was forbidden by Github. The Github App may not be set up for this repo.',
-            {});
+          'Operation was forbidden by Github. The Github App may not be set up for this repo.',
+          {});
       }
       debug(`Error creating status: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);
@@ -533,8 +533,8 @@ api.declare({
       // so return that on to the user
       if (e.code == 403) {
         return res.reportError('ForbiddenByGithub',
-            'Operation was forbidden by Github. The Github App may not be set up for this repo.',
-            {});
+          'Operation was forbidden by Github. The Github App may not be set up for this repo.',
+          {});
       }
       debug(`Error creating comment: ${JSON.stringify(e)}`);
       await this.monitor.reportError(e);

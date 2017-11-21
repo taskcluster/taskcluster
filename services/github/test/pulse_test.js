@@ -37,7 +37,7 @@ suite('pulse', () => {
       }
 
       let expected = [{
-        exchange: `v1/${params.listenFor}`,
+        exchange: `exchange/fake/v1/${params.listenFor}`,
         routingKey: params.routingKey,
         payload: {
           organization: 'TaskClusterRobot',

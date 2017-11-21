@@ -2,7 +2,7 @@ suite('allowPullRequests', function() {
   let debug = require('debug')('test');
   let helper = require('./helper');
   let assert = require('assert');
-  let prAllowed = require('../lib/pr-allowed');
+  let prAllowed = require('../src/pr-allowed');
 
   let github = null;
 
