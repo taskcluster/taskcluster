@@ -54,50 +54,6 @@ properties:
           type:         string
           format:       date-time
       additionalProperties: false
-  actions:
-    type:         array
-    items:
-      type:       object
-      title:      Actions
-      description: {$const: action-description}
-      properties:
-        name:
-          title:  "Name"
-          description: |
-            Short names for things like logging/error messages.
-          type:   string
-        title:
-          title:  "Title"
-          description: |
-            Appropriate title for any sort of Modal prompt.
-        context:
-          title:  "Context"
-          description: {$const: action-context-description}
-          type:   string
-          enum:   ["worker-type"]
-        url:
-          title:  "URL"
-          description: {$const: action-url-description}
-          type:    string
-        method:
-          title:  "Method"
-          description: |
-            Method to indicate the desired action to be performed for a given resource.
-          type:   string
-          enum:   ["POST", "PUT", "DELETE", "PATCH"]
-        description:
-          title:   "Description"
-          description: |
-            Description of the provisioner.
-          type:    string
-      required:
-        - name
-        - title
-        - context
-        - url
-        - method
-        - description
-      additionalProperties: false
   continuationToken:
     type:               string
     title:              "Continuation Token"
@@ -112,4 +68,3 @@ properties:
 additionalProperties: false
 required:
  - workerTypes
- - actions

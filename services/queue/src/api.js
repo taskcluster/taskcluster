@@ -2227,16 +2227,10 @@ api.declare({
   const provisionerId = req.params.provisionerId;
   const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  const [workerTypes, provisioner] = await Promise.all([
-    this.WorkerType.scan({provisionerId}, {continuation, limit}),
-    this.Provisioner.load({provisionerId}, true),
-  ]);
-
-  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker-type') : [];
+  const workerTypes = await this.WorkerType.scan({provisionerId}, {continuation, limit});
 
   const result = {
     workerTypes: workerTypes.entries.map(workerType => workerType.json()),
-    actions: actions || [],
   };
 
   if (workerTypes.continuation) {
@@ -2389,12 +2383,7 @@ api.declare({
     workerQuery.quarantineUntil = Entity.op.lessThan(now);
   }
 
-  const [workers, provisioner] = await Promise.all([
-    await this.Worker.scan(workerQuery, {continuation, limit}),
-    await this.Provisioner.load({provisionerId}, true),
-  ]);
-
-  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker') : [];
+  const workers = await this.Worker.scan(workerQuery, {continuation, limit});
 
   const result = {
     workers: workers.entries.map(worker => ({
@@ -2406,7 +2395,6 @@ api.declare({
         worker.quarantineUntil.toJSON() :
         null,
     })),
-    actions: actions || [],
   };
 
   if (workers.continuation) {
