@@ -114,7 +114,7 @@ test:
   intree:
     provisionerId: 'dummy-provisioner'
     workerType: 'dummy-worker'
-     
+
   taskcluster:
     schedulerId: tc-gh-devel
 

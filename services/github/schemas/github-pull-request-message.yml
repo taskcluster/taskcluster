@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#
+$schema:  http://json-schema.org/draft-06/schema#
 title:        "GitHub Pull Request Message"
 description: |
   Message reporting that a GitHub pull request has occurred
