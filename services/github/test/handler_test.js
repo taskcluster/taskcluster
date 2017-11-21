@@ -7,7 +7,7 @@ suite('handlers', () => {
   let helper = require('./helper');
   let assert = require('assert');
   let testing = require('taskcluster-lib-testing');
-  let load = require('../lib/main');
+  let load = require('../src/main');
   let sinon = require('sinon');
   let slugid = require('slugid');
 
