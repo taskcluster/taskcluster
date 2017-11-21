@@ -146,8 +146,6 @@ suite('provisioners and worker-types', () => {
 
     assert(result.workerTypes.length === 1, 'expected workerTypes');
     assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
-    assert(result.actions.length === 1, 'expected 1 action');
-    assert(result.actions[0].context === 'worker-type', 'expected action with context worker-type');
   });
 
   test('list worker-types (limit and continuationToken)', async () => {
@@ -299,8 +297,6 @@ suite('provisioners and worker-types', () => {
 
     assert(result.workers.length === 1, 'expected workers');
     assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
-    assert(result.actions.length === 1, 'expected 1 action');
-    assert(result.actions[0].context === 'worker', 'expected action with context worker');
   });
 
   test('queue.listWorkers returns filtered workers', async () => {
