@@ -15,3 +15,5 @@
 --scope queue:create-task:lowest:no-provisioning-nope/*
 --scope queue:scheduler-id:docker-worker-tests
 --scope docker-worker:cache:docker-worker-garbage-caches-tmp-obj-dir
+--scope aws-provisioner:create-secret:*
+--scope docker-worker:feature:balrogStageVPNProxy

@@ -1,7 +1,7 @@
 const assert = require('assert');
 const Debug = require('debug');
 const { scopeMatch } = require('taskcluster-base/utils');
-const request = require('superagent-promise');
+const got = require('got');
 const waitForPort = require('../wait_for_port');
 
 let debug = Debug('taskcluster-docker-worker:features:balrogVPNProxy');
@@ -103,14 +103,14 @@ class BalrogVPNProxy {
     let retries = MAX_RETRIES;
     while (retries-- > 0) {
       try {
-        let response = await request.get(`http://${ipAddress}`).end();
+        let response = await got(`http://${ipAddress}`);
         throw new Error(
           'Could not connect to balrog server and receive expected response ' +
-          `Status code: ${response.status}`);
+          `Status code: ${response.statusCode}`);
       } catch (e) {
         // Balrog server requires authentication and will return 401 when
         // reachable but unauthenticated.
-        if (e.message === 'Unauthorized') {
+        if (e.statusCode === 401) {
           break;
         }
         if (retries === 0) {

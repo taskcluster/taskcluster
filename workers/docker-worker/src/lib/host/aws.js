@@ -2,7 +2,7 @@
 Return the appropriate configuration defaults when on aws.
 */
 
-const request = require('superagent-promise');
+const got = require('got-promise');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const { createLogger } = require('../log');
@@ -27,9 +27,8 @@ const BASE_URL = 'http://169.254.169.254/latest';
 
 async function getText(url) {
   try {
-    let res = await request.get(url).end();
-    let text = res.ok ? res.text : '';
-    return text;
+    const res = await got(url);
+    return res.body;
   }
   catch (e) {
     // Some meta-data endpoints 404 until they have a value to display (spot node termination)
@@ -40,14 +39,12 @@ async function getText(url) {
 async function getJsonData(url) {
   // query the user data for any instance specific overrides set by the
   // provisioner.
-  let jsonData = await request.get(url).buffer().end();
-
-  if (!jsonData.ok || !jsonData.text) {
-    log(`${url} not available`);
-    return {};
+  try {
+    const res = await got(url);
+    return JSON.parse(res.body);
+  } catch (err) {
+    log(`${url} not available: ${err.stack || err}`);
   }
-
-  return JSON.parse(jsonData.text);
 }
 
 module.exports = {

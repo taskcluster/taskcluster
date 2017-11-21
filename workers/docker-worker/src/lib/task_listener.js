@@ -6,7 +6,7 @@ const TaskQueue = require('./queueservice');
 const DeviceManager = require('./devices/device_manager');
 const Debug = require('debug');
 const taskcluster = require('taskcluster-client');
-const request = require('superagent-promise');
+const got = require('got');
 const { Task } = require('./task');
 const { EventEmitter } = require('events');
 const { exceedsDiskspaceThreshold } = require('./util/capacity');
@@ -408,11 +408,13 @@ class TaskListener extends EventEmitter {
 
   async fetchSupersedingTasks(url, taskId) {
     url = url + '?taskId=' + taskId;
-    let jsonData = await request.get(url).timeout(this.supersedingTimeout).buffer().end();
-    if (!jsonData.ok || !jsonData.text) {
-      throw new Error('Failure fetching from superseding URL ' + url);
+    try {
+      return await got(url, {
+        timeout: this.supersedingTimeout
+      }).then(res => JSON.parse(res.body)['supersedes']);
+    } catch(e) {
+      throw new Error(`Failure fetching from superseding URL ${url}: ${e}`);
     }
-    return JSON.parse(jsonData.text)['supersedes'];
   }
 
   /**

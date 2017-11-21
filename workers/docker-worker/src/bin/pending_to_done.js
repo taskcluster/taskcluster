@@ -2,14 +2,15 @@
 
 var taskcluster = require('taskcluster-client');
 var queue = new taskcluster.Queue();
-var request = require('superagent-promise');
+var got = require('got');
 
 var PENDING = 'https://queue.taskcluster.net/v1/pending-tasks/aws-provisioner';
 var workerType = process.argv[2];
 
 
 async function main () {
-  var pending = (await request.get(PENDING).end()).body.tasks;
+  const res = await got(PENDING);
+  var pending = JSON.parse(res.body).tasks;
 
   for (var i = 0; i < pending.length; i++) {
     var taskId = pending[i].taskId;

@@ -5,7 +5,7 @@ const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
 const fs = require('mz/fs');
 const https = require('https');
-const request = require('superagent-promise');
+const got = require('got');
 const settings = require('../settings');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');
@@ -52,13 +52,12 @@ suite('use docker-save', () => {
 
     let url = `https://queue.taskcluster.net/v1/task/${taskId}/runs/${runId}/artifacts/public/dockerImage.tar`;
 
-    //superagent means no zlib required
-    let res = await request.get(url).end();
+    let res = got.stream(url);
     const tarStream = fs.createWriteStream('/tmp/dockerload.tar');
     await new Promise((accept, reject) => {
-      res.on('end', accept);
       res.on('error', reject);
       tarStream.on('error', reject);
+      tarStream.on('finish', accept);
       res.pipe(tarStream);
     });
     //make sure it finishes unzipping
@@ -121,13 +120,12 @@ suite('use docker-save', () => {
 
     let url = `https://queue.taskcluster.net/v1/task/${taskId}/runs/${runId}/artifacts/public/cache/docker-worker-garbage-caches-test-cache.tar`;
 
-    //superagent means no zlib required
-    let res = await request.get(url).end();
+    let res = got.stream(url);
     let tarStream = tar.extract('/tmp/cacheload');
     await new Promise((accept, reject) => {
-      res.on('end', accept);
       res.on('error', reject);
       tarStream.on('error', reject);
+      tarStream.on('finish', accept);
       res.pipe(tarStream);
     });
     //so the tar actually finishes extracting; tarStream doesn't have an end event

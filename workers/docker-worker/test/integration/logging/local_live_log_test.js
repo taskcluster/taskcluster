@@ -1,4 +1,4 @@
-const request = require('superagent-promise');
+const got = require('got');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assert = require('assert');
@@ -66,10 +66,8 @@ suite('live logging', () => {
     let artifactUrl = `https://queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`;
 
     // Don't follow redirect, we just care about where it's going
-    let req = request.get(artifactUrl);
-    let logUrl;
-    req.on('redirect', res => logUrl = res.headers.location);
-    await req.end();
+    let res = await got(artifactUrl, { followRedirect: false });
+    let logUrl = res.headers.location;
     let token = /^http:\/\/localhost:[0-9]+\/log\/([a-zA-Z0-9_-]+)$/.exec(logUrl);
     token = token ? token[1] : '';
 

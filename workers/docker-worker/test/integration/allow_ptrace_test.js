@@ -5,7 +5,6 @@ const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
 const fs = require('mz/fs');
 const https = require('https');
-const request = require('superagent-promise');
 const settings = require('../settings');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');

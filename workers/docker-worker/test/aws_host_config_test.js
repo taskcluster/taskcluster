@@ -3,7 +3,7 @@ const http = require('http');
 const awsConfig = require('../src/lib/host/aws');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const request = require('superagent-promise');
+const got = require('got');
 
 let server;
 let url;
@@ -22,8 +22,8 @@ suite('configuration/aws', () => {
   });
 
   test('configuration', async () => {
-    let response = await request.get(url + '/generate-secrets').end();
-    let data = JSON.parse(response.text);
+    let response = await got(url + '/generate-secrets');
+    let data = JSON.parse(response.body);
     let provisioner = new taskcluster.AwsProvisioner();
     await provisioner.createSecret(
       data.token,

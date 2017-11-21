@@ -5,7 +5,6 @@
  */
 const devnull = require('dev-null');
 const slugid = require('slugid');
-const request = require('superagent-promise');
 const Debug = require('debug');
 const waitForEvent = require('../src/lib/wait_for_event');
 const split = require('split2');

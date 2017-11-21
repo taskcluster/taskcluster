@@ -1,12 +1,13 @@
-const request = require('superagent-promise');
+const got = require('got');
+const promiseRetry = require('promise-retry');
 
 module.exports = async (url) => {
   try {
-    let response = await request.get(url).end();
-    return response.text;
+    const response = await got(url, {retries: 5});
+    return response.body;
   }
   catch (e) {
-    console.error(`error retrieving artifact. ${e.error} URL: ${url}`);
+    console.error(`error retrieving artifact. ${e} URL: ${url}`);
     return null;
   }
 };
