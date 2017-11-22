@@ -544,15 +544,33 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
     var bucket = artifact.details.bucket;
 
     if (bucket === this.publicBucket.bucket) {
+
+      // We have some headers to skip the Cache (cloud-mirror) and to skip the
+      // CDN (cloudfront) for those requests which require it
       let skipCacheHeader = (req.headers['x-taskcluster-skip-cache'] || '').toLowerCase();
-      if (!region) {
-        debug('artifact from CDN for ip: %s', req.headers['x-forwarded-for']);
-        url = this.publicBucket.createGetUrl(prefix);
-      } else if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
-        // Skip cache and go to cloud-front
-        url = this.publicBucket.createGetUrl(prefix);
-      } else if (this.artifactRegion === region) {
+      let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
+      
+      let skipCache = false;
+      if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
+        skipCache = true;
+      }
+
+      let skipCDN = false;
+      if (skipCDNHeader === 'true' || skipCDNeHeader === '1') {
+        skipCDN = true;
+      }
+
+      // When we're getting a request from the region we're serving artifacts
+      // from, we want to skip both CDN and Cache always
+      if (region && this.artifactRegion === region) {
+        skipCDN = true;
+        skipCache = true;
+      }
+
+      if (skipCache && skipCDN) {
         url = this.publicBucket.createGetUrl(prefix, true);
+      } else if (skipCache || !region) {
+        url = this.publicBucket.createGetUrl(prefix, false);
       } else {
         var canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
         // We need to build our url path appropriately.  Note that we URL
@@ -571,7 +589,6 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
           host: this.cloudMirrorHost,
           pathname: cloudMirrorPath,
         });
-
       }
     } else if (bucket === this.privateBucket.bucket) {
       url = await this.privateBucket.createSignedGetUrl(prefix, {
