@@ -497,12 +497,25 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
     return res.reportError('ResourceNotFound', 'Artifact not found', {});
   }
 
+  // Some downloading utilities need to know the artifact's storage type to be
+  // able to handle their downloads most correctly.  We're going to set this
+  // field on all artifact responses so that the downloading utilities can use
+  // slightly different logic for each artifact type
+  res.set('x-taskcluster-artifact-storage-type', artifact.storageType);
+
   if (artifact.storageType === 'blob') {
     // Most of the time, the same base options are used.
     let getOpts = {
       bucket: artifact.details.bucket,
       key: artifact.details.key,
     };
+
+    res.set('x-taskcluster-location-content-sha256', artifact.details.contentSha256);
+    res.set('x-taskcluster-location-content-length', artifact.details.contentLength);
+    res.set('x-taskcluster-location-transfer-sha256', artifact.details.transferSha256);
+    res.set('x-taskcluster-location-transfer-length', artifact.details.transferLength);
+    res.set('x-taskcluster-location-content-encoding', artifact.details.contentEncoding || 'identity');
+    res.set('x-taskcluster-location-content-type', artifact.details.contentType);
 
     // TODO: We should consider doing a HEAD on all resources and verifying that
     // the ETag they have matches the one that we received when creating the artifact.
