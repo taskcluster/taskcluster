@@ -97,7 +97,7 @@ satisfies the second, so the scopeset is equivalent to `['ab*', 'xyz']`. A
 scopeset that is minimized using this technique is said to be "normalized".
 
 The `normalizeScopeSet` function will normalize a scopeset.  However, it
-*requires* that its input is already sorted using `scopeCopmare`. The whole
+*requires* that its input is already sorted using `scopeCompare`. The whole
 operation looks like this:
 
 ```js
