@@ -105,7 +105,7 @@ let scopeset = ['a', 'a*', 'ab', 'b'];
 scopeset.sort(scopeUtils.scopeCompare);
 assert.equal(
     ['a*', 'b'],
-    scopeUtils.normalize(scopeset));
+    scopeUtils.normalizeScopeSet(scopeset));
 ```
 
 The `scopeCompare` function sorts the scopes such that a scope ending with a
