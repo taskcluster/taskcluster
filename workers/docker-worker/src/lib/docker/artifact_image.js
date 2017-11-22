@@ -8,6 +8,7 @@ const path = require('path');
 const tarfs = require('tar-fs');
 const taskcluster = require('taskcluster-client');
 const {scopeMatch} = require('taskcluster-base/utils');
+const pipe = require('promisepipe');
 
 const {makeDir, removeDir} = require('../util/fs');
 const {fmtLog, fmtErrorLog} = require('../log');
@@ -258,12 +259,7 @@ class ArtifactImage {
     let manifestPath = path.join(extractedPath, 'manifest.json');
 
     let extractStream = tarfs.extract(extractedPath);
-    fs.createReadStream(tarballPath).pipe(extractStream);
-
-    await new Promise((accept, reject) => {
-      extractStream.on('finish', accept);
-      extractStream.on('error', reject);
-    });
+    await pipe(fs.createReadStream(tarballPath), extractStream);
 
     let repositories = fs.readFileSync(path.join(extractedPath, 'repositories'));
     let repoInfo = JSON.parse(repositories);
@@ -297,11 +293,7 @@ class ArtifactImage {
     }
 
     let pack = tarfs.pack(path.join(dir, filename));
-    pack.pipe(fs.createWriteStream(editedTarballPath));
-    await new Promise((accept, reject) => {
-      pack.on('end', accept);
-      pack.on('error', reject);
-    });
+    await pipe(pack, fs.createWriteStream(editedTarballPath));
 
     try {
       await removeDir(extractedPath);

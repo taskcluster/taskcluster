@@ -57,6 +57,7 @@
     "openpgp": "^2.3.2",
     "promise": "^7.0.3",
     "promise-retry": "^1.1.1",
+    "promisepipe": "https://github.com/taskcluster/node-promisepipe",
     "request": "^2.65.0",
     "rimraf": "^2.2.8",
     "slugid": "^1.1.0",

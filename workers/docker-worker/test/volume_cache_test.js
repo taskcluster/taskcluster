@@ -12,6 +12,7 @@ const path = require('path');
 const rmrf = require('rimraf');
 const cmd = require('./integration/helper/cmd');
 const monitoring = require('taskcluster-lib-monitor');
+const pipe = require('promisepipe');
 
 let debug = Debug('volumeCacheTest');
 let docker = Docker();
@@ -138,8 +139,7 @@ suite('volume cache test', function () {
     );
 
     let pullStream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu:latest');
-    pullStream.pipe(devnull());
-    await waitForEvent(pullStream, 'end');
+    await pipe(pullStream, devnull());
 
     var createConfig = {
       Image: 'taskcluster/test-ubuntu:latest',

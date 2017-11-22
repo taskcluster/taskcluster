@@ -8,7 +8,6 @@ const https = require('https');
 const settings = require('../settings');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');
-const waitForEvent = require('../../src/lib/wait_for_event');
 const Debug = require('debug');
 
 let debug = Debug('docker-worker:test:allow-ptrace-test');

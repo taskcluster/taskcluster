@@ -8,6 +8,7 @@ const promiseRetry = require('promise-retry');
 const { createLogger } = require('./log');
 const _ = require('lodash');
 const waitForEvent = require('./wait_for_event');
+const pipe = require('promisepipe');
 
 var log = createLogger({source: 'uploadToS3'});
 let debug = Debug('taskcluster-docker-worker:uploadToS3');
@@ -38,12 +39,8 @@ module.exports = async function uploadToS3 (
     if (typeof source === 'string') {
       await tmp.writeFile(source);
     } else {
-      await new Promise((accept, reject) => {
-        let stream = fs.createWriteStream(tmp.path);
-        stream.on('error', reject);
-        stream.on('finish', accept);
-        source.pipe(stream);
-      });
+      let stream = fs.createWriteStream(tmp.path);
+      await pipe(source, stream);
     }
     debug(`wrote source file to ${tmp.path} for ${artifactName}`);
 

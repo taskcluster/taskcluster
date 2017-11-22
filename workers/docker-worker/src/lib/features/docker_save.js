@@ -5,8 +5,8 @@ const tar = require('tar-fs');
 const taskcluster = require('taskcluster-client');
 const slugid = require('slugid');
 const uploadToS3 = require('../upload_to_s3');
-const waitForEvent = require('../wait_for_event');
 const zlib = require('zlib');
+const pipe = require('promisepipe');
 
 let debug = Debug('docker-worker:features:docker-save');
 
@@ -31,13 +31,8 @@ class DockerSave {
     let image = await task.runtime.docker.getImage(`${imageName}:latest`);
     let imgStream = await image.get();
     let zipStream = zlib.createGzip();
-    await new Promise((accept, reject) => {
-      const output = fs.createWriteStream(pathname);
-      zipStream.on('error', reject);
-      zipStream.on('end', accept);
-      output.on('error', reject);
-      imgStream.pipe(zipStream).pipe(output);
-    });
+    const output = fs.createWriteStream(pathname);
+    await pipe(imgStream, zipStream, output);
 
     let stat = await fs.stat(pathname);
     let uploadStream = fs.createReadStream(pathname);
@@ -67,14 +62,13 @@ class DockerSave {
 
     //temporary path for saved file
     let pathname = path.join(task.runtime.dockerVolume, slugid.v4() + '.tar');
-    let zipStream = tar.pack(cache.cacheLocation, { dereference: true }).pipe(zlib.createGzip());
-    await new Promise((accept, reject) => {
-      const output = fs.createWriteStream(pathname);
-      zipStream.on('end', accept);
-      zipStream.on('error', reject);
-      output.on('error', reject);
-      zipStream.pipe(output);
-    });
+    const output = fs.createWriteStream(pathname);
+    await pipe(
+      tar.pack(cache.cacheLocation, { dereference: true }),
+      zlib.createGzip(),
+      output
+    );
+
     let expiration = taskcluster.fromNow(task.runtime.dockerSave.expiration);
     expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
     let stat = await fs.stat(pathname);

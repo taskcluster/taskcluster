@@ -2862,6 +2862,10 @@ promise@~7.0.3:
   dependencies:
     asap "~2.0.3"
 
+"promisepipe@https://github.com/taskcluster/node-promisepipe":
+  version "2.1.1"
+  resolved "https://github.com/taskcluster/node-promisepipe#cb17b5ccb29877dc5731bb175e406773dedb673d"
+
 propagate@0.3.x:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/propagate/-/propagate-0.3.1.tgz#e3a84404a7ece820dd6bbea9f6d924e3135ae09c"

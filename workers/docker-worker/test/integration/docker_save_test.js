@@ -9,9 +9,9 @@ const got = require('got');
 const settings = require('../settings');
 const tar = require('tar-fs');
 const TestWorker = require('../testworker');
-const waitForEvent = require('../../src/lib/wait_for_event');
 const Debug = require('debug');
 const {removeImage} = require('../../src/lib/util/remove_image');
+const pipe = require('promisepipe');
 
 let debug = Debug('docker-worker:test:docker-save-test');
 
@@ -54,12 +54,7 @@ suite('use docker-save', () => {
 
     let res = got.stream(url);
     const tarStream = fs.createWriteStream('/tmp/dockerload.tar');
-    await new Promise((accept, reject) => {
-      res.on('error', reject);
-      tarStream.on('error', reject);
-      tarStream.on('finish', accept);
-      res.pipe(tarStream);
-    });
+    await pipe(res, tarStream);
     //make sure it finishes unzipping
     await base.testing.sleep(2000);
 
@@ -122,12 +117,7 @@ suite('use docker-save', () => {
 
     let res = got.stream(url);
     let tarStream = tar.extract('/tmp/cacheload');
-    await new Promise((accept, reject) => {
-      res.on('error', reject);
-      tarStream.on('error', reject);
-      tarStream.on('finish', accept);
-      res.pipe(tarStream);
-    });
+    await pipe(res, tarStream);
     //so the tar actually finishes extracting; tarStream doesn't have an end event
     await base.testing.sleep(1000);
 

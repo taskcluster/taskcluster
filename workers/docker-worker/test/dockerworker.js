@@ -6,6 +6,7 @@ var dockerOpts = require('dockerode-options');
 var DockerProc = require('dockerode-process');
 var dockerUtils = require('dockerode-process/utils');
 var waitForEvent = require('../src/lib/wait_for_event');
+var pipe = require('promisepipe');
 
 const IMAGE = 'taskcluster/docker-worker-test:latest';
 
@@ -56,8 +57,7 @@ class DockerWorker {
 
   async launch() {
     var stream = dockerUtils.pullImageIfMissing(docker, IMAGE);
-    stream.pipe(devnull());
-    await waitForEvent(stream, 'end');
+    await pipe(stream, devnull());
 
     var createConfig = {
       name: this.workerId,

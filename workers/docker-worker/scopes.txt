@@ -17,3 +17,4 @@
 --scope docker-worker:cache:docker-worker-garbage-caches-tmp-obj-dir
 --scope aws-provisioner:create-secret:*
 --scope docker-worker:feature:balrogStageVPNProxy
+--scope docker-worker:image:localhost:*/testuser/busybox:latest

@@ -7,7 +7,7 @@ const openpgp = require('openpgp');
 const testworker = require('../post_task');
 const settings = require('../settings');
 const slugid = require('slugid');
-const waitForEvent = require('../../src/lib/wait_for_event');
+const pipe = require('promisepipe');
 
 var docker = Docker();
 
@@ -30,8 +30,7 @@ suite('encrypted private env variables', () => {
     // ensure that the image already exists because encrypted payload is time sensitive
     var stream = dockerUtils.pullImageIfMissing(docker, 'taskcluster/test-ubuntu');
     // Ensure the test proxy actually exists...
-    stream.pipe(devnull());
-    await waitForEvent(stream, 'end');
+    await pipe(stream, devnull());
   });
 
   function getEncryptedEnvPayload(payloadData) {

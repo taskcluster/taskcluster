@@ -4,6 +4,7 @@ const request = require('request');
 const fs = require('mz/fs');
 const sleep = require('../util/sleep');
 const { fmtLog, fmtErrorLog } = require('../log');
+const pipe = require('promisepipe');
 
 const RETRY_CONFIG = {
   maxAttempts: 5,
@@ -57,21 +58,10 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
         }
       }, 5000);
 
-      req.pipe(destinationStream);
-
       try {
-        await new Promise((accept, reject) => {
-          req.on('end', (res) => {
-            clearInterval(intervalId);
-            accept(res);
-          });
-          req.on('error', (err) => {
-            clearInterval(intervalId);
-            reject(err);
-          });
-        });
-      } catch(e) {
-        throw e;
+        await pipe(req, destinationStream);
+      } finally {
+        clearInterval(intervalId);
       }
 
       if (req.response.statusCode !== 200) {

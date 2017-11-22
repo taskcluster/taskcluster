@@ -3,9 +3,9 @@ const dockerUtils = require('dockerode-process/utils');
 const path = require('path');
 const slugid = require('slugid');
 
-const waitForEvent = require('../../../src/lib/wait_for_event');
 const sleep = require('../../../src/lib/util/sleep');
 const {removeImage} = require('../../../src/lib/util/remove_image');
+const pipe = require('promisepipe');
 
 // Registry proxy image...
 const DOCKER_IMAGE = 'registry:2';
@@ -18,8 +18,7 @@ class Registry {
   async start() {
     var stream = dockerUtils.pullImageIfMissing(this.docker, DOCKER_IMAGE);
     // Ensure the test proxy actually exists...
-    stream.pipe(devnull());
-    await waitForEvent(stream, 'end');
+    await pipe(stream, devnull());
 
     await this.createContainer();
     await this.startContainer();
@@ -110,8 +109,7 @@ class Registry {
     let docker = this.docker;
     var stream = dockerUtils.pullImageIfMissing(docker, imageName);
     // Ensure the test proxy actually exists...
-    stream.pipe(devnull());
-    await waitForEvent(stream, 'end');
+    await pipe(stream, devnull());
 
     let image = await docker.getImage(imageName);
 
