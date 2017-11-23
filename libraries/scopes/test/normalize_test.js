@@ -95,6 +95,21 @@ suite('normalize', () => {
       assert.deepEqual(['ab*', 'b*'],
         utils.normalizeScopeSet(unnormalized));
     });
+
+    test('not normalized, contains duplicates', function() {
+      const unnormalized = ['abc', 'abx*', 'ab*', 'b', 'b*', 'abc*'];
+      unnormalized.sort(utils.scopeCompare);
+      assert.deepEqual(['ab*', 'b*'],
+        utils.normalizeScopeSet(unnormalized));
+    });
+
+    test('not normalized, contains lots of duplicates', function() {
+      const unnormalized = ['abc', 'abx*', 'ab*', 'b', 'b*', 'abc*', 'b*',
+        'b*', 'b*', 'b*'];
+      unnormalized.sort(utils.scopeCompare);
+      assert.deepEqual(['ab*', 'b*'],
+        utils.normalizeScopeSet(unnormalized));
+    });
   });
 
   suite('scopeset merging', function() {
