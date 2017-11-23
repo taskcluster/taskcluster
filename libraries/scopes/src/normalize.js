@@ -66,6 +66,10 @@ export const normalizeScopeSet = scopeset => {
   while (i < n) {
     let scope = scopeset[i++];
     result.push(scope);
+    // consume duplicates
+    while (i < n && scopeset[i] === scope) {
+      i++;
+    }
     if (scope.endsWith('*')) {
       let prefix = scope.slice(0, -1);
       while (i < n && scopeset[i].startsWith(prefix)) {
