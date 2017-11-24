@@ -3,10 +3,8 @@
 set -e -v
 
 DOCKER_VERSION=1.12.6-0~ubuntu-trusty
-# Kernels < 3.13.0.77 and > 3.13.0.71 have an AUFS bug which can cause docker
-# containers to not exit properly because of zombie processes that can't be reaped.
-KERNEL_VER=3.13.0-100-generic
-V4L2LOOPBACK_VERSION=0.8.0
+KERNEL_VER=4.4.0-98-generic
+V4L2LOOPBACK_VERSION=0.10.0
 
 lsb_release -a
 

@@ -1,7 +1,9 @@
 #!/bin/bash -vex
 
 # Find instance storage devices
-devices=$(ls /dev/xvd* | grep -v '/dev/xvda');
+# c5 and newer has nvme* devices. The nvmeN devices can't be used
+# with vgcreate. But nvmeNnN can.
+devices=$(ls /dev/xvd* /dev/nvme*n* | grep -v '/dev/xvda' | grep -v '/dev/nvme0');
 
 # Unmount block-device if already mounted, the first block-device always is
 for d in $devices; do umount $d || true; done

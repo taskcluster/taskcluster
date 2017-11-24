@@ -37,8 +37,8 @@ module.exports = {
   },
 
   'filesystem': {
-    description: 'Docker filesystem type (aufs, btrfs)',
-    value: 'aufs'
+    description: 'Docker filesystem type (aufs, btrfs, overlay2)',
+    value: 'overlay2'
   },
 
   'papertrail': {

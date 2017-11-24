@@ -49,4 +49,4 @@ mkdir -p /mnt/docker-tmp
 mkdir -p /mnt/var/cache/docker-worker
 
 export TMPDIR="/mnt/docker-tmp"
-export DOCKER_OPTS=" -g /mnt/var/lib/docker -s aufs --icc=false --iptables=true"
+export DOCKER_OPTS=" -g /mnt/var/lib/docker -s overlay2 --icc=false --iptables=true"
