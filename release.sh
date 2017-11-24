@@ -103,8 +103,8 @@ fi
 # Now, let's commit this change.  We only care to commit
 # setup.py because we've already verified that it's the
 # only file which is changing
-git diff-index --quiet HEAD
-if [ $? -ne 0 ] ; then 
+git diff-index --quiet HEAD || true
+if [ ${PIPESTATUS[0]} -ne 0 ] ; then 
   git commit -m "Version $VERSION"
 fi 
 git tag "$VERSION"
