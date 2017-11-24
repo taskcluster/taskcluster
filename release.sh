@@ -101,10 +101,9 @@ fi
 # Now, let's commit this change.  We only care to commit
 # setup.py because we've already verified that it's the
 # only file which is changing
-git diff-index --quiet HEAD || true
-if [ ${PIPESTATUS[0]} -ne 0 ] ; then 
+if [ x"$(git status --porcelain=v1 | wc -l)" != "x0" ] ; then
   git commit -a -m "Version $VERSION"
-fi 
+fi
 git tag "$VERSION"
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
 
