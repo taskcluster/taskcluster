@@ -92,8 +92,6 @@ cat "${tmpFile}" | sed "s,^VERSION.*=.*$,VERSION = '$VERSION',g" > setup.py
 rm "${tmpFile}"
 
 # Add files which we've created
-git add setup.py README.md README.html apis.json
-
 if [ -f filescreated.dat ] ; then
   for file in $(cat filescreated.dat) ; do
     git add "$file"
@@ -105,7 +103,7 @@ fi
 # only file which is changing
 git diff-index --quiet HEAD || true
 if [ ${PIPESTATUS[0]} -ne 0 ] ; then 
-  git commit -m "Version $VERSION"
+  git commit -a -m "Version $VERSION"
 fi 
 git tag "$VERSION"
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/$VERSION:refs/tags/$VERSION" "+refs/tags/$VERSION:refs/heads/master"
