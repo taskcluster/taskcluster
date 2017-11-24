@@ -716,8 +716,9 @@ class Queue(BaseClient):
 
         Get a list of all active workers of a workerType.
 
-        `listWorkers` allows a response to be filtered by the `disabled` property.
-        To filter the query, you should call the end-point with `disabled` as a query-string option.
+        `listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
+        To filter the query, you should call the end-point with `quarantined` as a query-string option with a
+        true or false value.
 
         The response is paged. If this end-point returns a `continuationToken`, you
         should call the end-point again with the `continuationToken` as a query-string
@@ -743,6 +744,21 @@ class Queue(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["getWorker"], *args, **kwargs)
+
+    def quarantineWorker(self, *args, **kwargs):
+        """
+        Quarantine a worker
+
+        Quarantine a worker
+
+        This method takes input: ``http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#``
+
+        This method gives output: ``http://schemas.taskcluster.net/queue/v1/worker-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["quarantineWorker"], *args, **kwargs)
 
     def declareWorker(self, *args, **kwargs):
         """
@@ -960,7 +976,7 @@ class Queue(BaseClient):
             'method': 'get',
             'name': 'listWorkers',
             'output': 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#',
-            'query': ['continuationToken', 'limit', 'disabled'],
+            'query': ['continuationToken', 'limit', 'quarantined'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
         },
@@ -986,6 +1002,15 @@ class Queue(BaseClient):
             'output': 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#',
             'route': '/poll-task-url/<provisionerId>/<workerType>',
             'stability': 'stable',
+        },
+        "quarantineWorker": {
+            'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+            'input': 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#',
+            'method': 'put',
+            'name': 'quarantineWorker',
+            'output': 'http://schemas.taskcluster.net/queue/v1/worker-response.json#',
+            'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
+            'stability': 'experimental',
         },
         "reclaimTask": {
             'args': ['taskId', 'runId'],

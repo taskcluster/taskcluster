@@ -3474,8 +3474,9 @@ await asyncQueue.declareWorkerType(payload, provisionerId='value', workerType='v
 #### Get a list of all active workers of a workerType
 Get a list of all active workers of a workerType.
 
-`listWorkers` allows a response to be filtered by the `disabled` property.
-To filter the query, you should call the end-point with `disabled` as a query-string option.
+`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
+To filter the query, you should call the end-point with `quarantined` as a query-string option with a
+true or false value.
 
 The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
@@ -3521,6 +3522,31 @@ queue.getWorker(provisionerId='value', workerType='value', workerGroup='value', 
 # Async call
 await asyncQueue.getWorker(provisionerId, workerType, workerGroup, workerId) # -> result
 await asyncQueue.getWorker(provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
+```
+
+#### Quarantine a worker
+Quarantine a worker
+
+
+
+Takes the following arguments:
+
+  * `provisionerId`
+  * `workerType`
+  * `workerGroup`
+  * `workerId`
+
+Required [input schema](http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/queue/v1/worker-response.json#)
+
+```python
+# Sync calls
+queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result`
+queue.quarantineWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
+# Async call
+await asyncQueue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
+await asyncQueue.quarantineWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
 ```
 
 #### Declare a worker

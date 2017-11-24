@@ -135,8 +135,12 @@ if __name__ == '__main__':
     print('Generating documentation')
     docs = genDocs(os.environ.get('APIS_JSON', 'apis.json'))
     outLines = []
-    with open(readmeFile) as f:
-        lines = [x.rstrip() for x in f.read().split('\n')]
+    lines = []
+    with open(readmeFile, 'rb') as f:
+        fileData = f.read()
+        fileData = fileData.decode("UTF-8")
+        for line in fileData.split('\n'):
+            lines.append(line.rstrip())
 
     print('Inserting/replacing documentation')
     foundExisting = False
@@ -153,9 +157,6 @@ if __name__ == '__main__':
         outLines.extend(lines)
         outLines.extend(docs)
 
-    with open(readmeFile, 'w') as f:
-        if six.PY2:
-            f.write('\n'.join(outLines).encode('utf-8'))
-        else:
-            f.write(u'\n'.join(outLines))
+    with open(readmeFile, 'wb') as f:
+        f.write('\n'.join(outLines).encode('utf-8'))
     print('Done!')
