@@ -92,7 +92,7 @@ cat "${tmpFile}" | sed "s,^VERSION.*=.*$,VERSION = '$VERSION',g" > setup.py
 rm "${tmpFile}"
 
 # Add files which we've created
-git add setup.py README.md apis.json
+git add setup.py README.md README.html apis.json
 
 if [ -f filescreated.dat ] ; then
   for file in $(cat filescreated.dat) ; do
