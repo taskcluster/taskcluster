@@ -141,6 +141,28 @@ in the sync client.  This feature allows passing a callback as the
 'paginationHandler' keyword-argument.  This function will be passed the
 response body of the API method as its sole positional arugment.
 
+This example of the built in pagination shows how a list of tasks could be
+built and then counted:
+
+```python
+import taskcluster
+queue = taskcluster.Queue()
+
+responses = []
+
+def handle_page(y):
+    print("%d tasks fetched" % len(y.get('tasks', [])))
+    responses.append(y)
+
+queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g', paginationHandler=handle_page)
+
+tasks = 0
+for response in responses:
+    tasks += len(response.get('tasks', []))
+
+print("%d requests fetch %d tasks" % (len(responses), tasks))
+```
+
 ## Logging
 Logging is set up in `taskcluster/__init__.py`.  If the special
 `DEBUG_TASKCLUSTER_CLIENT` environment variable is set, the `__init__.py`
