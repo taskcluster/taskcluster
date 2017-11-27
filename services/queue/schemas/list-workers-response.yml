@@ -33,7 +33,7 @@ properties:
             Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
             Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
             somewhere in the past).
-          type:         string
+          type:         ["string", "null"]
           format:       date-time
         firstClaim:
           title:        "First task claimed"
@@ -62,15 +62,7 @@ properties:
               type:             integer
               minimum:          {$const: min-run-id}
               maximum:          {$const: max-run-id}
-          required:
-            - taskId
-            - runId
-          additionalProperties: false
       additionalProperties: false
-      required:
-        - workerGroup
-        - workerId
-        - firstClaim
   continuationToken:
     type:           string
     title:          "Continuation Token"
