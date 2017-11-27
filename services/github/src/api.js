@@ -138,9 +138,9 @@ async function installationAuthenticate(owner, OwnersDirectory, github) {
  Returns either status object or undefined (if not found).
 ***/
 async function findTCStatus(github, owner, repo, branch, configuration) {
-  let taskclusterBot = await github.users.getForUser({username: configuration.app.botName});
+  let taskclusterBot = (await github.users.getForUser({username: configuration.app.botName})).data;
   // Statuses is an array of status objects, where we find the relevant status
-  let statuses = await github.repos.getStatuses({owner, repo, ref: branch});
+  let statuses = (await github.repos.getStatuses({owner, repo, ref: branch})).data;
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 }
 
@@ -263,7 +263,7 @@ api.declare({
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
   let headUser = msg.details['event.head.user.id'].toString();
-  let userDetails = await instGithub.users.getById({id: headUser});
+  let userDetails = (await instGithub.users.getById({id: headUser})).data;
   msg.details['event.head.user.email'] = this.ajv.validate({type: 'string', format: 'email'}, userDetails.email) ?
     userDetails.email :
     msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
@@ -384,10 +384,10 @@ api.declare({
 
   if (instGithub) {
     try {
-      let reposList = await instGithub.integrations.getInstallationRepositories({});
+      let reposList = await instGithub.apps.getInstallationRepositories({});
 
       while (true) {
-        let installed = reposList.repositories.map(repo => repo.name).indexOf(repo);
+        let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);
         if (installed !== -1) {
           return res.reply({installed: true});
         }

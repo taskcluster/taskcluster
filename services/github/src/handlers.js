@@ -235,7 +235,7 @@ async function jobHandler(message) {
       repo: repository,
       ref: `refs/tags/${message.payload.details['event.version']}`,
     });
-    sha = commitInfo.sha;
+    sha = commitInfo.data.sha;
   }
 
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
@@ -250,7 +250,7 @@ async function jobHandler(message) {
       path: '.taskcluster.yml',
       ref: sha,
     });
-    repoconf = new Buffer(tcyml.content, 'base64').toString();
+    repoconf = new Buffer(tcyml.data.content, 'base64').toString();
   } catch (e) {
     if (e.code === 404) {
       debug(`${organization}/${repository} has no '.taskcluster.yml'. Skipping.`);
