@@ -241,7 +241,7 @@ suite('provisioners and worker-types', () => {
     assert(result.workers.length === 1, 'expected workers');
     assert(result.workers[0].workerGroup === worker.workerGroup, `expected ${worker.workerGroup}`);
     assert(result.workers[0].workerId === worker.workerId, `expected ${worker.workerId}`);
-    assert(!result.workers[0].quarantineUntil, 'expected quarantineUntil to not be defined');
+    assert(result.workers[0].quarantineUntil === null, 'expected quarantineUntil to be null');
     assert(result.workers[0].latestTask.taskId === taskId2, `expected ${taskId2}`);
     assert(
       new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`
