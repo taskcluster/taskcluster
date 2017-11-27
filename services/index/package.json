@@ -2,43 +2,39 @@
   "name": "taskcluster-index",
   "version": "0.1.0",
   "private": true,
-  "main": "babel-node bin/server server",
+  "main": "./src/main.js",
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/*_test.js",
-    "pretest": "npm run compile",
-    "install": "npm run compile"
+    "lint": "eslint src/*.js test/*.js",
+    "test": "mocha test/*_test.js",
+    "pretest": "yarn lint"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-index.git"
   },
   "dependencies": {
-    "azure-entities": "^1.1.0",
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
-    "babel-runtime": "^6.6.1",
-    "debug": "^2.2.0",
+    "azure-entities": "^3.0.0",
+    "debug": "^3.1.0",
     "lodash": "^4.11.1",
-    "mocha": "^2.4.5",
-    "promise": "^7.1.1",
-    "slugid": "^1.1.0",
-    "source-map-support": "^0.4.2",
-    "superagent": "^1.8.3",
-    "superagent-promise": "^1.1.0",
-    "taskcluster-client": "^2.2.0",
-    "taskcluster-lib-api": "3.2.2",
-    "taskcluster-lib-app": "^1.0.0",
-    "taskcluster-lib-docs": "^3.3.1",
-    "taskcluster-lib-loader": "^1.1.0",
-    "taskcluster-lib-monitor": "^4.0.0",
-    "taskcluster-lib-testing": "^1.0.3",
-    "taskcluster-lib-validate": "^2.1.0",
+    "taskcluster-client": "^3.1.0",
+    "taskcluster-lib-api": "3.2.3",
+    "taskcluster-lib-app": "^2.0.3",
+    "taskcluster-lib-docs": "^4.0.0",
+    "taskcluster-lib-loader": "^2.0.0",
+    "taskcluster-lib-monitor": "^4.6.3",
+    "taskcluster-lib-validate": "^3.0.1",
     "typed-env-config": "^1.0.0"
   },
   "engine-strict": true,
   "engines": {
-    "node": "6.11.1",
-    "yarn": "0.27.5"
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "^4.0.1",
+    "slugid": "^1.1.0",
+    "superagent": "^3.8.1",
+    "taskcluster-lib-testing": "^2.0.2"
   }
 }

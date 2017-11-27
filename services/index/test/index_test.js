@@ -1,5 +1,4 @@
 suite('Indexing', () => {
-  var Promise     = require('promise');
   var assert      = require('assert');
   var debug       = require('debug')('index:test:index_test');
   var helper      = require('./helper');
@@ -20,7 +19,7 @@ suite('Indexing', () => {
         helper.routePrefix + '.my-ns.my-indexed-thing-again',
         helper.routePrefix + '.my-ns.one-ns.my-indexed-thing',
         helper.routePrefix + '.my-ns.another-ns.my-indexed-thing-again',
-        helper.routePrefix + '.my-ns.slash/things-are-ignored'
+        helper.routePrefix + '.my-ns.slash/things-are-ignored',
       ],
       retries: 3,
       created: (new Date()).toJSON(),
@@ -30,11 +29,11 @@ suite('Indexing', () => {
         name: 'Print `"Hello World"` Once',
         description: 'This task will prìnt `"Hello World"` **once**!',
         owner: 'jojensen@mozilla.com',
-        source: 'https://github.com/taskcluster/taskcluster-index'
+        source: 'https://github.com/taskcluster/taskcluster-index',
       },
       tags: {
-        objective: 'Test task indexing'
-      }
+        objective: 'Test task indexing',
+      },
     };
   };
 
@@ -103,9 +102,9 @@ suite('Indexing', () => {
         rank:       42,
         expires:    taskcluster.fromNow('1 hour'),
         data: {
-          hello:    "world"
-        }
-      }
+          hello:    'world',
+        },
+      },
     };
     helper.queue.addTask(taskId, task);
 
@@ -124,9 +123,9 @@ suite('Indexing', () => {
     let result = await testing.poll(function() {
       return helper.index.findTask('my-ns.my-indexed-thing');
     });
-    assert.equal(result.taskId, taskId, "Wrong taskId");
-    assert.equal(result.rank, 42, "Expected rank 42");
-    assert.equal(result.data.hello, 'world', "Expected data");
+    assert.equal(result.taskId, taskId, 'Wrong taskId');
+    assert.equal(result.rank, 42, 'Expected rank 42');
+    assert.equal(result.data.hello, 'world', 'Expected data');
 
     debug('### Find task in index (again)');
     result = await helper.index.findTask('my-ns.my-indexed-thing-again');
