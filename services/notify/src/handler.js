@@ -2,20 +2,20 @@ let debug = require('debug')('notify');
 let _ = require('lodash');
 let assert = require('assert');
 let taskcluster = require('taskcluster-client');
+let jsone = require('json-e');
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
-  /** Construct listener given notifier, pulse credentials and queueName */
-  constructor({notifier, validator, credentials, queueName, monitor, routePrefix}) {
-    this.queue = new taskcluster.Queue();
+  constructor({notifier, validator, monitor, routePrefix, listener, queue, testing}) {
+    this.queue = queue;
 
     this.notifier = notifier;
     this.validator = validator;
     this.monitor = monitor;
     this.routePrefix = routePrefix;
 
-    // Create listener
-    this.listener = new taskcluster.PulseListener({credentials, queueName});
+    this.listener = listener;
+    this.testing = testing;
 
     // Bind to exchanges with pattern for custom routing keys
     let qe = new taskcluster.QueueEvents();
@@ -31,18 +31,20 @@ class Handler {
   }
 
   async listen() {
-    await this.listener.connect();
+    if (!this.testing) {
+      await this.listener.connect();
+    }
     await this.listener.resume();
   }
 
   async onMessage(message) {
     // Load task definition
-    let taskId = message.payload.status.taskId;
+    let {status} = message.payload;
+    let taskId = status.taskId;
     let task = await this.queue.task(taskId);
-    let status = await this.queue.status(taskId);
     let href = `https://tools.taskcluster.net/task-inspector/#${taskId}`;
     let groupHref = `https://tools.taskcluster.net/task-group-inspector/#/${task.taskGroupId}`;
-    let runCount = status.status.runs.length;
+    let runCount = status.runs.length;
 
     debug(`Received message for ${taskId} with notify routes. Finding notifications.`);
     this.monitor.count('notification-requested.any');
@@ -52,47 +54,69 @@ class Handler {
 
       // convert from on- syntax to state. e.g. on-exception -> exception
       let decider = _.join(_.slice(route[route.length -1], 3), '');
-      if (decider !== 'any' && status.status.state !== decider) {
+      if (decider !== 'any' && status.state !== decider) {
         return;
       }
+
+      let ircMessage = `Task "${task.metadata.name}" complete with status '${status.state}'. Inspect: ${href}`;
+
       switch (route[1]) {
         case 'irc-user':
           this.monitor.count('notification-requested.irc-user');
+          if (_.has(task, 'extra.notify.ircUserMessage')) {
+            ircMessage = jsone(task.extra.notify.ircUserMessage, {task, status});
+          }
           return this.notifier.irc({
             user: route[2],
-            message: `Task "${task.metadata.name}" complete with status '${status.status.state}'. Inspect: ${href}`,
+            message: ircMessage,
           });
+
         case 'irc-channel':
           this.monitor.count('notification-requested.irc-channel');
+          if (_.has(task, 'extra.notify.ircChannelMessage')) {
+            ircMessage = jsone(task.extra.notify.ircChannelMessage, {task, status});
+          }
           return this.notifier.irc({
             channel: route[2],
-            message: `Task "${task.metadata.name}" complete with status '${status.status.state}'. Inspect: ${href}`,
+            message: ircMessage,
           });
+
         case 'pulse':
           this.monitor.count('notification-requested.pulse');
           return this.notifier.pulse({
             routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
             message: status,
           });
+
         case 'email':
           this.monitor.count('notification-requested.email');
-          return this.notifier.email({
-            address:  _.join(_.slice(route, 2, route.length - 1), '.'),
-            // I hate having to dedent this, but it's easy and without it there's
-            // whitespace before every line, making Markdown think it's preformatted.
-            content: `
+          let content = `
 Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHref}) is complete.
 
-**Status:** ${status.status.state} (in ${runCount} run${runCount === 1? '' : 's'})
+**Status:** ${status.state} (in ${runCount} run${runCount === 1? '' : 's'})
 **Name:** ${task.metadata.name}
 **Description:** ${task.metadata.description}
 **Owner:** ${task.metadata.owner}
 **Source:** ${task.metadata.source}
-            `,
-            subject: `Task ${status.status.state}: ${task.metadata.name} - ${taskId}`,
-            link: {text: 'Inspect Task', href},
-            template: 'simple',
+          `;
+          let link = {text: 'Inspect Task', href};
+          let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
+          let template = 'simple';
+          if (_.has(task, 'extra.notify.email')) {
+            let extra = task.extra.notify.email;
+            content = email.content ? jsone(email.content, {task, status}) : content;
+            subject = email.subject ? jsone(email.subject, {task, status}) : subject;
+            link = email.link ? jsone(email.link, {task, status}) : link;
+            template = email.template ? jsone(email.template, {task, status}) : template;
+          }
+          return this.notifier.email({
+            address:  _.join(_.slice(route, 2, route.length - 1), '.'),
+            content,
+            subject,
+            link,
+            template,
           });
+
         default:
       }
     }));

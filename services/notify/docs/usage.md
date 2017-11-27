@@ -41,6 +41,26 @@ But what you've really been waiting for is to know how to use this, so here's a 
 }
 ```
 
+### Setting Custom Messages
+
+In both irc and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
+given a context of the [task definition](https://docs.taskcluster.net/reference/platform/taskcluster-queue/references/api#get-task-definition)
+and [task status](https://docs.taskcluster.net/reference/platform/taskcluster-queue/references/events#message-payload-4). The task definition is in the context under the key
+`task` and the status is in the context under the key `status`. The fields you add to your task definition are all in the `task.extra` section under a key `notify`. They are as follows:
+
+__task.extra.notify.ircUserMessage:__ This should evaluate to a string and is the message sent to a user in irc if a `notify.irc-user` event occurs
+
+__task.extra.notify.ircChannelMessage:__ This should evaluate to a string and is the message posted to a channel in irc if a `notify.irc-channel` event occurs
+
+__task.extra.notify.email.content:__ This should evaluate to a markdown string and is the body of an email
+
+__task.extra.notify.email.subject:__ This should evaluate to a normal string and is the subject of an email
+
+__task.extra.notify.email.link:__ This should evaluate to an object with `text` (which will be the text on the button) and `href` keys or null if you don not want a link in your email
+
+__task.extra.notify.email.template:__ This should evaluate to string with a value of either 'simple' or 'fullscreen' at this time
+
+
 ### Scopes
 
 If you're using this from the api instead of via a task definition, you'll need some simple ``notify.<type>.*`` scopes of some sort. The specific ones you need are documented on the [api docs](https://docs.taskcluster.net/reference/core/notify/api-docs).
@@ -73,6 +93,9 @@ tasks:
       - "notify.irc-channel.#taskcluster-notifications.on-failed"
       - "notify.irc-channel.#taskcluster-notifications.on-exception"
     extra:
+      notify:
+        email:
+          content: 'Things worked in ${status.taskId}',
       github:
         env: true
         events:

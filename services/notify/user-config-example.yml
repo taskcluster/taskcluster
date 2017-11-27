@@ -1,11 +1,4 @@
 defaults:
-  taskcluster:
-    credentials:
-      clientId:         '...'
-      accessKey:        '...'
   aws:
     accessKeyId:        '...'
     secretAccessKey:    '...'
-  pulse:
-    username:           '...'
-    password:           '...'

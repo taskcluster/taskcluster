@@ -54,7 +54,8 @@ mocha.before(async () => {
   // Create mock authentication server
   testing.fakeauth.start(testclients);
 
-  webServer = await load('server', {profile: 'test', process: 'test'});
+  helper.publisher = await load('publisher', {profile: 'test', process: 'test'});
+  webServer = await load('server', {profile: 'test', process: 'test', publisher: helper.publisher});
 
   // Create client for working with API
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
@@ -75,7 +76,6 @@ mocha.before(async () => {
   });
   helper.NotifyEvents = taskcluster.createClient(exchangeReference);
   helper.notifyEvents = new helper.NotifyEvents();
-  helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
 
   // Create client for listening for irc requests
   helper.sqs = new aws.SQS(cfg.aws);
