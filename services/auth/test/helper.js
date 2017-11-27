@@ -3,12 +3,12 @@ var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
 var testing     = require('taskcluster-lib-testing');
-var data        = require('../lib/data');
-var v1          = require('../lib/v1');
+var data        = require('../src/data');
+var v1          = require('../src/v1');
 var taskcluster = require('taskcluster-client');
 var mocha       = require('mocha');
-var serverLoad  = require('../lib/main');
-var exchanges   = require('../lib/exchanges');
+var serverLoad  = require('../src/main');
+var exchanges   = require('../src/exchanges');
 var testserver  = require('./testserver');
 var slugid      = require('slugid');
 var Config      = require('typed-env-config');
@@ -25,8 +25,8 @@ helper.rootAccessToken = cfg.app.rootAccessToken;
 
 // Skip tests if no pulse credentials are configured
 if (!cfg.pulse.password) {
-  console.log("Skip tests for due to missing pulse credentials; " +
-              "create user-config.yml");
+  console.log('Skip tests for due to missing pulse credentials; ' +
+              'create user-config.yml');
   process.exit(1);
 }
 

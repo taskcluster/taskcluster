@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#
+$schema:  http://json-schema.org/draft-06/schema#
 title:                      "Webhooktunnel Token Response"
 description: |
     Token for connecting a worker to webhooktunnel proxy

@@ -1,3 +1,3 @@
-web:                 node lib/main server
-expireSentry:        node lib/main expire-sentry
-purgeExpiredClients: node lib/main purge-expired-clients
+web:                 node src/main server
+expireSentry:        node src/main expire-sentry
+purgeExpiredClients: node src/main purge-expired-clients

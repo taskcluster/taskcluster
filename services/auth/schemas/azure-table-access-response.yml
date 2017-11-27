@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#
+$schema:  http://json-schema.org/draft-06/schema#
 title:                      "Azure Table Shared-Access-Signature Response"
 description: |
   Response to a request for an Shared-Access-Signature to access and Azure

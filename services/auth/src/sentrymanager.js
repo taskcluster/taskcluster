@@ -78,9 +78,9 @@ class SentryManager {
       // Ignore error try to create the project, and list keys again.
       await this._sentry.teams.createProject(
         this._organization, this._initialTeam, {
-        name: project,
-        slug: project,
-      });
+          name: project,
+          slug: project,
+        });
       keys = await this._sentry.projects.keys(this._organization, project);
     }
 
@@ -91,8 +91,8 @@ class SentryManager {
       let expires = taskcluster.fromNow('48 hours');
       let k = await this._sentry.projects.createKey(
         this._organization, project, {
-        name: this._keyPrefix + ` managed (expires-at:${expires.toJSON()})`,
-      });
+          name: this._keyPrefix + ` managed (expires-at:${expires.toJSON()})`,
+        });
       key = {
         id:   k.id,
         dsn:  k.dsn,

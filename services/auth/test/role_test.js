@@ -16,16 +16,16 @@ suite('api (roles)', function() {
   // Setup a clientId we can play with
   let clientId, accessToken;
   clientId = slugid.v4();
-  test('createClient', async() => {
+  test('createClient', async () => {
     let client = await helper.auth.createClient(clientId, {
       expires: taskcluster.fromNowJSON('1 day'),
-      description: "test client...",
+      description: 'test client...',
       scopes: ['assume:thing-id:' + clientId],
     });
     accessToken = client.accessToken;
   });
 
-  test('createRole (normal)', async() => {
+  test('createRole (normal)', async () => {
     await helper.events.listenFor('e1', helper.authEvents.roleCreated());
 
     let role = await helper.auth.createRole('thing-id:' + clientId, {
@@ -35,7 +35,7 @@ suite('api (roles)', function() {
     assume(role.description).equals('test role');
     assume(new Date(role.created).getTime()).is.atmost(Date.now());
     assume(role.scopes).deep.equals([
-      'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'
+      'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2',
     ]);
     assume(role.expandedScopes).contains('dummy-scope-1');
     assume(role.expandedScopes).contains('auth:create-role:*');
@@ -58,15 +58,15 @@ suite('api (roles)', function() {
     );
   });
 
-  test('createRole (prefix)', async() => {
+  test('createRole (prefix)', async () => {
     let auth = new helper.Auth({
-      credentials: {clientId, accessToken}
+      credentials: {clientId, accessToken},
     });
 
     let roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
     let role = await auth.createRole(roleId, {
       description: 'test prefix role',
-      scopes: ['dummy-scope-2']
+      scopes: ['dummy-scope-2'],
     });
     assume(role.description).equals('test prefix role');
     assume(new Date(role.created).getTime()).is.atmost(Date.now());
@@ -80,33 +80,33 @@ suite('api (roles)', function() {
     assume(client.expandedScopes).contains('dummy-scope-2');
   });
 
-  test('createRole (encodeURIComponent)', async() => {
+  test('createRole (encodeURIComponent)', async () => {
     // Ensure that encodeURIComponent in client library works...
-    let roleId = clientId + "/test ?test=1";
+    let roleId = clientId + '/test ?test=1';
     let role = await helper.auth.createRole(roleId, {
       description: 'test role for werid roleId',
-      scopes: ['dummy-scope-2']
+      scopes: ['dummy-scope-2'],
     });
     assume(role.roleId).equals(roleId);
     await helper.auth.deleteRole(roleId);
   });
 
-  test('getRole', async() => {
+  test('getRole', async () => {
     let role = await helper.auth.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
       'assume:thing-id:' + clientId,
       'dummy-scope-1',
       'auth:create-role:*',
-      'dummy-scope-2'
+      'dummy-scope-2',
     ].sort());
   });
 
-  test('listRoles', async() => {
+  test('listRoles', async () => {
     let roles = await helper.auth.listRoles();
     assert(roles.some(role => role.roleId === 'thing-id:' + clientId));
   });
 
-  test('updateRole (add scope)', async() => {
+  test('updateRole (add scope)', async () => {
     await helper.events.listenFor('e1', helper.authEvents.roleUpdated());
 
     let r1 = await helper.auth.role('thing-id:' + clientId);
@@ -115,7 +115,7 @@ suite('api (roles)', function() {
 
     let r2 = await helper.auth.updateRole('thing-id:' + clientId, {
       description: 'test role',
-      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3']
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3'],
     });
     assume(new Date(r2.lastModified).getTime()).greaterThan(
       new Date(r1.lastModified).getTime()
@@ -127,12 +127,12 @@ suite('api (roles)', function() {
       'dummy-scope-1',
       'auth:create-role:*',
       'dummy-scope-2',
-      'dummy-scope-3'
+      'dummy-scope-3',
     ].sort());
     await helper.events.waitFor('e1');
   });
 
-  test('deleteRole', async() => {
+  test('deleteRole', async () => {
     await helper.events.listenFor('e1', helper.authEvents.roleDeleted());
 
     await helper.auth.deleteRole('thing-id:' + clientId);
@@ -141,8 +141,8 @@ suite('api (roles)', function() {
     await helper.auth.deleteRole(roleId);
 
     await helper.auth.role('thing-id:' + clientId).then(() => {
-      assert(false, "Expected error");
-    }, err => assert(err.statusCode === 404, "Expected 404"));
+      assert(false, 'Expected error');
+    }, err => assert(err.statusCode === 404, 'Expected 404'));
 
     // At least one of them should trigger this message
     await helper.events.waitFor('e1');
@@ -161,7 +161,7 @@ suite('api (roles)', function() {
           'scope:role-has:a',
           'scope:caller-has:a',
           'scope:caller-has:b*',
-        ]
+        ],
       });
       await helper.Role.remove({roleId}, true);
       await helper.Role.create({
@@ -192,28 +192,28 @@ suite('api (roles)', function() {
       await helper.Role.remove({roleId}, true);
     });
 
-    test('caller has new scope verbatim', async() => {
+    test('caller has new scope verbatim', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
         scopes: ['scope:role-has:*', 'scope:caller-has:a'],
       });
     });
 
-    test('caller has a prefix of the new scope', async() => {
+    test('caller has a prefix of the new scope', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
         scopes: ['scope:caller-has:bxx'],
       });
     });
 
-    test('role already has new scope verbatim', async() => {
+    test('role already has new scope verbatim', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
         scopes: ['scope:role-has:*'],
       });
     });
 
-    test('role already has new scope by role expansion', async() => {
+    test('role already has new scope by role expansion', async () => {
       // NOTE: this represents no immediate change, but if roleId2 later
       // had this scope removed, it wouldn't disappear from roleId..
       await auth.updateRole(roleId, {
@@ -222,22 +222,22 @@ suite('api (roles)', function() {
       });
     });
 
-    test('role already has a prefix of the new scope', async() => {
+    test('role already has a prefix of the new scope', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
         scopes: ['scope:role-has:x', 'scope:role-has:y'],
       });
     });
 
-    test('caller does not have new scope', async() => {
+    test('caller does not have new scope', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
         scopes: ['nobody-has-this'],
-      }).then(() => assert(false, "Expected an error"),
-              err => assert(err.statusCode === 403));
+      }).then(() => assert(false, 'Expected an error'),
+        err => assert(err.statusCode === 403));
     });
 
-    test('remove a scope the caller does not posess', async() => {
+    test('remove a scope the caller does not posess', async () => {
       await auth.updateRole(roleId, {
         description: 'test role',
         scopes: [],

@@ -1,5 +1,5 @@
-suite("ScopeResolver (normalizeScopes)", () => {
-  let ScopeResolver = require('../lib/scoperesolver');
+suite('ScopeResolver (normalizeScopes)', () => {
+  let ScopeResolver = require('../src/scoperesolver');
   let assert = require('assert');
   let _ = require('lodash');
 
@@ -7,44 +7,44 @@ suite("ScopeResolver (normalizeScopes)", () => {
   [
     {
       scopes:   ['*'],
-      result:   ['*']
+      result:   ['*'],
     }, {
       scopes:   ['*', 'test'],
-      result:   ['*']
+      result:   ['*'],
     }, {
       scopes:   ['*', 'test', 'te*'],
-      result:   ['*']
+      result:   ['*'],
     }, {
       scopes:   ['*', 'te*'],
-      result:   ['*']
+      result:   ['*'],
     }, {
       scopes:   ['test*', 't*'],
-      result:   ['t*']
+      result:   ['t*'],
     }, {
       scopes:   ['test*', 'ab*'],
-      result:   ['test*', 'ab*']
+      result:   ['test*', 'ab*'],
     }, {
       scopes:   ['abc', 'ab*', 'a', 'ab'],
-      result:   ['ab*', 'a']
+      result:   ['ab*', 'a'],
     }, {
       scopes:   ['a', 'b', 'c'],
-      result:   ['a', 'b', 'c']
+      result:   ['a', 'b', 'c'],
     }, {
       scopes:   ['ab', 'a', 'abc*'],
-      result:   ['ab', 'a', 'abc*']
+      result:   ['ab', 'a', 'abc*'],
     }, {
       scopes:   ['a*', 'ab', 'a', 'abc*'],
-      result:   ['a*']
+      result:   ['a*'],
     },
   ].forEach(({scopes, result}) => {
     test(`normalizeScopes(${scopes.join(', ')})`, () => {
       if (_.xor(ScopeResolver.normalizeScopes(scopes), result).length !== 0) {
-        console.error("Expected: ");
+        console.error('Expected: ');
         console.error(result);
-        console.error("Got: ");
+        console.error('Got: ');
         console.error(ScopeResolver.normalizeScopes(scopes));
-        assert(false, "Expected normalizeScopes(" + scopes.join(', ') +
-                      ") === " + result.join(', '));
+        assert(false, 'Expected normalizeScopes(' + scopes.join(', ') +
+                      ') === ' + result.join(', '));
       }
     });
   });

@@ -1,5 +1,5 @@
-suite("ScopeResolver (grantsRole)", () => {
-  let ScopeResolver = require('../lib/scoperesolver');
+suite('ScopeResolver (grantsRole)', () => {
+  let ScopeResolver = require('../src/scoperesolver');
   let assert        = require('assert');
 
   // Test cases for grantsRole
@@ -8,116 +8,116 @@ suite("ScopeResolver (grantsRole)", () => {
       // cases with *
       scope:    '*',
       role:     '*',
-      result:   true
+      result:   true,
     }, {
       scope:    '*',
       role:     'client-id:queue',
-      result:   true
+      result:   true,
     }, {
       scope:    '*',
       role:     'task-run-id:*',
-      result:   true
+      result:   true,
     }, {
       // cases with as*
       scope:    'as*',
       role:     '*',
-      result:   true
+      result:   true,
     }, {
       scope:    'as*',
       role:     'client-id:queue',
-      result:   true
+      result:   true,
     }, {
       scope:    'as*',
       role:     'task-run-id:*',
-      result:   true
+      result:   true,
     }, {
       scope:    'queue:*',
       role:     'task-run-id:*',
-      result:   false
+      result:   false,
     }, {
       // cases with assume:*
       scope:    'assume:*',
       role:     'client-id:queue',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:*',
       role:     'task-run-id:*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:*',
       role:     '*',
-      result:   true
+      result:   true,
     }, {
       // cases with assume:<prefix>*
       scope:    'assume:thing-id:*',
       role:     'thing-id:queue',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:*',
       role:     'task-run-id:*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:*',
       role:     '*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:*',
       role:     'task-run-*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:*',
       role:     'client-id:queue',
-      result:   false
+      result:   false,
     }, {
       scope:    'assume:task-run-id:*',
       role:     'client-id:*',
-      result:   false
+      result:   false,
     }, {
       // cases with assume:roleId
       scope:    'assume:thing-id:queue',
       role:     'thing-id:queue',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:12345',
       role:     'task-run-id:72345',
-      result:   false
+      result:   false,
     }, {
       scope:    'assume:task-run-id:12345',
       role:     'task-run-id:*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:12345',
       role:     '*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:12345',
       role:     'task-run-*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:task-run-id:12345',
       role:     'client-id:*',
-      result:   false
+      result:   false,
     }, {
       scope:    'assume:a',
       role:     'a*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:a*',
       role:     'a*',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:a*',
       role:     'a',
-      result:   true
+      result:   true,
     }, {
       scope:    'assume:ab*',
       role:     'ac*',
-      result:   false
-    }
+      result:   false,
+    },
   ].forEach(({scope, role, result}) => {
     test(`grantsRole(${scope}, ${role}) === ${result}`, () => {
       assert(ScopeResolver.grantsRole(scope, role) === result,
-             `Expected grantsRole(${scope}, ${role}) === ${result}`);;
+        `Expected grantsRole(${scope}, ${role}) === ${result}`);;
     });
   });
 });

@@ -10,16 +10,16 @@ api.declare({
   deferAuth:  true,
   stability:  'stable',
   scopes:     [['auth:sentry:<project>']],
-  title:      "Get DSN for Sentry Project",
+  title:      'Get DSN for Sentry Project',
   description: [
-    "Get temporary DSN (access credentials) for a sentry project.",
-    "The credentials returned can be used with any Sentry client for up to",
-    "24 hours, after which the credentials will be automatically disabled.",
-    "",
-    "If the project doesn't exist it will be created, and assigned to the",
-    "initial team configured for this component. Contact a Sentry admin",
-    "to have the project transferred to a team you have access to if needed",
-  ].join('\n')
+    'Get temporary DSN (access credentials) for a sentry project.',
+    'The credentials returned can be used with any Sentry client for up to',
+    '24 hours, after which the credentials will be automatically disabled.',
+    '',
+    'If the project doesn\'t exist it will be created, and assigned to the',
+    'initial team configured for this component. Contact a Sentry admin',
+    'to have the project transferred to a team you have access to if needed',
+  ].join('\n'),
 }, async function(req, res) {
   let project = req.params.project;
 

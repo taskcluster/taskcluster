@@ -13,8 +13,8 @@ var hawk = require('hawk');
 // with `npm run checkStaging`.
 suite('taskcluster-auth-staging check', function() {
   if (!helper.cfg.checkStaging.credentials) {
-    console.log("run `heroku run -a taskcluster-auth-staging node bin/make-check-client.js` and " +
-                "set checkStaging.credentials in user-config.yml");
+    console.log('run `heroku run -a taskcluster-auth-staging node bin/make-check-client.js` and ' +
+                'set checkStaging.credentials in user-config.yml');
     process.exit(1);
   }
 
@@ -22,7 +22,7 @@ suite('taskcluster-auth-staging check', function() {
     baseUrl: helper.cfg.checkStaging.baseUrl,
   });
 
-  test("can get a client (no auth required)", async function() {
+  test('can get a client (no auth required)', async function() {
     let clientId = helper.cfg.checkStaging.credentials.clientId;
     let client = await auth.client(clientId);
     assume(client.clientId).to.equal(clientId);
@@ -30,23 +30,23 @@ suite('taskcluster-auth-staging check', function() {
     assume(client.expandedScopes).to.contain('auth:delete-client:garbage/*');
   });
 
-  test("can create and delete a client", async function() {
+  test('can create and delete a client', async function() {
     var auth = new taskcluster.Auth({
       baseUrl: helper.cfg.checkStaging.baseUrl,
       credentials: helper.cfg.checkStaging.credentials,
     });
 
-    let clientId = "garbage/checkStaging/" + slugid.nice();
+    let clientId = 'garbage/checkStaging/' + slugid.nice();
     let client = await auth.createClient(clientId, {
-      description: "delete me",
-      expires: taskcluster.fromNow("1 minute"),
+      description: 'delete me',
+      expires: taskcluster.fromNow('1 minute'),
     });
     assume(client.clientId).to.equal(clientId);
     // clean up
     await auth.deleteClient(clientId);
   });
 
-  test("can answer authenticateHawk requests", async function() {
+  test('can answer authenticateHawk requests', async function() {
     // just use a very basic request
     var credentials = helper.cfg.checkStaging.credentials;
     var data = {
@@ -56,19 +56,19 @@ suite('taskcluster-auth-staging check', function() {
       port: 443,
     };
     data.authorization = hawk.client.header(
-        'https://' + data.host + data.resource, data.method, {
-          credentials: {
-            id: credentials.clientId,
-            key: credentials.accessToken,
-            algorithm: 'sha256',
-          },
-        }).field;
+      'https://' + data.host + data.resource, data.method, {
+        credentials: {
+          id: credentials.clientId,
+          key: credentials.accessToken,
+          algorithm: 'sha256',
+        },
+      }).field;
 
     let res = await auth.authenticateHawk(data);
     assume(res.status).to.equal('auth-success');
   });
 
-  test("can answer authenticateHawk requests with a hash", async function() {
+  test('can answer authenticateHawk requests with a hash', async function() {
     // just use a very basic request
     var credentials = helper.cfg.checkStaging.credentials;
     var data = {
@@ -78,14 +78,14 @@ suite('taskcluster-auth-staging check', function() {
       port: 443,
     };
     data.authorization = hawk.client.header(
-        'https://' + data.host + data.resource, data.method, {
-          credentials: {
-            id: credentials.clientId,
-            key: credentials.accessToken,
-            algorithm: 'sha256',
-          },
-          payload: '{}',
-        }).field;
+      'https://' + data.host + data.resource, data.method, {
+        credentials: {
+          id: credentials.clientId,
+          key: credentials.accessToken,
+          algorithm: 'sha256',
+        },
+        payload: '{}',
+      }).field;
     console.log(data.authorization);
 
     let res = await auth.authenticateHawk(data);

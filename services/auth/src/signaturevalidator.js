@@ -1,4 +1,3 @@
-"use strict";
 
 var debug         = require('debug')('auth:signaturevalidator');
 var Promise       = require('promise');
@@ -10,7 +9,6 @@ require('superagent-hawk')(require('superagent'));
 var utils         = require('taskcluster-lib-scopes');
 var hoek          = require('hoek');
 var https         = require('https');
-var cryptiles     = require('cryptiles');
 var crypto        = require('crypto');
 
 /**
@@ -24,13 +22,12 @@ var parseExt = function(ext) {
   // Attempt to parse ext
   try {
     ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
-  }
-  catch(err) {
-    throw new Error("Failed to parse ext");
+  } catch (err) {
+    throw new Error('Failed to parse ext');
   }
 
   return ext;
-}
+};
 
 /**
  * Limit the client scopes and possibly use temporary keys.
@@ -40,7 +37,7 @@ var parseExt = function(ext) {
  * modified (otherwise it returns the original).
  */
 var limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
-                                  expires, ext, expandScopes) {
+  expires, ext, expandScopes) {
   let issuingScopes = scopes;
   let res = {scopes, expires, accessToken};
 
@@ -49,66 +46,64 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
     var cert = ext.certificate;
     // Validate the certificate
     if (!(cert instanceof Object)) {
-      throw new Error("ext.certificate must be a JSON object");
+      throw new Error('ext.certificate must be a JSON object');
     }
     if (cert.version !== 1) {
-      throw new Error("ext.certificate.version must be 1");
+      throw new Error('ext.certificate.version must be 1');
     }
-    if (typeof(cert.seed) !== 'string') {
+    if (typeof cert.seed !== 'string') {
       throw new Error('ext.certificate.seed must be a string');
     }
     if (cert.seed.length !== 44) {
       throw new Error('ext.certificate.seed must be 44 characters');
     }
-    if (typeof(cert.start) !== 'number') {
+    if (typeof cert.start !== 'number') {
       throw new Error('ext.certificate.start must be a number');
     }
-    if (typeof(cert.expiry) !== 'number') {
+    if (typeof cert.expiry !== 'number') {
       throw new Error('ext.certificate.expiry must be a number');
     }
     if (!(cert.scopes instanceof Array)) {
-      throw new Error("ext.certificate.scopes must be an array");
+      throw new Error('ext.certificate.scopes must be an array');
     }
     if (!cert.scopes.every(utils.validScope)) {
-      throw new Error("ext.certificate.scopes must be an array of valid scopes");
+      throw new Error('ext.certificate.scopes must be an array of valid scopes');
     }
 
     // Check start and expiry
     var now = new Date().getTime();
     if (cert.start > now) {
-      throw new Error("ext.certificate.start > now");
+      throw new Error('ext.certificate.start > now');
     }
     if (cert.expiry < now) {
-      throw new Error("ext.certificate.expiry < now");
+      throw new Error('ext.certificate.expiry < now');
     }
     // Check max time between start and expiry
     if (cert.expiry - cert.start > 31 * 24 * 60 * 60 * 1000) {
-      throw new Error("ext.certificate cannot last longer than 31 days!");
+      throw new Error('ext.certificate cannot last longer than 31 days!');
     }
 
     // Check clientId validity
     if (issuingClientId !== credentialName) {
       let createScope = 'auth:create-client:' + credentialName;
       if (!utils.scopeMatch(issuingScopes, [[createScope]])) {
-        throw new Error("ext.certificate issuer `" + issuingClientId +
-                        "` doesn't have `" + createScope + "` for supplied clientId.");
+        throw new Error('ext.certificate issuer `' + issuingClientId +
+                        '` doesn\'t have `' + createScope + '` for supplied clientId.');
       }
-    } else {
-      if (cert.hasOwnProperty('clientId')) {
-        throw new Error('ext.certificate.clientId must only be used with ext.certificate.issuer');
-      }
+    } else if (cert.hasOwnProperty('clientId')) {
+      throw new Error('ext.certificate.clientId must only be used with ext.certificate.issuer');
     }
 
     // Validate certificate scopes are subset of client
     if (!utils.scopeMatch(scopes, [cert.scopes])) {
-      throw new Error("ext.certificate issuer `" + issuingClientId +
-                      "` doesn't satisfiy all certificate scopes " +
-                      cert.scopes.join(', ') + ".  The temporary " +
-                      "credentials were not generated correctly.");
+      throw new Error('ext.certificate issuer `' + issuingClientId +
+                      '` doesn\'t satisfiy all certificate scopes ' +
+                      cert.scopes.join(', ') + '.  The temporary ' +
+                      'credentials were not generated correctly.');
     }
 
     // Generate certificate signature
-    var sigContent = []
+    var sigContent = [];
     sigContent.push('version:'    + '1');
     if (cert.issuer) {
       sigContent.push('clientId:' + credentialName);
@@ -124,12 +119,12 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
       .digest('base64');
 
     // Validate signature
-    if (typeof(cert.signature) !== 'string' ||
-        !cryptiles.fixedTimeComparison(cert.signature, signature)) {
+    if (typeof cert.signature !== 'string' ||
+        !crypto.timingSafeEqual(Buffer.from(cert.signature), Buffer.from(signature))) {
       if (cert.issuer) {
-        throw new Error("ext.certificate.signature is not valid, or wrong clientId provided");
+        throw new Error('ext.certificate.signature is not valid, or wrong clientId provided');
       } else {
-        throw new Error("ext.certificate.signature is not valid");
+        throw new Error('ext.certificate.signature is not valid');
       }
     }
 
@@ -156,10 +151,10 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
   if (ext.authorizedScopes) {
     // Validate input format
     if (!(ext.authorizedScopes instanceof Array)) {
-      throw new Error("ext.authorizedScopes must be an array");
+      throw new Error('ext.authorizedScopes must be an array');
     }
     if (!ext.authorizedScopes.every(utils.validScope)) {
-      throw new Error("ext.authorizedScopes must be an array of valid scopes");
+      throw new Error('ext.authorizedScopes must be an array of valid scopes');
     }
 
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
@@ -175,7 +170,6 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
 
   return res;
 };
-
 
 /**
  * Make a function for the signature validation.
@@ -204,22 +198,22 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
  * `remoteAuthentication`.
  */
 var createSignatureValidator = function(options) {
-  assert(typeof(options) === 'object', 'options must be an object');
+  assert(typeof options === 'object', 'options must be an object');
   assert(options.clientLoader instanceof Function,
-         'options.clientLoader must be a function');
+    'options.clientLoader must be a function');
   if (!options.expandScopes) {
     // Default to the identity function
     options.expandScopes = function(scopes) { return scopes; };
   }
   assert(options.expandScopes instanceof Function,
-         'options.expandScopes must be a function');
+    'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
   var loadCredentials = function(clientId, ext, callback) {
     // We may have two clientIds here: the credentialName (the one the caller
     // sent in the Hawk Authorization header) and the issuingClientId (the one
     // that signed the temporary credentials).
     let credentialName = clientId,
-        issuingClientId = clientId;
+      issuingClientId = clientId;
 
     (async () => {
       // extract ext.certificate.issuer, if present
@@ -227,7 +221,7 @@ var createSignatureValidator = function(options) {
         ext = parseExt(ext);
         if (ext.certificate && ext.certificate.issuer) {
           issuingClientId = ext.certificate.issuer;
-          if (typeof(issuingClientId) !== 'string') {
+          if (typeof issuingClientId !== 'string') {
             throw new Error('ext.certificate.issuer must be a string');
           }
           if (issuingClientId == credentialName) {
@@ -242,8 +236,8 @@ var createSignatureValidator = function(options) {
       // apply restrictions based on the ext field
       if (ext) {
         ({scopes, expires, accessToken} = limitClientWithExt(
-            credentialName, issuingClientId, accessToken,
-            scopes, expires, ext, options.expandScopes));
+          credentialName, issuingClientId, accessToken,
+          scopes, expires, ext, options.expandScopes));
       }
 
       callback(null, {
@@ -251,7 +245,7 @@ var createSignatureValidator = function(options) {
         algorithm: 'sha256',
         clientId:  credentialName,
         expires:   expires,
-        scopes:    scopes
+        scopes:    scopes,
       });
     })().catch(callback);
   };
@@ -260,18 +254,18 @@ var createSignatureValidator = function(options) {
       var authenticated = function(err, credentials, artifacts) {
         var result = null;
         if (err) {
-          var message = "Unknown authorization error";
+          var message = 'Unknown authorization error';
           if (err.output && err.output.payload && err.output.payload.error) {
             message = err.output.payload.error;
             if (err.output.payload.message) {
-              message += ": " + err.output.payload.message;
+              message += ': ' + err.output.payload.message;
             }
-          } else if(err.message) {
+          } else if (err.message) {
             message = err.message;
           }
           result = {
             status:   'auth-failed',
-            message:  '' + message
+            message:  '' + message,
           };
         } else {
           result = {
@@ -279,7 +273,7 @@ var createSignatureValidator = function(options) {
             scheme:   'hawk',
             expires:  credentials.expires,
             scopes:   credentials.scopes,
-            clientId: credentials.clientId
+            clientId: credentials.clientId,
           };
           if (artifacts.hash) {
             result.hash = artifacts.hash;
@@ -308,7 +302,7 @@ var createSignatureValidator = function(options) {
           url:              req.resource,
           host:             req.host,
           port:             req.port,
-          authorization:    req.authorization
+          authorization:    req.authorization,
         }, function(clientId, callback) {
           var ext = undefined;
 
@@ -335,7 +329,7 @@ var createSignatureValidator = function(options) {
           timestampSkewSec: 15 * 60,
 
           // Provide nonce manager
-          nonceFunc:    options.nonceManager
+          nonceFunc:    options.nonceManager,
         }, authenticated);
       } else {
       // If there is no authorization header we'll attempt a login with bewit
@@ -343,7 +337,7 @@ var createSignatureValidator = function(options) {
           method:           req.method.toUpperCase(),
           url:              req.resource,
           host:             req.host,
-          port:             req.port
+          port:             req.port,
         }, function(clientId, callback) {
           var ext = undefined;
 

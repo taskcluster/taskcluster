@@ -11,12 +11,12 @@ api.declare({
   deferAuth:  true,
   stability:  'stable',
   scopes:     [['auth:statsum:<project>']],
-  title:      "Get Token for Statsum Project",
+  title:      'Get Token for Statsum Project',
   description: [
-    "Get temporary `token` and `baseUrl` for sending metrics to statsum.",
-    "",
-    "The token is valid for 24 hours, clients should refresh after expiration.",
-  ].join('\n')
+    'Get temporary `token` and `baseUrl` for sending metrics to statsum.',
+    '',
+    'The token is valid for 24 hours, clients should refresh after expiration.',
+  ].join('\n'),
 }, async function(req, res) {
   let project = req.params.project;
 

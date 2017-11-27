@@ -32,19 +32,19 @@ suite('Client.purgeExpired', function() {
     throw new Error('client should be absent');
   };
 
-  test('does not delete unexpired clients', async() => {
+  test('does not delete unexpired clients', async () => {
     await testClient({expires: '1 hour', deleteOnExpiration: true});
     await helper.Client.purgeExpired(new Date());
     await assertClientPresent();
   });
 
-  test('does not delete expired clients with !deleteOnExpiration', async() => {
+  test('does not delete expired clients with !deleteOnExpiration', async () => {
     await testClient({expires: '1 hour', deleteOnExpiration: false});
     await helper.Client.purgeExpired(taskcluster.fromNow('2 hours'));
     await assertClientPresent();
   });
 
-  test('deletes expired clients with deleteOnExpiration', async() => {
+  test('deletes expired clients with deleteOnExpiration', async () => {
     await testClient({expires: '1 hour', deleteOnExpiration: true});
     await helper.Client.purgeExpired(taskcluster.fromNow('2 hours'));
     await assertClientAbsent();
