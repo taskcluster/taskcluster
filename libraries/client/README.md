@@ -236,7 +236,7 @@ var auth = new taskcluster.Auth(options);
 ### Methods in `taskcluster.AwsProvisioner`
 ```js
 // Create AwsProvisioner client instance with default baseUrl:
-//  - https://staging-aws-provisioner.herokuapp.com/v1
+//  - https://aws-provisioner.taskcluster.net/v1
 var awsProvisioner = new taskcluster.AwsProvisioner(options);
 ```
  * `awsProvisioner.listWorkerTypeSummaries() : result`
@@ -383,6 +383,7 @@ var queue = new taskcluster.Queue(options);
  * `queue.declareWorkerType(provisionerId, workerType, payload) : result`
  * `queue.listWorkers(provisionerId, workerType, [options]) : result`
  * `queue.getWorker(provisionerId, workerType, workerGroup, workerId) : result`
+ * `queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) : result`
  * `queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) : result`
  * `queue.ping() : void`
 
@@ -414,7 +415,7 @@ var authEvents = new taskcluster.AuthEvents(options);
 ### Exchanges in `taskcluster.AwsProvisionerEvents`
 ```js
 // Create AwsProvisionerEvents client instance with default exchangePrefix:
-//  - exchange/taskcluster-aws-provisioner-staging/v1/
+//  - exchange/taskcluster-aws-provisioner/v1/
 var awsProvisionerEvents = new taskcluster.AwsProvisionerEvents(options);
 ```
  * `awsProvisionerEvents.workerTypeCreated(routingKeyPattern) : binding-info`
