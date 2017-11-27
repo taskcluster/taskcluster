@@ -22,14 +22,14 @@ var data    = require('./data');
  */
 var insertTask = function(namespace, input, options) {
   // Validate input
-  assert(input.expires instanceof Date,   "expires must be a Date object");
-  assert(input.data instanceof Object,    "data must be an object");
-  assert(input.taskId,                    "taskId must be given");
-  assert(typeof(input.rank) === 'number', "rank must be a number");
+  assert(input.expires instanceof Date,   'expires must be a Date object');
+  assert(input.data instanceof Object,    'data must be an object');
+  assert(input.taskId,                    'taskId must be given');
+  assert(typeof input.rank === 'number', 'rank must be a number');
   assert(options.IndexedTask,
-         "options.IndexedTask must be an instance of data.IndexedTask");
+    'options.IndexedTask must be an instance of data.IndexedTask');
   assert(options.Namespace,
-         "options.Namespace must be an instance of data.Namespace");
+    'options.Namespace must be an instance of data.Namespace');
 
   // Get namespace and ensure that we have a least one dot
   var namespace = namespace.split('.');
@@ -44,7 +44,7 @@ var insertTask = function(namespace, input, options) {
   // Attempt to load indexed task
   return options.IndexedTask.load({
     namespace:    namespace,
-    name:         name
+    name:         name,
   }).then(function(task) {
     return task.modify(function() {
       // Update if we prefer input over what we have
@@ -74,7 +74,7 @@ var insertTask = function(namespace, input, options) {
         rank:         input.rank,
         taskId:       input.taskId,
         data:         input.data,
-        expires:      expires
+        expires:      expires,
       });
     });
   });

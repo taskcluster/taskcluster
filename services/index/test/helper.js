@@ -1,11 +1,10 @@
 var assert      = require('assert');
-var Promise     = require('promise');
 var path        = require('path');
 var _           = require('lodash');
 var mocha       = require('mocha');
-var api          = require('../lib/api');
+var api          = require('../src/api');
 var taskcluster = require('taskcluster-client');
-var load        = require('../lib/main');
+var load        = require('../src/main');
 var Config      = require('typed-env-config');
 var testing     = require('taskcluster-lib-testing');
 
@@ -34,8 +33,8 @@ var stubbedQueue = () => {
   var queue = new taskcluster.Queue({
     credentials:      {
       clientId: 'index-server',
-      accessToken: 'none'
-    }
+      accessToken: 'none',
+    },
   });
   var tasks = {};
 
@@ -75,7 +74,7 @@ mocha.before(async () => {
   helper.listenFor = function(binding) {
     // Create listener
     var listener = new taskcluster.PulseListener({
-      credentials:        cfg.pulse
+      credentials:        cfg.pulse,
     });
     // Track it, so we can close it in teardown()
     listeners.push(listener);
@@ -105,8 +104,8 @@ mocha.before(async () => {
     baseUrl:          baseUrl,
     credentials:      {
       clientId: 'test-client',
-      accessToken: 'none'
-    }
+      accessToken: 'none',
+    },
   });
 
   // Create queueEvents

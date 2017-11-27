@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 var path        = require('path');
-var Promise     = require('promise');
 var debug       = require('debug')('index:bin:server');
 var taskcluster = require('taskcluster-client');
 var data        = require('./data');
@@ -27,8 +26,8 @@ var load = loader({
       account:          cfg.app.azureAccount,
       table:            cfg.app.indexedTaskTableName,
       credentials:      cfg.taskcluster.credentials,
-      authBaseUrl:      cfg.taskcluster.authBaseUrl
-    })
+      authBaseUrl:      cfg.taskcluster.authBaseUrl,
+    }),
   },
   Namespace: {
     requires: ['cfg'],
@@ -36,8 +35,8 @@ var load = loader({
       account:          cfg.app.azureAccount,
       table:            cfg.app.namespaceTableName,
       credentials:      cfg.taskcluster.credentials,
-      authBaseUrl:      cfg.taskcluster.authBaseUrl
-    })
+      authBaseUrl:      cfg.taskcluster.authBaseUrl,
+    }),
   },
 
   // Create a validator
@@ -45,20 +44,20 @@ var load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => validator({
       prefix: 'index/v1/',
-      aws:    cfg.aws
-    })
+      aws:    cfg.aws,
+    }),
   },
 
   queue: {
     requires: ['cfg'],
     setup: ({cfg}) => new taskcluster.Queue({
-      credentials: cfg.taskcluster.credentials
-    })
+      credentials: cfg.taskcluster.credentials,
+    }),
   },
 
   queueEvents: {
     requires: [],
-    setup: () => new taskcluster.QueueEvents()
+    setup: () => new taskcluster.QueueEvents(),
   },
 
   monitor: {
@@ -93,7 +92,7 @@ var load = loader({
         queue,
         validator,
         IndexedTask,
-        Namespace
+        Namespace,
       },
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.app.publishMetaData,
@@ -102,7 +101,7 @@ var load = loader({
       aws:              cfg.aws,
       validator,
       monitor:          monitor.prefix('api'),
-    })
+    }),
   },
 
   server: {
@@ -111,7 +110,7 @@ var load = loader({
       let app = App(cfg.server);
       app.use('/v1', api);
       return app.createServer();
-    }
+    },
   },
 
   handlers: {
@@ -132,7 +131,7 @@ var load = loader({
       await handlers.setup();
 
       return handlers;
-    }
+    },
   },
 }, ['process', 'profile']);
 

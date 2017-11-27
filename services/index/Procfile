@@ -1,2 +1,2 @@
-web:      node lib/main server
-handlers: node lib/main handlers
+web:      node src/main server
+handlers: node src/main handlers
