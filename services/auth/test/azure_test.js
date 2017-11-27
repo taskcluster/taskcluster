@@ -28,16 +28,15 @@ suite('azure table and blob (sas)', function() {
     });
   });
 
-
   test('azureTableSAS', function() {
     return helper.auth.azureTableSAS(
       helper.testaccount,
       'TestTable',
       'read-write'
     ).then(function(result) {
-      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
-             "Expected expiry to be in the future");
+        'Expected expiry to be in the future');
     });
   });
 
@@ -47,9 +46,9 @@ suite('azure table and blob (sas)', function() {
       'TestTable',
       'read-write',
     ).then(function(result) {
-      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
-             "Expected expiry to be in the future");
+        'Expected expiry to be in the future');
       return result;
     });
     let table = new azure.Table({
@@ -66,9 +65,9 @@ suite('azure table and blob (sas)', function() {
       'TestTable',
       'read-only',
     ).then(function(result) {
-      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
-             "Expected expiry to be in the future");
+        'Expected expiry to be in the future');
       return result;
     });
     let table = new azure.Table({
@@ -77,7 +76,7 @@ suite('azure table and blob (sas)', function() {
     });
     // This should not error since this is read-write
     return table.insertEntity('TestTable', {PartitionKey: taskcluster.slugid(), RowKey: 'c'}).then(() => {
-      assert(false, "This should not have been allowed to write!");
+      assert(false, 'This should not have been allowed to write!');
     }, (err) => {
       assert.equal(err.code, 'ResourceNotFound', 'This should not be able to see the table at all.');
     });
@@ -89,15 +88,15 @@ suite('azure table and blob (sas)', function() {
       'TestTable',
       'foo-bar-baz',
     ).then(function(result) {
-      assert(false, "This should have thrown an error");
+      assert(false, 'This should have thrown an error');
     }).catch(function(err) {
-      assert.equal(err.code, "InvalidRequestArguments");
+      assert.equal(err.code, 'InvalidRequestArguments');
     });
   });
 
   var rootCredentials = {
     clientId: 'root',
-    accessToken: helper.rootAccessToken
+    accessToken: helper.rootAccessToken,
   };
 
   test('azureTableSAS (allowed table)', () => {
@@ -110,9 +109,9 @@ suite('azure table and blob (sas)', function() {
       'allowedTable',
       'read-write'
     ).then(function(result) {
-      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
-             "Expected expiry to be in the future");
+        'Expected expiry to be in the future');
     });
   });
 
@@ -126,9 +125,9 @@ suite('azure table and blob (sas)', function() {
       'allowedTable',
       'read-only'
     ).then(function(result) {
-      assert(typeof(result.sas) === 'string', "Expected some form of string");
+      assert(typeof result.sas === 'string', 'Expected some form of string');
       assert(new Date(result.expiry).getTime() > new Date().getTime(),
-             "Expected expiry to be in the future");
+        'Expected expiry to be in the future');
     });
   });
 
@@ -142,9 +141,9 @@ suite('azure table and blob (sas)', function() {
       'allowedTable',
       'read-write'
     ).then(function(result) {
-      assert(false, "Expected an authentication error!");
+      assert(false, 'Expected an authentication error!');
     }, function(err) {
-      assert(err.statusCode == 403, "Expected authorization error!");
+      assert(err.statusCode == 403, 'Expected authorization error!');
     });
   });
 
@@ -158,9 +157,9 @@ suite('azure table and blob (sas)', function() {
       'unauthorizedTable',
       'read-write'
     ).then(function(result) {
-      assert(false, "Expected an authentication error!");
+      assert(false, 'Expected an authentication error!');
     }, function(err) {
-      assert(err.statusCode == 403, "Expected authorization error!");
+      assert(err.statusCode == 403, 'Expected authorization error!');
     });
   });
 
@@ -171,9 +170,9 @@ suite('azure table and blob (sas)', function() {
       'read-write'
     );
 
-    assert(typeof(result.sas) === 'string', "Expected some form of string");
+    assert(typeof result.sas === 'string', 'Expected some form of string');
     assert(new Date(result.expiry).getTime() > new Date().getTime(),
-      "Expected expiry to be in the future");
+      'Expected expiry to be in the future');
   });
 
   test('azureBlobSAS (read-write)', async () => {
@@ -182,13 +181,13 @@ suite('azure table and blob (sas)', function() {
       'container-test',
       'read-write',
     );
-    assert(typeof(result.sas) === 'string', "Expected some form of string");
+    assert(typeof result.sas === 'string', 'Expected some form of string');
     assert(new Date(result.expiry).getTime() > new Date().getTime(),
-      "Expected expiry to be in the future");
+      'Expected expiry to be in the future');
 
     let blob = new azure.Blob({
       accountId: helper.testaccount,
-      sas: result.sas
+      sas: result.sas,
     });
 
     result = await blob.putBlob('container-test', 'blobTest', {type: 'BlockBlob'});
@@ -201,13 +200,13 @@ suite('azure table and blob (sas)', function() {
       'container-test',
       'read-only',
     );
-    assert(typeof(result.sas) === 'string', "Expected some form of string");
+    assert(typeof result.sas === 'string', 'Expected some form of string');
     assert(new Date(result.expiry).getTime() > new Date().getTime(),
-      "Expected expiry to be in the future");
+      'Expected expiry to be in the future');
 
     let blob = new azure.Blob({
       accountId: helper.testaccount,
-      sas: result.sas
+      sas: result.sas,
     });
 
     try {
@@ -230,7 +229,7 @@ suite('azure table and blob (sas)', function() {
       assert.equal(error.code, 'InvalidRequestArguments');
       return;
     }
-    assert(false, "This should have thrown an error");
+    assert(false, 'This should have thrown an error');
   });
 
   test('azureBlobSAS (allowed container)', async () => {
@@ -244,9 +243,9 @@ suite('azure table and blob (sas)', function() {
       'read-write'
     );
 
-    assert(typeof(result.sas) === 'string', "Expected some form of string");
+    assert(typeof result.sas === 'string', 'Expected some form of string');
     assert(new Date(result.expiry).getTime() > new Date().getTime(),
-      "Expected expiry to be in the future");
+      'Expected expiry to be in the future');
   });
 
   test('azureBlobSAS (allowed read-write -> read-only)', async () => {
@@ -259,9 +258,9 @@ suite('azure table and blob (sas)', function() {
       'allowed-container',
       'read-only',
     );
-    assert(typeof(result.sas) === 'string', "Expected some form of string");
+    assert(typeof result.sas === 'string', 'Expected some form of string');
     assert(new Date(result.expiry).getTime() > new Date().getTime(),
-      "Expected expiry to be in the future");
+      'Expected expiry to be in the future');
   });
 
   test('azureBlobSAS (unauthorized container)', async () => {
@@ -269,15 +268,15 @@ suite('azure table and blob (sas)', function() {
       'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
     );
     try {
-     await helper.auth.azureBlobSAS(
-       helper.testaccount,
-       'unauthorized-container',
-       'read-write'
-     );
+      await helper.auth.azureBlobSAS(
+        helper.testaccount,
+        'unauthorized-container',
+        'read-write'
+      );
     } catch (error) {
-      assert(error.statusCode == 403, "Expected authorization error!");
+      assert(error.statusCode == 403, 'Expected authorization error!');
       return;
     }
-    assert(false, "Expected an authentication error!");
+    assert(false, 'Expected an authentication error!');
   });
 });

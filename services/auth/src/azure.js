@@ -10,10 +10,10 @@ api.declare({
   output:     'azure-account-list-response.json#',
   stability:  'stable',
   scopes:     [['auth:azure-table:list-accounts']],
-  title:      "List Accounts Managed by Auth",
+  title:      'List Accounts Managed by Auth',
   description: [
-    "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
-  ].join('\n')
+    'Retrieve a list of all Azure accounts managed by Taskcluster Auth.',
+  ].join('\n'),
 }, function(req, res) {
   return res.reply({accounts: _.keys(this.azureAccounts)});
 });
@@ -29,10 +29,10 @@ api.declare({
   output:     'azure-table-list-response.json#',
   stability:  'stable',
   scopes:     [['auth:azure-table:list-tables:<account>']],
-  title:      "List Tables in an Account Managed by Auth",
+  title:      'List Tables in an Account Managed by Auth',
   description: [
-    "Retrieve a list of all tables in an account.",
-  ].join('\n')
+    'Retrieve a list of all tables in an account.',
+  ].join('\n'),
 }, async function(req, res) {
   let account = req.params.account;
   let continuationToken  = req.query.continuationToken || null;
@@ -41,13 +41,13 @@ api.declare({
 
   let table = new azure.Table({
     accountId:  account,
-    accessKey:  this.azureAccounts[account]
+    accessKey:  this.azureAccounts[account],
   });
 
   let result = await table.queryTables({continuationToken});
   let data = {tables: result.tables};
   if (result.nextTableName) {
-      data.continuationToken = result.nextTableName;
+    data.continuationToken = result.nextTableName;
   }
   return res.reply(data);
 });
@@ -61,15 +61,15 @@ api.declare({
   deferAuth:  true,
   stability:  'stable',
   scopes:     [['auth:azure-table:<level>:<account>/<table>']],
-  title:      "Get Shared-Access-Signature for Azure Table",
+  title:      'Get Shared-Access-Signature for Azure Table',
   description: [
-    "Get a shared access signature (SAS) string for use with a specific Azure",
-    "Table Storage table.",
-    "",
-    "The `level` parameter can be `read-write` or `read-only` and determines",
-    "which type of credentials are returned.  If level is read-write, it will create the",
-    "table if it doesn't already exist.",
-  ].join('\n')
+    'Get a shared access signature (SAS) string for use with a specific Azure',
+    'Table Storage table.',
+    '',
+    'The `level` parameter can be `read-write` or `read-only` and determines',
+    'which type of credentials are returned.  If level is read-write, it will create the',
+    'table if it doesn\'t already exist.',
+  ].join('\n'),
 }, async function(req, res) {
   var account   = req.params.account;
   var tableName = req.params.table;
@@ -91,7 +91,7 @@ api.declare({
   // Construct client
   var table = new azure.Table({
     accountId:  account,
-    accessKey:  this.azureAccounts[account]
+    accessKey:  this.azureAccounts[account],
   });
 
   // Create table ignore error, if it already exists
@@ -117,13 +117,13 @@ api.declare({
       add:        perm,
       update:     perm,
       delete:     perm,
-    }
+    },
   });
 
   // Return the generated SAS
   return res.reply({
     sas:      sas,
-    expiry:   expiry.toJSON()
+    expiry:   expiry.toJSON(),
   });
 });
 
@@ -136,16 +136,16 @@ api.declare({
   deferAuth:  true,
   stability:  'stable',
   scopes:     [['auth:azure-blob:<level>:<account>/<container>']],
-  title:      "Get Shared-Access-Signature for Azure Blob",
+  title:      'Get Shared-Access-Signature for Azure Blob',
   description: [
-    "Get a shared access signature (SAS) string for use with a specific Azure",
-    "Blob Storage container.",
-    "",
-    "The `level` parameter can be `read-write` or `read-only` and determines",
-    "which type of credentials are returned.  If level is read-write, it will create the",
-    "container if it doesn't already exist."
-  ].join('\n')
-}, async function(req, res){
+    'Get a shared access signature (SAS) string for use with a specific Azure',
+    'Blob Storage container.',
+    '',
+    'The `level` parameter can be `read-write` or `read-only` and determines',
+    'which type of credentials are returned.  If level is read-write, it will create the',
+    'container if it doesn\'t already exist.',
+  ].join('\n'),
+}, async function(req, res) {
   // Get parameters
   let account = req.params.account;
   let container = req.params.container;
@@ -167,7 +167,7 @@ api.declare({
   // Construct client
   let blob = new azure.Blob({
     accountId:  account,
-    accessKey:  this.azureAccounts[account]
+    accessKey:  this.azureAccounts[account],
   });
 
   // Create container ignore error, if it already exists
@@ -196,12 +196,12 @@ api.declare({
       write:      perm,
       delete:     perm,
       list:       true,
-    }
+    },
   });
 
   // Return the generated SAS
   return res.reply({
     sas:      sas,
-    expiry:   expiry.toJSON()
+    expiry:   expiry.toJSON(),
   });
 });

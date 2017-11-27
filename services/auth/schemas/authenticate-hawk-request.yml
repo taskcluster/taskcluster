@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#
+$schema:  http://json-schema.org/draft-06/schema#
 title:    "Hawk Signature Authentication Request"
 description: |
   Request to authenticate a hawk request.

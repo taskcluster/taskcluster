@@ -1,9 +1,6 @@
 suite('api (role logic)', function() {
   var Promise     = require('promise');
-  var assert      = require('assert');
-  var debug       = require('debug')('test:roles');
   var helper      = require('./helper');
-  var slugid      = require('slugid');
   var _           = require('lodash');
   var assume      = require('assume');
   var taskcluster = require('taskcluster-client');
@@ -36,7 +33,7 @@ suite('api (role logic)', function() {
       this.timeout(10 * 60 * 1000);
 
       // Ensure all roles and clients from the test are deleted
-      for(let c of t.clients) {
+      for (let c of t.clients) {
         await helper.auth.deleteClient(c.clientId);
       }
       for (let r of t.roles) {
@@ -44,17 +41,17 @@ suite('api (role logic)', function() {
       }
 
       // Create all roles and clients
-      for(let c of t.clients) {
+      for (let c of t.clients) {
         await helper.auth.createClient(c.clientId, {
           description:  'client for test case: ' + title,
           expires:      taskcluster.fromNowJSON('2 hours'),
-          scopes:       c.scopes
+          scopes:       c.scopes,
         });
       }
       for (let r of t.roles) {
         await helper.auth.createRole(r.roleId, {
           description:  'role for test case: ' + title,
-          scopes:       r.scopes
+          scopes:       r.scopes,
         });
       }
 
@@ -65,14 +62,14 @@ suite('api (role logic)', function() {
         let missing = _.difference(c.includes, client.expandedScopes);
         let forbidden = _.intersection(c.exludes, client.expandedScopes);
         if (missing.length !== 0 || forbidden.length !== 0) {
-          err += "Test failed: " + JSON.stringify(t, null, 2) + '\n';
-          err += "Client: " + JSON.stringify(client, null, 2) + '\n';
+          err += 'Test failed: ' + JSON.stringify(t, null, 2) + '\n';
+          err += 'Client: ' + JSON.stringify(client, null, 2) + '\n';
         }
         if (missing.length !== 0) {
-          err += "Missing: " + JSON.stringify(missing) + '\n';
+          err += 'Missing: ' + JSON.stringify(missing) + '\n';
         }
         if (forbidden.length !== 0) {
-          err += "Forbidden: " + JSON.stringify(forbidden) + '\n';
+          err += 'Forbidden: ' + JSON.stringify(forbidden) + '\n';
         }
         if (missing.length !== 0 || forbidden.length !== 0) {
           err += '\n\n';
@@ -80,7 +77,7 @@ suite('api (role logic)', function() {
       }));
 
       // delete all roles and clients from the tests
-      for(let c of t.clients) {
+      for (let c of t.clients) {
         await helper.auth.deleteClient(c.clientId);
       }
       for (let r of t.roles) {
@@ -93,132 +90,128 @@ suite('api (role logic)', function() {
     });
   };
 
-
-  test("assume:thing-id:* works", {
+  test('assume:thing-id:* works', {
     roles: [
       {
         roleId: 'thing-id:*',
-        scopes: ['test-scope-1']
+        scopes: ['test-scope-1'],
       },
     ],
     clients: [
       {
         clientId:   'test-client',
         scopes: [
-          'assume:thing-id:test'
+          'assume:thing-id:test',
         ],
         includes: [
           'assume:thing-id:test',
-          'test-scope-1'
+          'test-scope-1',
         ],
         excludes: [
           'assume:thing-id:*',
           '*',
-        ]
-      }
+        ],
+      },
     ],
   });
 
-
-  test("can get *", {
+  test('can get *', {
     roles: [
       {
         roleId: 'thing-id:test',
-        scopes: ['*']
+        scopes: ['*'],
       },
     ],
     clients: [
       {
         clientId:   'test-client',
         scopes: [
-          'assume:thing-id:test'
+          'assume:thing-id:test',
         ],
         includes: [
-          '*'
+          '*',
         ],
         excludes: [
-          'assume:thing-id:test' // should be compressed away
-        ]
-      }
+          'assume:thing-id:test', // should be compressed away
+        ],
+      },
     ],
   });
 
-
-  test("two clients don't get the same .. uh, look, something shiny!", {
+  test('two clients don\'t get the same .. uh, look, something shiny!', {
     roles: [
       {
         roleId: 'thing-id:test-client-1',
-        scopes: ['scope-1']
+        scopes: ['scope-1'],
       }, {
         roleId: 'thing-id:test-client-2',
-        scopes: ['scope-2']
+        scopes: ['scope-2'],
       }, {
         roleId: 'thing-id:test-client-*',
-        scopes: ['scope-for-both']
+        scopes: ['scope-for-both'],
       }, {
         roleId: 'thing-id:other-client',
-        scopes: ['other-scope']
+        scopes: ['other-scope'],
       },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:thing-id:test-client-1'
+          'assume:thing-id:test-client-1',
         ],
         includes: [
           'assume:thing-id:test-client-1',
           'scope-1',
-          'scope-for-both'
+          'scope-for-both',
         ],
         excludes: [
           'assume:thing-id:test-client-2',
           'scope-2',
           'other-scope',
-          'thing-id:test-client-*'
-        ]
+          'thing-id:test-client-*',
+        ],
       }, {
         clientId:   'test-client-2',
         scopes: [
-          'assume:thing-id:test-client-2'
+          'assume:thing-id:test-client-2',
         ],
         includes: [
           'scope-2',
-          'scope-for-both'
+          'scope-for-both',
         ],
         excludes: [
           'scope-1',
           'other-scope',
-          'thing-id:test-client-*'
-        ]
+          'thing-id:test-client-*',
+        ],
       }, {
         clientId:   'other-client',
         scopes: [
-          'assume:thing-id:other-client'
+          'assume:thing-id:other-client',
         ],
         includes: [
-          'other-scope'
+          'other-scope',
         ],
         excludes: [
           'scope-for-both',
           'scope-1',
           'scope-2',
-          'thing-id:test-client-*'
-        ]
-      }
+          'thing-id:test-client-*',
+        ],
+      },
     ],
   });
 
-
-  test("two clients with two prefix roles", {
+  test('two clients with two prefix roles', {
     roles: [
       {
         roleId: 'test-role-abc*',
-        scopes: ['scope-1']
+        scopes: ['scope-1'],
       }, {
         roleId: 'test-role-abc-*',
-        scopes: ['scope-2']
-      }
+        scopes: ['scope-2'],
+      },
     ],
     clients: [
       {
@@ -231,7 +224,7 @@ suite('api (role logic)', function() {
         ],
         excludes: [
           'scope-2',
-        ]
+        ],
       }, {
         clientId:   'test-client-abc-again',
         scopes: [
@@ -241,21 +234,20 @@ suite('api (role logic)', function() {
           'scope-1',
           'scope-2',
         ],
-        excludes: ['*']
-      }
+        excludes: ['*'],
+      },
     ],
   });
 
-
-  test("indirect roles works", {
+  test('indirect roles works', {
     roles: [
       {
         roleId: 'test-client-1',
-        scopes: ['assume:test-role']
+        scopes: ['assume:test-role'],
       }, {
         roleId: 'test-role',
-        scopes: ['special-scope']
-      }
+        scopes: ['special-scope'],
+      },
     ],
     clients: [
       {
@@ -265,47 +257,46 @@ suite('api (role logic)', function() {
         ],
         includes: [
           'assume:test-role',
-          'special-scope'
+          'special-scope',
         ],
-        excludes: ['*']
-      }
+        excludes: ['*'],
+      },
     ],
   });
 
-
-  test("indirect roles works (with many levels of indirection)", {
+  test('indirect roles works (with many levels of indirection)', {
     roles: [
       {
         roleId: 'test-role-1',
-        scopes: ['assume:test-role-2']
+        scopes: ['assume:test-role-2'],
       }, {
         roleId: 'test-role-2',
-        scopes: ['assume:test-role-3']
+        scopes: ['assume:test-role-3'],
       }, {
         roleId: 'test-role-3',
-        scopes: ['assume:test-role-4']
+        scopes: ['assume:test-role-4'],
       }, {
         roleId: 'test-role-4',
-        scopes: ['assume:test-role-5']
+        scopes: ['assume:test-role-5'],
       }, {
         roleId: 'test-role-5',
-        scopes: ['assume:test-role-6']
+        scopes: ['assume:test-role-6'],
       }, {
         roleId: 'test-role-6',
-        scopes: ['assume:test-role-7']
+        scopes: ['assume:test-role-7'],
       }, {
         roleId: 'test-role-7',
-        scopes: ['assume:test-role-8']
+        scopes: ['assume:test-role-8'],
       }, {
         roleId: 'test-role-8',
-        scopes: ['assume:test-role-9']
+        scopes: ['assume:test-role-9'],
       }, {
         roleId: 'test-role-9',
-        scopes: ['assume:test-role']
+        scopes: ['assume:test-role'],
       }, {
         roleId: 'test-role',
-        scopes: ['special-scope']
-      }
+        scopes: ['special-scope'],
+      },
     ],
     clients: [
       {
@@ -324,206 +315,204 @@ suite('api (role logic)', function() {
           'assume:test-role-7',
           'assume:test-role-8',
           'assume:test-role-9',
-          'special-scope'
+          'special-scope',
         ],
-        excludes: ['*']
-      }
+        excludes: ['*'],
+      },
     ],
   }); // */
 
   const N = 50;
-  test("indirect roles works (with " + N + " roles)", {
+  test('indirect roles works (with ' + N + ' roles)', {
     roles: [
       {
         roleId: 'big-test-client',
-        scopes: ['assume:test-role-0']
+        scopes: ['assume:test-role-0'],
       }, {
         roleId: 'test-role-' + N,
-        scopes: ['special-scope']
-      }
+        scopes: ['special-scope'],
+      },
     ].concat(_.range(N).map(i => {
       return {
         roleId: 'test-role-' + i,
-        scopes: ['assume:test-role-' + (i + 1)]
+        scopes: ['assume:test-role-' + (i + 1)],
       };
     })),
     clients: [
       {
         clientId:   'big-test-client',
         scopes: [
-          'assume:big-test-client'
+          'assume:big-test-client',
         ],
         includes: [
-          'special-scope'
+          'special-scope',
         ].concat(_.range(N + 1).map(i => 'assume:test-role-' + i)),
-        excludes: ['*']
-      }
+        excludes: ['*'],
+      },
     ],
   }); //*/
 
   const M = 5;  // depth
   const K = 50; // multiplier
-  test('test with depth = ' + M + " x " + K, {
+  test('test with depth = ' + M + ' x ' + K, {
     roles: _.flatten([
       _.flatten(_.range(K).map(k => {
         return _.flatten(_.range(M).map(m => {
           return {
             roleId: 'k-' + k + '-' + m,
-            scopes: ['assume:k-' + k + '-' + (m + 1)]
+            scopes: ['assume:k-' + k + '-' + (m + 1)],
           };
         }));
       })),
       _.range(K).map(k => {
         return {
           roleId: 'k-' + k + '-' + M,
-          scopes: ['special-scope']
+          scopes: ['special-scope'],
         };
-      })
+      }),
     ]),
     clients: [
       {
         clientId: 'c',
         scopes: ['assume:k-2-0'],
         includes: [
-          'special-scope'
+          'special-scope',
         ].concat(_.range(M + 1).map(i => 'assume:k-2-' + i)),
-        excludes: ['*']
-      }
-    ]
+        excludes: ['*'],
+      },
+    ],
   });
 
-
-  test("cyclic roles", {
+  test('cyclic roles', {
     roles: [
       {
         roleId: 'test-client-1',
-        scopes: ['assume:test-role']
+        scopes: ['assume:test-role'],
       }, {
         roleId: 'test-role',
-        scopes: ['special-scope', 'assume:test-client-1']
-      }
+        scopes: ['special-scope', 'assume:test-client-1'],
+      },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1'
+          'assume:test-client-1',
         ],
         includes: [
           'assume:test-role',
-          'special-scope'
+          'special-scope',
         ],
-        excludes: ['*']
-      }
+        excludes: ['*'],
+      },
     ],
   });
 
-
-  test("a* scope is *", {
+  test('a* scope is *', {
     roles: [
       {
         roleId: 'test-client-1',
-        scopes: ['a*']
+        scopes: ['a*'],
       },
       {
         roleId: 'star',
-        scopes: ['*']
-      }
+        scopes: ['*'],
+      },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1'
+          'assume:test-client-1',
         ],
         includes: [
-          '*'       // because assume:star is granted
+          '*',       // because assume:star is granted
         ],
         excludes: [
-          'scope-1', 'scope-2'
-        ]
-      }
+          'scope-1', 'scope-2',
+        ],
+      },
     ],
   });
 
-  test("assume* scope is *", {
+  test('assume* scope is *', {
     roles: [
       {
         roleId: 'test-client-1',
-        scopes: ['assume*']
+        scopes: ['assume*'],
       },
       {
         roleId: 'star',
-        scopes: ['*']
-      }
+        scopes: ['*'],
+      },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1'
+          'assume:test-client-1',
         ],
         includes: [
-          '*'       // because assume:star is granted
+          '*',       // because assume:star is granted
         ],
         excludes: [
-          'scope-1', 'scope-2'
-        ]
-      }
+          'scope-1', 'scope-2',
+        ],
+      },
     ],
   });
 
-  test("assume:* scope is *", {
+  test('assume:* scope is *', {
     roles: [
       {
         roleId: 'test-client-1',
-        scopes: ['assume:*']
+        scopes: ['assume:*'],
       },
       {
         roleId: 'star',
-        scopes: ['*']
-      }
+        scopes: ['*'],
+      },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1'
+          'assume:test-client-1',
         ],
         includes: [
-          '*'       // because assume:star is granted
+          '*',       // because assume:star is granted
         ],
         excludes: [
-          'scope-1', 'scope-2'
-        ]
-      }
+          'scope-1', 'scope-2',
+        ],
+      },
     ],
   });
 
-  test("assume:client-* scope is *", {
+  test('assume:client-* scope is *', {
     roles: [
       {
         roleId: 'test-client-1',
-        scopes: ['assume:st*']
+        scopes: ['assume:st*'],
       },
       {
         roleId: 'star',
-        scopes: ['*']
-      }
+        scopes: ['*'],
+      },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1'
+          'assume:test-client-1',
         ],
         includes: [
-          '*'       // because assume:star is granted
+          '*',       // because assume:star is granted
         ],
         excludes: [
-          'scope-1', 'scope-2'
-        ]
-      }
+          'scope-1', 'scope-2',
+        ],
+      },
     ],
   });
 
