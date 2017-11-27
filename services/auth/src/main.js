@@ -9,7 +9,7 @@ let v1                 = require('./v1');
 let path               = require('path');
 let debug              = require('debug')('server');
 let Promise            = require('promise');
-let AWS                = require('aws-sdk-promise');
+let AWS                = require('aws-sdk');
 let exchanges          = require('./exchanges');
 let ScopeResolver      = require('./scoperesolver');
 let signaturevalidator = require('./signaturevalidator');
@@ -65,7 +65,7 @@ let load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
-    })
+    }),
   },
 
   Client: {
@@ -77,7 +77,7 @@ let load = Loader({
         signingKey:   cfg.app.tableSigningKey,
         cryptoKey:    cfg.app.tableCryptoKey,
         monitor:      monitor.prefix('table.clients'),
-      })
+      }),
   },
 
   Role: {
@@ -88,7 +88,7 @@ let load = Loader({
         credentials:  cfg.azure || {},
         signingKey:   cfg.app.tableSigningKey,
         monitor:      monitor.prefix('table.roles'),
-      })
+      }),
   },
 
   validator: {
@@ -97,9 +97,8 @@ let load = Loader({
       prefix:  'auth/v1/',
       aws:      cfg.aws,
       bucket:   cfg.app.buckets.schemas,
-    })
+    }),
   },
-
 
   docs: {
     requires: ['cfg', 'validator'],
@@ -123,7 +122,6 @@ let load = Loader({
     }),
   },
 
-
   publisher: {
     requires: ['cfg', 'validator', 'monitor'],
     setup: ({cfg, validator, monitor}) =>
@@ -136,7 +134,7 @@ let load = Loader({
         aws:              cfg.aws,
         referenceBucket:  cfg.app.buckets.references,
         monitor:          monitor.prefix('publisher'),
-      })
+      }),
   },
 
   api: {
@@ -145,7 +143,7 @@ let load = Loader({
       'sentryManager', 'monitor',
     ],
     setup: async ({
-      cfg, Client, Role, validator, publisher, resolver, sentryManager, monitor
+      cfg, Client, Role, validator, publisher, resolver, sentryManager, monitor,
     }) => {
       // Set up the Azure tables
       await Role.ensureTable();
@@ -163,7 +161,7 @@ let load = Loader({
           credentials:      cfg.pulse,
           exchangePrefix:   cfg.app.exchangePrefix,
         }),
-        connection: new taskcluster.PulseConnection(cfg.pulse)
+        connection: new taskcluster.PulseConnection(cfg.pulse),
       });
 
       let signatureValidator = signaturevalidator.createSignatureValidator({
@@ -194,7 +192,7 @@ let load = Loader({
         referenceBucket:    cfg.app.buckets.references,
         monitor:            monitor.prefix('api'),
       });
-    }
+    },
   },
 
   server: {
@@ -211,14 +209,14 @@ let load = Loader({
           host:           'login.taskcluster.net',
           query: {
             target:       req.query.target,
-            description:  req.query.description
-          }
+            description:  req.query.description,
+          },
         }));
       });
 
       // Create server
       return serverApp.createServer();
-    }
+    },
   },
 
   'expire-sentry': {
@@ -226,7 +224,7 @@ let load = Loader({
     setup: async ({cfg, sentryManager}) => {
       let now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
       if (isNaN(now)) {
-        console.log("FATAL: sentryExpirationDelay is not valid!");
+        console.log('FATAL: sentryExpirationDelay is not valid!');
         process.exit(1);
       }
       await sentryManager.purgeExpiredKeys(now);
@@ -238,7 +236,7 @@ let load = Loader({
     setup: async ({cfg, Client}) => {
       now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
       if (isNaN(now)) {
-        console.log("FATAL: clientExpirationDelay is not valid!");
+        console.log('FATAL: clientExpirationDelay is not valid!');
         process.exit(1);
       }
       await Client.purgeExpired(now);

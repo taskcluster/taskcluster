@@ -90,7 +90,6 @@ let sortScopesForMerge = (scopes) => {
 // Export sortScopesForMerge
 exports.sortScopesForMerge = sortScopesForMerge;
 
-
 /**
  * Take two sets of sorted scopes and merge them, normalizing in the process.
  * Normalizing means removing duplicates, as well as scopes implied by a
@@ -141,10 +140,10 @@ let mergeScopeSets = (scopes1, scopes2) => {
     // is satisfied by the star scope.
     if (scope.endsWith('*')) {
       let prefix = scope.slice(0, -1);
-      while(i < n && scopes1[i].startsWith(prefix)) {
+      while (i < n && scopes1[i].startsWith(prefix)) {
         i += 1;
       }
-      while(j < m && scopes2[j].startsWith(prefix)) {
+      while (j < m && scopes2[j].startsWith(prefix)) {
         j += 1;
       }
     }
@@ -159,7 +158,7 @@ let mergeScopeSets = (scopes1, scopes2) => {
     i += 1;
     if (scope.endsWith('*')) {
       let prefix = scope.slice(0, -1);
-      while(i < n && scopes1[i].startsWith(prefix)) {
+      while (i < n && scopes1[i].startsWith(prefix)) {
         i += 1;
       }
     }
@@ -170,7 +169,7 @@ let mergeScopeSets = (scopes1, scopes2) => {
     j += 1;
     if (scope.endsWith('*')) {
       let prefix = scope.slice(0, -1);
-      while(j < m && scopes2[j].startsWith(prefix)) {
+      while (j < m && scopes2[j].startsWith(prefix)) {
         j += 1;
       }
     }
@@ -367,7 +366,7 @@ let generateDFA = (roles, i, n, k, sets, implied) => {
     current = role.roleId[k];
   }
   var start = j;
-  while(j < n) {
+  while (j < n) {
     role = roles[j];
     var c = role.roleId[k];
     // Here we go through the roles in the sorted order given, and whenever we
@@ -463,20 +462,20 @@ let buildResolver = (roles) => {
   let resolver = (scope) => executeDFA(dfa, scope);
 
   return {sets, resolver: (scope) => {
-      // Optimization so our DFA only has to operate on roleId
-      if (scope.startsWith('assume:')) {
-        // TODO: note that this might be slightly improved by not taking a slice
-        // here but instead modifying the offset at which the current character
-        // is read from in renderDFA
-        return resolver(scope.slice(7));
-      }
-      if (scope.endsWith('*') && 'assume'.startsWith(scope.slice(0, -1))) {
-        return resolver('*');
-      }
-      // If it doesn't start with assume:... or a..* then we just return sets[0]
-      // which is always the empty set.
-      return 0;
+    // Optimization so our DFA only has to operate on roleId
+    if (scope.startsWith('assume:')) {
+      // TODO: note that this might be slightly improved by not taking a slice
+      // here but instead modifying the offset at which the current character
+      // is read from in renderDFA
+      return resolver(scope.slice(7));
     }
+    if (scope.endsWith('*') && 'assume'.startsWith(scope.slice(0, -1))) {
+      return resolver('*');
+    }
+    // If it doesn't start with assume:... or a..* then we just return sets[0]
+    // which is always the empty set.
+    return 0;
+  },
   };
 };
 
@@ -496,7 +495,7 @@ let computeFixedPoint = (roles) => {
   // Add initial value for expandedScopes for each role R and sort roles
   for (let R of roles) {
     R.expandedScopes = null;
-    R.scopes = sortScopesForMerge(R.scopes)
+    R.scopes = sortScopesForMerge(R.scopes);
     R.impliedRoles = []; // roles that R can directly assume
     R.seen = 0; // later iteration this role was seen (used later)
   }
@@ -504,10 +503,10 @@ let computeFixedPoint = (roles) => {
   let {resolver, sets} = buildResolver(roles);
 
   // Construct impliedRoles
-  for(let R of roles) {
+  for (let R of roles) {
     let expandImpliedRoles = (index) => {
       sets[index].forEach(r => {
-        if (typeof(r) === 'number') {
+        if (typeof r === 'number') {
           expandImpliedRoles(r);
         } else if (!_.includes(R.impliedRoles, r) && r !== R) {
           R.impliedRoles.push(r);
@@ -571,8 +570,8 @@ let computeFixedPoint = (roles) => {
     //TODO: make this faster using a min-heap in mergeScopeSets so that can
     //      merge multiple sets at the same time.
     sets[i].map(r => {
-      if (typeof(r) === 'number') {
-        assert(r < i, "What!!!");
+      if (typeof r === 'number') {
+        assert(r < i, 'What!!!');
         return scopeSets[r]; // we know that r < i, hence, this works
       }
       return r.expandedScopes;

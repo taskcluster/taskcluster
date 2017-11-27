@@ -17,17 +17,17 @@ let badcreds = {
   accessToken: 'wrong',
 };
 
-suite("testAuthenticate", function() {
+suite('testAuthenticate', function() {
   let testAuth = (name, {config, requiredScopes, clientScopes, errorCode}) => {
     test(name, async () => {
       let auth = new helper.Auth(config);
       await auth.testAuthenticate({requiredScopes, clientScopes}).then(() => {
-        assert(!errorCode, "Request was successful, but expected an error " +
-                           "with code: " + errorCode);
+        assert(!errorCode, 'Request was successful, but expected an error ' +
+                           'with code: ' + errorCode);
       }, err => {
-        assert(errorCode, "Request failed!");
-        assert(err.code === errorCode, "Expected error with code: " +
-                                       errorCode + " but got: " + err.code);
+        assert(errorCode, 'Request failed!');
+        assert(err.code === errorCode, 'Expected error with code: ' +
+                                       errorCode + ' but got: ' + err.code);
       });
     });
   };
@@ -49,7 +49,6 @@ suite("testAuthenticate", function() {
     requiredScopes: ['test-scope:test2'],
     clientScopes: ['test-scope:test1', 'test-scope:test2'],
   });
-
 
   testAuth('invalid creds (scope subset)', {
     config: {credentials},
@@ -99,17 +98,17 @@ suite("testAuthenticate", function() {
   });
 });
 
-suite("testAuthenticateGet", function() {
+suite('testAuthenticateGet', function() {
   let testAuthGet = (name, {config, errorCode}) => {
     test(name, async () => {
       let auth = new helper.Auth(config);
       await auth.testAuthenticateGet().then(() => {
-        assert(!errorCode, "Request was successful, but expected an error " +
-                           "with code: " + errorCode);
+        assert(!errorCode, 'Request was successful, but expected an error ' +
+                           'with code: ' + errorCode);
       }, err => {
-        assert(errorCode, "Request failed!");
-        assert(err.code === errorCode, "Expected error with code: " +
-                                       errorCode + " but got: " + err.code);
+        assert(errorCode, 'Request failed!');
+        assert(err.code === errorCode, 'Expected error with code: ' +
+                                       errorCode + ' but got: ' + err.code);
       });
     });
   };
