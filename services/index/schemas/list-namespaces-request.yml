@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#
+$schema:  http://json-schema.org/draft-06/schema#
 title:              "List Namespaces Request"
 description: |
   Request to list namespaces within a given namespace.

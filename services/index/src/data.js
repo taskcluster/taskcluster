@@ -1,5 +1,4 @@
 var assert      = require('assert');
-var Promise     = require('promise');
 var _           = require('lodash');
 var Entity      = require('azure-entities');
 
@@ -14,8 +13,8 @@ var IndexedTask = Entity.configure({
     rank:           Entity.types.Number,
     taskId:         Entity.types.SlugId,
     data:           Entity.types.JSON,
-    expires:        Entity.types.Date
-  }
+    expires:        Entity.types.Date,
+  },
 });
 
 // Export IndexedTask
@@ -33,10 +32,9 @@ IndexedTask.prototype.json = function() {
     taskId:       this.taskId,
     rank:         this.rank,
     data:         _.cloneDeep(this.data),
-    expires:      this.expires.toJSON()
+    expires:      this.expires.toJSON(),
   };
 };
-
 
 /** Entities for namespaces */
 var Namespace = Entity.configure({
@@ -46,8 +44,8 @@ var Namespace = Entity.configure({
   properties: {
     parent:         Entity.types.String,
     name:           Entity.types.String,
-    expires:        Entity.types.Date
-  }
+    expires:        Entity.types.Date,
+  },
 });
 
 // Export Namespace
@@ -63,13 +61,13 @@ Namespace.prototype.json = function() {
   return {
     namespace:  ns,
     name:       this.name,
-    expires:    this.expires.toJSON()
+    expires:    this.expires.toJSON(),
   };
 };
 
 /** Create namespace structure */
 Namespace.ensureNamespace = function(namespace, expires) {
-  var Class = this;
+  var that = this;
 
   // Stop recursion at root
   if (namespace.length === 0) {
@@ -94,9 +92,9 @@ Namespace.ensureNamespace = function(namespace, expires) {
   var parent  = namespace.join('.');
 
   // Load namespace, to check if it exists and if we should update expires
-  return Class.load({
+  return that.load({
     parent:   parent,
-    name:     name
+    name:     name,
   }).then(function(folder) {
     // Modify the namespace
     return folder.modify(function() {
@@ -106,7 +104,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
         this.expires = expires;
 
         // Update all parents first though
-        return Namespace.ensureNamespace.call(Class, namespace, expires);
+        return Namespace.ensureNamespace.call(that, namespace, expires);
       }
     });
   }, function(err) {
@@ -117,15 +115,15 @@ Namespace.ensureNamespace = function(namespace, expires) {
 
     // Create parent namespaces
     return Namespace.ensureNamespace.call(
-      Class,
+      that,
       namespace,
       expires
     ).then(function() {
       // Create namespace
-      return Class.create({
+      return that.create({
         parent:       parent,
         name:         name,
-        expires:      expires
+        expires:      expires,
       }).then(null, function(err) {
         // Re-throw error if it's because the entity was constructed while we
         // waited
@@ -133,9 +131,9 @@ Namespace.ensureNamespace = function(namespace, expires) {
           throw err;
         }
 
-        return Class.load({
+        return that.load({
           parent:   parent,
-          name:     name
+          name:     name,
         });
       });
     });
