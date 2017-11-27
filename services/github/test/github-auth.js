@@ -70,7 +70,7 @@ class FakeGithub {
       'repos.get': async ({owner, repo}) => {
         const key = `${owner}/${repo}`;
         if (this._repo_info[key]) {
-          return this._repo_info[key];
+          return {data: this._repo_info[key]};
         } else {
           throwError(404);
         }
@@ -79,9 +79,9 @@ class FakeGithub {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
-          return {content: new Buffer(
+          return {data: {content: new Buffer(
             JSON.stringify(this._taskcluster_yml_files[key])
-          ).toString('base64')};
+          ).toString('base64')}};
         } else {
           let err = new Error();
           err.code = 404;
@@ -91,18 +91,18 @@ class FakeGithub {
       'users.getById': async ({id}) => {
         let user = _.find(this._github_users, {id});
         if (user) {
-          return user;
+          return {data: user};
         } else {
           throwError(404);
         }
       },
-      'integrations.getInstallationRepositories': async () => {
-        return this._repositories;
+      'apps.getInstallationRepositories': async () => {
+        return {data: this._repositories};
       },
       'repos.getStatuses': async ({owner, repo, ref}) => {
         const key = `${owner}/${repo}@${ref}`;
         if (this._statuses[key]) {
-          return this._statuses[key];
+          return {data: this._statuses[key]};
         } else {
           throwError(404);
         }
@@ -111,7 +111,7 @@ class FakeGithub {
         let requested = _.find(this._github_users, {username});
         if (requested) {
           requested.id = parseInt(requested.id, 10);
-          return requested;
+          return {data: requested};
         } else {
           throwError(404);
         }
@@ -183,12 +183,12 @@ class FakeGithub {
 
   getStatuses({owner, repo, ref}) {
     const key = `${owner}/${repo}@${ref}`;
-    return this._statuses[key];
+    return {data: this._statuses[key]};
   }
 
   getComments({owner, repo, number}) {
     const key = `${owner}/${repo}@${number}`;
-    return this._comments[key];
+    return {data: this._comments[key]};
   }
 
   hasNextPage() {
@@ -227,12 +227,12 @@ class FakeGithubAuth {
 
   async getIntegrationGithub() {
     return {
-      integrations: {
+      apps: {
         getInstallations: async () => {
-          return _.map(this.installations, (install, id) => ({
+          return {data: _.map(this.installations, (install, id) => ({
             id: parseInt(id, 10),
             account: {login: install._installedOn},
-          }));
+          }))};
         },
       },
     };

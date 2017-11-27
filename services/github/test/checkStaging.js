@@ -47,7 +47,7 @@ const checkStaging = async () => {
       ref: sha,
     });
 
-    let status = _.find(statuses, {context: 'Taskcluster-Staging (push)'});
+    let status = _.find(statuses.data, {context: 'Taskcluster-Staging (push)'});
     if (!status) {
       update('no Taskcluster-Staging (push) status');
       continue;

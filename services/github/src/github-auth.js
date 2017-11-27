@@ -33,9 +33,9 @@ module.exports = async ({cfg}) => {
     getInstallationGithub: async (inst_id) => {
       setupToken();
       // Authenticating as installation
-      var instaToken = await github.integrations.createInstallationToken({
+      var instaToken = (await github.apps.createInstallationToken({
         installation_id: inst_id,
-      });
+      })).data;
       let gh = new Github({promise: Promise});
       try {
         gh.authenticate({type: 'token', token: instaToken.token});

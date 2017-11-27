@@ -154,7 +154,7 @@ let load = loader({
     requires: ['github', 'OwnersDirectory'],
     setup: async ({github, OwnersDirectory}) => {
       let gh = await github.getIntegrationGithub();
-      let installations = await gh.integrations.getInstallations({});
+      let installations = (await gh.apps.getInstallations({})).data;
       await Promise.map(installations, inst => {
         return OwnersDirectory.create({
           installationId: inst.id,
