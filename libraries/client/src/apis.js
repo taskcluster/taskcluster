@@ -616,7 +616,7 @@ module.exports = {
   "AwsProvisioner": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://staging-aws-provisioner.herokuapp.com/v1",
+      "baseUrl": "https://aws-provisioner.taskcluster.net/v1",
       "description": "The AWS Provisioner is responsible for provisioning instances on EC2 for use in\nTaskcluster.  The provisioner maintains a set of worker configurations which\ncan be managed with an API that is typically available at\naws-provisioner.taskcluster.net/v1.  This API can also perform basic instance\nmanagement tasks in addition to maintaining the internal state of worker type\nconfiguration information.\n\nThe Provisioner runs at a configurable interval.  Each iteration of the\nprovisioner fetches a current copy the state that the AWS EC2 api reports.  In\neach iteration, we ask the Queue how many tasks are pending for that worker\ntype.  Based on the number of tasks pending and the scaling ratio, we may\nsubmit requests for new instances.  We use pricing information, capacity and\nutility factor information to decide which instance type in which region would\nbe the optimal configuration.\n\nEach EC2 instance type will declare a capacity and utility factor.  Capacity is\nthe number of tasks that a given machine is capable of running concurrently.\nUtility factor is a relative measure of performance between two instance types.\nWe multiply the utility factor by the spot price to compare instance types and\nregions when making the bidding choices.\n\nWhen a new EC2 instance is instantiated, its user data contains a token in\n`securityToken` that can be used with the `getSecret` method to retrieve\nthe worker's credentials and any needed passwords or other restricted\ninformation.  The worker is responsible for deleting the secret after\nretrieving it, to prevent dissemination of the secret to other proceses\nwhich can read the instance user data.\n",
       "entries": [
         {
@@ -973,7 +973,7 @@ module.exports = {
           "type": "topic-exchange"
         }
       ],
-      "exchangePrefix": "exchange/taskcluster-aws-provisioner-staging/v1/",
+      "exchangePrefix": "exchange/taskcluster-aws-provisioner/v1/",
       "title": "AWS Provisioner Pulse Exchanges",
       "version": 0
     },
@@ -2550,14 +2550,14 @@ module.exports = {
             "provisionerId",
             "workerType"
           ],
-          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by the `disabled` property.\nTo filter the query, you should call the end-point with `disabled` as a query-string option.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
+          "description": "Get a list of all active workers of a workerType.\n\n`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.\nTo filter the query, you should call the end-point with `quarantined` as a query-string option with a\ntrue or false value.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 workers in a single\npage. You may limit this with the query-string parameter `limit`.",
           "method": "get",
           "name": "listWorkers",
           "output": "http://schemas.taskcluster.net/queue/v1/list-workers-response.json#",
           "query": [
             "continuationToken",
             "limit",
-            "disabled"
+            "quarantined"
           ],
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers",
           "stability": "experimental",
@@ -2580,6 +2580,30 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "stability": "experimental",
           "title": "Get a worker-type",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType",
+            "workerGroup",
+            "workerId"
+          ],
+          "description": "Quarantine a worker",
+          "input": "http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#",
+          "method": "put",
+          "name": "quarantineWorker",
+          "output": "http://schemas.taskcluster.net/queue/v1/worker-response.json#",
+          "query": [
+          ],
+          "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
+          "scopes": [
+            [
+              "queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>"
+            ]
+          ],
+          "stability": "experimental",
+          "title": "Quarantine a worker",
           "type": "function"
         },
         {
