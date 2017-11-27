@@ -7,12 +7,11 @@ suite('API', () => {
   });
 
   test('pulse', async (done) => {
-    await helper.events.listenFor('notification', helper.notifyEvents.notify({}));
-    helper.events.waitFor('notification').then(message => {
+    helper.publisher.on('fakePublish', message => {
       assert.deepEqual(message.payload.message, {test: 123});
-      assert.deepEqual(message.routes, ['notify-test']);
+      assert.deepEqual(message.CCs, ['route.notify-test']);
       done();
-    }).catch(done);
+    });
     await helper.notify.pulse({routingKey: 'notify-test', message: {test: 123}});
   });
 
