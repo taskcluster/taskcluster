@@ -52,7 +52,8 @@ module.exports = {
       credentials: {
         clientId: process.env.TASKCLUSTER_CLIENT_ID,
         accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
-      }
+      },
+      baseUrl: 'https://aws-provisioner.taskcluster.net/v1'
     });
   },
 
