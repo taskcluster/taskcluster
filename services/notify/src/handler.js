@@ -104,10 +104,10 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
           let template = 'simple';
           if (_.has(task, 'extra.notify.email')) {
             let extra = task.extra.notify.email;
-            content = email.content ? jsone(email.content, {task, status}) : content;
-            subject = email.subject ? jsone(email.subject, {task, status}) : subject;
-            link = email.link ? jsone(email.link, {task, status}) : link;
-            template = email.template ? jsone(email.template, {task, status}) : template;
+            content = extra.content ? jsone(extra.content, {task, status}) : content;
+            subject = extra.subject ? jsone(extra.subject, {task, status}) : subject;
+            link = extra.link ? jsone(extra.link, {task, status}) : link;
+            template = extra.template ? jsone(extra.template, {task, status}) : template;
           }
           return this.notifier.email({
             address:  _.join(_.slice(route, 2, route.length - 1), '.'),
