@@ -211,7 +211,7 @@ suite('api', () => {
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',
-    }).pop();
+    }).data.pop();
     assert.equal(status.state, 'error');
     assert.equal(status.target_url, undefined);
     assert.equal(status.description, undefined);
@@ -230,7 +230,7 @@ suite('api', () => {
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',
-    }).pop();
+    }).data.pop();
     assert.equal(status.state, 'failure');
     assert.equal(status.target_url, 'http://test.com');
     assert.equal(status.description, 'Status title');
@@ -260,7 +260,7 @@ suite('api', () => {
       owner: 'abc123',
       repo: 'awesomeRepo',
       number: 1,
-    }).pop();
+    }).data.pop();
     assert.equal(comment.body, 'Task failed here');
   });
 

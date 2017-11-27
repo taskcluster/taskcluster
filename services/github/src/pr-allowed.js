@@ -21,7 +21,7 @@ async function prAllowed(options) {
  */
 async function getRepoPolicy({login, organization, repository, instGithub, debug}) {
   // first, get the repository's default branch
-  let repoInfo = await instGithub.repos.get({owner: organization, repo: repository});
+  let repoInfo = (await instGithub.repos.get({owner: organization, repo: repository})).data;
   let branch = repoInfo.default_branch;
 
   // load .taskcluster.yml from that branch
@@ -33,7 +33,7 @@ async function getRepoPolicy({login, organization, repository, instGithub, debug
       path: '.taskcluster.yml',
       ref: branch,
     });
-    taskclusterYml = yaml.safeLoad(new Buffer(content.content, 'base64').toString());
+    taskclusterYml = yaml.safeLoad(new Buffer(content.data.content, 'base64').toString());
   } catch (e) {
     if (e.code === 404) {
       return DEFAULT_POLICY;
