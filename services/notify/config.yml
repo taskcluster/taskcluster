@@ -72,3 +72,5 @@ test:
     realName:         Taskcluster Test Robot
     queueName:        irc-test-notifications
     port:             6697
+  pulse:
+    fake: true
