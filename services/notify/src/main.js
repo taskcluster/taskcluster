@@ -5,6 +5,7 @@ let config            = require('typed-env-config');
 let monitor           = require('taskcluster-lib-monitor');
 let validator         = require('taskcluster-lib-validate');
 let docs              = require('taskcluster-lib-docs');
+let taskcluster       = require('taskcluster-client');
 let _                 = require('lodash');
 let v1                = require('./api');
 let Notifier          = require('./notifier');
@@ -75,6 +76,19 @@ let load = loader({
     }),
   },
 
+  listener: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new taskcluster.PulseListener({
+      credentials: cfg.pulse,
+      queueName: cfg.app.listenerQueueName,
+    }),
+  },
+
+  queue: {
+    requires: [],
+    setup: () => new taskcluster.Queue(),
+  },
+
   notifier: {
     requires: ['cfg', 'publisher'],
     setup: ({cfg, publisher}) => new Notifier({
@@ -98,15 +112,16 @@ let load = loader({
   },
 
   handler: {
-    requires: ['cfg', 'monitor', 'notifier', 'validator'],
-    setup: async ({cfg, monitor, notifier, validator}) => {
+    requires: ['profile', 'cfg', 'monitor', 'notifier', 'validator', 'listener', 'queue'],
+    setup: async ({profile, cfg, monitor, notifier, validator, listener, queue}) => {
       let handler = new Handler({
         notifier,
         validator,
-        credentials:        cfg.pulse,
-        queueName:          cfg.app.listenerQueueName,
         monitor:            monitor.prefix('handler'),
         routePrefix:        cfg.app.routePrefix,
+        listener,
+        queue,
+        testing:            profile === 'test',
       });
       return handler.listen();
     },
