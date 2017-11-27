@@ -18,7 +18,7 @@ class ScopeResolver extends events.EventEmitter {
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
     assert(/^ *-/.test(options.maxLastUsedDelay),
-           'maxLastUsedDelay must be negative');
+      'maxLastUsedDelay must be negative');
 
     // List of client objects on the form:
     // {
@@ -61,11 +61,11 @@ class ScopeResolver extends events.EventEmitter {
     options = _.defaults({}, options || {}, {
       cacheExpiry:    20 * 60 * 1000,   // default to 20 min
     });
-    assert(options.Client, "Expected options.Client");
-    assert(options.Role, "Expected options.Role");
-    assert(options.exchangeReference, "Expected options.exchangeReference");
+    assert(options.Client, 'Expected options.Client');
+    assert(options.Role, 'Expected options.Role');
+    assert(options.exchangeReference, 'Expected options.exchangeReference');
     assert(options.connection instanceof taskcluster.PulseConnection,
-           "Expected options.connection to be a PulseConnection object");
+      'Expected options.connection to be a PulseConnection object');
     this._Client        = options.Client;
     this._Role          = options.Role;
     this._options       = options;
@@ -77,11 +77,11 @@ class ScopeResolver extends events.EventEmitter {
     // Create PulseListeners
     this._clientListener = new taskcluster.PulseListener({
       connection:   options.connection,
-      reconnect:    true
+      reconnect:    true,
     });
     this._roleListener = new taskcluster.PulseListener({
       connection:   options.connection,
-      reconnect:    true
+      reconnect:    true,
     });
 
     // listen for client events
@@ -139,7 +139,7 @@ class ScopeResolver extends events.EventEmitter {
           expires:          client.expires,
           updateLastUsed:   lastUsedDate < minLastUsed,
           unexpandedScopes: client.scopes,
-          disabled:         client.disabled
+          disabled:         client.disabled,
         });
       }
       this._computeFixedPoint();
@@ -166,7 +166,7 @@ class ScopeResolver extends events.EventEmitter {
 
   reload() {
     return this._syncReload(async () => {
-      debug("Loading clients and roles");
+      debug('Loading clients and roles');
 
       // Load clients and roles in parallel
       let clients = [];
@@ -188,9 +188,9 @@ class ScopeResolver extends events.EventEmitter {
               // (cheap way to know if it's been used recently)
               updateLastUsed:   lastUsedDate < minLastUsed,
               unexpandedScopes: client.scopes,
-              disabled:         client.disabled
+              disabled:         client.disabled,
             });
-          }
+          },
         }),
         // Load all roles on a simplified form: {roleId, scopes}
         // _computeFixedPoint() will later add the `expandedScopes` property
@@ -209,8 +209,8 @@ class ScopeResolver extends events.EventEmitter {
               scopes = _.union(scopes, ['assume:' + role.roleId]);
             }
             roles.push({roleId: role.roleId, scopes});
-          }
-        })
+          },
+        }),
       ]);
 
       // Set _roles and _clients at the same time and immediately call
@@ -270,13 +270,13 @@ class ScopeResolver extends events.EventEmitter {
   async loadClient(clientId) {
     let client = this._clientCache[clientId];
     if (!client) {
-      throw new Error("Client with clientId '" + clientId + "' not found");
+      throw new Error('Client with clientId \'' + clientId + '\' not found');
     }
     if (client.disabled) {
-      throw new Error("Client with clientId '" + clientId + "' is disabled");
+      throw new Error('Client with clientId \'' + clientId + '\' is disabled');
     }
     if (client.expires < new Date()) {
-      throw new Error("Client with clientId: '" + clientId + "' has expired");
+      throw new Error('Client with clientId: \'' + clientId + '\' has expired');
     }
 
     if (client.updateLastUsed) {

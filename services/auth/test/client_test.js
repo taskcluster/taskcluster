@@ -9,21 +9,30 @@ suite('api (client)', function() {
   var testing     = require('taskcluster-lib-testing');
   var taskcluster = require('taskcluster-client');
 
+  const cleanup = async () => {
+    // Delete all clients and roles
+    await helper.Client.scan({}, {handler: c => c.clientId === 'root' ? null : c.remove()});
+    await helper.Role.scan({}, {handler: r => r.remove()});
+  };
+  setup(cleanup);
+  teardown(cleanup);
+
   test('ping', async () => {
     await helper.auth.ping();
   });
 
-  test("auth.client (root credentials)", async () => {
+  test('auth.client (root credentials)', async () => {
     await helper.auth.client('root');
   });
 
-  test("auth.client (no credentials)", async () => {
+  test('auth.client (no credentials)', async () => {
+    await helper.auth.client('root');
     await (new helper.Auth()).client('root');
   });
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
-  test("auth.deleteClient (non-existent)", async () => {
+  test('auth.deleteClient (non-existent)', async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientDeleted({
-      clientId:  CLIENT_ID
+      clientId:  CLIENT_ID,
     }));
 
     await helper.auth.deleteClient(CLIENT_ID);
@@ -32,35 +41,35 @@ suite('api (client)', function() {
     await helper.events.waitFor('e1');
   });
 
-  test("auth.deleteClient (invalid root credentials)", async () => {
+  test('auth.deleteClient (invalid root credentials)', async () => {
     await (new helper.Auth({
       clientId:     'root',
-      accessToken:  'wrong'
+      accessToken:  'wrong',
     })).deleteClient(CLIENT_ID).then(() => {
-      assert(false, "Expected an error");
+      assert(false, 'Expected an error');
     }, err => {
       // Expected error
     });
   });
 
-  test("auth.deleteClient (invalid credentials)", async () => {
+  test('auth.deleteClient (invalid credentials)', async () => {
     await (new helper.Auth({
       clientId:     'wrong-client',
-      accessToken:  'no-secret'
+      accessToken:  'no-secret',
     })).deleteClient(CLIENT_ID).then(() => {
-      assert(false, "Expected an error");
+      assert(false, 'Expected an error');
     }, err => {
       // Expected error
     });
   });
 
-  test("auth.createClient (no scopes)", async () => {
+  test('auth.createClient (no scopes)', async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientCreated({
-      clientId:  CLIENT_ID
+      clientId:  CLIENT_ID,
     }));
 
     var expires = taskcluster.fromNow('1 hour');
-    var description = "Test client...";
+    var description = 'Test client...';
     let client = await helper.auth.createClient(CLIENT_ID, {
       expires, description,
     });
@@ -80,7 +89,7 @@ suite('api (client)', function() {
     await helper.auth.deleteClient(CLIENT_ID);
   });
 
-  test("auth.listClients", async() => {
+  test('auth.listClients', async () => {
     let suffixes = ['/aa', '/bb', '/bb/1', '/bb/2'];
 
     await Promise.all(suffixes.map(suffix =>
@@ -96,19 +105,19 @@ suite('api (client)', function() {
 
     let gotSuffixes = (result) =>
       _.map(_.filter(result,
-                     c => c.clientId.startsWith(CLIENT_ID)),
-            c => c.clientId.substr(CLIENT_ID.length)).sort();
+        c => c.clientId.startsWith(CLIENT_ID)),
+      c => c.clientId.substr(CLIENT_ID.length)).sort();
 
     // get all clients
     assume(gotSuffixes(await helper.auth.listClients())).to.deeply.equal(suffixes);
 
     // prefix filtering
     assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/bb'})))
-    .to.deeply.equal(['/bb', '/bb/1', '/bb/2']);
+      .to.deeply.equal(['/bb', '/bb/1', '/bb/2']);
     assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/bb/'})))
-    .to.deeply.equal(['/bb/1', '/bb/2']);
+      .to.deeply.equal(['/bb/1', '/bb/2']);
     assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/c'})))
-    .to.deeply.equal([]);
+      .to.deeply.equal([]);
 
     // clean up
     await Promise.all(suffixes.map(suffix =>
@@ -116,16 +125,14 @@ suite('api (client)', function() {
     ));
   });
 
-  test("auth.createClient (with scopes)", async () => {
-    await helper.auth.deleteClient(CLIENT_ID);
-
+  test('auth.createClient (with scopes)', async () => {
     await helper.events.listenFor('e1', helper.authEvents.clientCreated({
-      clientId:  CLIENT_ID
+      clientId:  CLIENT_ID,
     }));
 
     var expires = taskcluster.fromNow('1 hour');
-    var description = "Test client...";
-    var scopes = ["scope1", "myapi:*"];
+    var description = 'Test client...';
+    var scopes = ['scope1', 'myapi:*'];
     let client = await helper.auth.createClient(CLIENT_ID, {
       expires, description, scopes,
     });
@@ -152,12 +159,29 @@ suite('api (client)', function() {
     await helper.events.waitFor('e1');
   });
 
-  test("auth.resetAccessToken", async () => {
-    await helper.events.listenFor('e1', helper.authEvents.clientUpdated({
-      clientId:  CLIENT_ID
+  const createTestClient = async () => {
+    await helper.events.listenFor('created', helper.authEvents.clientCreated({
+      clientId:  CLIENT_ID,
     }));
 
-    let client = await helper.auth.resetAccessToken(CLIENT_ID)
+    var expires = taskcluster.fromNow('1 hour');
+    var description = 'Test client...';
+    var scopes = ['scope1', 'myapi:*'];
+    let client = await helper.auth.createClient(CLIENT_ID, {
+      expires, description, scopes,
+    });
+
+    await helper.events.waitFor('created');
+  };
+
+  test('auth.resetAccessToken', async () => {
+    await createTestClient();
+
+    await helper.events.listenFor('e1', helper.authEvents.clientUpdated({
+      clientId:  CLIENT_ID,
+    }));
+
+    let client = await helper.auth.resetAccessToken(CLIENT_ID);
     assume(new Date(client.lastRotated).getTime())
       .is.greaterThan(new Date(client.lastModified).getTime());
     assume(client.accessToken).is.a('string');
@@ -168,7 +192,9 @@ suite('api (client)', function() {
     assume(client2).has.not.own('accessToken');
   });
 
-  test("use client", async () => {
+  test('use client', async () => {
+    await createTestClient();
+
     // Fetch client
     let r1 = await helper.auth.client(CLIENT_ID);
 
@@ -206,9 +232,11 @@ suite('api (client)', function() {
     );
   });
 
-  test("auth.updateClient (no scope changes)", async () => {
+  test('auth.updateClient (no scope changes)', async () => {
+    await createTestClient();
+
     await helper.events.listenFor('e1', helper.authEvents.clientUpdated({
-      clientId:  CLIENT_ID
+      clientId:  CLIENT_ID,
     }));
 
     var expires = new Date();
@@ -236,16 +264,18 @@ suite('api (client)', function() {
     assume(client2.expandedScopes).contains('myapi:*');
   });
 
-  test("auth.updateClient (with scope changes)", async () => {
+  test('auth.updateClient (with scope changes)', async () => {
+    await createTestClient();
+
     await helper.events.listenFor('e1', helper.authEvents.clientUpdated({
-      clientId:  CLIENT_ID
+      clientId:  CLIENT_ID,
     }));
 
     var expires = new Date();
     let description = 'Third test description...';
     let scopes = ['scope2', 'scope3'];
     let client = await helper.auth.updateClient(CLIENT_ID, {
-      description, expires, scopes
+      description, expires, scopes,
     });
     assume(client.description).equals(description);
     assume(client.expires).equals(expires.toJSON());
@@ -273,17 +303,17 @@ suite('api (client)', function() {
     assume(client2.expandedScopes).contains('scope3');
   });
 
-  test("auth.disableClient", async () => {
+  test('auth.disableClient / enableClient', async () => {
+    await createTestClient();
+
     let client = await helper.auth.disableClient(CLIENT_ID);
     assume(client.disabled).equals(true);
     client = await helper.auth.client(CLIENT_ID);
     assume(client.disabled).equals(true);
     client = await helper.auth.disableClient(CLIENT_ID);
     assume(client.disabled).equals(true);
-  });
 
-  test("auth.enableClient", async () => {
-    let client = await helper.auth.enableClient(CLIENT_ID);
+    client = await helper.auth.enableClient(CLIENT_ID);
     assume(client.disabled).equals(false);
     client = await helper.auth.client(CLIENT_ID);
     assume(client.disabled).equals(false);
@@ -291,9 +321,11 @@ suite('api (client)', function() {
     assume(client.disabled).equals(false);
   });
 
-  test("auth.deleteClient", async () => {
+  test('auth.deleteClient', async () => {
+    await createTestClient();
+
     await helper.events.listenFor('e1', helper.authEvents.clientDeleted({
-      clientId:  CLIENT_ID
+      clientId:  CLIENT_ID,
     }));
 
     await helper.auth.deleteClient(CLIENT_ID);
@@ -302,7 +334,7 @@ suite('api (client)', function() {
     await helper.events.waitFor('e1');
 
     await helper.auth.client(CLIENT_ID).then(() => {
-      assert(false, "Expected an error");
+      assert(false, 'Expected an error');
     }, err => {
       // Expected error
     });
@@ -312,37 +344,34 @@ suite('api (client)', function() {
     ss1.scopes.sort();
     ss2.scopes.sort();
     assume(ss1).deeply.equal(ss2);
-  }
+  };
 
-  test("auth.expandScopes with empty scopeset", async () => {
+  test('auth.expandScopes with empty scopeset', async () => {
     assumeScopesetsEqual(await helper.auth.expandScopes({scopes: []}), {scopes: []});
   });
 
-  test("auth.expandScopes with non-expanding scopes", async () => {
+  test('auth.expandScopes with non-expanding scopes', async () => {
     let scopes = ['myapi:a', 'myapi:b'];
     assume(await helper.auth.expandScopes({scopes: scopes}))
-    .to.deeply.equal({scopes: scopes});
-    assumeScopesetsEqual(await helper.auth.expandScopes({scopes}), {scopes})
+      .to.deeply.equal({scopes: scopes});
+    assumeScopesetsEqual(await helper.auth.expandScopes({scopes}), {scopes});
   });
 
-  test("auth.expandScopes with expanding scopes", async () => {
-    await helper.auth.deleteRole('myrole:a');
-    await helper.auth.deleteRole('myrole:b');
-
+  test('auth.expandScopes with expanding scopes', async () => {
     await helper.events.listenFor('role-a', helper.authEvents.roleCreated({
-      roleId:  'myrole:a'
+      roleId:  'myrole:a',
     }));
     await helper.events.listenFor('role-b', helper.authEvents.roleCreated({
-      roleId:  'myrole:b'
+      roleId:  'myrole:b',
     }));
 
     await helper.auth.createRole('myrole:a', {
       description: 'test role',
-      scopes: ['myapi:a:a', 'myapi:a:b']
+      scopes: ['myapi:a:a', 'myapi:a:b'],
     });
     await helper.auth.createRole('myrole:b', {
       description: 'test role',
-      scopes: ['assume:myrole:a', 'myapi:b:a']
+      scopes: ['assume:myrole:a', 'myapi:b:a'],
     });
     await helper.events.waitFor('role-a');
     await helper.events.waitFor('role-b');
@@ -356,18 +385,15 @@ suite('api (client)', function() {
       'myapi:a:a',
       'myapi:a:b',
       'myapi:b:a',
-      'myapi:c'
+      'myapi:c',
     ]});
-
-    await helper.auth.deleteRole('myrole:a');
-    await helper.auth.deleteRole('myrole:b');
   });
 
-  test("auth.currentScopes with root credentials", async () => {
+  test('auth.currentScopes with root credentials', async () => {
     assumeScopesetsEqual(await helper.auth.currentScopes(), {scopes: ['*']});
   });
 
-  test("auth.currentScopes with root credentials and authorizedScopes", async () => {
+  test('auth.currentScopes with root credentials and authorizedScopes', async () => {
     let auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
       credentials: {
@@ -380,7 +406,7 @@ suite('api (client)', function() {
       {scopes: ['myapi:a', 'myapi:b']});
   });
 
-  test("auth.currentScopes with temp credentials", async () => {
+  test('auth.currentScopes with temp credentials', async () => {
     let auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
       credentials: taskcluster.createTemporaryCredentials({
@@ -396,7 +422,7 @@ suite('api (client)', function() {
       {scopes: ['myapi:x', 'myapi:y']});
   });
 
-  test("auth.currentScopes with temp credentials and authorizedScopes", async () => {
+  test('auth.currentScopes with temp credentials and authorizedScopes', async () => {
     let auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
       credentials: taskcluster.createTemporaryCredentials({

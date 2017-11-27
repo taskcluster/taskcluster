@@ -9,8 +9,8 @@ let taskcluster = require('taskcluster-client');
 const PORT = 60321;
 
 let myapi = new API({
-  title:        "Test API Server",
-  description:  "API server for testing"
+  title:        'Test API Server',
+  description:  'API server for testing',
 });
 
 myapi.declare({
@@ -18,11 +18,11 @@ myapi.declare({
   route:        '/resource',
   name:         'resource',
   scopes:       [['myapi:resource']],
-  title:        "Get Resource",
-  description:  "..."
+  title:        'Get Resource',
+  description:  '...',
 }, function(req, res) {
   res.status(200).json({
-    message: "Hello World"
+    message: 'Hello World',
   });
 });
 

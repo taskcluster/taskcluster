@@ -14,8 +14,8 @@ var Client = Entity.configure({
     description:    Entity.types.Text,
     accessToken:    Entity.types.EncryptedText,
     expires:        Entity.types.Date,
-    details:        Entity.types.JSON
-  }
+    details:        Entity.types.JSON,
+  },
 }).configure({
   version:          2,
   signEntities:     true,
@@ -34,13 +34,13 @@ var Client = Entity.configure({
      */
     details:        Entity.types.JSON,
     scopes:         Entity.types.JSON,  // new in v2
-    disabled:       Entity.types.Number // new in v2
+    disabled:       Entity.types.Number, // new in v2
   },
   migrate(item) {
     item.scopes = [];
     item.disabled = 0;
     return item;
-  }
+  },
 }).configure({
   version:          3,
   signEntities:     true,
@@ -74,12 +74,12 @@ var Client = Entity.configure({
       ],
     }),
     scopes:         Entity.types.JSON,
-    disabled:       Entity.types.Number
+    disabled:       Entity.types.Number,
   },
   migrate(item) {
     item.details = _.defaults({}, item.details, {deleteOnExpiration: false});
     return item;
-  }
+  },
 });
 
 /** Get scopes granted to this client */
@@ -100,7 +100,7 @@ Client.prototype.json = function(resolver) {
     deleteOnExpiration: this.details.deleteOnExpiration,
     scopes:             this.scopes,
     expandedScopes:     this.expandedScopes(resolver),
-    disabled:           !!this.disabled
+    disabled:           !!this.disabled,
   };
 };
 
@@ -112,14 +112,13 @@ Client.prototype.json = function(resolver) {
  * root access token, and that appropriate role is attached.
  */
 Client.ensureRootClient = function(accessToken) {
-  assert(typeof(accessToken) === 'string',
-         "Expected accessToken to be a string");
-  let Client = this;
+  assert(typeof accessToken === 'string',
+    'Expected accessToken to be a string');
   // Create client resolving conflicts by overwriting
-  return Client.create({
+  return this.create({
     clientId:         'root',
-    description:      "Automatically created `root` client with star scopes " +
-                      "for bootstrapping API access",
+    description:      'Automatically created `root` client with star scopes ' +
+                      'for bootstrapping API access',
     accessToken:      accessToken,
     expires:          taskcluster.fromNow('24 hours'),
     details: {
@@ -175,7 +174,7 @@ var Role = Entity.configure({
      * (more properties may be added in the future)
      */
     details:        Entity.types.JSON,
-  }
+  },
 });
 
 /** Get JSON representation of a role */
@@ -190,7 +189,7 @@ Role.prototype.json = function(resolver) {
     created:        this.details.created,
     lastModified:   this.details.lastModified,
     scopes:         this.scopes,
-    expandedScopes: resolver.resolve(scopes)
+    expandedScopes: resolver.resolve(scopes),
   };
 };
 

@@ -5,10 +5,10 @@ suite('webhooktunnel', () => {
 
   test('webhooktunnelToken', async () => {
     let {tunnelId, token, proxyUrl} = await helper.auth.webhooktunnelToken();
-		let decoded = jwt.verify(token, 'test-secret');
+    let decoded = jwt.verify(token, 'test-secret');
 
     assert(decoded !== null);
     assert(decoded.tid === tunnelId);
-		assert(decoded.sub === 'root');
+    assert(decoded.sub === 'root');
   });
 });

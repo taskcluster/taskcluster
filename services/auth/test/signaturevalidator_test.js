@@ -1,4 +1,4 @@
-suite("signature validation", function() {
+suite('signature validation', function() {
   var Promise      = require('promise');
   var assert       = require('assert');
   var mocha        = require('mocha');
@@ -9,7 +9,7 @@ suite("signature validation", function() {
   var slugid       = require('slugid');
   var crypto       = require('crypto');
   var taskcluster  = require('taskcluster-client');
-  var sigvalidator = require('../lib/signaturevalidator');
+  var sigvalidator = require('../src/signaturevalidator');
   var Monitor      = require('taskcluster-lib-monitor');
 
   var one_hour = taskcluster.fromNow('1 hour');
@@ -36,7 +36,7 @@ suite("signature validation", function() {
     validator = sigvalidator.createSignatureValidator({
       clientLoader: async clientId => {
         if (!clients[clientId]) {
-          throw new Error("no such clientId");
+          throw new Error('no such clientId');
         }
         return clients[clientId];
       },
@@ -48,7 +48,7 @@ suite("signature validation", function() {
   var test = function(name, input, expected) {
     mocha.test(name, async function() {
       // defer creation of input until the test runs, if necessary
-      if (typeof input == "function") {
+      if (typeof input == 'function') {
         input = input();
       }
 
@@ -69,14 +69,14 @@ suite("signature validation", function() {
         // stringify ext
         if (typeof input.authorization.ext === 'object') {
           input.authorization.ext = new Buffer(
-              JSON.stringify(input.authorization.ext))
+            JSON.stringify(input.authorization.ext))
             .toString('base64');
         }
 
         // create the authorization "header"
         let url = 'https://' + input.host + input.resource;
         input['authorization'] = hawk.client.header(
-            url, input.method, input.authorization).field;
+          url, input.method, input.authorization).field;
       }
 
       if (input.bewit) {
@@ -87,7 +87,7 @@ suite("signature validation", function() {
 
         if (typeof input.bewit.ext === 'object') {
           input.bewit.ext = new Buffer(
-              JSON.stringify(input.bewit.ext))
+            JSON.stringify(input.bewit.ext))
             .toString('base64');
         }
 
@@ -98,7 +98,7 @@ suite("signature validation", function() {
             algorithm: input.bewit.algorithm,
           },
           ttlSec: 15 * 60,
-          ext: input.bewit.ext
+          ext: input.bewit.ext,
         });
         input.resource += '?bewit=' + bewit;
         delete input.bewit;
@@ -145,7 +145,7 @@ suite("signature validation", function() {
         start:      options.start.getTime(),
         expiry:     options.expiry.getTime(),
         seed:       slugid.v4() + slugid.v4(),
-        signature:  null  // generated later
+        signature:  null,  // generated later
       };
 
       if (options.issuer && !options.omitIssuerFromCert) {
@@ -184,7 +184,7 @@ suite("signature validation", function() {
         .replace(/=/g,  '');  // Drop '==' padding
 
       return inputFn(id, accessToken, cert);
-    }
+    };
 
     // Only make the certificate at test runtime; then the expiry times
     // are relevant to when the cert is examined
@@ -214,71 +214,71 @@ suite("signature validation", function() {
     return {status: 'auth-failed', message};
   };
 
-  test("simple credentials", {
+  test('simple credentials', {
     authorization: {
-      credentials: {id: 'root'}
-    }
+      credentials: {id: 'root'},
+    },
   }, success(['*']));
 
-  test("simple credentials with payload hash", {
+  test('simple credentials with payload hash', {
     authorization: {
       credentials: {id: 'root'},
       payload: '{}',
-    }
+    },
   }, success(['*'], {hash: 'XtNvx1FqrUYVOLlne3l2WzcyRfj9QeC6YtmhMKKFMGY='}));
 
-  test("simple credentials, empty ext", {
+  test('simple credentials, empty ext', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
-      }
-    }
+      },
+    },
   }, success(['*']));
 
-  test("simple credentials, unknown field in ext (forward-compat)", {
+  test('simple credentials, unknown field in ext (forward-compat)', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
-        'somefield': 'foo'
-      }
-    }
+        somefield: 'foo',
+      },
+    },
   }, success(['*']));
 
-  test("simple credentials, bad secret", {
+  test('simple credentials, bad secret', {
     authorization: {
       credentials: {
         id: 'root',
         key: 'root-wrong-secret',
-      }
-    }
+      },
+    },
   }, failed('Unauthorized: Bad mac'));
 
-  test("simple credentials, bad id", {
+  test('simple credentials, bad id', {
     authorization: {
       credentials: {
         id: 'unknown',
         key: 'root-secret',
-      }
-    }
+      },
+    },
   }, failed('no such clientId'));
 
-  test("invalid: bad ext", {
+  test('invalid: bad ext', {
     authorization: {
       credentials: {id: 'root'},
       ext: 'abcd',
-    }
+    },
   }, failed('Failed to parse ext'));
 
-  test("invalid: non-object ext.certificate", {
+  test('invalid: non-object ext.certificate', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
-        certificate: true
-      }
-    }
+        certificate: true,
+      },
+    },
   }, failed('ext.certificate must be a JSON object'));
 
-  test("invalid: bad ext.certificate.version", {
+  test('invalid: bad ext.certificate.version', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -289,11 +289,11 @@ suite("signature validation", function() {
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: [],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.version must be 1'));
 
-  test("invalid: bad seed type", {
+  test('invalid: bad seed type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -304,11 +304,11 @@ suite("signature validation", function() {
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: [],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.seed must be a string'));
 
-  test("invalid: bad seed length", {
+  test('invalid: bad seed length', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -319,11 +319,11 @@ suite("signature validation", function() {
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: [],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.seed must be 44 characters'));
 
-  test("invalid: bad seed length", {
+  test('invalid: bad seed length', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -334,26 +334,26 @@ suite("signature validation", function() {
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: [],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.seed must be 44 characters'));
 
-  test("invalid: bad start type", {
+  test('invalid: bad start type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
         certificate: {
           version: 1,
           seed: slugid.v4() + slugid.v4(),
-          start: "2016-07-27T14:32:15.407820Z",
+          start: '2016-07-27T14:32:15.407820Z',
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: [],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.start must be a number'));
 
-  test("invalid: bad expiry type", {
+  test('invalid: bad expiry type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -361,14 +361,14 @@ suite("signature validation", function() {
           version: 1,
           seed: slugid.v4() + slugid.v4(),
           start: taskcluster.fromNow('-1 minute').getTime(),
-          expiry: "2016-07-27T14:32:15.407820Z",
+          expiry: '2016-07-27T14:32:15.407820Z',
           scopes: [],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.expiry must be a number'));
 
-  test("invalid: bad scopes type", {
+  test('invalid: bad scopes type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -377,13 +377,13 @@ suite("signature validation", function() {
           seed: slugid.v4() + slugid.v4(),
           start: taskcluster.fromNow('-1 minute').getTime(),
           expiry: taskcluster.fromNow('1 minute').getTime(),
-          scopes: "all of them",
+          scopes: 'all of them',
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.scopes must be an array'));
 
-  test("invalid: bad scope type", {
+  test('invalid: bad scope type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -394,11 +394,11 @@ suite("signature validation", function() {
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: [1, 2],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.scopes must be an array of valid scopes'));
 
-  test("invalid: bad scope format", {
+  test('invalid: bad scope format', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -409,59 +409,59 @@ suite("signature validation", function() {
           expiry: taskcluster.fromNow('1 minute').getTime(),
           scopes: ['one\ntwo'],
         },
-      }
-    }
+      },
+    },
   }, failed('ext.certificate.scopes must be an array of valid scopes'));
 
-  test("authorized scopes", {
+  test('authorized scopes', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
         authorizedScopes: ['scope1:*', 'scope2'],
-      }
-    }
+      },
+    },
   }, success(['scope1:*', 'scope2']));
 
-  test("invalid: authorized scopes not satisfied by clientId", {
+  test('invalid: authorized scopes not satisfied by clientId', {
     authorization: {
       credentials: {id: 'unpriv'},
       ext: {
         authorizedScopes: ['scope1:*', 'scope2'],
-      }
-    }
+      },
+    },
   }, failed('Supplied credentials do not satisfy authorizedScopes; '
     + `credentials have scopes [${clients.unpriv.scopes}]; `
-    + `authorizedScopes are [scope1:*,scope2]`));
+    + 'authorizedScopes are [scope1:*,scope2]'));
 
-  test("invalid: authorizedScopes not an array", {
+  test('invalid: authorizedScopes not an array', {
     authorization: {
       credentials: {id: 'unpriv'},
       ext: {
         authorizedScopes: 'scope1:*',
-      }
-    }
+      },
+    },
   }, failed('ext.authorizedScopes must be an array'));
 
-  test("invalid: authorizedScopes invalid scope", {
+  test('invalid: authorizedScopes invalid scope', {
     authorization: {
       credentials: {id: 'unpriv'},
       ext: {
         authorizedScopes: ['scope1\n**'],
-      }
-    }
+      },
+    },
   }, failed('ext.authorizedScopes must be an array of valid scopes'));
 
-  testWithTemp("basic temporary credentials", {
+  testWithTemp('basic temporary credentials', {
     id: 'root',
     scopes: ['tmpscope'],
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), success(['tmpscope']));
 
-  testWithTemp("invalid: expired temporary credentials", {
+  testWithTemp('invalid: expired temporary credentials', {
     start: taskcluster.fromNow('-2 hour'),
     expiry: taskcluster.fromNow('-1 hour'),
     id: 'root',
@@ -469,10 +469,10 @@ suite("signature validation", function() {
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), failed('ext.certificate.expiry < now'));
 
-  testWithTemp("temporary credentials that expire soon give correct expiration", {
+  testWithTemp('temporary credentials that expire soon give correct expiration', {
     expiry: one_hour,
     id: 'root',
     scopes: ['tmpscope'],
@@ -480,10 +480,10 @@ suite("signature validation", function() {
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), success(['tmpscope'], {expires: one_hour}));
 
-  testWithTemp("temporary credentials that expire after issuer give correct expiration", {
+  testWithTemp('temporary credentials that expire after issuer give correct expiration', {
     expiry: three_hours,
     id: 'root',
     scopes: ['tmpscope'],
@@ -491,10 +491,10 @@ suite("signature validation", function() {
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), success(['tmpscope'], {expires: two_hours}));
 
-  testWithTemp("invalid: postdated temporary credentials", {
+  testWithTemp('invalid: postdated temporary credentials', {
     start: taskcluster.fromNow('1 hour'),
     expiry: taskcluster.fromNow('2 hour'),
     id: 'root',
@@ -502,10 +502,10 @@ suite("signature validation", function() {
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), failed('ext.certificate.start > now'));
 
-  testWithTemp("invalid: year-long temporary credentials", {
+  testWithTemp('invalid: year-long temporary credentials', {
     start: taskcluster.fromNow('-185 days'),
     expiry: taskcluster.fromNow('180 days'),
     id: 'root',
@@ -513,31 +513,31 @@ suite("signature validation", function() {
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), failed('ext.certificate cannot last longer than 31 days!'));
 
-  testWithTemp("invalid: bad signature for temp creds", {
+  testWithTemp('invalid: bad signature for temp creds', {
     id: 'root',
     signature: 'not the right one',
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), failed('ext.certificate.signature is not valid'));
 
-  testWithTemp("invalid: temp scopes not satisfied by issuing client", {
+  testWithTemp('invalid: temp scopes not satisfied by issuing client', {
     id: 'unpriv',
     scopes: ['godlike'],
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
       ext: {certificate},
-    }
+    },
   }), failed('ext.certificate issuer `unpriv` doesn\'t satisfiy all certificate ' +
-             'scopes godlike.  The temporary credentials were not generated correctly.'))
+             'scopes godlike.  The temporary credentials were not generated correctly.'));
 
-  testWithTemp("temporary credentials with authorizedScopes", {
+  testWithTemp('temporary credentials with authorizedScopes', {
     id: 'root',
     scopes: ['scope1:*', 'scope2:*'],
   }, (id, key, certificate) => ({
@@ -547,10 +547,10 @@ suite("signature validation", function() {
         certificate,
         authorizedScopes: ['scope1:a', 'scope2:b'],
       },
-    }
+    },
   }), success(['scope1:a', 'scope2:b']));
 
-  testWithTemp("invalid: temporary credentials with authorizedScopes not satisfied", {
+  testWithTemp('invalid: temporary credentials with authorizedScopes not satisfied', {
     id: 'unpriv',
     scopes: ['scope2'],
   }, (id, key, certificate) => ({
@@ -560,12 +560,12 @@ suite("signature validation", function() {
         certificate,
         authorizedScopes: ['scope1', 'scope2'],
       },
-    }
+    },
   }), failed('Supplied credentials do not satisfy authorizedScopes; '
     + `credentials have scopes [${clients.unpriv.scopes}]; `
-    + `authorizedScopes are [scope1,scope2]`));
+    + 'authorizedScopes are [scope1,scope2]'));
 
-  testWithTemp("invalid: temporary credentials with authorizedScopes, temp not satisfied", {
+  testWithTemp('invalid: temporary credentials with authorizedScopes, temp not satisfied', {
     id: 'unpriv',
     scopes: ['scope999'],
   }, (id, key, certificate) => ({
@@ -575,11 +575,11 @@ suite("signature validation", function() {
         certificate,
         authorizedScopes: ['scope999'],
       },
-    }
+    },
   }), failed('ext.certificate issuer `unpriv` doesn\'t satisfiy all certificate scopes ' +
-             'scope999.  The temporary credentials were not generated correctly.'))
+             'scope999.  The temporary credentials were not generated correctly.'));
 
-  testWithTemp("named temporary credentials", {
+  testWithTemp('named temporary credentials', {
     id: 'my-temp-cred',
     accessToken: 'root-secret',
     scopes: ['tmpscope'],
@@ -591,10 +591,10 @@ suite("signature validation", function() {
       ext: {
         certificate,
       },
-    }
+    },
   }), success(['tmpscope'], {clientId: 'my-temp-cred'}));
 
-  testWithTemp("named temporary credentials with authorizedScopes", {
+  testWithTemp('named temporary credentials with authorizedScopes', {
     id: 'my-temp-cred',
     accessToken: 'root-secret',
     scopes: ['scopes:*'],
@@ -607,10 +607,10 @@ suite("signature validation", function() {
         certificate,
         authorizedScopes: ['scopes:1', 'scopes:2'],
       },
-    }
+    },
   }), success(['scopes:1', 'scopes:2'], {clientId: 'my-temp-cred'}));
 
-  testWithTemp("invalid: named temporary credentials with issuer == clientId", {
+  testWithTemp('invalid: named temporary credentials with issuer == clientId', {
     id: 'root',
     accessToken: 'root-secret',
     scopes: ['tmpscope'],
@@ -622,10 +622,10 @@ suite("signature validation", function() {
       ext: {
         certificate,
       },
-    }
+    },
   }), failed('ext.certificate.issuer must differ from the supplied clientId'));
 
-  testWithTemp("invalid: named temporary credentials clientId != name", {
+  testWithTemp('invalid: named temporary credentials clientId != name', {
     id: 'some-temp-cred',
     accessToken: 'root-secret',
     scopes: ['tmpscope'],
@@ -637,26 +637,26 @@ suite("signature validation", function() {
       ext: {
         certificate,
       },
-    }
+    },
   }), failed('ext.certificate.signature is not valid, or wrong clientId provided'));
 
-  testWithTemp("invalid: named temporary credentials with issuer but no name in signature", {
+  testWithTemp('invalid: named temporary credentials with issuer but no name in signature', {
     id: 'my-temp-cred',
     accessToken: 'root-secret',
     scopes: ['tmpscope'],
     credentialName: 'my-temp-cred',
     issuer: 'root',
-    omitClientIdFromSig: true
+    omitClientIdFromSig: true,
   }, (id, key, certificate) => ({
     authorization: {
       credentials: {id, key},
       ext: {
         certificate,
       },
-    }
+    },
   }), failed('ext.certificate.signature is not valid, or wrong clientId provided'));
 
-  testWithTemp("invalid: named temporary credentials with name that issuer cannot create", {
+  testWithTemp('invalid: named temporary credentials with name that issuer cannot create', {
     id: 'cant-create-this',
     accessToken: 'unpriv-secret',
     scopes: [],
@@ -668,56 +668,56 @@ suite("signature validation", function() {
       ext: {
         certificate,
       },
-    }
-  }), failed("ext.certificate issuer `unpriv` doesn't have " +
-             "`auth:create-client:cant-create-this` for supplied clientId."));
+    },
+  }), failed('ext.certificate issuer `unpriv` doesn\'t have ' +
+             '`auth:create-client:cant-create-this` for supplied clientId.'));
 
-  test("simple bewit", {
+  test('simple bewit', {
     bewit: {
       id: 'root',
-    }
+    },
   }, success(['*']));
 
-  test("bewit with authorizedScopes", {
+  test('bewit with authorizedScopes', {
     bewit: {
       id: 'root',
       ext: {
         authorizedScopes: ['scope1:*'],
-      }
-    }
+      },
+    },
   }, success(['scope1:*']));
 
-  test("invalid: bewit with bad key", {
+  test('invalid: bewit with bad key', {
     bewit: {
       id: 'root',
       key: 'not-root',
-    }
+    },
   }, failed('Unauthorized: Bad mac'));
 
-  test("invalid: bogus bewit", {
+  test('invalid: bogus bewit', {
     resource: '/?bewit=' + slugid.v4(),
   }, failed('Bad Request: Invalid bewit structure'));
 
-  test("invalid: bewit with unknown client", {
+  test('invalid: bewit with unknown client', {
     bewit: {
       id: 'somebody',
-    }
+    },
   }, failed('no such clientId'));
 
-  test("bewit with unknown client", {
+  test('bewit with unknown client', {
     bewit: {
       id: 'somebody',
-    }
+    },
   }, failed('no such clientId'));
 
-  testWithTemp("bewit based on temporary creds", {
+  testWithTemp('bewit based on temporary creds', {
     id: 'root',
     scopes: ['scope3'],
   }, (id, key, certificate) => ({
-    bewit: {id, key, ext: {certificate}}
+    bewit: {id, key, ext: {certificate}},
   }), success(['scope3']));
 
-  testWithTemp("bewit based on temporary creds and authorizedScopes", {
+  testWithTemp('bewit based on temporary creds and authorizedScopes', {
     id: 'root',
     scopes: ['scope*'],
   }, (id, key, certificate) => ({
@@ -727,11 +727,11 @@ suite("signature validation", function() {
       ext: {
         authorizedScopes: ['scope3'],
         certificate,
-      }
-    }
+      },
+    },
   }), success(['scope3']));
 
-  testWithTemp("bewit based on named temporary creds and authorizedScopes", {
+  testWithTemp('bewit based on named temporary creds and authorizedScopes', {
     id: 'root/temp-url',
     accessToken: 'root-secret',
     scopes: ['scope*'],
@@ -744,7 +744,7 @@ suite("signature validation", function() {
       ext: {
         authorizedScopes: ['scope3'],
         certificate,
-      }
-    }
+      },
+    },
   }), success(['scope3'], {clientId: 'root/temp-url'}));
 });
