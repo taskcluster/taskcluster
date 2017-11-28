@@ -37,6 +37,18 @@ class Handler {
     await this.listener.resume();
   }
 
+  renderMessage(template, context) {
+    try {
+      return jsone(template, context);
+    } catch (err) {
+      // We will try to deliver nice error messages for json-e errors
+      if (err.name && _.includes(['BuiltinError', 'TemplateError', 'InterpreterError', 'SyntaxError'], err.name)) {
+        return `Error parsing custom message: ${err.message}`;
+      }
+      throw err;
+    }
+  }
+
   async onMessage(message) {
     // Load task definition
     let {status} = message.payload;
@@ -64,7 +76,7 @@ class Handler {
         case 'irc-user':
           this.monitor.count('notification-requested.irc-user');
           if (_.has(task, 'extra.notify.ircUserMessage')) {
-            ircMessage = jsone(task.extra.notify.ircUserMessage, {task, status});
+            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
           }
           return this.notifier.irc({
             user: route[2],
@@ -74,7 +86,7 @@ class Handler {
         case 'irc-channel':
           this.monitor.count('notification-requested.irc-channel');
           if (_.has(task, 'extra.notify.ircChannelMessage')) {
-            ircMessage = jsone(task.extra.notify.ircChannelMessage, {task, status});
+            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
           }
           return this.notifier.irc({
             channel: route[2],
@@ -104,8 +116,8 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
           let template = 'simple';
           if (_.has(task, 'extra.notify.email')) {
             let extra = task.extra.notify.email;
-            content = extra.content ? jsone(extra.content, {task, status}) : content;
-            subject = extra.subject ? jsone(extra.subject, {task, status}) : subject;
+            content = extra.content ? this.renderMessage(extra.content, {task, status}) : content;
+            subject = extra.subject ? this.renderMessage(extra.subject, {task, status}) : subject;
             link = extra.link ? jsone(extra.link, {task, status}) : link;
             template = extra.template ? jsone(extra.template, {task, status}) : template;
           }
