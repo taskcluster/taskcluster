@@ -100,4 +100,4 @@ produced.
 
 # Service Owner
 
-Service Owner: garndt@mozilla.com
+Service Owner: bstack@mozilla.com
