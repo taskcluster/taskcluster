@@ -1,7 +1,6 @@
 let debug             = require('debug')('purge-cache');
 let assert            = require('assert');
 let path              = require('path');
-let Promise           = require('promise');
 let _                 = require('lodash');
 let config            = require('typed-env-config');
 let loader            = require('taskcluster-lib-loader');
