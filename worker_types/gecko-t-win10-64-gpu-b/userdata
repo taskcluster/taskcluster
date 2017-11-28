@@ -107,17 +107,17 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
 
-# reg_WindowsErrorReportingLocalDumps
+# reg_WindowsErrorReportingLocalDumps: https://bugzilla.mozilla.org/show_bug.cgi?id=1261812
 New-Item -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Force
 
-# reg_WindowsErrorReportingDontShowUI
+# reg_WindowsErrorReportingDontShowUI: https://bugzilla.mozilla.org/show_bug.cgi?id=1261812
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "DontShowUI" -Value "0x00000001" -PropertyType Dword -Force
 
 # GenericWorkerDirectory
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.2.2/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v8.3.0/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -131,11 +131,8 @@ New-NetFirewallRule -DisplayName "LiveLog_Put (TCP 60023 Inbound): Allow" -Direc
 # NSSMDownload
 $client.DownloadFile("https://nssm.cc/ci/nssm-2.24-103-gdee49fc.zip", "C:\Windows\Temp\NSSMInstall.zip")
 
-# NSSMInstall: NSSM is required to install Generic Worker as a service. Currently ZipInstall fails, so using 7z instead.
-Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -oC:\ C:\Windows\Temp\NSSMInstall.zip" -Wait -NoNewWindow
-
 # GenericWorkerInstall
-Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install service --nssm C:\nssm-2.24-103-gdee49fc\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow
+Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install startup --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow
 
 # DisableDesktopInterrupt
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/disable-desktop-interrupt.reg", "C:\generic-worker\disable-desktop-interrupt.reg")
@@ -239,9 +236,6 @@ $client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/blob/mas
 # maintenanceservice_install
 Start-Process "C:\dsc\MozillaMaintenance\maintenanceservice_installer.exe" -ArgumentList "/s" -Wait -NoNewWindow
 
-# MaintenanceServiceAcessRights: See https://bugzilla.mozilla.org/show_bug.cgi?id=1067756#c21
-Start-Process "icacls.exe" -ArgumentList "`"C:\Program Files (x86)\Mozilla Maintenance Service`" /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
-
 # MozFakeCA_cer
 $client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/blob/master/userdata/Configuration/Mozilla%20Maintenance%20Service/MozFakeCA.cer?raw=true", "C:\dsc\MozillaMaintenance\MozFakeCA.cer")
 
@@ -297,7 +291,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d3
 New-ItemProperty -Path "HKLM:SOFTWARE\Mozilla\MaintenanceService\3932ecacee736d366d6436db0f55bce4\2" -Name "publisherLink" -Value "" -PropertyType String -Force
 
 # GrantGenericWorkerMozillaRegistryWriteAccess: Bug 1353889 - Grant GenericWorker account write access to Mozilla registry key
-Start-Process "powershell" -ArgumentList "-command `"& {& (Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla').SetAccessRule(New-Object System.Security.AccessControl.RegistryAccessRule ('Everyone', 'FullControl', 'Allow'))}`"; `"& {& ((Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla') | Set-Acl -Path 'HKLM:\SOFTWARE\Mozilla')}`"" -Wait -NoNewWindow
+Start-Process "powershell" -ArgumentList "-command `"& {& (Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla').SetAccessRule(New-Object System.Security.AccessControl.RegistryAccessRule ('.\GenericWorker', 'FullControl', 'Allow'))}`"; `"& {& ((Get-Acl -Path 'HKLM:\SOFTWARE\Mozilla') | Set-Acl -Path 'HKLM:\SOFTWARE\Mozilla')}`"" -Wait -NoNewWindow
 
 # KmsIn
 New-NetFirewallRule -DisplayName "KmsIn (TCP 1688 Inbound): Allow" -Direction Inbound -LocalPort 1688 -Protocol TCP -Action Allow
@@ -308,24 +302,18 @@ New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction 
 # DisableFirewall: Bug 1358301 - Disable Windows Firewall
 Start-Process "netsh" -ArgumentList "advfirewall set allprofiles state off" -Wait -NoNewWindow
 
-# NvidiaK520DriverPackage: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
-$client.DownloadFile("http://uk.download.nvidia.com/Windows/Quadro_Certified/GRID/369.95/369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe", "C:\binaries\369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe")
-Start-Process "C:\binaries\369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe" -ArgumentList "/s" -Wait -NoNewWindow
+# NvidiaTeslaDriverPackage: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
+$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nvidia/377.35-tesla-desktop-win10-64bit-international-whql.exe", "C:\binaries\377.35-tesla-desktop-win10-64bit-international-whql.exe")
+Start-Process "C:\binaries\377.35-tesla-desktop-win10-64bit-international-whql.exe" -ArgumentList "/s" -Wait -NoNewWindow
 
-# NvidiaK520DriverInstall: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
-Start-Process "C:\NVIDIA\369.95\setup.exe" -ArgumentList "/s" -Wait -NoNewWindow
-
-# reg_DisableTouchEvents: Bug 1382988 - Disable touch events
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Wisp\Touch" -Name "TouchGate" -Value "0x00000000" -PropertyType Dword -Force
+# NvidiaTeslaDriverInstall: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
+Start-Process "C:\NVIDIA\DisplayDriver\377.35\Win10_64\International\setup.exe" -ArgumentList "/s" -Wait -NoNewWindow
 
 # nircmd
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe", "C:\Windows\System32\nircmd.exe")
 
 # nircmdc
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmdc.exe", "C:\Windows\System32\nircmdc.exe")
-
-# AssocTxtfileNotepad: Bug 1373551 - associate text files with notepad
-Start-Process "ftype" -ArgumentList "txtfile=`"C:\Windows\System32\Notepad.exe`" `"%1`"" -Wait -NoNewWindow
 
 # UltraVNC: VNC Server - not essential for building firefox
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/UltraVnc/UltraVnc_10962_x64.msi", "C:\binaries\UltraVnc_10962_x64.msi")
@@ -335,7 +323,10 @@ Start-Process "msiexec" -ArgumentList "/i C:\binaries\UltraVnc_10962_x64.msi /qu
 New-NetFirewallRule -DisplayName "Vnc_In (TCP 5900 Inbound): Allow" -Direction Inbound -LocalPort 5900 -Protocol TCP -Action Allow
 
 # reg_DisableNewAppAlert: Bug 1373551 - prevent dialog to confirm file association
-New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "0x00000001" -PropertyType Dword -Force
+New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Value "1" -PropertyType Dword -Force
+
+# reg_NewNetworkWindowOff: https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58
+New-Item -Path "HKLM:System\CurrentControlSet\Control\Network\NewNetworkWindowOff" -Force
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

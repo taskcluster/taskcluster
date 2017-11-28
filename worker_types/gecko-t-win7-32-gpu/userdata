@@ -113,10 +113,10 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
 
-# reg_WindowsErrorReportingLocalDumps
+# reg_WindowsErrorReportingLocalDumps: https://bugzilla.mozilla.org/show_bug.cgi?id=1261812
 New-Item -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Force
 
-# reg_WindowsErrorReportingDontShowUI
+# reg_WindowsErrorReportingDontShowUI: https://bugzilla.mozilla.org/show_bug.cgi?id=1261812
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "DontShowUI" -Value "0x00000001" -PropertyType Dword -Force
 
 # GenericWorkerDirectory
