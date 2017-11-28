@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/lint.js .test/*_test.js",
-    "pretest": "npm run compile",
-    "install": "npm run compile",
+    "test": "mocha test/*_test.js",
+    "lint": "eslint src/*.js test/*.js",
+    "pretest": "yarn lint",
     "verify": "node bin/verify-prod"
   },
   "repository": {
@@ -14,34 +13,28 @@
     "url": "https://github.com/taskcluster/taskcluster-purge-cache.git"
   },
   "dependencies": {
-    "assume": "^1.4.1",
-    "azure-entities": "^1.0.2",
-    "babel-compile": "^2.0.0",
-    "babel-eslint": "^6.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
-    "babel-runtime": "^6.11.6",
-    "debug": "^2.2.0",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.0",
+    "azure-entities": "^3.0.0",
+    "debug": "^3.1.0",
     "lodash": "^4.15.0",
-    "mocha": "^3.0.2",
-    "mocha-eslint": "^2.0.1",
-    "promise": "^7.1.1",
-    "pulse-publisher": "^1.1.4",
-    "source-map-support": "^0.4.2",
-    "taskcluster-client": "^1.6.3",
-    "taskcluster-lib-api": "3.2.2",
-    "taskcluster-lib-app": "^1.0.0",
-    "taskcluster-lib-docs": "^3.0.0",
-    "taskcluster-lib-loader": "^1.0.0",
-    "taskcluster-lib-monitor": "^4.2.0",
-    "taskcluster-lib-testing": "^1.0.1",
-    "taskcluster-lib-validate": "^2.0.0",
+    "pulse-publisher": "^3.0.2",
+    "taskcluster-client": "^3.1.1",
+    "taskcluster-lib-api": "4.0.0",
+    "taskcluster-lib-app": "^2.0.3",
+    "taskcluster-lib-docs": "^4.0.0",
+    "taskcluster-lib-loader": "^2.0.0",
+    "taskcluster-lib-monitor": "^4.6.3",
+    "taskcluster-lib-validate": "^3.0.1",
     "typed-env-config": "^1.1.0"
   },
   "engine-strict": true,
   "engines": {
-    "node": "6.11.1",
-    "yarn": "0.27.5"
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
+  },
+  "devDependencies": {
+    "assume": "^1.5.2",
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "^4.0.1",
+    "taskcluster-lib-testing": "^2.0.2"
   }
 }
