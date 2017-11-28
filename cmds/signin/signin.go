@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
 	"github.com/taskcluster/taskcluster-cli/config"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/auth"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
@@ -38,6 +41,7 @@ tools using those libraries can also benefit from this signin method.`,
 
 		RunE: cmdSignin,
 	}
+	cmd.Flags().Bool("check", false, "Check whether you are already signed in")
 	cmd.Flags().Bool("csh", false, "Output csh-style environment variables (default is Bourne shell)")
 	cmd.Flags().StringP("name", "n", "cli", "Name of the credential to create/reset.")
 	cmd.Flags().String("expires", "1d", "Lifetime for this client (keep it short to avoid risk from accidental disclosure).")
@@ -61,6 +65,10 @@ tools using those libraries can also benefit from this signin method.`,
 }
 
 func cmdSignin(cmd *cobra.Command, _ []string) error {
+	if check, _ := cmd.Flags().GetBool("check"); check {
+		return checkSignin()
+	}
+
 	// Load configuration
 	fmt.Fprintln(cmd.OutOrStderr(), "Starting")
 
@@ -139,5 +147,25 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to save configuration, error: %s", serr)
 	}
 
+	return nil
+}
+
+// Return an appropriate exit code based on whether we have credentials.
+// Useful for shell scripting around 'taskcluster signin' calls.
+func checkSignin() error {
+	var creds *tcclient.Credentials
+	if config.Credentials != nil {
+		creds = config.Credentials.ToClientCredentials()
+	}
+	auth := auth.New(creds)
+	result, err := auth.CurrentScopes()
+	if err != nil {
+		// Don't want an os.Exit() in case it causes scripting loops when used.
+		return fmt.Errorf("failed to check credentials: %s", err)
+	}
+	if len(result.Scopes) == 0 {
+		fmt.Println("No valid credentials were found")
+		os.Exit(1)
+	}
 	return nil
 }
