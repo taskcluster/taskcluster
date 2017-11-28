@@ -80,6 +80,7 @@ suite('pulse', () => {
       'event.pullNumber': 36,
       'event.type': 'pull_request.opened',
       'event.head.user.email': 'anotheruser@github.com',
+      'event.title': 'Update README.md',
     },
     jsonFile: 'webhook.pull_request.open.json',
   });
