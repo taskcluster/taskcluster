@@ -1,4 +1,4 @@
-Generated: 1510583004
+Generated: 1511878982
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -614,7 +614,7 @@ Properties
     TypeName               = 'Resource'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/resource'
 Required               = '[method resource host port]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Hawk Signature Authentication Request'
 Type                   = 'object'
 TypeName               = 'HawkSignatureAuthenticationRequest'
@@ -731,7 +731,7 @@ Item '1' =
 Description            = 'Response from a request to authenticate a hawk request.
 '
 ID                     = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Hawk Signature Authentication Response'
 Type                   = 'object'
 TypeName               = 'HawkSignatureAuthenticationResponse'
@@ -879,7 +879,7 @@ Properties
     TypeName               = 'Expires'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/expires'
 Required               = '[credentials expires]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'AWS S3 Credentials Response'
 Type                   = 'object'
 TypeName               = 'AWSS3CredentialsResponse'
@@ -907,7 +907,7 @@ Properties
     TypeName               = 'AzureAccounts'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#/properties/accounts'
 Required               = '[accounts]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Azure List Account Response'
 Type                   = 'object'
 TypeName               = 'AzureListAccountResponse'
@@ -938,7 +938,7 @@ Properties
     TypeName               = 'Sas'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#/properties/sas'
 Required               = '[sas expiry]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Azure Blob Shared-Access-Signature Response'
 Type                   = 'object'
 TypeName               = 'Var1'
@@ -969,7 +969,7 @@ Properties
     TypeName               = 'Sas'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas'
 Required               = '[sas expiry]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Azure Table Shared-Access-Signature Response'
 Type                   = 'object'
 TypeName               = 'Var'
@@ -1009,7 +1009,7 @@ Properties
     TypeName               = 'AzureTables'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties/tables'
 Required               = '[tables]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Azure List Account Response'
 Type                   = 'object'
 TypeName               = 'AzureListAccountResponse1'
@@ -1061,7 +1061,7 @@ Properties
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes'
 Required               = '[expires description]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Create Client Request'
 Type                   = 'object'
 TypeName               = 'CreateClientRequest'
@@ -1179,7 +1179,7 @@ Properties
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/scopes'
 Required               = '[clientId accessToken expires description created lastModified lastDateUsed lastRotated scopes expandedScopes disabled deleteOnExpiration]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Create Client Response'
 Type                   = 'object'
 TypeName               = 'CreateClientResponse'
@@ -1216,7 +1216,7 @@ Properties
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/scopes'
 Required               = '[scopes description]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Create Role Request'
 Type                   = 'object'
 TypeName               = 'CreateRoleRequest'
@@ -1326,7 +1326,7 @@ Properties
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes'
 Required               = '[clientId expires description created lastModified lastDateUsed lastRotated scopes expandedScopes disabled deleteOnExpiration]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Get Client Response'
 Type                   = 'object'
 TypeName               = 'GetClientResponse'
@@ -1399,7 +1399,7 @@ Properties
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/scopes'
 Required               = '[roleId scopes description created lastModified expandedScopes]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Get Role Response'
 Type                   = 'object'
 TypeName               = 'GetRoleResponse'
@@ -1415,7 +1415,7 @@ Items
   Ref                    = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
   TypeName               = 'Entry'
   SourceURL              = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/items'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'List Client Response'
 Type                   = 'array'
 TypeName               = 'ListClientResponse'
@@ -1431,7 +1431,7 @@ Items
   Ref                    = 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#'
   TypeName               = 'Entry1'
   SourceURL              = 'http://schemas.taskcluster.net/auth/v1/list-roles-response.json#/items'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'List Roles Response'
 Type                   = 'array'
 TypeName               = 'ListRolesResponse'
@@ -1456,7 +1456,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/scopeset.json#/properties/scopes'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Set of scopes'
 Type                   = 'object'
 TypeName               = 'SetOfScopes'
@@ -1517,7 +1517,7 @@ Properties
     TypeName               = 'Project'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/project'
 Required               = '[project dsn expires]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Sentry DSN Response'
 Type                   = 'object'
 TypeName               = 'SentryDSNResponse'
@@ -1562,7 +1562,7 @@ Properties
     TypeName               = 'AccessToken'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#/properties/token'
 Required               = '[project token expires baseUrl]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Statsum Token Response'
 Type                   = 'object'
 TypeName               = 'StatsumTokenResponse'
@@ -1601,7 +1601,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'RequiredScopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#/properties/requiredScopes'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Test Authenticate Request'
 Type                   = 'object'
 TypeName               = 'TestAuthenticateRequest'
@@ -1634,7 +1634,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'Scopes'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/scopes'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Test Authenticate Response'
 Type                   = 'object'
 TypeName               = 'TestAuthenticateResponse'
@@ -1670,7 +1670,7 @@ Properties
     TypeName               = 'ProxyConnectionID'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#/properties/tunnelId'
 Required               = '[token tunnelId proxyUrl]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Webhooktunnel Token Response'
 Type                   = 'object'
 TypeName               = 'WebhooktunnelTokenResponse'
@@ -1792,7 +1792,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/client-message.json#/properties/version'
 Required               = '[version clientId]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Client Message'
 Type                   = 'object'
 TypeName               = 'ClientMessage'
@@ -1820,7 +1820,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/auth/v1/role-message.json#/properties/version'
 Required               = '[version roleId]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Role Message'
 Type                   = 'object'
 TypeName               = 'RoleMessage'
@@ -1860,7 +1860,7 @@ information.  The worker is responsible for deleting the secret after
 retrieving it, to prevent dissemination of the secret to other proceses
 which can read the instance user data.
 '
-Base URL    = 'https://staging-aws-provisioner.herokuapp.com/v1'
+Base URL    = 'https://aws-provisioner.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -2972,7 +2972,7 @@ Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'AWS Provisioner Pulse Exchanges'
 Description     = 'Exchanges from the provisioner... more docs later'
-Exchange Prefix = 'exchange/taskcluster-aws-provisioner-staging/v1/'
+Exchange Prefix = 'exchange/taskcluster-aws-provisioner/v1/'
 Entry 0     = 
     Entry Type        = 'topic-exchange'
     Entry Exchange    = 'worker-type-created'
@@ -3308,7 +3308,7 @@ Properties
     TypeName               = 'ContinuationToken'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/build-list.json#/properties/continuationToken'
 Required               = '[builds]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Builds'
 Type                   = 'object'
 TypeName               = 'Builds1'
@@ -3345,7 +3345,7 @@ Properties
     TypeName               = 'Body'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-comment.json#/properties/body'
 Required               = '[body]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Create comment'
 Type                   = 'object'
 TypeName               = 'CreateComment1'
@@ -3382,7 +3382,7 @@ Properties
     TypeName               = 'Target_URL'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/create-status.json#/properties/target_url'
 Required               = '[state]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Create status'
 Type                   = 'object'
 TypeName               = 'CreateStatus1'
@@ -3403,7 +3403,7 @@ Properties
     TypeName               = 'Installed'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/repository.json#/properties/installed'
 Required               = '[installed]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'repository'
 Type                   = 'object'
 TypeName               = 'Repository1'
@@ -3571,7 +3571,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/version'
 Required               = '[version organization repository action installationId eventId]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'GitHub Pull Request Message'
 Type                   = 'object'
 TypeName               = 'GitHubPullRequestMessage'
@@ -3631,7 +3631,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/version'
 Required               = '[version organization repository installationId eventId]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'GitHub Push Message'
 Type                   = 'object'
 TypeName               = 'GitHubPushMessage'
@@ -3691,7 +3691,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/version'
 Required               = '[version organization repository installationId eventId]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'GitHub Release Message'
 Type                   = 'object'
 TypeName               = 'GitHubReleaseMessage'
@@ -5106,7 +5106,7 @@ Properties
     TypeName               = 'TaskIdentifier'
     SourceURL              = 'http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/taskId'
 Required               = '[namespace taskId rank data expires]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Indexed Task Response'
 Type                   = 'object'
 TypeName               = 'IndexedTaskResponse'
@@ -5157,7 +5157,7 @@ Properties
     TypeName               = 'TaskIdentifier'
     SourceURL              = 'http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/taskId'
 Required               = '[taskId rank data expires]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Insert Task Request'
 Type                   = 'object'
 TypeName               = 'InsertTaskRequest'
@@ -5191,7 +5191,7 @@ Properties
     Type                   = 'integer'
     TypeName               = 'ResultLimit'
     SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/limit'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'List Namespaces Request'
 Type                   = 'object'
 TypeName               = 'ListNamespacesRequest'
@@ -5257,7 +5257,7 @@ Properties
     TypeName               = 'Namespaces'
     SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces'
 Required               = '[namespaces]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'List Namespaces Response'
 Type                   = 'object'
 TypeName               = 'ListNamespacesResponse'
@@ -5291,7 +5291,7 @@ Properties
     Type                   = 'integer'
     TypeName               = 'ResultLimit'
     SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/limit'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'List Tasks Request'
 Type                   = 'object'
 TypeName               = 'ListTasksRequest'
@@ -5374,7 +5374,7 @@ Properties
     TypeName               = 'Tasks'
     SourceURL              = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks'
 Required               = '[tasks]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'List Tasks Response'
 Type                   = 'object'
 TypeName               = 'ListTasksResponse'
@@ -7061,7 +7061,7 @@ Entry 29    =
     Entry Method      = 'get'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers'
     Entry Args        = '[provisionerId workerType]'
-    Entry Query        = '[continuationToken disabled limit]'
+    Entry Query        = '[continuationToken limit quarantined]'
     Entry Name        = 'listWorkers'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
@@ -7070,8 +7070,9 @@ Entry 29    =
     Entry Title       = 'Get a list of all active workers of a workerType'
     Entry Description = 'Get a list of all active workers of a workerType.
 
-`listWorkers` allows a response to be filtered by the `disabled` property.
-To filter the query, you should call the end-point with `disabled` as a query-string option.
+`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
+To filter the query, you should call the end-point with `quarantined` as a query-string option with a
+true or false value.
 
 The response is paged. If this end-point returns a `continuationToken`, you
 should call the end-point again with the `continuationToken` as a query-string
@@ -7093,6 +7094,19 @@ Entry 30    =
 Entry 31    =
     Entry Type        = 'function'
     Entry Method      = 'put'
+    Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>'
+    Entry Args        = '[provisionerId workerType workerGroup workerId]'
+    Entry Query        = '[]'
+    Entry Name        = 'quarantineWorker'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = '[[queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>]]'
+    Entry Input       = 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
+    Entry Title       = 'Quarantine a worker'
+    Entry Description = 'Quarantine a worker'
+Entry 32    =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
     Entry Route       = '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>'
     Entry Args        = '[provisionerId workerType workerGroup workerId]'
     Entry Query        = '[]'
@@ -7106,7 +7120,7 @@ Entry 31    =
 
 `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
 possessed.'
-Entry 32    =
+Entry 33    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
@@ -7934,85 +7948,6 @@ Description            = 'Response from a `listWorkers` request.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#'
 Properties
-  Property 'actions' =
-    Items
-      Additional Properties  = 'false'
-      Description            = 'Actions are defined on the provisioner and they are performed via a request using the `url` and `method`.
-      Depending on the `context`, the `url` will be filled with parameters. In addition, `context` is
-      used by the front-end to know where to display the action. For example, `context=worker`
-      will display the action on the worker explorer.
-      
-      _Note: The request will be signed with the user's Taskcluster credentials._
-      '
-      Properties
-        Property 'context' =
-          Description            = 'Actions have a "context" that is one of provisioner, worker-type,
-          or worker, indicating which it applies to. `context` is used by the front-end to know where to display the action.
-          
-          | `context`   | Page displayed        |
-          |-------------|-----------------------|
-          | provisioner | Provisioner Explorer  |
-          | worker-type | Workers Explorer      |
-          | worker      | Worker Explorer       |
-          '
-          Enum                   = '[worker]'
-          Title                  = 'Context'
-          Type                   = 'string'
-          TypeName               = 'Context'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/context'
-        Property 'description' =
-          Description            = 'Description of the provisioner.
-          '
-          Title                  = 'Description'
-          Type                   = 'string'
-          TypeName               = 'Description'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/description'
-        Property 'method' =
-          Description            = 'Method to indicate the desired action to be performed for a given resource.
-          '
-          Enum                   = '[POST PUT DELETE PATCH]'
-          Title                  = 'Method'
-          Type                   = 'string'
-          TypeName               = 'Method'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/method'
-        Property 'name' =
-          Description            = 'Short names for things like logging/error messages.
-          '
-          Title                  = 'Name'
-          Type                   = 'string'
-          TypeName               = 'Name'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/name'
-        Property 'title' =
-          Description            = 'Appropriate title for any sort of Modal prompt.
-          '
-          Title                  = 'Title'
-          Type HAS NOT BEEN SET!!!
-          TypeName               = 'Title'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/title'
-        Property 'url' =
-          Description            = 'When an action is triggered, a request is made using the `url` and `method`.
-          Depending on the `context`, the following parameters will be substituted in the url:
-          
-          | `context`   | Path parameters                                          |
-          |-------------|----------------------------------------------------------|
-          | provisioner | <provisionerId>                                          |
-          | worker-type | <provisionerId>, <workerType>                            |
-          | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-          
-          _Note: The request needs to be signed with the user's Taskcluster credentials._
-          '
-          Title                  = 'URL'
-          Type                   = 'string'
-          TypeName               = 'URL'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/url'
-      Required               = '[name title context url method description]'
-      Title                  = 'Actions'
-      Type                   = 'object'
-      TypeName               = 'Actions1'
-      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items'
-    Type                   = 'array'
-    TypeName               = 'Actions'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions'
   Property 'continuationToken' =
     Description            = 'Opaque `continuationToken` to be given as query-string option to get the
     next set of workers in the worker-type.
@@ -8032,14 +7967,6 @@ Properties
     Items
       Additional Properties  = 'false'
       Properties
-        Property 'disabled' =
-          Description            = 'Disabling a worker allows the machine to remain alive but not accept jobs.
-          Enabling a worker on the other hand will resume accepting jobs.
-          '
-          Title                  = 'Worker Disabled'
-          Type                   = 'boolean'
-          TypeName               = 'WorkerDisabled'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/disabled'
         Property 'firstClaim' =
           Description            = 'Date of the first time this worker claimed a task.
           '
@@ -8049,6 +7976,7 @@ Properties
           TypeName               = 'FirstTaskClaimed'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim'
         Property 'latestTask' =
+          Additional Properties  = 'false'
           Description            = 'The most recent claimed task
           '
           Properties
@@ -8071,10 +7999,22 @@ Properties
               Type                   = 'string'
               TypeName               = 'TaskIdentifier'
               SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId'
+          Required               = '[taskId runId]'
           Title                  = 'Most Recent Task'
           Type                   = 'object'
           TypeName               = 'MostRecentTask'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask'
+        Property 'quarantineUntil' =
+          Description            = 'Quarantining a worker allows the machine to remain alive but not accept jobs.
+          Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+          Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+          somewhere in the past).
+          '
+          Format                 = 'date-time'
+          Title                  = 'Worker Quarantine'
+          Type                   = 'string'
+          TypeName               = 'WorkerQuarantine'
+          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/quarantineUntil'
         Property 'workerGroup' =
           Description            = 'Identifier for the worker group containing this worker.
           '
@@ -8093,6 +8033,7 @@ Properties
           Type                   = 'string'
           TypeName               = 'WorkerID'
           SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId'
+      Required               = '[workerGroup workerId firstClaim]'
       Type                   = 'object'
       TypeName               = 'WorkersEntry'
       SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items'
@@ -8100,7 +8041,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'WorkersFromAWorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers'
-Required               = '[workers actions]'
+Required               = '[workers]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Workers Response'
 Type                   = 'object'
@@ -8115,85 +8056,6 @@ Description            = 'Response from a `listWorkerTypes` request.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#'
 Properties
-  Property 'actions' =
-    Items
-      Additional Properties  = 'false'
-      Description            = 'Actions are defined on the provisioner and they are performed via a request using the `url` and `method`.
-      Depending on the `context`, the `url` will be filled with parameters. In addition, `context` is
-      used by the front-end to know where to display the action. For example, `context=worker`
-      will display the action on the worker explorer.
-      
-      _Note: The request will be signed with the user's Taskcluster credentials._
-      '
-      Properties
-        Property 'context' =
-          Description            = 'Actions have a "context" that is one of provisioner, worker-type,
-          or worker, indicating which it applies to. `context` is used by the front-end to know where to display the action.
-          
-          | `context`   | Page displayed        |
-          |-------------|-----------------------|
-          | provisioner | Provisioner Explorer  |
-          | worker-type | Workers Explorer      |
-          | worker      | Worker Explorer       |
-          '
-          Enum                   = '[worker-type]'
-          Title                  = 'Context'
-          Type                   = 'string'
-          TypeName               = 'Context'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/context'
-        Property 'description' =
-          Description            = 'Description of the provisioner.
-          '
-          Title                  = 'Description'
-          Type                   = 'string'
-          TypeName               = 'Description'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/description'
-        Property 'method' =
-          Description            = 'Method to indicate the desired action to be performed for a given resource.
-          '
-          Enum                   = '[POST PUT DELETE PATCH]'
-          Title                  = 'Method'
-          Type                   = 'string'
-          TypeName               = 'Method'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/method'
-        Property 'name' =
-          Description            = 'Short names for things like logging/error messages.
-          '
-          Title                  = 'Name'
-          Type                   = 'string'
-          TypeName               = 'Name'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/name'
-        Property 'title' =
-          Description            = 'Appropriate title for any sort of Modal prompt.
-          '
-          Title                  = 'Title'
-          Type HAS NOT BEEN SET!!!
-          TypeName               = 'Title'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/title'
-        Property 'url' =
-          Description            = 'When an action is triggered, a request is made using the `url` and `method`.
-          Depending on the `context`, the following parameters will be substituted in the url:
-          
-          | `context`   | Path parameters                                          |
-          |-------------|----------------------------------------------------------|
-          | provisioner | <provisionerId>                                          |
-          | worker-type | <provisionerId>, <workerType>                            |
-          | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-          
-          _Note: The request needs to be signed with the user's Taskcluster credentials._
-          '
-          Title                  = 'URL'
-          Type                   = 'string'
-          TypeName               = 'URL'
-          SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/url'
-      Required               = '[name title context url method description]'
-      Title                  = 'Actions'
-      Type                   = 'object'
-      TypeName               = 'Actions1'
-      SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items'
-    Type                   = 'array'
-    TypeName               = 'Actions'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions'
   Property 'continuationToken' =
     Description            = 'Opaque `continuationToken` to be given as query-string option to get the
     next set of worker-types in the provisioner.
@@ -8273,7 +8135,7 @@ Properties
     Type                   = 'array'
     TypeName               = 'WorkerTypesFromTheProvisioner'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes'
-Required               = '[workerTypes actions]'
+Required               = '[workerTypes]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Worker-Types Response'
 Type                   = 'object'
@@ -9588,6 +9450,31 @@ TypeName               = 'CompleteArtifactRequest'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#'
 
 
+http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#
+=======================================================================
+Additional Properties  = 'false'
+Description            = 'Request to update a worker's quarantineUntil property.
+'
+ID                     = 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#'
+Properties
+  Property 'quarantineUntil' =
+    Description            = 'Quarantining a worker allows the machine to remain alive but not accept jobs.
+    Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+    Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+    somewhere in the past).
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker Quarantine'
+    Type                   = 'string'
+    TypeName               = 'WorkerQuarantine'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#/properties/quarantineUntil'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
+Title                  = 'Quarantine Worker Request'
+Type                   = 'object'
+TypeName               = 'QuarantineWorkerRequest'
+SourceURL              = 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#'
+
+
 http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 ================================================================
 Additional Properties  = 'false'
@@ -10515,14 +10402,6 @@ Description            = 'Request to update a worker.
 '
 ID                     = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#'
 Properties
-  Property 'disabled' =
-    Description            = 'Disabling a worker allows the machine to remain alive but not accept jobs.
-    Enabling a worker on the other hand will resume accepting jobs.
-    '
-    Title                  = 'Worker Disabled'
-    Type                   = 'boolean'
-    TypeName               = 'WorkerDisabled'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/disabled'
   Property 'expires' =
     Description            = 'Date and time after which the worker will be automatically
     deleted by the queue.
@@ -10666,14 +10545,6 @@ Properties
     Type                   = 'array'
     TypeName               = 'Actions'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions'
-  Property 'disabled' =
-    Description            = 'Disabling a worker allows the machine to remain alive but not accept jobs.
-    Enabling a worker on the other hand will resume accepting jobs.
-    '
-    Title                  = 'Worker Disabled'
-    Type                   = 'boolean'
-    TypeName               = 'WorkerDisabled'
-    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/disabled'
   Property 'expires' =
     Description            = 'Date and time after which the worker will be automatically
     deleted by the queue.
@@ -10699,6 +10570,17 @@ Properties
     Type                   = 'string'
     TypeName               = 'ProvisionerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId'
+  Property 'quarantineUntil' =
+    Description            = 'Quarantining a worker allows the machine to remain alive but not accept jobs.
+    Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+    Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+    somewhere in the past).
+    '
+    Format                 = 'date-time'
+    Title                  = 'Worker Quarantine'
+    Type                   = 'string'
+    TypeName               = 'WorkerQuarantine'
+    SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/quarantineUntil'
   Property 'recentTasks' =
     Description            = 'List of 20 most recent tasks claimed by the worker.
     '
@@ -10762,7 +10644,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerTypeName'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType'
-Required               = '[provisionerId workerType workerGroup workerId recentTasks expires disabled firstClaim actions]'
+Required               = '[provisionerId workerType workerGroup workerId recentTasks expires firstClaim actions]'
 Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker Response'
 Type                   = 'object'

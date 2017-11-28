@@ -687,65 +687,6 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#
 	ListWorkerTypesResponse struct {
 
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions
-		Actions []struct {
-
-			// Actions have a "context" that is one of provisioner, worker-type,
-			// or worker, indicating which it applies to. `context` is used by the front-end to know where to display the action.
-			//
-			// | `context`   | Page displayed        |
-			// |-------------|-----------------------|
-			// | provisioner | Provisioner Explorer  |
-			// | worker-type | Workers Explorer      |
-			// | worker      | Worker Explorer       |
-			//
-			// Possible values:
-			//   * "worker-type"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/context
-			Context string `json:"context"`
-
-			// Description of the provisioner.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/description
-			Description string `json:"description"`
-
-			// Method to indicate the desired action to be performed for a given resource.
-			//
-			// Possible values:
-			//   * "POST"
-			//   * "PUT"
-			//   * "DELETE"
-			//   * "PATCH"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/method
-			Method string `json:"method"`
-
-			// Short names for things like logging/error messages.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/name
-			Name string `json:"name"`
-
-			// Appropriate title for any sort of Modal prompt.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/title
-			Title json.RawMessage `json:"title"`
-
-			// When an action is triggered, a request is made using the `url` and `method`.
-			// Depending on the `context`, the following parameters will be substituted in the url:
-			//
-			// | `context`   | Path parameters                                          |
-			// |-------------|----------------------------------------------------------|
-			// | provisioner | <provisionerId>                                          |
-			// | worker-type | <provisionerId>, <workerType>                            |
-			// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-			//
-			// _Note: The request needs to be signed with the user's Taskcluster credentials._
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/actions/items/properties/url
-			URL string `json:"url"`
-		} `json:"actions"`
-
 		// Opaque `continuationToken` to be given as query-string option to get the
 		// next set of worker-types in the provisioner.
 		// This property is only present if another request is necessary to fetch all
@@ -814,65 +755,6 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#
 	ListWorkersResponse struct {
 
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions
-		Actions []struct {
-
-			// Actions have a "context" that is one of provisioner, worker-type,
-			// or worker, indicating which it applies to. `context` is used by the front-end to know where to display the action.
-			//
-			// | `context`   | Page displayed        |
-			// |-------------|-----------------------|
-			// | provisioner | Provisioner Explorer  |
-			// | worker-type | Workers Explorer      |
-			// | worker      | Worker Explorer       |
-			//
-			// Possible values:
-			//   * "worker"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/context
-			Context string `json:"context"`
-
-			// Description of the provisioner.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/description
-			Description string `json:"description"`
-
-			// Method to indicate the desired action to be performed for a given resource.
-			//
-			// Possible values:
-			//   * "POST"
-			//   * "PUT"
-			//   * "DELETE"
-			//   * "PATCH"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/method
-			Method string `json:"method"`
-
-			// Short names for things like logging/error messages.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/name
-			Name string `json:"name"`
-
-			// Appropriate title for any sort of Modal prompt.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/title
-			Title json.RawMessage `json:"title"`
-
-			// When an action is triggered, a request is made using the `url` and `method`.
-			// Depending on the `context`, the following parameters will be substituted in the url:
-			//
-			// | `context`   | Path parameters                                          |
-			// |-------------|----------------------------------------------------------|
-			// | provisioner | <provisionerId>                                          |
-			// | worker-type | <provisionerId>, <workerType>                            |
-			// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-			//
-			// _Note: The request needs to be signed with the user's Taskcluster credentials._
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/actions/items/properties/url
-			URL string `json:"url"`
-		} `json:"actions"`
-
 		// Opaque `continuationToken` to be given as query-string option to get the
 		// next set of workers in the worker-type.
 		// This property is only present if another request is necessary to fetch all
@@ -889,16 +771,10 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers
 		Workers []struct {
 
-			// Disabling a worker allows the machine to remain alive but not accept jobs.
-			// Enabling a worker on the other hand will resume accepting jobs.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/disabled
-			Disabled bool `json:"disabled,omitempty"`
-
 			// Date of the first time this worker claimed a task.
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim
-			FirstClaim tcclient.Time `json:"firstClaim,omitempty"`
+			FirstClaim tcclient.Time `json:"firstClaim"`
 
 			// The most recent claimed task
 			//
@@ -911,7 +787,7 @@ type (
 				// Maximum:    1000
 				//
 				// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-				RunID int64 `json:"runId,omitempty"`
+				RunID int64 `json:"runId"`
 
 				// Unique task identifier, this is UUID encoded as
 				// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
@@ -920,8 +796,16 @@ type (
 				// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 				//
 				// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId
-				TaskID string `json:"taskId,omitempty"`
+				TaskID string `json:"taskId"`
 			} `json:"latestTask,omitempty"`
+
+			// Quarantining a worker allows the machine to remain alive but not accept jobs.
+			// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+			// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+			// somewhere in the past).
+			//
+			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/quarantineUntil
+			QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 
 			// Identifier for the worker group containing this worker.
 			//
@@ -930,7 +814,7 @@ type (
 			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerGroup
-			WorkerGroup string `json:"workerGroup,omitempty"`
+			WorkerGroup string `json:"workerGroup"`
 
 			// Identifier for this worker (unique within this worker group).
 			//
@@ -939,7 +823,7 @@ type (
 			// Max length: 22
 			//
 			// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId
-			WorkerID string `json:"workerId,omitempty"`
+			WorkerID string `json:"workerId"`
 		} `json:"workers"`
 	}
 
@@ -1201,6 +1085,20 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/stability
 		Stability string `json:"stability"`
+	}
+
+	// Request to update a worker's quarantineUntil property.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#
+	QuarantineWorkerRequest struct {
+
+		// Quarantining a worker allows the machine to remain alive but not accept jobs.
+		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+		// somewhere in the past).
+		//
+		// See http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#/properties/quarantineUntil
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 	}
 
 	// Request the queue to redirect to a URL for a given artifact.
@@ -2200,12 +2098,6 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#
 	WorkerRequest struct {
 
-		// Disabling a worker allows the machine to remain alive but not accept jobs.
-		// Enabling a worker on the other hand will resume accepting jobs.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/disabled
-		Disabled bool `json:"disabled,omitempty"`
-
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
 		//
@@ -2277,12 +2169,6 @@ type (
 			URL string `json:"url"`
 		} `json:"actions"`
 
-		// Disabling a worker allows the machine to remain alive but not accept jobs.
-		// Enabling a worker on the other hand will resume accepting jobs.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/disabled
-		Disabled bool `json:"disabled"`
-
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
 		//
@@ -2300,6 +2186,14 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
+
+		// Quarantining a worker allows the machine to remain alive but not accept jobs.
+		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+		// somewhere in the past).
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/quarantineUntil
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		//

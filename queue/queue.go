@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 13 Nov 2017 at 14:23:00 UTC. The code was generated
+// Tue, 28 Nov 2017 at 14:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -817,8 +817,9 @@ func (myQueue *Queue) DeclareWorkerType(provisionerId, workerType string, payloa
 //
 // Get a list of all active workers of a workerType.
 //
-// `listWorkers` allows a response to be filtered by the `disabled` property.
-// To filter the query, you should call the end-point with `disabled` as a query-string option.
+// `listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
+// To filter the query, you should call the end-point with `quarantined` as a query-string option with a
+// true or false value.
 //
 // The response is paged. If this end-point returns a `continuationToken`, you
 // should call the end-point again with the `continuationToken` as a query-string
@@ -826,16 +827,16 @@ func (myQueue *Queue) DeclareWorkerType(provisionerId, workerType string, payloa
 // page. You may limit this with the query-string parameter `limit`.
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#listWorkers
-func (myQueue *Queue) ListWorkers(provisionerId, workerType, continuationToken, disabled, limit string) (*ListWorkersResponse, error) {
+func (myQueue *Queue) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined string) (*ListWorkersResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
 	}
-	if disabled != "" {
-		v.Add("disabled", disabled)
-	}
 	if limit != "" {
 		v.Add("limit", limit)
+	}
+	if quarantined != "" {
+		v.Add("quarantined", quarantined)
 	}
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", new(ListWorkersResponse), v)
@@ -850,6 +851,20 @@ func (myQueue *Queue) ListWorkers(provisionerId, workerType, continuationToken, 
 func (myQueue *Queue) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
 	cd := tcclient.Client(*myQueue)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	return responseObject.(*WorkerResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Quarantine a worker
+//
+// Required scopes:
+//   * queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#quarantineWorker
+func (myQueue *Queue) QuarantineWorker(provisionerId, workerType, workerGroup, workerId string, payload *QuarantineWorkerRequest) (*WorkerResponse, error) {
+	cd := tcclient.Client(*myQueue)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
 }
 
