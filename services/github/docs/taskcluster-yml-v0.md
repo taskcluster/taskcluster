@@ -162,6 +162,7 @@ milliseconds.
                          |                                | pull_request.reopened
                          |                                |
   GITHUB_PULL_REQUEST    | "{{ event.pullNumber }}"       | 18
+  GITHUB_PULL_TITLE      | "{{ event.title }}"            | Update README.md
   GITHUB_BRANCH          | "{{ event.head.repo.branch }}" | master
                          |                                |
   GITHUB_BASE_USER       | "{{ event.base.user.login }}"  | johndoe

@@ -37,6 +37,7 @@ function getPullRequestDetails(eventData) {
     'event.head.user.id': eventData.sender.id,
 
     'event.pullNumber': eventData.number,
+    'event.title': eventData.pull_request.title,
     'event.type': 'pull_request.' + eventData.action,
   };
 };
