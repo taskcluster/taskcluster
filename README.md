@@ -54,7 +54,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
@@ -122,14 +121,15 @@ type (
 	Mount json.RawMessage
 )
 
+func fatalOnError(err error) {
+	if err != nil {
+		log.Fatalf("Error:\n%v", err)
+	}
+}
+
 func main() {
-	myQueue := queue.New(
-		&tcclient.Credentials{
-			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
-	)
+	myQueue, err := queue.New(nil)
+	fatalOnError(err)
 	taskID := slugid.Nice()
 	created := time.Now()
 
@@ -142,9 +142,7 @@ func main() {
 			Type    string        `json:"type"`
 		}{},
 		Command: []string{
-			"reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\"",
-			"cmd.exe /K \"start cmd.exe && timeout /c 5 >/dev/null\"",
-			"sleep 10000",
+			`echo Hello World!`,
 		},
 		Env: env,
 		Features: struct {
@@ -152,20 +150,16 @@ func main() {
 		}{
 			ChainOfTrust: false,
 		},
-		MaxRunTime: 10800,
+		MaxRunTime: 60,
 		Mounts:     []Mount{},
 		OSGroups:   []string{},
 	}
 
 	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		log.Fatalf("Error:\n%v", err)
-	}
+	fatalOnError(err)
 	var payloadJSON json.RawMessage
 	err = json.Unmarshal(payloadBytes, &payloadJSON)
-	if err != nil {
-		log.Fatalf("Error:\n%v", err)
-	}
+	fatalOnError(err)
 
 	taskDef := &queue.TaskDefinitionRequest{
 		Created:      tcclient.Time(created),
@@ -194,22 +188,18 @@ func main() {
 		Scopes:        []string{},
 		Tags:          json.RawMessage("{}"),
 		TaskGroupID:   taskID,
-		WorkerType:    "gecko-t-win10-64",
+		WorkerType:    "win2012r2",
 	}
 
 	tsr, err := myQueue.CreateTask(taskID, taskDef)
-	if err != nil {
-		log.Fatal("Error:\n%v", err)
-	}
+	fatalOnError(err)
 
 	respJSON, err := json.MarshalIndent(tsr, "", "  ")
-	if err != nil {
-		log.Fatal("Error:\n%v", err)
-	}
+	fatalOnError(err)
 
 	fmt.Println(string(respJSON))
 	fmt.Println("")
-	fmt.Printf("curl -L https://queue.taskcluster.net/v1/task/%v/runs/0/artifacts/public/logs/live.log\n", taskID)
+	fmt.Printf("curl -L https://queue.taskcluster.net/v1/task/%v/runs/0/artifacts/public/logs/live.log | gunzip\n", taskID)
 }
 ```
 
