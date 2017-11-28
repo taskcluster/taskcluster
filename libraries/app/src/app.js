@@ -61,6 +61,7 @@ var createServer = function() {
  *   forceSSL:              false,          // Force redirect to SSL or return 403
  *   trustProxy:            false,          // Trust the proxy that forwarded for SSL
  *   contentSecurityPolicy: true,           // Send CSP (default true!)
+ *   robotsTxt:             true,           // Serve a disallow-all robots.txt
  * }
  *
  * Returns an express application with extra methods:
@@ -70,6 +71,7 @@ var app = function(options) {
   assert(options,                           'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
+    robotsTxt: true,
   });
   assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env == 'development' ||
@@ -121,6 +123,13 @@ var app = function(options) {
   // Middleware for development
   if (app.get('env') == 'development') {
     app.use(morganDebug('base:app:request', 'dev'));
+  }
+
+  if (options.robotsTxt) {
+    app.use('/robots.txt', function(req, res) {
+      res.header('Content-Type', 'text/plain');
+      res.send('User-Agent: *\nDisallow: /\n');
+    });
   }
 
   // Add some auxiliary methods to the app
