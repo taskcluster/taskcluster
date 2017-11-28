@@ -173,7 +173,7 @@ type APICallException struct {
 }
 
 func (err *APICallException) Error() string {
-	return err.RootCause.Error()
+	return err.CallSummary.String() + "\n" + err.RootCause.Error()
 }
 
 // APICall is the generic REST API calling method which performs all REST API
