@@ -68,7 +68,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://staging-aws-provisioner.herokuapp.com/v1"
+	DefaultBaseURL = "https://aws-provisioner.taskcluster.net/v1"
 )
 
 type AwsProvisioner tcclient.Client
