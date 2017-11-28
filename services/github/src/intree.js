@@ -48,6 +48,7 @@ function completeInTreeConfig(config, payload) {
           GITHUB_EVENT: payload.details['event.type'],
           GITHUB_BRANCH: payload.details['event.base.repo.branch'],
           GITHUB_PULL_REQUEST: stringify(payload.details['event.pullNumber']),
+          GITHUB_PULL_TITLE: stringify(payload.details['event.title']),
           GITHUB_BASE_REPO_NAME: payload.details['event.base.repo.name'],
           GITHUB_BASE_REPO_URL: payload.details['event.base.repo.url'],
           GITHUB_BASE_USER: payload.details['event.base.user.login'],
