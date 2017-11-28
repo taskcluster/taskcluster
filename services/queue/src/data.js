@@ -979,7 +979,7 @@ Worker.expire = async function(now) {
 };
 
 Worker.prototype.json = function() {
-  return {
+  const worker = {
     workerType:       this.workerType,
     provisionerId:    this.provisionerId,
     workerId:         this.workerId,
@@ -987,10 +987,11 @@ Worker.prototype.json = function() {
     recentTasks:      this.recentTasks,
     expires:          this.expires.toJSON(),
     firstClaim:       this.firstClaim.toJSON(),
-    quarantineUntil:  this.quarantineUntil.getTime() > new Date().getTime() ?
-      this.quarantineUntil.toJSON() :
-      null,
   };
+  if (this.quarantineUntil.getTime() > new Date().getTime()) {
+    worker.quarantineUntil = this.quarantineUntil.toJSON();
+  }
+  return worker;
 };
 
 exports.Worker = Worker;
