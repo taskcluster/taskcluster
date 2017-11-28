@@ -61,20 +61,35 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
-type (
+// *********************************************************
+// These type definitions are copied from:
+// https://github.com/taskcluster/generic-worker/blob/2f19f3bde265128ecafc6c17f55f480e9dc34215/generated_windows.go#L34-L109
+// *********************************************************
 
+type (
 	// This schema defines the structure of the `payload` property referred to in a
-	// TaskCluster Task definition.
+	// Taskcluster Task definition.
 	GenericWorkerPayload struct {
 
 		// Artifacts to be published. For example:
 		// `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
 		Artifacts []struct {
 
-			// Date when artifact should expire must be in the future
-			Expires tcclient.Time `json:"expires"`
+			// Date when artifact should expire must be in the future, no earlier than task deadline, but
+			// no later than task expiry. If not set, defaults to task expiry.
+			Expires tcclient.Time `json:"expires,omitempty"`
 
-			// Filesystem path of artifact
+			// Name of the artifact, as it will be published. If not set, `path` will be used.
+			// Conventionally (although not enforced) path elements are forward slash separated. Example:
+			// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
+			// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
+			// download the artifact). See the Queue documentation for more information.
+			Name string `json:"name,omitempty"`
+
+			// Relative path of the file/directory from the task directory. Note this is not an absolute
+			// path as is typically used in docker-worker, since the absolute task directory name is not
+			// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+			// forward slashes or backslashes are used.
 			Path string `json:"path"`
 
 			// Artifacts can be either an individual `file` or a `directory` containing
@@ -92,15 +107,15 @@ type (
 		Command []string `json:"command"`
 
 		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS": "darwin" }```
-		Env map[string]string `json:"env"`
+		Env json.RawMessage `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
 		Features struct {
 
-			// An artifact named chainOfTrust.json.asc should be generated
-			// which will include information for downstream tasks to build
-			// a level of trust for the artifacts produced by the task and
-			// the environment it ran in.
+			// An artifact named `public/chainOfTrust.json.asc` should be generated
+			// which will include information for downstream tasks to build a level
+			// of trust for the artifacts produced by the task and the environment
+			// it ran in.
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 		} `json:"features,omitempty"`
 
@@ -108,7 +123,7 @@ type (
 		//
 		// Mininum:    1
 		// Maximum:    86400
-		MaxRunTime int `json:"maxRunTime"`
+		MaxRunTime int64 `json:"maxRunTime"`
 
 		// Directories and/or files to be mounted
 		Mounts []Mount `json:"mounts,omitempty"`
@@ -116,6 +131,15 @@ type (
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
 		OSGroups []string `json:"osGroups,omitempty"`
+
+		// URL of a service that can indicate tasks superseding this one; the current `taskId`
+		// will be appended as a query argument `taskId`. The service should return an object with
+		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
+		// tasks should be ordered such that each task supersedes all tasks appearing later in the
+		// list.  See
+		// [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)
+		// for more detail.
+		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
 	Mount json.RawMessage
@@ -127,6 +151,15 @@ func fatalOnError(err error) {
 	}
 }
 
+func mustCompileToRawMessage(data interface{}) *json.RawMessage {
+	bytes, err := json.Marshal(data)
+	fatalOnError(err)
+	var JSON json.RawMessage
+	err = json.Unmarshal(bytes, &JSON)
+	fatalOnError(err)
+	return &JSON
+}
+
 func main() {
 	myQueue, err := queue.New(nil)
 	fatalOnError(err)
@@ -134,17 +167,19 @@ func main() {
 	created := time.Now()
 
 	env := map[string]string{}
+	envJSON := mustCompileToRawMessage(env)
 
 	payload := GenericWorkerPayload{
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			Expires tcclient.Time "json:\"expires,omitempty\""
+			Name    string        "json:\"name,omitempty\""
+			Path    string        "json:\"path\""
+			Type    string        "json:\"type\""
 		}{},
 		Command: []string{
 			`echo Hello World!`,
 		},
-		Env: env,
+		Env: *envJSON,
 		Features: struct {
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 		}{
@@ -155,11 +190,7 @@ func main() {
 		OSGroups:   []string{},
 	}
 
-	payloadBytes, err := json.Marshal(payload)
-	fatalOnError(err)
-	var payloadJSON json.RawMessage
-	err = json.Unmarshal(payloadBytes, &payloadJSON)
-	fatalOnError(err)
+	payloadJSON := mustCompileToRawMessage(payload)
 
 	taskDef := &queue.TaskDefinitionRequest{
 		Created:      tcclient.Time(created),
@@ -178,7 +209,7 @@ func main() {
 			Owner:       "pmoore@mozilla.com",
 			Source:      "https://hg.mozilla.org/try/file/xxxx",
 		},
-		Payload:       payloadJSON,
+		Payload:       *payloadJSON,
 		Priority:      "normal",
 		ProvisionerID: "aws-provisioner-v1",
 		Requires:      "all-completed",
