@@ -1,12 +1,11 @@
 let assert      = require('assert');
-let Promise     = require('promise');
 let path        = require('path');
 let _           = require('lodash');
-let api         = require('../lib/api');
+let api         = require('../src/api');
 let taskcluster = require('taskcluster-client');
 let mocha       = require('mocha');
-let exchanges   = require('../lib/exchanges');
-let load = require('../lib/main');
+let exchanges   = require('../src/exchanges');
+let load        = require('../src/main');
 let config      = require('typed-env-config');
 let testing     = require('taskcluster-lib-testing');
 
