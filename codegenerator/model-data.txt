@@ -1,4 +1,4 @@
-Generated: 1511878982
+Generated: 1511889898
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6198,7 +6198,7 @@ Properties
     TypeName               = 'Requests'
     SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests'
 Required               = '[requests]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Open All Purge Requests List'
 Type                   = 'object'
 TypeName               = 'OpenAllPurgeRequestsList'
@@ -6253,7 +6253,7 @@ Properties
     TypeName               = 'Requests'
     SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests'
 Required               = '[requests cacheHit]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Open Purge Request List'
 Type                   = 'object'
 TypeName               = 'OpenPurgeRequestList'
@@ -6276,7 +6276,7 @@ Properties
     TypeName               = 'CacheName'
     SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#/properties/cacheName'
 Required               = '[cacheName]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Purge Cache Request'
 Type                   = 'object'
 TypeName               = 'PurgeCacheRequest'
@@ -6364,7 +6364,7 @@ Properties
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/workerType'
 Required               = '[version provisionerId workerType cacheName]'
-Schema                 = 'http://json-schema.org/draft-04/schema#'
+Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Purge Cache Message'
 Type                   = 'object'
 TypeName               = 'PurgeCacheMessage'
