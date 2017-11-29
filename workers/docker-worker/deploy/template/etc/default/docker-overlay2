@@ -7,7 +7,13 @@ if ! lvdisplay | grep instance_storage; then
   # Find instance storage devices
   # c5 and newer has nvme* devices. The nvmeN devices can't be used
   # with vgcreate. But nvmeNnN can.
-  devices=$(ls /dev/xvd* /dev/nvme*n* | grep -v '/dev/xvda' | grep -v '/dev/nvme0');
+  if [ -e /dev/nvme0 ]; then
+    devices=$(ls /dev/nvme*n*)
+  else
+    devices=$(ls /dev/xvd* | grep -v '/dev/cvda')
+  fi
+
+  echo "Found devices: $devices"
 
   # Unmount block-device if already mounted, the first block-device always is
   for d in $devices; do umount $d || true; done
