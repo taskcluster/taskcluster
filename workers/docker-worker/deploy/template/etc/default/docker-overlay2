@@ -10,7 +10,7 @@ if ! lvdisplay | grep instance_storage; then
   if [ -e /dev/nvme0 ]; then
     devices=$(ls /dev/nvme*n*)
   else
-    devices=$(ls /dev/xvd* | grep -v '/dev/cvda')
+    devices=$(ls /dev/xvd* | grep -v '/dev/xvda')
   fi
 
   echo "Found devices: $devices"
