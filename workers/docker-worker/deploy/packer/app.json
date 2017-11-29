@@ -4,8 +4,8 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "hvmSourceAMI":        "ami-234f935b",
-    "pvSourceAMI":         "ami-3d4d9145",
+    "hvmSourceAMI":        "ami-6788511f",
+    "pvSourceAMI":         "ami-f8964f80",
     "fsType":              "",
     "workerRevision":      ""
   },
