@@ -988,7 +988,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err.add(executionError("worker-shutdown", errored, fmt.Errorf("%#v", r)))
+			err.add(executionError(InternalError, errored, fmt.Errorf("%#v", r)))
 			defer panic(r)
 		}
 		err.add(task.resolve(err))
