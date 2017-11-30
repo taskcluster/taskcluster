@@ -125,7 +125,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
         name:         name,
         expires:      expires,
       }).then(null, function(err) {
-        // Re-throw error if it's because the entity was constructed while we
+        // Re-throw error if it's not because the entity was constructed while we
         // waited
         if (!err || err.code !== 'EntityAlreadyExists') {
           throw err;
