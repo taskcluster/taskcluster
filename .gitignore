@@ -24,7 +24,7 @@ _testmain.go
 *.prof
 
 # Coverage report
-coverage.report
+/coverage.report
 
 # other
 *.secrets
@@ -46,3 +46,4 @@ generic-worker.config
 directory-caches.json
 file-caches.json
 tasks-resolved-count.txt
+/revision.txt

@@ -49,6 +49,7 @@ func ReportCrashToSentry(r interface{}) {
 			"workerId":              config.WorkerID,
 			"workerType":            config.WorkerType,
 			"gwVersion":             version,
+			"gwRevision":            revision,
 			"GOOS":                  runtime.GOOS,
 			"GOARCH":                runtime.GOARCH,
 		},

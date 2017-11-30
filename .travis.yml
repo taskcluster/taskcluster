@@ -9,16 +9,15 @@ env:
   - "GIMME_OS=windows GIMME_ARCH=386"
 
 install:
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get github.com/axw/gocov/gocov github.com/mattn/goveralls github.com/pierrre/gotestcover github.com/taskcluster/livelog github.com/gordonklaus/ineffassign"
+  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get github.com/mattn/goveralls github.com/taskcluster/livelog github.com/gordonklaus/ineffassign"
 
 script:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get ./gw-codegen"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go generate"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || git status"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || test $(git status --porcelain | wc -l) == 0"
-  - "go get -v -t ./..."
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || GORACE=history_size=7 travis_wait 30 ${GOPATH}/bin/gotestcover -v -coverprofile=coverage.report -race -timeout 1h ./..."
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go tool cover -func=coverage.report"
+  - "go get -ldflags \"-X main.revision=$(git rev-parse HEAD)\" -v -t ./..."
+  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || GORACE=history_size=7 travis_wait 30 ./gotestcover.sh coverage.report"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 
 after_script:

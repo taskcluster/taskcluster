@@ -50,8 +50,9 @@ var (
 		&SupersedeFeature{},
 	}
 
-	version = "10.2.3"
-	usage   = `
+	version  = "10.2.3"
+	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
+	usage    = `
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -306,7 +307,11 @@ func initialiseFeatures() (err error) {
 
 // Entry point into the generic worker...
 func main() {
-	arguments, err := docopt.Parse(usage, nil, true, "generic-worker "+version, false, true)
+	versionName := "generic-worker " + version
+	if revision != "" {
+		versionName += " [ revision: https://github.com/taskcluster/generic-worker/tree/" + revision + " ]"
+	}
+	arguments, err := docopt.Parse(usage, nil, true, versionName, false, true)
 	if err != nil {
 		log.Println("Error parsing command line arguments!")
 		panic(err)
@@ -429,7 +434,9 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
 		"go-version": runtime.Version(),
+		"source":     "https://github.com/taskcluster/generic-worker/tree/" + revision,
 		"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
+		"revision":   revision,
 		"version":    version,
 	}
 
