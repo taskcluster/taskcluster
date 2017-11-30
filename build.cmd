@@ -19,6 +19,9 @@ set /P lines=<..\tmp1.txt
 :: this checks that if more than 0 lines are returned, we fail
 if %lines% gtr 0 exit /b 64
 
+git rev-parse HEAD > revision.txt
+set /p REVISION=< revision.txt
+del revision.txt
 set GORACE=history_size=7
-go test -v ./... || exit /b %ERRORLEVEL%
+go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%REVISION%" ./... || exit /b %ERRORLEVEL%
 ineffassign . || exit /b %ERRORLEVEL%
