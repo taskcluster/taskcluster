@@ -20,7 +20,7 @@ if [ -z "${1}" ]; then
   exit 1
 fi
 
-OLD_VERSION="$(cat main.go | sed -n 's/^[[:space:]]*version = "\(.*\)"$/\1/p')"
+OLD_VERSION="$(cat main.go | sed -n 's/^[[:space:]]*version *= *"\(.*\)"$/\1/p')"
 
 VALID_FORMAT='^[1-9][0-9]*\.\(0\|[1-9][0-9]*\)\.\(0\|[1-9]\)\([0-9]*alpha[1-9][0-9]*\|[0-9]*\)$'
 FORMAT_EXPLANATION='should be "<a>.<b>.<c>" OR "<a>.<b>.<c>alpha<d>" where a>=1, b>=0, c>=0, d>=1 and a,b,c,d are integers, with no leading zeros'
@@ -103,7 +103,7 @@ if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
 fi
 
 inline_sed README.md "s/.\/release.sh ${OLD_VERSION//./\\.}/.\/release.sh ${NEW_VERSION}/"
-inline_sed main.go 's/version = "'"${OLD_VERSION//./\\.}"'"$/version = "'"${NEW_VERSION}"'"/'
+inline_sed main.go 's/\(version *= *\)"'"${OLD_VERSION//./\\.}"'"$/\1"'"${NEW_VERSION}"'"/'
 find . -name userdata | while read file; do
   inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_VERSION//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_VERSION}/:g"
 done
