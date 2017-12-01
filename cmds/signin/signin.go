@@ -4,6 +4,7 @@ package signin
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -87,11 +88,11 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
 		if csh {
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '" + qs.Get("clientId") + "'")
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '" + qs.Get("accessToken") + "'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
 		} else {
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='" + qs.Get("clientId") + "'")
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='" + qs.Get("accessToken") + "'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='"+qs.Get("clientId")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
 		}
 		fmt.Fprintln(cmd.OutOrStderr(), "Credentials output as environment variables")
 
@@ -123,7 +124,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Construct URL for login service and open it
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
-	loginURL := config.Configuration["signin"]["toolsUrl"].(string) + "/auth/clients/new";
+	loginURL := config.Configuration["signin"]["toolsUrl"].(string) + "/auth/clients/new"
 	name, _ := cmd.Flags().GetString("name")
 	loginURL += "?name=" + url.QueryEscape(name)
 	loginURL += "&description=" + description
@@ -135,9 +136,15 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	loginURL += "&expires=" + url.QueryEscape(expires)
 	loginURL += "&callback_url=" + url.QueryEscape(callbackURL)
 
-	// Open browser
+	// Display URL to open
 	fmt.Fprintln(cmd.OutOrStderr(), "Listening for a callback on: "+callbackURL)
 	fmt.Fprintln(cmd.OutOrStderr(), "Opening URL: "+loginURL)
+
+	// Discard whatever the browser dumps to stdout / stderr
+	browser.Stderr = ioutil.Discard
+	browser.Stdout = ioutil.Discard
+
+	// Open browser
 	browser.OpenURL(loginURL)
 
 	// Start serving
