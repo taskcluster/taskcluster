@@ -166,6 +166,23 @@ async function statusHandler(message) {
   debug(`Handling state change for task-group ${taskGroupId}`);
 
   let state = 'success';
+
+  if (message.exchange.endsWith('task-group-resolved')) {
+    let queue = new taskcluster.Queue({
+      baseUrl: this.context.cfg.taskcluster.queueBaseUrl,
+    });
+    let params = {};
+    do {
+      let group = await queue.listTaskGroup(message.payload.taskGroupId, params);
+      params.continuationToken = group.continuationToken;
+      group.tasks.forEach(task => {
+        if (_.includes(['failed', 'exception'], task.status.state)) {
+          state = 'failure';
+        }
+      });
+    } while (params.continuationToken);
+  }
+
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
     state = 'failure';
   }
