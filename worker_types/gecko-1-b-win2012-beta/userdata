@@ -207,7 +207,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.3.1/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.2.3/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -253,27 +253,6 @@ Start-Process "xcopy" -ArgumentList "C:\Windows\Temp\carbon\Carbon C:\Windows\Sy
 
 # GrantEveryoneSeCreateSymbolicLinkPrivilege: Bug 1316329 - support creation of symlinks by task users
 Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeAssignPrimaryTokenPrivilege: Bug 1303455 - grant SeAssignPrimaryTokenPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeAssignPrimaryTokenPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeIncreaseQuotaPrivilege: Bug 1303455 - grant SeIncreaseQuotaPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseQuotaPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeIncreaseBasePriorityPrivilege: Bug 1312383 - grant SeIncreaseBasePriorityPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseBasePriorityPrivilege}`"" -Wait -NoNewWindow
-
-# reg_PythonCpuPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions" -Name "CpuPriorityClass" -Value "0x00000006" -PropertyType Dword -Force
-
-# reg_PythonIoPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions" -Name "IoPriority" -Value "0x00000002" -PropertyType Dword -Force
-
-# reg_MercurialCpuPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions" -Name "CpuPriorityClass" -Value "0x00000006" -PropertyType Dword -Force
-
-# reg_MercurialIoPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions" -Name "IoPriority" -Value "0x00000002" -PropertyType Dword -Force
 
 # ZDriveAccessRights: facilitates loaner self provisioning
 Start-Process "icacls.exe" -ArgumentList "z:\ /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
