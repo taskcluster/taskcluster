@@ -5,6 +5,11 @@ deploy_json=deploy/deploy.json;
 NODE_VERSION_MAJOR=$(node --version | tr -d v | awk -F. '{print $1}')
 NODE_VERSION_MINOR=$(node --version | tr -d v | awk -F. '{print $2}')
 
+if [ "$TASKCLUSTER_CLIENT_ID" == "" -o "$TASKCLUSTER_ACCESS_TOKEN" == "" ]; then
+    echo "You don't seem to have proper Taskcluster credentials, please run 'taskcluster-cli signin' command" >&2
+    exit 1
+fi
+
 if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MINOR -lt 5 ]; then
   echo "$0 requires node version 8.5.0 or higher." >&2
   exit 1
