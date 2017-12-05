@@ -2430,7 +2430,7 @@ api.declare({
       workerGroup,
       workerId,
       expires: Entity.op.greaterThan(new Date()),
-    }),
+    }, true),
     await this.Provisioner.load({provisionerId}, true),
   ]);
 
