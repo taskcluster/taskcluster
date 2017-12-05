@@ -37,6 +37,12 @@ An action is comprised with the following properties:
 | `method`      | enum('POST', 'PUT', 'DELETE', 'PATCH')        | ✓         | HTTP Method to use for the request.                                                                                                                                                                                                                 |
 | `description` | string                                        | ✓         | A human readable string describing the action, such as what it does, how it does it, what it is useful for. This string is to be render as markdown, allowing for bullet points, links and other simple formatting to explain what the action does. |
 
+
+Note that the action endpoint should return early. In other words, if an action takes a while
+to finish, start it up and send the HTTP response. To notify a user with the action status,
+use [taskcluster-notify](https://docs.taskcluster.net/reference/core/taskcluster-notify).
+
+
 ### Context
 
 Actions have a "context" that is one of `provisioner`, `worker-type`, or `worker`, indicating which it applies to.  Actions
