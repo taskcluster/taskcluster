@@ -4,7 +4,7 @@
  * identity.  This is done by means of a set of plugins in the `authz`
  * directory and named in the configuration.
  */
-export default class Authorizer {
+class Authorizer {
   constructor(cfg) {
     this. authorizers = cfg.app.authorizers.map((name) => {
       return new (require('./authz/' + name))({cfg});
@@ -37,3 +37,5 @@ export default class Authorizer {
       .reduce((a, b) => a.concat(b));
   }
 }
+
+module.exports = Authorizer;

@@ -1,7 +1,6 @@
-require('mocha');
-import assume from 'assume';
-import helper from './helper';
-import Handler from '../lib/handlers/mozilla-auth0';
+const assume = require('assume');
+const helper = require('./helper');
+const Handler = require('../src/handlers/mozilla-auth0');
 
 suite('handlers/mozilla-auth0', function() {
   suite('userFromProfile', function() {

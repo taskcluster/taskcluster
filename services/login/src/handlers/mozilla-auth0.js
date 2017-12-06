@@ -1,12 +1,12 @@
-import User from './../user';
-import assert from 'assert';
-import _ from 'lodash';
-import jwt from 'jsonwebtoken';
-import expressJwt from 'express-jwt';
-import jwks from 'jwks-rsa';
-import Debug from 'debug';
-import auth0js from 'auth0-js';
-import request from 'superagent';
+const User = require('./../user');
+const assert = require('assert');
+const _ = require('lodash');
+const jwt = require('jsonwebtoken');
+const expressJwt = require('express-jwt');
+const jwks = require('jwks-rsa');
+const Debug = require('debug');
+const auth0js = require('auth0-js');
+const request = require('superagent');
 
 const debug = Debug('handlers.mozilla-auth0');
 
@@ -152,4 +152,4 @@ class Handler {
   }
 }
 
-export default Handler;
+module.exports = Handler;
