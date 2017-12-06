@@ -320,7 +320,61 @@ suite('api (role logic)', function() {
         excludes: ['*'],
       },
     ],
-  }); // */
+  });
+
+  test('a client using a parameterized role', {
+    roles: [
+      {
+        roleId: 'project-admin:*',
+        scopes: ['assume:admin-role:project-<..>/*', 'secrets:get:project/<..>/*'],
+      }, {
+        roleId: 'admin-role:*',
+        scopes: [
+          'auth:create-role:<..>',
+          'auth:update-role:<..>',
+          'auth:delete-role:<..>',
+        ],
+      },
+    ],
+    clients: [
+      {
+        clientId:   'single-admin',
+        scopes: [
+          'assume:project-admin:proj1',
+        ],
+        includes: [
+          'auth:create-role:project-proj1/*',
+        ],
+        excludes: [
+          'auth:create-role:project-*',
+        ],
+      }, {
+        clientId:   'double-admin',
+        scopes: [
+          'assume:project-admin:proj1',
+          'assume:project-admin:proj2',
+        ],
+        includes: [
+          'auth:create-role:project-proj1/*',
+          'auth:create-role:project-proj2/*',
+        ],
+        excludes: [
+          'auth:create-role:project-*',
+        ],
+      }, {
+        clientId:   'star-admin',
+        scopes: [
+          'assume:project-admin:proj*',
+        ],
+        includes: [
+          'auth:create-role:project-proj*', // note no slash
+        ],
+        excludes: [
+          'auth:create-role:project-*',
+        ],
+      },
+    ],
+  });
 
   const N = 50;
   test('indirect roles works (with ' + N + ' roles)', {

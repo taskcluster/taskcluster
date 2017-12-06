@@ -4,7 +4,14 @@ var taskcluster = require('taskcluster-client');
 var events      = require('events');
 var debug       = require('debug')('auth:ScopeResolver');
 var Promise     = require('promise');
-var dfa         = require('./dfa');
+var {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
+var {generateTrie, executeTrie} = require('./trie');
+
+const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
+const PARAMETERIZED_SCOPE = /^(:?|a|as|ass|assu|assum|assum|assume|assume:.*)<\.\.>/;
+const PARAMETER = /<\.\.\>/;
+const PARAMETER_G = /<\.\.\>/g;
+const PARAMETER_TO_END = /<\.\.>.*/;
 
 class ScopeResolver extends events.EventEmitter {
   /** Create ScopeResolver */
@@ -32,7 +39,7 @@ class ScopeResolver extends events.EventEmitter {
     // }
     this._clients = [];
     // List of role objects on the form:
-    // {roleId: '...', scopes: [...], expandedScopes: [...]}
+    // {roleId: '...', scopes: [...]}
     this._roles = [];
 
     // Mapping from clientId to client objects from _clients,
@@ -114,6 +121,18 @@ class ScopeResolver extends events.EventEmitter {
     await this._roleListener.resume();
   }
 
+  /** Update lastDateUsed for a clientId */
+  async _updateLastUsed(clientId) {
+    let client = await this._Client.load({clientId});
+    await client.modify(client => {
+      let lastUsedDate = new Date(client.details.lastDateUsed);
+      let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
+      if (lastUsedDate < minLastUsed) {
+        client.details.lastDateUsed = new Date().toJSON();
+      }
+    });
+  }
+
   /**
    * Execute async `reloader` function, after any earlier async `reloader`
    * function given this function has completed. Ensuring that the `reloader`
@@ -142,7 +161,7 @@ class ScopeResolver extends events.EventEmitter {
           disabled:         client.disabled,
         });
       }
-      this._computeFixedPoint();
+      this._rebuildResolver();
     });
   }
 
@@ -153,14 +172,9 @@ class ScopeResolver extends events.EventEmitter {
       this._roles = this._roles.filter(r => r.roleId !== roleId);
       // If a role was loaded add it back
       if (role) {
-        let scopes = role.scopes;
-        if (!role.roleId.endsWith('*')) {
-          // For reasoning on structure, see reload()
-          scopes = _.union(scopes, ['assume:' + role.roleId]);
-        }
-        this._roles.push({roleId: role.roleId, scopes});
+        this._roles.push({roleId: role.roleId, scopes: role.scopes});
       }
-      this._computeFixedPoint();
+      this._rebuildResolver();
     });
   }
 
@@ -174,7 +188,7 @@ class ScopeResolver extends events.EventEmitter {
       await Promise.all([
         // Load all clients on a simplified form:
         // {clientId, accessToken, updateLastUsed}
-        // _computeFixedPoint() will construct the `_clientCache` object
+        // _rebuildResolver() will construct the `_clientCache` object
         this._Client.scan({}, {
           handler: client => {
             let lastUsedDate = new Date(client.details.lastDateUsed);
@@ -193,39 +207,40 @@ class ScopeResolver extends events.EventEmitter {
           },
         }),
         // Load all roles on a simplified form: {roleId, scopes}
-        // _computeFixedPoint() will later add the `expandedScopes` property
         this._Role.scan({}, {
           handler(role) {
-            let scopes = role.scopes;
-            if (!role.roleId.endsWith('*')) {
-              // Ensure identity, if role isn't a prefix pattern. Obviously,
-              // 'assume:ab' which matches 'assume:a*' doesn't have 'assume:a*'
-              // by the identity relation. But for non-prefix patterns, the
-              // identify relation implies that you have 'assume:<roleId>'.
-              // This speeds up fixed-point computation, and means that if you
-              // have a match without any *, then you can look up the role, and
-              // not have to worry about any prefix patterns that may also match
-              // as they are already saturated.
-              scopes = _.union(scopes, ['assume:' + role.roleId]);
-            }
-            roles.push({roleId: role.roleId, scopes});
+            roles.push({roleId: role.roleId, scopes: role.scopes});
           },
         }),
       ]);
 
       // Set _roles and _clients at the same time and immediately call
-      // _computeFixedPoint, so anyone using the cache is using a consistent one
+      // _rebuildResolver, so anyone using the cache is using a consistent one
       this._roles = roles;
       this._clients = clients;
-      this._computeFixedPoint();
+      this._rebuildResolver();
     });
   }
 
+  /**
+   * Verify that the existing set of roles, plus the given role (or without it if
+   * scopes is undefined), is valid.  If not, this will raise an informative exception.
+   */
+  checkUpdatedRole(roleId, scopes) {
+    let roles = _.clone(this._roles);
+    // Always remove it
+    roles = roles.filter(r => r.roleId !== roleId);
+    // If a role was loaded add it back
+    if (scopes) {
+      roles.push({roleId, scopes});
+    }
+
+    ScopeResolver.cycleCheck(roles);
+  }
+
   /** Compute fixed point over this._roles, and construct _clientCache */
-  _computeFixedPoint() {
-    //console.time("_computeFixedPoint");
-    this._resolver = dfa.computeFixedPoint(this._roles);
-    //console.timeEnd("_computeFixedPoint");
+  _rebuildResolver() {
+    this._resolver = this.buildResolver(this._roles);
 
     // Construct client cache
     this._clientCache = {};
@@ -237,17 +252,169 @@ class ScopeResolver extends events.EventEmitter {
     }
   }
 
-  /** Update lastDateUsed for a clientId */
-  async _updateLastUsed(clientId) {
-    let client = await this._Client.load({clientId});
-    await client.modify(client => {
-      let lastUsedDate = new Date(client.details.lastDateUsed);
-      let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
-      if (lastUsedDate < minLastUsed) {
-        client.details.lastDateUsed = new Date().toJSON();
+  /**
+   * Throw an informative exception if this set of roles has a cycle that would
+   * lead to unbounded role expansion.
+   *
+   * Such a cycle must contain *only* parameterized expansions (`..*` ->
+   * `assume:..<..>..`).  Any non-parameterized expansions in a cycle would
+   * always produce the same expansion, resulting in a fixed point.
+   */
+  static cycleCheck(roles) {
+    let paramRules = [];
+
+    // find the set of parameterized rules and strip * and parameters from them
+    let roleIds = roles.map(({roleId}) => roleId);
+    roles.forEach(({roleId, scopes}) => {
+      if (!roleId.endsWith('*')) {
+        return;
+      }
+      roleId = roleId.slice(0, -1);
+      scopes.forEach(scope => {
+        if (!PARAMETERIZED_SCOPE.test(scope)) {
+          return;
+        }
+        // strip `assume:` and any parameters
+        scope = scope.replace(PARAMETER_TO_END, '').slice(7);
+        paramRules.push({roleId, scope});
+      });
+    });
+
+    // turn those into edges, with an edge wherever r is a prefix of s or s is a prefix of r
+    let edges = {};
+    for (let {roleId: roleId1, scope: scope1} of paramRules) {
+      for (let {roleId: roleId2} of paramRules) {
+        if (scope1.startsWith(roleId2) || roleId2.startsWith(scope1)) {
+          if (edges[roleId1]) {
+            edges[roleId1].push(roleId2);
+          } else {
+            edges[roleId1] = [roleId2];
+          }
+        }
+      }
+    }
+
+    // Use depth-first searches from each node to find any cycles in the edges collected above.
+    // The graph may not be connected, so we must start from each node, but once we have visited
+    // a node we need not start there again
+    let done = new Set();
+    _.keys(edges).forEach(start => {
+      let seen = [];
+      let visit = roleId => {
+        if (done.has(start)) {
+          return;
+        }
+        if (seen.indexOf(roleId) !== -1) {
+          return seen.slice(seen.indexOf(roleId)).concat([roleId]);
+        }
+        seen.push(roleId);
+        for (let edge of edges[roleId] || []) {
+          let cycle = visit(edge);
+          if (cycle) {
+            return cycle;
+          }
+        }
+        done.add(seen.pop());
+      };
+
+      let cycle = visit(start);
+      if (cycle) {
+        throw new Error(`Found cycle in roles: ${cycle.map(c => `${c}*`).join(' -> ')}`);
       }
     });
-  }
+  };
+
+  /**
+   * Build a resolver which, given a set of scopes, will return the expanded
+   * set of scopes based on the given roles.  Roles are an array of elements
+   * {roleId, scopes}.
+   */
+  buildResolver(roles) {
+    ScopeResolver.cycleCheck(roles);
+
+    // encode the roles as rules, including the `assume:` prefix, and marking up
+    // the expansions of any parameterized scopes as {scope, index}, where index
+    // is the index in the input at which the replacement begins (the index of
+    // the `*`)
+
+    let rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
+    let dfa = generateTrie(rules);
+
+    return (inputs) => {
+      inputs.sort(scopeCompare);
+      // seen is the normalied scopeset we have seen already
+      let seen = normalizeScopeSet(inputs);
+      // queue is the list of scopes to expand (so only expandable scopes)
+      let queue = seen.filter(s => ASSUME_PREFIX.test(s));
+
+      // insert a new scope into the `seen` scopeset, returning false if it was
+      // already satisfied by the scopeset.  This is equivalent to `seen =
+      // mergeScopeSets(seen, [scope])`, then returning false if seen is not
+      // changed.
+      let see = (scope) => {
+        const n = seen.length;
+        const trailingStar = scope.endsWith('*');
+        const prefix = scope.slice(0, -1);
+        let i = 0;
+        while (i < n) {
+          let seenScope = seen[i];
+          // if seenScope satisfies scope, we're done
+          if (scope === seenScope || seenScope.endsWith('*') && scope.startsWith(seenScope.slice(0, -1))) {
+            return false;
+          }
+
+          // if we've found where to insert this scope, do so and splice out any existing scopes
+          // that this one satisfies
+          if (scopeCompare(seenScope, scope) > 0) {
+            let j = i;
+            if (trailingStar) {
+              while (j < n && seen[j].startsWith(prefix)) {
+                j++;
+              }
+            }
+            seen.splice(i, j - i, scope);
+            return true;
+          }
+
+          i++;
+        }
+
+        // we fell off the end of `seen`, so add this new scope at the end
+        seen.push(scope);
+        return true;
+      };
+
+      let i = 0;
+      while (i < queue.length) {
+        let scope = queue[i++];
+
+        // execute the DFA and expand any parameterizations in the result, then add
+        // the newly expanded scopes to the list of scopes to expand (recursively)
+        const trailingStar = scope.endsWith('*');
+        executeTrie(dfa, scope).forEach((expansion, k) => {
+          if (!expansion) {
+            return;
+          }
+
+          // Get the replacement slice for any parameterization. If this is empty and the
+          // scope ended with `*`, consider that `*` to have been extended into the
+          // replacement.
+          const slice = scope.slice(k) || (trailingStar ? '*' : '');
+          const parameter_regexp = trailingStar ? PARAMETER_TO_END : PARAMETER_G;
+
+          expansion.map(s => s.replace(parameter_regexp, slice)).forEach(s => {
+            // mark this scope as seen, and if it is novel and expandable, add it
+            // to the queue for expansion
+            if (see(s) && ASSUME_PREFIX.test(s)) {
+              queue.push(s);
+            }
+          });
+        });
+      }
+
+      return seen;
+    };
+  };
 
   /**
    * Return a normalized set of scopes that `scopes` can be expanded to when
@@ -255,16 +422,7 @@ class ScopeResolver extends events.EventEmitter {
    */
 
   resolve(scopes) {
-    // use mergeScopeSets to eliminate any redundant scopes in the input (which will
-    // cause redundant scopes in the output)
-    let granted = dfa.mergeScopeSets(dfa.sortScopesForMerge(_.clone(scopes)), []);
-    for (let scope of scopes) {
-      let found = this._resolver(scope);
-      if (found.length > 0) {
-        granted = dfa.mergeScopeSets(granted, found);
-      }
-    }
-    return granted;
+    return this._resolver(scopes);
   }
 
   async loadClient(clientId) {
@@ -309,47 +467,6 @@ class ScopeResolver extends events.EventEmitter {
         return !(other.endsWith('*') && scope.startsWith(other.slice(0, -1)));
       });
     });
-  }
-
-  /**
-   * Determine if scope grants a roleId, and allows owner to assume the role.
-   * This is equivalent to: `scopeMatch([["assume:" + roleId]], scopes)`
-   */
-  static grantsRole(scope, roleId) {
-    // We have 3 rules (A), (B) and (C) by which a scope may match a role.
-    // This implementation focuses on being reasonably fast by avoiding
-    // allocations whenever possible.
-
-    // Rule (A) and (B) both requires the scope to start with "assume:"
-    if (scope.startsWith('assume:')) {
-      // A) We have scope = 'assume:<roleId>', so we can assume the role
-      if (scope.length === roleId.length + 7 && scope.endsWith(roleId)) {
-        return true;
-      }
-
-      // B) role is on the form 'assume:<prefix>*' and we have a scope on the
-      //    form 'assume:<prefix>...'. This is special rule, assigning
-      //    special meaning to '*' when used at the end of a roleId.
-      if (roleId.endsWith('*') && scope.slice(7).startsWith(roleId.slice(0, -1))) {
-        return true;
-      }
-
-      // C) We have scope as 'assume:<prefix>*' and '<prefix>' is a prefix of
-      // roleId, this is similar to rule (A) relying on the normal scope
-      // satisfiability. Note, this is only half of role (C).
-      if (scope.endsWith('*') && roleId.startsWith(scope.slice(7, -1))) {
-        return true;
-      }
-    }
-
-    // C) We have scope as '<prefix>*' and '<prefix>' is a prefix of 'assume',
-    // then similar to rule (A) relying on the normal scope satisfiability we
-    // have that any role is granted.
-    if (scope.endsWith('*') && 'assume'.startsWith(scope.slice(0, -1))) {
-      return true;
-    }
-
-    return false;
   }
 }
 
