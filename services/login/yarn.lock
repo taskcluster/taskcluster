@@ -635,7 +635,7 @@ content-disposition@0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/content-disposition/-/content-disposition-0.5.2.tgz#0cf68bb9ddf5f2be7961c3a85178cb85dba78cb4"
 
-content-security-policy@^0.3.0:
+content-security-policy@^0.3.0, content-security-policy@^0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/content-security-policy/-/content-security-policy-0.3.2.tgz#bfe2238c23b231fdc04d684dbccc363df68860c1"
 

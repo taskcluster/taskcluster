@@ -19,6 +19,7 @@
     "body-parser": "^1.18.2",
     "browserid-verify": "^0.1.2",
     "connect-flash": "^0.1.1",
+    "content-security-policy": "^0.3.2",
     "cookie-session": "^2.0.0-beta.3",
     "debug": "^3.1.0",
     "eslint-config-taskcluster": "^3.0.0",

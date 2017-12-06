@@ -20,6 +20,7 @@ const tcApp = require('taskcluster-lib-app');
 const validator = require('taskcluster-lib-validate');
 const monitor = require('taskcluster-lib-monitor');
 const docs = require('taskcluster-lib-docs');
+const csp = require('content-security-policy');
 
 let load = loader({
   cfg: {
@@ -132,7 +133,7 @@ let load = loader({
     requires: ['cfg', 'authenticators', 'router'],
     setup: ({cfg, authenticators, router}) => {
       // Create application
-      let app = tcApp(cfg.server);
+      let app = tcApp(_.defaults({}, cfg.server, {contentSecurityPolic: false}));
 
       // setup 'trust proxy', which tc-lib-app does not do
       app.set('trust proxy', cfg.server.trustProxy);
@@ -144,6 +145,17 @@ let load = loader({
       app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
       app.set('views', path.join(__dirname, '..', 'views'));
       app.set('view engine', 'jade');
+
+      // build a CSP that's appropriate to this app..
+      app.use(csp.getCSP({
+        'default-src': csp.SRC_NONE,
+        'frame-ancestors': csp.SRC_NONE,
+        'base-uri': csp.SRC_NONE,
+        'report-uri': '/__cspreport__',
+        'font-src': csp.SRC_SELF,
+        'script-src': [csp.SRC_SELF, '\'unsafe-inline\''],
+        'style-src': [csp.SRC_SELF, '\'unsafe-inline\''],
+      }));
 
       // Parse request bodies
       app.use(bodyParser.urlencoded({extended: false}));
