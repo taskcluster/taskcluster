@@ -58,3 +58,82 @@ two different kinds of `*` expansion:
 
    The scopeset `["assume:hook-id:taskcluster/nightly-diagnostics"]` will expand
    to include `"queue:create-task:aws-provisioner/taskcluster-hooks"`.
+
+## Parameterized Roles
+
+A role with a final `*` can be parameterized on the suffix of the input string
+that matched the `*`.  Any appearance of `<..>` in the scopes will be replaced
+with the suffix.  For example, given
+
+```
+project-admin:* -> auth:create-role:project-<..>/*
+                   secrets:get:project/<..>/*
+```
+
+a scope-set containing `"assume:project-admin:zap"` would expand to include
+
+```js
+[
+    "assume:project-admin:zap",
+    "auth:create-role:project-zap/*",
+    "secrets:get:project/zap/*",
+]
+```
+
+Multiple `<..>` are allowed in the same scope.
+
+### Circular Roles
+
+It is possible to construct parameterized roles which would expand infinitely.
+For example:
+
+```
+[
+project-admin:* -> assume:project-admin:subproject:<...>
+]
+```
+
+Such cyclical configurations of roles are forbidden and will result in an
+error. In practice, such configurations are always a mistake, anyway.
+
+### Stars in Parameters
+
+*WARNING*: be careful using `*` in scopes that will be expanded with a
+parameterization, as results may not be what you expect.
+
+As a special case, if there is a `*` in the input suffixed matched by the
+role's `*`, then anything following the first `<..>` in the scope will be
+considered "matched" by that `*` and not included in the expansion.  Continuing
+the example above, `"assume:project-admin:ops*"` would expand to
+
+```js
+[
+    "assume:project-admin:ops*",
+    "auth:create-role:project-ops*", // NOT ..project-ops/*/*
+    "secrets:get:project/ops*",      // NOT ..project/ops/*/*
+]
+```
+
+The rationale for this special-case is that `["assume:project-admin:ops*"]`
+satisfies `["assume:project-admin:ops-dns"]`, so the expansion of the former
+must satisfy the expansion of the latter. In practice, this special case
+generally eliminates punctuation, such as the `/` in the example above.
+
+However, this can cause more insidious problems.  Consider, for example,
+
+```
+repo:github.com/* -> secrets:get:github/<..>/repo-secrets
+```
+
+The intent here is to allow a Github repository access to the `repo-secrets`
+secret corresponding to its repo name.  With that in place, it might seem
+reasonable to issue an organization-level scope like
+`"repo:github.com/mozilla/*"` to an organization administrator. The expectation
+is that this scope would expand to
+`"secrets:get:github.com/mozilla/*/repo-secrets"`. The reality is that it
+expands to `"secrets:get:github.com/mozilla/*"`, allowing access to secrets not
+named `repo-secrets`.
+
+It is worth recalling here that `*` in the middle of a scope has no special
+meaning, so `"secrets:get:github.com/mozilla/*/repo-secrets"` would not be a
+useful scope, as it would only apply to a repository literally named `*`.

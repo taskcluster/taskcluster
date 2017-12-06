@@ -91,6 +91,22 @@ suite('api (roles)', function() {
     await helper.auth.deleteRole(roleId);
   });
 
+  test('createRole introducing a cycle', async () => {
+    let role = await helper.auth.createRole('test*', {
+      description: 'test*',
+      scopes: ['assume:other<..>x'],
+    });
+    assume(role.roleId).equals('test*');
+
+    helper.auth.createRole('other*', {
+      description: 'other*',
+      scopes: ['assume:te<..>'],
+    }).then(() => assert(false, 'Expected error'),
+      err => assert(err.statusCode === 400, 'Expected 400'));
+
+    await helper.auth.deleteRole('test*');
+  });
+
   test('getRole', async () => {
     let role = await helper.auth.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
@@ -146,6 +162,18 @@ suite('api (roles)', function() {
 
     // At least one of them should trigger this message
     await helper.events.waitFor('e1');
+  });
+
+  test('update a role introducing a parameter cycle', async () => {
+    await helper.auth.createRole('test*', {
+      description: 'test*',
+      scopes: ['assume:test2'],
+    });
+    helper.auth.updateRole('test*', {
+      description: 'test*',
+      scopes: ['assume:test2<..>'],
+    }).then(() => assert(false, 'Expected an error'),
+      err => assert.equal(err.statusCode, 400));
   });
 
   suite('updateRole', function() {
