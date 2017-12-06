@@ -6,6 +6,9 @@ defaults:
     # Azure table for the roles table
     rolesTableName:           Roles
 
+    # Azure blob container for the role table
+    rolesContainerName:       auth-default-roles
+
     # Key for signing in base.Entity (sufficiently random string required)
     tableSigningKey:          !env TABLE_SIGNING_KEY
     # Key for data encryption in base.Entity (32 random bytes as base64)
@@ -106,6 +109,7 @@ production:
   app:
     clientTableName:          Clients
     rolesTableName:           Roles
+    rolesContainerName:       auth-production-roles
   server:
     forceSSL:                 true
     trustProxy:               true
@@ -115,6 +119,7 @@ test:
   app:
     clientTableName:          TestClients28
     rolesTableName:           TestRoles28
+    rolesContainerName:       auth-testing-roles
     tableSigningKey:          not-a-secret-so-you-cant-guess-it
     tableCryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
     publishMetaData:          false
