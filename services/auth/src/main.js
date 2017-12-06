@@ -262,6 +262,7 @@ let load = Loader({
       let blob = [];
       await Role.scan({}, {
         handler: r => {
+          console.log(`read ${r.roleId}`);
           blob.push({
             roleId: r.roleId,
             scopes: r.scopes,
@@ -272,11 +273,13 @@ let load = Loader({
         },
       });
 
+      console.log('writing to blob');
       await Roles.modify(roles => {
         // clear and replace
         roles.splice(0);
         blob.forEach(r => roles.push(r));
       });
+      console.log('wrote blob');
     },
   },
 
