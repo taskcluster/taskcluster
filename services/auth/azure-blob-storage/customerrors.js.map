@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "sources": [
+    "customerrors.js"
+  ],
+  "names": [
+    "ExtendableError",
+    "message",
+    "name",
+    "code",
+    "Error",
+    "captureStackTrace",
+    "CongestionError",
+    "SchemaValidationError",
+    "BlobSerializationError",
+    "SchemaIntegrityCheckError",
+    "module",
+    "exports"
+  ],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;IAAMA,e;;;AACJ,2BAAYC,OAAZ,EAAqBC,IAArB,EAA2BC,IAA3B,EAAiC;AAAA;;AAAA,wJACzBF,OADyB;;AAE/B,UAAKC,IAAL,GAAYA,IAAZ;AACA,UAAKC,IAAL,GAAYA,IAAZ;AACAC,UAAMC,iBAAN,QAA8BL,eAA9B;AAJ+B;AAKhC;;;EAN2BI,K;;IASxBE,e;;;AACJ,2BAAYL,OAAZ,EAAqB;AAAA;AAAA,mJACbA,OADa,EACJ,iBADI,EACe,YADf;AAEpB;;;EAH2BD,e;;IAMxBO,qB;;;AACJ,iCAAYN,OAAZ,EAAqB;AAAA;AAAA,+JACbA,OADa,EACJ,uBADI,EACqB,kBADrB;AAEpB;;;EAHiCD,e;;IAM9BQ,sB;;;AACJ,kCAAYP,OAAZ,EAAqB;AAAA;AAAA,iKACbA,OADa,EACJ,wBADI,EACsB,mBADtB;AAEpB;;;EAHkCD,e;;IAM/BS,yB;;;AACJ,qCAAYR,OAAZ,EAAqB;AAAA;AAAA,uKACbA,OADa,EACJ,2BADI,EACyB,sBADzB;AAEpB;;;EAHqCD,e;;AAMxCU,OAAOC,OAAP,GAAiB;AACfL,kCADe;AAEfC,8CAFe;AAGfC,gDAHe;AAIfC;AAJe,CAAjB",
+  "file": "customerrors.js",
+  "sourceRoot": "../src",
+  "sourcesContent": [
+    "class ExtendableError extends Error {\n  constructor(message, name, code) {\n    super(message);\n    this.name = name;\n    this.code = code;\n    Error.captureStackTrace(this, ExtendableError);\n  }\n}\n\nclass CongestionError extends ExtendableError {\n  constructor(message) {\n    super(message, 'CongestionError', 'Congestion');\n  }\n}\n\nclass SchemaValidationError extends ExtendableError {\n  constructor(message) {\n    super(message, 'SchemaValidationError', 'SchemaValidation');\n  }\n}\n\nclass BlobSerializationError extends ExtendableError {\n  constructor(message) {\n    super(message, 'BlobSerializationError', 'BlobSerialization');\n  }\n}\n\nclass SchemaIntegrityCheckError extends ExtendableError {\n  constructor(message) {\n    super(message, 'SchemaIntegrityCheckError', 'SchemaIntegrityCheck');\n  }\n}\n\nmodule.exports = {\n  CongestionError,\n  SchemaValidationError,\n  BlobSerializationError,\n  SchemaIntegrityCheckError,\n};"
+  ]
+}

@@ -228,7 +228,7 @@ api.declare({
         !_.isEqual(client.scopes, scopes) ||
         client.disabled !== 0 ||
         created > Date.now() - 15 * 60 * 1000) {
-      return res.reportError('RequesetConflict', 
+      return res.reportError('RequestConflict',
         'client with same clientId already exists, possibly an issue with retry logic or idempotency',
         {});
     }
@@ -554,6 +554,9 @@ api.declare({
     '',
     'If there already exists a role with the same `roleId` this operation',
     'will fail. Use `updateRole` to modify an existing role.',
+    '',
+    'Creation of a role that will generate an infinite expansion will result',
+    'in an error response.',
   ].join('\n'),
 }, async function(req, res) {
   let roleId    = req.params.roleId;
@@ -568,6 +571,12 @@ api.declare({
   // Check scopes
   if (!req.satisfies({roleId}) || !req.satisfies([input.scopes])) {
     return;
+  }
+
+  try {
+    this.resolver.checkUpdatedRole(roleId, input.scopes);
+  } catch (e) {
+    return res.reportError('InputError', e.message, {});
   }
 
   let role = await this.Role.create({
@@ -631,6 +640,9 @@ api.declare({
     '',
     'The caller\'s scopes must satisfy all of the new scopes being added, but',
     'need not satisfy all of the client\'s existing scopes.',
+    '',
+    'An update of a role that will generate an infinite expansion will result',
+    'in an error response.',
   ].join('\n'),
 }, async function(req, res) {
   let roleId    = req.params.roleId;
@@ -671,6 +683,12 @@ api.declare({
     ].join('\n'), {
       unionScopes,
     });
+  }
+
+  try {
+    this.resolver.checkUpdatedRole(roleId, input.scopes);
+  } catch (e) {
+    return res.reportError('InputError', e.message, {});
   }
 
   // Update role
@@ -715,6 +733,9 @@ api.declare({
   if (!req.satisfies({roleId})) {
     return;
   }
+
+  // NOTE: deleting a role cannot introduce a cycle, so we do not check this
+  // modification
 
   await this.Role.remove({roleId}, true);
 
