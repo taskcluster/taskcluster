@@ -66,7 +66,7 @@ elif sys.version_info[:2] < (3, 5):
 elif sys.version_info[:2] >= (3, 5):
     install_requires.extend([
         'aiohttp>=2.0.0,<3',
-        'async_timeout>=1.2.0,<2',
+        'async_timeout>=2.0.0,<3',
     ])
 
 if __name__ == '__main__':
