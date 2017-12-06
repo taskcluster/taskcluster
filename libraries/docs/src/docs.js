@@ -13,6 +13,7 @@ let debug = require('debug')('taskcluster-lib-docs');
 
 async function documenter(options) {
   options = _.defaults({}, options, {
+    referenceUrl: 'https://docs.taskcluster.net/reference/',
     aws: null,
     credentials: undefined,
     project: null,
@@ -46,6 +47,10 @@ async function documenter(options) {
 
   function headers(name, dir) {
     return {name: path.join(dir || '', name)};
+  }
+
+  function getDocumentationUrl() {
+    return options.referenceUrl + options.tier + '/' + options.project;
   }
 
   let tarball = tar.pack();
