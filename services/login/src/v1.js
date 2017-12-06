@@ -1,6 +1,6 @@
-import API from 'taskcluster-lib-api';
-import User from './user';
-import _ from 'lodash';
+const API = require('taskcluster-lib-api');
+const User = require('./user');
+const _ = require('lodash');
 
 var api = new API({
   title:         'Login API',
@@ -52,8 +52,8 @@ api.declare({
   let handler = this.handlers[req.params.provider];
   if (!handler) {
     return res.reportError('InputError',
-        'Invalid accessToken provider {{provider}}',
-        {provider: req.params.provider});
+      'Invalid accessToken provider {{provider}}',
+      {provider: req.params.provider});
   }
 
   let user = await handler.userFromRequest(req, res);
@@ -61,8 +61,8 @@ api.declare({
     // don't report much to the user, to avoid revealing sensitive information, although
     // it is likely in the service logs.
     return res.reportError('InputError',
-        'Could not generate credentials for this access token',
-        {});
+      'Could not generate credentials for this access token',
+      {});
   }
 
   // add scopes for this user based on matching authorizers
