@@ -1,6 +1,6 @@
-import Mozillians from 'mozillians-client';
-import assert from 'assert';
-import Debug from 'debug';
+const Mozillians = require('mozillians-client');
+const assert = require('assert');
+const Debug = require('debug');
 
 var debug = Debug('MozilliansAuthorizer');
 

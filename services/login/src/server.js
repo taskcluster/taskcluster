@@ -1,27 +1,25 @@
-import express from 'express';
-import passport from 'passport';
-import _ from 'lodash';
-import sslify from 'express-sslify';
-import http from 'http';
-import path from 'path';
-import session from 'cookie-session';
-import config from 'taskcluster-lib-config';
-import bodyParser from 'body-parser';
-import User from './user';
-import querystring from 'querystring';
-import loader from 'taskcluster-lib-loader';
-import taskcluster from 'taskcluster-client';
-import flash from 'connect-flash';
-import scanner from './scanner';
-import Authorizer from './authz';
-import v1 from './v1';
-import LDAPClient from './ldap';
-import tcApp from 'taskcluster-lib-app';
-import validator from 'taskcluster-lib-validate';
-import monitor from 'taskcluster-lib-monitor';
-import docs from 'taskcluster-lib-docs';
-
-require('source-map-support').install();
+const express = require('express');
+const passport = require('passport');
+const _ = require('lodash');
+const sslify = require('express-sslify');
+const http = require('http');
+const path = require('path');
+const session = require('cookie-session');
+const config = require('taskcluster-lib-config');
+const bodyParser = require('body-parser');
+const User = require('./user');
+const querystring = require('querystring');
+const loader = require('taskcluster-lib-loader');
+const taskcluster = require('taskcluster-client');
+const flash = require('connect-flash');
+const scanner = require('./scanner');
+const Authorizer = require('./authz');
+const v1 = require('./v1');
+const LDAPClient = require('./ldap');
+const tcApp = require('taskcluster-lib-app');
+const validator = require('taskcluster-lib-validate');
+const monitor = require('taskcluster-lib-monitor');
+const docs = require('taskcluster-lib-docs');
 
 let load = loader({
   cfg: {
@@ -70,7 +68,7 @@ let load = loader({
       let handlers = {};
 
       Object.keys(cfg.handlers).forEach((name) => {
-        let Handler = require('./handlers/' + name).default;
+        let Handler = require('./handlers/' + name);
         handlers[name] = new Handler({name, cfg});
       });
       return handlers;

@@ -1,9 +1,9 @@
-import express from 'express';
-import Auth0Strategy from 'passport-auth0';
-import passport from 'passport';
-import assert from 'assert';
-import User from './../user';
-import url from 'url';
+const express = require('express');
+const Auth0Strategy = require('passport-auth0');
+const passport = require('passport');
+const assert = require('assert');
+const User = require('./../user');
+const url = require('url');
 
 class Auth0Login {
   constructor(options) {
