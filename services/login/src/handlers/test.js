@@ -1,5 +1,5 @@
-import User from './../user';
-import Debug from 'debug';
+const User = require('./../user');
+const Debug = require('debug');
 
 const debug = Debug('handlers.test');
 
@@ -24,4 +24,4 @@ class Handler {
   }
 }
 
-export default Handler;
+module.exports = Handler;

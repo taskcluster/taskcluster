@@ -34,7 +34,7 @@ suite('API', function() {
   });
 
   suite('ping', function() {
-    test('pings', async() => {
+    test('pings', async () => {
       await helper.login.ping();
     });
   });

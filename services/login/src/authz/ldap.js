@@ -1,6 +1,6 @@
-import assert from 'assert';
-import LDAPClient from '../ldap';
-import Debug from 'debug';
+const assert = require('assert');
+const LDAPClient = require('../ldap');
+const Debug = require('debug');
 
 var debug = Debug('LDAPAuthorizer');
 

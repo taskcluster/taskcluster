@@ -1,7 +1,7 @@
-import url from 'url';
-import ldap from 'ldapjs';
-import _ from 'lodash';
-import Debug from 'debug';
+const url = require('url');
+const ldap = require('ldapjs');
+const _ = require('lodash');
+const Debug = require('debug');
 
 var debug = Debug('LDAPClient');
 

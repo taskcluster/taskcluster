@@ -1,12 +1,12 @@
-import taskcluster from 'taskcluster-client';
-import scopeUtils from 'taskcluster-lib-scopes';
-import User from './user';
-import _ from 'lodash';
-import Debug from 'debug';
+const taskcluster = require('taskcluster-client');
+const scopeUtils = require('taskcluster-lib-scopes');
+const User = require('./user');
+const _ = require('lodash');
+const Debug = require('debug');
 
 var debug = Debug('scanner');
 
-export default async function scanner(cfg, authorizer) {
+async function scanner(cfg, authorizer) {
   // * get the set of identityProviderIds
   // * for each:
   //   * fetch all clients, sort by identity
@@ -64,3 +64,5 @@ export default async function scanner(cfg, authorizer) {
     }
   }
 }
+
+module.exports = scanner;
