@@ -6,6 +6,17 @@ var slugid      = require('slugid');
 var Promise     = require('promise');
 var _           = require('lodash');
 var signaturevalidator = require('./signaturevalidator');
+let ScopeResolver      = require('./scoperesolver');
+var {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+
+/**
+ * Helper to return a role as defined in the blob to one suitable for return.
+ * This involves adding expandedRoles using the resolver.
+ */
+const roleToJson = (role, context) => _.defaults(
+  {expandedScopes: context.resolver.resolve([`assume:${role.roleId}`])},
+  role
+);
 
 /** API end-point for version v1/ */
 var api = new API({
@@ -72,8 +83,8 @@ var api = new API({
     project:    /^[a-zA-Z0-9_-]{1,22}$/,
   },
   context: [
-    // Instances of data.Client and data.Role
-    'Client', 'Role',
+    // Instances of data tables
+    'Client', 'Roles',
 
     // Publisher from exchanges.js
     'publisher',
@@ -502,12 +513,8 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load all roles
-  let roles = [];
-  await this.Role.scan({}, {
-    handler: role => roles.push(role.json(this.resolver)),
-  });
-
-  res.reply(roles);
+  let roles = await this.Roles.get();
+  res.reply(roles.map(r => roleToJson(r, this)));
 });
 
 /** Get role */
@@ -527,13 +534,14 @@ api.declare({
   let roleId = req.params.roleId;
 
   // Load role
-  let role = await this.Role.load({roleId}, true);
+  let roles = await this.Roles.get();
+  let role = _.find(roles, {roleId});
 
   if (!role) {
     return res.reportError('ResourceNotFound', 'Role not found', {});
   }
 
-  res.reply(role.json(this.resolver));
+  res.reply(roleToJson(role, this));
 });
 
 /** Create role */
@@ -573,55 +581,66 @@ api.declare({
     return;
   }
 
+  input.scopes.sort(scopeCompare);
+
+  let when = new Date().toJSON();
+  role = {
+    roleId,
+    description: input.description,
+    scopes: input.scopes,
+    lastModified: when,
+    created: when,
+  };
+
+  // update Roles
+  let reportError = (code, message, details) => {
+    res.reportError(code, message, details);
+    let err = new Error();
+    err.code = 'ErrorReported';
+    return err;
+  };
   try {
-    this.resolver.checkUpdatedRole(roleId, input.scopes);
+    await this.Roles.modify(roles => {
+      let existing = _.find(roles, {roleId});
+      if (existing) {
+        // role exists and doesn't match this one -> RequestConflict
+        if (existing.description !== input.description || !_.isEqual(existing.scopes, input.scopes)) {
+          throw reportError('RequestConflict',
+            'Role with same roleId already exists',
+            {});
+        } else {
+          role = existing;
+          return;
+        }
+      }
+
+      // check that this new role does not introduce a cycle
+      let checkRoles = _.clone(roles);
+      checkRoles.push(role);
+      try {
+        ScopeResolver.cycleCheck(checkRoles);
+      } catch (e) {
+        throw reportError('InputError', `Invalid roles: ${e.message}`, {});
+      }
+
+      // add the role for real
+      roles.push(role);
+    });
   } catch (e) {
-    return res.reportError('InputError', e.message, {});
+    if (e.code === 'ErrorReported') {
+      return;
+    }
+    throw e;
   }
 
-  let role = await this.Role.create({
-    roleId:       roleId,
-    description:  input.description,
-    scopes:       input.scopes,
-    details: {
-      created:      new Date().toJSON(),
-      lastModified: new Date().toJSON(),
-    },
-  }).catch(async (err) => {
-    // Only handle
-    if (err.code !== 'EntityAlreadyExists') {
-      throw err;
-    }
-
-    // Load role
-    let role = await this.Role.load({roleId});
-
-    // If stored role different or older than 15 min we return 409
-    let created = new Date(role.details.created).getTime();
-    if (role.description !== input.description ||
-        !_.isEqual(role.scopes, input.scopes) ||
-        role > Date.now() - 15 * 60 * 1000) {
-      return res.reportError('RequesetConflict', 
-        'role with same clientId already exists, possibly an issue with retry logic or idempotency',
-        {});
-    }
-
-    return role;
-  });
-
-  // If no role it was already created
-  if (!role) {
-    return;
-  }
-
-  // Send pulse message
+  // Send pulse message and reload
   await Promise.all([
     this.publisher.roleCreated({roleId}),
-    this.resolver.reloadRole(roleId),
+    this.resolver.reloadRoles(),
   ]);
 
   // Send result
-  return res.reply(role.json(this.resolver));
+  return res.reply(roleToJson(role, this));
 });
 
 /** Update role */
@@ -647,6 +666,7 @@ api.declare({
 }, async function(req, res) {
   let roleId    = req.params.roleId;
   let input     = req.body;
+  let role;
 
   if (process.env.LOCK_ROLES === 'true') {
     return res.reportError('InputError',
@@ -660,51 +680,71 @@ api.declare({
   }
 
   // Load role
-  let role = await this.Role.load({roleId}, true);
-  if (!role) {
-    return res.reportError('ResourceNotFound', 'Role not found', {});
-  }
-
-  // Check that requester has all the scopes added.  The combined
-  // scopes of the caller and the existing role must satisfy the
-  // new scopes
   let callerScopes = await req.scopes();
-  let unionScopes = this.resolver.resolve(callerScopes.concat(role.scopes));
-  if (!scopeUtils.scopeMatch(unionScopes, [input.scopes])) {
-    return res.reportError('InsufficientScopes', [
-      'You do not have sufficient scopes.  This request requires you',
-      'to have any new scopes you wish to add to the role.  More',
-      'precisely, the union of your scopes and the existing role scopes',
-      'must satisfy the scopes in the request.',
-      '',
-      'The combined scopes are:',
-      '{{unionScopes}}',
-      '',
-    ].join('\n'), {
-      unionScopes,
-    });
-  }
-
+  let reportError = (code, message, details) => {
+    res.reportError(code, message, details);
+    let err = new Error();
+    err.code = 'ErrorReported';
+    return err;
+  };
   try {
-    this.resolver.checkUpdatedRole(roleId, input.scopes);
-  } catch (e) {
-    return res.reportError('InputError', e.message, {});
-  }
+    await this.Roles.modify(roles => {
+      let i = _.findIndex(roles, {roleId});
+      if (i === -1) {
+        throw reportError('ResourceNotFound', 'Role not found', {});
+      }
+      role = roles[i];
 
-  // Update role
-  await role.modify(role => {
-    role.description = input.description;
-    role.scopes = input.scopes;
-    role.details.lastModified = new Date().toJSON();
-  });
+      // Check that requester has all the scopes added.  The combined
+      // scopes of the caller and the existing role must satisfy the
+      // new scopes
+      let unionScopes = this.resolver.resolve(callerScopes.concat(role.scopes));
+      if (!scopeUtils.scopeMatch(unionScopes, [input.scopes])) {
+        throw reportError('InsufficientScopes', [
+          'You do not have sufficient scopes.  This request requires you',
+          'to have any new scopes you wish to add to the role.  More',
+          'precisely, the union of your scopes and the existing role scopes',
+          'must satisfy the scopes in the request.',
+          '',
+          'The combined scopes are:',
+          '{{unionScopes}}',
+          '',
+        ].join('\n'), {
+          unionScopes,
+        });
+      }
+
+      // check that this updated role does not introduce a cycle, careful not to modify
+      // the original yet (since azure-blob-storage caches it)
+      let checkRoles = _.clone(roles);
+      checkRoles[i] = _.clone(role);
+      checkRoles[i].scopes = input.scopes;
+      try {
+        ScopeResolver.cycleCheck(checkRoles);
+      } catch (e) {
+        throw reportError('InputError', `Invalid roles: ${e.message}`, {});
+      }
+
+      // finish modification
+      role.scopes = input.scopes;
+      role.description = input.description;
+      role.lastModified = new Date().toJSON();
+    });
+  } catch (e) {
+    if (e.code === 'ErrorReported') {
+      // res.reportError already called
+      return;
+    }
+    throw e;
+  }
 
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.roleUpdated({roleId}),
-    this.resolver.reloadRole(roleId),
+    this.resolver.reloadRoles(),
   ]);
 
-  return res.reply(role.json(this.resolver));
+  return res.reply(roleToJson(role, this));
 });
 
 /** Delete role */
@@ -734,14 +774,16 @@ api.declare({
     return;
   }
 
-  // NOTE: deleting a role cannot introduce a cycle, so we do not check this
-  // modification
-
-  await this.Role.remove({roleId}, true);
+  await this.Roles.modify(roles => {
+    let i = _.findIndex(roles, {roleId});
+    if (i !== -1) {
+      roles.splice(i, 1);
+    }
+  });
 
   await Promise.all([
     this.publisher.roleDeleted({roleId}),
-    this.resolver.reloadRole(roleId),
+    this.resolver.reloadRoles(),
   ]);
 
   return res.reply();
