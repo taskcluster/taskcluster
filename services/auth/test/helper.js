@@ -12,12 +12,19 @@ var exchanges   = require('../src/exchanges');
 var testserver  = require('./testserver');
 var slugid      = require('slugid');
 var Config      = require('typed-env-config');
+var azure       = require('fast-azure-storage');
+var containers  = require('../src/containers');
+var uuid        = require('uuid');
 
 // Load configuration
 var cfg = Config({profile: 'test'});
 
 // Create subject to be tested by test
 var helper = module.exports = {};
+
+// Use a unique container name per run, so that parallel test runs
+// do not interfere with each other.
+helper.containerName = `auth-test-${uuid.v4()}`;
 
 helper.cfg = cfg;
 helper.testaccount = _.keys(cfg.app.azureAccounts)[0];
@@ -33,6 +40,21 @@ if (!cfg.pulse.password) {
 // Configure PulseTestReceiver
 helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
 
+// fake "Roles" container
+class FakeRoles {
+  constructor() {
+    this.roles = [];
+  }
+
+  async get() {
+    return this.roles;
+  }
+
+  async modify(modifier) {
+    modifier(this.roles);
+  }
+}
+
 var webServer = null, testServer;
 mocha.before(async () => {
   let overwrites = {};
@@ -43,7 +65,7 @@ mocha.before(async () => {
 
   overwrites.resolver = helper.resolver =
     await serverLoad('resolver', overwrites);
-  //
+
   // if we don't have an azure account/key, use the inmemory version
   if (!cfg.azure || !cfg.azure.accountName) {
     let signingKey = cfg.app.tableSigningKey;
@@ -55,15 +77,14 @@ mocha.before(async () => {
       cryptoKey,
       signingKey,
     });
-    helper.Role = overwrites['Role'] = data.Role.setup({
-      table: 'Role',
-      account: 'inMemory',
-      credentials: null,
-      signingKey,
-    });
+    helper.Roles = overwrites['Roles'] = new FakeRoles();
   } else {
     helper.Client = overwrites['Client'] = await serverLoad('Client', overwrites);
-    helper.Role = overwrites['Role'] = await serverLoad('Role', overwrites);
+    helper.Roles = overwrites['Roles'] = new containers.Roles({
+      containerName: helper.containerName,
+      credentials: cfg.azure,
+    });
+    await helper.Roles.setup();
   }
 
   webServer = await serverLoad('server', overwrites);
@@ -125,4 +146,22 @@ mocha.after(async () => {
   if (webServer) {
     await webServer.terminate();
   }
+  if (cfg.azure && cfg.azure.accountName && cfg.azure.accountKey) {
+    const blobService = new azure.Blob({
+      accountId: cfg.azure.accountName,
+      accountKey: cfg.azure.accountKey,
+    });
+    try {
+      await blobService.deleteContainer(helper.containerName);
+    } catch (e) {
+      if (e.code !== 'ResourceNotFound') {
+        throw e;
+      }
+      // already deleted, so nothing to do
+      // NOTE: really, this doesn't work -- the container doesn't register as existing
+      // before the tests are complete, so we "leak" containers despite this effort to
+      // clean them up.
+    }
+  }
+
 });

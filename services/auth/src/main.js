@@ -152,14 +152,13 @@ let load = Loader({
 
   api: {
     requires: [
-      'cfg', 'Client', 'Role', 'validator', 'publisher', 'resolver',
+      'cfg', 'Client', 'Roles', 'validator', 'publisher', 'resolver',
       'sentryManager', 'monitor',
     ],
     setup: async ({
-      cfg, Client, Role, validator, publisher, resolver, sentryManager, monitor,
+      cfg, Client, Roles, validator, publisher, resolver, sentryManager, monitor,
     }) => {
       // Set up the Azure tables
-      await Role.ensureTable();
       await Client.ensureTable();
 
       // set up the root access token if necessary
@@ -169,7 +168,7 @@ let load = Loader({
 
       // Load everything for resolver
       await resolver.setup({
-        Client, Role,
+        Client, Roles,
         exchangeReference: exchanges.reference({
           credentials:      cfg.pulse,
           exchangePrefix:   cfg.app.exchangePrefix,
@@ -185,7 +184,7 @@ let load = Loader({
 
       return v1.setup({
         context: {
-          Client, Role,
+          Client, Roles,
           publisher,
           resolver,
           sts:                new AWS.STS(cfg.aws),
