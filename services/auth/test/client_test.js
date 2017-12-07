@@ -12,7 +12,7 @@ suite('api (client)', function() {
   const cleanup = async () => {
     // Delete all clients and roles
     await helper.Client.scan({}, {handler: c => c.clientId === 'root' ? null : c.remove()});
-    await helper.Role.scan({}, {handler: r => r.remove()});
+    await helper.Roles.modify((roles) => roles.splice(0));
   };
   setup(cleanup);
   teardown(cleanup);

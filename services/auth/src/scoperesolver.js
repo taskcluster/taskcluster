@@ -3,7 +3,6 @@ var assert      = require('assert');
 var taskcluster = require('taskcluster-client');
 var events      = require('events');
 var debug       = require('debug')('auth:ScopeResolver');
-var Promise     = require('promise');
 var {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
 var {generateTrie, executeTrie} = require('./trie');
 
@@ -58,7 +57,7 @@ class ScopeResolver extends events.EventEmitter {
    * options:
    * {
    *   Client:              // data.Client object
-   *   Role:                // data.Role object
+   *   Roles:               // data.Roles object
    *   connection:          // PulseConnection object
    *   exchangeReference:   // reference for exchanges declared
    *   cacheExpiry:         // Time before clearing cache
@@ -69,12 +68,12 @@ class ScopeResolver extends events.EventEmitter {
       cacheExpiry:    20 * 60 * 1000,   // default to 20 min
     });
     assert(options.Client, 'Expected options.Client');
-    assert(options.Role, 'Expected options.Role');
+    assert(options.Roles, 'Expected options.Roles');
     assert(options.exchangeReference, 'Expected options.exchangeReference');
     assert(options.connection instanceof taskcluster.PulseConnection,
       'Expected options.connection to be a PulseConnection object');
     this._Client        = options.Client;
-    this._Role          = options.Role;
+    this._Roles         = options.Roles;
     this._options       = options;
 
     // Create authEvents client
@@ -105,7 +104,7 @@ class ScopeResolver extends events.EventEmitter {
       return this.reloadClient(m.payload.clientId);
     });
     this._roleListener.on('message', m => {
-      return this.reloadRole(m.payload.roleId);
+      return this.reloadRoles();
     });
 
     // Load initially
@@ -161,20 +160,14 @@ class ScopeResolver extends events.EventEmitter {
           disabled:         client.disabled,
         });
       }
-      this._rebuildResolver();
+      this._rebuildResolver(this._roles, this._clients);
     });
   }
 
-  reloadRole(roleId) {
+  reloadRoles() {
     return this._syncReload(async () => {
-      let role = await this._Role.load({roleId}, true);
-      // Always remove it
-      this._roles = this._roles.filter(r => r.roleId !== roleId);
-      // If a role was loaded add it back
-      if (role) {
-        this._roles.push({roleId: role.roleId, scopes: role.scopes});
-      }
-      this._rebuildResolver();
+      let roles = await this._Roles.get();
+      this._rebuildResolver(roles, this._clients);
     });
   }
 
@@ -206,41 +199,25 @@ class ScopeResolver extends events.EventEmitter {
             });
           },
         }),
-        // Load all roles on a simplified form: {roleId, scopes}
-        this._Role.scan({}, {
-          handler(role) {
-            roles.push({roleId: role.roleId, scopes: role.scopes});
-          },
-        }),
+        (async () => {
+          roles = await this._Roles.get();
+        })(),
       ]);
 
       // Set _roles and _clients at the same time and immediately call
       // _rebuildResolver, so anyone using the cache is using a consistent one
-      this._roles = roles;
-      this._clients = clients;
-      this._rebuildResolver();
+      this._rebuildResolver(roles, clients);
     });
   }
 
-  /**
-   * Verify that the existing set of roles, plus the given role (or without it if
-   * scopes is undefined), is valid.  If not, this will raise an informative exception.
-   */
-  checkUpdatedRole(roleId, scopes) {
-    let roles = _.clone(this._roles);
-    // Always remove it
-    roles = roles.filter(r => r.roleId !== roleId);
-    // If a role was loaded add it back
-    if (scopes) {
-      roles.push({roleId, scopes});
-    }
-
-    ScopeResolver.cycleCheck(roles);
-  }
-
   /** Compute fixed point over this._roles, and construct _clientCache */
-  _rebuildResolver() {
-    this._resolver = this.buildResolver(this._roles);
+  _rebuildResolver(roles, clients) {
+    this._resolver = this.buildResolver(roles);
+
+    // set this._roles, this._clients only after the resolver is successfully
+    // constructed, so there are no cycles, etc.
+    this._roles = roles;
+    this._clients = clients;
 
     // Construct client cache
     this._clientCache = {};
