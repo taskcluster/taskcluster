@@ -7,6 +7,16 @@ const validateScopePatterns = (scopePatterns) => {
   }), 'scopes must be an array of strings');
 };
 
+export const patternMatch = (pattern, scope) => {
+  if (scope === pattern) {
+    return true;
+  }
+  if (/\*$/.test(pattern)) {
+    return scope.indexOf(pattern.slice(0, -1)) === 0;
+  }
+  return false;
+};
+
 /**
  * Auxiliary function to check if scopePatterns satisfies a scope-set
  *
@@ -25,15 +35,7 @@ export const scopeMatch = (scopePatterns, scopesets) => {
 
   return scopesets.some(scopeset =>
     scopeset.every(scope =>
-      scopePatterns.some(pattern => {
-        if (scope === pattern) {
-          return true;
-        }
-        if (/\*$/.test(pattern)) {
-          return scope.indexOf(pattern.slice(0, -1)) === 0;
-        }
-        return false;
-      })
+      scopePatterns.some(pattern => patternMatch(pattern, scope))
     )
   );
 };
