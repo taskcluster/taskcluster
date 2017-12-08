@@ -1,7 +1,7 @@
 Taskcluster Scopes Utilities
 ============================
 
-Simple utilities to validate scopes, scope-sets, and scope-set satisfiability.
+Simple utilities to validate scopes, scope-sets, and scope-expression satisfiability.
 
 For information on scopes, see [the Taskcluster documentation](https://docs.taskcluster.net/manual/integrations/apis/scopes).
 
@@ -21,18 +21,123 @@ containing ascii characters):
 assert(scopeUtils.validScope("..."));
 ```
 
-### Checking Scope Sets
+### Scope Expressions
 
-The `validateScopeSets` function checks whether the scopes in the sets are
-valid, and if form of the scope-sets is double nested arrays.  This is the
-"disjunctive normal form" expected by
-[taskcluster-lib-api](https://github.com/taskcluster/taskcluster-lib-api).
+There are two different but similar ways to combine scopes into larger sets.
+The first way is using Scope Expressions which are newer and more expressive.
+The second way is through nested arrays. Each layer of the nesting alternates
+between or-ing and and-ing the contents of the array in "disjunctive normal form".
+Prefer using the first way when possible. Following are pairs of identical
+expressions in each type:
+
+```
+// New Style
+{"AnyOf": ["abc", "def"]}
+// Old Style
+["abc", "def"]
+
+// New Style
+{"AnyOf": [{"AllOf": ["abc"]}, {"AllOf": ["def"]}]}
+// Old Style
+[["abc"], ["def"]]
+
+
+// New Style
+{"AllOf": ["abc", "def"]}
+// Old Style
+[["abc", "def"]]
+```
+
+### Correctness
+
+This library provides a way to validate both styles of scope expressions.
 
 ```js
+// New Style
+assert(scopeUtils.validExpression({AnyOf: [{AllOf: ['a', 'b'}, {AllOf: ['c']}]});
+
+// Old Style
 assert(scopeUtils.validateScopeSets([['a', 'b'], ['c']]));
 ```
 
-### Checking Scope Satisfaction
+Old style scope expressions are always valid so long as they are nested arrays
+that contain valid scopes for all elements.
+
+New style scope expressions have a few more requirements. The following are
+all invalid:
+
+```
+{} // Empty object
+{AnyOf: []} // Empty sub-expression
+```
+
+### Satisfaction
+
+Given a scope set (an array of valid scopes), this library can check to see if the
+scope set "satisfies" a given expression. This is done in two ways depending
+on which form of expression is used.
+
+#### New Style
+
+These are the "new-style" way of dealing with scopes and allow for greater
+flexibility than the old style. The expressions are objects with a single key --
+either `AnyOf` or `AllOf`. The value must be an array and the elements of the
+array must be either expressions or a [valid scope](#valid-scopes).
+
+This check is performed with `scopeUtils.satisfiesExpression` which takes
+a scopeset as the first argument and a scope expression as the second.
+
+A scope expression can be evaluated against an array of scopes to determine if the
+scope expression is "satisfied" by the array of scopes. Satisfaction in this context
+means that the following clauses are satisfied:
+
+**AllOf:** All sub-expressions and scopes must be satisfied
+
+**AnyOf:** At least one sub-expression or scope must be satisfied
+
+given that the scopes contained in the expression are satisfied as described in
+the [the tascluster-auth docs](https://docs.taskcluster.net/reference/platform/taskcluster-auth/docs/scopes).
+
+Examples:
+
+```js
+// Evaluates to true
+scopeUtils.satisfiesExpression(
+  [
+    'abc*',
+  ],
+  {
+    AnyOf: ['abcd'],
+  }
+)
+
+// Evaluates to false
+scopeUtils.satisfiesExpression(
+  [
+    'abc*',
+  ],
+  {
+    AnyOf: ['def'],
+  }
+)
+
+// Evaluates to true
+scopeUtils.satisfiesExpression(
+  [
+    'abc*',
+  ],
+  {
+    AnyOf: [
+      {AllOf: ['abcdef']},
+      'def',
+    ]
+  }
+)
+```
+
+### Old Style
+
+These are evaluated with `scopeMatch`.
 
 The first argument to `scopeMatch` is the set of scopes being tested.  The
 second is an array of arrays of scopes, in disjunctive normal form, meaning
@@ -71,6 +176,7 @@ assert(scopeUtils.scopeMatch(['a*', 'b'], [['a', 'b'], ['c']]));
 // Checks if ['b'] satisfies [['a', 'b'], ['c']] (spoiler alert it doesn't)
 assert(!scopeUtils.scopeMatch(['b'], [['a', 'b'], ['c']]));
 ```
+
 ### Set Operations
 
 The intersection of two scopesets A and B is the largest scopeset C which is
