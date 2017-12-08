@@ -21,6 +21,12 @@ function Extract-ZIPFile($file, $destination, $url)
 md C:\logs
 md C:\binaries
 
+# KillXenDPriv.exe: See https://bugzilla.mozilla.org/show_bug.cgi?id=1399401#c43 and https://bugzilla.mozilla.org/show_bug.cgi?id=1394757
+Start-Process "taskkill" -ArgumentList "/im XenDPriv.exe /f" -Wait -NoNewWindow
+
+# DeleteXenDPriv.exe: See https://bugzilla.mozilla.org/show_bug.cgi?id=1399401#c43 and https://bugzilla.mozilla.org/show_bug.cgi?id=1394757
+Start-Process "cmd.exe" -ArgumentList "/c del /f /q `"C:\Program Files\Citrix\XenTools\XenDPriv.exe`"" -Wait -NoNewWindow
+
 # LogDirectory: Required by OpenCloudConfig for DSC logging
 md "C:\log"
 
@@ -123,7 +129,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.2.3/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.3.1/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe", "C:\generic-worker\livelog.exe")
@@ -286,6 +292,9 @@ $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/
 
 # nircmdc
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmdc.exe", "C:\Windows\System32\nircmdc.exe")
+
+# reg_Power_PreferredPlan_HighPerformance: https://bugzilla.mozilla.org/show_bug.cgi?id=1362613
+New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\ControlPanel\NameSpace\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}" -Name "PreferredPlan" -Value "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" -PropertyType String -Force
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

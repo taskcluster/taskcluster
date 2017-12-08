@@ -117,7 +117,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.2.3/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.3.1/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -312,6 +312,9 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name
 
 # reg_NewNetworkWindowOff: https://bugzilla.mozilla.org/show_bug.cgi?id=1397201#c58
 New-Item -Path "HKLM:System\CurrentControlSet\Control\Network\NewNetworkWindowOff" -Force
+
+# reg_Power_PreferredPlan_HighPerformance: https://bugzilla.mozilla.org/show_bug.cgi?id=1362613
+New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\ControlPanel\NameSpace\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}" -Name "PreferredPlan" -Value "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" -PropertyType String -Force
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
