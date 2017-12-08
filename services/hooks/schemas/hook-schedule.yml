@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 title:   "Hook schedule response"
 description: |
   A description of when a hook's task will be created, and the next scheduled time

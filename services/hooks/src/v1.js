@@ -236,6 +236,7 @@ api.declare({
         lastFire:           {result: 'no-fire'},
         nextTaskId:         taskcluster.slugid(),
         nextScheduledDate:  nextDate(hookDef.schedule),
+
       }));
   } catch (err) {
     if (!err || err.code !== 'EntityAlreadyExists') {

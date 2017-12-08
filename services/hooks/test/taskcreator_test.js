@@ -1,9 +1,9 @@
 suite('TaskCreator', function() {
   var assume            = require('assume');
-  var taskcreator       = require('../lib/taskcreator');
+  var taskcreator       = require('../src/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
-  var data              = require('../lib/data');
+  var data              = require('../src/data');
   var taskcluster       = require('taskcluster-client');
 
   this.slow(500);
@@ -79,14 +79,14 @@ suite('TaskCreator', function() {
   test('fails if task.scopes includes scopes not granted to the role', async function() {
     let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
     await creator.fire(hook, {payload: true}).then(
-        () => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); });
+      () => { throw new Error('Expected an error'); },
+      (err) => { debug('Got expected error: %s', err); });
   });
 });
 
 suite('MockTaskCreator', function() {
   var assume            = require('assume');
-  var taskcreator       = require('../lib/taskcreator');
+  var taskcreator       = require('../src/taskcreator');
   var debug             = require('debug')('test:test_schedule_hooks');
   var helper            = require('./helper');
   var hookDef           = require('./test_definition');

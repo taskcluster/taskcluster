@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-04/schema#
+$schema:            http://json-schema.org/draft-06/schema#
 title:              "Task Template"
 description: |
   Definition of a task embedded in a hook

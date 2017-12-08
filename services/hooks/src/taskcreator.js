@@ -14,7 +14,7 @@ class TaskCreator {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.credentials instanceof Object,
-        'Expected credentials');
+      'Expected credentials');
     this.credentials = options.credentials;
   }
 
@@ -58,7 +58,7 @@ class TaskCreator {
     // TODO: payload is ignored right now
 
     debug('firing hook %s/%s to create taskId: %s',
-        hook.hookGroupId, hook.hookId, options.taskId);
+      hook.hookGroupId, hook.hookId, options.taskId);
     return await queue.createTask(options.taskId,
       this.taskForHook(hook, options));
   };

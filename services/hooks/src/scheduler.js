@@ -28,12 +28,12 @@ class Scheduler extends events.EventEmitter {
   constructor(options) {
     super();
     assert(options, 'options must be given');
-    assert(options.Hook.prototype instanceof data.Hook,
-        'Expected data.Hook instance');
+    assert(options.Hook.prototype instanceof data.Hook, 
+      'Expected data.Hook instance');
     assert(options.taskcreator instanceof taskcreator.TaskCreator,
-        'An instance of taskcreator.TaskCreator is required');
+      'An instance of taskcreator.TaskCreator is required');
     assert(typeof options.pollingDelay === 'number',
-        'Expected pollingDelay to be a number');
+      'Expected pollingDelay to be a number');
     // Store options on this for use in event handlers
     this.Hook         = options.Hook;
     this.taskcreator  = options.taskcreator;
