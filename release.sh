@@ -111,7 +111,7 @@ git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag -s "v${NEW_VERSION}"
 # only ensure master is updated if it is a non-alpha release
 if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
-  git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
+  git push "${OFFICIAL_GIT_REPO}" "+HEAD:refs/heads/master"
   git fetch --all
 fi
 git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VERSION}"
