@@ -39,8 +39,6 @@ var load = loader({
       return data.Hook.setup(_.defaults({
         table:        cfg.app.hookTable,
         monitor:      monitor.prefix(cfg.app.hookTable.toLowerCase()),
-        component:    cfg.app.component,
-        process,
       }, cfg.azureTable, cfg.taskcluster));
     },
   },
