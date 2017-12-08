@@ -49,9 +49,7 @@ async function documenter(options) {
     return {name: path.join(dir || '', name)};
   }
 
-  function getDocumentationUrl() {
-    return options.referenceUrl + options.tier + '/' + options.project;
-  }
+  let documentationUrl = options.referenceUrl + options.tier + '/' + options.project;
 
   let tarball = tar.pack();
 
@@ -150,6 +148,7 @@ async function documenter(options) {
 
   return {
     tgz,
+    documentationUrl,
   };
 }
 
