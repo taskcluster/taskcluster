@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 28 Nov 2017 at 17:24:00 UTC. The code was generated
+// Fri, 8 Dec 2017 at 08:08:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -273,6 +273,9 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 // If there already exists a role with the same `roleId` this operation
 // will fail. Use `updateRole` to modify an existing role.
 //
+// Creation of a role that will generate an infinite expansion will result
+// in an error response.
+//
 // Required scopes:
 //   * auth:create-role:<roleId>
 //
@@ -287,6 +290,9 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 //
 // The caller's scopes must satisfy all of the new scopes being added, but
 // need not satisfy all of the client's existing scopes.
+//
+// An update of a role that will generate an infinite expansion will result
+// in an error response.
 //
 // Required scopes:
 //   * auth:update-role:<roleId>
