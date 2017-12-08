@@ -94,12 +94,12 @@ func (l *SupersedeTask) Start() *CommandExecutionError {
 		e := l.task.uploadArtifact(
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    supersededByName,
-					Expires: l.task.Definition.Expires,
+					Name:     supersededByName,
+					Expires:  l.task.Definition.Expires,
+					MimeType: "application/json",
 				},
 				Path:            supersededByPath,
 				ContentEncoding: "gzip",
-				MimeType:        "application/json",
 			},
 		)
 		if e != nil {

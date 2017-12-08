@@ -80,6 +80,19 @@ properties:
           description: |-
             Date when artifact should expire must be in the future, no earlier than task deadline, but
             no later than task expiry. If not set, defaults to task expiry.
+        contentType:
+          title: Content-Type header when serving artifact over HTTP
+          type: string
+          description: |-
+            Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
+            is/are served over HTTP(S). If not provided (this property is optional) the worker will
+            guess the content type of artifacts based on the filename extension of the file storing
+            the artifact content. It does this by looking at the system filename-to-mimetype mappings
+            defined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`
+            on a directory artifact will apply the same contentType to all files contained in the
+            directory.
+
+            See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
       required:
       - type
       - path
