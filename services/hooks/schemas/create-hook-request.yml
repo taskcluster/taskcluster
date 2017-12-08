@@ -1,4 +1,4 @@
-$schema:                    http://json-schema.org/draft-04/schema#
+$schema:                    http://json-schema.org/draft-06/schema#
 title:                      "Hook creation request"
 description: |
   Definition of a hook that can create tasks at defined times.
