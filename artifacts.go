@@ -40,27 +40,25 @@ type (
 	}
 
 	BaseArtifact struct {
-		Name    string
-		Expires tcclient.Time
+		Name     string
+		Expires  tcclient.Time
+		MimeType string
 	}
 
 	S3Artifact struct {
 		*BaseArtifact
 		Path            string
 		ContentEncoding string
-		MimeType        string
 	}
 
 	AzureArtifact struct {
 		*BaseArtifact
-		Path     string
-		MimeType string
+		Path string
 	}
 
 	RedirectArtifact struct {
 		*BaseArtifact
-		MimeType string
-		URL      string
+		URL string
 	}
 
 	ErrorArtifact struct {
@@ -271,8 +269,9 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 	for _, artifact := range task.Payload.Artifacts {
 		basePath := artifact.Path
 		base := &BaseArtifact{
-			Name:    artifact.Name,
-			Expires: artifact.Expires,
+			Name:     artifact.Name,
+			Expires:  artifact.Expires,
+			MimeType: artifact.ContentType,
 		}
 		// if no name given, use canonical path
 		if base.Name == "" {
@@ -306,8 +305,9 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 				}
 				subName := filepath.Join(base.Name, relativePath)
 				b := &BaseArtifact{
-					Name:    canonicalPath(subName),
-					Expires: base.Expires,
+					Name:     canonicalPath(subName),
+					Expires:  base.Expires,
+					MimeType: base.MimeType,
 				}
 				switch {
 				case info.IsDir():
@@ -376,21 +376,22 @@ func resolve(base *BaseArtifact, artifactType string, path string) Artifact {
 	if artifactType == "directory" {
 		return nil
 	}
-	extension := filepath.Ext(path)
-	// first look up our own custom mime type mappings
-	mimeType := customMimeMappings[strings.ToLower(extension)]
-	// then fall back to system mime type mappings
-	if mimeType == "" {
-		mimeType = mime.TypeByExtension(extension)
-	}
-	// lastly, fall back to application/octet-stream in the absense of any other value
-	if mimeType == "" {
-		// application/octet-stream is the mime type for "unknown"
-		mimeType = "application/octet-stream"
+	if base.MimeType == "" {
+		extension := filepath.Ext(path)
+		// first look up our own custom mime type mappings
+		base.MimeType = customMimeMappings[strings.ToLower(extension)]
+		// then fall back to system mime type mappings
+		if base.MimeType == "" {
+			base.MimeType = mime.TypeByExtension(extension)
+		}
+		// lastly, fall back to application/octet-stream in the absense of any other value
+		if base.MimeType == "" {
+			// application/octet-stream is the mime type for "unknown"
+			base.MimeType = "application/octet-stream"
+		}
 	}
 	return &S3Artifact{
 		BaseArtifact: base,
-		MimeType:     mimeType,
 		Path:         path,
 	}
 }
@@ -410,10 +411,10 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 			BaseArtifact: &BaseArtifact{
 				Name: name,
 				// logs expire when task expires
-				Expires: task.Definition.Expires,
+				Expires:  task.Definition.Expires,
+				MimeType: "text/plain; charset=utf-8",
 			},
 			Path:            path,
-			MimeType:        "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",
 		},
 	)

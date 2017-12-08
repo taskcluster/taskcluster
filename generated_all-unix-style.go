@@ -40,6 +40,17 @@ type (
 		// `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
 		Artifacts []struct {
 
+			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
+			// is/are served over HTTP(S). If not provided (this property is optional) the worker will
+			// guess the content type of artifacts based on the filename extension of the file storing
+			// the artifact content. It does this by looking at the system filename-to-mimetype mappings
+			// defined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`
+			// on a directory artifact will apply the same contentType to all files contained in the
+			// directory.
+			//
+			// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+			ContentType string `json:"contentType,omitempty"`
+
 			// Date when artifact should expire must be in the future, no earlier than task deadline, but
 			// no later than task expiry. If not set, defaults to task expiry.
 			Expires tcclient.Time `json:"expires,omitempty"`
@@ -372,6 +383,11 @@ func taskPayloadSchema() string {
       "items": {
         "additionalProperties": false,
         "properties": {
+          "contentType": {
+            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in multiple ` + "`" + `mime.types` + "`" + ` files located under ` + "`" + `/etc` + "`" + `. Note, setting ` + "`" + `contentType` + "`" + `\non a directory artifact will apply the same contentType to all files contained in the\ndirectory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).",
+            "title": "Content-Type header when serving artifact over HTTP",
+            "type": "string"
+          },
           "expires": {
             "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.",
             "format": "date-time",

@@ -16,10 +16,11 @@ func TestResolveResolvedTask(t *testing.T) {
 		Command:    goRun("resolvetask.go"),
 		MaxRunTime: 60,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 
 			{

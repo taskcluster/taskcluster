@@ -24,10 +24,11 @@ import (
 )
 
 type PayloadArtifact struct {
-	Expires tcclient.Time `json:"expires,omitempty"`
-	Name    string        `json:"name,omitempty"`
-	Path    string        `json:"path"`
-	Type    string        `json:"type"`
+	ContentType string        `json:"contentType,omitempty"`
+	Expires     tcclient.Time `json:"expires,omitempty"`
+	Name        string        `json:"name,omitempty"`
+	Path        string        `json:"path"`
+	Type        string        `json:"type"`
 }
 
 var (

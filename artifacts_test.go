@@ -36,10 +36,11 @@ func validateArtifacts(
 	tr := &TaskRun{
 		Payload: GenericWorkerPayload{
 			Artifacts: []struct {
-				Expires tcclient.Time `json:"expires,omitempty"`
-				Name    string        `json:"name,omitempty"`
-				Path    string        `json:"path"`
-				Type    string        `json:"type"`
+				ContentType string        `json:"contentType,omitempty"`
+				Expires     tcclient.Time `json:"expires,omitempty"`
+				Name        string        `json:"name,omitempty"`
+				Path        string        `json:"path"`
+				Type        string        `json:"type"`
 			}{},
 		},
 		Definition: queue.TaskDefinitionResponse{
@@ -77,11 +78,41 @@ func TestFileArtifactWithNames(t *testing.T) {
 		[]Artifact{
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "public/build/firefox.exe",
-					Expires: inAnHour,
+					Name:     "public/build/firefox.exe",
+					Expires:  inAnHour,
+					MimeType: "text/plain; charset=utf-8",
 				},
-				Path:     "SampleArtifacts/_/X.txt",
-				MimeType: "text/plain; charset=utf-8",
+				Path: "SampleArtifacts/_/X.txt",
+			},
+		})
+}
+
+func TestFileArtifactWithContentType(t *testing.T) {
+
+	setup(t, "TestFileArtifactWithContentType")
+	defer teardown(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]PayloadArtifact{
+			{
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts/_/X.txt",
+				Type:        "file",
+				Name:        "public/build/firefox.exe",
+				ContentType: "application/octet-stream",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]Artifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
+					Name:     "public/build/firefox.exe",
+					Expires:  inAnHour,
+					MimeType: "application/octet-stream",
+				},
+				Path: "SampleArtifacts/_/X.txt",
 			},
 		})
 }
@@ -106,27 +137,73 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 		[]Artifact{
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "public/b/c/%%%/v/X",
-					Expires: inAnHour,
+					Name:     "public/b/c/%%%/v/X",
+					Expires:  inAnHour,
+					MimeType: "application/octet-stream",
 				},
-				Path:     filepath.Join("SampleArtifacts", "%%%", "v", "X"),
-				MimeType: "application/octet-stream",
+				Path: filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "public/b/c/_/X.txt",
-					Expires: inAnHour,
+					Name:     "public/b/c/_/X.txt",
+					Expires:  inAnHour,
+					MimeType: "text/plain; charset=utf-8",
 				},
-				Path:     filepath.Join("SampleArtifacts", "_", "X.txt"),
-				MimeType: "text/plain; charset=utf-8",
+				Path: filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "public/b/c/b/c/d.jpg",
-					Expires: inAnHour,
+					Name:     "public/b/c/b/c/d.jpg",
+					Expires:  inAnHour,
+					MimeType: "image/jpeg",
 				},
-				Path:     filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
-				MimeType: "image/jpeg",
+				Path: filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
+			},
+		})
+}
+
+func TestDirectoryArtifactWithContentType(t *testing.T) {
+
+	setup(t, "TestDirectoryArtifactWithContentType")
+	defer teardown(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]PayloadArtifact{
+			{
+				Expires:     inAnHour,
+				Path:        "SampleArtifacts",
+				Type:        "directory",
+				Name:        "public/b/c",
+				ContentType: "text/plain; charset=utf-8",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]Artifact{
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
+					Name:     "public/b/c/%%%/v/X",
+					Expires:  inAnHour,
+					MimeType: "text/plain; charset=utf-8",
+				},
+				Path: filepath.Join("SampleArtifacts", "%%%", "v", "X"),
+			},
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
+					Name:     "public/b/c/_/X.txt",
+					Expires:  inAnHour,
+					MimeType: "text/plain; charset=utf-8",
+				},
+				Path: filepath.Join("SampleArtifacts", "_", "X.txt"),
+			},
+			&S3Artifact{
+				BaseArtifact: &BaseArtifact{
+					Name:     "public/b/c/b/c/d.jpg",
+					Expires:  inAnHour,
+					MimeType: "text/plain; charset=utf-8",
+				},
+				Path: filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -152,27 +229,27 @@ func TestDirectoryArtifacts(t *testing.T) {
 		[]Artifact{
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "SampleArtifacts/%%%/v/X",
-					Expires: inAnHour,
+					Name:     "SampleArtifacts/%%%/v/X",
+					Expires:  inAnHour,
+					MimeType: "application/octet-stream",
 				},
-				Path:     filepath.Join("SampleArtifacts", "%%%", "v", "X"),
-				MimeType: "application/octet-stream",
+				Path: filepath.Join("SampleArtifacts", "%%%", "v", "X"),
 			},
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "SampleArtifacts/_/X.txt",
-					Expires: inAnHour,
+					Name:     "SampleArtifacts/_/X.txt",
+					Expires:  inAnHour,
+					MimeType: "text/plain; charset=utf-8",
 				},
-				Path:     filepath.Join("SampleArtifacts", "_", "X.txt"),
-				MimeType: "text/plain; charset=utf-8",
+				Path: filepath.Join("SampleArtifacts", "_", "X.txt"),
 			},
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "SampleArtifacts/b/c/d.jpg",
-					Expires: inAnHour,
+					Name:     "SampleArtifacts/b/c/d.jpg",
+					Expires:  inAnHour,
+					MimeType: "image/jpeg",
 				},
-				Path:     filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
-				MimeType: "image/jpeg",
+				Path: filepath.Join("SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
 }
@@ -278,11 +355,11 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 		[]Artifact{
 			&S3Artifact{
 				BaseArtifact: &BaseArtifact{
-					Name:    "SampleArtifacts/b/c/d.jpg",
-					Expires: inAnHour,
+					Name:     "SampleArtifacts/b/c/d.jpg",
+					Expires:  inAnHour,
+					MimeType: "image/jpeg",
 				},
-				Path:     "SampleArtifacts/b/c/d.jpg",
-				MimeType: "image/jpeg",
+				Path: "SampleArtifacts/b/c/d.jpg",
 			},
 		},
 	)
@@ -328,10 +405,11 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 		Command:    append(helloGoodbye()),
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "Nonexistent/art i fact.txt",
@@ -365,10 +443,11 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "public/logs/live.log",
@@ -466,10 +545,11 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "public",
@@ -520,10 +600,11 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "SampleArtifacts/_/X.txt",
@@ -580,10 +661,11 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "SampleArtifacts/_/X.txt",
@@ -640,10 +722,11 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "SampleArtifacts/_/X.txt",
@@ -702,10 +785,11 @@ func TestUpload(t *testing.T) {
 		Command:    command,
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path:    "SampleArtifacts/_/X.txt",
@@ -959,10 +1043,11 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path: "SampleArtifacts/_/X.txt",
@@ -1003,10 +1088,11 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
 		MaxRunTime: 30,
 		Artifacts: []struct {
-			Expires tcclient.Time `json:"expires,omitempty"`
-			Name    string        `json:"name,omitempty"`
-			Path    string        `json:"path"`
-			Type    string        `json:"type"`
+			ContentType string        `json:"contentType,omitempty"`
+			Expires     tcclient.Time `json:"expires,omitempty"`
+			Name        string        `json:"name,omitempty"`
+			Path        string        `json:"path"`
+			Type        string        `json:"type"`
 		}{
 			{
 				Path: "SampleArtifacts/_",

@@ -55,6 +55,9 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	if !strings.Contains(logtext, "max run time exceeded") {
 		t.Fatalf("Was expecting log file to mention task abortion, but it doesn't")
 	}
+	// TODO: this is a hack to make sure sleep process has died before we call teardown
+	// We need to make sure processes are properly killed when a task is aborted
+	time.Sleep(1500 * time.Millisecond)
 }
 
 func TestIdleWithoutCrash(t *testing.T) {
