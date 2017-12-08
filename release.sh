@@ -108,7 +108,7 @@ find . -name userdata | while read file; do
   inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_VERSION//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_VERSION}/:g"
 done
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
-git tag "v${NEW_VERSION}"
+git tag -s "v${NEW_VERSION}"
 # only ensure master is updated if it is a non-alpha release
 if ! echo "${NEW_VERSION}" | grep -q "alpha"; then
   git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/heads/master"
