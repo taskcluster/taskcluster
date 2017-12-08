@@ -412,7 +412,7 @@ var remoteAuthentication = function(options, entry) {
           'sha256',
           req.headers['content-type']
         );
-        if (!crypto.timingSafeEqual(result.hash, hash)) {
+        if (!crypto.timingSafeEqual(Buffer.from(result.hash), Buffer.from(hash))) {
           // create a fake auth-failed result with the failed hash
           result = {
             status: 'auth-failed',
