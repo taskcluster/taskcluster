@@ -31,8 +31,8 @@ suite('API', function() {
     test('with invalid scopes', async () => {
       helper.scopes('hooks:modify-hook:wrong/scope');
       await helper.hooks.createHook('foo', 'bar', hookDef).then(
-          () => { throw new Error('Expected an authentication error'); },
-          (err) => { debug('Got expected authentication error: %s', err); });
+        () => { throw new Error('Expected an authentication error'); },
+        (err) => { debug('Got expected authentication error: %s', err); });
     });
 
     test('succeeds if a matching resource already exists', async () => {
@@ -45,8 +45,8 @@ suite('API', function() {
       let newHookDef = _.cloneDeep(hookDef);
       newHookDef.expires = '11 days';
       await helper.hooks.createHook('foo', 'bar', newHookDef).then(
-          () => { throw new Error('Expected an error'); },
-          (err) => { debug('Got expected error: %s', err); });
+        () => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
     });
 
     test('creates associated group', async () => {
@@ -70,8 +70,8 @@ suite('API', function() {
 
     test('fails with invalid schedule', async () => {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
-          () => { throw new Error('Expected an error'); },
-          (err) => { assume(err.statusCode).equals(400); });
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.statusCode).equals(400); });
     });
   });
 
@@ -88,8 +88,8 @@ suite('API', function() {
 
     test('fails if resource doesn\'t exist', async () => {
       await helper.hooks.updateHook('foo', 'bar', hookDef).then(
-          () => { throw new Error('Expected an error'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
 
     test('fails if new schedule is invalid', async () => {
@@ -97,8 +97,8 @@ suite('API', function() {
       await helper.hooks.createHook('foo', 'bar', input);
 
       await helper.hooks.updateHook('foo', 'bar', invalidHookDef).then(
-          () => { throw new Error('Expected an error'); },
-          (err) => { assume(err.statusCode).equals(400); });
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.statusCode).equals(400); });
     });
   });
 
@@ -161,8 +161,8 @@ suite('API', function() {
 
     test('fails if no hook exists', async () => {
       await helper.hooks.hook('foo', 'bar').then(
-          () => { throw new Error('The resource should not exist'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('The resource should not exist'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -177,8 +177,8 @@ suite('API', function() {
 
     test('error on requesting token for undefined hook', async () => {
       await helper.hooks.getTriggerToken('foo', 'bar').then(
-          () => { throw new Error('This operation should have failed!'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('This operation should have failed!'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -198,8 +198,8 @@ suite('API', function() {
 
     test('fails if no hook exists', async () => {
       await helper.hooks.getHookSchedule('foo', 'bar').then(
-          () => { throw new Error('The resource should not exist'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('The resource should not exist'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -227,7 +227,7 @@ suite('API', function() {
       assume(r1.lastFire.time).is.equal(now.toJSON());
     });
 
-    test('returns the last run status for triggerHook', async() => {
+    test('returns the last run status for triggerHook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookDef);
       await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
@@ -237,8 +237,8 @@ suite('API', function() {
 
     test('fails if no hook exists', async () => {
       await helper.hooks.getHookStatus('foo', 'bar').then(
-          () => { throw new Error('The resource should not exist'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('The resource should not exist'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -270,8 +270,8 @@ suite('API', function() {
 
     test('fails if no hook exists', async () => {
       await helper.hooks.triggerHook('foo', 'bar', {a: 'payload'}).then(
-          () => { throw new Error('The resource should not exist'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('The resource should not exist'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
   });
 
@@ -312,8 +312,8 @@ suite('API', function() {
       let payload = {};
       await helper.hooks.createHook('foo', 'bar', hookDef);
       await helper.hooks.triggerHookWithToken('foo', 'bar', 'invalidtoken', payload).then(
-          () => { throw new Error('This operation should have failed!'); },
-          (err) => { assume(err.statusCode).equals(401); });
+        () => { throw new Error('This operation should have failed!'); },
+        (err) => { assume(err.statusCode).equals(401); });
     });
 
     test('fails with invalidated token', async () => {
@@ -323,15 +323,15 @@ suite('API', function() {
 
       await helper.hooks.resetTriggerToken('foo', 'bar');
       await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload).then(
-          () => { throw new Error('This operation should have failed!'); },
-          (err) => { assume(err.statusCode).equals(401); });
+        () => { throw new Error('This operation should have failed!'); },
+        (err) => { assume(err.statusCode).equals(401); });
     });
 
     test('fails with undefined hook', async () => {
       let payload = {};
       await helper.hooks.triggerHookWithToken('foo', 'bar', 'zzz', payload).then(
-          () => { throw new Error('This operation should have failed!'); },
-          (err) => { assume(err.statusCode).equals(404); });
+        () => { throw new Error('This operation should have failed!'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
 
     test('trigger task after resetting the trigger token', async () => {
