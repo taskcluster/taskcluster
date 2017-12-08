@@ -15,12 +15,11 @@ var nextDate = function(schedule, reference) {
       currentDate: reference,
       utc: true,
     });
-    let n = interval.next();
+    let n = new Date(interval.next().toString());
     if (typeof next === 'undefined' || n < next) {
       next = n;
     }
   });
-
   return next || FUTURE;
 };
 

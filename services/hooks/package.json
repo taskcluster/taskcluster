@@ -3,10 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/lint.js .test/*_test.js",
-    "pretest": "npm run compile",
-    "install": "npm run compile"
+    "lint": "eslint src/*.js test/*.js",
+    "test": "mocha test/*_test.js",
+    "pretest": "yarn lint"
   },
   "repository": {
     "type": "git",
@@ -16,33 +15,29 @@
   "license": "MPL-2.0",
   "dependencies": {
     "assume": "^1.2.5",
-    "aws-sdk": "^2.2.0",
-    "azure-entities": "^0.9.0",
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
-    "cron-parser": "^1.0.1",
-    "debug": "^2.2.0",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.2",
-    "lodash": "^3.10.1",
-    "mocha-eslint": "^3.0.1",
-    "promise": "^7.0.4",
-    "taskcluster-client": "^1.6.3",
-    "taskcluster-lib-api": "3.2.2",
-    "taskcluster-lib-app": "^0.8.10",
-    "taskcluster-lib-docs": "^3.3.0",
-    "taskcluster-lib-loader": "0.0.8",
+    "aws-sdk": "^2.164.0",
+    "azure-entities": "^3.0.0",
+    "cron-parser": "2.4.3",
+    "debug": "^3.1.0",
+    "eslint-config-taskcluster": "^3.0.0",
+    "lodash": "^4.17.4",
+    "promise": "^8.0.1",
+    "taskcluster-client": "^3.1.1",
+    "taskcluster-lib-api": "4.0.0",
+    "taskcluster-lib-app": "^2.1.0",
+    "taskcluster-lib-docs": "^4.0.0",
+    "taskcluster-lib-loader": "2.0.0",
     "taskcluster-lib-monitor": "^4.3.4",
-    "taskcluster-lib-validate": "^2.1.0",
-    "typed-env-config": "^0.10.0"
+    "taskcluster-lib-validate": "^3.0.1",
+    "typed-env-config": "^1.1.1"
   },
   "devDependencies": {
-    "mocha": "^2.2.5",
-    "taskcluster-lib-testing": "^1.0.3"
+    "mocha": "^4.0.1",
+    "taskcluster-lib-testing": "^2.0.2"
   },
   "engine-strict": true,
   "engines": {
-    "node": "7.10.1",
-    "yarn": "0.24.6"
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
   }
 }
