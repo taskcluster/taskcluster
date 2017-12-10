@@ -12,7 +12,7 @@
     "test": "mocha .test/*_test.js"
   },
   "bin": {
-    "upload-project-docs": "node lib/upload-project-docs.js"
+    "upload-project-docs": "lib/upload-project-docs.js"
   },
   "files": [
     "lib"
