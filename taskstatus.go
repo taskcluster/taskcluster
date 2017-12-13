@@ -219,8 +219,14 @@ func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 }
 
 func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) error {
+	log.Printf("Waiting for task status lock for task %v...", tsm.task.TaskID)
 	tsm.Lock()
-	defer tsm.Unlock()
+	log.Printf("Lock for task status for task %v acquired.", tsm.task.TaskID)
+	defer func() {
+		log.Printf("Releasing task status lock for task %v...", tsm.task.TaskID)
+		tsm.Unlock()
+		log.Printf("Lock for task status for task %v released.", tsm.task.TaskID)
+	}()
 	currentStatus := tsm.task.Status
 	for _, allowedStatus := range fromStatuses {
 		if currentStatus == allowedStatus {

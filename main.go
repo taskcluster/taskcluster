@@ -735,8 +735,10 @@ func (task *TaskRun) setReclaimTimer() {
 		log.Print("This is more than 30 seconds away - so setting a timer")
 		task.reclaimTimer = time.AfterFunc(
 			waitTimeUntilReclaim, func() {
+				log.Printf("About to reclaim task %v...", task.TaskID)
 				err := task.StatusManager.Reclaim()
 				if err == nil {
+					log.Printf("Successfully reclaimed task %v", task.TaskID)
 					// only set another reclaim timer if the previous reclaim succeeded
 					task.setReclaimTimer()
 				} else {
