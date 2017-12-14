@@ -309,7 +309,7 @@ func initialiseFeatures() (err error) {
 func main() {
 	versionName := "generic-worker " + version
 	if revision != "" {
-		versionName += " [ revision: https://github.com/taskcluster/generic-worker/tree/" + revision + " ]"
+		versionName += " [ revision: https://github.com/taskcluster/generic-worker/commits/" + revision + " ]"
 	}
 	arguments, err := docopt.Parse(usage, nil, true, versionName, false, true)
 	if err != nil {
@@ -439,7 +439,7 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 	}
 	if revision != "" {
 		gwMetadata["revision"] = revision
-		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/tree/" + revision
+		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/commits/" + revision
 	}
 	c.WorkerTypeMetadata["generic-worker"] = gwMetadata
 
