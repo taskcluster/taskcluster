@@ -430,15 +430,18 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		"runTasksAsCurrentUser": c.RunTasksAsCurrentUser,
 		"deploymentId":          c.DeploymentID,
 	}
-	c.WorkerTypeMetadata["generic-worker"] = map[string]interface{}{
+	gwMetadata := map[string]interface{}{
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
 		"go-version": runtime.Version(),
-		"source":     "https://github.com/taskcluster/generic-worker/tree/" + revision,
 		"release":    "https://github.com/taskcluster/generic-worker/releases/tag/v" + version,
-		"revision":   revision,
 		"version":    version,
 	}
+	if revision != "" {
+		gwMetadata["revision"] = revision
+		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/tree/" + revision
+	}
+	c.WorkerTypeMetadata["generic-worker"] = gwMetadata
 
 	// now check all required values are set
 	// TODO: could probably do this with reflection to avoid explicitly listing
