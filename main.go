@@ -633,7 +633,7 @@ func RunWorker() (exitCode ExitCode) {
 						remainingTaskCountText = fmt.Sprintf(" %v more tasks to run before exiting.", remainingTasks)
 					}
 				}
-				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
+				log.Printf("No task claimed. Idle for %v (since %v)%v.%v", idleTime, lastActive, remainingIdleTimeText, remainingTaskCountText)
 			}
 		}
 		// To avoid hammering queue, make sure there is at least 5 seconds
