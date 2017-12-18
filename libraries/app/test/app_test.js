@@ -9,13 +9,16 @@ suite('app', function() {
     var server;
 
     suiteSetup(async function() {
+
+      let fakeDocs = {documentationUrl: 'https://fake.documentation/url'};
       // Create a simple app
       var app = subject({
-        port:       1459,
-        env:        'development',
-        forceSSL:   false,
-        forceHSTS:  true,
-        trustProxy: false,
+        port:             1459,
+        env:              'development',
+        forceSSL:         false,
+        forceHSTS:        true,
+        trustProxy:       false,
+        docs:             fakeDocs,
       });
       assert(app, 'Should have an app');
 
@@ -45,6 +48,14 @@ suite('app', function() {
       assert.equal(res.text, 'User-Agent: *\nDisallow: /\n', 'Got the right text');
       assert.equal(res.headers['content-type'], 'text/plain; charset=utf-8');
     });
+
+    test('get /', async function() {
+      var res = await request
+        .get('http://localhost:1459/')
+        .ok(res => res.status < 500);
+      assert(res.status, 404, 'Got 404 status');
+      assert(res.text.includes('https://fake.documentation/url'));
+    }); 
 
     suiteTeardown(function() {
       return server.terminate();
