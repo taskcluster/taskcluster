@@ -62,6 +62,8 @@ var createServer = function() {
  *   trustProxy:            false,          // Trust the proxy that forwarded for SSL
  *   contentSecurityPolicy: true,           // Send CSP (default true!)
  *   robotsTxt:             true,           // Serve a disallow-all robots.txt
+ *   rootDocsLink:          true,           // Indicator to redirect to a HTML with documentation link (default true!)
+ *   docs:                  'docs',         // Instance of taskcluster-lib-docs for accessing its methods
  * }
  *
  * Returns an express application with extra methods:
@@ -72,12 +74,14 @@ var app = function(options) {
   _.defaults(options, {
     contentSecurityPolicy: true,
     robotsTxt: true,
+    rootDocsLink: true,
   });
   assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env == 'development' ||
          options.env == 'production',       'env must be production or development');
   assert(options.forceSSL !== undefined,    'forceSSL must be defined');
   assert(options.trustProxy !== undefined,  'trustProxy must be defined');
+  assert(!options.rootDocsLink || options.docs, 'options.docs must be given if rootDocsLink is specified');
 
   // Create application
   var app = express();
@@ -129,6 +133,17 @@ var app = function(options) {
     app.use('/robots.txt', function(req, res) {
       res.header('Content-Type', 'text/plain');
       res.send('User-Agent: *\nDisallow: /\n');
+    });
+  }
+
+  // If rootDocsLink == true ,
+  // we redirect to a HTML page with documentation link
+  if (options.rootDocsLink) {
+    let link = options.docs.documentationUrl;
+    let DOCS_HTML = `<html><body><p>You're lost, here's the way out.</p>
+    <a href= "${link}" >Refer to the documentation</a></body></html>`;
+    app.get('/', function(req, res) {
+      res.status(404).send(DOCS_HTML);
     });
   }
 
