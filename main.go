@@ -612,7 +612,8 @@ func RunWorker() (exitCode ExitCode) {
 				return REBOOT_REQUIRED
 			}
 		} else {
-			idleTime := time.Now().Sub(lastActive)
+			now := time.Now()
+			idleTime := now.Sub(lastActive)
 			remainingIdleTimeText := ""
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
@@ -633,7 +634,7 @@ func RunWorker() (exitCode ExitCode) {
 						remainingTaskCountText = fmt.Sprintf(" %v more tasks to run before exiting.", remainingTasks)
 					}
 				}
-				log.Printf("No task claimed. Idle for %v (since %v)%v.%v", idleTime, lastActive, remainingIdleTimeText, remainingTaskCountText)
+				log.Printf("No task claimed at %v. Idle for %v (since %v)%v.%v", now, idleTime, lastActive, remainingIdleTimeText, remainingTaskCountText)
 			}
 		}
 		// To avoid hammering queue, make sure there is at least 5 seconds
