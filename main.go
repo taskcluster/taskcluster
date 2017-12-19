@@ -576,7 +576,8 @@ func RunWorker() (exitCode ExitCode) {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
-		if configureForAws && time.Now().Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
+		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+		if configureForAws && time.Now().Round(0).Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
 			lastQueriedProvisioner = time.Now()
 			if deploymentIDUpdated() {
 				return NONCURRENT_DEPLOYMENT_ID
@@ -612,7 +613,8 @@ func RunWorker() (exitCode ExitCode) {
 				return REBOOT_REQUIRED
 			}
 		} else {
-			idleTime := time.Now().Sub(lastActive)
+			// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+			idleTime := time.Now().Round(0).Sub(lastActive)
 			remainingIdleTimeText := ""
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
@@ -622,9 +624,10 @@ func RunWorker() (exitCode ExitCode) {
 					return IDLE_TIMEOUT
 				}
 			}
-			// let's not be over-verbose in logs - has cost implications
-			// so report only once per minute that no task was claimed, not every second
-			if time.Now().Sub(lastReportedNoTasks) > 1*time.Minute {
+			// Let's not be over-verbose in logs - has cost implications,
+			// so report only once per minute that no task was claimed, not every second.
+			// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+			if time.Now().Round(0).Sub(lastReportedNoTasks) > 1*time.Minute {
 				lastReportedNoTasks = time.Now()
 				// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
 				remainingTaskCountText := ""
@@ -731,7 +734,8 @@ func (task *TaskRun) setReclaimTimer() {
 	// Attempt to reclaim 3 mins earlier...
 	reclaimTime := takenUntil.Add(time.Minute * -3)
 	log.Printf("Reclaiming 3 mins earlier, at %v", reclaimTime)
-	waitTimeUntilReclaim := reclaimTime.Sub(time.Now())
+	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+	waitTimeUntilReclaim := reclaimTime.Round(0).Sub(time.Now())
 	log.Printf("Time to wait until then is %v", waitTimeUntilReclaim)
 	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue
 	if waitTimeUntilReclaim.Seconds() > 30 {
@@ -950,7 +954,8 @@ func (task *TaskRun) setMaxRunTimer() *time.Timer {
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
 	return time.AfterFunc(
-		task.maxRunTimeDeadline.Sub(time.Now()),
+		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+		task.maxRunTimeDeadline.Round(0).Sub(time.Now()),
 		func() {
 			// ignore any error - in the wrong go routine to properly handle it
 			task.StatusManager.Abort()
@@ -1138,7 +1143,8 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	defer func() {
 		finished := time.Now()
 		task.Log("=== Task Finished ===")
-		task.Log("Task Duration: " + finished.Sub(started).String())
+		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+		task.Log("Task Duration: " + finished.Round(0).Sub(started).String())
 	}()
 
 	for i := range task.Payload.Command {

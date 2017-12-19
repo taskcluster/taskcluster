@@ -121,7 +121,8 @@ func (c *Command) String() string {
 
 func (c *Command) Execute() (r *Result) {
 	if !c.Deadline.IsZero() {
-		c.HardTimeLimit = c.Deadline.Sub(time.Now())
+		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+		c.HardTimeLimit = c.Deadline.Round(0).Sub(time.Now())
 		if c.HardTimeLimit < 0 {
 			log.Printf("WARNING: Deadline %v exceeded before command %v has been executed!", c.Deadline, c)
 			// this is a hack to simulate a failure

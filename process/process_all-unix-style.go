@@ -81,7 +81,8 @@ func (c *Command) Execute() (r *Result) {
 	}
 	err = c.Wait()
 	finished := time.Now()
-	r.Duration = finished.Sub(started)
+	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+	r.Duration = finished.Round(0).Sub(started)
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			r.ExitError = exiterr

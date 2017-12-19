@@ -73,7 +73,8 @@ func TestIdleWithoutCrash(t *testing.T) {
 	if exitCode != IDLE_TIMEOUT {
 		t.Fatalf("Was expecting exit code %v, but got exit code %v", IDLE_TIMEOUT, exitCode)
 	}
-	if secsAlive := end.Sub(start).Seconds(); secsAlive < 7 {
+	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+	if secsAlive := end.Round(0).Sub(start).Seconds(); secsAlive < 7 {
 		t.Fatalf("Worker died early - lasted for %v seconds", secsAlive)
 	}
 }

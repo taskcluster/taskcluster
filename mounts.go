@@ -674,7 +674,8 @@ func (taskMount *TaskMount) purgeCaches() error {
 			writableCaches = append(writableCaches, t)
 		}
 	}
-	if len(writableCaches) == 0 && time.Now().Sub(lastQueriedPurgeCacheService) < 6*time.Hour {
+	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+	if len(writableCaches) == 0 && time.Now().Round(0).Sub(lastQueriedPurgeCacheService) < 6*time.Hour {
 		return nil
 	}
 	// In case of clock drift, let's query all purge cache requests created
