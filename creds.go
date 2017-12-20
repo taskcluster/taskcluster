@@ -88,6 +88,11 @@ type Certificate struct {
 // the permanent credentials will be passed through as authorized scopes to the
 // temporary credentials, but will not be restricted via the certificate.
 //
+// Note that the auth service already applies a 5 minute clock skew to the
+// start and expiry times in
+// https://github.com/taskcluster/taskcluster-auth/pull/117 so no clock skew is
+// applied in this method, nor should be applied by the caller.
+//
 // See https://docs.taskcluster.net/manual/apis/temporary-credentials
 func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
@@ -95,7 +100,7 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID stri
 	}
 
 	now := time.Now()
-	start := now.Add(time.Minute * -5) // subtract 5 min for clock drift
+	start := now
 	expiry := now.Add(duration)
 
 	if permaCreds.ClientID == "" {
