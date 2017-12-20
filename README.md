@@ -18,6 +18,9 @@ temporary credentials as follows. Notice that the credentials cannot last more
 than 31 days, and you can only revoke them by revoking the credentials that was
 used to issue them (this takes up to one hour).
 
+It is not the responsibility of the caller to apply any clock drift adjustment
+to the start or expiry time - this is handled by the auth service directly.
+
 ```python
 import datetime
 
