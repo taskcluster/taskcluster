@@ -754,8 +754,8 @@ class TestAuthentication(base.TCTest):
         tempCred = subject.createTemporaryCredentials(
             'tester',
             'no-secret',
-            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            datetime.datetime.utcnow(),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             ['test:xyz'],
         )
         client = subject.Auth({
@@ -772,8 +772,8 @@ class TestAuthentication(base.TCTest):
         tempCred = subject.createTemporaryCredentials(
             'tester',
             'no-secret',
-            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            datetime.datetime.utcnow(),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             ['test:xyz'],
             name='credName'
         )
@@ -791,8 +791,8 @@ class TestAuthentication(base.TCTest):
         tempCred = subject.createTemporaryCredentials(
             'tester',
             'no-secret',
-            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            datetime.datetime.utcnow(),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             ['test:xyz:*'],
         )
         client = subject.Auth({
@@ -811,8 +811,8 @@ class TestAuthentication(base.TCTest):
         tempCred = subject.createTemporaryCredentials(
             'tester',
             'no-secret',
-            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            datetime.datetime.utcnow(),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             ['test:xyz:*'],
             name='credName'
         )
@@ -863,8 +863,8 @@ class TestAuthentication(base.TCTest):
         tempCred = subject.createTemporaryCredentials(
             'tester',
             'no-secret',
-            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            datetime.datetime.utcnow(),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             ['test:*'],
         )
         client = subject.Auth({
@@ -900,8 +900,8 @@ class TestAuthentication(base.TCTest):
         tempCred = subject.createTemporaryCredentials(
             'tester',
             'no-secret',
-            datetime.datetime.utcnow() - datetime.timedelta(hours=10),
-            datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+            datetime.datetime.utcnow(),
+            datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             ['test:*'],
         )
         client = subject.Auth({

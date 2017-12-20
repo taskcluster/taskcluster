@@ -279,6 +279,9 @@ def createApiClient(name, api):
 def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, name=None):
     """ Create a set of temporary credentials
 
+    Callers should not apply any clock skew; clock drift is accounted for by
+    auth service.
+
     clientId: the issuing clientId
     accessToken: the issuer's accessToken
     start: start time of credentials, seconds since epoch
