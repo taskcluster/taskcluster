@@ -3,6 +3,90 @@ suite('normalize', () => {
   const assert = require('assert');
   const _ = require('lodash');
 
+  suite('scope comparing', function() {
+    const cmp = (a, b) => {
+      if (a < b) {
+        return -1;
+      } else if (a > b) {
+        return 1;
+      } else {
+        return 0;
+      }
+    };
+    const SYMBOLIC = {
+      '-1': '<',
+      0: '===',
+      1: '>',
+    };
+
+    const testTotalOrder = ({title, scopes}) => {
+      _.range(scopes.length).forEach(i => {
+        _.range(scopes.length).forEach(j => {
+          // scopeCompare doesn't return 0, so don't test that
+          if (i === j) {
+            return;
+          }
+          let exp = cmp(i, j);
+          test(`${title} - ${scopes[i]} ${SYMBOLIC[exp]} ${scopes[j]}`, () => {
+            assert.equal(
+              SYMBOLIC[utils.scopeCompare(scopes[i], scopes[j])],
+              SYMBOLIC[exp],
+              `expected ${scopes[i]} ${SYMBOLIC[exp]} ${scopes[j]}`);
+          });
+        });
+      });
+    };
+
+    testTotalOrder({
+      title: 'simple example of total order',
+      scopes: [
+        'abc*',
+        'abc',
+        'abc%d',
+      ],
+    });
+
+    testTotalOrder({
+      title: 'stars',
+      scopes: [
+        '*',
+        '',
+        '**',
+        '***',
+        '****',
+
+        'aaa*',
+        'aaa',
+        'aaa**',
+        'aaa***',
+        'aaa****',
+        'aaa*****',
+      ],
+    });
+
+    testTotalOrder({
+      title: 'all character combos',
+      scopes: [
+        'x*',
+        'x',
+
+        'x%*',
+        'x%',
+        'x%%',
+        'x%a',
+
+        'x**',
+        'x*%',
+        'x*a',
+
+        'xa*',
+        'xa',
+        'xa%',
+        'xaa',
+      ],
+    });
+  });
+
   suite('scope sorting', function() {
     const testSortScopes = ({title, scopes, expected, N}) => {
       title = title || 'sort scopes ' + scopes.join(',');
@@ -54,6 +138,25 @@ suite('normalize', () => {
         'test*a',
         'test*b',
         'testb',
+      ],
+    });
+
+    testSortScopes({
+      scopes: [
+        'abc',
+        //'abc%d',
+        'abc*',
+        'abc*d',
+        'ab',
+        'abcd',
+      ],
+      expected: [
+        'ab',
+        'abc*',
+        'abc',
+        //'abc%d',
+        'abc*d',
+        'abcd',
       ],
     });
 
