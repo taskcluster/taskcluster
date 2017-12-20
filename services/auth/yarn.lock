@@ -3044,17 +3044,17 @@ taskcluster-lib-monitor@4.6.3:
     taskcluster-client "^1.0.1"
     usage "^0.7.1"
 
+taskcluster-lib-scopes@1.6.5:
+  version "1.6.5"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.6.5.tgz#6184ae5b78f26a434ef279164d1fb198afd65d94"
+  dependencies:
+    babel-runtime "^6.26.0"
+
 taskcluster-lib-scopes@^0.8.8:
   version "0.8.8"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-0.8.8.tgz#6c67f1b719b6aaa00138de499083fc7e12009bdd"
   dependencies:
     babel-runtime "^5.8.25"
-
-taskcluster-lib-scopes@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.5.0.tgz#c7df2ef1bb92d6f00bc319da6dc12949e0f3359c"
-  dependencies:
-    babel-runtime "^6.26.0"
 
 taskcluster-lib-testing@^2.0.2:
   version "2.0.2"
