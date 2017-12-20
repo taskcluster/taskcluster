@@ -28,6 +28,9 @@ The configuration (here `cfg.server`) has the following options:
  * `forceSSL`: true to redirect to https using sslify; set to true for production
  * `trustProxy`: trust headers from the proxy; set to true for production
  * `contentSecurityPolicy`: include a CSP header with default-src: none; *default is true*
+ * `robotsTxt`: include a /robots.txt; *default is true*
+ * `rootDocsLink`: include a lin to the docs in an HTML document at /; *default is true*
+ * `docs`: a taskcluster-lib-docs documenter, used to generate the docs link
 
 The resulting object is an express application, configured with the standard
 TaskCluster microservice settings.  It should have an API object added to it,
