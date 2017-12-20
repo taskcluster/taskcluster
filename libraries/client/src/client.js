@@ -630,12 +630,12 @@ exports.config = function(options) {
 exports.createTemporaryCredentials = function(options) {
   assert(options, 'options are required');
 
-  // Get now as default value for start
   var now = new Date();
-  now.setMinutes(now.getMinutes() - 5); // subtract 5 min for clock drift
 
   // Set default options
   options = _.defaults({}, options, {
+    // Clock drift is handled in auth service (PR #117)
+    // so no clock skew required.
     start:      now,
     scopes:     [],
   }, _defaultOptions);
