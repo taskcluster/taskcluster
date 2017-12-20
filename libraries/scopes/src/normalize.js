@@ -1,6 +1,19 @@
 /**
  * Compare scopes a and b to see which comes first if sorted
- * Such that 'a*' comes before 'a', but otherwise normal order.
+ * Such that 'a*' comes before 'a', but otherwise normal order.  In other words,
+ * the trailing * is considered a special character that sorts *before* the end of
+ * string.
+ *
+ * In particular, for a given prefix P that does not end in *, it will produce
+ * the following contiguous segments of the set of scopes beginning with P (if
+ * such scopes are present):
+ *
+ *  - P*
+ *  - P
+ *  - P<anything>
+ *
+ * In the case where P itself ends in *, the * in "P<anything>" is not a trailing star
+ * and is thus not treated specially, so ordering is lexical.
  *
  * Example: ['*', '', 'a*', 'a', 'a(', 'aa', 'b'] is a list sorted as such.
  *
@@ -8,35 +21,24 @@
  * scopes (those with a final `*`) up front.
  */
 export const scopeCompare = (a, b) => {
-  let n = a.length;
-  let m = b.length;
+  let astar = a.endsWith('*');
+  let bstar = b.endsWith('*');
 
-  let d = Math.abs(n - m);
-  if (d == 0) {
-    if (a[n - 1] === '*' || b[n - 1] === '*') {
-      if (a.startsWith(b.slice(0, -1))) {
-        if (a[n - 1] === '*') {
-          return -1;
-        }
-        if (b[n - 1] === '*') {
-          return 1;
-        }
-      }
-    }
-  } else if (d == 1) {
-    if (n > m && a[n - 1] === '*') {
-      if (a.startsWith(b)) {
-        return -1;
-      }
-    }
-    if (m > n && b[m - 1] === '*') {
-      if (b.startsWith(a)) {
-        return 1;
-      }
-    }
+  a = astar ? a.slice(0, -1) : a;
+  b = bstar ? b.slice(0, -1) : b;
+
+  if (astar !== bstar && a === b) {
+    return astar ? -1 : 1;
   }
 
-  return a < b ? -1 : 1;
+  // "normal" comparison
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else {
+    return 0;
+  }
 };
 
 /**
