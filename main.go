@@ -853,11 +853,11 @@ func executionError(reason TaskUpdateReason, status TaskStatus, err error) *Comm
 }
 
 func ResourceUnavailable(err error) *CommandExecutionError {
-	return executionError("resource-unavailable", errored, err)
+	return executionError(resourceUnavailable, errored, err)
 }
 
 func MalformedPayloadError(err error) *CommandExecutionError {
-	return executionError("malformed-payload", errored, err)
+	return executionError(malformedPayload, errored, err)
 }
 
 func Failure(err error) *CommandExecutionError {
@@ -1005,7 +1005,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err.add(executionError(InternalError, errored, fmt.Errorf("%#v", r)))
+			err.add(executionError(internalError, errored, fmt.Errorf("%#v", r)))
 			defer panic(r)
 		}
 		err.add(task.resolve(err))

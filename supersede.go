@@ -108,7 +108,7 @@ func (l *SupersedeTask) Start() *CommandExecutionError {
 		return &CommandExecutionError{
 			TaskStatus: aborted,
 			Cause:      fmt.Errorf("Task %v has been superseded by task %v", l.task.TaskID, taskIDs[0]),
-			Reason:     Superseded,
+			Reason:     superseded,
 		}
 	}
 	return nil

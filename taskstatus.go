@@ -26,12 +26,12 @@ const (
 )
 
 const (
-	WorkerShutdown      TaskUpdateReason = "worker-shutdown"
-	MalformedPayload    TaskUpdateReason = "malformed-payload"
-	ReousrceUnavailable TaskUpdateReason = "resource-unavailable"
-	InternalError       TaskUpdateReason = "internal-error"
-	Superseded          TaskUpdateReason = "superseded"
-	IntermittentTask    TaskUpdateReason = "intermittent-task"
+	workerShutdown      TaskUpdateReason = "worker-shutdown"
+	malformedPayload    TaskUpdateReason = "malformed-payload"
+	resourceUnavailable TaskUpdateReason = "resource-unavailable"
+	internalError       TaskUpdateReason = "internal-error"
+	superseded          TaskUpdateReason = "superseded"
+	intermittentTask    TaskUpdateReason = "intermittent-task"
 )
 
 type TaskStatusManager struct {
