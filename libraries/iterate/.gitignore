@@ -2,7 +2,7 @@
 /user-config.yml
 /node_modules/
 provisioner-test-*.pem
-.test
+.test/
 
 # Logs
 logs
@@ -31,3 +31,4 @@ node_modules
 Session.vim
 .netrwhist
 *~
+lib/
