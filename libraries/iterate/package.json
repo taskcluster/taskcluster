@@ -9,6 +9,10 @@
     "prepare": "yarn compile",
     "test": "yarn compile && mocha .test/*_test.js"
   },
+  "files": [
+    "src",
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-lib-iterate.git"
