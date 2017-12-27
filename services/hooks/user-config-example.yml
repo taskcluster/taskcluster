@@ -1,18 +1,7 @@
 defaults:
 test:
-  # Credentials to be specified for tests to work
-  # notice that you can also specify these by environment variables
-  influx:
-    connectionString: '...'
   taskcluster:
-    # should have the scopes:
-    #  - 'auth:azure-table-access:jungle/*'
-    #  - 'assume:hook-id:tc-hooks-tests/tc-test-hook'
-    #  - 'queue:create-task:no-provisioner/test-worker'
-    #  - 'jungle:tc-hooks-tests:scope/required/for/task/1'
-    # and the role: 'hook-id:tc-hooks-tests/tc-test-hook' should have
-    #  - 'queue:create-task:no-provisioner/test-worker'
-    #  - 'jungle:tc-hooks-tests:scope/required/for/task/1'
+    # should have the scope `assume:project:taskcluster:tc-hooks-tests`
     credentials:
       clientId:       '...'
       accessToken:    '...'
