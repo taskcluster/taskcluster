@@ -3,3 +3,4 @@ exports.sh
 user-config.yml
 lib
 .test
+*.log

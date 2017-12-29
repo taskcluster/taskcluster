@@ -29,7 +29,7 @@ suite('TaskCreator', function() {
     creator = await helper.load('taskcreator', helper.loadOptions);
   });
 
-  var createHook = async function(scopes) {
+  var createHook = async function(scopes, extra) {
     return await helper.Hook.create({
       hookGroupId:        'tc-hooks-tests',
       hookId:             'tc-test-hook',
@@ -50,6 +50,7 @@ suite('TaskCreator', function() {
         tags: {
           purpose:        'taskcluster-testing',
         },
+        extra,
       },
       bindings:           [],
       deadline:           '1 day',
@@ -69,6 +70,27 @@ suite('TaskCreator', function() {
     assume(resp.status.taskId).equals(taskId);
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
+
+  test('firing a real task with a JSON-e context succeeds', async function() {
+    let hook = await createHook([], {
+      valueFromContext: {$eval: 'someValue + 13'},
+      flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
+    }); 
+    let taskId = taskcluster.slugid();
+    let resp = await creator.fire(hook, {
+      someValue: 42, 
+      numbers: [1, 2, [3, 4], [[5, 6]]],
+    }, {taskId});
+
+    // get the created task to examine its payload
+    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
+    let task = await queue.task(taskId);
+    // check that JSON-e was properly expanded
+    assume(task.extra).deeply.equals({
+      valueFromContext: 55,
+      flattenedDeep: [1, 2, 3, 4, 5, 6],
+    });
+  });   
 
   test('adds a taskId if one is not specified', async function() {
     let hook = await createHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1']);

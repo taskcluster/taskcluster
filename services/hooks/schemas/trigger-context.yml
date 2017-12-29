@@ -1,5 +1,5 @@
 $schema:        http://json-schema.org/draft-06/schema#
-title:          "trigger payload"
+title:          "trigger context"
 description:    |
-  Trigger payload
+  Trigger context
 type:           object
