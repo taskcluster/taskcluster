@@ -1401,6 +1401,10 @@ jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
 
+json-e@^2.3.5:
+  version "2.3.5"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.3.5.tgz#93a1aaae9554744b7ffc93c173f7518fe4e6c6ed"
+
 json-schema-traverse@^0.3.0:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.3.1.tgz#349a6d44c53a51de89b40805c5d5e59b417d3340"

@@ -2,6 +2,7 @@ var assert      = require('assert');
 var taskcluster = require('taskcluster-client');
 var debug       = require('debug')('hooks:taskcreator');
 var _           = require('lodash');
+var jsone       = require('json-e');
 
 class TaskCreator {
   /** Create a TaskCreator instance.
@@ -18,10 +19,10 @@ class TaskCreator {
     this.credentials = options.credentials;
   }
 
-  taskForHook(hook, options) {
-    let task = _.cloneDeep(hook.task);
+  taskForHook(hook, context, options) {
+    let task = jsone(hook.task, context);
     let created = options.created || new Date();
-
+  
     task.created = created.toJSON();
     task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
     task.expires = taskcluster.fromNowJSON(hook.expires, created);
@@ -39,7 +40,7 @@ class TaskCreator {
   * options.retru is false, then the call will not be automatically retried on
   * 5xx errors.
   */
-  async fire(hook, payload, options) {
+  async fire(hook, context, options) {
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
       created: new Date(),
@@ -55,12 +56,10 @@ class TaskCreator {
       retries: options.retry ? 0 : 5,
     });
 
-    // TODO: payload is ignored right now
-
     debug('firing hook %s/%s to create taskId: %s',
       hook.hookGroupId, hook.hookId, options.taskId);
     return await queue.createTask(options.taskId,
-      this.taskForHook(hook, options));
+      this.taskForHook(hook, context, options));
   };
 }
 
