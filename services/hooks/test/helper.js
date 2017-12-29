@@ -36,6 +36,7 @@ helper.setup = function() {
     await helper.Hook.ensureTable();
     await helper.Hook.scan({}, {handler: hook => hook.remove()});
 
+    helper.cfg = cfg;
     helper.creator = new taskcreator.MockTaskCreator();
     webServer = await load('server', _.defaults({
       Hook: helper.Hook,

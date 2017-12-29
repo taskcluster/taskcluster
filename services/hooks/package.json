@@ -20,6 +20,7 @@
     "cron-parser": "2.4.3",
     "debug": "^3.1.0",
     "eslint-config-taskcluster": "^3.0.0",
+    "json-e": "^2.3.5",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
     "taskcluster-client": "^3.1.1",
