@@ -11,6 +11,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -272,6 +273,7 @@ and reports back results to the queue.
     70     A new deploymentId has been issued in the AWS worker type configuration, meaning
            this worker environment is no longer up-to-date. Typcially workers should
            terminate.
+    71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
 `
 )
 
@@ -283,6 +285,7 @@ const (
 	IDLE_TIMEOUT             ExitCode = 68
 	INTERNAL_ERROR           ExitCode = 69
 	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
+	WORKER_STOPPED           ExitCode = 71
 )
 
 func persistFeaturesState() (err error) {
@@ -572,6 +575,8 @@ func RunWorker() (exitCode ExitCode) {
 	if reboot {
 		return REBOOT_REQUIRED
 	}
+	sigInterrupt := make(chan os.Signal, 1)
+	signal.Notify(sigInterrupt, os.Interrupt)
 	for {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
@@ -586,6 +591,7 @@ func RunWorker() (exitCode ExitCode) {
 		// make sure at least 5 seconds passes between iterations
 		wait5Seconds := time.NewTimer(time.Second * 5)
 		taskFound := FindAndRunTask()
+
 		if taskFound {
 			err := taskCleanup()
 			if err != nil {
@@ -642,7 +648,11 @@ func RunWorker() (exitCode ExitCode) {
 		// To avoid hammering queue, make sure there is at least 5 seconds
 		// between consecutive requests. Note we do this even if a task ran,
 		// since a task could complete in less than that amount of time.
-		<-wait5Seconds.C
+		select {
+		case <-wait5Seconds.C:
+		case <-sigInterrupt:
+			return WORKER_STOPPED
+		}
 	}
 }
 
