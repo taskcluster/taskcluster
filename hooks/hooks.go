@@ -44,7 +44,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Sat, 9 Dec 2017 at 16:54:00 UTC. The code was generated
+// Sat, 30 Dec 2017 at 15:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -215,7 +215,7 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 //   * hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
-func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerPayload) (*TaskStatusStructure, error) {
+func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerContext) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*myHooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err
@@ -267,7 +267,7 @@ func (myHooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTok
 // This endpoint triggers a defined hook with a valid token.
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
-func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerPayload) (*TaskStatusStructure, error) {
+func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerContext) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*myHooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err

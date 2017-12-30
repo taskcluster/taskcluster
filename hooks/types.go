@@ -636,10 +636,10 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
-	// Trigger payload
+	// Trigger context
 	//
-	// See http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#
-	TriggerPayload json.RawMessage
+	// See http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
+	TriggerContext json.RawMessage
 
 	// Secret token for a trigger
 	//
@@ -652,16 +652,16 @@ type (
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// TriggerPayload is of type json.RawMessage...
-func (this *TriggerPayload) MarshalJSON() ([]byte, error) {
+// TriggerContext is of type json.RawMessage...
+func (this *TriggerContext) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerPayload) UnmarshalJSON(data []byte) error {
+func (this *TriggerContext) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("TriggerPayload: UnmarshalJSON on nil pointer")
+		return errors.New("TriggerContext: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

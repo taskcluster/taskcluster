@@ -1,4 +1,4 @@
-Generated: 1512838455
+Generated: 1514647394
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3848,7 +3848,7 @@ Entry 8     =
     Entry Name        = 'triggerHook'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[[hooks:trigger-hook:<hookGroupId>/<hookId>]]'
-    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json'
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook'
     Entry Description = 'This endpoint will trigger the creation of a task from a hook definition.'
@@ -3889,7 +3889,7 @@ Entry 11    =
     Entry Name        = 'triggerHookWithToken'
     Entry Stability   = 'experimental'
     Entry Scopes      = '[]'
-    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json'
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook with a token'
     Entry Description = 'This endpoint triggers a defined hook with a valid token.'
@@ -4818,16 +4818,16 @@ TypeName               = 'TaskTemplate'
 SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/task-template.json#'
 
 
-http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#
+http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
 =============================================================
-Description            = 'Trigger payload
+Description            = 'Trigger context
 '
-ID                     = 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#'
+ID                     = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json#'
 Schema                 = 'http://json-schema.org/draft-06/schema#'
-Title                  = 'trigger payload'
+Title                  = 'trigger context'
 Type                   = 'object'
-TypeName               = 'TriggerPayload'
-SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#'
+TypeName               = 'TriggerContext'
+SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json#'
 
 
 http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json#
