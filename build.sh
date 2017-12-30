@@ -1,4 +1,4 @@
-#!/bin/bash -evx
+#!/bin/bash -e
 
 cd "$(dirname "${0}")"
 
@@ -21,28 +21,55 @@ elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 8 ]; then
   go version >&2
   exit 65
 fi
+TEST=false
+OUTPUT_ALL_PLATFORMS="Building just for the native platform (build.sh -a argument NOT specified)"
+OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
+ALL_PLATFORMS=false
+while getopts ":at" opt; do
+    case "${opt}" in
+        a)  ALL_PLATFORMS=true
+            OUTPUT_ALL_PLATFORMS="Building for all platforms (build.sh -a argument specified)"
+            ;;
+        t)  TEST=true
+            OUTPUT_TEST="Test flag detected (-t) as build.sh argument"
+            ;;
+    esac
+done
+echo "${OUTPUT_ALL_PLATFORMS}"
+echo "${OUTPUT_TEST}"
 
 go get github.com/taskcluster/generic-worker/gw-codegen
 go generate ./...
 
 function install {
-  # GOOS="${1}" GOARCH="${2}" go get -u ./...
-  GOOS="${1}" GOARCH="${2}" go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
-  GOOS="${1}" GOARCH="${2}" go vet ./...
-  # note, this just builds tests, it doesn't run them!
-  GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker
-  GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker/livelog
+  if [ "${1}" != 'native' ]; then
+    GOOS="${1}" GOARCH="${2}" go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
+    GOOS="${1}" GOARCH="${2}" go vet ./...
+    # note, this just builds tests, it doesn't run them!
+    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker
+    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker/livelog
+  else
+    go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
+    go vet ./...
+    # note, this just builds tests, it doesn't run them!
+    go test -c github.com/taskcluster/generic-worker
+    go test -c github.com/taskcluster/generic-worker/livelog
+  fi
 }
 
-# build windows first
-install windows 386
-install windows amd64
-# darwin
-install darwin     386
-install darwin     amd64
-# linux
-install linux      386
-install linux      amd64
+if ${ALL_PLATFORMS}; then
+  # build windows first
+  install windows 386
+  install windows amd64
+  # darwin
+  install darwin     386
+  install darwin     amd64
+  # linux
+  install linux      386
+  install linux      amd64
+else
+  install native
+fi
 
 # now the rest
 ## install android    arm
@@ -74,7 +101,9 @@ go get github.com/taskcluster/livelog
 # capital X here ... we only want to delete things that are ignored!
 git clean -fdX
 
-CGO_ENABLED=1 GORACE="history_size=7" go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+if $TEST; then
+  CGO_ENABLED=1 GORACE="history_size=7" go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+fi
 go vet ./...
 golint ./...
 go get github.com/gordonklaus/ineffassign
