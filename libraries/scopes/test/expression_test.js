@@ -73,6 +73,7 @@ suite('scope expression satisfaction:', function() {
     [['abc*'], {AllOf: ['abc', 'ghi']}],
     [[''], {AnyOf: ['abc', 'def']}],
     [['abc:def'], {AnyOf: ['abc', 'def']}],
+    [['xyz', 'abc'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}],
   ].map(([s, e]) => {
     test(`${JSON.stringify(e)} is _not_ satisfied by ${JSON.stringify(s)}`, scenario(s, e, 'should-fail'));
   });
@@ -85,6 +86,7 @@ suite('scope expression satisfaction:', function() {
     [['abc*'], {AnyOf: ['abc', 'def']}],
     [['abc*'], {AnyOf: ['abc']}],
     [['abc*', 'def*'], {AnyOf: ['abc', 'def']}],
+    [['foo'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}],
   ].map(([s, e]) => {
     test(`${JSON.stringify(e)} is satisfied by ${JSON.stringify(s)}`, scenario(s, e));
   });
