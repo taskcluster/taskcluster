@@ -1,32 +1,20 @@
 language: go
-
 go:
-  - 1.5
+  - 1.9
 
 env:
-  - "MY_GOOS=linux MY_GOARCH=amd64"
-  - "MY_GOOS=darwin MY_GOARCH=amd64"
-  - "MY_GOOS=windows MY_GOARCH=amd64"
-  - "MY_GOOS=windows MY_GOARCH=386"
-
-before_install:
-# workaround for travis-ci/gimme#42
-  - curl -o go.tar.gz -sL https://storage.googleapis.com/golang/go1.7.4.linux-amd64.tar.gz
-  - tar -C $HOME -xf go.tar.gz
-  - rm go.tar.gz
-  - export GOROOT="${HOME}/go"
-  - export PATH="${GOROOT}/bin:${PATH}"
-  - export GOOS="${MY_GOOS}"
-  - export GOARCH="${MY_GOARCH}"
-# end of workaround ###
+  - "GIMME_OS=linux GIMME_ARCH=amd64"
+  - "GIMME_OS=darwin GIMME_ARCH=amd64"
+  - "GIMME_OS=windows GIMME_ARCH=amd64"
+  - "GIMME_OS=windows GIMME_ARCH=386"
 
 install:
   - go get -d -t ./...
-  - "if test $GOOS.$GOARCH = linux.amd64; then npm install; fi"
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm install; fi"
 
 script:
   - go install -v ./...
-  - "if test $GOOS.$GOARCH = linux.amd64; then npm test; fi"
+  - "if test $GIMME_OS.$GIMME_ARCH = linux.amd64; then npm test; fi"
 
 notifications:
   irc:

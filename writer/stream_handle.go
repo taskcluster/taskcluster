@@ -6,11 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-
-	. "github.com/visionmedia/go-debug"
 )
-
-var debug = Debug("stream:handle")
 
 const EVENT_BUFFER_SIZE = 100
 
@@ -106,7 +102,7 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 	// If the stream is over or we drained enough of it then stop before event
 	// processing begins...
 	if self.stream.Ended || self.Offset >= self.Stop {
-		debug(
+		log.Printf(
 			"Ending stream | ended: %v | offset: %d | stop: %s",
 			self.Offset, self.Stop, self.stream.Ended,
 		)

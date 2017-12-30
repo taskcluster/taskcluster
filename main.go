@@ -10,10 +10,7 @@ import (
 	"sync"
 
 	stream "github.com/taskcluster/livelog/writer"
-	. "github.com/visionmedia/go-debug"
 )
-
-var debug = Debug("livelog")
 
 const (
 	DEFAULT_PUT_PORT = 60022
@@ -40,7 +37,7 @@ func startLogServe(stream *stream.Stream, getAddr string) {
 
 	routes := http.NewServeMux()
 	routes.HandleFunc("/log/", func(w http.ResponseWriter, r *http.Request) {
-		debug("output %s %s", r.Method, r.URL.String())
+		log.Printf("output %s %s", r.Method, r.URL.String())
 
 		// Authenticate the request with accessToken, this is good enough because
 		// live logs are short-lived, we do this by slicing away '/log/' from the
@@ -64,12 +61,12 @@ func startLogServe(stream *stream.Stream, getAddr string) {
 	crtFile := os.Getenv("SERVER_CRT_FILE")
 	keyFile := os.Getenv("SERVER_KEY_FILE")
 	if crtFile != "" && keyFile != "" {
-		debug("Output server listening... %s (with TLS)", server.Addr)
-		debug("key %s ", keyFile)
-		debug("crt %s ", crtFile)
+		log.Printf("Output server listening... %s (with TLS)", server.Addr)
+		log.Printf("key %s ", keyFile)
+		log.Printf("crt %s ", crtFile)
 		server.ListenAndServeTLS(crtFile, keyFile)
 	} else {
-		debug("Output server listening... %s (without TLS)", server.Addr)
+		log.Printf("Output server listening... %s (without TLS)", server.Addr)
 		server.ListenAndServe()
 	}
 }
@@ -95,7 +92,7 @@ func getLog(
 		// Ensure we close our file handle...
 		// Ensure the stream is cleaned up after errors, etc...
 		stream.Unobserve(handle)
-		debug("send connection close...")
+		log.Print("send connection close...")
 	}()
 
 	// TODO: Allow the input stream to configure headers rather then assume
@@ -108,7 +105,7 @@ func getLog(
 
 	// Send headers so its clear what we are trying to do...
 	writer.WriteHeader(200)
-	debug("wrote headers...")
+	log.Print("wrote headers...")
 
 	// Begin streaming any pending results...
 	_, writeToErr := handle.WriteTo(writer)
@@ -154,11 +151,11 @@ func main() {
 		if port := os.Getenv(envVar); port != "" {
 			p, err := strconv.Atoi(port)
 			if err != nil {
-				debug("env var %v is not a number (%v)", envVar, port)
+				log.Printf("env var %v is not a number (%v)", envVar, port)
 				os.Exit(notANumberExitCode)
 			}
 			if p < 0 || p > 65535 {
-				debug("env var %v is not between [0, 65535] (%v)", envVar, p)
+				log.Printf("env var %v is not between [0, 65535] (%v)", envVar, p)
 				os.Exit(outOfRangeExitCode)
 			}
 			addr = ":" + port
@@ -179,10 +176,10 @@ func main() {
 	// publicly but via links in the docker container... In the future we can
 	// handle something fancier.
 	routes.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
-		debug("input %s %s", r.Method, r.URL.String())
+		log.Printf("input %s %s", r.Method, r.URL.String())
 
 		if r.Method != "PUT" {
-			debug("input not put")
+			log.Print("input not put")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("This endpoint can only handle PUT requests"))
 			return
@@ -191,7 +188,7 @@ func main() {
 		// Threadsafe checking of the `handlingPut` flag
 		mutex.Lock()
 		if handlingPut {
-			debug("Attempt to put when in progress")
+			log.Print("Attempt to put when in progress")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("This endpoint can only process one http PUT at a time"))
 			mutex.Unlock() // used instead of defer so we don't block other rejections
@@ -202,7 +199,7 @@ func main() {
 		stream, streamErr := stream.NewStream(r.Body)
 
 		if streamErr != nil {
-			debug("input stream open err", streamErr)
+			log.Printf("input stream open err %v", streamErr)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Could not open stream for body"))
 
@@ -216,7 +213,7 @@ func main() {
 		w.WriteHeader(http.StatusCreated)
 
 		// Initialize the sub server in another go routine...
-		debug("Begin consuming...")
+		log.Print("Begin consuming...")
 		go startLogServe(stream, getAddr)
 		consumeErr := stream.Consume()
 		if consumeErr != nil {
@@ -227,6 +224,6 @@ func main() {
 	})
 
 	// Listen forever on the PUT side...
-	debug("input server listening... %s", server.Addr)
+	log.Printf("input server listening... %s", server.Addr)
 	server.ListenAndServe()
 }

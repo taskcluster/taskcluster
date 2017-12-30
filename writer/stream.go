@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 
-	. "github.com/visionmedia/go-debug"
 	"gopkg.in/fatih/set.v0"
 )
 
@@ -30,9 +29,6 @@ type Stream struct {
 	Ended   bool
 	Reading bool
 
-	debug  DebugFunction
-	debugR DebugFunction
-
 	handles *set.Set
 }
 
@@ -42,9 +38,8 @@ func NewStream(read io.Reader) (*Stream, error) {
 		return nil, err
 	}
 
-	debug := Debug("stream:control")
 	path := fmt.Sprintf(dir + "/stream")
-	debug("created at path", path)
+	log.Printf("created at path %v", path)
 
 	file, openErr :=
 		os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
@@ -62,13 +57,11 @@ func NewStream(read io.Reader) (*Stream, error) {
 		File:    *file,
 
 		handles: set.New(),
-		debug:   debug,
-		debugR:  Debug("stream:read"),
 	}, nil
 }
 
 func (self *Stream) Unobserve(handle *StreamHandle) {
-	self.debug("unobserve")
+	log.Print("unobserve")
 	self.handles.Remove(handle)
 }
 
@@ -80,18 +73,18 @@ func (self *Stream) Observe(start, stop int64) *StreamHandle {
 }
 
 func (self *Stream) Consume() error {
-	self.debug("consume")
+	log.Print("consume")
 	if self.Reading {
 		return fmt.Errorf("Cannot consome twice...")
 	}
 
 	defer func() {
-		self.debug("consume cleanup...")
+		log.Print("consume cleanup...")
 
 		self.File.Close()
 
 		// Cleanup all handles after the consumption is complete...
-		self.debug("removing %d handles", self.handles.Size())
+		log.Printf("removing %d handles", self.handles.Size())
 		self.handles.Clear()
 	}()
 
@@ -100,7 +93,7 @@ func (self *Stream) Consume() error {
 	for {
 		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
-		self.debugR("reading bytes %d", bytesRead)
+		log.Printf("reading bytes %d", bytesRead)
 
 		startOffset := self.Offset
 
@@ -117,7 +110,7 @@ func (self *Stream) Consume() error {
 			eventErr = readErr
 		}
 
-		self.debugR("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
+		log.Printf("read: %d total offset: %d eof: %v", bytesRead, self.Offset, eof)
 		event := Event{
 			Number: eventNumber,
 			Length: int64(bytesRead),
@@ -151,14 +144,14 @@ func (self *Stream) Consume() error {
 
 		// Return the reader errors (except for EOF) and abort.
 		if !eof && readErr != nil {
-			self.debugR("Read error %v", readErr)
+			log.Printf("Read error %v", readErr)
 			return readErr
 		}
 
 		// If we are done reading the stream break the loop...
 		if eof {
 			self.Ended = true
-			self.debugR("finishing consume eof")
+			log.Print("finishing consume eof")
 			break
 		}
 	}
