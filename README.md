@@ -8,7 +8,7 @@
 [![Coverage Status](https://coveralls.io/repos/taskcluster/generic-worker/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/generic-worker?branch=master)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-A generic worker for task cluster, written in go.
+A generic worker for [taskcluster](https://tools.taskcluster.net/), written in go.
 
 # Install binary
 
