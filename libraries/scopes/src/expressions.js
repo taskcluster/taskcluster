@@ -6,7 +6,7 @@ import {patternMatch} from './satisfaction';
  * Validate scope-expression for well-formedness.
  */
 exports.validExpression = function(expr) {
-  assert(expr, 'Scope expression must be objects.');
+  assert(expr, 'Scope expression must exist.');
   assert(typeof expr === 'object' && !Array.isArray(expr), 'Scope expressions must be objects.');
   const keys = Object.keys(expr);
   assert(keys.length === 1, 'Scope expressions must have only one key.');
@@ -37,6 +37,6 @@ exports.satisfiesExpression = function(scopeset, expr) {
   const method = operator === 'AnyOf' ? 'some' : 'every';
   return subexpressions[method](subexpr => typeof subexpr === 'string' ?
     scopeset.some(scope => patternMatch(scope, subexpr)) :
-    exports.satisfiesExpression(patterns, subexpr)
+    exports.satisfiesExpression(scopeset, subexpr)
   );
 };
