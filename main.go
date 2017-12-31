@@ -51,7 +51,7 @@ var (
 		&SupersedeFeature{},
 	}
 
-	version  = "10.4.0"
+	version  = "10.4.1"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 	usage    = `
 generic-worker
