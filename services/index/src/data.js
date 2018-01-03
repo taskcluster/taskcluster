@@ -142,7 +142,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
 
 /**Delete expired entries */
 Namespace.expireEntries = function(parent, indexedTask, continuationToken=null) {
- 
+  console.log(`expireEntries in ${parent}`);
   return this.query({
     parent: parent,
   },
