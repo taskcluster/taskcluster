@@ -103,7 +103,15 @@ var load = loader({
   server: {
     requires: ['cfg', 'router', 'docs'],
     setup: ({cfg, router, docs}) => {
-      let hooksApp = app(cfg.server);
+      let hooksApp = app({
+        port:                   cfg.server.port,
+        env:                    cfg.server.env,
+        forceSSL:               cfg.server.forceSSL,
+        trustProxy:             cfg.server.trustProxy,
+        publicUrl:              cfg.server.publicUrl,
+        rootDocsRedirect:       true, 
+        docs,
+      });
       hooksApp.use('/v1', router);
       return hooksApp.createServer();
     },
