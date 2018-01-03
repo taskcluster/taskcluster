@@ -142,7 +142,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
 
 /**Delete expired entries */
 Namespace.expireEntries = function(parent, indexedTask, continuationToken=null) {
-  console.log(`expireEntries in ${parent}`);
+  console.log(`expireEntries in '${parent}' with token '${continuationToken}'`);
   return this.query({
     parent: parent,
   },
@@ -154,6 +154,7 @@ Namespace.expireEntries = function(parent, indexedTask, continuationToken=null) 
     
     for (var i=0; i<dataLength; i++) {
       let entry = data.entries[i];
+      console.log(`..entry ${entry.name}`);
       let namespace = parent + '.' + entry.name;
       if (parent.length === 0 || entry.name.length === 0) {
         namespace = parent + entry.name;
