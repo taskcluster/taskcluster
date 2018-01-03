@@ -154,7 +154,7 @@ Namespace.expireEntries = function(parent, indexedTask, continuationToken=null) 
     
     for (var i=0; i<dataLength; i++) {
       let entry = data.entries[i];
-      console.log(`..entry ${entry.name}`);
+      console.log(`..entry ${JSON.stringify(entry)}`);
       let namespace = parent + '.' + entry.name;
       if (parent.length === 0 || entry.name.length === 0) {
         namespace = parent + entry.name;
