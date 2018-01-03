@@ -109,7 +109,7 @@ var load = loader({
         forceSSL:               cfg.server.forceSSL,
         trustProxy:             cfg.server.trustProxy,
         publicUrl:              cfg.server.publicUrl,
-        rootDocsRedirect:       true, 
+        rootDocsLink:           true, 
         docs,
       });
       hooksApp.use('/v1', router);
