@@ -25,7 +25,7 @@
     "promise": "^8.0.1",
     "taskcluster-client": "^3.1.1",
     "taskcluster-lib-api": "^4.0.1",
-    "taskcluster-lib-app": "^2.1.0",
+    "taskcluster-lib-app": "3.0.0",
     "taskcluster-lib-docs": "^4.0.0",
     "taskcluster-lib-loader": "2.0.0",
     "taskcluster-lib-monitor": "^4.3.4",
