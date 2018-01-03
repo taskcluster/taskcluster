@@ -6,6 +6,7 @@ suite('Indexing', () => {
   var _           = require('lodash');
   var testing     = require('taskcluster-lib-testing');
   var taskcluster = require('taskcluster-client');
+  var data = require('../src/data');
 
   var makeTask = function() {
     return {
@@ -131,4 +132,44 @@ suite('Indexing', () => {
     result = await helper.index.findTask('my-ns.my-indexed-thing-again');
     assert.equal(result.taskId, taskId, 'Wrong taskId');
   });
+
+  test('Expiring Index', async function() {
+    // Create expiration
+    var expiry = new Date();
+    expiry.setMinutes(expiry.getMinutes() - 25);
+    
+    var myns     = slugid.v4();
+    var taskId   = slugid.v4();
+    var taskId2  = slugid.v4();
+    await helper.index.insertTask(myns + '.my-task', {
+      taskId:     taskId,
+      rank:       41,
+      data:       {hello: 'world'},
+      expires:    expiry.toJSON(),
+    });
+    let result = await helper.index.findTask(myns + '.my-task');
+    assert(result.taskId === taskId, 'Wrong taskId');
+
+    expiry.setMinutes(expiry.getMinutes() + 50);
+    await helper.index.insertTask(myns + '.my-task2', {
+      taskId:     taskId2,
+      rank:       42,
+      data:       {hello: 'world two'},
+      expires:    expiry.toJSON(),
+    });
+    result = await helper.index.findTask(myns + '.my-task2');
+    assert(result.taskId === taskId2, 'Wrong taskId');
+    
+    await helper.handlers.Namespace.expireEntries('', helper.handlers.IndexedTask);
+    
+    try {
+      await helper.index.findTask(myns + '.my-task');
+    } catch (err) {
+      assert(err.statusCode === 404, 'Should have returned 404');
+      return;
+    }    
+    assert(false, 'This shouldn\'t have worked');
+
+  });
+
 });
