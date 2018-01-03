@@ -133,6 +133,19 @@ var load = loader({
       return handlers;
     },
   },
+
+  expire: {
+    requires: ['cfg', 'IndexedTask', 'Namespace'],
+    setup: async ({cfg, IndexedTask, Namespace}) => {
+
+      debug('Expiring index entries and namespaces');
+      await Namespace.expireEntries('', IndexedTask);
+
+      monitor.count('expire-artifacts.done');
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
+    },
+  },
 }, ['process', 'profile']);
 
 // If server.js is executed start the server
