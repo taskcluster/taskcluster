@@ -102,7 +102,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
       if (this.expires < expires) {
         // Update expires
         this.expires = expires;
-
+        
         // Update all parents first though
         return Namespace.ensureNamespace.call(that, namespace, expires);
       }
@@ -137,5 +137,67 @@ Namespace.ensureNamespace = function(namespace, expires) {
         });
       });
     });
+  });
+};
+
+/**Delete expired entries */
+Namespace.expireEntries = function(parent, indexedTask, continuationToken=null) {
+ 
+  return this.query({
+    parent: parent,
+  },
+  {
+    limit:         500,
+    continuation:   continuationToken,
+  }).then(async (data) => { 
+    var dataLength = data.entries.length;
+    
+    for (var i=0; i<dataLength; i++) {
+      let entry = data.entries[i];
+      let namespace = parent + '.' + entry.name;
+      if (parent.length === 0 || entry.name.length === 0) {
+        namespace = parent + entry.name;
+      }
+      await this.expireEntries(namespace, indexedTask);
+
+      // insertTask is careful to update expires of entries 
+      // from the root out to the leaf. A parent's expires is
+      // always later than the child's. Hence, we can delete an
+      // entry without checking its children.
+      await indexedTask.expireTasks(namespace);
+      if (entry.expires.getTime() < Date.now()) {
+        console.log(`remove namespace ${namespace}`);
+        //entry.remove(false, true);
+      }
+    }
+
+    if (data.continuation) {
+      await Namespace.expireEntries(parent, indexedTask, data.continuation);
+    }
+  });   
+};
+
+IndexedTask.expireTasks = function(namespace, continuationToken=null) {
+
+  return this.query({
+    namespace: namespace,
+  },
+  {
+    limit:         500,
+    continuation:   continuationToken,
+  }).then(async (data) => {
+    var dataLength = data.entries.length;
+
+    for (var i=0; i<dataLength; i++) {
+      task = data.entries[i];
+      if (task.expires.getTime() < Date.now()) {
+        console.log(`remove task ${namespace}.${task.name}`);
+        //task.remove(false, true);
+      }
+    }
+
+    if (data.continuation) {
+      await IndexedTask.expireTasks(namespace, data.continuation) ;
+    }
   });
 };
