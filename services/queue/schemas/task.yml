@@ -180,6 +180,7 @@ properties:
           to who came up with recipe for this task.
         type:           string
         format:         uri
+        pattern:        {$const: source-pattern}
         maxLength:      4096
     additionalProperties: false
     required:
