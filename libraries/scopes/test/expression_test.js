@@ -92,3 +92,32 @@ suite('scope expression satisfaction:', function() {
   });
 
 });
+
+suite('scope expression failure explanation:', function() {
+
+  function scenario(scopes, expr, explanation) {
+    return () => {
+      assert.deepEqual(explanation, utils.removeGivenScopes(scopes, expr));
+    };
+  }
+
+  [
+    [[], {AllOf: []}, null],
+    [['a'], {AllOf: ['a']}, null],
+    [['a'], {AllOf: ['a', 'b']}, {AllOf: ['b']}],
+    [[], {AnyOf: []}, {AnyOf: []}],
+    [['a'], {AnyOf: ['a', 'b']}, null],
+    [['c'], {AnyOf: ['a', 'b']}, {AnyOf: ['a', 'b']}],
+    [['ghi'], {AnyOf: ['abc', 'def']}, {AnyOf: ['abc', 'def']}],
+    [['ghi'], {AllOf: ['abc', 'def', 'ghi']}, {AllOf: ['abc', 'def']}],
+    [['ghi*', 'fff*'], {AnyOf: ['abc', 'def']}, {AnyOf: ['abc', 'def']}],
+    [
+      ['xyz', 'abc'],
+      {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]},
+      {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]},
+    ],
+  ].map(([s, e, expl]) => {
+    test(`Given ${JSON.stringify(s)}, ${JSON.stringify(e)} is explained by ${JSON.stringify(expl)}}`,
+      scenario(s, e, expl));
+  });
+});

@@ -135,6 +135,29 @@ scopeUtils.satisfiesExpression(
 )
 ```
 
+If you wish to understand why a certain expression was not satisfied by a scopeset
+you can use the `removeGivenScopes` function. The function returns a scope expression
+where all scopes that exist are missing from the scopeset. Any scopes under an
+`AllOf` key are definitely needed to satisfy the expression and at least
+one of the scopes under an `AnyOf` must be provided to satisfy. If the scope
+expression is satisfied by the scopes provided, this function returns `null`.
+
+```js
+scopeUtils.removeGivenScopes(
+  [
+    'abc',
+  ],
+  {
+    AllOf: [
+      {AnyOf: ['abc']},
+      'def',
+    ]
+  }
+)
+// Returns
+// {AllOf: ['def']}
+```
+
 ### Old Style
 
 These are evaluated with `scopeMatch`.
