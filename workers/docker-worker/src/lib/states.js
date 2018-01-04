@@ -50,12 +50,12 @@ class States {
           return hook[method](task)
             .then(info => { return info; })
             .catch(err => {
-              errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err.message}`));
+              errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err}`));
             });
         })
     ).then(results => {
       if (errors.length > 0) {
-        throw new Error(errors.map(e => e.message).join(' | '));
+        throw new Error(errors.map(e => e).join(' | '));
       }
       return results;
     });
