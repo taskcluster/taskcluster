@@ -29,10 +29,11 @@ suite('scope expression validity:', function() {
   test('int value is not OK', scenario({AnyOf: 1}, 'should-fail'));
   test('string value is not OK', scenario({AnyOf: 'scope:bar'}, 'should-fail'));
   test('object value is not OK', scenario({AnyOf: {}}, 'should-fail'));
-  test('empty subexpression is not OK', scenario({AnyOf: []}, 'should-fail'));
 
   // All of the following should be valid
   [
+    {AnyOf: []},
+    {AllOf: []},
     {AnyOf: ['abc']},
     {AllOf: ['abc']},
     {AnyOf: [{AnyOf: ['scope:foo:thing']}]},
@@ -65,6 +66,7 @@ suite('scope expression satisfaction:', function() {
 
   // The following should _not_ succeed
   [
+    [[], {AnyOf: []}],
     [['ghi'], {AnyOf: ['abc', 'def']}],
     [['ghi*'], {AnyOf: ['abc', 'def']}],
     [['ghi', 'fff'], {AnyOf: ['abc', 'def']}],
@@ -80,6 +82,7 @@ suite('scope expression satisfaction:', function() {
 
   // The following should succeed
   [
+    [[], {AllOf: []}],
     [['abc'], {AnyOf: ['abc', 'def']}],
     [['def'], {AnyOf: ['abc', 'def']}],
     [['abc', 'def'], {AnyOf: ['abc', 'def']}],
