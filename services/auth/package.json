@@ -17,6 +17,7 @@
   "dependencies": {
     "assume": "^1.5.2",
     "aws-sdk": "^2.150.0",
+    "azure-blob-storage": "^2.0.2",
     "azure-entities": "3.0.0",
     "debug": "^3.1.0",
     "fast-azure-storage": "^2.0.0",
