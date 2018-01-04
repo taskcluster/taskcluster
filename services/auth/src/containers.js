@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const {DataContainer, DataBlockBlob} = require('../azure-blob-storage');
+const {DataContainer, DataBlockBlob} = require('azure-blob-storage');
 
 /**
  * Roles stores exactly one blob that contains all of the defined roles.  This
