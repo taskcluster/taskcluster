@@ -7,7 +7,7 @@ import {patternMatch} from './satisfaction';
  */
 exports.validExpression = function(expr) {
   assert(expr, 'Scope expression must exist.');
-  assert(typeof expr === 'object' && !Array.isArray(expr), 'Scope expressions must be objects.');
+  assert(typeof expr === 'object' && !Array.isArray(expr), `Scope expressions must be objects. Received ${expr}`);
   const keys = Object.keys(expr);
   assert(keys.length === 1, 'Scope expressions must have only one key.');
   const operator = keys[0];
@@ -39,4 +39,45 @@ exports.satisfiesExpression = function(scopeset, expr) {
     scopeset.some(scope => patternMatch(scope, subexpr)) :
     exports.satisfiesExpression(scopeset, subexpr)
   );
+};
+
+/**
+ * Given a scopeset and a scope-expression, remove any scopes
+ * that are in the scopeset so that all remaining scopes
+ * are ones that are missing. If all scopes are provided, this
+ * function will return null. This function is useful to
+ * generate nice error messages about which scopes a client
+ * is missing.
+ *
+ * This is separate from satisfiesExpression in order to keep
+ * that code path simple and clean due to its important nature.
+ *
+ * Returns a scope expression where all scopes that exist are
+ * missing from the scopeset. Any scopes under an AllOf key
+ * are definitely needed to satisfy the expression and at least
+ * one of the scopes under an AnyOf must be provided to satisfy.
+ */
+exports.removeGivenScopes = function(scopeset, expr) {
+  assert(Array.isArray(scopeset), 'Scopeset must be an array.');
+
+  if (typeof expr === 'string') {
+    if (scopeset.some(scope => patternMatch(scope, expr))) {
+      return null;
+    }
+    return expr;
+  }
+
+  if (expr.AllOf) {
+    const AllOf = expr.AllOf.map(e => exports.removeGivenScopes(scopeset, e)).filter(e => e !== null);
+    if (AllOf.length === 0) {
+      return null;
+    }
+    return {AllOf};
+  }
+
+  const AnyOf = expr.AnyOf.map(e => exports.removeGivenScopes(scopeset, e));
+  if (AnyOf.some(e => e === null)) {
+    return null;
+  }
+  return {AnyOf};
 };
