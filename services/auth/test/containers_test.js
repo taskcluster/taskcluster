@@ -3,7 +3,7 @@ const uuid = require('uuid');
 const assert = require('assert');
 const helper = require('./helper');
 const azure = require('fast-azure-storage');
-const DataContainer = require('../azure-blob-storage');
+const DataContainer = require('azure-blob-storage');
 
 const sorted = (arr) => {
   arr.sort();
