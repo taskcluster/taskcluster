@@ -15,7 +15,6 @@ exports.validExpression = function(expr) {
     `Operator must be one of "AnyOf" or "AllOf". Found "${operator}" instead.`);
   const subexpressions = expr[operator];
   assert(Array.isArray(subexpressions), 'Sub-expressions must be arrays.');
-  assert(subexpressions.length > 0, 'Sub-expressions must not be empty.');
   subexpressions.forEach(subexpr => {
     if (typeof subexpr === 'string') {
       assert(validScope(subexpr), `Each scope must be valid. "${subexpr}" is not valid.`);
