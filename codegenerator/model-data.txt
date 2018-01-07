@@ -1,4 +1,4 @@
-Generated: 1514647394
+Generated: 1515327794
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7409,6 +7409,7 @@ Properties
         '
         Format                 = 'uri'
         MaxLength              = '4096'
+        Pattern                = '^https?://'
         Title                  = 'Source'
         Type                   = 'string'
         TypeName               = 'Source'
@@ -10119,6 +10120,7 @@ Properties
         '
         Format                 = 'uri'
         MaxLength              = '4096'
+        Pattern                = '^https?://'
         Title                  = 'Source'
         Type                   = 'string'
         TypeName               = 'Source'
