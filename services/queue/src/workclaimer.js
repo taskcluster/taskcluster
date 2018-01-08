@@ -2,6 +2,7 @@ let assert      = require('assert');
 let _           = require('lodash');
 let events      = require('events');
 let taskcluster = require('taskcluster-client');
+let taskCreds   = require('./task-creds');
 let Promise     = require('promise');
 
 /**
@@ -276,28 +277,15 @@ class WorkClaimer extends events.EventEmitter {
       takenUntil:   run.takenUntil,
     }, task.routes);
 
-    // Create temporary credentials for the task
-    let clientId = [
-      'task-client',
+    let credentials = taskCreds(
       taskId,
-      `${runId}`,
-      'on',
+      runId,
       workerGroup,
       workerId,
-      'until',
-      `${takenUntil.getTime() / 1000}`,
-    ].join('/');
-    let credentials = taskcluster.createTemporaryCredentials({
-      clientId,
-      start:  new Date(Date.now() - 15 * 60 * 1000),
-      expiry: new Date(takenUntil.getTime() + 15 * 60 * 1000),
-      scopes: [
-        'queue:reclaim-task:' + taskId + '/' + runId,
-        'queue:resolve-task:' + taskId + '/' + runId,
-        'queue:create-artifact:' + taskId + '/' + runId,
-      ].concat(task.scopes),
-      credentials: this._credentials,
-    });
+      takenUntil,
+      task.scopes,
+      this._credentials,
+    );
 
     // Return claim structure
     return {
