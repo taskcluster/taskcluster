@@ -5,6 +5,7 @@ let _           = require('lodash');
 let API         = require('taskcluster-lib-api');
 let Entity      = require('azure-entities');
 let taskcluster = require('taskcluster-client');
+let taskCreds   = require('./task-creds');
 let Promise     = require('promise');
 
 // Maximum number runs allowed
@@ -1649,17 +1650,15 @@ api.declare({
     );
   }
 
-  // Create temporary credentials for the task
-  let credentials = taskcluster.createTemporaryCredentials({
-    start:  new Date(Date.now() - 15 * 60 * 1000),
-    expiry: new Date(takenUntil.getTime() + 15 * 60 * 1000),
-    scopes: [
-      'queue:reclaim-task:' + taskId + '/' + runId,
-      'queue:resolve-task:' + taskId + '/' + runId,
-      'queue:create-artifact:' + taskId + '/' + runId,
-    ].concat(task.scopes),
-    credentials: this.credentials,
-  });
+  let credentials = taskCreds(
+    taskId,
+    runId,
+    run.workerGroup,
+    run.workerId,
+    takenUntil,
+    task.scopes,
+    this.credentials,
+  );
 
   // Reply to caller
   return res.reply({
