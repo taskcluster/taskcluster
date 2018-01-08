@@ -2,8 +2,7 @@
 
 cd "$(dirname "${0}")"
 
-# need to use go 1.7 or later, see e.g.
-# https://github.com/contester/runlib/issues/5
+# Support go 1.8 or later
 
 unset CGO_ENABLED
 unset GOOS
