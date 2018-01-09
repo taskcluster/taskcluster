@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -16,6 +17,16 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 	"github.com/taskcluster/taskcluster-client-go/secrets"
 )
+
+func gitRevision(dir string) string {
+	command := exec.Command("git", "rev-parse", "HEAD")
+	command.Dir = dir
+	output, err := command.Output()
+	if err != nil {
+		panic(err)
+	}
+	return string(output[:len(output)-1])
+}
 
 func main() {
 	sshSecret := make(map[string]string)
@@ -101,6 +112,14 @@ func main() {
 	config["deploymentId"] = newDeploymentID
 	log.Print("Old deployment ID: " + oldDeploymentID)
 	log.Print("New deployment ID: " + newDeploymentID)
+	oldMetadata := config["workerTypeMetadata"].(map[string]interface{})
+	oldMachineSetup := oldMetadata["machine-setup"].(map[string]interface{})
+	oldScript := oldMachineSetup["script"].(string)
+	newScript := "https://raw.githubusercontent.com/taskcluster/generic-worker/" + gitRevision(workerTypeDir) + "/worker_types/" + workerType + "/userdata"
+	oldMachineSetup["script"] = newScript
+
+	log.Print("Old machine setup script: " + oldScript)
+	log.Print("New machine setup script: " + newScript)
 
 	if newAMICount != len(regions) {
 		log.Printf("WARNING: not updating all AMIs for worker type %v - only %v of %v", workerType, newAMICount, len(regions))
