@@ -26,6 +26,10 @@ const base64 = hawk.crypto.utils.enc.Base64;
  * have the scope 'auth:create-client:<name>'.  This function does not check for
  * this scope, but it will be checked when the credentials are used.
  *
+ * The auth service already tolerates up to five minutes clock drift for start
+ * and expiry fields, therefore caller should *not* apply further clock skew
+ * adjustment.
+ *
  * Returns an object on the form: {clientId, accessToken, certificate}
  */
 export const createTemporaryCredentials = (opts) => {
@@ -33,8 +37,8 @@ export const createTemporaryCredentials = (opts) => {
     throw new Error('Missing required options');
   }
 
-  // subtract 5 min for clock drift
-  const now = new Date(Date.now() - ((1000 * 5) * 60));
+  // auth service handles clock drift (PR #117) - should not skew times here
+  const now = new Date();
   const options = { start: now, scopes: [], ...opts };
   const isNamed = !!options.clientId;
 
