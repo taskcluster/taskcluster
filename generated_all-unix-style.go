@@ -426,6 +426,7 @@ func taskPayloadSchema() string {
           "type",
           "path"
         ],
+        "title": "Artifact",
         "type": "object"
       },
       "title": "Artifacts to be published",

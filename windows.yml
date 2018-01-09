@@ -51,6 +51,7 @@ properties:
       `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
     items:
       type: object
+      title: Artifact
       additionalProperties: false
       properties:
         type:
