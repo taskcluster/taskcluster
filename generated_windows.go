@@ -80,7 +80,15 @@ type (
 		// `["set", "echo hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
 		Command []string `json:"command"`
 
-		// Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS": "darwin" }```
+		// Env vars must be string to __string__ mappings (not number or boolean). For example:
+		// ```
+		// {
+		//   "PATH": "C:\\Windows\\system32;C:\\Windows",
+		//   "GOOS": "windows",
+		//   "FOO_ENABLE": "true",
+		//   "BAR_TOTAL": "3"
+		// }
+		// ```
 		Env json.RawMessage `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
@@ -435,8 +443,8 @@ func taskPayloadSchema() string {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Example: ` + "`" + `` + "`" + `` + "`" + `{ \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\", \"GOOS\": \"darwin\" }` + "`" + `` + "`" + `` + "`" + `",
-      "title": "Environment variable mappings. Must be strings.",
+      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
+      "title": "Env vars",
       "type": "object"
     },
     "features": {

@@ -22,9 +22,17 @@ properties:
       a Windows™ .bat file). For example:
       `["set", "echo hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
   env:
-    title: Environment variable mappings. Must be strings.
-    description: 'Example: ```{ "PATH": "C:\\Windows\\system32;C:\\Windows", "GOOS":
-      "darwin" }```'
+    title: Env vars
+    description: |-
+      Env vars must be string to __string__ mappings (not number or boolean). For example:
+      ```
+      {
+        "PATH": "C:\\Windows\\system32;C:\\Windows",
+        "GOOS": "windows",
+        "FOO_ENABLE": "true",
+        "BAR_TOTAL": "3"
+      }
+      ```
     type: object
     additionalProperties:
       type: string
