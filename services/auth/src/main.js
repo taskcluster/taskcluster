@@ -214,8 +214,8 @@ let load = Loader({
       // Create app
       let serverApp = App(cfg.server);
 
-      serverApp.use('/v1', api);
       serverApp.use(morganDebug('auth-request', 'dev'));
+      serverApp.use('/v1', api);
 
       serverApp.get('/', (req, res) => {
         res.redirect(302, url.format({
