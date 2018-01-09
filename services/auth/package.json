@@ -25,6 +25,7 @@
     "hoek": "^2.16.3",
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
+    "morgan-debug": "^2.0.0",
     "promise": "^8.0.1",
     "pulse-publisher": "^3.0.0",
     "raven": "^2.2.1",

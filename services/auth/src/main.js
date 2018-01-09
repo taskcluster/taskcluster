@@ -19,6 +19,7 @@ let url                = require('url');
 let SentryManager      = require('./sentrymanager');
 let Statsum            = require('statsum');
 let _                  = require('lodash');
+let morganDebug        = require('morgan-debug');
 
 // Create component loader
 let load = Loader({
@@ -51,7 +52,7 @@ let load = Loader({
 
         },
         sentryDSN: async (project) => {
-          let key = await this.sentryManager.projectDSN(project);
+          let key = await sentryManager.projectDSN(project);
           return {
             project,
             dsn: _.pick(key.dsn, ['secret', 'public']),
@@ -214,6 +215,7 @@ let load = Loader({
       let serverApp = App(cfg.server);
 
       serverApp.use('/v1', api);
+      serverApp.use(morganDebug('auth-request', 'dev'));
 
       serverApp.get('/', (req, res) => {
         res.redirect(302, url.format({
