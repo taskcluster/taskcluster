@@ -527,4 +527,55 @@ suite('volume cache tests', () => {
       assert.equal(e.code, 'ENOENT');
     }
   });
+
+  test('purge cache based on exit status', async () => {
+    var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
+    var neededScope = 'docker-worker:cache:' + cacheName;
+    var fullCacheDir = path.join(localCacheDir, cacheName);
+    settings.configure({
+      cache: {
+        volumeCachePath: volumeCacheDir
+      },
+      garbageCollection: {
+        interval: 100
+      }
+    });
+
+    var task = {
+      payload: {
+        image: 'taskcluster/test-ubuntu',
+        command: cmd(
+          'echo "foo" > /tmp-obj-dir/foo.txt',
+          'exit 36',
+        ),
+        features: {
+          localLiveLog: true
+        },
+        cache: {},
+        maxRunTime:         5 * 60,
+	onExitStatus: {
+          purgeCaches: 36,
+        },
+      },
+      scopes: [neededScope]
+    };
+
+    task.payload.cache[cacheName] = '/tmp-obj-dir';
+
+    let worker = new TestWorker(DockerWorker);
+    await worker.launch();
+    let result = await worker.postToQueue(task);
+
+    assert.equal(result.run.state, 'completed');
+    assert.equal(result.run.reasonResolved, 'completed');
+
+    await waitForEvent(worker, 'cache volume removed')
+
+    await worker.terminate();
+
+    try {
+      assert.equal(fs.readdirSync(fullCacheDir).length, 0);
+    } catch(e) {
+    }
+  });
 });

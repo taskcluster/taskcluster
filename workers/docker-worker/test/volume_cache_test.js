@@ -239,4 +239,27 @@ suite('volume cache test', function () {
     instance2 = await cache.get(cacheName);
     assert.ok(instance1.key !== instance2.key);
   });
+
+  test('purge volume cache instance', async () => {
+    // After purging an instance of a cache, future requests for that cache
+    // return new instances.
+    var cache = new VolumeCache({
+      cache: {
+        volumeCachePath: localCacheDir
+      },
+      log: debug,
+      monitor: monitor
+    });
+
+    var cacheName = 'tmp-obj-dir-' + Date.now().toString();
+    var fullPath = path.join(localCacheDir, cacheName);
+
+    var purgedInstance = await cache.get(cacheName);
+
+    await cache.purgeInstance(purgedInstance.key);
+    await cache.release(purgedInstance.key);
+
+    var freshInstance = await cache.get(cacheName);
+    assert.notEqual(freshInstance.key !== purgedInstance.key);
+  });
 });

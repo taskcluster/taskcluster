@@ -218,6 +218,11 @@ class VolumeCache {
     this.log("cache volume release", {key: cacheKey});
   }
 
+  purgeInstance(cacheKey) {
+    this.set(cacheKey, {purge: true})
+    this.log("cache volume purge", {key: cacheKey});
+  }
+
   /**
   Set a property for a cached volume.
 
