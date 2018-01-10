@@ -18,9 +18,8 @@ import (
 )
 
 var (
-	livelogName        = "public/logs/live.log"
-	livelogBackingName = "public/logs/live_backing.log"
-	livelogPath        = filepath.Join("generic-worker", "live_backing.log")
+	livelogName = "public/logs/live.log"
+	livelogPath = filepath.Join("generic-worker", "live_backing.log")
 )
 
 type LiveLogFeature struct {
@@ -55,7 +54,6 @@ type LiveLogTask struct {
 func (feature *LiveLogTask) ReservedArtifacts() []string {
 	return []string{
 		livelogName,
-		livelogBackingName,
 	}
 }
 
@@ -126,7 +124,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 		log.Printf("WARN: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Print("Redirecting live.log to live_backing.log")
-	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, l.task.TaskID, l.task.RunID, livelogBackingName)
+	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", Queue.BaseURL, l.task.TaskID, l.task.RunID, logName)
 	err := l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{

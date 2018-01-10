@@ -45,6 +45,8 @@ var (
 	configFile  string
 	Features    []Feature
 
+	logName = "public/logs/live_backing.log"
+
 	version  = "10.4.1"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 	usage    = `
@@ -697,7 +699,7 @@ func FindAndRunTask() bool {
 			TaskClaimResponse: queue.TaskClaimResponse(taskResponse),
 			Artifacts:         map[string]Artifact{},
 			featureArtifacts: map[string]string{
-				livelogBackingName: "log feature",
+				logName: "Native Log",
 			},
 		}
 
@@ -1053,7 +1055,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog(livelogBackingName, livelogPath))
+		err.add(task.uploadLog(logName, livelogPath))
 	}()
 
 	task.logHeader()
