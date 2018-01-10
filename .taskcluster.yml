@@ -61,7 +61,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request
+          - pull_request.synchronize
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
@@ -139,7 +139,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request
+          - pull_request.synchronize
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
@@ -208,7 +208,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request
+          - pull_request.synchronize
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
@@ -288,7 +288,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request
+          - pull_request.synchronize
           - push
     scopes:
       - generic-worker:cache:generic-worker-checkout
@@ -358,7 +358,7 @@ tasks:
   #     github:
   #       # Events that will trigger this task
   #       events:
-  #         - pull_request
+  #         - pull_request.synchronize
   #         - push
   #   scopes:
   #     - generic-worker:cache:generic-worker-checkout
@@ -422,7 +422,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
-          - pull_request
+          - pull_request.synchronize
           - push
     scopes:
       - secrets:get:repo:github.com/taskcluster/generic-worker
