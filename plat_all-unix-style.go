@@ -175,8 +175,8 @@ func defaultTasksDir() string {
 }
 
 // N/A for unix - just a windows thing
-func AutoLogonUser() string {
-	return ""
+func AutoLogonCredentials() (string, string) {
+	return "", ""
 }
 
 func chooseTaskDirName() string {

@@ -103,7 +103,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 			Name: userName,
 		},
 	}
-	if userName == AutoLogonUser() {
+	if autoLogonUser, _ := AutoLogonCredentials(); userName == autoLogonUser {
 		// make sure user has completed logon before doing anything else
 		// timeout of 1 minute should be plenty - note, this function will
 		// return as soon as user has logged in *and* user profile directory
@@ -195,13 +195,15 @@ func deleteExistingOSUsers() {
 }
 
 func deleteOSUserAccount(line string) {
-	if strings.HasPrefix(line, "task_") && line != AutoLogonUser() {
-		user := line
-		log.Print("Attempting to remove Windows user " + user + "...")
-		err := runtime.RunCommands(false, []string{"net", "user", user, "/delete"})
-		if err != nil {
-			log.Print("WARNING: Could not remove Windows user account " + user)
-			log.Printf("%v", err)
+	if strings.HasPrefix(line, "task_") {
+		if autoLogonUser, _ := AutoLogonCredentials(); line != autoLogonUser {
+			user := line
+			log.Print("Attempting to remove Windows user " + user + "...")
+			err := runtime.RunCommands(false, []string{"net", "user", user, "/delete"})
+			if err != nil {
+				log.Print("WARNING: Could not remove Windows user account " + user)
+				log.Printf("%v", err)
+			}
 		}
 	}
 }
@@ -605,23 +607,28 @@ func defaultTasksDir() string {
 	return win32.ProfilesDirectory()
 }
 
-func AutoLogonUser() string {
+func AutoLogonCredentials() (username, password string) {
 	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE)
 	if err != nil {
 		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
-		return ""
+		return
 	}
 	defer k.Close()
-	s, _, err := k.GetStringValue("DefaultUserName")
+	username, _, err = k.GetStringValue("DefaultUserName")
 	if err != nil {
 		log.Printf("Hit error reading winlogon DefaultUserName registry value - assume no autologon set: %v", err)
-		return ""
+		return "", ""
 	}
-	return s
+	password, _, err = k.GetStringValue("DefaultPassword")
+	if err != nil {
+		log.Printf("Hit error reading winlogon DefaultPassword registry value - assume no autologon set: %v", err)
+		return "", ""
+	}
+	return
 }
 
 func chooseTaskDirName() string {
-	taskDirName := AutoLogonUser()
+	taskDirName, _ := AutoLogonCredentials()
 	if taskDirName == "" {
 		return "task_" + strconv.Itoa(int(time.Now().Unix()))
 	}

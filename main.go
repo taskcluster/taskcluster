@@ -1241,7 +1241,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 }
 
 func removeTaskDirs(parentDir string) {
-	activeTaskUser := AutoLogonUser()
+	activeTaskUser, _ := AutoLogonCredentials()
 	taskDirsParent, err := os.Open(parentDir)
 	if err != nil {
 		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
