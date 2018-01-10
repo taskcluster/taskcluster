@@ -92,7 +92,7 @@ func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 }
 
 func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
-	logFile := filepath.Join(taskContext.TaskDir, livelogPath)
+	logFile := filepath.Join(taskContext.TaskDir, logPath)
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
 	signedCert := filepath.Join(taskContext.TaskDir, signedCertPath)
 	e := copyFileContents(logFile, certifiedLogFile)

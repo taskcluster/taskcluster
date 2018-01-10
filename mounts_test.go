@@ -206,7 +206,7 @@ func TestMissingScopes(t *testing.T) {
 	ensureResolution(t, taskID, "exception", "malformed-payload")
 
 	// check log mentions both missing scopes
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
@@ -308,7 +308,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	ensureResolution(t, taskID, "failed", "failed")
 
 	// check log mentions zip file is invalid
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}

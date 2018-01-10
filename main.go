@@ -46,6 +46,7 @@ var (
 	Features    []Feature
 
 	logName = "public/logs/live_backing.log"
+	logPath = filepath.Join("generic-worker", "live_backing.log")
 
 	version  = "10.4.1"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
@@ -984,7 +985,7 @@ func (task *TaskRun) kill() {
 }
 
 func (task *TaskRun) createLogFile() *os.File {
-	absLogFile := filepath.Join(taskContext.TaskDir, livelogPath)
+	absLogFile := filepath.Join(taskContext.TaskDir, logPath)
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		panic(err)
@@ -1055,7 +1056,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
-		err.add(task.uploadLog(logName, livelogPath))
+		err.add(task.uploadLog(logName, logPath))
 	}()
 
 	task.logHeader()
@@ -1231,7 +1232,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 	if reboot {
 		return
 	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(livelogPath))
+	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
 	err := os.MkdirAll(logDir, 0777)
 	if err != nil {
 		panic(err)

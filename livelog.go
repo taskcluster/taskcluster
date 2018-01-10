@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -19,7 +18,6 @@ import (
 
 var (
 	livelogName = "public/logs/live.log"
-	livelogPath = filepath.Join("generic-worker", "live_backing.log")
 )
 
 type LiveLogFeature struct {

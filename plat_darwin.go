@@ -33,7 +33,7 @@ func createNewTaskContext() error {
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(filepath.Join(taskContext.TaskDir, filepath.Dir(livelogPath)), 0777)
+	return os.MkdirAll(filepath.Join(taskContext.TaskDir, filepath.Dir(logPath)), 0777)
 }
 
 func (user *OSUser) createNewOSUser() error {

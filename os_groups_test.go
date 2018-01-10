@@ -23,7 +23,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 	ensureResolution(t, taskID, "exception", "malformed-payload")
 
 	// check log mentions both missing scopes
-	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestOSGroupsRespected(t *testing.T) {
 		ensureResolution(t, taskID, "completed", "completed")
 
 		// check log mentions both missing scopes
-		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
+		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 		if err != nil {
 			t.Fatalf("Error when trying to read log file: %v", err)
 		}
@@ -64,7 +64,7 @@ func TestOSGroupsRespected(t *testing.T) {
 		ensureResolution(t, taskID, "exception", "malformed-payload")
 
 		// check log mentions both missing scopes
-		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, livelogPath))
+		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
 		if err != nil {
 			t.Fatalf("Error when trying to read log file: %v", err)
 		}
