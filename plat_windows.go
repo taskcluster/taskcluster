@@ -29,6 +29,10 @@ type TaskContext struct {
 	LogonSession *process.LogonSession
 }
 
+func platformFeatures() []Feature {
+	return []Feature{}
+}
+
 func immediateReboot() {
 	log.Println("Immediate reboot being issued...")
 	cmd := exec.Command("C:\\Windows\\System32\\shutdown.exe", "/r", "/t", "3", "/c", "generic-worker requested reboot")

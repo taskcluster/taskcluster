@@ -43,13 +43,7 @@ var (
 	Provisioner *awsprovisioner.AwsProvisioner
 	config      *gwconfig.Config
 	configFile  string
-	Features    []Feature = []Feature{
-		&LiveLogFeature{},
-		&OSGroupsFeature{},
-		&ChainOfTrustFeature{},
-		&MountsFeature{},
-		&SupersedeFeature{},
-	}
+	Features    []Feature
 
 	version  = "10.4.1"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
@@ -299,6 +293,14 @@ func persistFeaturesState() (err error) {
 }
 
 func initialiseFeatures() (err error) {
+	Features = []Feature{
+		&LiveLogFeature{},
+		&OSGroupsFeature{},
+		&ChainOfTrustFeature{},
+		&MountsFeature{},
+		&SupersedeFeature{},
+	}
+	Features = append(Features, platformFeatures()...)
 	for _, feature := range Features {
 		err := feature.Initialise()
 		if err != nil {
@@ -1077,7 +1079,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	// create task features
 	for _, feature := range Features {
-		if feature.IsEnabled(task.Payload.Features) {
+		if feature.IsEnabled(task) {
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
 			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.NewNoAuth())
@@ -1090,6 +1092,14 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			if !scopesSatisfied {
 				err.add(MalformedPayloadError(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
 				continue
+			}
+			reservedArtifacts := taskFeature.ReservedArtifacts()
+			for _, a := range reservedArtifacts {
+				if f := task.featureArtifacts[a]; f != "" {
+					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name.", feature.Name(), a, f)))
+				} else {
+					task.featureArtifacts[a] = feature.Name()
+				}
 			}
 			taskFeatures = append(taskFeatures, taskFeature)
 		}

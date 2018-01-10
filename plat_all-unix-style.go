@@ -18,6 +18,10 @@ import (
 	"github.com/taskcluster/shell"
 )
 
+func platformFeatures() []Feature {
+	return []Feature{}
+}
+
 type OSUser struct {
 	HomeDir  string
 	Name     string

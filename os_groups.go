@@ -23,7 +23,7 @@ func (feature *OSGroupsFeature) PersistState() error {
 	return nil
 }
 
-func (feature *OSGroupsFeature) IsEnabled(fl EnabledFeatures) bool {
+func (feature *OSGroupsFeature) IsEnabled(task *TaskRun) bool {
 	// always enabled, since scopes protect usage at a group level
 	return true
 }
@@ -33,6 +33,10 @@ func (feature *OSGroupsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 		Task: task,
 	}
 	return osGroups
+}
+
+func (feature *OSGroups) ReservedArtifacts() []string {
+	return []string{}
 }
 
 func (osGroups *OSGroups) RequiredScopes() scopes.Required {

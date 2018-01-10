@@ -65,15 +65,20 @@ func (feature *ChainOfTrustFeature) Initialise() error {
 	return nil
 }
 
-func (feature *ChainOfTrustFeature) IsEnabled(fl EnabledFeatures) bool {
-	return fl.ChainOfTrust
+func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
+	return task.Payload.Features.ChainOfTrust
 }
 
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
-	task.featureArtifacts[signedCertName] = "chain of trust feature"
-	task.featureArtifacts[certifiedLogName] = "chain of trust feature"
 	return &ChainOfTrustTaskFeature{
 		task: task,
+	}
+}
+
+func (feature *ChainOfTrustTaskFeature) ReservedArtifacts() []string {
+	return []string{
+		signedCertName,
+		certifiedLogName,
 	}
 }
 

@@ -39,7 +39,7 @@ func (feature *LiveLogFeature) PersistState() error {
 }
 
 // livelog is always enabled
-func (feature *LiveLogFeature) IsEnabled(fl EnabledFeatures) bool {
+func (feature *LiveLogFeature) IsEnabled(task *TaskRun) bool {
 	return true
 }
 
@@ -52,9 +52,14 @@ type LiveLogTask struct {
 	backingLogFile *os.File
 }
 
+func (feature *LiveLogTask) ReservedArtifacts() []string {
+	return []string{
+		livelogName,
+		livelogBackingName,
+	}
+}
+
 func (feature *LiveLogFeature) NewTaskFeature(task *TaskRun) TaskFeature {
-	task.featureArtifacts[livelogName] = "livelog feature"
-	task.featureArtifacts[livelogBackingName] = "livelog feature"
 	return &LiveLogTask{
 		task: task,
 	}
