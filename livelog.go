@@ -130,8 +130,8 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 			BaseArtifact: &BaseArtifact{
 				Name: livelogName,
 				// same expiry as underlying log it points to
-				Expires:  l.task.Definition.Expires,
-				MimeType: "text/plain; charset=utf-8",
+				Expires:     l.task.Definition.Expires,
+				ContentType: "text/plain; charset=utf-8",
 			},
 			URL: logURL,
 		},
@@ -161,8 +161,8 @@ func (l *LiveLogTask) uploadLiveLog() error {
 			BaseArtifact: &BaseArtifact{
 				Name: livelogName,
 				// livelog expires when task must have completed
-				Expires:  tcclient.Time(maxRunTimeDeadline),
-				MimeType: "text/plain; charset=utf-8",
+				Expires:     tcclient.Time(maxRunTimeDeadline),
+				ContentType: "text/plain; charset=utf-8",
 			},
 			URL: getURL.String(),
 		},
