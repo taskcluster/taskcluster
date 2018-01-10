@@ -130,7 +130,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	loginURL += "&description=" + description
 	scopes, _ := cmd.Flags().GetStringArray("scope")
 	for i := range scopes {
-		loginURL += "&scope=" + scopes[i]
+		loginURL += "&scope=" + url.QueryEscape(scopes[i])
 	}
 	expires, _ := cmd.Flags().GetString("expires")
 	loginURL += "&expires=" + url.QueryEscape(expires)
