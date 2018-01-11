@@ -105,17 +105,18 @@ export function resources(monitor, proc, seconds) {
 
 export function timer(monitor, prefix, funcOrPromise) {
   let start = process.hrtime();
-  let done = () => {
+  let done = (x) => {
     let d = process.hrtime(start);
     monitor.measure(prefix, d[0] * 1000 + d[1] / 1000000);
   };
   if (funcOrPromise instanceof Function) {
     try {
       funcOrPromise = funcOrPromise();
-    } finally {
+    } catch (e) {
       // If this is a sync function that throws, we let it...
       // We just remember to call done() afterwards
       done();
+      throw e;
     }
   }
   Promise.resolve(funcOrPromise).then(done, done);
