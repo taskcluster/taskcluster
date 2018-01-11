@@ -1,18 +1,18 @@
 FROM ubuntu:14.04
 
 ENV NODE_VERSION 8.6.0
-ENV DOCKER_VERSION 1.12.6-0~ubuntu-trusty
+ENV DOCKER_VERSION 17.12.0~ce-0~ubuntu
 
 RUN apt-get update && apt-get install -y apt-transport-https
 
 # Add key for docker apt repository
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D && \
-    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
+RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 && \
+    echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable" > /etc/apt/sources.list.d/docker.list
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     ca-certificates \
-    docker-engine=$DOCKER_VERSION \
+    docker-ce=$DOCKER_VERSION \
     git \
     iptables \
     lxc \
