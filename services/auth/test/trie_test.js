@@ -220,17 +220,15 @@ suite('trie', () => {
         expected.forEach(({input, expected}) => {
           test(`input=${JSON.stringify(input)}`, function() {
             debug(`input: ${JSON.stringify(input)}`);
-            let got = executeTrie(d, input);
-            // trim trailing 'undefineds' since they're the default anyway, and
-            // we don't care if executeTrie "gives up" early
-            while (got.length && !got[got.length - 1]) {
-              got.pop();
-            }
-            got.forEach((scopes, k) => {
-              let inp = input + '$';
-              debug(`${inp.slice(0, k)}|${inp.slice(k)} -> ${JSON.stringify(scopes)}`);
+            const result = {};
+            executeTrie(d, input, (scopes, offset) => {
+              result[offset] = scopes;
             });
-            assert.deepEqual(got, expected, `for input ${JSON.stringify(input)}`);
+            for (let i = 0; i < input.length + 1; i++) {
+              const inp = input + '$';
+              debug(`${inp.slice(0, i)}|${inp.slice(i)} -> ${JSON.stringify(result[i])}`);
+            }
+            assert.deepEqual(result, expected, `for input ${JSON.stringify(input)}`);
           });
         });
       });
@@ -239,48 +237,48 @@ suite('trie', () => {
     testTrie('for a simple star rule', [
       {pattern: 'ab*', scopes: ['d<..>f']},
     ], [
-      {input: '', expected: []},
-      {input: '*', expected: [undefined, undefined, ['d<..>f']]},
-      {input: 'a', expected: []},
-      {input: 'a*', expected: [undefined, undefined, undefined, ['d<..>f']]},
-      {input: 'ab', expected: [undefined, undefined, ['d<..>f']]},
-      {input: 'ab*', expected: [undefined, undefined, ['d<..>f']]},
-      {input: 'abc', expected: [undefined, undefined, ['d<..>f']]},
-      {input: 'abc*', expected: [undefined, undefined, ['d<..>f']]},
+      {input: '', expected: {}},
+      {input: '*', expected: {2: ['d<..>f']}},
+      {input: 'a', expected: {}},
+      {input: 'a*', expected:  {3: ['d<..>f']}},
+      {input: 'ab', expected: {2: ['d<..>f']}},
+      {input: 'ab*', expected: {2: ['d<..>f']}},
+      {input: 'abc', expected: {2: ['d<..>f']}},
+      {input: 'abc*', expected: {2: ['d<..>f']}},
     ]);
 
     testTrie('for a simple non-star rule', [
       {pattern: 'xy', scopes: ['pq']},
     ], [
-      {input: '', expected: []},
-      {input: '*', expected: [undefined, undefined, ['pq']]},
-      {input: 'x', expected: []},
-      {input: 'x*', expected: [undefined, undefined, undefined, ['pq']]},
-      {input: 'xy', expected: [undefined, undefined, undefined, ['pq']]},
-      {input: 'xy*', expected: [undefined, undefined, undefined, undefined, ['pq']]},
-      {input: 'xyc', expected: []},
-      {input: 'xyc*', expected: []},
+      {input: '', expected: {}},
+      {input: '*', expected: {2: ['pq']}},
+      {input: 'x', expected: {}},
+      {input: 'x*', expected: {3: ['pq']}},
+      {input: 'xy', expected: {3: ['pq']}},
+      {input: 'xy*', expected: {4: ['pq']}},
+      {input: 'xyc', expected: {}},
+      {input: 'xyc*', expected: {}},
     ]);
 
     testTrie('nonterminal star in role', [
       {pattern: 'a*c', scopes: ['x']},
     ], [
-      {input: '', expected: []},
-      {input: '*', expected: [undefined, undefined, ['x']]},
-      {input: 'a', expected: []},
-      {input: 'a*', expected: [undefined, undefined, undefined, ['x']]},
-      {input: 'ab', expected: []},
-      {input: 'a**', expected: [undefined, undefined, undefined, undefined, ['x']]},
-      {input: 'abc', expected: []},
-      {input: 'a*c', expected: [undefined, undefined, undefined, undefined, ['x']]},
-      {input: 'a*c*', expected: [undefined, undefined, undefined, undefined, undefined, ['x']]},
+      {input: '', expected: {}},
+      {input: '*', expected: {2: ['x']}},
+      {input: 'a', expected: {}},
+      {input: 'a*', expected: {3: ['x']}},
+      {input: 'ab', expected: {}},
+      {input: 'a**', expected: {4: ['x']}},
+      {input: 'abc', expected: {}},
+      {input: 'a*c', expected: {4: ['x']}},
+      {input: 'a*c*', expected: {5: ['x']}},
     ]);
 
     testTrie('nonterminal star in scope', [
       {pattern: 'abc', scopes: ['x']},
     ], [
-      {input: '*bc', expected: []},
-      {input: 'a*c', expected: []},
+      {input: '*bc', expected: {}},
+      {input: 'a*c', expected: {}},
     ]);
 
     testTrie('for several overlapping rules', [
@@ -288,14 +286,14 @@ suite('trie', () => {
       {pattern: 'ab*', scopes: ['B']},
       {pattern: 'abc', scopes: ['C']},
     ], [
-      {input: '', expected: []},
-      {input: 'a', expected: []},
-      {input: 'a*', expected: [undefined, undefined, undefined, ['A', 'B', 'C']]},
-      {input: 'ab', expected: [undefined, undefined, ['B'], ['A']]},
-      {input: 'ab*', expected: [undefined, undefined, ['B'], undefined, ['A', 'C']]},
-      {input: 'abx', expected: [undefined, undefined, ['B']]},
-      {input: 'abc', expected: [undefined, undefined, ['B'], undefined, ['C']]},
-      {input: 'abcx', expected: [undefined, undefined, ['B']]},
+      {input: '', expected: {}},
+      {input: 'a', expected: {}},
+      {input: 'a*', expected: {3: ['A', 'B', 'C']}},
+      {input: 'ab', expected: {2: ['B'], 3: ['A']}},
+      {input: 'ab*', expected: {2: ['B'], 4: ['A', 'C']}},
+      {input: 'abx', expected: {2: ['B']}},
+      {input: 'abc', expected: {2: ['B'], 4: ['C']}},
+      {input: 'abcx', expected: {2: ['B']}},
     ]);
   });
 });
