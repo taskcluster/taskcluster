@@ -35,7 +35,7 @@ async function validator(options) {
       cfg.constants = yaml.safeLoad(fs.readFileSync(fullpath, 'utf-8'));
     } catch (err) {
       if (err.code == 'ENOENT') {
-        console.log('Constants file does not exist, setting constants to {}');
+        debug('Constants file does not exist, setting constants to {}');
         cfg.constants = {};
       } else {
         throw err;
