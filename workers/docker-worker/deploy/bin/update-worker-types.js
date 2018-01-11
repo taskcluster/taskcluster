@@ -44,10 +44,10 @@ function backupWorkerTypes(client) {
   );
 }
 
-function updateWorkerTypes(client) {
+async function updateWorkerTypes(client) {
   console.log('Updating worker types...');
-  const p = Object.keys(workerTypesList).map(i => {
-    return workerTypesList[i].map(async name => {
+  for (let i of Object.keys(workerTypesList)) {
+    for (let name of workerTypesList[i]) {
       const workerType = new utils.WorkerType(client, name);
       const wt = await workerType.workerType();
 
@@ -55,11 +55,10 @@ function updateWorkerTypes(client) {
         region.launchSpec.ImageId = amis[i][region.region];
       }
       console.log(`Updating ${name}`);
-      return workerType.update(wt);
-    });
-  });
-
-  return Promise.all(_.flatten(p));
+      await new Promise(accept => setTimeout(accept, 200));
+      await workerType.update(wt);
+    }
+  }
 }
 
 function main() {
