@@ -85,23 +85,18 @@ exports.generateTrie = (rules) => {
 };
 
 /**
- * Executes the trie for a single input, returning an array of scopes
- * such that the scopes at result[k] were matched with input.slice(k)
- * not yet consumed (and thus available for parameterization).
- *
- * Note that the input is considered to be followed by an 'end' character,
- * so it may be that result.length > input.length; on the other hand, if
- * the trie completes matching before the input is consumed, result.length
- * can be smaller.
+ * Executes the trie for a single input, invoking cb(scopes, offset) whenever
+ * scopes are matched wuth input.slice(offset) unconsumed, and thus relevant
+ * for parameterization.
  */
-exports.executeTrie = (trie, input) => {
+exports.executeTrie = (trie, input, cb) => {
   let state = trie;
-  let result = [];
   let k = 0;
 
   while (state) {
-    result.push(state.scopes);
+    if (state.scopes) {
+      cb(state.scopes, k);
+    }
     state = state[input[k++] || 'end'];
   }
-  return result;
 };
