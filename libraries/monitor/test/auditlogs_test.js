@@ -105,8 +105,7 @@ suite('Audit Logs', () => {
     });
     let closed = false;
     monitor.log({test: 'foobar'});
-    monitor.flush().then(() => {closed = true;});
-    await testing.sleep(1000);
+    await monitor.flush().then(() => {closed = true;});
     assert(closed, 'Failed to reject permanently failing submission.');
   });
 
