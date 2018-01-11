@@ -338,31 +338,52 @@ suite('scoperesolver', () => {
     const scopeResolver = new ScopeResolver();
     const makeResolver = roles => scopeResolver.buildResolver(roles);
     const shouldMeasure = process.env.MEASURE_PERFORMANCE;
-    const measureN = 50;
-    const measureSkip = 5; // initial runs to skip (allows JIT warmup)
     const timings = [];
 
     const testResolver = (title, {roles, scopes, expected}) => {
       test(title, function() {
-        let timing, time;
+        let time;
         if (shouldMeasure) {
           // this could take a while..
           this.slow(3600000);
           this.timeout(0);
 
-          timing = {title};
+          let timing = {title};
           timings.push(timing);
+
+          const MIN_ITERATIONS = 5; // during warmup only
+          const PREHEAT_TIME = 500 * 1000000; // ns
+          const TIMEING_TIME = 3 * 1000000000; // ns
           time = (step, fn) => {
             let result;
-            timing[step] = [];
-            for (let i = 0; i < measureN; i++) {
-              const start = process.hrtime();
-              result = fn();
-              const took = process.hrtime(start);
-              timing[step].push(took[0] * 1000000000 + took[1]);
+            let mean;
+            let count = 0;
+            // initial runs to skip (allows JIT warmup)
+            // we also use this to estimate how many iterations we need to run
+            // inorder to do timing for TIMEING_TIME time.
+            const preheat = process.hrtime();
+            while (true) {
+              for (let i = 0; i < MIN_ITERATIONS; i++) {
+                result = fn();
+              }
+              count += 1;
+              const diff = process.hrtime(preheat);
+              if (diff[0] * 1000000000 + diff[1] > PREHEAT_TIME) {
+                mean = (diff[0] * 1000000000 + diff[1]) / (MIN_ITERATIONS * count);
+                break;
+              }
             }
-            timing[step].splice(0, measureSkip);
-            let mean = _.reduce(timing[step], (a, b) => a + b) / timing[step].length;
+            // Estimate iterations to measure and run them
+            let iterations = Math.ceil(TIMEING_TIME / mean);
+            const start = process.hrtime();
+            for (let i = 0; i < iterations; i++) {
+              result = fn();
+            }
+            const diff = process.hrtime(start);
+            mean = (diff[0] * 1000000000 + diff[1]) / iterations;
+
+            timing[step] = mean;
+
             let unit = 'ns';
             if (mean > 1000) {
               mean /= 1000;

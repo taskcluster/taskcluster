@@ -368,18 +368,14 @@ class ScopeResolver extends events.EventEmitter {
         // execute the DFA and expand any parameterizations in the result, then add
         // the newly expanded scopes to the list of scopes to expand (recursively)
         const trailingStar = scope.endsWith('*');
-        executeTrie(dfa, scope).forEach((expansion, k) => {
-          if (!expansion) {
-            return;
-          }
-
+        executeTrie(dfa, scope, (scopes, offset) => {
           // Get the replacement slice for any parameterization. If this is empty and the
           // scope ended with `*`, consider that `*` to have been extended into the
           // replacement.
-          const slice = scope.slice(k) || (trailingStar ? '*' : '');
+          const slice = scope.slice(offset) || (trailingStar ? '*' : '');
           const parameter_regexp = trailingStar ? PARAMETER_TO_END : PARAMETER_G;
 
-          expansion.map(s => s.replace(parameter_regexp, slice)).forEach(s => {
+          scopes.map(s => s.replace(parameter_regexp, slice)).forEach(s => {
             // mark this scope as seen, and if it is novel and expandable, add it
             // to the queue for expansion
             if (see(s) && ASSUME_PREFIX.test(s)) {
