@@ -113,8 +113,8 @@ GarbageCollector.prototype = {
             // Any data volumes created by container should be removed too.
             // These can be created with VOLUME statement in dockerfile.
             // Tasks should use cache folders for caching things, though
-            // VOLUME statements makes sense if you want a non-AUFS folder that
-            // isn't persistent (AUFS can be slow for file intensive work)
+            // VOLUME statements makes sense for performance, since it avoids
+            // Docker's storage layer.
             v: true
           });
           delete this.markedContainers[containerId];
