@@ -80,30 +80,38 @@ on the host.
 
 The v4l2loopback and snd-aloop kernel modules are installed to allow loopback audio/video
 devices to be available within tasks that require them.  For information on how to
-configure these modules like production, consult the [vagrant script](https://github.com/taskcluster/docker-worker/blob/master/vagrant.sh)
+configure these modules like production, consult the
+[vagrant script](https://github.com/taskcluster/docker-worker/blob/master/vagrant.sh)
 used for creating a local environment.
 
 ## Running tests
 
-There are a few components that must be configured for the tests to work properly (e.g. docker, kernel
-modules, and other packages).  To ease the setup, a vagrant file is provided in this repo that can setup
-an environment very similar to the one docker-worker runs in production.
+There are a few components that must be configured for the tests to work properly
+(e.g. docker, kernel modules, and other packages). To ease the setup, a vagrant file
+is provided in this repo that can setup an environment very similar to the one
+docker-worker runs in production.
 
 #### Setting up vagrant
 
 1. Install [VirtualBox](https://www.virtualbox.org/)
 2. Install [Vagrant](https://www.vagrantup.com/)
 3. Install vagrant-reload by running `vagrant plugin install vagrant-reload`
-4. Create temporary Taskcluster credentials running `eval $(taskcluster-cli signin --scope $(cat scopes.txt))`
+4. Create temporary Taskcluster credentials running `eval $(taskcluster-cli signin
+   --scope $(cat scopes.txt))`
 5. Within the root of the repo, run `vagrant up`
 
-*** Note: If TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME, PULSE_PASSWORD are configured within the virtual environment if available locally when building ***
+*** Note: If TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME,
+PULSE_PASSWORD are configured within the virtual environment if available locally
+when building ***
 
 #### Logging into virtual machine and configuring environment
 
 1. `vagrant ssh`
-2. The tests require TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME, PULSE_PASSWORD to be setup within the environment.  If they were not available locally when building, add them to the virtual machine now.
-3. `cd /vagrant` # Your local checkout of the docker-worker repo is made available under the '/vagrant' directory
+2. The tests require TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID,
+   PULSE_USERNAME, PULSE_PASSWORD to be setup within the environment. If they
+   were not available locally when building, add them to the virtual machine now.
+3. `cd /vagrant` # Your local checkout of the docker-worker repo is made
+   available under the '/vagrant' directory
 4. `./build.sh` # Builds some of the test images that are required
 5. `yarn install --frozen-lockfile` # Installs all the necessary node modules
 
@@ -111,11 +119,15 @@ Note: taskcluster-cli is available at https://github.com/taskcluster/taskcluster
 
 #### Running Tests
 
-1. Either all the tests can be run, but running `yarn test` or `./test/test.sh`, however, under most circumstances one only wants to run a single test suite
+1. Either all the tests can be run, but running `yarn test` or `./test/test.sh`,
+   however, under most circumstances one only wants to run a single test suite
 2. For individual test files, run `./node_modules/mocha/bin/mocha --bail .test/<file>`
-3. For running tests within a test file, add "--grep <phrase>" when running the above command to capture just the individual test name.
+3. For running tests within a test file, add "--grep <phrase>" when running
+   the above command to capture just the individual test name.
 
-*** Note: Sometimes things don't go as planned and tests will hang until they timeout.  To get more insight into what went wrong, set "DEBUG=*" when running the tests to get more detailed output. ***
+*** Note: Sometimes things don't go as planned and tests will hang until
+they timeout. To get more insight into what went wrong, set "DEBUG=*" when
+running the tests to get more detailed output. ***
 
 ### Common problems
 
@@ -124,7 +136,8 @@ Note: taskcluster-cli is available at https://github.com/taskcluster/taskcluster
     
 ## Updating Documentation
 
-Documentation for this project lives under docs/ .  Upon merging, documentation will be uploaded to s3 to display on docs.taskcluster.net automatically.
+Documentation for this project lives under docs/ . Upon merging, documentation
+will be uploaded to s3 to display on docs.taskcluster.net automatically.
 
 ## Deployment
 
@@ -141,8 +154,10 @@ list](/deploy/checklist.md)
 
 ### Amazon Credentials
 
-docker-worker is currently deployed to AWS EC2.  Using packer to configure and deploy an AMI requires
-Amazon credentials to be specified.  Follow this [document](https://www.packer.io/docs/builders/amazon.html) to configure the environment appropriately.
+docker-worker is currently deployed to AWS EC2.  Using packer to configure and
+deploy an AMI requires Amazon credentials to be specified. Follow this
+[document](https://www.packer.io/docs/builders/amazon.html) to configure the
+environment appropriately.
 
 ### Building AMI's
 
@@ -268,7 +283,8 @@ Schema changes are not deployed automatically so if the
 schema has been changed, the run the upload-schema.js script to update.
 
 Before running the upload schema script, ensure that AWS credentials are loaded 
-into your environment.  See [Configuring AWS with Node](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html)
+into your environment. See
+[Configuring AWS with Node](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html)
 
 Run the upload-schema.js script to update the schema:
 
@@ -276,8 +292,17 @@ Run the upload-schema.js script to update the schema:
 
 ### Post-Deployment Verification
 
-After creating a new AMI, operation can be verified by updating a test worker type in the AWS Provisioner and submitting tasks to it.  Ensure that the tasks were claimed and completed with the successful outcome.  Also add in features/capabilities to the tasks based on code changes made in this release.
+After creating a new AMI, operation can be verified by updating a test
+worker type in the AWS Provisioner and submitting tasks to it. Ensure that
+the tasks were claimed and completed with the successful outcome. Also add in
+features/capabilities to the tasks based on code changes made in this release.
 
-Further verification should be done if underlying packages, such as docker, change.  Stress tests should be used (submit a graph with a 1000 tasks) to ensure that all tasks have the expected outcome and complete in an expected amount of time.
+Further verification should be done if underlying packages, such as docker,
+change.  Stress tests should be used (submit a graph with a 1000 tasks) to
+ensure that all tasks have the expected outcome and complete in an expected
+amount of time.
 
-Errors from docker-worker are reported into papertrail and should be monitored during roll out of new AMIs.  Searching for the AMI Id along with ("task resolved" OR "claim task") should give a rough idea if work is being done using these new AMIs.
+Errors from docker-worker are reported into papertrail and should be
+monitored during roll out of new AMIs.  Searching for the AMI Id along with
+("task resolved" OR "claim task") should give a rough idea if work is being
+done using these new AMIs.
