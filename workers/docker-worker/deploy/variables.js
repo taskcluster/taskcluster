@@ -37,7 +37,7 @@ module.exports = {
   },
 
   'filesystem': {
-    description: 'Docker filesystem type (btrfs, overlay2)',
+    description: 'Docker filesystem type (overlay2)',
     value: 'overlay2'
   },
 

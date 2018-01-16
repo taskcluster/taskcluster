@@ -71,7 +71,6 @@ fi
 sudo apt-get install -y \
     unattended-upgrades \
     docker-ce=$DOCKER_VERSION \
-    btrfs-tools \
     lvm2 \
     curl \
     build-essential \
