@@ -382,7 +382,7 @@ api.declare({
   var validate = ajv.compile(hook.triggerSchema);
 
   if (validate && payload) {
-    let valid = validate(payload.context);
+    let valid = validate(payload);
     if (!valid) {
       return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
     }
