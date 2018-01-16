@@ -24,6 +24,12 @@
 //  * `['0 0 1 * * *']` -- daily at 1:00 UTC
 //  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 //
+// Hooks can be parametrized using JSON-e. The task definition in the hook is used as a JSON-e template,
+// and the paramters are supplied as a JSON-e context. The result of rendeting the template and context is
+// used as the task definition. Currently context can only be provided with the triggerHook method.
+// You can find a complete description about how json-e works, here:
+// https://github.com/taskcluster/json-e
+//
 // See: https://docs.taskcluster.net/reference/core/hooks/api-docs
 //
 // How to use this package
@@ -44,7 +50,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Sun, 7 Jan 2018 at 12:23:00 UTC. The code was generated
+// Tue, 16 Jan 2018 at 22:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 

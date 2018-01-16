@@ -1,4 +1,4 @@
-Generated: 1515327794
+Generated: 1516141312
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3723,7 +3723,13 @@ Hooks can have a "schedule" indicating specific times that new tasks should
 be created.  Each schedule is in a simple cron format, per 
 https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 1 * * *']` -- daily at 1:00 UTC
- * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon'
+ * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
+
+Hooks can be parametrized using JSON-e. The task definition in the hook is used as a JSON-e template,
+and the paramters are supplied as a JSON-e context. The result of rendeting the template and context is
+used as the task definition. Currently context can only be provided with the triggerHook method.
+You can find a complete description about how json-e works, here:
+https://github.com/taskcluster/json-e'
 Base URL    = 'https://hooks.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -3990,6 +3996,10 @@ Properties
     Ref                    = 'http://schemas.taskcluster.net/hooks/v1/task-template.json'
     TypeName               = 'Task'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task'
+  Property 'triggerSchema' =
+    Type                   = 'object'
+    TypeName               = 'TriggerSchema'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema'
 Required               = '[metadata task deadline]'
 Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Hook creation request'
@@ -4000,7 +4010,6 @@ SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-re
 
 http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
 =============================================================
-Additional Properties  = 'false'
 Description            = 'Definition of a hook that will create tasks when defined events occur.
 '
 ID                     = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#'
@@ -4082,7 +4091,11 @@ Properties
     Ref                    = 'http://schemas.taskcluster.net/hooks/v1/task-template.json'
     TypeName               = 'Task'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task'
-Required               = '[hookGroupId hookId metadata task schedule expires deadline]'
+  Property 'triggerSchema' =
+    Type                   = 'object'
+    TypeName               = 'TriggerSchema'
+    SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema'
+Required               = '[hookGroupId hookId metadata task schedule expires deadline triggerSchema]'
 Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Hook definition'
 Type                   = 'object'

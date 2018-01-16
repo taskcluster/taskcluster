@@ -95,6 +95,9 @@ type (
 
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
 		Task TaskTemplate `json:"task"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
+		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
 	}
 
 	// Definition of a hook that will create tasks when defined events occur.
@@ -171,6 +174,9 @@ type (
 
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
 		Task TaskTemplate `json:"task"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema
+		TriggerSchema json.RawMessage `json:"triggerSchema"`
 	}
 
 	// List of `hookGroupIds`.

@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Sun, 7 Jan 2018 at 12:23:00 UTC. The code was generated
+// Tue, 16 Jan 2018 at 22:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
