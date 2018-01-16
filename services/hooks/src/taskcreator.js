@@ -20,9 +20,9 @@ class TaskCreator {
   }
 
   taskForHook(hook, context, options) {
+
     let task = jsone(hook.task, context);
     let created = options.created || new Date();
-  
     task.created = created.toJSON();
     task.deadline = taskcluster.fromNowJSON(hook.deadline, created);
     task.expires = taskcluster.fromNowJSON(hook.expires, created);
@@ -41,12 +41,12 @@ class TaskCreator {
   * 5xx errors.
   */
   async fire(hook, context, options) {
+    
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
       created: new Date(),
       retry: true,
     });
-
     // create a queue instance with its authorized scopes limited to those
     // assigned to the hook.
     let role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
