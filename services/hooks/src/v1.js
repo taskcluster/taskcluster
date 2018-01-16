@@ -5,6 +5,7 @@ var taskcluster = require('taskcluster-client');
 var API         = require('taskcluster-lib-api');
 var nextDate    = require('../src/nextdate');
 var _           = require('lodash');
+var Ajv         = require('ajv');
 
 var api = new API({
   title:         'Hooks API Documentation',
@@ -26,11 +27,10 @@ var api = new API({
     ' * `[\'0 0 9,21 * * 1-5\', \'0 0 12 * * 0,6\']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon',
     '',
     'Hooks can be parametrized using JSON-e. The task definition in the hook is used as a JSON-e template,',
-    'and the paramters are supplied as a JSON-e context. The result os rendeting the template and context is',
+    'and the paramters are supplied as a JSON-e context. The result of rendeting the template and context is',
     'used as the task definition. Currently context can only be provided with the triggerHook method.',
     'You can find a complete description about how json-e works, here:',
     'https://github.com/taskcluster/json-e',
-    
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
@@ -219,7 +219,7 @@ api.declare({
   var hookDef   = req.body;
 
   hookDef = _.defaults({hookGroupId, hookId}, hookDef);
-
+  
   if (!req.satisfies({hookGroupId, hookId})) {
     return;
   }
@@ -373,10 +373,25 @@ api.declare({
   var payload = req.body;
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
   var error = null;
+  const ajv = new Ajv();
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
+  //Using ajv lib to check if the context respect the triggerSchema
+  var validate = ajv.compile(hook.triggerSchema);
+
+  if (validate && payload) {
+    let valid = validate(payload.context);
+    if (!valid) {
+      return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
+    }
+  } 
+  // build the context for the task creation
+  let context = {
+    triggeredBy: 'triggerHook',
+    context: payload,
+  };
 
   try {
     resp = await this.taskcreator.fire(hook, payload);
