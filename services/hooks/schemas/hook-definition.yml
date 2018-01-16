@@ -23,7 +23,7 @@ properties:
   expires:                {$const: expires}
   deadline:               {$const: deadline}
   task:                   {$ref: "http://schemas.taskcluster.net/hooks/v1/task-template.json"}
-additionalProperties:     false
+  triggerSchema:          {type: 'object'}
 required:
   - hookGroupId
   - hookId
@@ -32,3 +32,4 @@ required:
   - schedule
   - expires
   - deadline
+  - triggerSchema
