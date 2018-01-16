@@ -1,3 +1,3 @@
 #!/bin/bash -vex
 
-. /etc/default/docker-{{filesystem}}
+. /etc/default/docker-overlay2

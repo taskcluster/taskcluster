@@ -36,11 +36,6 @@ module.exports = {
     description: 'Location of private RSA key for docker-worker'
   },
 
-  'filesystem': {
-    description: 'Docker filesystem type (overlay2)',
-    value: 'overlay2'
-  },
-
   'papertrail': {
     description: 'Papertrail host + port'
   },

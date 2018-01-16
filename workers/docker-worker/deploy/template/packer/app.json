@@ -1,6 +1,5 @@
 {
   "templateContents": "deploy.tar.gz",
-  "fsType": "{{filesystem}}",
   "cotSigningKey": "{{cotSigningKey}}"
 }
 
