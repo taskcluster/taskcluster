@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-scopes",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Scope checking utilities for Taskcluster",
   "license": "MPL-2.0",
