@@ -7,7 +7,7 @@ sudo ln -sf /vagrant /worker
 # Keep in sync with deploy/packer/base/scripts/packages.sh.
 NODE_VERSION=v8.6.0
 DOCKER_VERSION=1.12.6-0~ubuntu-trusty
-KERNEL_VER=4.4.0-98-generic
+KERNEL_VER=4.4.0-109-generic
 V4L2LOOPBACK_VERSION=0.10.0
 
 lsb_release -a
