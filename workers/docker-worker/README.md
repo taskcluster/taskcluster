@@ -226,7 +226,7 @@ are important.
   2. Building the [app](/deploy/packer/app.json) AMI. Do this when:
       - You want to test new code/features.
 
-      - You need to update diamond/statsd/configs (not packages).
+      - You need to update statsd/configs (not packages).
 
       Note: That just because you deploy an AMI does not mean anyone is
       using it.. Usually you need to also update a provisioner workerType with

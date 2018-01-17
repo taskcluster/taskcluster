@@ -1,6 +1,6 @@
 # So you want to deploy a docker worker?
 
-1. Do you need to update docker/node/diamond/apt package versions?
+1. Do you need to update docker/node/apt package versions?
 
   a. No: Okay go to 2.
   b. Yes: Go to [Creating a base image](#creating-a-base-image) then go to 2.

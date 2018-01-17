@@ -2,7 +2,7 @@
 
 # Setting the actual hostname on a node is expensive and tricky to do well given
 # you have to reboot... The much saner approach is to craft the hostname and
-# hardcode it into syslog/diamond/etc.. The hostname for a docker-worker (on
+# hardcode it into syslog/etc.. The hostname for a docker-worker (on
 # aws) is split up into three parts $INSTANCE_ID-$INSTANCE_TYPE-$WORKER_TYPE.
 # This script can also output the DELIMITER in "." (period) for things like
 # graphite/statsd.
