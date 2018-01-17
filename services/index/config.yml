@@ -17,6 +17,10 @@ defaults:
     # Name of pulse queue, if a non-exclusive queue is to be used.
     listenerQueueName:            null
 
+    # Time delay before expiring artifacts, in readable format, see:
+    # taskcluster.fromNow, notice this should be negative!
+    expirationDelay:              '-1 day'
+
   # Server configuration
   server:
     # Public URL from which the server can be accessed (used for persona)

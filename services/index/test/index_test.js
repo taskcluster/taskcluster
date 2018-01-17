@@ -133,10 +133,11 @@ suite('Indexing', () => {
     assert.equal(result.taskId, taskId, 'Wrong taskId');
   });
 
-  test('Expiring Index', async function() {
+  test('Expiring Indexed Tasks', async function() {
     // Create expiration
     var expiry = new Date();
-    expiry.setMinutes(expiry.getMinutes() - 25);
+
+    expiry.setDate(expiry.getDate() - 1);
     
     var myns     = slugid.v4();
     var taskId   = slugid.v4();
@@ -150,7 +151,7 @@ suite('Indexing', () => {
     let result = await helper.index.findTask(myns + '.my-task');
     assert(result.taskId === taskId, 'Wrong taskId');
 
-    expiry.setMinutes(expiry.getMinutes() + 50);
+    expiry.setDate(expiry.getDate() + 1);
     await helper.index.insertTask(myns + '.my-task2', {
       taskId:     taskId2,
       rank:       42,
@@ -160,7 +161,10 @@ suite('Indexing', () => {
     result = await helper.index.findTask(myns + '.my-task2');
     assert(result.taskId === taskId2, 'Wrong taskId');
     
-    await helper.handlers.Namespace.expireEntries('', helper.handlers.IndexedTask);
+    // Set now to one day in the past 
+    var now = taskcluster.fromNow('- 1 day');
+    debug('Expiring indexed tasks at: %s, from before %s', new Date(), now);
+    await helper.handlers.IndexedTask.expireTasks(now);
     
     try {
       await helper.index.findTask(myns + '.my-task');
@@ -170,6 +174,43 @@ suite('Indexing', () => {
     }    
     assert(false, 'This shouldn\'t have worked');
 
+  });
+
+  test('Expiring Namespace', async function() {
+    // Create expiration
+    var expiry = new Date();
+    var myns     = slugid.v4();
+    var taskId   = slugid.v4();
+    var taskId2  = slugid.v4();
+    await helper.index.insertTask(myns+'.one-ns.my-task', {
+      taskId:     taskId,
+      rank:       41,
+      data:       {hello: 'world'},
+      expires:    expiry.toJSON(),
+    });
+    let result = await helper.index.findTask(myns + '.one-ns.my-task');
+    assert(result.taskId === taskId, 'Wrong taskId');
+    expiry.setDate(expiry.getDate() - 2);
+    await helper.index.insertTask(myns + '.another-ns.my-task', {
+      taskId:     taskId2,
+      rank:       42,
+      data:       {hello: 'world two'},
+      expires:    expiry.toJSON(),
+    });
+    result = await helper.index.findTask(myns + '.another-ns.my-task');
+    assert(result.taskId === taskId2, 'Wrong taskId');
+    // Set now to one day in the past 
+    var now = taskcluster.fromNow('- 1 day');
+    
+    debug('Expiring namespace at: %s, from before %s', new Date(), now);
+    await helper.handlers.Namespace.expireEntries(now);
+    
+    result = await helper.index.listNamespaces(myns, {});
+    assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');
+    assert(result.namespaces.some(function(ns) {
+      return ns.name === 'one-ns';
+    }), 'Expected to find one-ns');
+    
   });
 
 });
