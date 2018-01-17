@@ -280,10 +280,21 @@ folders.
     Given the backup file, this scripts rolls back the worker type configuration.
     It requires node 8.5.0+.
 
+  - [deploy/bin/github-release.js](/deploy/bin/github-release.js) :
+    It creates a Github release of the current branch. Do not use this script
+    directly, use the [release.sh](/release.sh) script, which does some safe
+    checks before releasing.
+
 If eveything is alright, all should you do to deploy docker-worker is to run
-[release.sh](/release.sh). You need the
+[deploy.sh](/deploy.sh). You need the
 [secrets](ssh://gitolite3@git-internal.mozilla.org/taskcluster/secrets.git)
 repo configured.
+
+After running [deploy.sh](/deploy.sh), you can make a Github release of the
+deployed AMIs by running [release.sh](/release.sh). It creates the Github
+release and uploads the `docker-worker-amis.json` and
+`worker-types-backup.json` files. You need to setup a Github personal access
+token and put it in a environment variable called `DOCKER_WORKER_GITHUB_TOKEN`.
 
 ### Block-Device Mapping
 The AMI built with packer will mount all available instances storage under

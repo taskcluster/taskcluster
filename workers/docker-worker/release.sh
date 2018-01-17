@@ -1,29 +1,30 @@
 #!/bin/bash -e
 
-deploy_json=deploy/deploy.json;
+echo "Releasing docker-worker on Github"
 
-NODE_VERSION_MAJOR=$(node --version | tr -d v | awk -F. '{print $1}')
-NODE_VERSION_MINOR=$(node --version | tr -d v | awk -F. '{print $2}')
-
-if [ "$TASKCLUSTER_CLIENT_ID" == "" -o "$TASKCLUSTER_ACCESS_TOKEN" == "" ]; then
-    echo "You don't seem to have proper Taskcluster credentials, please run 'taskcluster-cli signin' command" >&2
-    exit 1
-fi
-
-if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MINOR -lt 5 ]; then
-  echo "$0 requires node version 8.5.0 or higher." >&2
+if [ "$DOCKER_WORKER_GITHUB_TOKEN" == "" ]; then
+  echo "You need to define the environment variable DOCKER_WORKER_GITHUB_TOKEN" >&2
+  echo "with a valid Github personal token." >&2
+  echo "If you intended to only deploy AMIs, then run the deploy.sh script." >&2
   exit 1
 fi
 
-if ! [ -d $HOME/.password-store ]; then
-    echo "Password store not found, please install it by running:"
-    echo "git clone ssh://gitolite3@git-internal.mozilla.org/taskcluster/secrets.git $HOME/.password-store"
-    echo "To clone this repository, you need Mozilla VPN access. Please check \
-https://mana.mozilla.org/wiki/display/IT/Mozilla+VPN for information on how to setup VPN connection."
-    exit 1
+remote=$(git remote -v | grep 'taskcluster/docker-worker' | head -1 | awk '{print $1}')
+if [ "$remote" == "" ]; then
+  git remote add tcdw git@github.com/taskcluster/docker-worker
+  remote=tcdw
 fi
 
-deploy/bin/import-docker-worker-secrets
-deploy/bin/build app
-deploy/bin/update-worker-types.js $*
-rm -f /tmp/docker-worker*
+git fetch $remote
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+current_branch_head_sha=$(git rev-parse $branch)
+remote_branch_head_sha=$(git rev-parse $remote/$branch)
+
+if [ "$current_branch_head_sha" != "$remote_branch_head_sha" ]; then
+  echo "$branch and $remote/$branch mismatch!" >&2
+  exit 1
+fi
+
+release_name=$(deploy/bin/github-release.js)
+echo "$release_name has been released at https://github.com/taskcluster/docker-worker/releases/tag/$release_name"
