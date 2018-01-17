@@ -9,7 +9,7 @@ if [ $md5 != "c75ce425e553e416bde4e412439e3d09" ]; then
 fi
 
 # pip deps
-sudo pip install python-statsd influxdb
+sudo pip install python-statsd
 
 # template source which must override system files.
 template_source=$1
