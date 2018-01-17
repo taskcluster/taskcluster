@@ -2,6 +2,7 @@
 
 set -e -v
 
+# Keep in sync with vagrant.sh.
 DOCKER_VERSION=1.12.6-0~ubuntu-trusty
 KERNEL_VER=4.4.0-98-generic
 V4L2LOOPBACK_VERSION=0.10.0

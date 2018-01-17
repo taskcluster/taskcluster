@@ -87,35 +87,71 @@ used for creating a local environment.
 ## Running tests
 
 There are a few components that must be configured for the tests to work properly
-(e.g. docker, kernel modules, and other packages). To ease the setup, a vagrant file
-is provided in this repo that can setup an environment very similar to the one
-docker-worker runs in production.
+(e.g. docker, kernel modules, and other packages). A Vagrant environment is
+available to make this easy to use. Alternatively, it is possible to run tests
+outside of Vagrant. But this requires a bit more effort.
 
-#### Setting up vagrant
+### Setting up vagrant (recommended)
 
 1. Install [VirtualBox](https://www.virtualbox.org/)
 2. Install [Vagrant](https://www.vagrantup.com/)
 3. Install vagrant-reload by running `vagrant plugin install vagrant-reload`
-4. Create temporary Taskcluster credentials running `eval $(taskcluster-cli signin
-   --scope $(cat scopes.txt))`
-5. Within the root of the repo, run `vagrant up`
+4. Within the root of the repo, run `vagrant up`
+5. `vagrant ssh` to enter the virtual machine
 
-*** Note: If TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID, PULSE_USERNAME,
-PULSE_PASSWORD are configured within the virtual environment if available locally
-when building ***
+### Setting up a standalone vm (non-Vagrant users)
+
+If you can't use Vagrant (e.g. you are using Hyper-V and can't use Virtualbox),
+it is possible to configure a bare virtual machine in a very similar manner to
+what Vagrant would produce.
+
+1. Create a new virtual machine.
+2. Download and boot an Ubuntu 14.04 server ISO
+3. Boot the VM
+4. Click through the Ubuntu installer dialogs
+5. For the primary username, use `vagrant`
+6. All other settings can pretty much be the defaults. You'll just
+   press ENTER a bunch of times during the install wizard. Although
+   you'll probably want to install `OpenSSH server` on the
+   `Software selection` screen so you can SSH into your VM.
+7. On first boot, run `sudo visudo` and modify the end of the `%sudo` line
+   so it contains `NOPASSWD:ALL` instead of just `ALL`. This allows you
+   to `sudo` without typing a password.
+8. `apt-get install git`
+9. `git clone https://github.com/taskcluster/docker-worker ~/docker-worker`
+10. `sudo ln -s /home/vagrant/docker-worker /vagrant`
+11. `sudo ln -s /home/vagrant/docker-worker /worker`
+12. `cd docker-worker`
+13. `./vagrant.sh` -- this will provision the VM by installing a bunch of
+    packages and dependencies.
+14. `sudo reboot` -- this is necessary to activate the updated kernel.
+15. `sudo depmod`
 
 #### Logging into virtual machine and configuring environment
 
-1. `vagrant ssh`
-2. The tests require TASKCLUSTER_ACCESS_TOKEN, TASKCLUSTER_CLIENT_ID,
-   PULSE_USERNAME, PULSE_PASSWORD to be setup within the environment. If they
-   were not available locally when building, add them to the virtual machine now.
-3. `cd /vagrant` # Your local checkout of the docker-worker repo is made
-   available under the '/vagrant' directory
-4. `./build.sh` # Builds some of the test images that are required
-5. `yarn install --frozen-lockfile` # Installs all the necessary node modules
+Many tests require the `TASKCLUSTER_ACCESS_TOKEN`, `TASKCLUSTER_CLIENT_ID`,
+`PULSE_USERNAME`, and `PULSE_PASSWORD` environment variables. These variables
+define credentials used to connect to external services.
 
-Note: taskcluster-cli is available at https://github.com/taskcluster/taskcluster-cli/releases
+To obtain Taskcluster client credentials, run
+`eval $(cat scopes.txt | xargs taskcluster-cli signin)`. This will open a web
+browser and you'll be prompted to log into Taskcluster. This command requires
+the `taskcluster-cli` Go application. Find one at
+https://github.com/taskcluster/taskcluster-cli/releases.
+
+Pulse credentials can be created at https://pulseguardian.mozilla.org/.
+
+If using Vagrant, setting these environment variables in the shell used
+to run `vagrant ssh` will cause the variables to get inherited inside the
+Vagrant VM. If not using Vagrant, you should add `export VAR=value` lines
+to /home/vagrant/.bash_profile.
+
+From the virtual machine, you'll need to install some application-level
+dependencies:
+
+1. `cd /vagrant`
+2. `./build.sh` -- builds some Docker images
+3. `yarn install --frozen-lockfile` -- installs Node modules
 
 #### Running Tests
 
@@ -298,7 +334,7 @@ the tasks were claimed and completed with the successful outcome. Also add in
 features/capabilities to the tasks based on code changes made in this release.
 
 Further verification should be done if underlying packages, such as docker,
-change.  Stress tests should be used (submit a graph with a 1000 tasks) to
+change. Stress tests should be used (submit a graph with a 1000 tasks) to
 ensure that all tasks have the expected outcome and complete in an expected
 amount of time.
 
