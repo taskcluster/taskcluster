@@ -1,5 +1,11 @@
 #!/bin/bash -vex
 
+# Wait for cloud-init to finish initializing.
+while [ ! -e /var/lib/cloud/instance/boot-finished ]; do
+    echo "waiting on cloud-init to finish..."
+    sleep 1
+done
+
 # Create logical volume
 # Do not attempt to create if volume already exists (upstart respawn).
 if ! lvdisplay | grep instance_storage; then
