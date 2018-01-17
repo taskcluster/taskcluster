@@ -56,7 +56,7 @@ exports.satisfiesExpression = function(scopeset, expr) {
  * are definitely needed to satisfy the expression and at least
  * one of the scopes under an AnyOf must be provided to satisfy.
  */
-exports.removeGivenScopes = function(scopeset, expr) {
+exports.removeGivenScopes = function(scopeset, expr, topLevel=true) {
   assert(Array.isArray(scopeset), 'Scopeset must be an array.');
 
   if (typeof expr === 'string') {
@@ -67,16 +67,22 @@ exports.removeGivenScopes = function(scopeset, expr) {
   }
 
   if (expr.AllOf) {
-    const AllOf = expr.AllOf.map(e => exports.removeGivenScopes(scopeset, e)).filter(e => e !== null);
+    const AllOf = expr.AllOf.map(e => exports.removeGivenScopes(scopeset, e, false)).filter(e => e !== null);
     if (AllOf.length === 0) {
       return null;
+    }
+    if (AllOf.length === 1 && (!topLevel || typeof AllOf[0] !== 'string')) {
+      return AllOf[0];
     }
     return {AllOf};
   }
 
-  const AnyOf = expr.AnyOf.map(e => exports.removeGivenScopes(scopeset, e));
+  const AnyOf = expr.AnyOf.map(e => exports.removeGivenScopes(scopeset, e, false));
   if (AnyOf.some(e => e === null)) {
     return null;
+  }
+  if (AnyOf.length === 1 && (!topLevel || typeof AnyOf[0] !== 'string')) {
+    return AnyOf[0];
   }
   return {AnyOf};
 };

@@ -117,7 +117,7 @@ suite('scope expression failure explanation:', function() {
     [
       ['xyz', 'abc'],
       {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]},
-      {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]},
+      {AnyOf: ['foo', 'bar']},
     ],
   ].map(([s, e, expl]) => {
     test(`Given ${JSON.stringify(s)}, ${JSON.stringify(e)} is explained by ${JSON.stringify(expl)}}`,
