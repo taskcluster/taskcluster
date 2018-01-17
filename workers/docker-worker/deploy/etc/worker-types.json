@@ -62,8 +62,5 @@
     "gecko-3-images",
     "gecko-images",
     "taskcluster-images"
-  ],
-  "pv-builder": [
-    "gecko-t-linux-medium"
   ]
 }

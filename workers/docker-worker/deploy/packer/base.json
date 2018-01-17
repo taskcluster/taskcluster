@@ -66,21 +66,6 @@
         "Release":    "Latest",
         "Revision":   "{{user `workerRevision`}}"
       }
-    },
-    {
-      "type": "amazon-ebs",
-      "name": "pv-builder",
-      "region": "us-west-2",
-      "source_ami": "ami-0fcf1c77",
-      "ami_virtualization_type": "paravirtual",
-      "instance_type": "m1.medium",
-      "ssh_username": "ubuntu",
-      "ami_name": "taskcluster-docker-worker-base PV {{timestamp}}",
-      "tags": {
-        "OS_Version": "Ubuntu",
-        "Release":    "Latest",
-        "Revision":   "{{user `workerRevision`}}"
-      }
     }
   ]
 }
