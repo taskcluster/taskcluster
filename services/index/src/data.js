@@ -155,7 +155,6 @@ Namespace.expireEntries = async function(now) {
     
     for (var i=0; i<dataLength; i++) {
       let entry = data.entries[i];
-      console.log(`..entry ${JSON.stringify(entry)}`);
       let namespace = entry.parent + '.' + entry.name;
       if (entry.parent.length === 0 || entry.name.length === 0) {
         namespace = entry.parent + entry.name;
@@ -164,8 +163,7 @@ Namespace.expireEntries = async function(now) {
       // from the root out to the leaf. A parent's expires is
       // always later than the child's. Hence, we can delete an
       // entry without checking its children.
-      console.log(`remove namespace ${namespace}`);
-      //entry.remove(false, true);
+      entry.remove(false, true);
     }
 
     if (!data.continuation) {
@@ -185,13 +183,11 @@ IndexedTask.expireTasks = async function(now) {
       continuation:   continuationToken,
     });
 
-    console.log('..indexed tasks ', data);
     var dataLength = data.entries.length;
 
     for (var i=0; i<dataLength; i++) {
       task = data.entries[i];
-      console.log(`remove task ${task.name}`);
-      //task.remove(false, true);
+      task.remove(false, true);
     }
     if (!data.continuation) {
       break;
