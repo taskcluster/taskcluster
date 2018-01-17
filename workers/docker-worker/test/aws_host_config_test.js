@@ -51,7 +51,6 @@ suite('configuration/aws', () => {
       host: 'publichost',
       shutdown: {
         enabled: true,
-        minimumCycleSeconds: 2 * 60
       },
       provisionerId: 'aws-provisioner',
       workerId: 'i-123456',
@@ -63,7 +62,6 @@ suite('configuration/aws', () => {
       region: 'us-west-2d',
       capacity: 1,
       publicIp: '22.33.44.252',
-      billingCycleInterval: 120*60,
       privateIp: '169.254.1.2',
       restrictedProxy: {
         accessToken: 'xyz'

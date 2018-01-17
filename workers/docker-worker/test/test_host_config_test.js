@@ -7,12 +7,11 @@ suite('test host', () => {
   teardown(settings.cleanup);
 
   test('configure', async () => {
-    settings.configure({capacity: 2, billingCycleInterval: 3600});
+    settings.configure({capacity: 2});
     assert.deepEqual(
       {
         capacity: 2,
         publicIp: '127.0.0.1',
-        billingCycleInterval: 3600,
         workerNodeType: 'test-worker',
         instanceId: 'test-worker-instance',
         instanceType: 'r3-superlarge',

@@ -9,11 +9,10 @@ suite('Shutdown on idle', () => {
   var worker;
   setup(async () => {
     settings.cleanup();
-    settings.billingCycleInterval(40);
     settings.configure({
       shutdown: {
         enabled: true,
-        minimumCycleSeconds: 2 // always wait 2 seconds before shutdown...
+        afterIdleSeconds: 5,
       }
     });
 
@@ -35,18 +34,16 @@ suite('Shutdown on idle', () => {
   });
 
   test('shutdown without ever working a task', async () => {
-    settings.billingCycleUptime(30);
     var res = await Promise.all([
       worker.launch(),
       waitForEvent(worker, 'pending shutdown'),
       waitForEvent(worker, 'exit')
     ]);
-    assert.equal(res[1].time, 8);
+    assert.equal(res[1].time, 5);
   });
 
   test('with timer shutdown', async () => {
     await [worker.launch(), waitForEvent(worker, 'pending shutdown')];
-    settings.billingCycleUptime(469);
 
     var res = await Promise.all([
       worker.postToQueue({
@@ -61,45 +58,23 @@ suite('Shutdown on idle', () => {
           maxRunTime: 60 * 60
         }
       }),
+      waitForEvent(worker, 'task resolved'),
       waitForEvent(worker, 'pending shutdown'),
       waitForEvent(worker, 'exit')
     ]);
-    assert.equal(res[1].time, 9);
-  });
-
-  test('in range of shutdown', async () => {
-    // We are very close to end of the cycle so might as well wait for some more
-    // work rather then shutting down...
-    settings.billingCycleUptime(79);
-    // 2 seconds prior to the next billing interval.
-    var res = await Promise.all([
-      worker.launch(),
-      waitForEvent(worker, 'pending shutdown'),
-    ]);
-    assert.equal(res[1].time, 39);
+    // Ensure task completed.
+    assert.equal(res[1].taskState, 'completed');
+    assert.equal(res[2].time, 5);
   });
 
   test('cancel idle', async () => {
-    settings.billingCycleUptime(20);
-    await worker.launch();
-    var idling = await Promise.all([
-      worker.postToQueue({
-        payload: {
-          features: {
-            localLiveLog: false,
-          },
-          image: 'taskcluster/test-ubuntu',
-          command: cmd(
-            'echo "Okay, this is now done"'
-          ),
-          maxRunTime: 60 * 60
-        }
-      }),
-      waitForEvent(worker, 'pending shutdown')
+    await Promise.all([
+      worker.launch(),
+      waitForEvent(worker, 'pending shutdown'),
     ]);
-    assert.equal(idling[1].time, 18);
 
-    var working = await Promise.all([
+    // Posting work should untrigger the shutdown timer and process the task.
+    var events = await Promise.all([
       worker.postToQueue({
         payload: {
           features: {
@@ -112,8 +87,12 @@ suite('Shutdown on idle', () => {
           maxRunTime: 60 * 60
         }
       }),
-      waitForEvent(worker, 'cancel pending shutdown')
+      waitForEvent(worker, 'cancel pending shutdown'),
+      waitForEvent(worker, 'task resolved'),
+      waitForEvent(worker, 'pending shutdown'),
     ]);
-    assert.ok(working[1], 'cancel event fired');
+
+    assert.ok(events[1], 'cancel event fired');
+    assert.equal(events[2].taskState, 'completed');
   });
 });

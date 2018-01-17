@@ -199,33 +199,6 @@ class TaskListener extends EventEmitter {
             stack: e.stack
         });
       }
-      let stats = {
-        uptime: this.host.billingCycleUptime(),
-        interval: this.runtime.billingCycleInterval
-      };
-      let remainder = stats.interval - (stats.uptime % stats.interval);
-      if (remainder * this.runtime.taskQueue.slowdownDivisor < stats.interval) {
-        //slow down the polling because it's nearing the end of the billing cycle
-        if (this.taskPollInterval === this.runtime.taskQueue.pollInterval) {
-          this.taskPollInterval = this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier;
-
-          this.runtime.log('polling', {
-            message: 'polling interval adjusted',
-            oldInterval: this.runtime.taskQueue.pollInterval,
-            newInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier
-          });
-        }
-      } else {
-        //speed it up
-        if (this.taskPollInterval !== this.runtime.taskQueue.pollInterval) {
-          this.taskPollInterval = this.runtime.taskQueue.pollInterval;
-
-          this.runtime.log('polling', { message: 'polling interval adjusted',
-            oldInterval: this.runtime.taskQueue.pollInterval * this.runtime.taskQueue.pollIntervalMultiplier,
-            newInterval: this.runtime.taskQueue.pollInterval
-          });
-        }
-      }
       this.scheduleTaskPoll();
     }, nextPoll);
   }

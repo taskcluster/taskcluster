@@ -20,12 +20,10 @@ suite('Spot Node Termination', () => {
     // clean up any settings that may have been left behind
     settings.cleanup();
 
-    settings.billingCycleInterval(40);
     settings.configure({
       shutdown: {
         enabled: true,
         nodeTerminationPoll: 1,
-        minimumCycleSeconds: 2 // always wait 2 seconds before shutdown...
       }
     });
   });
@@ -135,7 +133,6 @@ suite('Spot Node Termination', () => {
       shutdown: {
         enabled: true,
         nodeTerminationPoll: 2000,
-        minimumCycleSeconds: 2 // always wait 2 seconds before shutdown...
       }
     });
 

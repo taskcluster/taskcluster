@@ -14,18 +14,7 @@ function billingCycleUptime() {
   }
 }
 
-function billingCycleInterval() {
-  let path = settingsPath('billingCycleInterval');
-
-  try {
-    return parseInt(fs.readFileSync(path), 10);
-  } catch(e) {
-    return 0;
-  }
-}
-
 module.exports = {
-  billingCycleInterval,
   billingCycleUptime,
 
   getTerminationTime() {
@@ -45,7 +34,6 @@ module.exports = {
     let path = settingsPath('configure');
     let config = {
       publicIp: '127.0.0.1',
-      billingCycleInterval: billingCycleInterval(),
       privateIp: '169.254.1.1',
       workerNodeType: 'test-worker',
       instanceId: 'test-worker-instance',

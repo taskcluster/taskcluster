@@ -55,35 +55,4 @@ suite('Task Polling', () => {
 
     assert.ok(!claimedTask, 'Task should not have been claimed');
   });
-
-  test('task polling at normal speed', async () => {
-    settings.billingCycleUptime(30);
-    settings.billingCycleInterval(40);
-
-    worker = new TestWorker(DockerWorker);
-    await worker.launch();
-    // wait for one polling cycle so that the next polling cycle with uptime
-    // adjustment triggers a change that can be validated
-    await waitForEvent(worker, 'polling');
-
-    settings.billingCycleUptime(0);
-    let pollingMessage = await waitForEvent(worker, 'polling');
-    assert.equal(pollingMessage.message, 'polling interval adjusted');
-    assert.ok(pollingMessage.oldInterval > pollingMessage.newInterval);
-  });
-
-  test('task polling slows down', async () => {
-    settings.billingCycleUptime(0);
-    settings.billingCycleInterval(40);
-    worker = new TestWorker(DockerWorker);
-    await worker.launch();
-    //make sure the polling timer is accurate
-    await base.testing.sleep(6000);
-
-    settings.billingCycleUptime(30);
-
-    let pollingMessage = await waitForEvent(worker, 'polling');
-    assert.equal(pollingMessage.message, 'polling interval adjusted');
-    assert.ok(pollingMessage.oldInterval < pollingMessage.newInterval);
-  });
 });

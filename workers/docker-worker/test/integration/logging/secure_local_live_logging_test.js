@@ -117,7 +117,6 @@ suite('secure local live logging', () => {
   });
 
   test('tasks not claimed when secure logging enabled and missing certs', async () => {
-    settings.billingCycleInterval(20);
     settings.configure({
       logging: {
         secureLiveLogging: true,
@@ -126,7 +125,7 @@ suite('secure local live logging', () => {
       },
       shutdown: {
         enabled: true,
-        minimumCycleSeconds: 2 // always wait 2 seconds before shutdown...
+        afterIdleSeconds: 2,
       },
       ssl: {
         certificate: '/some/path/ssl.cert',

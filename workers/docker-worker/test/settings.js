@@ -30,10 +30,6 @@ module.exports = {
   settingsPath,
   unlink,
 
-  billingCycleInterval(seconds) {
-    write('billingCycleInterval', seconds);
-  },
-
   billingCycleUptime(seconds) {
     write('billingCycleUptime', seconds);
   },
@@ -48,7 +44,6 @@ module.exports = {
 
   // cleanup any settings files.
   cleanup() {
-    unlink('billingCycleInterval');
     unlink('billingCycleUptime');
     unlink('nodeTermination');
     unlink('configure');

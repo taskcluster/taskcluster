@@ -89,7 +89,6 @@ module.exports = {
     let config = {
       host: metadata[0],
       publicIp: metadata[1],
-      billingCycleInterval: minutes(60),
       privateIp: metadata[2],
       workerId: metadata[3],
       workerGroup: metadata[4].replace(/[a-z]$/, ''),
@@ -103,8 +102,13 @@ module.exports = {
       // AWS Specific shutdown parameters notice this can also be overridden.
       shutdown: {
         enabled: true,
-        // Always wait 2 minutes minimum prior to shutting down this node.
-        minimumCycleSeconds: minutes(2),
+        // AWS does per second billing. So every second we are idling is wasting
+        // money. However, we want machines waiting on work not work waiting on
+        // machines. Furthermore, the value of a running machine is higher than
+        // the value of a new machine because a) it has already paid the startup
+        // cost b) it may have populated caches that can result in subsequent
+        // tasks executing faster.
+        afterIdleSeconds: minutes(5),
       }
     };
 

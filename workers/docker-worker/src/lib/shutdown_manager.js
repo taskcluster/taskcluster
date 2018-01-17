@@ -25,45 +25,15 @@ class ShutdownManager extends EventEmitter {
     spawn('shutdown', ['-h', 'now']);
   }
 
-  /**
-  Calculate when we should shutdown this worker.
-
-  The most important bit here is we never should return 0 we should always wait
-  at least some duration prior to shutting down the worker.
-
-  @return {Number} shutdown time in seconds.
-  */
-  nextShutdownTime() {
-    // Minimum wait time before a shutdown if the billing cycle is over _before_
-    // the minimum then we wait until the next cycle.
-    var minimumCycleSeconds = this.config.shutdown.minimumCycleSeconds;
-
+  onIdle() {
     let stats = {
       uptime: this.host.billingCycleUptime(),
-      interval: this.config.billingCycleInterval
+      idleInterval: this.config.shutdown.afterIdleSeconds
     };
 
     this.config.log('uptime', stats);
 
-
-    // Remainder of the cycle in seconds.
-    let remainder = stats.interval - (stats.uptime % stats.interval);
-
-    // Note: the most important part of this logic is it never returns 0 so we
-    // always have some leeway to accept more work as part of a billing cycle.
-
-    // We are so close to the end of this billing cycle we go another before
-    // trigger a shutdown.
-    if (remainder <= minimumCycleSeconds) {
-      return remainder + (stats.interval - minimumCycleSeconds);
-    }
-
-    // We are somewhere in the billing cycle but not close to the end...
-    return Math.max(remainder - minimumCycleSeconds, minimumCycleSeconds);
-  }
-
-  onIdle() {
-    var shutdownTime = this.nextShutdownTime();
+    var shutdownTime = stats.idleInterval;
     this.config.log('pending shutdown', {
       time: shutdownTime
     });
