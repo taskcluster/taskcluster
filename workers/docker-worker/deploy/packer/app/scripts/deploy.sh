@@ -45,3 +45,11 @@ docker pull taskcluster/relengapi-proxy:2.0.1
 
 # Export the images as a tarball to load when insances are initialized
 docker save taskcluster/taskcluster-proxy:4.0.1 taskcluster/livelog:v4 taskcluster/dind-service:v4.0 taskcluster/relengapi-proxy:2.0.1 > /home/ubuntu/docker_worker/docker_worker_images.tar
+
+# Blow away local docker state because it is never used. On actual workers
+# per-instance storage is initialized and Docker state goes there.
+sudo service docker stop
+sudo rm -rf /var/lib/docker
+# Blow away the upstart log so logs on worker instances don't contain
+# our logs.
+sudo rm /var/log/upstart/docker.log
