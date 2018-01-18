@@ -3,7 +3,6 @@ let debug               = require('debug')('app:main');
 let _                   = require('lodash');
 let assert              = require('assert');
 let path                = require('path');
-let Promise             = require('promise');
 let taskcluster         = require('taskcluster-client');
 let v1                  = require('./api');
 let exchanges           = require('./exchanges');
@@ -25,7 +24,6 @@ let validator           = require('taskcluster-lib-validate');
 let docs                = require('taskcluster-lib-docs');
 let App                 = require('taskcluster-lib-app');
 let remoteS3            = require('remotely-signed-s3');
-let aws                 = require('aws-sdk');
 
 // Create component loader
 let load = loader({
@@ -416,7 +414,15 @@ let load = loader({
   server: {
     requires: ['cfg', 'api', 'monitor', 'docs'],
     setup: ({cfg, api, monitor, docs}) => {
-      let app = App(cfg.server);
+      let app = App({
+        port: cfg.server.port,
+        publicUrl: cfg.server.publicUrl,
+        env: cfg.server.env,
+        forceSSL: cfg.server.forceSSL,
+        trustProxy: cfg.server.trustProxy,
+        rootDocsLink: true,
+        docs,
+      });
       app.use('/v1', api);
       return app.createServer();
     },
@@ -560,7 +566,7 @@ let load = loader({
 
       // Expire task-group members using delay
       debug('Expiring task-group members at: %s, from before %s',
-            new Date(), now);
+        new Date(), now);
       let count = await TaskGroupMember.expire(now);
       debug('Expired %s task-group members', count);
 
@@ -579,7 +585,7 @@ let load = loader({
 
       // Expire task-group sizes using delay
       debug('Expiring task-group sizes at: %s, from before %s',
-            new Date(), now);
+        new Date(), now);
       let count = await TaskGroupActiveSet.expire(now);
       debug('Expired %s task-group sizes', count);
 
@@ -607,7 +613,7 @@ let load = loader({
     },
   },
 
-   // Create the task-requirement expiration process (periodic job)
+  // Create the task-requirement expiration process (periodic job)
   'expire-task-requirement': {
     requires: ['cfg', 'TaskRequirement', 'monitor'],
     setup: async ({cfg, TaskRequirement, monitor}) => {
