@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-04/schema#
+$schema:            http://json-schema.org/draft-06/schema#
 title:              "Task Status Structure"
 description: |
   A representation of **task status** as known by the queue
