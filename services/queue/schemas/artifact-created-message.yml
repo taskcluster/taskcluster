@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-04/schema#
+$schema:  http://json-schema.org/draft-06/schema#
 title:          "Artifact Created Message"
 description: |
   Message reporting a new artifact has been created for a given task.
