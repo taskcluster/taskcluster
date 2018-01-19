@@ -1,8 +1,8 @@
-import assert from 'assert';
-import path from 'path';
-import { Handler } from '../lib/handler';
-import Monitor from 'taskcluster-lib-monitor';
-import validator from 'taskcluster-lib-validate';
+const assert = require('assert');
+const path = require('path');
+const Handler = require('../src/handler');
+const Monitor = require('taskcluster-lib-monitor');
+const validator = require('taskcluster-lib-validate');
 
 let monitor;
 
@@ -11,9 +11,9 @@ suite('handle message', () => {
     monitor = await Monitor({
       project: 'tc-treeherder-test',
       credentials: {},
-      mock: true
+      mock: true,
     });
-  })
+  });
 
   test('invalid message - more than one matching route', async () => {
     let handler = new Handler({
@@ -23,17 +23,17 @@ suite('handle message', () => {
         task: (taskId) => {
           return {
             payload: {
-              image: 'foo:latest'
+              image: 'foo:latest',
             },
             extra: {
               treeherder: {
-                reason: "scheduled",
-                tier: 1
-              }
-            }
+                reason: 'scheduled',
+                tier: 1,
+              },
+            },
           };
-        }
-      }
+        },
+      },
     });
 
     let err;
@@ -44,17 +44,16 @@ suite('handle message', () => {
         payload: {
           status: {
             taskId: 'abc',
-          }
-        }
-      })
-    } catch(e) {
+          },
+        },
+      });
+    } catch (e) {
       err = e;
     }
 
     assert(err, 'Error was not thrown');
-    assert(err.message.includes("Could not determine treeherder route"));
+    assert(err.message.includes('Could not determine treeherder route'));
   });
-
 
   test('invalid message - no matching route', async () => {
     let handler = new Handler({
@@ -64,17 +63,17 @@ suite('handle message', () => {
         task: (taskId) => {
           return {
             payload: {
-              image: 'foo:latest'
+              image: 'foo:latest',
             },
             extra: {
               treeherder: {
-                reason: "scheduled",
-                tier: 1
-              }
-            }
+                reason: 'scheduled',
+                tier: 1,
+              },
+            },
           };
-        }
-      }
+        },
+      },
     });
     let err;
 
@@ -84,15 +83,15 @@ suite('handle message', () => {
         payload: {
           status: {
             taskId: 'abc',
-          }
-        }
-      })
-    } catch(e) {
+          },
+        },
+      });
+    } catch (e) {
       err = e;
     }
 
     assert(err, 'Error was not thrown');
-    assert(err.message.includes("Could not determine treeherder route"));
+    assert(err.message.includes('Could not determine treeherder route'));
   });
 
   test('invalid message - missing treeherder configuration', async () => {
@@ -105,11 +104,11 @@ suite('handle message', () => {
           called = true;
           return {
             payload: {
-              image: 'foo:latest'
-            }
+              image: 'foo:latest',
+            },
           };
-        }
-      }
+        },
+      },
     });
 
     await handler.handleMessage({
@@ -117,12 +116,12 @@ suite('handle message', () => {
       payload: {
         status: {
           taskId: 'abc',
-        }
-      }
-    })
+        },
+      },
+    });
 
     assert(called, 'Task was not retrieved by the queue');
-    assert.equal(monitor.counts['tc-treeherder-test.validateTask.no-config'], 1)
+    assert.equal(monitor.counts['tc-treeherder-test.validateTask.no-config'], 1);
   });
 
   test('invalid message - invalid treeherder config', async () => {
@@ -135,34 +134,34 @@ suite('handle message', () => {
           called = true;
           return {
             payload: {
-              image: 'foo:latest'
+              image: 'foo:latest',
             },
             extra: {
               treeherder: {
-                reason: "scheduled",
-                tier: 1
-              }
-            }
+                reason: 'scheduled',
+                tier: 1,
+              },
+            },
           };
-        }
+        },
       },
     });
     handler.validator = await validator({
-        folder: path.join(__dirname, '..', 'schemas'),
-        prefix: 'taskcluster-treeherder/v1/',
-        aws:    {}
+      folder: path.join(__dirname, '..', 'schemas'),
+      prefix: 'taskcluster-treeherder/v1/',
+      aws:    {},
     });
 
     await handler.handleMessage({
       routes: ['foo.bar.123'],
       payload: {
         status: {
-          taskId: 'abc'
-        }
-      }
-    })
+          taskId: 'abc',
+        },
+      },
+    });
 
     assert(called, 'Task was retrieved by the queue');
-    assert.equal(monitor.counts['tc-treeherder-test.validateTask.invalid-config'], 1)
+    assert.equal(monitor.counts['tc-treeherder-test.validateTask.invalid-config'], 1);
   });
 });

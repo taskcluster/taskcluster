@@ -1,1 +1,1 @@
-handlers: node lib/main.js server
+handlers: node src/main.js server
