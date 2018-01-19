@@ -30,14 +30,15 @@ exports.validExpression = function(expr) {
  */
 exports.satisfiesExpression = function(scopeset, expr) {
   assert(Array.isArray(scopeset), 'Scopeset must be an array.');
-  assert(exports.validExpression(expr));
-  const operator = Object.keys(expr)[0];
-  const subexpressions = expr[operator];
-  const method = operator === 'AnyOf' ? 'some' : 'every';
-  return subexpressions[method](subexpr => typeof subexpr === 'string' ?
+
+  const subexprSatisfied = subexpr => typeof subexpr === 'string' ?
     scopeset.some(scope => patternMatch(scope, subexpr)) :
-    exports.satisfiesExpression(scopeset, subexpr)
-  );
+    exports.satisfiesExpression(scopeset, subexpr);
+
+  if (expr.AnyOf) {
+    return expr.AnyOf.some(subexprSatisfied);
+  }
+  return expr.AllOf.every(subexprSatisfied);
 };
 
 /**
