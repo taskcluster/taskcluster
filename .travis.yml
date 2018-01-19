@@ -1,7 +1,6 @@
 language: go
-
 go:
-  - 1.5
+  - 1.9
 
 # currently cannot customise per user fork, see:
 # https://github.com/travis-ci/travis-ci/issues/1094
