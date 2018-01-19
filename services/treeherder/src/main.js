@@ -1,13 +1,13 @@
-import Debug from 'debug';
-import path from 'path';
-import taskcluster from 'taskcluster-client';
-import { Handler } from './handler';
-import exchanges from './exchanges';
-import loader from 'taskcluster-lib-loader';
-import docs from 'taskcluster-lib-docs';
-import config from 'typed-env-config';
-import monitor from 'taskcluster-lib-monitor';
-import validator from 'taskcluster-lib-validate';
+const Debug = require('debug');
+const path = require('path');
+const taskcluster = require('taskcluster-client');
+const Handler = require('./handler');
+const exchanges = require('./exchanges');
+const loader = require('taskcluster-lib-loader');
+const docs = require('taskcluster-lib-docs');
+const config = require('typed-env-config');
+const monitor = require('taskcluster-lib-monitor');
+const validator = require('taskcluster-lib-validate');
 
 let debug = Debug('taskcluster-treeherder:main');
 
@@ -23,9 +23,9 @@ let load = loader({
       debug('Configuring validator');
       return validator({
         prefix:       'taskcluster-treeherder/v1/',
-        aws:           cfg.aws
+        aws:           cfg.aws,
       });
-    }
+    },
   },
 
   monitor: {
@@ -59,8 +59,8 @@ let load = loader({
         aws:              cfg.aws,
         monitor: monitor.prefix('publisher'),
         process,
-      })
-    }
+      });
+    },
   },
 
   docs: {
@@ -100,8 +100,8 @@ let load = loader({
         listener.bind(queueEvents.taskRunning(routingPattern)),
         listener.bind(queueEvents.taskCompleted(routingPattern)),
         listener.bind(queueEvents.taskFailed(routingPattern)),
-        listener.bind(queueEvents.taskException(routingPattern))
-      ])
+        listener.bind(queueEvents.taskException(routingPattern)),
+      ]);
 
       let handler = new Handler({
         queue,
@@ -110,20 +110,20 @@ let load = loader({
         prefix,
         publisher,
         validator,
-        monitor
+        monitor,
       });
       handler.start();
-    }
-  }
+    },
+  },
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
   load(process.argv[2], {
     profile: process.env.NODE_ENV,
-    process: process.argv[2]
+    process: process.argv[2],
   }).catch(err => {
-    console.log("Server crashed: " + err.stack);
+    console.log('Server crashed: ' + err.stack);
     process.exit(1);
   });
 }

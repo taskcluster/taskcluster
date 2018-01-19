@@ -3,7 +3,7 @@ env:
   global:
   - CXX=g++-4.8
 node_js:
-  - '5'
+  - '8'
 cache:
   yarn: true
   directories:

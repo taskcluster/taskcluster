@@ -1,4 +1,4 @@
-let taskDefinition = `
+module.exports = `
 {
     "provisionerId": "DUMMYPROVISIONER",
     "workerType": "DUMMYWORKERTYPE",
@@ -96,5 +96,3 @@ let taskDefinition = `
         ]
     }
 }`;
-
-exports.taskDefinition = taskDefinition;
