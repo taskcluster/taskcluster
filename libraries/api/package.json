@@ -30,7 +30,7 @@
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
     "taskcluster-client": "^3.1.0",
-    "taskcluster-lib-scopes": "^1.2.0",
+    "taskcluster-lib-scopes": "^1.8.1",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
   },
@@ -45,7 +45,7 @@
     "taskcluster-lib-app": "^2.0.3",
     "taskcluster-lib-monitor": "^4.6.3",
     "taskcluster-lib-testing": "^2.0.2",
-    "taskcluster-lib-validate": "^3.0.1",
+    "taskcluster-lib-validate": "^3.0.3",
     "typed-env-config": "^1.1.1"
   },
   "main": "./lib/api.js"
