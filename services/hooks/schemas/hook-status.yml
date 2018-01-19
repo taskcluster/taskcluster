@@ -8,7 +8,6 @@ properties:
     description: |
       Information about the last time this hook fired.  This property is only present
       if the hook has fired at least once.
-    type: object
     oneOf:
       - title: Successful Fire
         description: "Information about a successful firing of the hook"
