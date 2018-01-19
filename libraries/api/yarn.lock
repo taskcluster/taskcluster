@@ -2712,9 +2712,9 @@ taskcluster-lib-monitor@^4.6.3:
     taskcluster-client "^1.0.1"
     usage "^0.7.1"
 
-taskcluster-lib-scopes@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.2.0.tgz#c3409a34e6627b90a09be3b48c139ee58dabff3b"
+taskcluster-lib-scopes@^1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.8.1.tgz#e85162a0435a2fd187cdbf8f5c25a96271127be7"
   dependencies:
     babel-runtime "^6.26.0"
 
@@ -2742,6 +2742,22 @@ taskcluster-lib-testing@^2.0.2:
 taskcluster-lib-validate@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-3.0.1.tgz#100280e7137bb065bcb7c27570e23238a7781afd"
+  dependencies:
+    ajv "^5.3.0"
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.142.0"
+    babel-runtime "^6.26.0"
+    debug "^3.1.0"
+    js-yaml "^3.10.0"
+    lodash "^4.5.1"
+    promise "^8.0.1"
+    rimraf "^2.6.2"
+    url-join "^2.0.2"
+    walk "^2.3.9"
+
+taskcluster-lib-validate@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-3.0.3.tgz#3b09ccda1a205e728009bafb60f2eb0a11e10a85"
   dependencies:
     ajv "^5.3.0"
     app-root-dir "^1.0.2"

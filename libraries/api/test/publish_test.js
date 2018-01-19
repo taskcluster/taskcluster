@@ -24,11 +24,79 @@ suite('api/publish', function() {
     // Declare a simple method
     api.declare({
       method:       'get',
-      route:        '/test',
+      route:        '/test0',
       name:         'test',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
+    }, function(req, res) {
+      res.send(200, 'Hello World');
+    });
+
+    // Declare some methods with some fun scopes
+    api.declare({
+      method:       'get',
+      route:        '/test1',
+      name:         'test',
+      title:        'Test End-Point',
+      description:  'Place we can call to test something',
+      stability:    subject.stability.stable,
+      scopes:       {AllOf: ['foo:bar']},
+    }, function(req, res) {
+      res.send(200, 'Hello World');
+    });
+    api.declare({
+      method:       'get',
+      route:        '/test2',
+      name:         'test',
+      title:        'Test End-Point',
+      description:  'Place we can call to test something',
+      stability:    subject.stability.stable,
+      scopes:       {AnyOf: ['foo:bar']},
+    }, function(req, res) {
+      res.send(200, 'Hello World');
+    });
+    api.declare({
+      method:       'get',
+      route:        '/test3',
+      name:         'test',
+      title:        'Test End-Point',
+      description:  'Place we can call to test something',
+      stability:    subject.stability.stable,
+      scopes:       {if: 'not_public', then: {AllOf: ['foo:bar']}},
+    }, function(req, res) {
+      res.send(200, 'Hello World');
+    });
+    api.declare({
+      method:       'get',
+      route:        '/test4',
+      name:         'test',
+      title:        'Test End-Point',
+      description:  'Place we can call to test something',
+      stability:    subject.stability.stable,
+      scopes:       {AllOf: [{for: 'foo', in: 'whatever', each: 'bar:<foo>'}]},
+    }, function(req, res) {
+      res.send(200, 'Hello World');
+    });
+    api.declare({
+      method:       'get',
+      route:        '/test4',
+      name:         'test',
+      title:        'Test End-Point',
+      description:  'Place we can call to test something',
+      stability:    subject.stability.stable,
+      scopes:       {AllOf: [{for: 'foo', in: 'whatever', each: 'bar:<foo>'}]},
+    }, function(req, res) {
+      res.send(200, 'Hello World');
+    });
+    api.declare({
+      method:       'get',
+      route:        '/test3',
+      name:         'test',
+      title:        'Test End-Point',
+      description:  'Place we can call to test something',
+      stability:    subject.stability.stable,
+      scopes:       {if: 'not_public', then: {AllOf: ['abc', {AnyOf: ['e']}, {for: 'a', in: 'b', each: 'c'}]}},
     }, function(req, res) {
       res.send(200, 'Hello World');
     });
@@ -49,7 +117,7 @@ suite('api/publish', function() {
     }).then(function(res) {
       var reference = JSON.parse(res.Body);
       assert(reference.entries, 'Missing entries');
-      assert(reference.entries.length == 2, 'Should have two entries');
+      assert.equal(reference.entries.length, 8);
       assert(reference.title, 'Missing title');
     });
   });

@@ -1,9 +1,58 @@
 {
-    "$id": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
     "$schema": "http://json-schema.org/draft-06/schema#",
     "title": "API Reference File",
     "description": "Reference of methods implemented by API",
     "type": "object",
+    "definitions": {
+      "scopeExpressionTemplate": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "The most basic element of a scope expression",
+            "pattern": "^[\\x20-\\x7e]*$"
+          },
+          {
+            "type": "object",
+            "description": "AnyOf objects will evaluate to true if any subexpressions are true",
+            "properties": {
+              "AnyOf": {"type": "array", "items": {"$ref": "#/definitions/scopeExpressionTemplate"}}
+            },
+            "required": ["AnyOf"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "description": "AllOf objects will evaluate to true if all subexpressions are true",
+            "properties": {
+              "AllOf": {"type": "array", "items": {"$ref": "#/definitions/scopeExpressionTemplate"}}
+            },
+            "required": ["AllOf"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "description": "if/then objects will replace themselves with the contents of then if the `if` is true",
+            "properties": {
+              "if": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"},
+              "then": {"$ref": "#/definitions/scopeExpressionTemplate"}
+            },
+            "required": ["if", "then"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "description": "for/each/in objects will replace themselves with an array of basic scopes. They will be flattened into the array this object is a part of.",
+            "properties": {
+              "for": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"},
+              "each": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"},
+              "in": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"}
+            },
+            "required": ["for", "each", "in"],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
     "properties": {
         "version": {
             "description": "API reference version",
@@ -106,17 +155,8 @@
                         ]
                     },
                     "scopes": {
-                        "type": "array",
-                        "description": "List of scope-sets of which the client must satisfy at least one of the sets of scopes. Not provided if authentication isn't required.",
-                        "items": {
-                            "type": "array",
-                            "description": "A set of scopes that grants access if all the scopes in the set is satisfied.  Scopes must be composed of printable ASCII characters and spaces.",
-                            "items": {
-                                "type": "string",
-                                "description": "Scope identifier",
-                                "pattern": "^[\\x20-\\x7e]*$"
-                            }
-                        }
+                        "description": "Scope expression template specifying required scopes for a method. Not provided if authentication isn't required.",
+                        "$ref": "#/definitions/scopeExpressionTemplate"
                     },
                     "input": {
                         "type": "string",
