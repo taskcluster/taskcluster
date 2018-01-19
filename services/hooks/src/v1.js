@@ -373,7 +373,7 @@ api.declare({
   var payload = req.body;
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
   var error = null;
-  const ajv = new Ajv();
+  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
@@ -383,6 +383,7 @@ api.declare({
 
   if (validate && payload) {
     let valid = validate(payload);
+    console.log(validate);
     if (!valid) {
       return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
     }
