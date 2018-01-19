@@ -246,33 +246,6 @@ let load = Loader({
     },
   },
 
-  rolesToBlob: {
-    requires: ['cfg', 'Role', 'Roles'],
-    setup: async ({cfg, Role, Roles}) => {
-      let blob = [];
-      await Role.scan({}, {
-        handler: r => {
-          console.log(`read ${r.roleId}`);
-          blob.push({
-            roleId: r.roleId,
-            scopes: r.scopes,
-            description: r.description,
-            lastModified: r.details.lastModified,
-            created: r.details.created,
-          });
-        },
-      });
-
-      console.log('writing to blob');
-      await Roles.modify(roles => {
-        // clear and replace
-        roles.splice(0);
-        blob.forEach(r => roles.push(r));
-      });
-      console.log('wrote blob');
-    },
-  },
-
   dumpBlob: {
     requires: ['cfg', 'Roles'],
     setup: async ({cfg, Roles}) => {
