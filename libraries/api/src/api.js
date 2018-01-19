@@ -13,6 +13,7 @@ var crypto        = require('crypto');
 var taskcluster   = require('taskcluster-client');
 var Ajv           = require('ajv');
 var errors        = require('./errors');
+var expressions   = require('./expressions');
 var typeis        = require('type-is');
 
 // Default baseUrl for authentication server
@@ -143,6 +144,10 @@ var schema = function(validate, options) {
     // Add a reply method sending JSON replies, this will always reply with HTTP
     // code 200... errors should be sent with res.json(code, json)
     res.reply = function(json) {
+      if (!req.hasAuthed) {
+        let err = new Error('Deferred auth was never checked!');
+        return res.reportInternalError(err, {apiMethodName: options.name});
+      }
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
       if (options.output !== undefined && !options.skipOutputValidation &&
@@ -286,8 +291,8 @@ var createRemoteSignatureValidator = function(options) {
 };
 
 /**
- * Authenticate client using remote API end-point and validate that he satisfies
- * one of the sets of scopes required. Skips validation if `options.scopes` is
+ * Authenticate client using remote API end-point and validate that it satisfies
+ * a specified scope expression. Skips validation if `options.scopes` is
  * `undefined`.
  *
  * options:
@@ -300,11 +305,10 @@ var createRemoteSignatureValidator = function(options) {
  *
  * entry:
  * {
- *   scopes:  [
+ *   scopes:  {AnyOf: [
  *     'service:method:action:<resource>'
- *     ['admin', 'superuser'],
- *   ]
- *   deferAuth:   false, // defaults to false
+ *     {AllOf: ['admin', 'superuser']},
+ *   ]},
  *   name:        '...', // API end-point name for internal errors
  * }
  *
@@ -315,27 +319,61 @@ var createRemoteSignatureValidator = function(options) {
  *
  * The request grows the following properties:
  *
- *  * `req.satisfies(scopesets, noReply)`
+ *  * `req.authorize(params, options)`
  *  * `await req.scopes()`
  *  * `await req.clientId()`
  *
- * The `req.satisfies(scopesets, noReply)` method returns `true` if the
- * client satisfies one of the scopesets. If the client does not satisfy one
- * of the scopesets, it returns `false` and sends an error message unless
- * `noReply = true`.
+ * The `req.authorize(params, options)` method will substitute params
+ * into the scope expression in `options.scopes`. This can happen in one of three
+ * ways:
  *
- * If `deferAuth` is set to `true`, then authentication will be postponed to
- * the first invocation of `req.satisfies`. Further note, that if
- * `req.satisfies` is called with an object as first argument (instead of a
- * list), then it'll assume this object is a mapping from scope parameters to
- * values. e.g. `req.satisfies({resource: "my-resource"})` will check that
- * the client satisfies `'service:method:action:my-resource'`.
- * (This is useful when working with dynamic scope strings).
+ * First is that any strings with `<foo>` in them will have `<foo>` replaced
+ * by whatever parameter you pass in to authorize that has the key `foo`. It
+ * must be a string to be substituted in this manner.
  *
- * Note that `deferAuth` will not perform authorization unless, `req.satisfies({})`
- * is called either without arguments or with an object as first argument.
+ * Second is a case where an object of the form
+ * `{for: 'foo', in: 'bar', each: 'baz:<foo>'}`. In this case, the param
+ * `bar` must be an array and each element of `bar` will be substituted
+ * into the string in `each` in the same way as described above for regular
+ * strings. The results will then be concatenated into the array that this
+ * object is a part of. An example:
  *
- * If `deferAuth` is false, then req.params will be used as the scope parameters.
+ * options.scopes = {AnyOf: ['abc', {for: 'foo', in: 'bar', each: '<foo>:baz'}]}
+ *
+ * params = {bar: ['def', 'qed']}
+ *
+ * results in:
+ *
+ * {AnyOf: [
+ *   'abc',
+ *   'def:baz',
+ *   'qed:baz',
+ * ]}
+ *
+ * Third is an object of the form `{if: 'foo', then: ...}`.
+ * In this case if the parameter `foo` is a boolean and true, then the
+ * object will be substituted with the scope expression specified
+ * in `then`. No truthiness conversions will be done for you.
+ * This is useful for allowing methods to be called
+ * when certain cases happen such as an artifact beginning with the
+ * string "public/".
+ *
+ * Params specified in `<...>` or the `in` part of the objects are allowed to
+ * use dotted syntax to descend into params. Example:
+ *
+ * options.scopes = {AllOf: ['whatever:<foo.bar>]}
+ *
+ * params = {foo: {bar: 'abc'}}
+ *
+ * results in:
+ *
+ * {AllOf: ['whatever:abc']}
+ *
+ * The `req.authorize(params, options)` method returns `true` if the
+ * client satisfies the scope expression in `options.scopes` after the
+ * parameters denoted by `<...>` and `{for: ..., each: ..., in: ...}` are
+ * substituted in. If the client does not satisfy the scope expression, it
+ * throws an expressions.AuthorizationError.
  *
  * The `req.scopes()` method returns a Promise for the set of scopes the caller
  * has. Please, note that `req.scopes()` returns `[]` if there was an
@@ -359,7 +397,7 @@ var remoteAuthentication = function(options, entry) {
   // Returns promise for object on the form:
   //   {status, message, scopes, scheme, hash}
   // scopes, scheme, hash are only present if status isn't auth-failed
-  var authenticate = function(req) {
+  var authenticate = async function(req) {
     // Check that we're not using two authentication schemes, we could
     // technically allow two. There are cases where we redirect and it would be
     // smart to let bewit overwrite header authentication.
@@ -394,126 +432,152 @@ var remoteAuthentication = function(options, entry) {
     }
 
     // Send input to signatureValidator (auth server or local validator)
-    return Promise.resolve(options.signatureValidator({
+    let result = await Promise.resolve(options.signatureValidator({
       method:           req.method.toLowerCase(),
       resource:         req.originalUrl,
       host:             host.name,
       port:             parseInt(port, 10),
       authorization:    req.headers.authorization,
     }, options));
+
+    // Validate request hash if one is provided
+    if (typeof result.hash === 'string' && result.scheme === 'hawk') {
+      var hash = hawk.crypto.calculatePayloadHash(
+        new Buffer(req.text, 'utf-8'),
+        'sha256',
+        req.headers['content-type']
+      );
+      if (!crypto.timingSafeEqual(Buffer.from(result.hash), Buffer.from(hash))) {
+        // create a fake auth-failed result with the failed hash
+        result = {
+          status: 'auth-failed',
+          message:
+            'Invalid payload hash: {{hash}}\n' +
+            'Computed payload hash: {{computedHash}}\n' +
+            'This happens when your request carries a signed hash of the ' +
+            'payload and the hash doesn\'t match the hash we\'ve computed ' +
+            'on the server-side.',
+          computedHash: hash,
+        };
+      }
+    }
+
+    return result;
   };
 
-  return function(req, res, next) {
-    return authenticate(req).then(function(result) {
-      // Validate request hash if one is provided
-      if (typeof result.hash === 'string' && result.scheme === 'hawk') {
-        var hash = hawk.crypto.calculatePayloadHash(
-          new Buffer(req.text, 'utf-8'),
-          'sha256',
-          req.headers['content-type']
-        );
-        if (!crypto.timingSafeEqual(Buffer.from(result.hash), Buffer.from(hash))) {
-          // create a fake auth-failed result with the failed hash
-          result = {
-            status: 'auth-failed',
-            message:
-              'Invalid payload hash: {{hash}}\n' +
-              'Computed payload hash: {{computedHash}}\n' +
-              'This happens when your request carries a signed hash of the ' +
-              'payload and the hash doesn\'t match the hash we\'ve computed ' +
-              'on the server-side.',
-            computedHash: hash,
-          };
-        }
-      }
-
+  return async function(req, res, next) {
+    let result;
+    try {
       /** Create method that returns list of scopes the caller has */
-      req.scopes = function() {
+      req.scopes = async function() {
+        result = await (result || authenticate(req));
         if (result.status !== 'auth-success') {
           return Promise.resolve([]);
         }
         return Promise.resolve(result.scopes || []);
       };
 
-      let clientId, expires;
-      // generate valid clientIds for exceptional cases
-      if (result.status === 'auth-success') {
-        clientId = result.clientId || 'unknown-clientId';
-        expires = new Date(result.expires);
-      } else {
-        clientId = 'auth-failed:' + result.status;
-        expires = undefined;
-      }
-      // these are functions so we can later make an async request on demand
-      req.clientId = async () => clientId;
-      req.expires = async () => expires;
+      req.clientId = async () => {
+        result = await (result || authenticate(req));
+        if (result.status === 'auth-success') {
+          return result.clientId || 'unknown-clientId';
+        }
+        return 'auth-failed:' + result.status;
+      };
+
+      req.expires = async () => {
+        result = await (result || authenticate(req));
+        if (result.status === 'auth-success') {
+          return new Date(result.expires);
+        }
+        return undefined;
+      };
+
+      req.satisfies = function() {
+        throw new Error('req.satisfies is deprecated! use req.authorize instead');
+      };
 
       /**
-       * Create method to check if request satisfies a scope-set from required
-       * set of scope-sets.
-       * Return true, if successful and if unsuccessful it replies with
-       * error to `res`, unless `noReply` is `true`.
+       * Create method to check if request satisfies the scope expression. Given
+       * extra parameters.
+       * Return true, if successful and if unsuccessful it throws an expressions.AuthorizationError.
        */
-      req.satisfies = function(scopesets, noReply) {
+      req.authorize = async function(params, options) {
+        let {allowLater} = options || {};
+        result = await (result || authenticate(req));
+
         // If authentication failed
         if (result.status === 'auth-failed') {
-          if (!noReply) {
-            res.set('www-authenticate', 'hawk');
-            res.reportError('AuthenticationFailed', result.message, result);
-          }
+          res.set('www-authenticate', 'hawk');
+          res.reportError('AuthenticationFailed', result.message, result);
           return false;
         }
 
-        // If we're not given an array, we assume it's a set of parameters that
-        // must be used to parameterize the original scopesets
-        if (!(scopesets instanceof Array)) {
-          var params = scopesets;
-          scopesets = _.cloneDeepWith(entry.scopes, function(scope) {
-            if (typeof scope === 'string') {
-              return scope.replace(/<([^>]+)>/g, function(match, param) {
-                var value = params[param];
-                return value === undefined ? match : value;
-              });
-            }
-          });
+        let missing = [];
+
+        let scopeExpression = expressions.expandExpressionTemplate(entry.scopes, params, missing);
+
+        if (missing.length) {
+          if (allowLater) {
+            debug(`Not all parameters supplied yet. Deferring authorization for due to missing parameters: ${missing}`);
+            return true;
+          }
+          throw new Error(`
+            Not all parameters were supplied to a scope check.
+            The call to req.authorize was not allowed to be partially
+            applied. Missing parameters: ${JSON.stringify(missing)}`,
+          );
         }
 
         // Test that we have scope intersection, and hence, is authorized
-        var retval = scopes.scopeMatch(result.scopes, scopesets);
-        if (retval) {
-          // TODO: log this in a structured format when structured logging is
-          // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
-          authLog(`Authorized ${clientId} for ${req.method} access to ${req.originalUrl}`);
-        }
-        if (!retval && !noReply) {
-          res.reportError('InsufficientScopes', [
-            'You do not have sufficient scopes. This request requires you',
-            'to have one of the following sets of scopes:',
-            '{{scopesets}}',
+        let authed = !scopeExpression || scopes.satisfiesExpression(result.scopes, scopeExpression);
+        req.hasAuthed = true;
+
+        if (!authed) {
+          let err = new Error('Authorization failed'); // This way instead of subclassing due to babel/babel#3083
+          err.name =  'AuthorizationError';
+          err.code =  'AuthorizationError';
+          err.scopes = result.scopes;
+          err.expression = scopeExpression;
+          err.missing = scopes.removeGivenScopes(result.scopes, scopeExpression);
+          err.report = [
+            'You do not have sufficient scopes. You are missing the following scopes:',
             '',
-            'You only have the scopes:',
+            '{{missing}}',
+            '',
+            'You have the scopes:',
+            '',
             '{{scopes}}',
             '',
-            'In other words you are missing scopes from one of the options:',
-          ].concat(scopesets.map((set, index) => {
-            let missing = set.filter(scope => {
-              return !scopes.scopeMatch(result.scopes, [[scope]]);
-            });
-            return ' * Option ' + index + ':\n    - "' +
-                   missing.join('", and\n    - "') + '"';
-          })).join('\n'),  {scopesets, scopes: result.scopes});
+            'This request requires you to satisfy this scope expression:',
+            '',
+            '{{expression}}',
+          ].join('\n');
+          throw err;
         }
-        return retval;
+
+        // TODO: log this in a structured format when structured logging is
+        // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
+        authLog(`Authorized ${await req.clientId()} for ${req.method} access to ${req.originalUrl}`);
       };
 
+      req.hasAuthed = false;
+
       // If authentication is deferred or satisfied, then we proceed,
-      // substituting the request paramters by default
-      if (!entry.scopes || entry.deferAuth || req.satisfies(req.params)) {
+      // substituting the request parameters by default
+      if (!entry.scopes) {
+        req.hasAuthed = true;  // No need to check auth if there are no scopes
+        next();
+      } else {
+        await req.authorize(req.params, {allowLater: true});
         next();
       }
-    }).catch(function(err) {
+    } catch (err) {
+      if (err.code === 'AuthorizationError') {
+        return res.reportError('InsufficientScopes', err.report, err);
+      }
       return res.reportInternalError(err, {apiMethodName: entry.name});
-    });
+    };
   };
 };
 
@@ -529,7 +593,18 @@ var handle = function(handler, context, name) {
   return function(req, res) {
     Promise.resolve(null).then(function() {
       return handler.call(context, req, res);
+    }).then(function() {
+      if (!req.hasAuthed) {
+        // Note: This will not fail the request since a response has already
+        // been sent at this point. It will report to sentry however!
+        // This is only to catch the case where people do not use res.reply()
+        let err = new Error('req.authorize was never called, or some parameters were missing from the request');
+        return res.reportInternalError(err, {apiMethodName: name});
+      }
     }).catch(function(err) {
+      if (err.code === 'AuthorizationError') {
+        return res.reportError('InsufficientScopes', err.report, err);
+      }
       return res.reportInternalError(err, {apiMethodName: name});
     });
   };
@@ -683,8 +758,17 @@ API.prototype.declare = function(options, handler) {
       throw new Error('query.' + key + ' must be a RegExp or a function!');
     }
   });
+  assert(!options.deferAuth,
+    'deferAuth is deprecated! https://github.com/taskcluster/taskcluster-lib-api#request-handlers');
   if ('scopes' in options) {
-    scopes.validateScopeSets(options.scopes);
+    assert(scopes.validExpression(_.cloneDeepWith(options.scopes, function morphExpression(scope) {
+      // This makes these template constructs valid parts of an expression
+      if (_.isObject(scope) && scope.for && scope.in && scope.each) {
+        return 'looping-template-construct';
+      } else if (_.isObject(scope) && scope.if && scope.then) {
+        return _.cloneDeepWith(scope.then, morphExpression);
+      }
+    })));
   }
   options.handler = handler;
   if (options.input) {
@@ -909,14 +993,11 @@ API.prototype.reference = function(options) {
   var validate = ajv.compile(JSON.parse(schema));
 
   // Check against it
-  var refSchema = 'http://schemas.taskcluster.net/base/v1/api-reference.json#';
-  var valid = validate(reference, refSchema);
+  var valid = validate(reference);
   if (!valid) {
-    debug('API.references(): Failed to validate against schema, errors: %j ' +
-          'reference: %j', validate.errors, reference);
     debug('Reference:\n%s', JSON.stringify(reference, null, 2));
-    debug('Errors:\n%s', JSON.stringify(validate.errors, null, 2));
-    throw new Error('API.references(): Failed to validate against schema');
+    throw new Error(`API.references(): Failed to validate against schema:\n
+      ${ajv.errorsText(validate.errors, {separator: '\n  * '})}`);
   }
 
   return reference;

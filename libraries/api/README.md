@@ -94,9 +94,7 @@ To declare an API method, call `api.declare(options, handler)` with the followin
  * `route` (required) - the URL pattern, with parameters, e.g., `'/object/:id/action/:param'`
  * `params` - patterns for URL parameters (see below)
  * `query` - patterns for query parameters (see below)
- * `scopes` - scopes required for this API endpoint, in disjunctive normal form (see below)
- * `deferAuth` - if true, authentication will not be checked automatically before the handler
-   is invoked.  In this case, the handler must call `req.satisfies()`; see below.
+ * `scopes` - scopes required for this API endpoint, in 'scope expression' form (see below)
  * `stability` - API stability level, defaulting to experimental (see below)
  * `input` - the schema against which the input payload will be validated
  * `skipInputValidation` - if true, don't do input validation (but include the schema in documentation)
@@ -130,28 +128,84 @@ Examples:
 
 ### Scopes
 
-Scopes should be specified in disjunctive normal form.  In other words, an
-array of arrays, where all of the scopes in at least one of the inner arrays
-must be satisfied.  Parameters are substituted into scopes with `<paramName>`
+Scopes should be specified in
+[scope expression form](https://github.com/taskcluster/taskcluster-lib-scopes#new-style).
+Parameters are substituted into scopes with `<paramName>`
 syntax.  For example, the following defintion allows the method when *either*
 the caller's scopes satisfy `queue:create-task..` for the given `provisionerId`
 and `workerType`, *or* the caller's scopes satisfy all of
 `queue:define-task:..`, `queue:task-group-id:..`, and `queue:schedule-task:..`.
 
 ```js
-  scopes: [
-    [
-      'queue:create-task:<provisionerId>/<workerType>',
-    ], [
-      'queue:define-task:<provisionerId>/<workerType>',
-      'queue:task-group-id:<schedulerId>/<taskGroupId>',
-      'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
-    ],
-  ],
+  scopes:
+    {AnyOf: [
+      {AllOf: [
+        'queue:create-task:<provisionerId>/<workerType>',
+      ]},
+      {AllOf: [
+        'queue:define-task:<provisionerId>/<workerType>',
+        'queue:task-group-id:<schedulerId>/<taskGroupId>',
+        'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+      ]},
+    ]},
 ```
 
 If scope validation fails, the user is presented with an extensive error
 message indicating the available and required scopes.
+
+Given an array of parameters, an array of scopes can be templated. When
+this form is used, the parameter in the `in` section must be an array. The
+value of `each` *must* be a simple template string and cannot be a scope
+expression or another template object. This will not allow recursive
+definitions.
+
+```js
+  scopes: {AllOf: [
+    {for: 'route', in: 'routes', each: 'queue:route:<route>'}
+  ]}
+```
+
+Given a parameter `routes` that is an array of strings as in `['foo', 'bar']`,
+this will evaluate to:
+
+```js
+  scopes: {AllOf: ['queue:route:foo', 'queue:route:bar']}
+```
+
+You may also use if/then constructs in scope expressions. In this case, the `if`
+field should be a parameter and the `then` must be a scope expression that will
+be subsituted in for the if/then block if the `if` parameter is a boolean and is true.
+This will not do any truthiness conversions, you must do that yourself if desired.
+Given the following example:
+
+```js
+  scopes: {if: 'private', then: {AllOf: ['foo:bar']}}
+```
+
+We can call `async req.authorize({private: false})` and the method call will be permitted
+even if the client does not have the scope `foo:bar`.
+
+In addition, parameters can be nested objects and accessed with dotted notation.
+Given the parameter `task` that is `{extra: {treeherder: {symbol: 'F'}}}`, we can do
+the following:
+
+```js
+  scopes: {AllOf: ['some:scope', 'some:scope:<task.extra.treeherder.symbol>']}
+```
+
+which evaluates to
+
+```js
+  scopes: {AllOf: ['some:scope', 'some:scope:F']}
+```
+
+When you specify scopes required to access an endpoint, by default all of the params
+specified in the `params` section of the request will be substituted in and the expression
+satisfaction will be checked against the client's scopes. If any of the parameters specified in
+your scopes are _not_ in the `params`, this satisfaction check will be deferred and the
+endpoint implementation _must_ check for authorization manually as described below. If
+this check does not occur, taskcluster-lib-api will throw an error for the result of the
+endpoint.
 
 ### Stability Levels
 
@@ -220,30 +274,22 @@ includes some additional security token, its duration should be limited to this
 expiration time to prevent callers from extending their access beyond the
 allowed time.
 
-The `req.satisfies(.., noReply)` method returns `true` if the client satisfies
-one of the scopesets. If the client does not satisfy one of the scopesets, it
-returns `false` and sends an error message unless `noReply` is true. 
+The `async req.authorize(params, options)` throws an error with the code
+'AuthorizationError' if the client does not satisfy the scope
+expression in `options.scopes`. You can catch this if you wish
+or let it bubble up and taskcluster-lib-api will return a detailed error message
+to the client.
 
-The first argument to `req.satisfies` can be a scopeset (in disjunctive normal
-form as described above).  Or, it can be an object, in which case the method
-will assume this object is a mapping from scope parameters (`<name>`) to
-values.
+The AuthorizationError has 3 extra fields to help inspect the results.
 
-If `deferAuth` is set to `true`, then authentication will be postponed to the
-first invocation of `req.satisfies`.  Note that `deferAuth` will not perform
-authorization unless, `req.satisfies({})` is called either without arguments or
-with an object as first argument.  If `deferAuth` is false, then req.params
-will be used as the scope parameters.
+**err.scopes:** The scopeset containing the scopes the client has
+**err.expression:** The scope expression that was not satisfied
+**err.missing:** The reduced subset of the expression containing only scopes that were missing
 
-Where authorization depends on parameters or the contents of the request, the
-`req.satisfies` method is generally used with `deferAuth: true` in a construct
-like this:
-
-```js
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
-```
+The first argument to `req.authorize` must be an object where the keys are parameters
+to the scope expression defined in the method definition. If any parameters are missing
+when you call this, the check will throw an error. The rules for how the scope expression
+defined in the method is transformed given a set of parameters is described above.
 
 To return a successful result with a JSON body, return `res.reply(result)`.
 The result will be validated against the output schema, and if validation
