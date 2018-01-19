@@ -3,9 +3,6 @@ defaults:
     # Azure table for the client table
     clientTableName:          Clients
 
-    # Azure table for the roles table
-    rolesTableName:           Roles
-
     # Azure blob container for the role table
     rolesContainerName:       auth-default-roles
 
@@ -108,7 +105,6 @@ defaults:
 production:
   app:
     clientTableName:          Clients
-    rolesTableName:           Roles
     rolesContainerName:       auth-production-roles
   server:
     forceSSL:                 true
@@ -118,7 +114,6 @@ production:
 test:
   app:
     clientTableName:          TestClients28
-    rolesTableName:           TestRoles28
     rolesContainerName:       auth-testing-roles
     tableSigningKey:          not-a-secret-so-you-cant-guess-it
     tableCryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
