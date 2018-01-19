@@ -32,7 +32,7 @@ suite('api/route', function() {
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
-    }, /array of arrays of strings/);
+    }, /Scope expressions must be objects/);
   });
 
   test('array of string scope rejected', function() {
@@ -45,19 +45,41 @@ suite('api/route', function() {
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
-    }, /array of arrays of strings/);
+    }, /Scope expressions must be objects/);
   });
 
-  test('array of arrays of objects scope rejected', function() {
+  test('array of arrays of scope rejected', function() {
     assert.throws(function() {
       api.declare({
         method:       'get',
         route:        '/test/:myparam',
-        scopes:       [[{}]],
+        scopes:       [[]],
         name:         'testEP',
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
-    }, /array of arrays of strings/);
+    }, /Scope expressions must be objects/);
+  });
+
+  test('scope expression not rejected', function() {
+    api.declare({
+      method:       'get',
+      route:        '/test/:myparam',
+      scopes:       {AnyOf: ['something']},
+      name:         'testEP',
+      title:        'Test',
+      description:  'Test',
+    }, function(req, res) {});
+  });
+
+  test('scope expression with looping template not rejected', function() {
+    api.declare({
+      method:       'get',
+      route:        '/test/:myparam',
+      scopes:       {AnyOf: [{for: 'foo', in: 'bar', each: '<foo>'}]},
+      name:         'testEP',
+      title:        'Test',
+      description:  'Test',
+    }, function(req, res) {});
   });
 });
