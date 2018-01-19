@@ -1,8 +1,8 @@
-import assert from 'assert';
-import parseRoute from '../lib/util/route_parser';
+const assert = require('assert');
+const parseRoute = require('../src/util/route_parser');
 
-suite("route parsing", () => {
-  test("valid v1 format", async () => {
+suite('route parsing', () => {
+  test('valid v1 format', async () => {
     assert.deepEqual(
       parseRoute('treeherder.try.XYZ'),
       {
@@ -10,12 +10,12 @@ suite("route parsing", () => {
         origin:        'hg.mozilla.org',
         project:       'try',
         revision_hash: 'XYZ',
-        pushId:        undefined
+        pushId:        undefined,
       }
     );
   });
 
-  test("valid v2 format", async () => {
+  test('valid v2 format', async () => {
     assert.deepEqual(
       parseRoute('treeherder.v2.try.XYZ.234'),
       {
@@ -23,12 +23,12 @@ suite("route parsing", () => {
         origin:       'hg.mozilla.org',
         project:      'try',
         revision:     'XYZ',
-        pushId:       234
+        pushId:       234,
       }
     );
   });
 
-  test("valid format - github", async () => {
+  test('valid format - github', async () => {
     assert.deepEqual(
       parseRoute('treeherder.v2.dummy/try.XYZ.234'),
       {
@@ -37,14 +37,14 @@ suite("route parsing", () => {
         owner:        'dummy',
         project:      'try',
         revision:     'XYZ',
-        pushId:       234
+        pushId:       234,
       }
     );
   });
 
-  test("invalid format", async () => {
+  test('invalid format', async () => {
     assert.throws(
-      () => { parseRoute('treeherder.try') },
+      () => { parseRoute('treeherder.try'); },
       /Unrecognized treeherder routing key format/
     );
   });

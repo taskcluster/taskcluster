@@ -1,11 +1,11 @@
-import assert from 'assert';
-import { Handler } from '../lib/handler';
-import { taskDefinition } from './fixtures/task';
-import { statusMessage } from './fixtures/task_status';
-import { jobMessage } from './fixtures/job_message';
-import parseRoute from '../lib/util/route_parser';
-import Monitor from 'taskcluster-lib-monitor';
-import taskcluster from 'taskcluster-client';
+const assert = require('assert');
+const Handler = require('../src/handler');
+const taskDefinition = require('./fixtures/task');
+const statusMessage = require('./fixtures/task_status');
+const jobMessage = require('./fixtures/job_message');
+const parseRoute = require('../src/util/route_parser');
+const Monitor = require('taskcluster-lib-monitor');
+const taskcluster = require('taskcluster-client');
 
 let handler, task, status, expected, pushInfo;
 
@@ -35,10 +35,10 @@ suite('handle rerun job', () => {
     status.runId = 1;
     status.status.runs.push(
       {
-          runId: 1,
-          state: 'pending',
-          reasonCreated: 'retry',
-          scheduled: '2016-04-15T19:15:00.497Z'
+        runId: 1,
+        state: 'pending',
+        reasonCreated: 'retry',
+        scheduled: '2016-04-15T19:15:00.497Z',
       }
     );
 
@@ -47,9 +47,9 @@ suite('handle rerun job', () => {
     expected.isRetried = true;
     expected.logs = [
       {
-        name: "builds-4h",
-        url: "https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log"
-      }
+        name: 'builds-4h',
+        url: 'https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log', // eslint-disable-line max-len
+      },
     ];
 
     let job = await handler.handleTaskRerun(pushInfo, task, status);
