@@ -12,6 +12,11 @@ suite('API', function() {
   let hookWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
     default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
   additionalProperties: false}}, hookDef);
+
+  let hookWithTriggerWAddProp =  _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
+    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
+  additionalProperties: true}}, hookDef);
+
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
   }, hookWithTriggerSchema);
@@ -232,7 +237,7 @@ suite('API', function() {
     });
 
     test('returns the last run status for triggerHook', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerWAddProp);
       await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
         triggeredBy: 'triggerHook'});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
@@ -249,7 +254,7 @@ suite('API', function() {
 
   suite('triggerHook', function() {
     test('should launch task with the given payload', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerWAddProp);
       await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
         triggeredBy: 'triggerHook'});
       assume(helper.creator.fireCalls).deep.equals([{
