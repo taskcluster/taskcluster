@@ -82,17 +82,6 @@ let load = Loader({
       }),
   },
 
-  Role: {
-    requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor}) =>
-      data.Role.setup({
-        table:        cfg.app.rolesTableName,
-        credentials:  cfg.azure || {},
-        signingKey:   cfg.app.tableSigningKey,
-        monitor:      monitor.prefix('table.roles'),
-      }),
-  },
-
   Roles: {
     requires: ['cfg'],
     setup: async ({cfg}) => {
