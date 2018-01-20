@@ -1,4 +1,4 @@
-Generated: 1516141312
+Generated: 1516476138
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5459,6 +5459,7 @@ This endpoint is used to check that the service is up.'
 
 http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#
 =======================================================================
+Additional Properties  = 'false'
 Description            = 'A response containing credentials corresponding to a supplied OIDC `access_token`.
 '
 ID                     = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#'
