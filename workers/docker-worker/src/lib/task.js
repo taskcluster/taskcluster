@@ -589,7 +589,7 @@ class Task extends EventEmitter {
         reporter = queue.reportFailed;
         taskState = 'failed';
       }
-      let purgeStatuses = this.task.payload.onExistStatus.purgeCaches;
+      let purgeStatuses = this.task.payload.onExitStatus && this.task.payload.onExitStatus.purgeCaches;
       if (purgeStatuses && purgeStatuses.includes(this.exitCode)) {
         for (let cacheKey in this.task.volumeCaches) {
           this.runtime.purgeInstance(cacheKey)
