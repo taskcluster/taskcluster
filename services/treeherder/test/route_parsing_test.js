@@ -1,5 +1,5 @@
-import assert from 'assert';
-import parseRoute from '../lib/util/route_parser';
+const assert = require('assert');
+const parseRoute = require('../src/util/route_parser');
 
 suite('route parsing', () => {
   test('valid v1 format', async () => {
