@@ -3,6 +3,7 @@ title:                      "Set of scopes"
 description: |
   A set of scopes
 type:                       object
+additionalProperties:       false
 properties:
   scopes:
     description: |
