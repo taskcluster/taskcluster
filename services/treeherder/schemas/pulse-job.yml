@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "http://json-schema.org/draft-04/schema#"
 title: "Job Definition"
 description: |
   Definition of a single job that can be added to Treeherder
