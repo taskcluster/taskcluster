@@ -3,6 +3,7 @@ title:                      "Test Authenticate Response"
 description: |
   Details on how the test request was authenticated.
 type:                       object
+additionalProperties:       false
 properties:
   clientId:
     description: |
