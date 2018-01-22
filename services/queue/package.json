@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "assume": "^1.5.2",
-    "aws-sdk": "^2.174.0",
+    "aws-sdk": "^2.1.21",
     "azure-entities": "^3.0.0",
     "azure-storage": "2.7.0",
     "debug": "^3.1.0",
