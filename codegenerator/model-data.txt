@@ -1,4 +1,4 @@
-Generated: 1516634540
+Generated: 1516638152
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7195,7 +7195,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerId'
 Required               = '[workerGroup workerId tasks]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Claim Work Request'
 Type                   = 'object'
 TypeName               = 'ClaimWorkRequest'
@@ -7217,7 +7217,6 @@ Properties
       Additional Properties  = 'false'
       Properties
         Property 'credentials' =
-          Additional Properties  = 'false'
           Description            = 'Temporary credentials granting `task.scopes` and the scope:
           `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
           the task, upload artifacts and report task resolution.
@@ -7311,7 +7310,7 @@ Properties
     TypeName               = 'Tasks'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks'
 Required               = '[tasks]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Claim Work Response'
 Type                   = 'object'
 TypeName               = 'ClaimWorkResponse'
@@ -7598,7 +7597,7 @@ Properties
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType'
 Required               = '[provisionerId workerType created deadline payload metadata]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition Request'
 Type                   = 'object'
 TypeName               = 'TaskDefinitionRequest'
@@ -7678,7 +7677,7 @@ Properties
     TypeName               = 'ContinuationToken'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/continuationToken'
 Required               = '[artifacts]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Artifacts Response'
 Type                   = 'object'
 TypeName               = 'ListArtifactsResponse'
@@ -7739,7 +7738,7 @@ Properties
     TypeName               = 'TasksThatDependsOnTaskID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks'
 Required               = '[taskId tasks]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Dependent Tasks Response'
 Type                   = 'object'
 TypeName               = 'ListDependentTasksResponse'
@@ -7899,7 +7898,7 @@ Properties
     TypeName               = 'Provisioners'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners'
 Required               = '[provisioners]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Provisioners Response'
 Type                   = 'object'
 TypeName               = 'ListProvisionersResponse'
@@ -7960,7 +7959,7 @@ Properties
     TypeName               = 'TasksFromTheTaskGroup'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks'
 Required               = '[taskGroupId tasks]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Task-Group Response'
 Type                   = 'object'
 TypeName               = 'ListTaskGroupResponse'
@@ -8068,7 +8067,7 @@ Properties
     TypeName               = 'WorkersFromAWorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers'
 Required               = '[workers]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Workers Response'
 Type                   = 'object'
 TypeName               = 'ListWorkersResponse'
@@ -8162,7 +8161,7 @@ Properties
     TypeName               = 'WorkerTypesFromTheProvisioner'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes'
 Required               = '[workerTypes]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'List Worker-Types Response'
 Type                   = 'object'
 TypeName               = 'ListWorkerTypesResponse'
@@ -8210,7 +8209,7 @@ Properties
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/workerType'
 Required               = '[provisionerId workerType pendingTasks]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Count Pending Tasks Response'
 Type                   = 'object'
 TypeName               = 'CountPendingTasksResponse'
@@ -8239,7 +8238,6 @@ Properties
     have higher priority.
     '
     Items
-      Additional Properties  = 'false'
       Description            = 'Object holding two signed URLs for an azure queue, one for fetching
       messages, and another for deleting messages. Remember to `claimTask`
       before deleting the message, and delete message even if the `claimTask`
@@ -8294,7 +8292,7 @@ Properties
     TypeName               = 'QueuesToPollFrom'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues'
 Required               = '[queues expires]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Poll Task Urls Response'
 Type                   = 'object'
 TypeName               = 'PollTaskUrlsResponse'
@@ -8379,7 +8377,6 @@ OneOf
         validate, which is not as big of a security concern.
         '
         Items
-          Additional Properties  = 'false'
           Properties
             Property 'sha256' =
               Description            = 'The sha256 hash of the part.
@@ -8606,9 +8603,9 @@ OneOf
     Type                   = 'object'
     TypeName               = 'ErrorArtifactRequest'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Request'
-Type HAS NOT BEEN SET!!!
+Type                   = 'object'
 TypeName               = 'PostArtifactRequest'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#'
 
@@ -8687,7 +8684,6 @@ Properties
     validate, which is not as big of a security concern.
     '
     Items
-      Additional Properties  = 'false'
       Properties
         Property 'sha256' =
           Description            = 'The sha256 hash of the part.
@@ -9114,9 +9110,9 @@ OneOf
     Type                   = 'object'
     TypeName               = 'ErrorArtifactResponse'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Post Artifact Response'
-Type HAS NOT BEEN SET!!!
+Type                   = 'object'
 TypeName               = 'PostArtifactResponse'
 SourceURL              = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
 
@@ -9447,7 +9443,7 @@ Properties
     TypeName               = 'Stability'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/stability'
 Required               = '[provisionerId description actions stability expires lastDateActive]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Provisioner Response'
 Type                   = 'object'
 TypeName               = 'ProvisionerResponse'
@@ -9472,7 +9468,7 @@ Properties
     TypeName               = 'Etags'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags'
 Required               = '[etags]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Complete Artifact Request'
 Type                   = 'object'
 TypeName               = 'CompleteArtifactRequest'
@@ -9497,7 +9493,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerQuarantine'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#/properties/quarantineUntil'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Quarantine Worker Request'
 Type                   = 'object'
 TypeName               = 'QuarantineWorkerRequest'
@@ -9530,7 +9526,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerId'
 Required               = '[workerGroup workerId]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Claim Request'
 Type                   = 'object'
 TypeName               = 'TaskClaimRequest'
@@ -9545,7 +9541,6 @@ Description            = 'Response to a successful task claim
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
 Properties
   Property 'credentials' =
-    Additional Properties  = 'false'
     Description            = 'Temporary credentials granting `task.scopes` and the scope:
     `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
     the task, upload artifacts and report task resolution.
@@ -9632,7 +9627,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerId'
 Required               = '[status runId workerGroup workerId takenUntil task credentials]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Claim Response'
 Type                   = 'object'
 TypeName               = 'TaskClaimResponse'
@@ -9688,7 +9683,7 @@ Properties
     TypeName               = 'Reason'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#/properties/reason'
 Required               = '[reason]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Exception Request'
 Type                   = 'object'
 TypeName               = 'TaskExceptionRequest'
@@ -9703,7 +9698,6 @@ Description            = 'Response to a successful task claim
 ID                     = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
 Properties
   Property 'credentials' =
-    Additional Properties  = 'false'
     Description            = 'Temporary credentials granting `task.scopes` and the scope:
     `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
     the task, upload artifacts and report task resolution.
@@ -9786,7 +9780,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerId'
 Required               = '[status runId workerGroup workerId takenUntil credentials]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Reclaim Response'
 Type                   = 'object'
 TypeName               = 'TaskReclaimResponse'
@@ -9805,7 +9799,7 @@ Properties
     TypeName               = 'Status'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#/properties/status'
 Required               = '[status]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Status Response'
 Type                   = 'object'
 TypeName               = 'TaskStatusResponse'
@@ -10028,7 +10022,7 @@ Properties
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType'
 Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline expires retriesLeft state runs]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Status Structure'
 Type                   = 'object'
 TypeName               = 'TaskStatusStructure'
@@ -10300,7 +10294,7 @@ Properties
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType'
 Required               = '[provisionerId workerType schedulerId taskGroupId dependencies requires routes priority retries created deadline scopes payload metadata tags extra]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Definition Response'
 Type                   = 'object'
 TypeName               = 'TaskDefinitionResponse'
@@ -10420,7 +10414,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'Stability'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/stability'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Provisioner Request'
 Type                   = 'object'
 TypeName               = 'ProvisionerRequest'
@@ -10443,7 +10437,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'WorkerExpiration'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/expires'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker Request'
 Type                   = 'object'
 TypeName               = 'WorkerRequest'
@@ -10484,7 +10478,7 @@ Properties
     Type                   = 'string'
     TypeName               = 'Stability'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/stability'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker-type Request'
 Type                   = 'object'
 TypeName               = 'WorkerTypeRequest'
@@ -10617,7 +10611,6 @@ Properties
     Description            = 'List of 20 most recent tasks claimed by the worker.
     '
     Items
-      Additional Properties  = 'false'
       Properties
         Property 'runId' =
           Description            = 'Id of this task run, `run-id`s always starts from `0`
@@ -10678,7 +10671,7 @@ Properties
     TypeName               = 'WorkerTypeName'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType'
 Required               = '[provisionerId workerType workerGroup workerId recentTasks expires firstClaim actions]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker Response'
 Type                   = 'object'
 TypeName               = 'WorkerResponse'
@@ -10827,7 +10820,7 @@ Properties
     TypeName               = 'WorkerTypeName'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType'
 Required               = '[workerType provisionerId description stability expires lastDateActive actions]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Worker-type Response'
 Type                   = 'object'
 TypeName               = 'WorkerTypeResponse'
@@ -11528,7 +11521,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerId'
 Required               = '[version status runId workerGroup workerId artifact]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Artifact Created Message'
 Type                   = 'object'
 TypeName               = 'ArtifactCreatedMessage'
@@ -11579,7 +11572,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/workerId'
 Required               = '[version status runId workerGroup workerId]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Completed Message'
 Type                   = 'object'
 TypeName               = 'TaskCompletedMessage'
@@ -11605,7 +11598,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#/properties/version'
 Required               = '[version status]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Defined Message'
 Type                   = 'object'
 TypeName               = 'TaskDefinedMessage'
@@ -11660,7 +11653,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/workerId'
 Required               = '[version status]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Exception Message'
 Type                   = 'object'
 TypeName               = 'TaskExceptionMessage'
@@ -11711,7 +11704,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/workerId'
 Required               = '[version status runId workerGroup workerId]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Failed Message'
 Type                   = 'object'
 TypeName               = 'TaskFailedMessage'
@@ -11752,7 +11745,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#/properties/version'
 Required               = '[taskGroupId schedulerId]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Group Resolved'
 Type                   = 'object'
 TypeName               = 'TaskGroupResolved1'
@@ -11785,7 +11778,7 @@ Properties
     TypeName               = 'Version'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/version'
 Required               = '[version status runId]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Pending Message'
 Type                   = 'object'
 TypeName               = 'TaskPendingMessage'
@@ -11844,7 +11837,7 @@ Properties
     TypeName               = 'WorkerID'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/workerId'
 Required               = '[version status runId workerGroup workerId takenUntil]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Running Message'
 Type                   = 'object'
 TypeName               = 'TaskRunningMessage'
@@ -12067,7 +12060,7 @@ Properties
     TypeName               = 'WorkerType'
     SourceURL              = 'http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType'
 Required               = '[taskId provisionerId workerType schedulerId taskGroupId deadline expires retriesLeft state runs]'
-Schema                 = 'http://json-schema.org/draft-06/schema#'
+Schema                 = 'http://json-schema.org/draft-04/schema#'
 Title                  = 'Task Status Structure'
 Type                   = 'object'
 TypeName               = 'TaskStatusStructure'
