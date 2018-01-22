@@ -1,9 +1,9 @@
-const assert = require('assert');
-const Handler = require('../src/handler');
-const taskDefinition = require('./fixtures/task');
-const statusMessage = require('./fixtures/task_status');
-const jobMessage = require('./fixtures/job_message');
-const parseRoute = require('../src/util/route_parser');
+import assert from 'assert';
+import {Handler} from '../lib/handler';
+import {taskDefinition} from './fixtures/task';
+import {statusMessage} from './fixtures/task_status';
+import {jobMessage} from './fixtures/job_message';
+import parseRoute from '../lib/util/route_parser';
 
 let handler, task, status, expected, pushInfo;
 

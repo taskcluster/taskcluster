@@ -1,8 +1,8 @@
-const assert = require('assert');
-const path = require('path');
-const Handler = require('../src/handler');
-const Monitor = require('taskcluster-lib-monitor');
-const validator = require('taskcluster-lib-validate');
+import assert from 'assert';
+import path from 'path';
+import {Handler} from '../lib/handler';
+import Monitor from 'taskcluster-lib-monitor';
+import validator from 'taskcluster-lib-validate';
 
 let monitor;
 
