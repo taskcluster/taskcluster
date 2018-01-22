@@ -1,4 +1,4 @@
-Generated: 1516641763
+Generated: 1516645360
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -645,106 +645,106 @@ SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-ha
 
 http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
 =======================================================================
+Any Of                 = 'Item '0' =
+  Additional Properties  = 'false'
+  Properties
+    Property 'clientId' =
+      Description            = 'The `clientId` that made this request.  This may be the `id` supplied in
+      the Authorization header, or in the case of a named temporary credential
+      may be embedded in the payload.  In any case, this clientId can be used
+      for logging, auditing, and identifying the credential but **must** not be
+      used for access control.  That's what scopes are for.
+      '
+      Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
+      Type                   = 'string'
+      TypeName               = 'ClientID'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId'
+    Property 'expires' =
+      Description            = 'The expiration time for the credentials used to make this request.
+      This should be treated as the latest time at which the authorization
+      is valid.  For most cases, where the access being authorized occurs
+      immediately, this field can be ignored, as the value will always be
+      in the future if the status is `auth-success`.
+      '
+      Format                 = 'date-time'
+      Type                   = 'string'
+      TypeName               = 'Expires'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/expires'
+    Property 'hash' =
+      Description            = 'Payload as extracted from `Authentication` header. This property is
+      only present if a hash is available. You are not required to validate
+      this hash, but if you do, please check `scheme` to ensure that it's
+      on a scheme you support.
+      '
+      Type HAS NOT BEEN SET!!!
+      TypeName               = 'Hash'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/hash'
+    Property 'scheme' =
+      Description            = 'Authentication scheme the client used. Generally, you don't need to
+      read this property unless `hash` is provided and you want to validate
+      the payload hash. Additional values may be added in the future.
+      '
+      Enum                   = '[hawk]'
+      Type                   = 'string'
+      TypeName               = 'Scheme'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scheme'
+    Property 'scopes' =
+      Description            = 'List of scopes the client is authorized to access.  Scopes must be
+      composed of printable ASCII characters and spaces.
+      '
+      Items
+        Pattern                = '^[ -~]*$'
+        Type                   = 'string'
+        TypeName               = 'ScopesEntry'
+        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scopes/items'
+      Type                   = 'array'
+      TypeName               = 'Scopes'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scopes'
+    Property 'status' =
+      Description            = 'The kind of response, `auth-failed` or `auth-success`.
+      '
+      Enum                   = '[auth-success]'
+      Type                   = 'string'
+      TypeName               = 'Status'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/status'
+  Required               = '[status scopes scheme clientId expires]'
+  Title                  = 'Authentication Successful Response'
+  Type                   = 'object'
+  TypeName               = 'AuthenticationSuccessfulResponse'
+  SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]'
+Item '1' =
+  Additional Properties  = 'false'
+  Properties
+    Property 'message' =
+      Description            = 'Message saying why the authentication failed.
+      '
+      Type                   = 'string'
+      TypeName               = 'Message'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/message'
+    Property 'status' =
+      Description            = 'The kind of response, `auth-failed` or `auth-success`.
+      '
+      Enum                   = '[auth-failed]'
+      Type                   = 'string'
+      TypeName               = 'Status'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/status'
+  Required               = '[status message]'
+  Title                  = 'Authentication Failed Response'
+  Type                   = 'object'
+  TypeName               = 'AuthenticationFailedResponse'
+  SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]'
+'
 Description            = 'Response from a request to authenticate a hawk request.
 '
 ID                     = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#'
-OneOf
-  Item '0' =
-    Additional Properties  = 'false'
-    Properties
-      Property 'clientId' =
-        Description            = 'The `clientId` that made this request.  This may be the `id` supplied in
-        the Authorization header, or in the case of a named temporary credential
-        may be embedded in the payload.  In any case, this clientId can be used
-        for logging, auditing, and identifying the credential but **must** not be
-        used for access control.  That's what scopes are for.
-        '
-        Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
-        Type                   = 'string'
-        TypeName               = 'ClientID'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/clientId'
-      Property 'expires' =
-        Description            = 'The expiration time for the credentials used to make this request.
-        This should be treated as the latest time at which the authorization
-        is valid.  For most cases, where the access being authorized occurs
-        immediately, this field can be ignored, as the value will always be
-        in the future if the status is `auth-success`.
-        '
-        Format                 = 'date-time'
-        Type                   = 'string'
-        TypeName               = 'Expires'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/expires'
-      Property 'hash' =
-        Description            = 'Payload as extracted from `Authentication` header. This property is
-        only present if a hash is available. You are not required to validate
-        this hash, but if you do, please check `scheme` to ensure that it's
-        on a scheme you support.
-        '
-        Type HAS NOT BEEN SET!!!
-        TypeName               = 'Hash'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/hash'
-      Property 'scheme' =
-        Description            = 'Authentication scheme the client used. Generally, you don't need to
-        read this property unless `hash` is provided and you want to validate
-        the payload hash. Additional values may be added in the future.
-        '
-        Enum                   = '[hawk]'
-        Type                   = 'string'
-        TypeName               = 'Scheme'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scheme'
-      Property 'scopes' =
-        Description            = 'List of scopes the client is authorized to access.  Scopes must be
-        composed of printable ASCII characters and spaces.
-        '
-        Items
-          Pattern                = '^[ -~]*$'
-          Type                   = 'string'
-          TypeName               = 'ScopesEntry'
-          SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes/items'
-        Type                   = 'array'
-        TypeName               = 'Scopes'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes'
-      Property 'status' =
-        Description            = 'The kind of response, `auth-failed` or `auth-success`.
-        '
-        Enum                   = '[auth-success]'
-        Type                   = 'string'
-        TypeName               = 'Status'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/status'
-    Required               = '[status scopes scheme clientId expires]'
-    Title                  = 'Authentication Successful Response'
-    Type                   = 'object'
-    TypeName               = 'AuthenticationSuccessfulResponse'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]'
-  Item '1' =
-    Additional Properties  = 'false'
-    Properties
-      Property 'message' =
-        Description            = 'Message saying why the authentication failed.
-        '
-        Type                   = 'string'
-        TypeName               = 'Message'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]/properties/message'
-      Property 'status' =
-        Description            = 'The kind of response, `auth-failed` or `auth-success`.
-        '
-        Enum                   = '[auth-failed]'
-        Type                   = 'string'
-        TypeName               = 'Status'
-        SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]/properties/status'
-    Required               = '[status message]'
-    Title                  = 'Authentication Failed Response'
-    Type                   = 'object'
-    TypeName               = 'AuthenticationFailedResponse'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]'
 Schema                 = 'http://json-schema.org/draft-06/schema#'
 Title                  = 'Hawk Signature Authentication Response'
-Type HAS NOT BEEN SET!!!
+Type                   = 'object'
 TypeName               = 'HawkSignatureAuthenticationResponse'
 SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#'
 
 
-http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]
+http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]
 ================================================================================
 Additional Properties  = 'false'
 Properties
@@ -758,7 +758,7 @@ Properties
     Pattern                = '^[A-Za-z0-9@/:.+|_-]+$'
     Type                   = 'string'
     TypeName               = 'ClientID'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/clientId'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId'
   Property 'expires' =
     Description            = 'The expiration time for the credentials used to make this request.
     This should be treated as the latest time at which the authorization
@@ -769,7 +769,7 @@ Properties
     Format                 = 'date-time'
     Type                   = 'string'
     TypeName               = 'Expires'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/expires'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/expires'
   Property 'hash' =
     Description            = 'Payload as extracted from `Authentication` header. This property is
     only present if a hash is available. You are not required to validate
@@ -778,7 +778,7 @@ Properties
     '
     Type HAS NOT BEEN SET!!!
     TypeName               = 'Hash'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/hash'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/hash'
   Property 'scheme' =
     Description            = 'Authentication scheme the client used. Generally, you don't need to
     read this property unless `hash` is provided and you want to validate
@@ -787,7 +787,7 @@ Properties
     Enum                   = '[hawk]'
     Type                   = 'string'
     TypeName               = 'Scheme'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scheme'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scheme'
   Property 'scopes' =
     Description            = 'List of scopes the client is authorized to access.  Scopes must be
     composed of printable ASCII characters and spaces.
@@ -796,25 +796,25 @@ Properties
       Pattern                = '^[ -~]*$'
       Type                   = 'string'
       TypeName               = 'ScopesEntry'
-      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes/items'
+      SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scopes/items'
     Type                   = 'array'
     TypeName               = 'Scopes'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scopes'
   Property 'status' =
     Description            = 'The kind of response, `auth-failed` or `auth-success`.
     '
     Enum                   = '[auth-success]'
     Type                   = 'string'
     TypeName               = 'Status'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/status'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/status'
 Required               = '[status scopes scheme clientId expires]'
 Title                  = 'Authentication Successful Response'
 Type                   = 'object'
 TypeName               = 'AuthenticationSuccessfulResponse'
-SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]'
 
 
-http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]
+http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]
 ================================================================================
 Additional Properties  = 'false'
 Properties
@@ -823,19 +823,19 @@ Properties
     '
     Type                   = 'string'
     TypeName               = 'Message'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]/properties/message'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/message'
   Property 'status' =
     Description            = 'The kind of response, `auth-failed` or `auth-success`.
     '
     Enum                   = '[auth-failed]'
     Type                   = 'string'
     TypeName               = 'Status'
-    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]/properties/status'
+    SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/status'
 Required               = '[status message]'
 Title                  = 'Authentication Failed Response'
 Type                   = 'object'
 TypeName               = 'AuthenticationFailedResponse'
-SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]'
+SourceURL              = 'http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]'
 
 
 http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#
@@ -846,7 +846,6 @@ Description            = 'Response for a request to get access to an S3 bucket.
 ID                     = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#'
 Properties
   Property 'credentials' =
-    Additional Properties  = 'false'
     Description            = 'Temporary STS credentials for use when operating on S3
     '
     Properties
@@ -1447,7 +1446,6 @@ SourceURL              = 'http://schemas.taskcluster.net/auth/v1/list-roles-resp
 
 http://schemas.taskcluster.net/auth/v1/scopeset.json#
 =====================================================
-Additional Properties  = 'false'
 Description            = 'A set of scopes
 '
 ID                     = 'http://schemas.taskcluster.net/auth/v1/scopeset.json#'
@@ -1579,7 +1577,6 @@ SourceURL              = 'http://schemas.taskcluster.net/auth/v1/statsum-token-r
 
 http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#
 ======================================================================
-Additional Properties  = 'false'
 Description            = 'Details on how the test request should be authenticated.
 '
 ID                     = 'http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#'
@@ -1619,7 +1616,6 @@ SourceURL              = 'http://schemas.taskcluster.net/auth/v1/test-authentica
 
 http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#
 =======================================================================
-Additional Properties  = 'false'
 Description            = 'Details on how the test request was authenticated.
 '
 ID                     = 'http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#'
