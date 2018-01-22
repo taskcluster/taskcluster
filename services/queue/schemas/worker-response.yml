@@ -43,6 +43,7 @@ properties:
     type:         array
     items:
       type:       object
+      additionalProperties: false
       properties:
         taskId:
           title:            "Task Identifier"
