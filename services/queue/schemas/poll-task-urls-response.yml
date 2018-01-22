@@ -13,6 +13,7 @@ properties:
       have higher priority.
     items:
       type:       object
+      additionalProperties: false
       title:      "Signed URLs for a queue"
       description: |
         Object holding two signed URLs for an azure queue, one for fetching

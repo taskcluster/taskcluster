@@ -1,7 +1,6 @@
 $schema:            http://json-schema.org/draft-06/schema#
 title:              "Post Artifact Request"
 description: "Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well."
-type:               object
 oneOf:
   - title: "Blob Artifact Request"
     description: |
@@ -88,6 +87,7 @@ oneOf:
         minLength: 1
         items:
           type: object
+          additionalProperties: false
           properties:
             sha256:
               description: |
