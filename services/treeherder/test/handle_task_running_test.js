@@ -1,8 +1,8 @@
 import assert from 'assert';
-import {Handler} from '../lib/handler';
-import {taskDefinition} from './fixtures/task';
-import {statusMessage} from './fixtures/task_status';
-import {jobMessage} from './fixtures/job_message';
+import { Handler } from '../lib/handler';
+import { taskDefinition } from './fixtures/task';
+import { statusMessage } from './fixtures/task_status';
+import { jobMessage } from './fixtures/job_message';
 import parseRoute from '../lib/util/route_parser';
 import taskcluster from 'taskcluster-client';
 
@@ -25,14 +25,14 @@ suite('handle running job', () => {
 
     let scheduled = new Date();
     let started = new Date();
-    started.setMinutes(started.getMinutes() + 5);
+    started.setMinutes(started.getMinutes() + 5)
 
     status.status.runs[0] = {
       runId: 0,
       state: 'running',
       reasonCreated: 'scheduled',
       scheduled: scheduled.toISOString(),
-      started: started.toISOString(),
+      started: started.toISOString()
     };
 
     expected.state = 'running';
