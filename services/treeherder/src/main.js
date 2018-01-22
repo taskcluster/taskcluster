@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import path from 'path';
 import taskcluster from 'taskcluster-client';
-import { Handler } from './handler';
+import {Handler} from './handler';
 import exchanges from './exchanges';
 import loader from 'taskcluster-lib-loader';
 import docs from 'taskcluster-lib-docs';
@@ -23,9 +23,9 @@ let load = loader({
       debug('Configuring validator');
       return validator({
         prefix:       'taskcluster-treeherder/v1/',
-        aws:           cfg.aws
+        aws:           cfg.aws,
       });
-    }
+    },
   },
 
   monitor: {
@@ -59,8 +59,8 @@ let load = loader({
         aws:              cfg.aws,
         monitor: monitor.prefix('publisher'),
         process,
-      })
-    }
+      });
+    },
   },
 
   docs: {
@@ -100,8 +100,8 @@ let load = loader({
         listener.bind(queueEvents.taskRunning(routingPattern)),
         listener.bind(queueEvents.taskCompleted(routingPattern)),
         listener.bind(queueEvents.taskFailed(routingPattern)),
-        listener.bind(queueEvents.taskException(routingPattern))
-      ])
+        listener.bind(queueEvents.taskException(routingPattern)),
+      ]);
 
       let handler = new Handler({
         queue,
@@ -110,20 +110,20 @@ let load = loader({
         prefix,
         publisher,
         validator,
-        monitor
+        monitor,
       });
       handler.start();
-    }
-  }
+    },
+  },
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
   load(process.argv[2], {
     profile: process.env.NODE_ENV,
-    process: process.argv[2]
+    process: process.argv[2],
   }).catch(err => {
-    console.log("Server crashed: " + err.stack);
+    console.log('Server crashed: ' + err.stack);
     process.exit(1);
   });
 }

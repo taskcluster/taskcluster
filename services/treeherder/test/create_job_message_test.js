@@ -1,8 +1,8 @@
 import assert from 'assert';
-import { Handler } from '../lib/handler';
-import { taskDefinition } from './fixtures/task';
-import { statusMessage } from './fixtures/task_status';
-import { jobMessage } from './fixtures/job_message';
+import {Handler} from '../lib/handler';
+import {taskDefinition} from './fixtures/task';
+import {statusMessage} from './fixtures/task_status';
+import {jobMessage} from './fixtures/job_message';
 import parseRoute from '../lib/util/route_parser';
 
 let handler, task, status, expected, pushInfo;
@@ -40,7 +40,7 @@ suite('build job message', () => {
   });
 
   test('alternative label', async () => {
-    task.extra.treeherder.collection = { debug: true };
+    task.extra.treeherder.collection = {debug: true};
     expected.labels = ['debug'];
 
     let job = await handler.buildMessage(pushInfo, task, status.runId, status);
@@ -48,7 +48,7 @@ suite('build job message', () => {
   });
 
   test('labels take precedence over collection', async () => {
-    task.extra.treeherder.collection = { debug: true };
+    task.extra.treeherder.collection = {debug: true};
     task.extra.treeherder.labels = ['asan'];
     expected.labels = ['asan'];
 
@@ -86,8 +86,8 @@ suite('build job message', () => {
       name: 'testworkerid',
       platform: 'DUMMYWORKERTYPE',
       os: '-',
-      architecture: '-'
-    }
+      architecture: '-',
+    };
 
     let job = await handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
@@ -99,8 +99,8 @@ suite('build job message', () => {
       name: 'testworkerid',
       platform: 'b2g-emu-x86-kk',
       os: '-',
-      architecture: '-'
-    }
+      architecture: '-',
+    };
 
     let job = await handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
