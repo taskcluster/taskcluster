@@ -1,3 +1,4 @@
+let Promise       = require('promise');
 let debug         = require('debug')('app:dependency-resolver');
 let slugid        = require('slugid');
 let assert        = require('assert');
@@ -29,9 +30,9 @@ class DependencyResolver {
     assert(options.dependencyTracker, 'Expected options.dependencyTracker');
     assert(options.queueService,      'Expected options.queueService');
     assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
+           'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
-      'Expected parallelism to be a number');
+           'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
 
     // Remember options

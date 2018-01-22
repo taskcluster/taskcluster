@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema:  http://json-schema.org/draft-04/schema#
 title:          "List Artifacts Response"
 description: |
   List of artifacts for a given `taskId` and `runId`.

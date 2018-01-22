@@ -1,5 +1,6 @@
 let debug   = require('debug')('app:dependency-tracker');
 let assert  = require('assert');
+let Promise = require('promise');
 let _       = require('lodash');
 let Entity  = require('azure-entities');
 
@@ -222,7 +223,7 @@ class DependencyTracker {
   async resolveTask(taskId, taskGroupId, schedulerId, resolution) {
     assert(resolution === 'completed' || resolution === 'failed' ||
          resolution === 'exception',
-    'resolution must be completed, failed or exception');
+         'resolution must be completed, failed or exception');
 
     // Create query condition
     let condition = {

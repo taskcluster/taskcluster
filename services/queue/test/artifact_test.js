@@ -5,13 +5,14 @@ suite('Artifacts', function() {
   var assert        = require('assert');
   var slugid        = require('slugid');
   var _             = require('lodash');
-  var request       = require('superagent');
+  var Promise       = require('promise');
+  var request       = require('superagent-promise');
   var assert        = require('assert');
   var urljoin       = require('url-join');
   var BlobUploader  = require('./azure-blob-uploader-sas');
-  var Bucket        = require('../src/bucket');
-  var BlobStore     = require('../src/blobstore');
-  var data          = require('../src/data');
+  var Bucket        = require('../lib/bucket');
+  var BlobStore     = require('../lib/blobstore');
+  var data          = require('../lib/data');
   var taskcluster   = require('taskcluster-client');
   var {Netmask}     = require('netmask');
   var assume        = require('assume');
@@ -33,18 +34,18 @@ suite('Artifacts', function() {
   var getWith303Redirect = async (url) => {
     var res;
     try {
-      res = await request.get(url).redirects(0);
+      res = await request.get(url).redirects(0).end();
     } catch (err) {
       res = err.response;
     }
     assume(res.statusCode).equals(303);
-    return request.get(res.headers.location);
+    return request.get(res.headers.location).end();
   };
 
   var getWithoutRedirecting = async (url) => {
     var res;
     try {
-      res = await request.get(url).redirects(0);
+      res = await request.get(url).redirects(0).end();
     } catch (err) {
       res = err.response;
     }
@@ -110,7 +111,7 @@ suite('Artifacts', function() {
         });
       });
 
-      request.end();
+      request.end('');
     });
   };
 
@@ -119,7 +120,7 @@ suite('Artifacts', function() {
   var get404 = async (url) => {
     var res;
     try {
-      res = await request.get(url).redirects(0);
+      res = await request.get(url).redirects(0).end();
     } catch (err) {
       res = err.response;
     }
@@ -412,7 +413,7 @@ suite('Artifacts', function() {
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    var res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    var res = await request.put(r1.putUrl).send({message: 'Hello World'}).end();
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
@@ -449,7 +450,7 @@ suite('Artifacts', function() {
       taskId, 0, 'public/s3.json',
     );
     debug('Get ip-ranges from EC2');
-    var {body} = await request.get(AWS_IP_RANGES_URL);
+    var {body} = await request.get(AWS_IP_RANGES_URL).end();
     var ipRange = body.prefixes.filter(prefix => {
       return prefix.service === 'EC2' && prefix.region === 'us-east-1';
     })[0].ip_prefix;
@@ -457,15 +458,16 @@ suite('Artifacts', function() {
     debug('Fetching artifact from: %s', url);
     try {
       res = await request
-        .get(url)
-        .set('x-forwarded-for', fakeIp)
-        .redirects(0);
+                    .get(url)
+                    .set('x-forwarded-for', fakeIp)
+                    .redirects(0)
+                    .end();
     } catch (err) {
       res = err.response;
     }
     assume(res.statusCode).equals(303);
     assert(res.headers.location.indexOf('proxy-for-us-east-1'),
-      'Expected res.headers.location to contain proxy-for-us-east-1');
+           'Expected res.headers.location to contain proxy-for-us-east-1');
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
@@ -505,7 +507,7 @@ suite('Artifacts', function() {
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    var res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    var res = await request.put(r1.putUrl).send({message: 'Hello World'}).end();
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
@@ -542,7 +544,7 @@ suite('Artifacts', function() {
       taskId, 0, 'public/s3.json',
     );
     debug('Get ip-ranges from EC2');
-    var {body} = await request.get(AWS_IP_RANGES_URL);
+    var {body} = await request.get(AWS_IP_RANGES_URL).end();
     var ipRange = body.prefixes.filter(prefix => {
       return prefix.service === 'EC2' && prefix.region === 'us-east-1';
     })[0].ip_prefix;
@@ -550,15 +552,16 @@ suite('Artifacts', function() {
     debug('Fetching artifact from: %s', url);
     try {
       res = await request
-        .get(url)
-        .set('x-forwarded-for', fakeIp)
-        .redirects(0);
+                    .get(url)
+                    .set('x-forwarded-for', fakeIp)
+                    .redirects(0)
+                    .end();
     } catch (err) {
       res = err.response;
     }
     assume(res.statusCode).equals(303);
     assert(res.headers.location.indexOf('proxy-for-us-east-1'),
-      'Expected res.headers.location to contain proxy-for-us-east-1');
+           'Expected res.headers.location to contain proxy-for-us-east-1');
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
@@ -647,7 +650,7 @@ suite('Artifacts', function() {
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    var res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    var res = await request.put(r1.putUrl).send({message: 'Hello World'}).end();
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
@@ -785,7 +788,7 @@ suite('Artifacts', function() {
     debug('Fetching artifact from: %s', url);
     var res;
     try {
-      res = await request.get(url);
+      res = await request.get(url).end();
     } catch (err) {
       res = err.response;
     }
