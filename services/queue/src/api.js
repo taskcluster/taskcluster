@@ -6,6 +6,7 @@ let API         = require('taskcluster-lib-api');
 let Entity      = require('azure-entities');
 let taskcluster = require('taskcluster-client');
 let taskCreds   = require('./task-creds');
+let Promise     = require('promise');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
