@@ -1,4 +1,4 @@
-const Exchanges = require('pulse-publisher');
+import Exchanges from 'pulse-publisher';
 
 let exchanges = new Exchanges({
   title: 'Taskcluster-treeherder Pulse Exchange',
