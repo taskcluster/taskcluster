@@ -3,6 +3,7 @@ title:                      "Test Authenticate Request"
 description: |
   Details on how the test request should be authenticated.
 type:                       object
+additionalProperties:       false
 properties:
   clientScopes:
     description: |
