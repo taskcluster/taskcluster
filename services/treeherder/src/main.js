@@ -1,13 +1,13 @@
-import Debug from 'debug';
-import path from 'path';
-import taskcluster from 'taskcluster-client';
-import {Handler} from './handler';
-import exchanges from './exchanges';
-import loader from 'taskcluster-lib-loader';
-import docs from 'taskcluster-lib-docs';
-import config from 'typed-env-config';
-import monitor from 'taskcluster-lib-monitor';
-import validator from 'taskcluster-lib-validate';
+const Debug = require('debug');
+const path = require('path');
+const taskcluster = require('taskcluster-client');
+const Handler = require('./handler');
+const exchanges = require('./exchanges');
+const loader = require('taskcluster-lib-loader');
+const docs = require('taskcluster-lib-docs');
+const config = require('typed-env-config');
+const monitor = require('taskcluster-lib-monitor');
+const validator = require('taskcluster-lib-validate');
 
 let debug = Debug('taskcluster-treeherder:main');
 
