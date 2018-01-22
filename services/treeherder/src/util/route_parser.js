@@ -38,7 +38,7 @@ export default function parseRoute(route) {
       break;
     default:
       throw new Error(
-          'Unrecognized treeherder routing key format. Possible formats are:\n' +
+        'Unrecognized treeherder routing key format. Possible formats are:\n' +
           'v1: <treeherder destination>.<project>.<revision>\n' +
           'v2: <treeherder destination>.<version>.<user/project>|<project>.<revision>.<pushLogId/pullRequestId>' +
           `but received: ${route}`
@@ -48,7 +48,7 @@ export default function parseRoute(route) {
   let x = {
     destination: destination,
     pushId: pushId ? parseInt(pushId) : undefined,
-    project: parsedProject
+    project: parsedProject,
   };
   if (revision) {
     x.revision = revision;
@@ -66,5 +66,4 @@ export default function parseRoute(route) {
 
   return x;
 }
-
 

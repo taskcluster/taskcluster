@@ -15,7 +15,7 @@ const EVENT_MAP = {
   [events.taskRunning().exchange]: 'running',
   [events.taskCompleted().exchange]: 'completed',
   [events.taskFailed().exchange]: 'failed',
-  [events.taskException().exchange]: 'exception'
+  [events.taskException().exchange]: 'exception',
 };
 
 function stateFromRun(run) {
@@ -58,7 +58,7 @@ function createLogReference(queue, taskId, run) {
   return {
     // XXX: This is a magical name see 1147958 which enables the log viewer.
     name: 'builds-4h',
-    url: logUrl
+    url: logUrl,
   };
 }
 
@@ -72,7 +72,7 @@ function parseRouteInfo(prefix, taskId, routes, task) {
 
   if (matchingRoutes.length != 1) {
     throw new Error(
-      `Could not determine treeherder route.  Either there is no route, ` +
+      'Could not determine treeherder route.  Either there is no route, ' +
       `or more than one matching route exists.  Task ID: ${taskId} Routes: ${routes}`
     );
   }
@@ -89,22 +89,21 @@ function parseRouteInfo(prefix, taskId, routes, task) {
   return parsedRoute;
 }
 
-
 function validateTask(monitor, validate, taskId, task, schema) {
-    if (!task.extra || !task.extra.treeherder) {
-      monitor.count('validateTask.no-config');
-      debug(`Message is missing Treeherder job configuration. Task ID: ${taskId}`);
-      return false;
-    }
-    let validationErrors = validate(task.extra.treeherder, schema);
-    if (validationErrors) {
-      monitor.count('validateTask.invalid-config');
-      debug(`Message contains an invalid Treeherder job configuration. Task ID: ${taskId} ${validationErrors}`);
-      return false;
-    }
+  if (!task.extra || !task.extra.treeherder) {
+    monitor.count('validateTask.no-config');
+    debug(`Message is missing Treeherder job configuration. Task ID: ${taskId}`);
+    return false;
+  }
+  let validationErrors = validate(task.extra.treeherder, schema);
+  if (validationErrors) {
+    monitor.count('validateTask.invalid-config');
+    debug(`Message contains an invalid Treeherder job configuration. Task ID: ${taskId} ${validationErrors}`);
+    return false;
+  }
 
-    monitor.count('validateTask.good-config');
-    return true;
+  monitor.count('validateTask.good-config');
+  return true;
 }
 
 export class Handler {
@@ -125,7 +124,7 @@ export class Handler {
       try {
         await this.monitor.timer('handle-message.time', this.handleMessage(message));
         this.monitor.count('handle-message.success');
-      } catch(err) {
+      } catch (err) {
         this.monitor.count('handle-message.failure');
         this.monitor.reportError(err);
       };
@@ -166,15 +165,15 @@ export class Handler {
           await this.handleTaskRerun(parsedRoute, task, message.payload);
         }
 
-        return await this.handleTaskPending(parsedRoute, task, message.payload)
+        return await this.handleTaskPending(parsedRoute, task, message.payload);
       case 'running':
-        return await this.handleTaskRunning(parsedRoute, task, message.payload)
+        return await this.handleTaskRunning(parsedRoute, task, message.payload);
       case 'completed':
-        return await this.handleTaskCompleted(parsedRoute, task, message.payload)
+        return await this.handleTaskCompleted(parsedRoute, task, message.payload);
       case 'failed':
-        return await this.handleTaskFailed(parsedRoute, task, message.payload)
+        return await this.handleTaskFailed(parsedRoute, task, message.payload);
       case 'exception':
-        return await this.handleTaskException(parsedRoute, task, message.payload)
+        return await this.handleTaskException(parsedRoute, task, message.payload);
       default:
         throw new Error(`Unknown exchange: ${message.exchange}`);
     }
@@ -188,7 +187,7 @@ export class Handler {
       await this.publisher.jobs(job, {project:pushInfo.project, destination: pushInfo.destination});
       debug(`Published message for ${pushInfo.project} with task ID ${taskId}`);
       this.monitor.count(`${pushInfo.project}.publish-message.success`);
-    } catch(err) {
+    } catch (err) {
       this.monitor.count(`${pushInfo.project}.publish-message.failure`);
       this.monitor.reportError(err, {project: pushInfo.project});
       let e = new Error(
@@ -226,16 +225,16 @@ export class Handler {
       tier: treeherderConfig.tier || 1,
       timeScheduled: task.created,
       jobKind: treeherderConfig.jobKind ? treeherderConfig.jobKind : 'other',
-      reason: treeherderConfig.reason || "scheduled",
+      reason: treeherderConfig.reason || 'scheduled',
       jobInfo: {
         links: [],
-        summary: task.metadata.description
-      }
+        summary: task.metadata.description,
+      },
     };
 
     job.origin = {
-        kind: pushInfo.origin,
-        project: pushInfo.project
+      kind: pushInfo.origin,
+      project: pushInfo.project,
     };
 
     if (pushInfo.revision) {
@@ -266,10 +265,10 @@ export class Handler {
 
     let machine = treeherderConfig.machine || {};
     job.buildMachine = {
-        name: run.workerId || 'unknown',
-        platform: machine.platform || task.workerType,
-        os: machine.os || "-",
-        architecture: machine.architecture || "-"
+      name: run.workerId || 'unknown',
+      platform: machine.platform || task.workerType,
+      os: machine.os || '-',
+      architecture: machine.architecture || '-',
     };
 
     if (treeherderConfig.productName) {
@@ -296,10 +295,10 @@ export class Handler {
     job.isRetried = true;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
-                                         this.monitor,
-                                         message.status.taskId,
-                                         message.runId-1,
-                                         job);
+      this.monitor,
+      message.status.taskId,
+      message.runId-1,
+      job);
     await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
@@ -318,10 +317,10 @@ export class Handler {
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
-                                         this.monitor,
-                                         message.status.taskId,
-                                         message.runId,
-                                         job);
+      this.monitor,
+      message.status.taskId,
+      message.runId,
+      job);
     await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
@@ -339,10 +338,10 @@ export class Handler {
           // Simply allow the rerun handle to update the task...
           return;
         }
-      } catch(e) {
+      } catch (e) {
         debug(
           `Could not retrieve task graph information for ${task.taskGroupId}, ` +
-          `assuming task is part of a task group not scheduled through task-graph-scheduler.`
+          'assuming task is part of a task group not scheduled through task-graph-scheduler.'
         );
       }
     }
@@ -353,10 +352,10 @@ export class Handler {
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
-                                         this.monitor,
-                                         message.status.taskId,
-                                         message.runId,
-                                         job);
+      this.monitor,
+      message.status.taskId,
+      message.runId,
+      job);
     await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 
@@ -373,10 +372,10 @@ export class Handler {
     job.timeCompleted = run.resolved;
     job.logs = [createLogReference(this.queue, message.status.taskId, run)];
     job = await addArtifactUploadedLinks(this.queue,
-                                         this.monitor,
-                                         message.status.taskId,
-                                         message.runId,
-                                         job);
+      this.monitor,
+      message.status.taskId,
+      message.runId,
+      job);
     await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
 }
