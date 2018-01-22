@@ -72,6 +72,7 @@ created:
 # Task credentials issued with claim and reclaim, covering task.scopes
 task-credentials:
   type:         object
+  additionalProperties: false
   description: |
     Temporary credentials granting `task.scopes` and the scope:
     `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
