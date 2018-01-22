@@ -3,6 +3,7 @@ suite('Task Expiration (expire-tasks)', function() {
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
+  var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
@@ -14,8 +15,8 @@ suite('Task Expiration (expire-tasks)', function() {
       workerType:       'test-worker',
       created:          taskcluster.fromNowJSON(),
       deadline:         taskcluster.fromNowJSON('1 day'),
-      // Notice that in config/test.js we've configured
-      // expire-tasks to expire 4 days before expires
+                        // Notice that in config/test.js we've configured
+                        // expire-tasks to expire 4 days before expires
       expires:          taskcluster.fromNowJSON(expiration),
       retries:          1,
       payload:          {},
