@@ -1,10 +1,10 @@
-import assert from 'assert';
-import Debug from 'debug';
-import _ from 'lodash';
-import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
-import parseRoute from './util/route_parser';
-import addArtifactUploadedLinks from './transform/artifact_links';
+const assert = require('assert');
+const Debug = require('debug');
+const _ = require('lodash');
+const slugid = require('slugid');
+const taskcluster = require('taskcluster-client');
+const parseRoute = require('./util/route_parser');
+const addArtifactUploadedLinks = require('./transform/artifact_links');
 
 let events = new taskcluster.QueueEvents();
 let debug = Debug('taskcluster-treeherder:handler');
@@ -106,7 +106,7 @@ function validateTask(monitor, validate, taskId, task, schema) {
   return true;
 }
 
-export class Handler {
+module.exports = class Handler {
   constructor(options) {
     this.queue = options.queue;
     this.scheduler = options.scheduler;
@@ -378,4 +378,4 @@ export class Handler {
       job);
     await this.publishJobMessage(pushInfo, job, message.status.taskId);
   }
-}
+};

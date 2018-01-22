@@ -1,7 +1,7 @@
-import path from 'path';
-import taskcluster from 'taskcluster-client';
+const path = require('path');
+const taskcluster = require('taskcluster-client');
 
-export default async function(queue, monitor, taskId, runId, job) {
+module.exports = async function(queue, monitor, taskId, runId, job) {
   let res;
   try {
     res = await queue.listArtifacts(taskId, runId);

@@ -3,28 +3,22 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/*_test.js",
+    "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint && yarn compile",
-    "install": "yarn compile"
+    "pretest": "yarn lint"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-treeherder.git"
   },
   "dependencies": {
-    "babel-compile": "^2.0.0",
     "babel-plugin-array-includes": "^2.0.3",
-    "babel-preset-taskcluster": "^2.0.1",
-    "babel-runtime": "^6.22.0",
     "debug": "^2.6.0",
     "eslint-config-taskcluster": "^3.0.0",
     "lodash": "^4.12.0",
     "promise": "^7.1.1",
     "pulse-publisher": "^1.1.4",
     "slugid": "^1.1.0",
-    "source-map-support": "^0.4.0",
     "taskcluster-client": "^1.6.3",
     "taskcluster-lib-docs": "^3.3.1",
     "taskcluster-lib-loader": "^1.0.0",

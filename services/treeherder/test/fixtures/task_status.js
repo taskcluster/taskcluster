@@ -1,4 +1,4 @@
-let statusMessage = `
+module.exports = `
 {
     "status": {
         "taskId": "5UMTRzgESFG3Bn8kCBwxxQ",
@@ -22,5 +22,3 @@ let statusMessage = `
     "runId": 0,
     "version": 1
 }`;
-
-exports.statusMessage = statusMessage;
