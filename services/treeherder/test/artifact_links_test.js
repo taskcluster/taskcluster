@@ -1,7 +1,7 @@
-const assert = require('assert');
-const taskDefinition = require('./fixtures/task');
-const Monitor = require('taskcluster-lib-monitor');
-const artifactLinkTransform = require('../src/transform/artifact_links');
+import assert from 'assert';
+import {taskDefinition} from './fixtures/task';
+import Monitor from 'taskcluster-lib-monitor';
+import artifactLinkTransform from '../lib/transform/artifact_links';
 
 let monitor;
 

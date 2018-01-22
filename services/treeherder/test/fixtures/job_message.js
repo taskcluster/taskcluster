@@ -1,4 +1,4 @@
-module.exports = `
+let message = `
 {
     "buildSystem": "taskcluster",
     "owner": "dummy-taskcluster-tests@mozilla.com",
@@ -38,3 +38,5 @@ module.exports = `
         "platform": "b2g-emu-x86-kk"
     }
 }`;
+
+exports.jobMessage = message;

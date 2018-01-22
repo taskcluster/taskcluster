@@ -1,4 +1,4 @@
-module.exports = `
+let completed = `
 {
   "payload": {
     "status": {
@@ -50,3 +50,5 @@ module.exports = `
     "reserved": "_"
   }
 }`;
+
+exports.completed = completed;
