@@ -1,10 +1,11 @@
 suite('queue/tasks_store', function() {
+  var Promise       = require('promise');
   var slugid        = require('slugid');
   var assert        = require('assert');
-  var BlobStore     = require('../src/blobstore');
+  var BlobStore     = require('../lib/blobstore');
   var _             = require('lodash');
   var url           = require('url');
-  var request       = require('superagent');
+  var request       = require('superagent-promise');
   var BlobUploader  = require('./azure-blob-uploader-sas');
   var debug         = require('debug')('test:blobstore_test');
   var config        = require('typed-env-config');
@@ -50,7 +51,7 @@ suite('queue/tasks_store', function() {
       return blobstore.putIfNotExists(key, data);
     }).then(function() {
       assert(false, 'Expected error');
-    }, function(err) {
+    }).catch(function(err) {
       assert(err.code === 'BlobAlreadyExists', 'Should already exist');
     });
   });
@@ -174,12 +175,13 @@ suite('queue/tasks_store', function() {
       expiry.setMinutes(expiry.getMinutes() + 5);
       var url = blobstore.createSignedGetUrl(key, {expiry: expiry});
       return request
-        .get(url)
-        .then(function(res) {
-          assert(res.ok, 'Request failed');
-          assert.deepEqual(res.body, {message: 'Hello'},
-            'message wasn\'t preserved');
-        });
+                .get(url)
+                .end()
+                .then(function(res) {
+                  assert(res.ok, 'Request failed');
+                  assert(res.body.message === 'Hello',
+                         'message didn\'t message');
+                });
     });
   });
 

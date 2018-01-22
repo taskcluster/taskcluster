@@ -1,4 +1,5 @@
 let _           = require('lodash');
+let Promise     = require('promise');
 let debug       = require('debug')('app:queue');
 let assert      = require('assert');
 let base32      = require('thirty-two');
@@ -34,7 +35,7 @@ let secondsTo = (target, relativeTo = new Date()) => {
 let validateTask = task => {
   assert(typeof task.taskId === 'string', 'Expected task.taskId');
   assert(typeof task.provisionerId === 'string',
-    'Expected task.provisionerId');
+         'Expected task.provisionerId');
   assert(typeof task.workerType === 'string', 'Expected task.workerType');
   assert(task.deadline instanceof Date, 'Expected task.deadline');
 };
@@ -240,7 +241,7 @@ class QueueService {
     assert(schedulerId, 'schedulerId must be given');
     assert(resolution === 'completed' || resolution === 'failed' ||
            resolution === 'exception',
-    'resolution must be completed, failed or exception');
+           'resolution must be completed, failed or exception');
 
     await this.ensureResolvedQueue();
     return this._putMessage(this.resolvedQueue, {
@@ -262,7 +263,7 @@ class QueueService {
     await this.ensureDeadlineQueue();
     var delay = Math.floor(this.deadlineDelay / 1000);
     debug('Put deadline message to be visible in %s seconds',
-      secondsTo(deadline) + delay);
+           secondsTo(deadline) + delay);
     return this._putMessage(this.deadlineQueue, {
       taskId,
       taskGroupId,
@@ -404,9 +405,9 @@ class QueueService {
 
     // Create promise, if it doesn't exist
     assert(/^[A-Za-z0-9_-]{1,22}$/.test(provisionerId),
-      'Expected provisionerId to be an identifier');
+           'Expected provisionerId to be an identifier');
     assert(/^[A-Za-z0-9_-]{1,22}$/.test(workerType),
-      'Expected workerType to be an identifier');
+           'Expected workerType to be an identifier');
 
     // Hash identifier to 24 characters
     let hashId = (id) => {
@@ -530,7 +531,7 @@ class QueueService {
         // If meta-data is missing or 10 days old, we mark it for deletion
         var lastUsed = new Date(metadata.last_used);
         return (
-          !metadata.provisioner_id
+             !metadata.provisioner_id
           || !metadata.worker_type
           || !isFinite(lastUsed)
           || lastUsed.getTime() < deleteIfNotUsedSince
@@ -589,7 +590,7 @@ class QueueService {
       // This should not happen, but if timing is right it is possible.
       console.log('runId: %s of taskId: %s became pending after deadline, ' +
                   'skipping pending message publication to azure queue',
-      runId, task.taskId);
+                  runId, task.taskId);
       return;
     }
 

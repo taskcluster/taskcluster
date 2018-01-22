@@ -1,3 +1,4 @@
+let Promise       = require('promise');
 let debug         = require('debug')('app:claim-resolver');
 let slugid        = require('slugid');
 let assert        = require('assert');
@@ -45,15 +46,15 @@ class ClaimResolver {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.Task.prototype instanceof data.Task,
-      'Expected data.Task instance');
+           'Expected data.Task instance');
     assert(options.queueService instanceof QueueService,
-      'Expected instance of QueueService');
+           'Expected instance of QueueService');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
     assert(options.publisher, 'Expected a publisher');
     assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
+           'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
-      'Expected parallelism to be a number');
+           'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     this.Task               = options.Task;
     this.queueService       = options.queueService;

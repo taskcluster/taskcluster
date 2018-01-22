@@ -3,9 +3,10 @@ suite('Poll tasks', function() {
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
+  var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
-  var request     = require('superagent');
+  var request     = require('superagent-promise');
   var xml2js      = require('xml2js');
   var helper      = require('./helper');
   var testing     = require('taskcluster-lib-testing');
@@ -75,7 +76,7 @@ suite('Poll tasks', function() {
     await testing.poll(async () => {
       debug('### Polling azure queue: %s', i);
       queue = r1.queues[i++ % r1.queues.length];
-      var res = await request.get(queue.signedPollUrl).buffer();
+      var res = await request.get(queue.signedPollUrl).buffer().end();
       assume(res.ok).is.ok();
 
       // Parse XML
@@ -105,10 +106,10 @@ suite('Poll tasks', function() {
 
     debug('### Deleting message from azure');
     var deleteUrl = queue.signedDeleteUrl
-      .replace('{{messageId}}', encodeURIComponent(msg.MessageId[0]))
-      .replace('{{popReceipt}}', encodeURIComponent(msg.PopReceipt[0]));
+     .replace('{{messageId}}', encodeURIComponent(msg.MessageId[0]))
+     .replace('{{popReceipt}}', encodeURIComponent(msg.PopReceipt[0]));
     await testing.poll(async () => {
-      var res = await request.del(deleteUrl).buffer();
+      var res = await request.del(deleteUrl).buffer().end();
       if (!res.ok) {
         throw new Error('error deleting message: ' + res.text + ' deleteUrl: ' +
                         deleteUrl);
