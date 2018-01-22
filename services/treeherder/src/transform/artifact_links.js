@@ -5,7 +5,7 @@ export default async function(queue, monitor, taskId, runId, job) {
   let res;
   try {
     res = await queue.listArtifacts(taskId, runId);
-  } catch (e) {
+  } catch(e) {
     monitor.reportError(e, {taskId, runId});
     return job;
   }
@@ -17,7 +17,7 @@ export default async function(queue, monitor, taskId, runId, job) {
 
     try {
       res = await queue.listArtifacts(taskId, runId, continuation);
-    } catch (e) {
+    } catch(e) {
       monitor.reportError(e, {taskId, runId});
       break;
     }
@@ -25,23 +25,23 @@ export default async function(queue, monitor, taskId, runId, job) {
     artifacts = artifacts.concat(res.artifacts);
   }
 
-  let seen = {};
+  let seen = {}
 
   let links = artifacts.map((artifact) => {
-    let name = path.parse(artifact.name).base;
-    if (!seen[name]) {
-      seen[name] = [artifact.name];
-    } else {
-      seen[name].push(artifact.name);
-      name = `${name} (${seen[name].length-1})`;
-    }
-    let link = {
-      label: 'artifact uploaded',
-      linkText: name,
-      url: `https://queue.taskcluster.net/v1/task/${taskId}` +
+      let name = path.parse(artifact.name).base;
+      if (!seen[name]) {
+        seen[name] = [artifact.name];
+      } else {
+        seen[name].push(artifact.name);
+        name = `${name} (${seen[name].length-1})`;
+      }
+      let link = {
+        label: 'artifact uploaded',
+        linkText: name,
+        url: `https://queue.taskcluster.net/v1/task/${taskId}` +
              `/runs/${runId}/artifacts/${artifact.name}`,
-    };
-    return link;
+      };
+      return link;
   });
 
   job.jobInfo.links = job.jobInfo.links.concat(links);

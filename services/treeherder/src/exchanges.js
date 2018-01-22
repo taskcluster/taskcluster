@@ -1,18 +1,18 @@
 import Exchanges from 'pulse-publisher';
 
 let exchanges = new Exchanges({
-  title: 'Taskcluster-treeherder Pulse Exchange',
+  title: "Taskcluster-treeherder Pulse Exchange",
   description: [
-    'The taskcluster-treeherder service is responsible for processing',
-    'task events published by TaskCluster Queue and producing job messages',
-    'that are consumable by Treeherder.',
-    '',
-    'This exchange provides that job messages to be consumed by any queue that',
-    'attached to the exchange.  This could be a production Treeheder instance,',
-    'a local development environment, or a custom dashboard.',
+    "The taskcluster-treeherder service is responsible for processing",
+    "task events published by TaskCluster Queue and producing job messages",
+    "that are consumable by Treeherder.",
+    "",
+    "This exchange provides that job messages to be consumed by any queue that",
+    "attached to the exchange.  This could be a production Treeheder instance,",
+    "a local development environment, or a custom dashboard."
   ].join('\n'),
 
-  schemaPrefix: 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/',
+  schemaPrefix: 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/'
 });
 
 module.exports = exchanges;
@@ -24,22 +24,22 @@ let buildRoutingKey = (options={}) => {
       name:             'destination',
       summary:          'destination',
       required:         true,
-      maxSize:          25,
+      maxSize:          25
     },
     {
       name:             'project',
       summary:          'project',
       required:         true,
-      maxSize:          25,
+      maxSize:          25
     },
     {
       name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
-                        'should always match this entry with `#`. As ' +
-                        'automatically done by our tooling, if not specified.',
+      summary:          "Space reserved for future routing-key entries, you " +
+                        "should always match this entry with `#`. As " +
+                        "automatically done by our tooling, if not specified.",
       multipleWords:    true,
-      maxSize:          1,
-    },
+      maxSize:          1
+    }
   ];
 };
 
@@ -51,20 +51,20 @@ let commonMessageBuilder = (message) => {
 
 let commonRoutingKeyBuilder = (message, routing) => {
   return routing;
-};
+}
 
 /** Jobs exchange */
 exchanges.declare({
   exchange:           'jobs',
   name:               'jobs',
-  title:              'Job Messages',
+  title:              "Job Messages",
   description: [
-    'When a task run is scheduled or resolved, a message is posted to',
-    'this exchange in a Treeherder consumable format.',
+    "When a task run is scheduled or resolved, a message is posted to",
+    "this exchange in a Treeherder consumable format."
   ].join('\n'),
   routingKey:         buildRoutingKey(),
   schema:             'pulse-job.json#',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          () => [],
+  CCBuilder:          () => []
 });
