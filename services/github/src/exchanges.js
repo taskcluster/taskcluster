@@ -61,7 +61,7 @@ let releaseMessageBuilder = function(msg) {
 
 /** Declaration of exchanges offered by the github */
 let exchanges = new Exchanges({
-  title:      'TaskCluster-Github Exchanges',
+  title:      'Taskcluster-Github Exchanges',
   description: [
     'The github service, typically available at',
     '`github.taskcluster.net`, is responsible for publishing a pulse',

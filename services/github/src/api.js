@@ -148,7 +148,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
 /** API end-point for version v1/
  */
 let api = new API({
-  title:        'TaskCluster GitHub API Documentation',
+  title:        'Taskcluster GitHub API Documentation',
   description: [
     'The github service, typically available at',
     '`github.taskcluster.net`, is responsible for publishing pulse',

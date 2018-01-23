@@ -132,7 +132,7 @@ class Handlers {
     }
     let body = [
       '<details>\n',
-      '<summary>Submitting the task to TaskCluster failed. Details</summary>\n\n',
+      '<summary>Submitting the task to Taskcluster failed. Details</summary>\n\n',
       '```js\n',
       errorBody,
       '```\n',
@@ -163,7 +163,7 @@ module.exports = Handlers;
 
 /**
  * Post updates to GitHub, when the status of a task changes.
- * TaskCluster States: https://docs.taskcluster.net/reference/platform/queue/references/events
+ * Taskcluster States: https://docs.taskcluster.net/reference/platform/queue/references/events
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
 async function statusHandler(message) {
@@ -344,7 +344,7 @@ async function jobHandler(message) {
       if (!await prAllowed({login, organization, repository, instGithub, debug, message})) {
         let body = [
           '<details>\n',
-          '<summary>No TaskCluster jobs started for this pull request</summary>\n\n',
+          '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
           '```js\n',
           'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
           'default branch) does not allow starting tasks for this pull request.',
