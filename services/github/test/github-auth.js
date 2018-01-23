@@ -55,7 +55,6 @@ class FakeGithub {
         if (repo === 'no-permission') {
           throwError(403);
         }
-        //console.log(owner, repo, number, body);
         const key = `${owner}/${repo}@${number}`;
         const info = {
           body,
