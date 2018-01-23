@@ -143,6 +143,7 @@ class Handlers {
     // by posting a comment; this error is then considered handled and not
     // reported to the taskcluster team or retried
     if (pullNumber) {
+      debug(`creating exception comment on ${organization}/${repository}#${pullNumber}`);
       await instGithub.pullRequests.createComment({
         owner: organization,
         repo: repository,
@@ -151,6 +152,7 @@ class Handlers {
       });
       return;
     }
+    debug(`creating exception comment on ${organization}/${repository}@${sha}`);
     await instGithub.repos.createCommitComment({
       owner: organization,
       repo: repository,
@@ -372,7 +374,7 @@ async function jobHandler(message) {
             'for permissions **on default branch ' + branch + '**.',
             'Read more about this in',
             '[the taskcluster docs](' + docsLink + ').',
-            'Details</summary>\n\n',
+            'Details:</summary>\n\n',
             '```js\n',
             e.message,
             '```\n',
