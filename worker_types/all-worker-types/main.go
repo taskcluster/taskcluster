@@ -1,12 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
@@ -27,19 +28,16 @@ func main() {
 	}
 
 	for _, wt := range *allWorkerTypes {
-		resp, err := prov.WorkerType(wt)
+		cd := tcclient.Client(*prov)
+		cs, err := (&cd).Request(nil, "GET", "/worker-type/"+url.QueryEscape(wt), nil)
 		if err != nil {
 			panic(err)
 		}
-		asJSON, err := json.MarshalIndent(resp, "", "  ")
+		err = ioutil.WriteFile(filepath.Join("worker_type_definitions", wt), []byte(cs.HTTPResponseBody), 0644)
 		if err != nil {
 			panic(err)
 		}
-		err = ioutil.WriteFile(filepath.Join("worker_type_definitions", wt), asJSON, 0644)
-		if err != nil {
-			panic(err)
-		}
-		log.Print(string(asJSON))
+		log.Print(cs.HTTPResponseBody)
 	}
 
 	log.Print("All done.")
