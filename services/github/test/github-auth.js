@@ -51,6 +51,20 @@ class FakeGithub {
         }
         this._comments[key].push(info);
       },
+      'pullRequests.createComment': ({owner, repo, number, body}) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
+        //console.log(owner, repo, number, body);
+        const key = `${owner}/${repo}@${number}`;
+        const info = {
+          body,
+        };
+        if (!this._comments[key]) {
+          this._comments[key]=[];
+        }
+        this._comments[key].push(info);
+      },
       'repos.createCommitComment': () => {},
       'orgs.checkMembership': async ({org, username}) => {
         if (this._org_membership[org] && this._org_membership[org].has(username)) {
