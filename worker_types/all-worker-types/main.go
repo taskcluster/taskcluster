@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/taskcluster/taskcluster-base-go/jsontest"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
@@ -33,11 +34,15 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = ioutil.WriteFile(filepath.Join("worker_type_definitions", wt), []byte(cs.HTTPResponseBody), 0644)
+		formattedData, err := jsontest.FormatJson([]byte(cs.HTTPResponseBody))
 		if err != nil {
 			panic(err)
 		}
-		log.Print(cs.HTTPResponseBody)
+		err = ioutil.WriteFile(filepath.Join("worker_type_definitions", wt), formattedData, 0644)
+		if err != nil {
+			panic(err)
+		}
+		log.Print(string(formattedData))
 	}
 
 	log.Print("All done.")
