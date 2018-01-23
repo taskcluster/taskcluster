@@ -35,9 +35,9 @@ tasks:
        env: true
 ```
 
-## GitHub Events
+## Github Events
 
-You can modify a task definition so that it will only run for specific GitHub
+You can modify a task definition so that it will only run for specific Github
 events, by setting `task.extra.github.events` to a list of event names:
 
 ```yaml

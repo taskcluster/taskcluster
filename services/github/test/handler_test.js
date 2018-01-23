@@ -215,7 +215,7 @@ suite('handlers', () => {
       assert.equal(args[0][0].owner, 'TaskClusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].pullNumber, '36');
-      assert(args[0][0].body.indexOf('No TaskCluster jobs started for this pull request') !== -1);
+      assert(args[0][0].body.indexOf('No Taskcluster jobs started for this pull request') !== -1);
     });
 
     test('specifying allowPullRequests: public in the default branch allows all', async function() {

@@ -1,9 +1,9 @@
-TaskCluster GitHub Service
+Taskcluster Github Service
 ==========================
 [![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/taskcluster-github/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/taskcluster-github/master/latest)
 
 
-This service monitors all of the repositories associated with an organization for changes and schedules TaskCluster tasks for any repository which contains a `.taskcluster.yml` configuration file. The goal of this project is to provide project owners a method for scheduling jobs in TaskCluster which is quick and straight forward.
+This service monitors all of the repositories associated with an organization for changes and schedules Taskcluster tasks for any repository which contains a `.taskcluster.yml` configuration file. The goal of this project is to provide project owners a method for scheduling jobs in Taskcluster which is quick and straight forward.
 
 **NOTE: This project used to provide a base docker image for convenience's sake, but it has been deprecated due to not being that useful and not being kept up-to-date. The image will continue existing, but we recommend migrating to another image.**
 
@@ -21,7 +21,7 @@ Insert the following string (replacing the words in caps with your organization 
 Listens for WebHooks and, if they are valid, forwards them to a pulse exchange.
 
 ### Handlers
-Listen for WebHook triggered pulse messages and attempts to schedule TaskCluster tasks for any events related to a repository which contains a `.taskcluster.yml` file.
+Listen for WebHook triggered pulse messages and attempts to schedule Taskcluster tasks for any events related to a repository which contains a `.taskcluster.yml` file.
 
 ## Contributing
 
