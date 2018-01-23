@@ -10,12 +10,7 @@ suite('API', function() {
   // Use the same hook definition for everything
   var hookDef = require('./test_definition');
   let hookWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
-    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
-  additionalProperties: false}}, hookDef);
-
-  let hookWithTriggerWAddProp =  _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string',
-    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}},
-  additionalProperties: true}}, hookDef);
+    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, additionalProperties: true}}, hookDef);
 
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
@@ -237,8 +232,8 @@ suite('API', function() {
     });
 
     test('returns the last run status for triggerHook', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerWAddProp);
-      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
         triggeredBy: 'triggerHook'});
       var r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
@@ -254,20 +249,20 @@ suite('API', function() {
 
   suite('triggerHook', function() {
     test('should launch task with the given payload', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerWAddProp);
-      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 'Belo Horizonte, MG'}, 
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
         triggeredBy: 'triggerHook'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        payload: {context: {location: 'Belo Horizonte, MG'}, triggeredBy: 'triggerHook'},
+        payload: {location: 'Belo Horizonte, MG', triggeredBy: 'triggerHook'},
         options: {},
       }]);
     });
 
     test('checking schema validation', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {context: {location: 28}, 
+      await helper.hooks.triggerHook('foo', 'bar', {location: 28, 
         triggeredBy: 'triggerHook'}).then(() => { throw new Error('Location type should be string'); },
         (err) => { assume(err.statusCode).equals(400); });
     });
