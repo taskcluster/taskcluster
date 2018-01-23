@@ -13,8 +13,8 @@ suite('API', function() {
     default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
   additionalProperties: false}}, hookDef);
 
-  let hookWithTriggerWAddProp =  _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
-    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}}, 
+  let hookWithTriggerWAddProp =  _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string',
+    default: 'Niskayuna, NY'}, otherVariable: {type: 'number', default: '12'}},
   additionalProperties: true}}, hookDef);
 
   let dailyHookDef = _.defaults({
