@@ -83,6 +83,7 @@ class Handlers {
     await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId}));
 
     const callHandler = (name, handler) => message => {
+      //console.log('.. message received by handler', message);
       handler.call(this, message).catch(async err => {
         debug(`Error (reported to sentry) while calling ${name} handler: ${err}`);
         await this.monitor.reportError(err);
@@ -95,6 +96,7 @@ class Handlers {
         }
       });
     };
+
     this.jobListener.on('message',
       this.monitor.timedHandler('joblistener', callHandler('job', jobHandler)));
     this.statusListener.on('message',
@@ -123,28 +125,38 @@ class Handlers {
   }
 
   // Send an exception to Github in the form of a comment.
-  async createExceptionComment({instGithub, organization, repository, sha, error}) {
+  async createExceptionComment({instGithub, organization, repository, sha, error, pullNumber}) {
     let errorBody = error.body && error.body.error || error.message;
     // Let's prettify any objects
     if (typeof errorBody == 'object') {
       errorBody = JSON.stringify(errorBody, null, 4);
     }
+    let body = [
+      '<details>\n',
+      '<summary>Submitting the task to TaskCluster failed. Details</summary>\n\n',
+      '```js\n',
+      errorBody,
+      '```\n',
+      '</details>',
+    ].join('\n') ;
 
     // Warn the user know that there was a problem handling their request
     // by posting a comment; this error is then considered handled and not
     // reported to the taskcluster team or retried
+    if (pullNumber) {
+      await instGithub.pullRequests.createComment({
+        owner: organization,
+        repo: repository,
+        pullNumber,
+        body,
+      });
+      return;
+    }
     await instGithub.repos.createCommitComment({
       owner: organization,
       repo: repository,
       sha,
-      body: [
-        '<details>\n',
-        '<summary>Submitting the task to TaskCluster failed. Details</summary>\n\n',
-        '```js\n',
-        errorBody,
-        '```\n',
-        '</details>',
-      ].join('\n'),
+      body,
     });
   }
 }
@@ -245,6 +257,9 @@ async function jobHandler(message) {
   let organization = message.payload.organization;
   let repository = message.payload.repository;
   let sha = message.payload.details['event.head.sha'];
+  //console.log('..message passed to jobHandler', message);
+  let pullNumber = message.payload.details['event.pullNumber'];
+  //console.log('..pr number', number);
   if (!sha) {
     debug('Trying to get commit info in job handler...');
     let commitInfo = await instGithub.repos.getShaOfCommitRef({
@@ -296,7 +311,7 @@ async function jobHandler(message) {
     }
   } catch (e) {
     if (e.name === 'YAMLException') {
-      return await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
+      return await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
     }
     throw e;
   }
@@ -319,7 +334,7 @@ async function jobHandler(message) {
     }
   } catch (e) {
     debug('.taskcluster.yml was not formatted correctly. Leaving comment on Github.');
-    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
     return;
   }
 
@@ -339,10 +354,12 @@ async function jobHandler(message) {
           '```\n',
           '</details>',
         ].join('\n');
-        await instGithub.repos.createCommitComment({
+        //console.log(instGithub.pullRequests);
+        //console.log('..pr number' organization);
+        await instGithub.pullRequests.createComment({
           owner: organization,
           repo: repository,
-          sha,
+          pullNumber,
           body,
         });
         return;
@@ -350,10 +367,10 @@ async function jobHandler(message) {
     } catch (e) {
       if (e.name === 'YAMLException') {
         let docsLink = 'https://docs.taskcluster.net/reference/integrations/github/docs/usage#who-can-trigger-jobs';
-        await instGithub.repos.createCommitComment({
+        await instGithub.pullRequests.createComment({
           owner: organization,
           repo: repository,
-          sha,
+          pullNumber,
           body: [
             '<details>\n',
             '<summary>Error in `.taskcluster.yml` while checking',

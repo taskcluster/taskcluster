@@ -71,6 +71,9 @@ suite('handlers', () => {
             version: 1,
           },
         };
+        if (eventType.startsWith('pull_request.')) {
+          message.payload.details['event.pullNumber'] = 36;
+        }
 
         handlers.jobListener.fakeMessage(message);
       });
@@ -207,11 +210,11 @@ suite('handlers', () => {
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
-      assert(github.inst(5828).repos.createCommitComment.calledOnce);
-      let args = github.inst(5828).repos.createCommitComment.args;
+      assert(github.inst(5828).pullRequests.createComment.calledOnce);
+      let args = github.inst(5828).pullRequests.createComment.args;
       assert.equal(args[0][0].owner, 'TaskClusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
-      assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args[0][0].pullNumber, '36');
       assert(args[0][0].body.indexOf('No TaskCluster jobs started for this pull request') !== -1);
     });
 
@@ -231,7 +234,7 @@ suite('handlers', () => {
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
       assert(github.inst(5828).repos.createStatus.callCount === 1, 'Status was not updated!');
-      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+      assert(github.inst(5828).pullRequests.createComment.callCount === 0);
     });
 
     test('specifying allowPullRequests: collaborators in the default branch disallows public', async function() {
@@ -250,7 +253,7 @@ suite('handlers', () => {
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
       assert(github.inst(5828).repos.createStatus.callCount === 0);
-      assert(github.inst(5828).repos.createCommitComment.callCount === 1);
+      assert(github.inst(5828).pullRequests.createComment.callCount === 1);
     });
 
     test('user name not checked for pushes, so status is created', async function() {
