@@ -214,7 +214,7 @@ suite('handlers', () => {
       let args = github.inst(5828).pullRequests.createComment.args;
       assert.equal(args[0][0].owner, 'TaskClusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
-      assert.equal(args[0][0].pullNumber, '36');
+      assert.equal(args[0][0].number, '36');
       assert(args[0][0].body.indexOf('No Taskcluster jobs started for this pull request') !== -1);
     });
 
