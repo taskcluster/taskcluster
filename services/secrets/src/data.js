@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import assert from 'assert';
-import Entity from 'azure-entities';
+const _ = require('lodash');
+const assert = require('assert');
+const Entity = require('azure-entities');
 
 let SecretEntity = Entity.configure({
   version:          1,
