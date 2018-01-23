@@ -83,7 +83,6 @@ class Handlers {
     await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId}));
 
     const callHandler = (name, handler) => message => {
-      //console.log('.. message received by handler', message);
       handler.call(this, message).catch(async err => {
         debug(`Error (reported to sentry) while calling ${name} handler: ${err}`);
         await this.monitor.reportError(err);
@@ -257,9 +256,7 @@ async function jobHandler(message) {
   let organization = message.payload.organization;
   let repository = message.payload.repository;
   let sha = message.payload.details['event.head.sha'];
-  //console.log('..message passed to jobHandler', message);
   let pullNumber = message.payload.details['event.pullNumber'];
-  //console.log('..pr number', number);
   if (!sha) {
     debug('Trying to get commit info in job handler...');
     let commitInfo = await instGithub.repos.getShaOfCommitRef({
@@ -354,8 +351,6 @@ async function jobHandler(message) {
           '```\n',
           '</details>',
         ].join('\n');
-        //console.log(instGithub.pullRequests);
-        //console.log('..pr number' organization);
         await instGithub.pullRequests.createComment({
           owner: organization,
           repo: repository,
