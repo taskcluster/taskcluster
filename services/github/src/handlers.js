@@ -146,7 +146,7 @@ class Handlers {
       await instGithub.pullRequests.createComment({
         owner: organization,
         repo: repository,
-        pullNumber,
+        number: pullNumber,
         body,
       });
       return;
@@ -354,7 +354,7 @@ async function jobHandler(message) {
         await instGithub.pullRequests.createComment({
           owner: organization,
           repo: repository,
-          pullNumber,
+          number: pullNumber,
           body,
         });
         return;
@@ -365,7 +365,7 @@ async function jobHandler(message) {
         await instGithub.pullRequests.createComment({
           owner: organization,
           repo: repository,
-          pullNumber,
+          number: pullNumber,
           body: [
             '<details>\n',
             '<summary>Error in `.taskcluster.yml` while checking',
