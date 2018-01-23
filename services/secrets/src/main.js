@@ -1,18 +1,17 @@
 #!/usr/bin/env node
-import Debug from 'debug';
-import api from '../lib/api';
-import data from '../lib/data';
-import assert from 'assert';
-import path from 'path';
-import Promise from 'promise';
-import _ from 'lodash';
-import loader from 'taskcluster-lib-loader';
-import validator from 'taskcluster-lib-validate';
-import monitor from 'taskcluster-lib-monitor';
-import app from 'taskcluster-lib-app';
-import docs from 'taskcluster-lib-docs';
-import taskcluster from 'taskcluster-client';
-import config from 'typed-env-config';
+const Debug = require('debug');
+const api = require('../src/api');
+const data = require('../src/data');
+const assert = require('assert');
+const path = require('path');
+const _ = require('lodash');
+const loader = require('taskcluster-lib-loader');
+const validator = require('taskcluster-lib-validate');
+const monitor = require('taskcluster-lib-monitor');
+const app = require('taskcluster-lib-app');
+const docs = require('taskcluster-lib-docs');
+const taskcluster = require('taskcluster-client');
+const config = require('typed-env-config');
 
 let debug = Debug('secrets:server');
 
@@ -89,6 +88,7 @@ var load = loader({
         env:            cfg.server.env,
         forceSSL:       cfg.server.forceSSL,
         trustProxy:     cfg.server.trustProxy,
+        docs,
       });
 
       // Mount API router

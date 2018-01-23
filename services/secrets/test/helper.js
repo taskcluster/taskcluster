@@ -1,10 +1,10 @@
-import assert from 'assert';
-import api from '../lib/api';
-import taskcluster from 'taskcluster-client';
-import mocha from 'mocha';
-import testing from 'taskcluster-lib-testing';
-import load from '../lib/main';
-import config from 'typed-env-config';
+const assert = require('assert');
+const api = require('../src/api');
+const taskcluster = require('taskcluster-client');
+const mocha = require('mocha');
+const testing = require('taskcluster-lib-testing');
+const load = require('../src/main');
+const config = require('typed-env-config');
 
 // Create and export helper object
 var helper = module.exports = {};
