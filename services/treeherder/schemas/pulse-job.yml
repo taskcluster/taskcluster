@@ -42,6 +42,7 @@ properties:
   origin:
     oneOf:
       - type: "object"
+        additionalProperties: false
         title: "HG Push"
         properties:
           kind:
@@ -62,6 +63,7 @@ properties:
         required: [kind, project, revision]
 
       - type: "object"
+        additionalProperties: false
         title: "HG Push Legacy"
         description: |
           BACKWARD COMPATABILITY: An HG job that only has a revision_hash.
@@ -87,6 +89,7 @@ properties:
 
       - type: "object"
         title: "Github Pull Request"
+        additionalProperties: false
         properties:
           kind:
             type: "string"
@@ -114,6 +117,7 @@ properties:
 
   display:
     type: "object"
+    additionalProperties: false
     properties:
       jobSymbol:
         title: "jobSymbol"
@@ -377,12 +381,13 @@ properties:
                   - canceled
                   - unknown
             required:
-            - name
-            - timeStarted
-            - lineStarted
-            - lineFinished
-            - timeFinished
-            - result
+              - name
+              - timeStarted
+              - lineStarted
+              - lineFinished
+              - timeFinished
+              - result
+            additionalProperties: false
         errorsTruncated:
           type: boolean
           description: |
@@ -434,4 +439,4 @@ definitions:
       - platform
       - os
       - architecture
-
+    additionalProperties: false
