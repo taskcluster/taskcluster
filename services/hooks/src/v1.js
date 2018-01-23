@@ -383,7 +383,6 @@ api.declare({
 
   if (validate && payload) {
     let valid = validate(payload);
-    console.log(validate);
     if (!valid) {
       return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
     }
