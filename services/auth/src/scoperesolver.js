@@ -312,7 +312,7 @@ class ScopeResolver extends events.EventEmitter {
    * {roleId, scopes}.
    */
   buildResolver(roles) {
-    ScopeResolver.cycleCheck(roles);
+    this._monitor.timer('cycleCheck', () => ScopeResolver.cycleCheck(roles));
 
     // encode the roles as rules, including the `assume:` prefix, and marking up
     // the expansions of any parameterized scopes as {scope, index}, where index
@@ -320,7 +320,7 @@ class ScopeResolver extends events.EventEmitter {
     // the `*`)
 
     let rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
-    let dfa = generateTrie(rules);
+    let dfa = this._monitor.timer('generateTrie', () => generateTrie(rules));
 
     // LRU of resolved scope-sets, to increase probability of hits, we shall
     // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
