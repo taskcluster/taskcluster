@@ -11,7 +11,7 @@ defaults:
     botName: !env BOT_USERNAME
 
   taskcluster:
-    # TaskCluster credentials for this server, these must have scopes:
+    # Taskcluster credentials for this server, these must have scopes:
     # auth:credentials
     # (typically configured using environment variables)
     credentials:
