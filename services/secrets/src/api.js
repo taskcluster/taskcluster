@@ -1,6 +1,6 @@
-import API from 'taskcluster-lib-api';
-import slugid from 'slugid';
-import _ from 'lodash';
+const API = require('taskcluster-lib-api');
+const slugid = require('slugid');
+const _ = require('lodash');
 
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/secrets/v1/';
 
@@ -51,7 +51,7 @@ api.declare({
       expires:    new Date(expires),
     });
   } catch (e) {
-      // If the entity exists, update it
+    // If the entity exists, update it
     if (e.name == 'EntityAlreadyExistsError') {
       let item = await this.entity.load({name});
       await item.modify(function() {
