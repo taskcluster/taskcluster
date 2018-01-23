@@ -64,9 +64,10 @@ let load = Loader({
   },
 
   resolver: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new ScopeResolver({
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
+      monitor: monitor.prefix('scope-resolver'),
     }),
   },
 

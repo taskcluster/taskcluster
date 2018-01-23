@@ -1,16 +1,20 @@
 suite('scoperesolver', () => {
   let ScopeResolver = require('../src/scoperesolver');
   let {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+  let Monitor            = require('taskcluster-lib-monitor');
   let assert = require('assert');
   let _ = require('lodash');
   let fs = require('fs');
+  let monitor, scopeResolver;
+  before(async () => {
+    monitor = await Monitor({project: 'mock-auth', mock: true});
+    scopeResolver = new ScopeResolver({monitor});
+  });
 
   suite('buildResolver', function() {
-    const scopeResolver = new ScopeResolver();
-    const makeResolver = roles => scopeResolver.buildResolver(roles);
     const testResolver = (title, {roles, scopes, expected}) => {
       test(title, function() {
-        const resolver = makeResolver(roles);
+        const resolver = scopeResolver.buildResolver(roles);
         expected.sort(scopeCompare);
         assert.deepEqual(expected, resolver(scopes));
       });
@@ -335,8 +339,6 @@ suite('scoperesolver', () => {
   });
 
   suite('performance', function() {
-    const scopeResolver = new ScopeResolver();
-    const makeResolver = roles => scopeResolver.buildResolver(roles);
     const shouldMeasure = process.env.MEASURE_PERFORMANCE;
     const timings = [];
 
@@ -400,7 +402,7 @@ suite('scoperesolver', () => {
           time = (step, fn) => fn();
         }
 
-        let resolver = time('setup', () => makeResolver(roles));
+        let resolver = time('setup', () => scopeResolver.buildResolver(roles));
         let result = time('execute', () => resolver(scopes));
         if (expected) {
           expected.sort(scopeCompare);
