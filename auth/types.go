@@ -44,12 +44,12 @@ type (
 		Expires tcclient.Time `json:"expires"`
 	}
 
-	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]
 	AuthenticationFailedResponse struct {
 
 		// Message saying why the authentication failed.
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/message
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]/properties/message
 		Message string `json:"message"`
 
 		// The kind of response, `auth-failed` or `auth-success`.
@@ -57,11 +57,11 @@ type (
 		// Possible values:
 		//   * "auth-failed"
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[1]/properties/status
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]/properties/status
 		Status string `json:"status"`
 	}
 
-	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]
+	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]
 	AuthenticationSuccessfulResponse struct {
 
 		// The `clientId` that made this request.  This may be the `id` supplied in
@@ -72,7 +72,7 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9@/:.+|_-]+$
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/clientId
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/clientId
 		ClientID string `json:"clientId"`
 
 		// The expiration time for the credentials used to make this request.
@@ -81,7 +81,7 @@ type (
 		// immediately, this field can be ignored, as the value will always be
 		// in the future if the status is `auth-success`.
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/expires
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Payload as extracted from `Authentication` header. This property is
@@ -89,7 +89,7 @@ type (
 		// this hash, but if you do, please check `scheme` to ensure that it's
 		// on a scheme you support.
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/hash
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/hash
 		Hash json.RawMessage `json:"hash,omitempty"`
 
 		// Authentication scheme the client used. Generally, you don't need to
@@ -99,13 +99,13 @@ type (
 		// Possible values:
 		//   * "hawk"
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scheme
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scheme
 		Scheme string `json:"scheme"`
 
 		// List of scopes the client is authorized to access.  Scopes must be
 		// composed of printable ASCII characters and spaces.
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/scopes
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes
 		Scopes []string `json:"scopes"`
 
 		// The kind of response, `auth-failed` or `auth-success`.
@@ -113,7 +113,7 @@ type (
 		// Possible values:
 		//   * "auth-success"
 		//
-		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/anyOf[0]/properties/status
+		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/status
 		Status string `json:"status"`
 	}
 
