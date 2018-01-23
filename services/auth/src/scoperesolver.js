@@ -2,6 +2,7 @@ var _           = require('lodash');
 var assert      = require('assert');
 var taskcluster = require('taskcluster-client');
 var events      = require('events');
+var LRU         = require('lru-native');
 var debug       = require('debug')('auth:ScopeResolver');
 var {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
 var {generateTrie, executeTrie} = require('./trie');
@@ -23,8 +24,12 @@ class ScopeResolver extends events.EventEmitter {
       maxLastUsedDelay: '-6h',
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
+    assert(options.monitor, 'expected an instance of taskcluster-lib-monitor');
     assert(/^ *-/.test(options.maxLastUsedDelay),
       'maxLastUsedDelay must be negative');
+
+    // Store a reference to the monitor
+    this._monitor = options.monitor;
 
     // List of client objects on the form:
     // {
@@ -317,12 +322,31 @@ class ScopeResolver extends events.EventEmitter {
     let rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
     let dfa = generateTrie(rules);
 
+    // LRU of resolved scope-sets, to increase probability of hits, we shall
+    // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
+    let lru = new LRU({maxElements: 10000});
+
     return (inputs) => {
       inputs.sort(scopeCompare);
-      // seen is the normalied scopeset we have seen already
-      let seen = normalizeScopeSet(inputs);
+      inputs = normalizeScopeSet(inputs);
       // queue is the list of scopes to expand (so only expandable scopes)
-      let queue = seen.filter(s => ASSUME_PREFIX.test(s));
+      let queue = inputs.filter(s => ASSUME_PREFIX.test(s));
+      // seen is the normalied scopeset we have seen already, we don't include
+      // input scopes that doesn't match ASSUME_PREFIX because we don't want to
+      // embed those in the cacheKey
+      let seen = [...queue];
+
+      // Check if we have an expansion of queue in LRU cache, if there is no
+      // such expansion we'll continue, compute one in `seen`.
+      this._monitor.count('cache-lookup', 1);
+      const cacheKey = queue.join('\n');
+      const cacheResult = lru.get(cacheKey);
+      if (cacheResult !== undefined) {
+        this._monitor.count('cache-hit', 1);
+        return mergeScopeSets(inputs, cacheResult);
+      } else {
+        this._monitor.count('cache-miss', 1);
+      }
 
       // insert a new scope into the `seen` scopeset, returning false if it was
       // already satisfied by the scopeset.  This is equivalent to `seen =
@@ -385,7 +409,8 @@ class ScopeResolver extends events.EventEmitter {
         });
       }
 
-      return seen;
+      lru.set(cacheKey, seen);
+      return mergeScopeSets(inputs, seen);
     };
   };
 
