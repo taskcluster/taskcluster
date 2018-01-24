@@ -76,6 +76,24 @@ suite('api/auth', function() {
     res.status(200).json('OK');
   });
 
+  // Declare a method we can test calling authorize twice
+  api.declare({
+    method:       'get',
+    route:        '/test-scopes-authorize-twice',
+    name:         'testScopesAuthTwice',
+    title:        'Test End-Point',
+    scopes:       {AllOf: ['service:<param>']},
+    description:  'Place we can call to test something',
+  }, async function(req, res) {
+    await req.authorize({
+      param:      'myfolder/resource',
+    });
+    await req.authorize({
+      param:      'myfolder/other-resource',
+    });
+    res.status(200).json('OK');
+  });
+
   // Declare a method we can test overriding errors with
   api.declare({
     method:       'get',
@@ -226,6 +244,7 @@ suite('api/auth', function() {
       rockstar:    ['*'],
       nobody:      ['another-irrelevant-scope'],
       param:       ['service:myfolder/resource'],
+      param2:      ['service:myfolder/resource', 'service:myfolder/other-resource'],
     });
 
     // Create router
@@ -403,6 +422,38 @@ suite('api/auth', function() {
       .hawk({
         id:           'nobody',
         key:          'test-token',
+        algorithm:    'sha256',
+      })
+      .then(res => assert(false, 'request didn\'t fail'))
+      .catch(function(res) {
+        assert(res.status === 403, 'Request didn\'t fail');
+      });
+  });
+
+  test('Parameterized scopes, if authorized is called twice', function() {
+    var url = 'http://localhost:23526/test-scopes-authorize-twice';
+    return request
+      .get(url)
+      .hawk({
+        id:           'param2',
+        key:          '--',
+        algorithm:    'sha256',
+      })
+      .then(function(res) {
+        if (!res.ok) {
+          console.log(JSON.stringify(res.body));
+          assert(false, 'Request failed');
+        }
+      });
+  });
+
+  test('Parameterized scopes, if authorized is called twice, with bad scope', function() {
+    var url = 'http://localhost:23526/test-scopes-authorize-twice';
+    return request
+      .get(url)
+      .hawk({
+        id:           'param',
+        key:          '--',
         algorithm:    'sha256',
       })
       .then(res => assert(false, 'request didn\'t fail'))
