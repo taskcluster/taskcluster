@@ -1,4 +1,4 @@
-var request     = require('superagent');
+var request     = require('superagent-promise');
 var url         = require('url');
 var debug       = require('debug')('test:azure-blob-uploader-sas');
 var assert      = require('assert');
@@ -41,17 +41,18 @@ BlobUploader.prototype.putBlock = function(blockId, block) {
 
   // Send request
   return request
-    .put(url)
-    .send(block)
-    .then(function(res) {
-      // Check for success
-      if (!res.ok) {
-        debug('putBlock failed, error code: %s', res.status);
-        throw new Error('Failed putBlock');
-      }
-      // Return blockId
-      return blockId;
-    });
+          .put(url)
+          .send(block)
+          .end()
+          .then(function(res) {
+            // Check for success
+            if (!res.ok) {
+              debug('putBlock failed, error code: %s', res.status);
+              throw new Error('Failed putBlock');
+            }
+            // Return blockId
+            return blockId;
+          });
 };
 
 /** Commit a list of blocks as the blob */
@@ -76,15 +77,16 @@ BlobUploader.prototype.putBlockList = function(blockIds, contentType) {
   });
   // Send request
   return request
-    .put(url)
-    .set('x-ms-blob-content-type',  contentType)
-    .send(xml)
-    .then(function(res) {
-      // Check for success
-      if (!res.ok) {
-        debug('putBlockList failed, error code: %s', res.status);
-        throw new Error('Failed putBlockList');
-      }
-    });
+          .put(url)
+          .set('x-ms-blob-content-type',  contentType)
+          .send(xml)
+          .end()
+          .then(function(res) {
+            // Check for success
+            if (!res.ok) {
+              debug('putBlockList failed, error code: %s', res.status);
+              throw new Error('Failed putBlockList');
+            }
+          });
 };
 

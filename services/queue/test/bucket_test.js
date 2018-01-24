@@ -1,10 +1,11 @@
 suite('queue/bucket_test', function() {
+  var Promise       = require('promise');
   var slugid        = require('slugid');
   var assert        = require('assert');
-  var Bucket        = require('../src/bucket');
+  var Bucket        = require('../lib/bucket');
   var _             = require('lodash');
   var debug         = require('debug')('test:bucket_test');
-  var request       = require('superagent');
+  var request       = require('superagent-promise');
   var config        = require('typed-env-config');
   var Monitor       = require('taskcluster-lib-monitor');
 
@@ -44,7 +45,8 @@ suite('queue/bucket_test', function() {
     }).then(function(url) {
       return request
         .put(url)
-        .send({message: 'Hello'});
+        .send({message: 'Hello'})
+        .end();
     });
   });
 
@@ -57,7 +59,8 @@ suite('queue/bucket_test', function() {
     }).then(function(url) {
       return request
         .put(url)
-        .send({message: 'Hello'});
+        .send({message: 'Hello'})
+        .end();
     }).then(function() {
       return bucket.deleteObject(key);
     });
@@ -76,13 +79,13 @@ suite('queue/bucket_test', function() {
       expires:          60 * 10,
     });
 
-    var res = await request.put(url).send({message: 'Hello'});
+    var res = await request.put(url).send({message: 'Hello'}).end();
     assert(res.ok, 'put request failed');
 
     url = bucket.createGetUrl(key);
     debug('createGetUrl -> %s', url);
 
-    var res = await request.get(url);
+    var res = await request.get(url).end();
     assert(res.ok, 'get request failed');
     assert(res.body.message === 'Hello', 'wrong message');
   });

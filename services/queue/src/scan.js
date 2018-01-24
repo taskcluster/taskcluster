@@ -4,7 +4,7 @@
  * This file contains skeletons of functions to scan Azure tables or S3.
  *
  * To use, modify or add a scanning function below and make it the default export,
- * then run `npm compile && NODE_ENV=production node src/main.js scan`.  You will
+ * then run `npm compile && NODE_ENV=production node lib/main.js scan`.  You will
  * need AWS or Azure credentials (depending on what you're up to), and should also
  * set monitor.mock: false in your user-config.yml.
  *

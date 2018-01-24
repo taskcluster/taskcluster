@@ -1,6 +1,7 @@
 var debug         = require('debug')('app:load-test');
 var testing       = require('taskcluster-lib-testing');
 var path          = require('path');
+var Promise       = require('promise');
 var _             = require('lodash');
 var taskcluster   = require('taskcluster-client');
 var slugid        = require('slugid');
@@ -36,7 +37,7 @@ var launch = async function(cfg) {
   var failed  = 0;
   var summary = () => {
     console.log('%s req/s success: %s, failed: %s',
-      fmt(success / CYCLE_SECONDS), success, failed);
+                fmt(success / CYCLE_SECONDS), success, failed);
     success = 0;
     failed  = 0;
   };
@@ -45,7 +46,7 @@ var launch = async function(cfg) {
   var exiting = false;
   var startLoop = () => {
     loops += 1;
-    (async () => {
+    (async() => {
       var agent = new https.Agent({keepAlive: true});
       if (cfg.server.publicUrl.substr(0, 5) != 'https') {
         agent = new http.Agent({keepAlive: true});
@@ -78,7 +79,7 @@ var launch = async function(cfg) {
         ],
       });
       while (true) {
-        await (async () => {
+        await (async() => {
           let taskId = slugid.v4();
           await queue.createTask(taskId, makeTask());
           
@@ -140,7 +141,7 @@ var launch = async function(cfg) {
   while (loops < 16) { startLoop(); }
   await testing.sleep(CYCLE_SECONDS * 1000);
   summary();
-  /*
+/*
   // 32 req in parallel
   while (loops < 32) { startLoop(); }
   await testing.sleep(CYCLE_SECONDS * 1000);
