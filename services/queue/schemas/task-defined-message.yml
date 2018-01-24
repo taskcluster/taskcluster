@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema:  http://json-schema.org/draft-04/schema#
 title:        "Task Defined Message"
 description: |
   Message reporting that a task has been defined. The task may or may not be

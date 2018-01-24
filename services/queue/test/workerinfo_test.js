@@ -2,6 +2,7 @@ suite('provisioners and worker-types', () => {
   var debug       = require('debug')('test:claim-work');
   var assert      = require('assert');
   var _           = require('lodash');
+  var Promise     = require('promise');
   var slugid      = require('slugid');
   var Entity      = require('azure-entities');
   var taskcluster = require('taskcluster-client');
