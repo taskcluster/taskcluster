@@ -51,7 +51,7 @@ class FakeGithub {
         }
         this._comments[key].push(info);
       },
-      'pullRequests.createComment': ({owner, repo, number, body}) => {
+      'issues.createComment': ({owner, repo, number, body}) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
