@@ -1,6 +1,5 @@
 let azure       = require('azure-storage');
 let _           = require('lodash');
-let Promise     = require('promise');
 let debug       = require('debug')('app:blobstore');
 let assert      = require('assert');
 let querystring = require('querystring');
@@ -36,7 +35,7 @@ BlobStore.prototype.createContainer = function() {
     this.service.createContainerIfNotExists(this.container, (err, created) => {
       if (err) {
         debug('Failed to create container \'%s\', err: %s, as JSON: %j',
-              this.container, err, err);
+          this.container, err, err);
         return reject(err);
       }
       if (created) {
@@ -81,7 +80,9 @@ BlobStore.prototype.put = function(key, json) {
   return new Promise(function(accept, reject) {
     var payload = JSON.stringify(json);
     that.service.createBlockBlobFromText(that.container, key, payload, {
-      contentType:      'application/json',
+      contentSettings: {
+        contentType:      'application/json',
+      },
     }, function(err, result, response) {
       if (err) {
         return reject(err);
@@ -101,8 +102,10 @@ BlobStore.prototype.putIfNotExists = function(key, json) {
   return new Promise(function(accept, reject) {
     var payload = JSON.stringify(json);
     that.service.createBlockBlobFromText(that.container, key, payload, {
-      contentType:      'application/json',
-      accessConditions: {'if-none-match': '*'},
+      contentSettings: {
+        contentType:      'application/json',
+      },
+      accessConditions: {EtagNonMatch: '*'},
     }, function(err, result, response) {
       if (err) {
         return reject(err);

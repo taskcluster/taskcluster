@@ -1,7 +1,6 @@
 let Entity  = require('azure-entities');
 let debug   = require('debug')('app:data');
 let assert  = require('assert');
-let Promise = require('promise');
 let _       = require('lodash');
 
 /** Entity for tracking tasks and associated state */
@@ -431,7 +430,7 @@ Artifact.prototype.remove = function(ignoreError) {
 
   if (this.storageType === 'blob') {
     debug('Deleting expired s3 artifact from bucket: %s, key: %s',
-          this.details.bucket, this.details.key);
+      this.details.bucket, this.details.key);
     deleted = this.s3Controller.deleteObject({
       bucket: this.details.bucket,
       key: this.details.key,
@@ -441,7 +440,7 @@ Artifact.prototype.remove = function(ignoreError) {
   // Handle S3 artifacts
   if (this.storageType === 's3') {
     debug('Deleting expired s3 artifact from bucket: %s, prefix: %s',
-          this.details.bucket, this.details.prefix);
+      this.details.bucket, this.details.prefix);
     // Delete the right bucket
     if (this.details.bucket === this.publicBucket.bucket) {
       deleted = this.publicBucket.deleteObject(this.details.prefix);
@@ -461,7 +460,7 @@ Artifact.prototype.remove = function(ignoreError) {
   // Handle azure artifact
   if (this.storageType === 'azure') {
     debug('Deleting expired azure artifact from container: %s, path: %s',
-          this.details.container, this.details.path);
+      this.details.container, this.details.path);
     // Validate that this is the configured container
     if (this.details.container !== this.blobStore.container) {
       let err = new Error('Expiring artifact with container which isn\'t ' +
@@ -483,7 +482,7 @@ Artifact.prototype.remove = function(ignoreError) {
   }, err => {
     debug('WARNING: Failed to delete expired artifact: %j, details: %j ' +
           'from taskId: %s, runId: %s with error: %s, as JSON: %j',
-          this.json(), this.details, this.taskId, this.runId, err, err);
+    this.json(), this.details, this.taskId, this.runId, err, err);
     // Rethrow error, if we're not supposed to ignore it.
     if (!ignoreError) {
       throw err;

@@ -1,11 +1,10 @@
 suite('queue/QueueService', function() {
-  var Promise       = require('promise');
   var slugid        = require('slugid');
   var assert        = require('assert');
-  var QueueService  = require('../lib/queueservice');
+  var QueueService  = require('../src/queueservice');
   var _             = require('lodash');
   var url           = require('url');
-  var request       = require('superagent-promise');
+  var request       = require('superagent');
   var debug         = require('debug')('test:queueservice');
   var xml2js        = require('xml2js');
   var assume        = require('assume');
@@ -158,7 +157,7 @@ suite('queue/QueueService', function() {
       // Poll azure queue
       debug(' - Polling azure queue: %s', i);
       queue = queues[i++ % queues.length];
-      var res = await request.get(queue.signedPollUrl).buffer().end();
+      var res = await request.get(queue.signedPollUrl).buffer();
       assert(res.ok, 'Request failed');
 
       // Parse XML
@@ -187,9 +186,9 @@ suite('queue/QueueService', function() {
 
     debug('### Delete pending message');
     var deleteMessageUrl = queue.signedDeleteUrl
-          .replace('{{messageId}}', encodeURIComponent(message.MessageId))
-          .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
-    var res = await request.del(deleteMessageUrl).buffer().end();
+      .replace('{{messageId}}', encodeURIComponent(message.MessageId))
+      .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
+    var res = await request.del(deleteMessageUrl).buffer();
     assert(res.ok, 'Message failed to delete');
   });
 
@@ -277,7 +276,7 @@ suite('queue/QueueService', function() {
       // Poll azure queue
       debug(' - Polling azure queue: %s', i);
       queue = queues[i++ % queues.length];
-      var res = await request.get(queue.signedPollUrl).buffer().end();
+      var res = await request.get(queue.signedPollUrl).buffer();
       assert(res.ok, 'Request failed');
 
       // Parse XML
@@ -306,9 +305,9 @@ suite('queue/QueueService', function() {
 
     debug('### Delete pending message');
     var deleteMessageUrl = queue.signedDeleteUrl
-          .replace('{{messageId}}', encodeURIComponent(message.MessageId))
-          .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
-    var res = await request.del(deleteMessageUrl).buffer().end();
+      .replace('{{messageId}}', encodeURIComponent(message.MessageId))
+      .replace('{{popReceipt}}', encodeURIComponent(message.PopReceipt));
+    var res = await request.del(deleteMessageUrl).buffer();
     assert(res.ok, 'Message failed to delete');
   });
 
