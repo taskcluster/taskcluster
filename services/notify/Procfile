@@ -1,3 +1,3 @@
-web: node lib/main server
-irc: node lib/main irc
-handler: node lib/main handler
+web: node src/main server
+irc: node src/main irc
+handler: node src/main handler

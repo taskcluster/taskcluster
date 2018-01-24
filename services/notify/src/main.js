@@ -146,7 +146,7 @@ let load = loader({
     setup: ({cfg, api, docs}) => {
 
       debug('Launching server.');
-      let app = appsetup(cfg.server);
+      let app = appsetup(_.defaults({}, cfg.server, {docs}));
       app.use('/v1', api);
       return app.createServer();
     },
