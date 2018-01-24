@@ -1,5 +1,4 @@
 let assert      = require('assert');
-let Promise     = require('promise');
 let path        = require('path');
 let _           = require('lodash');
 let mocha       = require('mocha');
@@ -7,9 +6,9 @@ let aws         = require('aws-sdk');
 let taskcluster = require('taskcluster-client');
 let config      = require('typed-env-config');
 let testing     = require('taskcluster-lib-testing');
-let api         = require('../lib/api');
-let exchanges   = require('../lib/exchanges');
-let load        = require('../lib/main');
+let api         = require('../src/api');
+let exchanges   = require('../src/exchanges');
+let load        = require('../src/main');
 
 // Load configuration
 let cfg = config({profile: 'test'});
@@ -28,8 +27,8 @@ if (!cfg.pulse || !cfg.aws) {
   process.exit(1);
 }
 
-helper.checkSqsMessage = (queueUrl, done, check) => {
-  helper.sqs.receiveMessage({
+helper.checkSqsMessage = (queueUrl, check) => {
+  return helper.sqs.receiveMessage({
     QueueUrl:             queueUrl,
     AttributeNames:       ['ApproximateReceiveCount'],
     MaxNumberOfMessages:  10,
@@ -43,8 +42,7 @@ helper.checkSqsMessage = (queueUrl, done, check) => {
       ReceiptHandle:  m[0].ReceiptHandle,
     }).promise();
     check(JSON.parse(m[0].Body));
-    done();
-  }).catch(done);
+  });
 };
 
 let webServer = null;

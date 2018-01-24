@@ -5,7 +5,7 @@ suite('Handler', () => {
   let testing = require('taskcluster-lib-testing');
   let sinon = require('sinon');
   let helper = require('./helper');
-  let load = require('../lib/main');
+  let load = require('../src/main');
 
   let publisher;
   let listener;
@@ -72,10 +72,9 @@ suite('Handler', () => {
     ],
   };
 
-  test('pulse', async (done) => {
-    publisher.on('fakePublish', ({CCs}) => {
+  test('pulse', async () => {
+    let result = publisher.on('fakePublish', ({CCs}) => {
       assert.deepEqual(CCs, ['route.notify-test']);
-      done();
     });
 
     let route = 'test-notify.pulse.notify-test.on-any';
@@ -88,10 +87,11 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
+    return result;
   });
 
-  test('email', async (done) => {
-    helper.checkSqsMessage(helper.emailSqsQueueUrl, done, body => {
+  test('email', async () => {
+    let result = helper.checkSqsMessage(helper.emailSqsQueueUrl, body => {
       let j = JSON.parse(body.Message);
       assert.deepEqual(j.delivery.recipients, ['success@simulator.amazonses.com']);
     });
@@ -105,10 +105,11 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
+    return result;
   });
 
-  test('irc', async (done) => {
-    helper.checkSqsMessage(helper.sqsQueueUrl, done, body => {
+  test('irc', async () => {
+    let result = helper.checkSqsMessage(helper.sqsQueueUrl, body => {
       assert.equal(body.channel, '#taskcluster-test');
       assert.equal(body.message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
     });
@@ -124,5 +125,6 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
+    return result;
   });
 });
