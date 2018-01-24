@@ -1,4 +1,4 @@
-$schema:    http://json-schema.org/draft-06/schema#
+$schema:    http://json-schema.org/draft-04/schema#
 title:              "Count Pending Tasks Response"
 description: |
   Response to a request for the number of pending tasks for a given
