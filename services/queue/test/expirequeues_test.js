@@ -3,6 +3,7 @@ suite('Task Expiration (expire-tasks)', () => {
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
+  var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');

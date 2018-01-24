@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-06/schema#
+$schema:            http://json-schema.org/draft-04/schema#
 title:              "Task Group Resolved"
 description: |
   Message written once a task group has no tasks to be run. It is
