@@ -5,54 +5,45 @@
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "test": "mocha .test/lint.js .test/*_test.js",
-    "pretest": "npm run compile",
-    "install": "npm run compile"
+    "test": "mocha test/*_test.js",
+    "lint": "eslint src/*.js test/*.js",
+    "pretest": "yarn lint"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/taskcluster/taskcluster-notify.git"
   },
   "dependencies": {
-    "aws-sdk": "^2.4.11",
-    "babel-compile": "^2.0.0",
-    "babel-eslint": "^6.0.3",
-    "babel-preset-taskcluster": "^2.0.1",
-    "babel-runtime": "^6.6.1",
-    "bluebird": "^3.4.1",
-    "debug": "^2.1.3",
+    "aws-sdk": "^2.186.0",
+    "bluebird": "^3.5.1",
+    "debug": "^3.1.0",
     "email-templates": "^2.4.1",
-    "eslint-config-taskcluster": "^2.0.0",
-    "eslint-plugin-taskcluster": "^1.0.2",
+    "eslint-config-taskcluster": "^3.0.0",
     "irc": "^0.5.0",
-    "json-e": "^2.3.4",
+    "json-e": "^2.5.0",
     "lodash": "^4.11.1",
-    "marked": "^0.3.5",
-    "mocha": "^2.2.1",
-    "mocha-eslint": "^2.0.2",
+    "marked": "^0.3.12",
     "node-sass": "^3.8.0",
-    "promise": "^7.1.1",
-    "pug": "^2.0.0-beta5",
+    "pug": "^2.0.0-rc.4",
     "pulse-publisher": "^3.0.2",
     "slugid": "^1.1.0",
-    "source-map-support": "^0.4.0",
-    "taskcluster-client": "^3.1.0",
-    "taskcluster-lib-api": "3.2.2",
-    "taskcluster-lib-app": "^1.0.0",
-    "taskcluster-lib-docs": "^3.0.0",
-    "taskcluster-lib-loader": "^1.0.0",
-    "taskcluster-lib-monitor": "^4.2.0",
-    "taskcluster-lib-testing": "^1.0.1",
-    "taskcluster-lib-validate": "^2.0.0",
-    "typed-env-config": "^1.1.0"
+    "taskcluster-client": "^3.1.1",
+    "taskcluster-lib-api": "5.0.0",
+    "taskcluster-lib-app": "^3.0.0",
+    "taskcluster-lib-docs": "^4.1.1",
+    "taskcluster-lib-loader": "^2.0.0",
+    "taskcluster-lib-monitor": "^4.6.3",
+    "taskcluster-lib-validate": "^3.0.3",
+    "typed-env-config": "^2.0.0"
   },
   "engine-strict": true,
   "engines": {
-    "node": "7.10.1",
-    "yarn": "0.27.5"
+    "node": "^8.0.0",
+    "yarn": "^1.0.0"
   },
   "devDependencies": {
-    "sinon": "^4.1.2"
+    "mocha": "^5.0.0",
+    "sinon": "^4.2.1",
+    "taskcluster-lib-testing": "^2.0.2"
   }
 }
