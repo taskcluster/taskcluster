@@ -1,4 +1,4 @@
-Generated: 1516742660
+Generated: 1516793062
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2429,6 +2429,7 @@ Properties
       Description            = 'Region configuration'
       Properties
         Property 'launchSpec' =
+          Additional Properties  = 'true'
           Description            = 'LaunchSpecification entries unique to this Region
           '
           Properties
@@ -2540,11 +2541,13 @@ SourceURL              = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
 ===========================================================================
+Additional Properties  = 'true'
 Description            = 'Secrets from the provisioner
 '
 ID                     = 'http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#'
 Properties
   Property 'credentials' =
+    Additional Properties  = 'false'
     Description            = 'Generated Temporary credentials from the Provisioner
     '
     Properties
@@ -2801,6 +2804,7 @@ Properties
       Description            = 'Region configuration'
       Properties
         Property 'launchSpec' =
+          Additional Properties  = 'true'
           Description            = 'LaunchSpecification entries unique to this Region
           '
           Properties
