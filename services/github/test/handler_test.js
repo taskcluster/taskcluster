@@ -210,8 +210,8 @@ suite('handlers', () => {
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
-      assert(github.inst(5828).pullRequests.createComment.calledOnce);
-      let args = github.inst(5828).pullRequests.createComment.args;
+      assert(github.inst(5828).issues.createComment.calledOnce);
+      let args = github.inst(5828).issues.createComment.args;
       assert.equal(args[0][0].owner, 'TaskClusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].number, '36');
@@ -234,7 +234,7 @@ suite('handlers', () => {
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
       assert(github.inst(5828).repos.createStatus.callCount === 1, 'Status was not updated!');
-      assert(github.inst(5828).pullRequests.createComment.callCount === 0);
+      assert(github.inst(5828).issues.createComment.callCount === 0);
     });
 
     test('specifying allowPullRequests: collaborators in the default branch disallows public', async function() {
@@ -253,7 +253,7 @@ suite('handlers', () => {
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
       assert(github.inst(5828).repos.createStatus.callCount === 0);
-      assert(github.inst(5828).pullRequests.createComment.callCount === 1);
+      assert(github.inst(5828).issues.createComment.callCount === 1);
     });
 
     test('user name not checked for pushes, so status is created', async function() {
