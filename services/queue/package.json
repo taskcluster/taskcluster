@@ -14,6 +14,7 @@
   "dependencies": {
     "assume": "^1.5.2",
     "aws-sdk": "2.1.22",
+    "aws-sdk-promise": "0.0.2",
     "azure-entities": "^3.0.0",
     "azure-storage": "2.7.0",
     "debug": "^3.1.0",
