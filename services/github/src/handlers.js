@@ -144,7 +144,7 @@ class Handlers {
     // reported to the taskcluster team or retried
     if (pullNumber) {
       debug(`creating exception comment on ${organization}/${repository}#${pullNumber}`);
-      await instGithub.pullRequests.createComment({
+      await instGithub.issues.createComment({
         owner: organization,
         repo: repository,
         number: pullNumber,
@@ -353,7 +353,7 @@ async function jobHandler(message) {
           '```\n',
           '</details>',
         ].join('\n');
-        await instGithub.pullRequests.createComment({
+        await instGithub.issues.createComment({
           owner: organization,
           repo: repository,
           number: pullNumber,
@@ -364,7 +364,7 @@ async function jobHandler(message) {
     } catch (e) {
       if (e.name === 'YAMLException') {
         let docsLink = 'https://docs.taskcluster.net/reference/integrations/github/docs/usage#who-can-trigger-jobs';
-        await instGithub.pullRequests.createComment({
+        await instGithub.issues.createComment({
           owner: organization,
           repo: repository,
           number: pullNumber,
