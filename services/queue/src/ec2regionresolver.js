@@ -1,6 +1,6 @@
 let {Netmask} = require('netmask');
 let requestIp = require('request-ip');
-let request   = require('superagent-promise');
+let request   = require('superagent');
 let assert    = require('assert');
 
 // Static URL from which ip-ranges from AWS services can be fetched
@@ -17,9 +17,9 @@ class EC2RegionResolver {
 
   async loadIpRanges() {
     // Get IP ranges from AWS with really stupid retry logic
-    var {body} = await request.get(AWS_IP_RANGES_URL).end().catch(() => {
-      return request.get(AWS_IP_RANGES_URL).end().catch(() => {
-        return request.get(AWS_IP_RANGES_URL).end();
+    var {body} = await request.get(AWS_IP_RANGES_URL).catch(() => {
+      return request.get(AWS_IP_RANGES_URL).catch(() => {
+        return request.get(AWS_IP_RANGES_URL);
       });
     });
 
