@@ -1,4 +1,4 @@
-let aws         = require('aws-sdk');
+let aws         = require('aws-sdk-promise');
 let _           = require('lodash');
 let debug       = require('debug')('app:bucket');
 let assert      = require('assert');

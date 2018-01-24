@@ -169,6 +169,12 @@ asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
 
+aws-sdk-promise@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/aws-sdk-promise/-/aws-sdk-promise-0.0.2.tgz#2886bd1fc4c47ebcb9afdd6c597cf4260fb9e5e8"
+  dependencies:
+    promise "^6.1.0"
+
 aws-sdk@2.1.22:
   version "2.1.22"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1.22.tgz#e09bdcc43a697188ff51f501118a073f8ef5b19a"
