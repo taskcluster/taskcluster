@@ -8,7 +8,7 @@ defaults:
     credentials:
       username: !env PULSE_USERNAME
       password: !env PULSE_PASSWORD
-    prefetch:   20
+    prefetch:   40
     queueName:  null
   treeherder:
     routePrefix: !env TREEHERDER_ROUTE_PREFIX
