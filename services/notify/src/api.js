@@ -20,8 +20,7 @@ api.declare({
   method:       'post',
   route:        '/email',
   name:         'email',
-  scopes:       [['notify:email:<address>']],
-  deferAuth:    true,
+  scopes:       {AllOf: ['notify:email:<address>']},
   input:        'email-request.json',
   title:        'Send an Email',
   description: [
@@ -32,10 +31,7 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   debug(`Received request to send email to ${req.body.address}`);
-  if (!req.satisfies({address: req.body.address})) {
-    debug(`Scopes were not met for sending email to ${req.body.address}. Aborting.`);
-    return;
-  }
+  await req.authorize(req.body);
   await this.notifier.email(req.body);
   res.sendStatus(200);
 });
@@ -44,8 +40,7 @@ api.declare({
   method:       'post',
   route:        '/pulse',
   name:         'pulse',
-  scopes:       [['notify:pulse:<routingKey>']],
-  deferAuth:    true,
+  scopes:       {AllOf: ['notify:pulse:<routingKey>']},
   input:        'pulse-request.json',
   title:        'Publish a Pulse Message',
   description: [
@@ -53,10 +48,7 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   debug(`Received request to publish message on ${req.body.routingKey}`);
-  if (!req.satisfies({routingKey: req.body.routingKey})) {
-    debug(`Scopes were not met for publishing message on ${req.body.routingKey}. Aborting.`);
-    return;
-  }
+  await req.authorize({routingKey: req.body.routingKey});
   await this.notifier.pulse(req.body);
   res.sendStatus(200);
 });
@@ -65,8 +57,15 @@ api.declare({
   method:       'post',
   route:        '/irc',
   name:         'irc',
-  scopes:       [['notify:irc-channel:<channel>', 'notify:irc-user:<user>']],
-  deferAuth:    true,
+  scopes:       {AllOf: [
+    {
+      if: 'channelRequest',
+      then: {AllOf: ['notify:irc-channel:<channel>']},
+    }, {
+      if: 'userRequest',
+      then: {AllOf: ['notify:irc-user:<user>']},
+    },
+  ]},
   input:        'irc-request.json',
   title:        'Post IRC Message',
   description: [
@@ -85,18 +84,13 @@ api.declare({
 }, async function(req, res) {
   let input = req.body;
   let required = [];
-  if (input.channel) {
-    debug(`Received request to send irc message to channel ${input.channel}`);
-    required.push('notify:irc-channel:' + input.channel);
-  }
-  if (input.user) {
-    debug(`Received request to send irc message to user ${input.user}`);
-    required.push('notify:irc-user:' + input.user);
-  }
-  if (!req.satisfies([required])) {
-    debug(`Scopes were not met for sending irc message to ${input.user || input.channel}. Aborting.`);
-    return;
-  }
+  debug(`Received request to send irc message to ${input.channel || input.user}`);
+  await req.authorize({
+    channelRequest: input.channel !== undefined,
+    userRequest: input.user !== undefined,
+    channel: input.channel,
+    user: input.user,
+  });
   await this.notifier.irc(input);
   res.sendStatus(200);
 });

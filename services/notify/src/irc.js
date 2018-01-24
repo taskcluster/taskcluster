@@ -83,8 +83,7 @@ class IRCBot {
           try {
             await this.notify(JSON.parse(message.Body));
           } catch (err) {
-            console.log('Failed to send IRC notification: %j, %s',
-                        err, err.stack);
+            console.log('Failed to send IRC notification: %j, %s', err, err.stack);
             // Skip deleting if we're below MAX_RETRIES
             if (message.Attributes.ApproximateReceiveCount < MAX_RETRIES) {
               continue;

@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-04/schema#
+$schema:            http://json-schema.org/draft-06/schema#
 title:              "Notification Message"
 description: |
   This can be pretty much anything you want it to be.
