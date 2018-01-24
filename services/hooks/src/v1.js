@@ -197,11 +197,10 @@ api.declare({
   method:       'put',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'createHook',
-  deferAuth:    true,
   idempotent:   true,
-  scopes:       [
+  scopes:       {AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
-  ],
+  },
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
@@ -219,10 +218,8 @@ api.declare({
   var hookDef   = req.body;
 
   hookDef = _.defaults({hookGroupId, hookId}, hookDef);
-  
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
+
+  await req.authorize({hookGroupId, hookId});
 
   // Validate cron-parser expressions
   _.forEach(hookDef.schedule, function(schedule) {
@@ -267,11 +264,10 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'updateHook',
-  deferAuth:    true,
   idempotent:   true,
-  scopes:       [
+  scopes:       {AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
-  ],
+  },
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Update a hook',
@@ -285,9 +281,7 @@ api.declare({
   var hookId = req.params.hookId;
   var hookDef = req.body;
 
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
+  await req.authorize({hookGroupId, hookId});
 
   var hook = await this.Hook.load({hookGroupId, hookId}, true);
 
@@ -326,8 +320,7 @@ api.declare({
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'removeHook',
   idempotent:   true,
-  deferAuth:    true,
-  scopes:       [['hooks:modify-hook:<hookGroupId>/<hookId>']],
+  scopes:       {AllOf: ['hooks:modify-hook:<hookGroupId>/<hookId>']},
   title:        'Delete a hook',
   stability:    'experimental',
   description: [
@@ -337,9 +330,7 @@ api.declare({
   var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
 
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
+  await req.authorize({hookGroupId, hookId});
 
   // Remove the resource if it exists
   await this.Hook.remove({hookGroupId, hookId}, true);
@@ -352,8 +343,7 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/trigger',
   name:         'triggerHook',
-  deferAuth:    true,
-  scopes:       [['hooks:trigger-hook:<hookGroupId>/<hookId>']],
+  scopes:       {AllOf: ['hooks:trigger-hook:<hookGroupId>/<hookId>']},
   input:        'trigger-context.json',
   output:       'task-status.json',
   title:        'Trigger a hook',
@@ -364,9 +354,8 @@ api.declare({
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId      = req.params.hookId;
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
+
+  await req.authorize({hookGroupId, hookId});
 
   var lastFire;
   var resp;
@@ -426,8 +415,7 @@ api.declare({
   method:       'get',
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'getTriggerToken',
-  deferAuth:    true,
-  scopes:       [['hooks:get-trigger-token:<hookGroupId>/<hookId>']],
+  scopes:       {AllOf: ['hooks:get-trigger-token:<hookGroupId>/<hookId>']},
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Get a trigger token',
@@ -439,9 +427,7 @@ api.declare({
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
+  await req.authorize({hookGroupId, hookId});
 
   let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
@@ -459,8 +445,7 @@ api.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'resetTriggerToken',
-  deferAuth:    true,
-  scopes:       [['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],
+  scopes:       {AllOf: ['hooks:reset-trigger-token:<hookGroupId>/<hookId>']},
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Reset a trigger token',
@@ -472,9 +457,8 @@ api.declare({
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
   var hookId    = req.params.hookId;
-  if (!req.satisfies({hookGroupId, hookId})) {
-    return;
-  }
+
+  await req.authorize({hookGroupId, hookId});
 
   let hook = await this.Hook.load({hookGroupId, hookId}, true);
 
