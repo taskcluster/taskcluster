@@ -22,6 +22,7 @@ class ScopeResolver extends events.EventEmitter {
     options = _.defaults({}, options, {
       // Maximum time that lastUsed must be behind, must always be negative
       maxLastUsedDelay: '-6h',
+      disableCache: false, // useful for performance measurement
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
     assert(options.monitor, 'expected an instance of taskcluster-lib-monitor');
@@ -30,6 +31,7 @@ class ScopeResolver extends events.EventEmitter {
 
     // Store a reference to the monitor
     this._monitor = options.monitor;
+    this._disableCache = options.disableCache;
 
     // List of client objects on the form:
     // {
@@ -227,9 +229,8 @@ class ScopeResolver extends events.EventEmitter {
     // Construct client cache
     this._clientCache = {};
     for (let client of this._clients) {
-      var scopes = this.resolve(client.unexpandedScopes);
-      client.scopes = scopes; // for createSignatureValidator compatibility
-      client.expandedScopes = scopes;
+      client.scopes = null;
+      client.expandedScopes = null;
       this._clientCache[client.clientId] = client;
     }
   }
@@ -338,14 +339,16 @@ class ScopeResolver extends events.EventEmitter {
 
       // Check if we have an expansion of queue in LRU cache, if there is no
       // such expansion we'll continue, compute one in `seen`.
-      this._monitor.count('cache-lookup', 1);
       const cacheKey = queue.join('\n');
-      const cacheResult = lru.get(cacheKey);
-      if (cacheResult !== undefined) {
-        this._monitor.count('cache-hit', 1);
-        return mergeScopeSets(inputs, cacheResult);
-      } else {
-        this._monitor.count('cache-miss', 1);
+      if (!this._disableCache) {
+        this._monitor.count('cache-lookup', 1);
+        const cacheResult = lru.get(cacheKey);
+        if (cacheResult !== undefined) {
+          this._monitor.count('cache-hit', 1);
+          return mergeScopeSets(inputs, cacheResult);
+        } else {
+          this._monitor.count('cache-miss', 1);
+        }
       }
 
       // insert a new scope into the `seen` scopeset, returning false if it was
@@ -433,6 +436,13 @@ class ScopeResolver extends events.EventEmitter {
     }
     if (client.expires < new Date()) {
       throw new Error('Client with clientId: \'' + clientId + '\' has expired');
+    }
+
+    // Lazily expand client scopes
+    if (client.scopes === null) {
+      let scopes = this.resolve(client.unexpandedScopes);
+      client.scopes = scopes; // for createSignatureValidator compatibility
+      client.expandedScopes = scopes;
     }
 
     if (client.updateLastUsed) {

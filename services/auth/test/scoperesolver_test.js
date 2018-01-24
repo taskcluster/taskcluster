@@ -8,7 +8,7 @@ suite('scoperesolver', () => {
   let monitor, scopeResolver;
   before(async () => {
     monitor = await Monitor({project: 'mock-auth', mock: true});
-    scopeResolver = new ScopeResolver({monitor});
+    scopeResolver = new ScopeResolver({monitor, disableCache: true});
   });
 
   suite('buildResolver', function() {
@@ -340,68 +340,61 @@ suite('scoperesolver', () => {
 
   suite('performance', function() {
     const shouldMeasure = process.env.MEASURE_PERFORMANCE;
-    const timings = [];
+    let time;
+    if (shouldMeasure) {
+      // this could take a while..
+      this.slow(3600000);
+      this.timeout(0);
+
+      const MIN_ITERATIONS = 5; // during warmup only
+      const PREHEAT_TIME = 500 * 1000000; // ns
+      const TIMEING_TIME = 2 * 1000000000; // ns
+      time = (step, fn) => {
+        let result;
+        let mean;
+        let count = 0;
+        // initial runs to skip (allows JIT warmup)
+        // we also use this to estimate how many iterations we need to run
+        // inorder to do timing for TIMEING_TIME time.
+        const preheat = process.hrtime();
+        while (true) {
+          for (let i = 0; i < MIN_ITERATIONS; i++) {
+            result = fn();
+          }
+          count += 1;
+          const diff = process.hrtime(preheat);
+          if (diff[0] * 1000000000 + diff[1] > PREHEAT_TIME) {
+            mean = (diff[0] * 1000000000 + diff[1]) / (MIN_ITERATIONS * count);
+            break;
+          }
+        }
+        // Estimate iterations to measure and run them
+        let iterations = Math.ceil(TIMEING_TIME / mean);
+        const start = process.hrtime();
+        for (let i = 0; i < iterations; i++) {
+          result = fn();
+        }
+        const diff = process.hrtime(start);
+        mean = (diff[0] * 1000000000 + diff[1]) / iterations;
+
+        let unit = 'ns';
+        if (mean > 1000) {
+          mean /= 1000;
+          unit = 'μs';
+        }
+        if (mean > 1000) {
+          mean /= 1000;
+          unit = 'ms';
+        }
+        console.log(`${step}: ${mean.toFixed(2)} ${unit}`);
+        return result;
+      };
+    } else {
+      time = (step, fn) => fn();
+    }
 
     const testResolver = (title, {roles, scopes, expected}) => {
       test(title, function() {
-        let time;
-        if (shouldMeasure) {
-          // this could take a while..
-          this.slow(3600000);
-          this.timeout(0);
-
-          let timing = {title};
-          timings.push(timing);
-
-          const MIN_ITERATIONS = 5; // during warmup only
-          const PREHEAT_TIME = 500 * 1000000; // ns
-          const TIMEING_TIME = 3 * 1000000000; // ns
-          time = (step, fn) => {
-            let result;
-            let mean;
-            let count = 0;
-            // initial runs to skip (allows JIT warmup)
-            // we also use this to estimate how many iterations we need to run
-            // inorder to do timing for TIMEING_TIME time.
-            const preheat = process.hrtime();
-            while (true) {
-              for (let i = 0; i < MIN_ITERATIONS; i++) {
-                result = fn();
-              }
-              count += 1;
-              const diff = process.hrtime(preheat);
-              if (diff[0] * 1000000000 + diff[1] > PREHEAT_TIME) {
-                mean = (diff[0] * 1000000000 + diff[1]) / (MIN_ITERATIONS * count);
-                break;
-              }
-            }
-            // Estimate iterations to measure and run them
-            let iterations = Math.ceil(TIMEING_TIME / mean);
-            const start = process.hrtime();
-            for (let i = 0; i < iterations; i++) {
-              result = fn();
-            }
-            const diff = process.hrtime(start);
-            mean = (diff[0] * 1000000000 + diff[1]) / iterations;
-
-            timing[step] = mean;
-
-            let unit = 'ns';
-            if (mean > 1000) {
-              mean /= 1000;
-              unit = 'μs';
-            }
-            if (mean > 1000) {
-              mean /= 1000;
-              unit = 'ms';
-            }
-            console.log(`${step}: ${mean.toFixed(2)} ${unit}`);
-            return result;
-          };
-        } else {
-          time = (step, fn) => fn();
-        }
-
         let resolver = time('setup', () => scopeResolver.buildResolver(roles));
         let result = time('execute', () => resolver(scopes));
         if (expected) {
@@ -410,15 +403,6 @@ suite('scoperesolver', () => {
         }
       });
     };
-
-    suiteTeardown(function() {
-      if (!shouldMeasure) {
-        return;
-      }
-
-      fs.writeFileSync('timings.json', JSON.stringify(timings, null, 2));
-      console.log('timings written to timings.json');
-    });
 
     // test a chain of N roles, each one leading to the next
     // ch-1 -> ... -> assume:ch-N -> special-scope
@@ -434,6 +418,7 @@ suite('scoperesolver', () => {
         ]),
       });
     };
+
     testChain(500);
     if (shouldMeasure) {
       testChain(750);
@@ -514,6 +499,14 @@ suite('scoperesolver', () => {
     testRealRoles(['assume:mozilla-user:*']);
     testRealRoles(['assume:mozilla-group:team_taskcluster']);
     testRealRoles(['assume:moz-tree:level:3']);
+
+    const realClients = require('./clients');
+    test('resolve all clients', () => {
+      const resolver = time('setup', () => scopeResolver.buildResolver(realRoles));
+      time('resolve', () => {
+        realClients.map(client => resolver(client.scopes));
+      });
+    });
   });
 
   suite('cycleCheck', function() {
