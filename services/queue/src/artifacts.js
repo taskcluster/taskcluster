@@ -1,7 +1,6 @@
 let debug   = require('debug')('app:artifacts');
 let _       = require('lodash');
 let assert  = require('assert');
-let Promise = require('promise');
 let API     = require('taskcluster-lib-api');
 let urllib  = require('url');
 let crypto  = require('crypto');

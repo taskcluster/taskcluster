@@ -3,10 +3,9 @@ suite('task.priority', () => {
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
-  var request     = require('superagent-promise');
+  var request     = require('superagent');
   var xml2js      = require('xml2js');
   var helper      = require('./helper');
   var testing     = require('taskcluster-lib-testing');
@@ -73,7 +72,7 @@ suite('task.priority', () => {
     var lowTaskId  = slugid.v4();
 
     debug('### Creating low: %s and high: %s tasks',
-          lowTaskId, highTaskId);
+      lowTaskId, highTaskId);
     await Promise.all([
       helper.queue.createTask(highTaskId, makeTask('high')),
       helper.queue.createTask(lowTaskId, makeTask('low')),
@@ -100,7 +99,7 @@ suite('task.priority', () => {
       var queue = queues[index];
       var res = await request.get(
         queue.signedPollUrl + '&numofmessages=32'
-      ).buffer().end();
+      ).buffer();
       assume(res.ok).is.ok();
 
       // Parse XML
