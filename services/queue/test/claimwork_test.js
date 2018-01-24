@@ -3,7 +3,6 @@ suite('queue.claimWork', () => {
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
@@ -72,7 +71,7 @@ suite('queue.claimWork', () => {
     );
   });
 
-  test('claimWork, reclaimTask, reportCompleted', async() => {
+  test('claimWork, reclaimTask, reportCompleted', async () => {
     let taskId = slugid.v4();
 
     debug('### Start listening for task running message');
@@ -120,7 +119,7 @@ suite('queue.claimWork', () => {
     await queue.reportCompleted(taskId, 0);
   });
 
-  test('claimWork, reclaimTask, reportCompleted', async() => {
+  test('claimWork, reclaimTask, reportCompleted', async () => {
     let taskId = slugid.v4();
 
     debug('### Start listening for task running message');
@@ -176,7 +175,7 @@ suite('queue.claimWork', () => {
     await queue.reportCompleted(taskId, 0);
   });
 
-  test('claimWork gets "high" before "normal" priority', async() => {
+  test('claimWork gets "high" before "normal" priority', async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
@@ -215,7 +214,7 @@ suite('queue.claimWork', () => {
     await queueB.reportCompleted(taskIdB, 0);
   });
 
-  test('createTask twice, claimWork, reportCompleted', async() => {
+  test('createTask twice, claimWork, reportCompleted', async () => {
     let workerType = slugid.v4(); // need a fresh workerType
     let taskId = slugid.v4();
     let task = makeTask('normal', workerType);

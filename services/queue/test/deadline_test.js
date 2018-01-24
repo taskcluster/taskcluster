@@ -3,7 +3,6 @@ suite('Deadline expiration (deadline-reaper)', function() {
   var assert      = require('assert');
   var slugid      = require('slugid');
   var _           = require('lodash');
-  var Promise     = require('promise');
   var taskcluster = require('taskcluster-client');
   var assume      = require('assume');
   var helper      = require('./helper');
@@ -14,7 +13,7 @@ suite('Deadline expiration (deadline-reaper)', function() {
     var task = {
       provisionerId:    'no-provisioner',
       workerType:       'test-worker',
-                        // Legal because we allow a small bit of clock drift
+      // Legal because we allow a small bit of clock drift
       created:          taskcluster.fromNowJSON('- 5 seconds'),
       deadline:         taskcluster.fromNowJSON('10 seconds'),
       retries:          1,
