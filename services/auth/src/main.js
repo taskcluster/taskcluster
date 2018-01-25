@@ -224,26 +224,30 @@ let load = Loader({
   },
 
   'expire-sentry': {
-    requires: ['cfg', 'sentryManager'],
-    setup: async ({cfg, sentryManager}) => {
+    requires: ['cfg', 'sentryManager', 'monitor'],
+    setup: async ({cfg, sentryManager, monitor}) => {
       let now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
       if (isNaN(now)) {
         console.log('FATAL: sentryExpirationDelay is not valid!');
         process.exit(1);
       }
       await sentryManager.purgeExpiredKeys(now);
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     },
   },
 
   'purge-expired-clients': {
-    requires: ['cfg', 'Client'],
-    setup: async ({cfg, Client}) => {
+    requires: ['cfg', 'Client', 'monitor'],
+    setup: async ({cfg, Client, monitor}) => {
       now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
       if (isNaN(now)) {
         console.log('FATAL: clientExpirationDelay is not valid!');
         process.exit(1);
       }
       await Client.purgeExpired(now);
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     },
   },
 
