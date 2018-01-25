@@ -83,7 +83,6 @@ let load = loader({
     setup: async ({cfg, publisher, validator, monitor, docs}) => {
       debug('Configuring handler');
       let queue = new taskcluster.Queue();
-      let scheduler = new taskcluster.Scheduler();
       let queueEvents = new taskcluster.QueueEvents();
 
       // TODO add queue name for durable queues
@@ -105,7 +104,6 @@ let load = loader({
 
       let handler = new Handler({
         queue,
-        scheduler,
         listener,
         prefix,
         publisher,
