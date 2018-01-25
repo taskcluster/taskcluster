@@ -109,7 +109,6 @@ function validateTask(monitor, validate, taskId, task, schema) {
 module.exports = class Handler {
   constructor(options) {
     this.queue = options.queue;
-    this.scheduler = options.scheduler;
     this.listener = options.listener;
     this.prefix = options.prefix;
     this.publisher = options.publisher;
@@ -325,27 +324,6 @@ module.exports = class Handler {
   }
 
   async handleTaskFailed(pushInfo, task, message) {
-    // To correctly handle the rerun case we must not mark jobs which will be
-    // marked as retry as 'completed'. This means we must determine if this run
-    // will trigger a retry by querying the scheduler.
-    if (
-      task.schedulerId === 'task-graph-scheduler' &&
-      task.taskGroupId
-    ) {
-      try {
-        let taskInfo = await this.scheduler.inspectTask(task.taskGroupId, taskId);
-        if (taskInfo.reruns > payload.runId) {
-          // Simply allow the rerun handle to update the task...
-          return;
-        }
-      } catch (e) {
-        debug(
-          `Could not retrieve task graph information for ${task.taskGroupId}, ` +
-          'assuming task is part of a task group not scheduled through task-graph-scheduler.'
-        );
-      }
-    }
-
     let run = message.status.runs[message.runId];
     let job = this.buildMessage(pushInfo, task, message.runId, message);
     job.timeStarted = run.started;
