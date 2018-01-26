@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/pulse/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package pulse
 
@@ -146,7 +146,7 @@ func (myPulse *Pulse) Namespace(namespace string) (*Namespace1, error) {
 // operation.
 //
 // Required scopes:
-//   * pulse:namespace:<namespace>
+//   pulse:namespace:<namespace>
 //
 // See https://docs.do.not.exist.yet.service.not.in.production#claimNamespace
 func (myPulse *Pulse) ClaimNamespace(namespace string, payload *NamespaceCreationRequest) (*NamespaceCreationResponse, error) {

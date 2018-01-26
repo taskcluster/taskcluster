@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -180,7 +180,7 @@ func (myGithub *Github) Latest(owner, repo, branch string) error {
 // made of a custom title and link.
 //
 // Required scopes:
-//   * github:create-status:<owner>/<repo>
+//   github:create-status:<owner>/<repo>
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#createStatus
 func (myGithub *Github) CreateStatus(owner, repo, sha string, payload *CreateStatus1) error {
@@ -194,7 +194,7 @@ func (myGithub *Github) CreateStatus(owner, repo, sha string, payload *CreateSta
 // For a given Issue or Pull Request of a repository, this will write a new message.
 //
 // Required scopes:
-//   * github:create-comment:<owner>/<repo>
+//   github:create-comment:<owner>/<repo>
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#createComment
 func (myGithub *Github) CreateComment(owner, repo, number string, payload *CreateComment1) error {

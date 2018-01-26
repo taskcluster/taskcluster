@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -148,7 +148,7 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypeSummaries() (*ListWorkerType
 // the other secrets.
 //
 // Required scopes:
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#createWorkerType
 func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeResponse, error) {
@@ -170,7 +170,7 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 // create method.
 //
 // Required scopes:
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#updateWorkerType
 func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeResponse, error) {
@@ -199,8 +199,9 @@ func (awsProvisioner *AwsProvisioner) WorkerTypeLastModified(workerType string) 
 // method.
 //
 // Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   Any of:
+//   - aws-provisioner:view-worker-type:<workerType>
+//   - aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#workerType
 func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeResponse, error) {
@@ -212,8 +213,9 @@ func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerT
 // Returns a signed URL for WorkerType, valid for the specified duration.
 //
 // Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   Any of:
+//   - aws-provisioner:view-worker-type:<workerType>
+//   - aws-provisioner:manage-worker-type:<workerType>
 //
 // See WorkerType for more details.
 func (awsProvisioner *AwsProvisioner) WorkerType_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {
@@ -233,7 +235,7 @@ func (awsProvisioner *AwsProvisioner) WorkerType_SignedURL(workerType string, du
 // not a supported or tested action
 //
 // Required scopes:
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#removeWorkerType
 func (awsProvisioner *AwsProvisioner) RemoveWorkerType(workerType string) error {
@@ -262,7 +264,7 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes1, erro
 // creates a new secret directly for each spot bid.
 //
 // Required scopes:
-//   * aws-provisioner:create-secret:<workerType>
+//   aws-provisioner:create-secret:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#createSecret
 func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) error {
@@ -322,8 +324,9 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) error {
 // **This API end-point is experimental and may be subject to change without warning.**
 //
 // Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   Any of:
+//   - aws-provisioner:view-worker-type:<workerType>
+//   - aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#getLaunchSpecs
 func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, error) {
@@ -335,8 +338,9 @@ func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAll
 // Returns a signed URL for GetLaunchSpecs, valid for the specified duration.
 //
 // Required scopes:
-//   * aws-provisioner:view-worker-type:<workerType>, or
-//   * aws-provisioner:manage-worker-type:<workerType>
+//   Any of:
+//   - aws-provisioner:view-worker-type:<workerType>
+//   - aws-provisioner:manage-worker-type:<workerType>
 //
 // See GetLaunchSpecs for more details.
 func (awsProvisioner *AwsProvisioner) GetLaunchSpecs_SignedURL(workerType string, duration time.Duration) (*url.URL, error) {

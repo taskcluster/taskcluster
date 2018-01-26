@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -96,7 +96,7 @@ func NewNoAuth() *PurgeCache {
 // be listening for this message and purge caches when they see it.
 //
 // Required scopes:
-//   * purge-cache:<provisionerId>/<workerType>:<cacheName>
+//   purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
 // See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) error {

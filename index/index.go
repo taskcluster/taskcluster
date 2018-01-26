@@ -121,7 +121,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -226,7 +226,7 @@ func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*L
 // about indexing successfully completed tasks automatically using custom routes.
 //
 // Required scopes:
-//   * index:insert-task:<namespace>
+//   index:insert-task:<namespace>
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#insertTask
 func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
@@ -251,7 +251,7 @@ func (myIndex *Index) InsertTask(namespace string, payload *InsertTaskRequest) (
 // If no task exists for the given index path, this API end-point responds with 404.
 //
 // Required scopes:
-//   * queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#findArtifactFromTask
 func (myIndex *Index) FindArtifactFromTask(indexPath, name string) error {
@@ -263,7 +263,7 @@ func (myIndex *Index) FindArtifactFromTask(indexPath, name string) error {
 // Returns a signed URL for FindArtifactFromTask, valid for the specified duration.
 //
 // Required scopes:
-//   * queue:get-artifact:<name>
+//   queue:get-artifact:<name>
 //
 // See FindArtifactFromTask for more details.
 func (myIndex *Index) FindArtifactFromTask_SignedURL(indexPath, name string, duration time.Duration) (*url.URL, error) {

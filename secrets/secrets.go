@@ -36,7 +36,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package secrets
 
@@ -95,7 +95,7 @@ func NewNoAuth() *Secrets {
 // updated instead.
 //
 // Required scopes:
-//   * secrets:set:<name>
+//   secrets:set:<name>
 //
 // See https://docs.taskcluster.net/reference/core/secrets/api-docs#set
 func (mySecrets *Secrets) Set(name string, payload *Secret) error {
@@ -107,7 +107,7 @@ func (mySecrets *Secrets) Set(name string, payload *Secret) error {
 // Delete the secret associated with some key.
 //
 // Required scopes:
-//   * secrets:set:<name>
+//   secrets:set:<name>
 //
 // See https://docs.taskcluster.net/reference/core/secrets/api-docs#remove
 func (mySecrets *Secrets) Remove(name string) error {
@@ -122,7 +122,7 @@ func (mySecrets *Secrets) Remove(name string) error {
 // regardless of whether the secret exists.
 //
 // Required scopes:
-//   * secrets:get:<name>
+//   secrets:get:<name>
 //
 // See https://docs.taskcluster.net/reference/core/secrets/api-docs#get
 func (mySecrets *Secrets) Get(name string) (*Secret, error) {
@@ -134,7 +134,7 @@ func (mySecrets *Secrets) Get(name string) (*Secret, error) {
 // Returns a signed URL for Get, valid for the specified duration.
 //
 // Required scopes:
-//   * secrets:get:<name>
+//   secrets:get:<name>
 //
 // See Get for more details.
 func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {

@@ -50,7 +50,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -173,7 +173,8 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId, hookId string) (*HookSchedule
 // necessary scopes to add the task to the queue.
 //
 // Required scopes:
-//   * hooks:modify-hook:<hookGroupId>/<hookId>, and
+//   All of:
+//   * hooks:modify-hook:<hookGroupId>/<hookId>
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#createHook
@@ -189,7 +190,8 @@ func (myHooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreati
 // `hookGroupId` and `hookId` can be modified.
 //
 // Required scopes:
-//   * hooks:modify-hook:<hookGroupId>/<hookId>, and
+//   All of:
+//   * hooks:modify-hook:<hookGroupId>/<hookId>
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#updateHook
@@ -204,7 +206,7 @@ func (myHooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreati
 // This endpoint will remove a hook definition.
 //
 // Required scopes:
-//   * hooks:modify-hook:<hookGroupId>/<hookId>
+//   hooks:modify-hook:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#removeHook
 func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
@@ -218,7 +220,7 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 // This endpoint will trigger the creation of a task from a hook definition.
 //
 // Required scopes:
-//   * hooks:trigger-hook:<hookGroupId>/<hookId>
+//   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
 func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerContext) (*TaskStatusStructure, error) {
@@ -233,7 +235,7 @@ func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerCo
 // token can be deactivated with `resetTriggerToken`.
 //
 // Required scopes:
-//   * hooks:get-trigger-token:<hookGroupId>/<hookId>
+//   hooks:get-trigger-token:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#getTriggerToken
 func (myHooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
@@ -245,7 +247,7 @@ func (myHooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // Returns a signed URL for GetTriggerToken, valid for the specified duration.
 //
 // Required scopes:
-//   * hooks:get-trigger-token:<hookGroupId>/<hookId>
+//   hooks:get-trigger-token:<hookGroupId>/<hookId>
 //
 // See GetTriggerToken for more details.
 func (myHooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
@@ -259,7 +261,7 @@ func (myHooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, dura
 // may have been issued via getTriggerToken with a new token.
 //
 // Required scopes:
-//   * hooks:reset-trigger-token:<hookGroupId>/<hookId>
+//   hooks:reset-trigger-token:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#resetTriggerToken
 func (myHooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {

@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 24 Jan 2018 at 21:22:00 UTC. The code was generated
+// Fri, 26 Jan 2018 at 22:04:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -160,7 +160,7 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, error) {
 // The caller's scopes must satisfy `scopes`.
 //
 // Required scopes:
-//   * auth:create-client:<clientId>
+//   auth:create-client:<clientId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#createClient
 func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
@@ -177,7 +177,7 @@ func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) 
 // you must reset the accessToken to acquire it again.
 //
 // Required scopes:
-//   * auth:reset-access-token:<clientId>
+//   auth:reset-access-token:<clientId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#resetAccessToken
 func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, error) {
@@ -193,7 +193,7 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, er
 // unchanged
 //
 // Required scopes:
-//   * auth:update-client:<clientId>
+//   auth:update-client:<clientId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateClient
 func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
@@ -209,7 +209,7 @@ func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) 
 // had been disabled when the corresponding identity's scopes changed.
 //
 // Required scopes:
-//   * auth:enable-client:<clientId>
+//   auth:enable-client:<clientId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#enableClient
 func (myAuth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
@@ -224,7 +224,7 @@ func (myAuth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 // corresponding identity's scopes no longer satisfy the client's scopes.
 //
 // Required scopes:
-//   * auth:disable-client:<clientId>
+//   auth:disable-client:<clientId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#disableClient
 func (myAuth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
@@ -237,7 +237,7 @@ func (myAuth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 // be deleted independently.
 //
 // Required scopes:
-//   * auth:delete-client:<clientId>
+//   auth:delete-client:<clientId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#deleteClient
 func (myAuth *Auth) DeleteClient(clientId string) error {
@@ -277,7 +277,7 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 // in an error response.
 //
 // Required scopes:
-//   * auth:create-role:<roleId>
+//   auth:create-role:<roleId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#createRole
 func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
@@ -295,7 +295,7 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 // in an error response.
 //
 // Required scopes:
-//   * auth:update-role:<roleId>
+//   auth:update-role:<roleId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateRole
 func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
@@ -308,7 +308,7 @@ func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetR
 // the role exists.
 //
 // Required scopes:
-//   * auth:delete-role:<roleId>
+//   auth:delete-role:<roleId>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#deleteRole
 func (myAuth *Auth) DeleteRole(roleId string) error {
@@ -405,7 +405,7 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
 //
 // Required scopes:
-//   * auth:aws-s3:<level>:<bucket>/<prefix>
+//   auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#awsS3Credentials
 func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3CredentialsResponse, error) {
@@ -421,7 +421,7 @@ func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWS
 // Returns a signed URL for AwsS3Credentials, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:aws-s3:<level>:<bucket>/<prefix>
+//   auth:aws-s3:<level>:<bucket>/<prefix>
 //
 // See AwsS3Credentials for more details.
 func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format string, duration time.Duration) (*url.URL, error) {
@@ -436,7 +436,7 @@ func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format str
 // Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 //
 // Required scopes:
-//   * auth:azure-table:list-accounts
+//   auth:azure-table:list-accounts
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureAccounts
 func (myAuth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
@@ -448,7 +448,7 @@ func (myAuth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
 // Returns a signed URL for AzureAccounts, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:azure-table:list-accounts
+//   auth:azure-table:list-accounts
 //
 // See AzureAccounts for more details.
 func (myAuth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -459,7 +459,7 @@ func (myAuth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, e
 // Retrieve a list of all tables in an account.
 //
 // Required scopes:
-//   * auth:azure-table:list-tables:<account>
+//   auth:azure-table:list-tables:<account>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTables
 func (myAuth *Auth) AzureTables(account, continuationToken string) (*AzureListAccountResponse1, error) {
@@ -475,7 +475,7 @@ func (myAuth *Auth) AzureTables(account, continuationToken string) (*AzureListAc
 // Returns a signed URL for AzureTables, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:azure-table:list-tables:<account>
+//   auth:azure-table:list-tables:<account>
 //
 // See AzureTables for more details.
 func (myAuth *Auth) AzureTables_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
@@ -495,7 +495,7 @@ func (myAuth *Auth) AzureTables_SignedURL(account, continuationToken string, dur
 // table if it doesn't already exist.
 //
 // Required scopes:
-//   * auth:azure-table:<level>:<account>/<table>
+//   auth:azure-table:<level>:<account>/<table>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
 func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
@@ -507,7 +507,7 @@ func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:azure-table:<level>:<account>/<table>
+//   auth:azure-table:<level>:<account>/<table>
 //
 // See AzureTableSAS for more details.
 func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
@@ -523,7 +523,7 @@ func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, durati
 // container if it doesn't already exist.
 //
 // Required scopes:
-//   * auth:azure-blob:<level>:<account>/<container>
+//   auth:azure-blob:<level>:<account>/<container>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureBlobSAS
 func (myAuth *Auth) AzureBlobSAS(account, container, level string) (*Var1, error) {
@@ -535,7 +535,7 @@ func (myAuth *Auth) AzureBlobSAS(account, container, level string) (*Var1, error
 // Returns a signed URL for AzureBlobSAS, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:azure-blob:<level>:<account>/<container>
+//   auth:azure-blob:<level>:<account>/<container>
 //
 // See AzureBlobSAS for more details.
 func (myAuth *Auth) AzureBlobSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
@@ -552,7 +552,7 @@ func (myAuth *Auth) AzureBlobSAS_SignedURL(account, container, level string, dur
 // to have the project transferred to a team you have access to if needed
 //
 // Required scopes:
-//   * auth:sentry:<project>
+//   auth:sentry:<project>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#sentryDSN
 func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
@@ -564,7 +564,7 @@ func (myAuth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 // Returns a signed URL for SentryDSN, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:sentry:<project>
+//   auth:sentry:<project>
 //
 // See SentryDSN for more details.
 func (myAuth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
@@ -577,7 +577,7 @@ func (myAuth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) 
 // The token is valid for 24 hours, clients should refresh after expiration.
 //
 // Required scopes:
-//   * auth:statsum:<project>
+//   auth:statsum:<project>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#statsumToken
 func (myAuth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) {
@@ -589,7 +589,7 @@ func (myAuth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) 
 // Returns a signed URL for StatsumToken, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:statsum:<project>
+//   auth:statsum:<project>
 //
 // See StatsumToken for more details.
 func (myAuth *Auth) StatsumToken_SignedURL(project string, duration time.Duration) (*url.URL, error) {
@@ -601,7 +601,7 @@ func (myAuth *Auth) StatsumToken_SignedURL(project string, duration time.Duratio
 // The token is valid for 96 hours, clients should refresh after expiration.
 //
 // Required scopes:
-//   * auth:webhooktunnel
+//   auth:webhooktunnel
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#webhooktunnelToken
 func (myAuth *Auth) WebhooktunnelToken() (*WebhooktunnelTokenResponse, error) {
@@ -613,7 +613,7 @@ func (myAuth *Auth) WebhooktunnelToken() (*WebhooktunnelTokenResponse, error) {
 // Returns a signed URL for WebhooktunnelToken, valid for the specified duration.
 //
 // Required scopes:
-//   * auth:webhooktunnel
+//   auth:webhooktunnel
 //
 // See WebhooktunnelToken for more details.
 func (myAuth *Auth) WebhooktunnelToken_SignedURL(duration time.Duration) (*url.URL, error) {
