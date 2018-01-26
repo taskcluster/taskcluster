@@ -10,7 +10,7 @@ lsb_release -a
 
 # add docker group and add current user to it
 sudo groupadd -f docker
-sudo usermod -a -G docker $USER
+sudo usermod -a -G docker $SUDO_USER
 
 sudo apt-get update -y
 
