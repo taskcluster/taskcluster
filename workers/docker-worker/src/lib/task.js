@@ -591,8 +591,8 @@ class Task extends EventEmitter {
       }
       let purgeStatuses = this.task.payload.onExitStatus && this.task.payload.onExitStatus.purgeCaches;
       if (purgeStatuses && purgeStatuses.includes(this.exitCode)) {
-        for (let cacheKey in this.task.volumeCaches) {
-          this.runtime.purgeInstance(cacheKey)
+        for (let cacheKey of this.volumeCaches) {
+          this.runtime.volumeCache.purgeInstance(cacheKey)
         }
       }
     }

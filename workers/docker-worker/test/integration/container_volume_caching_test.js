@@ -553,8 +553,8 @@ suite('volume cache tests', () => {
         },
         cache: {},
         maxRunTime:         5 * 60,
-	onExitStatus: {
-          purgeCaches: 36,
+        onExitStatus: {
+          purgeCaches: [36],
         },
       },
       scopes: [neededScope]
@@ -564,12 +564,13 @@ suite('volume cache tests', () => {
 
     let worker = new TestWorker(DockerWorker);
     await worker.launch();
-    let result = await worker.postToQueue(task);
+    let result = await Promise.all([
+      waitForEvent(worker, 'cache volume removed'),
+      worker.postToQueue(task),
+    ]).then(results => results[1]);
 
-    assert.equal(result.run.state, 'completed');
-    assert.equal(result.run.reasonResolved, 'completed');
-
-    await waitForEvent(worker, 'cache volume removed')
+    assert.equal(result.run.state, 'failed');
+    assert.equal(result.run.reasonResolved, 'failed');
 
     await worker.terminate();
 
