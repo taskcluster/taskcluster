@@ -43,7 +43,32 @@ then
   else
     echo "Succesfully formated 'instance_storage' as ext4."
     echo "Mounting logical volume"
-    mount /dev/instance_storage/all /mnt
+
+    # Our assumption is that workers are ephemeral. If errors are encountered, the
+    # worker should be thrown away. Workers are never rebooted. So filesystem
+    # durability isn't too important to us.
+
+    # Default mount options: rw,relatime,errors=remount-ro,data=ordered
+    #
+    # We make the following changes:
+    #
+    # errors=panic -- The worker is unusable if the mount isn't writable. So
+    # panic if we encounter this.
+    #
+    # data=writeback -- Don't require write ordering between journal and main
+    # filesystem. Since we don't have a separate journal device, this probably
+    # does little. But in theory it relaxes durability so it shouldn't hurt.
+    #
+    # nobarrier -- Loosen restrictions around writes to journal.
+    #
+    # commit=60 -- By default, ext4 tries to sync every 5s to ensure
+    # minimal data loss in case of system failure. We increase that to 60s to
+    # avoid excessive filesystem sync. The filesystem will still write out
+    # changes in the background. And a `sync()` issued by an application can
+    # still force a full flush sooner. But ext4 itself won't be flushing all
+    # changes as often.
+
+    mount -o 'rw,relatime,errors=panic,data=writeback,nobarrier,commit=60' /dev/instance_storage/all /mnt
   fi
 else
   echo "Logical volume 'instance_storage' is already mounted."
