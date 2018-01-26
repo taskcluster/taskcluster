@@ -7,11 +7,13 @@
       "scopeExpressionTemplate": {
         "oneOf": [
           {
+            "title": "Required Scope",
             "type": "string",
             "description": "The most basic element of a scope expression",
             "pattern": "^[\\x20-\\x7e]*$"
           },
           {
+            "title": "Any Of",
             "type": "object",
             "description": "AnyOf objects will evaluate to true if any subexpressions are true",
             "properties": {
@@ -21,6 +23,7 @@
             "additionalProperties": false
           },
           {
+            "title": "All Of",
             "type": "object",
             "description": "AllOf objects will evaluate to true if all subexpressions are true",
             "properties": {
@@ -30,6 +33,7 @@
             "additionalProperties": false
           },
           {
+            "title": "If/Then",
             "type": "object",
             "description": "if/then objects will replace themselves with the contents of then if the `if` is true",
             "properties": {
@@ -40,6 +44,7 @@
             "additionalProperties": false
           },
           {
+            "title": "For/Each/In",
             "type": "object",
             "description": "for/each/in objects will replace themselves with an array of basic scopes. They will be flattened into the array this object is a part of.",
             "properties": {
@@ -166,11 +171,13 @@
                     "output": {
                         "oneOf": [
                             {
+                                "title": "Output Schema",
                                 "type": "string",
                                 "format": "uri",
                                 "description": "JSON schema for output, if output is provided otherwise not present."
                             },
                             {
+                                "title": "Blob",
                                 "type": "string",
                                 "const": "blob",
                                 "description": "Output kind if not JSON matching a specific schema."
