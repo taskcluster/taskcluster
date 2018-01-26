@@ -58,7 +58,7 @@
       "region": "us-west-2",
       "source_ami": "ami-25cf1c5d",
       "ami_virtualization_type": "hvm",
-      "instance_type": "m3.large",
+      "instance_type": "m5.large",
       "ssh_username": "ubuntu",
       "ami_name": "taskcluster-docker-worker-base {{timestamp}}",
       "tags": {
