@@ -12,6 +12,7 @@ RUN apt-get install -y apparmor liblz4-tool
 # Install Zstandard compression library
 RUN git clone https://github.com/facebook/zstd /zstd && \
     cd /zstd && \
+    git checkout f3a8bd553a865c59f1bd6e1f68bf182cf75a8f00 && \
     make zstd && \
     mv zstd /usr/bin && \
     rm -rf /zstd

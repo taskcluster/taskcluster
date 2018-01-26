@@ -2,7 +2,6 @@
 
 set -e -v
 
-# Keep in sync with vagrant.sh.
 DOCKER_VERSION=1.12.6-0~ubuntu-trusty
 KERNEL_VER=4.4.0-109-generic
 V4L2LOOPBACK_VERSION=0.10.0
@@ -10,7 +9,7 @@ V4L2LOOPBACK_VERSION=0.10.0
 lsb_release -a
 
 # add docker group and add current user to it
-sudo groupadd docker
+sudo groupadd -f docker
 sudo usermod -a -G docker $USER
 
 sudo apt-get update -y
@@ -32,12 +31,16 @@ sudo apt-get install -y \
     linux-image-$KERNEL_VER \
     linux-headers-$KERNEL_VER \
     linux-image-extra-$KERNEL_VER \
-    linux-image-extra-virtual \
     dkms
 
-# On paravirtualized instances, PV-GRUB looks at /boot/grub/menu.lst, which is different from the
-# /boot/grub/grub.cfg that dpkg just updated.  So we have to update menu.list manually.
-cat <<EOF | sudo tee /boot/grub/menu.lst >&2
+# Clean up old 3.13 kernel.
+sudo apt-get remove -y linux-image-extra-virtual
+sudo apt-get autoremove -y
+
+if [ -z "${VAGRANT_PROVISION}" ]; then
+    # On paravirtualized instances, PV-GRUB looks at /boot/grub/menu.lst, which is different from the
+    # /boot/grub/grub.cfg that dpkg just updated.  So we have to update menu.list manually.
+    cat <<EOF | sudo tee /boot/grub/menu.lst >&2
 default         0
 timeout         0
 hiddenmenu
@@ -52,7 +55,7 @@ root            (hd0)
 kernel          /boot/vmlinuz-${KERNEL_VER} root=LABEL=cloudimg-rootfs ro  single
 initrd          /boot/initrd.img-${KERNEL_VER}
 EOF
-
+fi
 
 ## Install all the packages
 sudo apt-get install -y \
@@ -85,19 +88,21 @@ sudo apt-get install -y \
 # Clone and build Zstandard
 sudo git clone https://github.com/facebook/zstd /zstd
 cd /zstd
+# Corresponds to v1.3.3.
+sudo git checkout f3a8bd553a865c59f1bd6e1f68bf182cf75a8f00
 sudo make zstd
 sudo mv zstd /usr/bin
 cd /
 sudo rm -rf /zstd
 
-
-## Clear mounts created in base image so fstab is empty in other builds...
-sudo sh -c 'echo "" > /etc/fstab'
-
+if [ -z "${VAGRANT_PROVISION}" ]; then
+    ## Clear mounts created in base image so fstab is empty in other builds...
+    sudo sh -c 'echo "" > /etc/fstab'
+fi
 
 ## Install v4l2loopback
 cd /usr/src
-rm -rf v4l2loopback-$V4L2LOOPBACK_VERSION
+sudo rm -rf v4l2loopback-$V4L2LOOPBACK_VERSION
 sudo git clone --branch v$V4L2LOOPBACK_VERSION https://github.com/umlaeute/v4l2loopback.git v4l2loopback-$V4L2LOOPBACK_VERSION
 cd v4l2loopback-$V4L2LOOPBACK_VERSION
 sudo dkms install -m v4l2loopback -v $V4L2LOOPBACK_VERSION -k ${KERNEL_VER}
@@ -105,14 +110,8 @@ sudo dkms build -m v4l2loopback -v $V4L2LOOPBACK_VERSION -k ${KERNEL_VER}
 
 echo "v4l2loopback" | sudo tee --append /etc/modules
 
-cat <<EOF | sudo tee --append /etc/modprobe.d/test-modules.conf >&2
-options v4l2loopback devices=100
-EOF
-
+sudo sh -c 'echo "options v4l2loopback devices=100" > /etc/modprobe.d/v4l2loopback.conf'
 
 # Install Audio loopback devices
 echo "snd-aloop" | sudo tee --append /etc/modules
-
-cat <<EOF | sudo tee --append /etc/modprobe.d/test-modules.conf >&2
-options snd-aloop enable=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 index=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29
-EOF
+sudo sh -c 'echo "options snd-aloop enable=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 index=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29" > /etc/modprobe.d/snd-aloop.conf'

@@ -14,6 +14,11 @@ Vagrant.configure("2") do |config|
 
 SCRIPT
 
+  config.vm.provision "shell" do |s|
+    s.path = "deploy/packer/base/scripts/packages.sh"
+    s.env = {VAGRANT_PROVISION: "1"}
+  end
+
   config.vm.provision "shell", path: 'vagrant.sh'
   # Requires vagrant-reload plugin
   config.vm.provision :reload
