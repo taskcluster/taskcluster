@@ -68,7 +68,6 @@ all invalid:
 
 ```
 {} // Empty object
-{AnyOf: []} // Empty sub-expression
 ```
 
 ### Satisfaction
@@ -80,9 +79,9 @@ on which form of expression is used.
 #### New Style
 
 These are the "new-style" way of dealing with scopes and allow for greater
-flexibility than the old style. The expressions are objects with a single key --
-either `AnyOf` or `AllOf`. The value must be an array and the elements of the
-array must be either expressions or a [valid scope](#valid-scopes).
+flexibility than the old style. A _scope expression_ is a [valid scope](#valid-scopes)
+or an object with a single key -- either `AnyOf` or `AllOf` mapping to an array
+of scope expressions.
 
 This check is performed with `scopeUtils.satisfiesExpression` which takes
 a scopeset as the first argument and a scope expression as the second.
@@ -91,12 +90,13 @@ A scope expression can be evaluated against an array of scopes to determine if t
 scope expression is "satisfied" by the array of scopes. Satisfaction in this context
 means that the following clauses are satisfied:
 
-**AllOf:** All sub-expressions and scopes must be satisfied
+**AllOf:** All sub-expressions must be satisfied.
 
-**AnyOf:** At least one sub-expression or scope must be satisfied
+**AnyOf:** At least one sub-expression must be satisfied.
 
-given that the scopes contained in the expression are satisfied as described in
-the [the tascluster-auth docs](https://docs.taskcluster.net/reference/platform/taskcluster-auth/docs/scopes).
+**"<scope>":** The `<scope>` is
+[satisfied](https://docs.taskcluster.net/reference/platform/taskcluster-auth/docs/scopes) by the scope-set.
+
 
 Examples:
 
