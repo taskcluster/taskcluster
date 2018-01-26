@@ -14,8 +14,8 @@ const devnull = require('dev-null');
 const streams = require('memory-streams');
 const waitForSocket = require('../wait_for_socket');
 const net = require('net');
-const rmrf = require('rimraf');
 const express = require('express');
+const {makeDir, removeDir} = require('../util/fs');
 
 let debug = Debug('docker-worker:features:interactive');
 
@@ -128,7 +128,7 @@ class WebsocketServer {
     this.semaphore = new SharedFileLock(await fs.open(this.lock, 'w'));
 
     // Ensure sockets folder is created
-    await fs.mkdir(this.socketsFolder);
+    await makeDir(this.socketsFolder);
 
     return {
       binds: [{
@@ -397,12 +397,7 @@ class WebsocketServer {
       debug(err);
     }
     // Remove the sockets folder, we don't need it anymore...
-    rmrf(this.socketsFolder, err => {
-      // Errors here are not great
-      if (err) {
-        debug("Failed to remove tmpFolder: %s", err.stack);
-      }
-    });
+    await removeDir(this.socketsFolder);
   }
 }
 

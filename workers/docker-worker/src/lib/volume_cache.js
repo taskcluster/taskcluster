@@ -2,31 +2,12 @@ var debug = require('debug')('docker-worker:volumeCacheManager');
 var path = require('path');
 var Promise = require('promise');
 var fs = require('fs');
-var mkdirp = require('mkdirp');
-var rmrf = require('rimraf');
+const {makeDir, removeDir} = require('./util/fs');
 var taskcluster = require('taskcluster-client');
 var uuid = require('uuid');
 var _ = require('lodash');
 
 var KEY_DELIMITER = '::';
-
-function removeDir(directory) {
-  return new Promise(function(accept, reject) {
-    rmrf(directory, function (error) {
-      if (error) return reject(error);
-      accept(error);
-    });
-  });
-}
-
-function makeDir(directory) {
-  return new Promise(function(accept, reject) {
-    mkdirp(directory, function (error) {
-      if (error) return reject(error);
-      accept(error);
-    });
-  });
-}
 
 function sortInstanceIds(cache) {
   var instanceIds = Object.keys(cache);

@@ -8,9 +8,8 @@
 
 const waitForSocket = require('../wait_for_socket');
 const slugid = require('slugid');
-const rmrf = require('rimraf');
 const path = require('path');
-const fs = require('fs');
+const {makeDir, removeDir} = require('../util/fs');
 let debug = require('debug')('docker-worker:features:dind');
 
 // Maximum time to wait for dind-service to be ready
@@ -35,11 +34,7 @@ class DockerInDocker {
     debug('image verified %s', imageId);
 
     // Create temporary directory
-    await new Promise((accept, reject) => {
-      fs.mkdir(this.tmpFolder, (err) => {
-        return err ? reject(err) : accept();
-      });
-    });
+    await makeDir(this.tmpFolder);
 
     this.container = await docker.createContainer({
       Image: task.runtime.dindImage,
@@ -85,13 +80,7 @@ class DockerInDocker {
     // Remove temporary folder, this should be possible even though container
     // is running... Well, maybe docker will complain that mounted folder is
     // deleted (delete socket while running is not a problem)
-    rmrf(this.tmpFolder, err => {
-      // Errors here are not great, but odds of a slugid collision are fairly
-      // slim...
-      if (err) {
-        debug("Failed to remove tmpFolder: %s", err.stack);
-      }
-    });
+    await removeDir(this.tmpFolder);
   }
 }
 
