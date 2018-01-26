@@ -108,7 +108,7 @@ module.exports = {
         // the value of a new machine because a) it has already paid the startup
         // cost b) it may have populated caches that can result in subsequent
         // tasks executing faster.
-        afterIdleSeconds: minutes(5),
+        afterIdleSeconds: minutes(15),
       }
     };
 
