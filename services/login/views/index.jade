@@ -57,8 +57,6 @@ html(lang='en')
       div.col-md-10.col-md-offset-1#content
         h1 TaskCluster Login
         hr
-        p
-          | Choose the best sign-in option for you from the options below.
         div.row.login-option
           div.col-md-4
             form(action='/auth0/login-temp', method='post')
@@ -68,39 +66,11 @@ html(lang='en')
           div.col-md-8
             p
               | If you have a&nbsp;
-              b Mozilla LDAP Account
+              b Mozilla Account
               | , sign in with Auth0 to maximize your
               | permissions.  You can use this option even if you are not an employee!
               | If you also have a Mozillians account, make sure your
               | LDAP email is included in your Mozillians profile.
-        div.row.login-option
-          div.col-md-4
-            form#auth0-form(action='/auth0/login-local', method='get')
-              button.btn.btn-block.btn-primary(type='submit')
-                i.glyphicon.glyphicon-user
-                | &nbsp;Sign-In with Email
-          div.col-md-8
-            p
-              | If you are a&nbsp;
-              b Mozillian
-              | , but do not have an LDAP account, sign in with your email address.
-              | You will need to validate your email address with a code.
-              | Your permissions will depend on the Mozillians groups you belong
-              | to.  If you do not have a Mozillians profile,&nbsp;
-              a(href='https://mozillians.org/en-US/')
-                | set one up
-              | &nbsp;now.  Get vouched to gain access to additional scopes.
-        div.row.login-option
-          div.col-md-4
-            button.btn.btn-block.btn-primary(data-toggle="modal", data-target="#manual-modal")
-              i.glyphicon.glyphicon-paste
-              | &nbsp;Sign-in Manually
-          div.col-md-8
-            p
-              | If you have a&nbsp;
-              b clientId, accessToken, and certificate
-              | , sign in manually by
-              | pasting them into the appropriate fields.
         br
         if flash.error
           div.alert.alert-danger(role="alert")
