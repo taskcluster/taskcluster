@@ -2,43 +2,38 @@ import assert from 'assert';
 import {validScope} from './validate';
 import {patternMatch} from './satisfaction';
 
-/**
- * Validate scope-expression for well-formedness.
- */
-exports.validExpression = function(expr) {
-  assert(expr, 'Scope expression must exist.');
-  assert(typeof expr === 'object' && !Array.isArray(expr), `Scope expressions must be objects. Received ${expr}`);
-  const keys = Object.keys(expr);
-  assert(keys.length === 1, 'Scope expressions must have only one key.');
-  const operator = keys[0];
-  assert(operator === 'AnyOf' || operator === 'AllOf',
-    `Operator must be one of "AnyOf" or "AllOf". Found "${operator}" instead.`);
-  const subexpressions = expr[operator];
-  assert(Array.isArray(subexpressions), 'Sub-expressions must be arrays.');
-  subexpressions.forEach(subexpr => {
-    if (typeof subexpr === 'string') {
-      assert(validScope(subexpr), `Each scope must be valid. "${subexpr}" is not valid.`);
-    } else {
-      exports.validExpression(subexpr);
-    }
-  });
+/** Validate a scope expression */
+const validateExpression = (expr) => {
+  if (typeof expr === 'string') {
+    return validScope(expr);
+  }
+  return Object.keys(expr).length === 1 && (
+    'AnyOf' in expr && expr.AnyOf.every(validateExpression) ||
+    'AllOf' in expr && expr.AllOf.every(validateExpression)
+  );
+};
+
+/** Assert that a scope expression is valid */
+exports.validExpression = (expr) => {
+  assert(validateExpression(expr), 'expected a valid scope expression');
   return true;
 };
 
-/**
- * Assert that an array of patterns satisfies a scope-expression.
- */
-exports.satisfiesExpression = function(scopeset, expr) {
+/** Check if a scope-set statisfies a given scope expression */
+exports.satisfiesExpression = function(scopeset, expression) {
   assert(Array.isArray(scopeset), 'Scopeset must be an array.');
 
-  const subexprSatisfied = subexpr => typeof subexpr === 'string' ?
-    scopeset.some(scope => patternMatch(scope, subexpr)) :
-    exports.satisfiesExpression(scopeset, subexpr);
+  const isSatisfied = (expr) => {
+    if (typeof expr === 'string') {
+      return scopeset.some(s => patternMatch(s, expr));
+    }
+    return (
+      'AllOf' in expr && expr.AllOf.every(isSatisfied) ||
+      'AnyOf' in expr && expr.AnyOf.some(isSatisfied)
+    );
+  };
 
-  if (expr.AnyOf) {
-    return expr.AnyOf.some(subexprSatisfied);
-  }
-  return expr.AllOf.every(subexprSatisfied);
+  return isSatisfied(expression);
 };
 
 /**
@@ -57,33 +52,42 @@ exports.satisfiesExpression = function(scopeset, expr) {
  * are definitely needed to satisfy the expression and at least
  * one of the scopes under an AnyOf must be provided to satisfy.
  */
-exports.removeGivenScopes = function(scopeset, expr, topLevel=true) {
-  assert(Array.isArray(scopeset), 'Scopeset must be an array.');
-
-  if (typeof expr === 'string') {
-    if (scopeset.some(scope => patternMatch(scope, expr))) {
-      return null;
+exports.removeGivenScopes = function(scopeset, expression) {
+  const simplify = (expr) => {
+    if (typeof expr === 'string') {
+      if (scopeset.some(s => patternMatch(s, expr))) {
+        return null;
+      }
+      return expr;
     }
-    return expr;
-  }
 
-  if (expr.AllOf) {
-    const AllOf = expr.AllOf.map(e => exports.removeGivenScopes(scopeset, e, false)).filter(e => e !== null);
-    if (AllOf.length === 0) {
-      return null;
+    if ('AllOf' in expr) {
+      const AllOf = expr.AllOf.map(simplify).filter(e => e !== null);
+      if (AllOf.length === 0) {
+        return null;
+      }
+      if (AllOf.length === 1) {
+        return AllOf[0];
+      }
+      return {AllOf};
     }
-    if (AllOf.length === 1 && (!topLevel || typeof AllOf[0] !== 'string')) {
-      return AllOf[0];
-    }
-    return {AllOf};
-  }
 
-  const AnyOf = expr.AnyOf.map(e => exports.removeGivenScopes(scopeset, e, false));
-  if (AnyOf.some(e => e === null)) {
-    return null;
-  }
-  if (AnyOf.length === 1 && (!topLevel || typeof AnyOf[0] !== 'string')) {
-    return AnyOf[0];
-  }
-  return {AnyOf};
+    if ('AnyOf' in expr) {
+      const AnyOf = expr.AnyOf.map(simplify);
+      if (AnyOf.includes(null)) {
+        return null;
+      }
+      if (AnyOf.length === 1) {
+        return AnyOf[0];
+      }
+      return {AnyOf};
+    }
+
+    // Throw an error if we have invalid expression
+    const err = new Error('removeGivenScopes expected a valid scope expression');
+    err.expression = expression;
+    throw err;
+  };
+
+  return simplify(expression);
 };

@@ -23,7 +23,6 @@ suite('scope expression validity:', function() {
   test('empty is not OK', scenario({}, 'should-fail'));
   test('array is not OK', scenario([], 'should-fail'));
   test('int is not OK', scenario(12, 'should-fail'));
-  test('string is not OK', scenario('scope:foo', 'should-fail'));
   test('wrong key is not OK', scenario({Foo: ['abc']}, 'should-fail'));
   test('multiple keys is not OK', scenario({AnyOf: ['abc'], AllOf: ['abc']}, 'should-fail'));
   test('int value is not OK', scenario({AnyOf: 1}, 'should-fail'));
@@ -32,6 +31,8 @@ suite('scope expression validity:', function() {
 
   // All of the following should be valid
   [
+    'hello-world',
+    'scope:foo',
     {AnyOf: []},
     {AllOf: []},
     {AnyOf: ['abc']},
@@ -67,6 +68,8 @@ suite('scope expression satisfaction:', function() {
   // The following should _not_ succeed
   [
     [[], {AnyOf: []}],
+    [[], 'missing-scope'],
+    [['wrong-scope'], 'missing-scope'],
     [['ghi'], {AnyOf: ['abc', 'def']}],
     [['ghi*'], {AnyOf: ['abc', 'def']}],
     [['ghi', 'fff'], {AnyOf: ['abc', 'def']}],
@@ -83,6 +86,8 @@ suite('scope expression satisfaction:', function() {
   // The following should succeed
   [
     [[], {AllOf: []}],
+    [['A'], {AllOf: ['A']}],
+    [['A', 'B'], 'A'],
     [['abc'], {AnyOf: ['abc', 'def']}],
     [['def'], {AnyOf: ['abc', 'def']}],
     [['abc', 'def'], {AnyOf: ['abc', 'def']}],
@@ -107,7 +112,7 @@ suite('scope expression failure explanation:', function() {
   [
     [[], {AllOf: []}, null],
     [['a'], {AllOf: ['a']}, null],
-    [['a'], {AllOf: ['a', 'b']}, {AllOf: ['b']}],
+    [['a'], {AllOf: ['a', 'b']}, 'b'],
     [[], {AnyOf: []}, {AnyOf: []}],
     [['a'], {AnyOf: ['a', 'b']}, null],
     [['c'], {AnyOf: ['a', 'b']}, {AnyOf: ['a', 'b']}],
