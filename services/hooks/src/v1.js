@@ -230,7 +230,6 @@ api.declare({
         '{{message}} in {{schedule}}', {message: err.message, schedule});
     }
   });
-
   // Try to create a Hook entity
   try {
     var hook = await this.Hook.create(
