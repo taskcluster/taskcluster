@@ -97,7 +97,7 @@ class Scheduler extends events.EventEmitter {
     var lastFire;
     console.log('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
     try {
-      await this.taskcreator.fire(hook, {}, {
+      await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
         taskId: hook.nextTaskId,
         // use the next scheduled date as task.created, to ensure idempotency
         created: hook.nextScheduledDate,

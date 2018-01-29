@@ -72,7 +72,7 @@ class MockTaskCreator extends TaskCreator {
     this.fireCalls = [];
   }
 
-  async fire(hook, payload, options) {
+  async fire(hook, context, options) {
     if (this.shouldFail) {
       let err = new Error('uhoh');
       err.statusCode = 499;
@@ -83,7 +83,7 @@ class MockTaskCreator extends TaskCreator {
     this.fireCalls.push({
       hookGroupId: hook.hookGroupId,
       hookId: hook.hookId,
-      payload,
+      context,
       options});
     var taskId = options.taskId || taskcluster.slugid();
     return {
