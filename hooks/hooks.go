@@ -24,11 +24,9 @@
 //  * `['0 0 1 * * *']` -- daily at 1:00 UTC
 //  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 //
-// Hooks can be parametrized using JSON-e. The task definition in the hook is used as a JSON-e template,
-// and the paramters are supplied as a JSON-e context. The result of rendeting the template and context is
-// used as the task definition. Currently context can only be provided with the triggerHook method.
-// You can find a complete description about how json-e works, here:
-// https://github.com/taskcluster/json-e
+// The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
+// https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+// for more information.
 //
 // See: https://docs.taskcluster.net/reference/core/hooks/api-docs
 //
@@ -50,7 +48,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 29 Jan 2018 at 18:32:00 UTC. The code was generated
+// Mon, 29 Jan 2018 at 21:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -219,6 +217,10 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 //
 // This endpoint will trigger the creation of a task from a hook definition.
 //
+// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+// provided as the `payload` property of the JSON-e context used to render the
+// task template.
+//
 // Required scopes:
 //   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
@@ -273,6 +275,10 @@ func (myHooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTok
 // Stability: *** EXPERIMENTAL ***
 //
 // This endpoint triggers a defined hook with a valid token.
+//
+// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+// provided as the `payload` property of the JSON-e context used to render the
+// task template.
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
 func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerContext) (*TaskStatusStructure, error) {
