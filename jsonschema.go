@@ -219,7 +219,8 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			}
 			value = string(v)
 		}
-		metadata += "// Default:    " + value + "\n"
+		indentedDefault := text.Indent(value+"\n", "//             ")
+		metadata += "// Default:    " + indentedDefault[15:]
 	}
 	if regex := jsonSubSchema.Pattern; regex != nil {
 		metadata += "// Syntax:     " + *regex + "\n"
