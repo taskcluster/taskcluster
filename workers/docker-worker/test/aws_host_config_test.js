@@ -50,6 +50,7 @@ suite('configuration/aws', () => {
     assert.deepEqual(config, {
       host: 'publichost',
       shutdown: {
+        afterIdleSeconds: 900,
         enabled: true,
       },
       provisionerId: 'aws-provisioner',
