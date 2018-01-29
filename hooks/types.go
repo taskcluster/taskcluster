@@ -96,6 +96,8 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
 		Task TaskTemplate `json:"task"`
 
+		// Default:    map["additionalProperties":%!q(bool=false) "type":"object"]
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
 		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
 	}

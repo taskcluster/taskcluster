@@ -1,4 +1,4 @@
-Generated: 1517004255
+Generated: 1517246906
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4013,6 +4013,7 @@ Properties
     TypeName               = 'Task'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task'
   Property 'triggerSchema' =
+    Default                = 'map[additionalProperties:false type:object]'
     Type                   = 'object'
     TypeName               = 'TriggerSchema'
     SourceURL              = 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema'
