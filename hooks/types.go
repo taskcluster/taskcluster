@@ -96,7 +96,10 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
 		Task TaskTemplate `json:"task"`
 
-		// Default:    map["additionalProperties":%!q(bool=false) "type":"object"]
+		// Default:    {
+		//               "additionalProperties": false,
+		//               "type": "object"
+		//             }
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
 		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
@@ -495,7 +498,7 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
-		// Default:    map[]
+		// Default:    {}
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
@@ -619,7 +622,7 @@ type (
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		//
-		// Default:    map[]
+		// Default:    {}
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/tags
 		Tags json.RawMessage `json:"tags,omitempty"`
