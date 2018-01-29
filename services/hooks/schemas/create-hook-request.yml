@@ -31,7 +31,8 @@ properties:
   deadline:               {$const: deadline}
   task:                   {$ref: "http://schemas.taskcluster.net/hooks/v1/task-template.json"}
   triggerSchema:
-    type:                 object
+    type:                 'object'          
+    default:              {type: "object", additionalProperties: false}
 additionalProperties:     false
 required:
   - metadata
