@@ -66,9 +66,9 @@ suite('TaskCreator', function() {
   };
 
   test('firing a real task succeeds', async function() {
-    let hook = await createTestHook([], {context:'${context}', triggeredBy:'${triggeredBy}'});
+    let hook = await createTestHook([], {context:'${context}', firedBy:'${firedBy}'});
     let taskId = taskcluster.slugid();
-    let resp = await creator.fire(hook, {context: true, triggeredBy: 'schedule'}, {taskId});
+    let resp = await creator.fire(hook, {context: true, firedBy: 'schedule'}, {taskId});
     assume(resp.status.taskId).equals(taskId);
     assume(resp.status.workerType).equals(hook.task.workerType);
   });
@@ -77,36 +77,36 @@ suite('TaskCreator', function() {
     let hook = await createTestHook([], {context:{
       valueFromContext: {$eval: 'someValue + 13'},
       flattenedDeep: {$flattenDeep: {$eval: 'numbers'}}, 
-      triggeredBy: '${triggeredBy}'},
+      firedBy: '${firedBy}'},
     }); 
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {
       someValue: 42, 
       numbers: [1, 2, [3, 4], [[5, 6]]],
-      triggeredBy: 'schedule',
+      firedBy: 'schedule',
     }, {taskId});
     let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
     let task = await queue.task(taskId);
     assume(task.extra).deeply.equals({
-      context: {valueFromContext: 55, flattenedDeep:[1, 2, 3, 4, 5, 6], triggeredBy: 'schedule'},
+      context: {valueFromContext: 55, flattenedDeep:[1, 2, 3, 4, 5, 6], firedBy: 'schedule'},
     });
   });   
 
   test('triggerSchema', async function() {
     let hook = await createTestHook([], {
       env: {DUSTIN_LOCATION: '${location}'},
-      triggeredBy: '${triggeredBy}',
+      firedBy: '${firedBy}',
     }); 
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {
       location: 'Belo Horizonte, MG',
-      triggeredBy:'schedule',
+      firedBy:'schedule',
     }, {taskId});
     let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
     let task = await queue.task(taskId);
     assume(task.extra).deeply.equals({
       env: {DUSTIN_LOCATION: 'Belo Horizonte, MG'},
-      triggeredBy:'schedule',
+      firedBy:'schedule',
     });
   });
 
@@ -144,7 +144,7 @@ suite('MockTaskCreator', function() {
     hook.hookId = 'h';
     await creator.fire(hook, {p: 1}, {o: 1});
     assume(creator.fireCalls).deep.equals([
-      {hookGroupId: 'g', hookId: 'h', payload: {p: 1}, options: {o: 1}},
+      {hookGroupId: 'g', hookId: 'h', context: {p: 1}, options: {o: 1}},
     ]);
   });
 });

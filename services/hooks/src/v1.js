@@ -26,11 +26,9 @@ var api = new API({
     ' * `[\'0 0 1 * * *\']` -- daily at 1:00 UTC',
     ' * `[\'0 0 9,21 * * 1-5\', \'0 0 12 * * 0,6\']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon',
     '',
-    'Hooks can be parametrized using JSON-e. The task definition in the hook is used as a JSON-e template,',
-    'and the paramters are supplied as a JSON-e context. The result of rendeting the template and context is',
-    'used as the task definition. Currently context can only be provided with the triggerHook method.',
-    'You can find a complete description about how json-e works, here:',
-    'https://github.com/taskcluster/json-e',
+    'The task definition is used as a JSON-e template, with a context depending on how it is fired.  See',
+    'https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks',
+    'for more information.',
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
@@ -349,6 +347,10 @@ api.declare({
   stability:    'experimental',
   description: [
     'This endpoint will trigger the creation of a task from a hook definition.',
+    '',
+    'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
+    'provided as the `payload` property of the JSON-e context used to render the',
+    'task template.',
   ].join('\n'),
 }, async function(req, res) {
   var hookGroupId = req.params.hookGroupId;
@@ -377,12 +379,12 @@ api.declare({
   } 
   // build the context for the task creation
   let context = {
-    triggeredBy: 'triggerHook',
-    context: payload,
+    firedBy: 'triggerHook',
+    payload: payload,
   };
 
   try {
-    resp = await this.taskcreator.fire(hook, payload);
+    resp = await this.taskcreator.fire(hook, context);
     lastFire = {
       result: 'success',
       taskId: resp.status.taskId,
@@ -485,9 +487,14 @@ api.declare({
   stability:    'experimental',
   description: [
     'This endpoint triggers a defined hook with a valid token.',
+    '',
+    'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
+    'provided as the `payload` property of the JSON-e context used to render the',
+    'task template.',
   ].join('\n'),
 }, async function(req, res) {
   var payload = req.body;
+  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   var hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
@@ -504,6 +511,21 @@ api.declare({
     return res.reportError('AuthenticationFailed', 'invalid hook token', {});
   }
 
-  let resp = await this.taskcreator.fire(hook, payload);
+  //Using ajv lib to check if the context respect the triggerSchema
+  var validate = ajv.compile(hook.triggerSchema);
+
+  if (validate && payload) {
+    let valid = validate(payload);
+    if (!valid) {
+      return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
+    }
+  }
+  // build the context for the task creation
+  let context = {
+    firedBy: 'triggerHookWithToken',
+    payload: payload,
+  };
+
+  let resp = await this.taskcreator.fire(hook, context);
   return res.reply(resp);
 });
