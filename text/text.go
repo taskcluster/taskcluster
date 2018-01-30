@@ -223,11 +223,10 @@ func fixCase(word string, makeLower bool) string {
 	upper := strings.ToUpper(word)
 	if commonInitialisms[upper] {
 		return upper
-	} else {
-		firstRune, size := utf8.DecodeRuneInString(word)
-		remainingString := word[size:]
-		return string(unicode.ToUpper(firstRune)) + remainingString
 	}
+	firstRune, size := utf8.DecodeRuneInString(word)
+	remainingString := word[size:]
+	return string(unicode.ToUpper(firstRune)) + remainingString
 }
 
 // Returns the indefinite article (in English) for a the given noun, which is
@@ -235,7 +234,6 @@ func fixCase(word string, makeLower bool) string {
 func IndefiniteArticle(noun string) string {
 	if strings.ContainsRune("AEIOUaeiou", rune(noun[0])) {
 		return "an"
-	} else {
-		return "a"
 	}
+	return "a"
 }

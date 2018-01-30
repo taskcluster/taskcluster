@@ -26,46 +26,46 @@ type (
 	// in the json we read, or whether it was not given. Unmarshaling into a pointer means pointer
 	// will be nil pointer if it wasn't read, or a pointer to true/false if it was read from json.
 	JsonSubSchema struct {
-		AdditionalItems      *bool                  `json:"additionalItems"`
-		AdditionalProperties *AdditionalProperties  `json:"additionalProperties"`
-		AllOf                *Items                 `json:"allOf"`
-		AnyOf                *Items                 `json:"anyOf"`
-		Default              *interface{}           `json:"default"`
-		Definitions          *Properties            `json:"definitions"`
-		Dependencies         map[string]*Dependency `json:"dependencies"`
-		Description          *string                `json:"description"`
-		Enum                 []interface{}          `json:"enum"`
-		ExclusiveMaximum     *bool                  `json:"exclusiveMaximum"`
-		ExclusiveMinimum     *bool                  `json:"exclusiveMinimum"`
-		Format               *string                `json:"format"`
-		ID                   *string                `json:"id"`
-		Items                *JsonSubSchema         `json:"items"`
-		Maximum              *int                   `json:"maximum"`
-		MaxItems             *int                   `json:"maxItems"`
-		MaxLength            *int                   `json:"maxLength"`
-		MaxProperties        *int                   `json:"maxProperties"`
-		Minimum              *int                   `json:"minimum"`
-		MinItems             *int                   `json:"minItems"`
-		MinLength            *int                   `json:"minLength"`
-		MinProperties        *int                   `json:"minProperties"`
-		MultipleOf           *int                   `json:"multipleOf"`
-		OneOf                *Items                 `json:"oneOf"`
-		Pattern              *string                `json:"pattern"`
-		PatternProperties    *Properties            `json:"patternProperties"`
-		Properties           *Properties            `json:"properties"`
-		Ref                  *string                `json:"$ref"`
-		Required             []string               `json:"required"`
-		Schema               *string                `json:"$schema"`
-		Title                *string                `json:"title"`
-		Type                 *string                `json:"type"`
-		UniqueItems          *bool                  `json:"uniqueItems"`
+		AdditionalItems      *bool                  `json:"additionalItems,omitempty"`
+		AdditionalProperties *AdditionalProperties  `json:"additionalProperties,omitempty"`
+		AllOf                *Items                 `json:"allOf,omitempty"`
+		AnyOf                *Items                 `json:"anyOf,omitempty"`
+		Default              *interface{}           `json:"default,omitempty"`
+		Definitions          *Properties            `json:"definitions,omitempty"`
+		Dependencies         map[string]*Dependency `json:"dependencies,omitempty"`
+		Description          *string                `json:"description,omitempty"`
+		Enum                 []interface{}          `json:"enum,omitempty"`
+		ExclusiveMaximum     *bool                  `json:"exclusiveMaximum,omitempty"`
+		ExclusiveMinimum     *bool                  `json:"exclusiveMinimum,omitempty"`
+		Format               *string                `json:"format,omitempty"`
+		ID                   *string                `json:"id,omitempty"`
+		Items                *JsonSubSchema         `json:"items,omitempty"`
+		Maximum              *int                   `json:"maximum,omitempty"`
+		MaxItems             *int                   `json:"maxItems,omitempty"`
+		MaxLength            *int                   `json:"maxLength,omitempty"`
+		MaxProperties        *int                   `json:"maxProperties,omitempty"`
+		Minimum              *int                   `json:"minimum,omitempty"`
+		MinItems             *int                   `json:"minItems,omitempty"`
+		MinLength            *int                   `json:"minLength,omitempty"`
+		MinProperties        *int                   `json:"minProperties,omitempty"`
+		MultipleOf           *int                   `json:"multipleOf,omitempty"`
+		OneOf                *Items                 `json:"oneOf,omitempty"`
+		Pattern              *string                `json:"pattern,omitempty"`
+		PatternProperties    *Properties            `json:"patternProperties,omitempty"`
+		Properties           *Properties            `json:"properties,omitempty"`
+		Ref                  *string                `json:"$ref,omitempty"`
+		Required             []string               `json:"required,omitempty"`
+		Schema               *string                `json:"$schema,omitempty"`
+		Title                *string                `json:"title,omitempty"`
+		Type                 *string                `json:"type,omitempty"`
+		UniqueItems          *bool                  `json:"uniqueItems,omitempty"`
 
 		// non-json fields used for sorting/tracking
-		TypeName     string         `json:"-"`
-		PropertyName string         `json:"-"`
-		SourceURL    string         `json:"-"`
-		RefSubSchema *JsonSubSchema `json:"-"`
-		IsRequired   bool           `json:"-"`
+		TypeName     string         `json:"TYPE_NAME"`
+		PropertyName string         `json:"PROPERTY_NAME"`
+		SourceURL    string         `json:"SOURCE_URL"`
+		RefSubSchema *JsonSubSchema `json:"REF_SUBSCHEMA,omitempty"`
+		IsRequired   bool           `json:"IS_REQUIRED"`
 	}
 
 	Items struct {
@@ -128,9 +128,8 @@ type (
 func sanitizeURL(url string) string {
 	if strings.ContainsRune(url, '#') {
 		return url
-	} else {
-		return url + "#"
 	}
+	return url + "#"
 }
 
 func (schemaSet *SchemaSet) SubSchema(url string) *JsonSubSchema {
@@ -148,36 +147,18 @@ func (schemaSet *SchemaSet) SortedSanitizedURLs() []string {
 	return keys
 }
 
+// May panic - this is recovered by fmt package, but care should be taken to
+// capture panics when calling String() directly
 func (subSchema JsonSubSchema) String() string {
-	result := ""
-	result += describe("Additional Items", subSchema.AdditionalItems)
-	result += describe("Additional Properties", subSchema.AdditionalProperties)
-	result += describe("All Of", subSchema.AllOf)
-	result += describe("Any Of", subSchema.AnyOf)
-	result += describe("Default", subSchema.Default)
-	result += describe("Description", subSchema.Description)
-	result += describe("Enum", subSchema.Enum)
-	result += describe("Format", subSchema.Format)
-	result += describe("ID", subSchema.ID)
-	result += describeList("Items", subSchema.Items)
-	result += describe("Maximum", subSchema.Maximum)
-	result += describe("MaxLength", subSchema.MaxLength)
-	result += describe("Minimum", subSchema.Minimum)
-	result += describe("MinLength", subSchema.MinLength)
-	result += describeList("OneOf", subSchema.OneOf)
-	result += describe("Pattern", subSchema.Pattern)
-	result += describeList("Properties", subSchema.Properties)
-	result += describe("Ref", subSchema.Ref)
-	result += describe("Required", subSchema.Required)
-	result += describe("Schema", subSchema.Schema)
-	result += describe("Title", subSchema.Title)
-	result += describe("Type", subSchema.Type)
-	if subSchema.Type == nil && subSchema.Ref == nil {
-		result += "Type HAS NOT BEEN SET!!!\n"
+	v, err := json.Marshal(subSchema)
+	if err != nil {
+		panic(err)
 	}
-	result += describe("TypeName", &subSchema.TypeName)
-	result += describe("SourceURL", &subSchema.SourceURL)
-	return result
+	b, err := yaml.JSONToYAML(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
 }
 
 func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ string) {
@@ -467,25 +448,6 @@ func (items *Items) setSourceURL(url string) {
 	items.SourceURL = url
 }
 
-func describeList(name string, value interface{}) string {
-	if reflect.ValueOf(value).IsValid() {
-		if !reflect.ValueOf(value).IsNil() {
-			return fmt.Sprintf("%v\n", name) + text.Indent(fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(value)).Interface()), "  ")
-		}
-	}
-	return ""
-}
-
-// If item is not null, then return a description of it. If it is a pointer, dereference it first.
-func describe(name string, value interface{}) string {
-	if reflect.ValueOf(value).IsValid() {
-		if !reflect.ValueOf(value).IsNil() {
-			return fmt.Sprintf("%-22v = '%v'\n", name, reflect.Indirect(reflect.ValueOf(value)).Interface())
-		}
-	}
-	return ""
-}
-
 func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, job *Job, suffix string) error {
 	if reflect.ValueOf(canPopulate).IsValid() {
 		if !reflect.ValueOf(canPopulate).IsNil() {
@@ -563,9 +525,10 @@ func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error)
 			return
 		}
 	} else {
-		u, err := url.Parse(URL)
+		var u *url.URL
+		u, err = url.Parse(URL)
 		if err != nil {
-			return subSchema, err
+			return
 		}
 		var resp *http.Response
 		// TODO: may be better to use https://golang.org/pkg/net/http/#NewFileTransport here??
