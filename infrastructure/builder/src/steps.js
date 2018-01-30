@@ -123,7 +123,7 @@ module.exports = class Steps {
       if (!line || line.startsWith('#')) {
         return null;
       }
-      const [name, command] = line.split(':', 2);
+      const [name, command] = line.split(/:?\s+/);
       return {name, command: quote([command.trim()])};
     }).filter(l => l !== null);
     const entrypoint = ENTRYPOINT_TEMPLATE({procs});
