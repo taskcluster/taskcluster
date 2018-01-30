@@ -120,6 +120,11 @@ auth.deleteRole(roleId)
 ```
 
 ```js
+// auth.expandScopesGet :: payload -> Promise Result
+auth.expandScopesGet(payload)
+```
+
+```js
 // auth.expandScopes :: payload -> Promise Result
 auth.expandScopes(payload)
 ```

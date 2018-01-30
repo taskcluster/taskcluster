@@ -37,8 +37,9 @@ secrets.get(name)
 ```
 
 ```js
-// secrets.list :: () -> Promise Result
+// secrets.list :: [options] -> Promise Result
 secrets.list()
+secrets.list(options)
 ```
 
 ```js
