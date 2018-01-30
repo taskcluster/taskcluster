@@ -173,6 +173,8 @@ module.exports = class Steps {
   async cleanup() {
     const log = fs.createWriteStream(path.join(this.workDir, 'clean.log'));
     try {
+      // If the docker daemon runs as root, it will leave root files scattered
+      // around. We should remove them first.
       await this.docker.run(
         this.buildImage,
         ['rm -rf /workdir/app /workdir/slug /workdir/cache /workdir/docker'],

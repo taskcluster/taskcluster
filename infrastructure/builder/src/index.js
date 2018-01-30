@@ -6,14 +6,14 @@ const stringify = require('json-stable-stringify');
 const Steps = require('./steps');
 
 // This is being used a shell trap
-//const CLEAN_STEPS = [];
-//ON_DEATH((signal, err) => {
-//  CLEAN_STEPS.forEach(step => {
-//    step();
-//  });
-//  err && console.error(err);
-//  process.exit(signal);
-//});
+const CLEAN_STEPS = [];
+ON_DEATH((signal, err) => {
+  CLEAN_STEPS.forEach(step => {
+    step();
+  });
+  err && console.error(err);
+  process.exit(signal);
+});
 
 const main = async () => {
   const cfg = config({
@@ -25,6 +25,7 @@ const main = async () => {
   const imageBuilder = new Listr(
     cfg.services.map(service => {
       const steps = new Steps(service, cfg, lockFile[service.name], context);
+      CLEAN_STEPS.push(steps.cleanup);
       return {
         title: service.name,
         skip: () => steps.shouldBuild(),
