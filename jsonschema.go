@@ -224,16 +224,6 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 		comment += "//\n" + metadata
 	}
 
-	if URL := jsonSubSchema.SourceURL; URL != "" {
-		u, err := url.Parse(URL)
-		if err == nil && u.Scheme != "file" {
-			comment += "//\n// See " + URL + "\n"
-		}
-	}
-	for strings.Index(comment, "\n//\n") == 0 {
-		comment = "\n" + comment[4:]
-	}
-
 	typ = "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
@@ -257,22 +247,37 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			typ = "[]interface{}"
 		}
 	case "object":
-		if s := jsonSubSchema.Properties; s != nil {
-			typ = fmt.Sprintf("struct {\n")
-			for _, j := range s.SortedPropertyNames {
-				// recursive call to build structs inside structs
-				var subComment, subType string
-				subMember := s.MemberNames[j]
-				subComment, subType = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
-				jsonStructTagOptions := ""
-				if !s.Properties[j].IsRequired {
-					jsonStructTagOptions = ",omitempty"
-				}
-				// struct member name and type, as part of struct definition
-				typ += fmt.Sprintf("\t%v%v %v `json:\"%v%v\"`\n", subComment, subMember, subType, j, jsonStructTagOptions)
-			}
-			typ += "}"
+		ap := jsonSubSchema.AdditionalProperties
+		noExtraProperties := ap != nil && ap.Boolean != nil && !*ap.Boolean
+		if noExtraProperties {
+			// If we are sure no additional properties are allowed, we can
+			// generate a struct with all allowed property names.
+			typ = jsonSubSchema.Properties.AsStruct(extraPackages, rawMessageTypes)
+		} else if ap != nil && ap.Properties != nil && jsonSubSchema.Properties == nil {
+			// In the special case no properties have been specified, but
+			// additionalProperties is an object, we can create a
+			// map[string]<additionalProperties definition>.
+			subComment, subType := ap.Properties.typeDefinition(true, extraPackages, rawMessageTypes)
+			typ = "map[string]" + subType
+			comment += subComment
 		} else {
+			// Either *arbitrarily structured* additional properties are
+			// allowed, or the additional properties are of a fixed form, but
+			// the explicitly listed properties may not conform to that form,
+			// so fall back to the most general option to ensure it can hold
+			// both listed properties and additional properties.
+			if s := jsonSubSchema.Properties; s != nil {
+				comment += "//\n// Defined properties:\n//\n"
+				comment += text.Indent(s.AsStruct(extraPackages, rawMessageTypes), "//  ") + "\n"
+			}
+			if ap != nil && ap.Properties != nil {
+				comment += "//\n// Additional properties:\n"
+				subComment, subType := ap.Properties.typeDefinition(true, extraPackages, rawMessageTypes)
+				comment += text.Indent(subComment, "//  ")
+				comment += text.Indent(subType, "//  ") + "\n"
+			} else {
+				comment += "//\n// Additional properties allowed\n"
+			}
 			typ = "json.RawMessage"
 		}
 	case "number":
@@ -291,6 +296,17 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			}
 		}
 	}
+
+	if URL := jsonSubSchema.SourceURL; URL != "" {
+		u, err := url.Parse(URL)
+		if err == nil && u.Scheme != "file" {
+			comment += "//\n// See " + URL + "\n"
+		}
+	}
+	for strings.Index(comment, "\n//\n") == 0 {
+		comment = "\n" + comment[4:]
+	}
+
 	switch typ {
 	case "json.RawMessage":
 		extraPackages["\"encoding/json\""] = true
@@ -715,4 +731,24 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 	}`
 	}
 	return content
+}
+
+func (s *Properties) AsStruct(extraPackages StringSet, rawMessageTypes StringSet) (typ string) {
+	typ = fmt.Sprintf("struct {\n")
+	if s != nil {
+		for _, j := range s.SortedPropertyNames {
+			// recursive call to build structs inside structs
+			var subComment, subType string
+			subMember := s.MemberNames[j]
+			subComment, subType = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
+			jsonStructTagOptions := ""
+			if !s.Properties[j].IsRequired {
+				jsonStructTagOptions = ",omitempty"
+			}
+			// struct member name and type, as part of struct definition
+			typ += text.Indent(fmt.Sprintf("%v%v %v `json:\"%v%v\"`", subComment, subMember, subType, j, jsonStructTagOptions), "\t") + "\n"
+		}
+	}
+	typ += "}"
+	return
 }
