@@ -5,7 +5,7 @@
   "description": "Build and deploy taskcluster clusters",
   "license": "MPL-2.0",
   "scripts": {
-    "updateImages": "node src/index"
+    "images": "node src/build"
   },
   "files": [
     "lib"
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/imbstack/taskcluster-installer.git"
   },
-  "main": "./src/index.js",
+  "main": "./src/build.js",
   "dependencies": {
     "death": "^1.1.0",
     "dockerode": "^2.5.3",

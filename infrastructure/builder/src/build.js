@@ -3,7 +3,7 @@ const config = require('typed-env-config');
 const ON_DEATH = require('death');
 const Listr = require('listr');
 const stringify = require('json-stable-stringify');
-const Steps = require('./steps');
+const Steps = require('./build_steps');
 
 // This is being used a shell trap
 const CLEAN_STEPS = [];
