@@ -2435,7 +2435,7 @@ api.declare({
   if (!worker || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
-      'worker-type {{workerType}} and provisionerId {{provisionerId}} not found.' +
+      'worker-type {{workerType}} and provisionerId {{provisionerId}} not found. ' +
       'Are you sure it was created?', {
         workerId,
         workerGroup,
