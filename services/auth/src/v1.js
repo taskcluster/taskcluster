@@ -495,7 +495,7 @@ api.declare({
     this.resolver.reloadClient(clientId),
   ]);
 
-  return res.status(200).send();
+  return res.status(204).send();
 });
 
 /** List roles */
@@ -786,7 +786,7 @@ api.declare({
     this.resolver.reloadRoles(),
   ]);
 
-  return res.reply();
+  return res.status(204).send();
 });
 
 /** Expand a scopeset */
