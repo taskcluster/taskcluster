@@ -30,7 +30,7 @@
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
     "taskcluster-client": "^3.1.0",
-    "taskcluster-lib-scopes": "^1.8.1",
+    "taskcluster-lib-scopes": "^1.9.0",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
   },

@@ -1,20 +1,20 @@
-var express       = require('express');
-var Debug         = require('debug');
-var Promise       = require('promise');
-var hawk          = require('hawk');
-var aws           = require('aws-sdk');
-var assert        = require('assert');
-var _             = require('lodash');
-var bodyParser    = require('body-parser');
-var path          = require('path');
-var fs            = require('fs');
-var scopes        = require('taskcluster-lib-scopes');
-var crypto        = require('crypto');
-var taskcluster   = require('taskcluster-client');
-var Ajv           = require('ajv');
-var errors        = require('./errors');
-var expressions   = require('./expressions');
-var typeis        = require('type-is');
+var express = require('express');
+var Debug = require('debug');
+var Promise = require('promise');
+var hawk = require('hawk');
+var aws = require('aws-sdk');
+var assert = require('assert');
+var _ = require('lodash');
+var bodyParser = require('body-parser');
+var path = require('path');
+var fs = require('fs');
+var scopes = require('taskcluster-lib-scopes');
+var crypto = require('crypto');
+var taskcluster = require('taskcluster-client');
+var Ajv = require('ajv');
+var typeis = require('type-is');
+var errors = require('./errors');
+var ScopeExpressionTemplate = require('./expressions');
 
 // Default baseUrl for authentication server
 var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
@@ -465,6 +465,18 @@ var remoteAuthentication = function(options, entry) {
     return result;
   };
 
+  // Compile the scopeTemplate
+  let scopeTemplate;
+  let useUrlParams = false;
+  if (entry.scopes) {
+    scopeTemplate = new ScopeExpressionTemplate(entry.scopes);
+    // Write route parameters into {[param]: ''}
+    // if these are valid parameters, then we can parameterize using req.params
+    let [, params] = cleanRouteAndParams(entry.route);
+    params = Object.assign({}, ...params.map(p => ({[p]: ''})));
+    useUrlParams = scopeTemplate.validate(params);
+  }
+
   return async function(req, res, next) {
     let result;
     try {
@@ -502,8 +514,7 @@ var remoteAuthentication = function(options, entry) {
        * extra parameters.
        * Return true, if successful and if unsuccessful it throws an expressions.AuthorizationError.
        */
-      req.authorize = async function(params, options) {
-        let {allowLater} = options || {};
+      req.authorize = async function(params) {
         result = await (result || authenticate(req));
 
         // If authentication failed
@@ -513,28 +524,15 @@ var remoteAuthentication = function(options, entry) {
           return false;
         }
 
-        let missing = [];
-
-        let scopeExpression = expressions.expandExpressionTemplate(entry.scopes, params, missing);
-
-        if (missing.length) {
-          if (allowLater) {
-            debug(`Not all parameters supplied yet. Deferring authorization for due to missing parameters: ${missing}`);
-            return true;
-          }
-          throw new Error(`
-            Not all parameters were supplied to a scope check.
-            The call to req.authorize was not allowed to be partially
-            applied. Missing parameters: ${JSON.stringify(missing)}`,
-          );
-        }
+        // Render the scope expression template
+        const scopeExpression = scopeTemplate.render(params);
 
         // Test that we have scope intersection, and hence, is authorized
         let authed = !scopeExpression || scopes.satisfiesExpression(result.scopes, scopeExpression);
         req.hasAuthed = true;
 
         if (!authed) {
-          let err = new Error('Authorization failed'); // This way instead of subclassing due to babel/babel#3083
+          const err = new Error('Authorization failed'); // This way instead of subclassing due to babel/babel#3083
           err.name =  'AuthorizationError';
           err.code =  'AuthorizationError';
           err.scopes = result.scopes;
@@ -543,15 +541,15 @@ var remoteAuthentication = function(options, entry) {
           err.report = [
             'You do not have sufficient scopes. You are missing the following scopes:',
             '',
-            '{{missing}}',
+            '{{err.missing}}',
             '',
             'You have the scopes:',
             '',
-            '{{scopes}}',
+            '{{err.scopes}}',
             '',
             'This request requires you to satisfy this scope expression:',
             '',
-            '{{expression}}',
+            '{{scopeExpression}}',
           ].join('\n');
           throw err;
         }
@@ -569,7 +567,10 @@ var remoteAuthentication = function(options, entry) {
         req.hasAuthed = true;  // No need to check auth if there are no scopes
         next();
       } else {
-        await req.authorize(req.params, {allowLater: true});
+        // If url parameters is enough to parameterize we do it automatically
+        if (useUrlParams) {
+          await req.authorize(req.params);
+        }
         next();
       }
     } catch (err) {
@@ -760,15 +761,8 @@ API.prototype.declare = function(options, handler) {
   });
   assert(!options.deferAuth,
     'deferAuth is deprecated! https://github.com/taskcluster/taskcluster-lib-api#request-handlers');
-  if ('scopes' in options) {
-    assert(scopes.validExpression(_.cloneDeepWith(options.scopes, function morphExpression(scope) {
-      // This makes these template constructs valid parts of an expression
-      if (_.isObject(scope) && scope.for && scope.in && scope.each) {
-        return 'looping-template-construct';
-      } else if (_.isObject(scope) && scope.if && scope.then) {
-        return _.cloneDeepWith(scope.then, morphExpression);
-      }
-    })));
+  if ('scopes' in options && !ScopeExpressionTemplate.validate(options.scopes)) {
+    throw new Error(`Invalid scope expression template: ${JSON.stringify(options.scopes, null, 2)}`);
   }
   options.handler = handler;
   if (options.input) {
@@ -818,13 +812,6 @@ API.prototype.router = function(options) {
     assert(options.context[property] !== undefined,
       'Context must have declared property: \'' + property + '\'');
   });
-
-  // Authentication strategy (default to remote authentication)
-  var authStrategy = function(entry) {
-    return remoteAuthentication({
-      signatureValidator: options.signatureValidator,
-    }, entry);
-  };
 
   // Create caching authentication strategy if possible
   if (options.clientLoader || options.credentials) {
@@ -918,7 +905,9 @@ API.prototype.router = function(options) {
         }
         next();
       },
-      authStrategy(entry),
+      remoteAuthentication({
+        signatureValidator: options.signatureValidator,
+      }, entry),
       parameterValidator(entry.params),
       queryValidator(entry.query),
       schema(options.validator, entry),
@@ -931,6 +920,21 @@ API.prototype.router = function(options) {
 
   // Return router
   return router;
+};
+
+/** Return [route, params] from route */
+const cleanRouteAndParams = (route) => {
+  // Find parameters for entry
+  const params = [];
+  // Note: express uses the NPM module path-to-regexp for parsing routes
+  // when modifying this to support more complicated routes it can be
+  // beneficial lookup the source of this module:
+  // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
+  route = route.replace(/\/:(\w+)(\(.*?\))?\??/g, (match, param) => {
+    params.push(param);
+    return '/<' + param + '>';
+  });
+  return [route, params];
 };
 
 /**
@@ -952,17 +956,7 @@ API.prototype.reference = function(options) {
     description:        this._options.description,
     baseUrl:            options.baseUrl,
     entries: _.concat(this._entries, [ping]).filter(entry => !entry.noPublish).map(function(entry) {
-      // Find parameters for entry
-      var params  = [];
-      // Note: express uses the NPM module path-to-regexp for parsing routes
-      // when modifying this to support more complicated routes it can be
-      // beneficial lookup the source of this module:
-      // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
-      var regexp  = /\/:(\w+)(\(.*?\))?\??/g;
-      var route   = entry.route.replace(regexp, function(match, param) {
-        params.push(param);
-        return '/<' + param + '>';
-      });
+      const [route, params] = cleanRouteAndParams(entry.route);
       var retval = {
         type:           'function',
         method:         entry.method,

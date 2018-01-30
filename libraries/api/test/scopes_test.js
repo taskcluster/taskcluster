@@ -22,17 +22,15 @@ suite('api/route', function() {
     }, function(req, res) {});
   });
 
-  test('string scope rejected', function() {
-    assert.throws(function() {
-      api.declare({
-        method:       'get',
-        route:        '/test/:myparam',
-        scopes:       'test:unit',
-        name:         'testEP',
-        title:        'Test',
-        description:  'Test',
-      }, function(req, res) {});
-    }, /Scope expressions must be objects/);
+  test('string scope works', function() {
+    api.declare({
+      method:       'get',
+      route:        '/test/:myparam',
+      scopes:       'test:unit',
+      name:         'testEP',
+      title:        'Test',
+      description:  'Test',
+    }, function(req, res) {});
   });
 
   test('array of string scope rejected', function() {
@@ -45,7 +43,7 @@ suite('api/route', function() {
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
-    }, /Scope expressions must be objects/);
+    }, /Invalid scope expression/);
   });
 
   test('array of arrays of scope rejected', function() {
@@ -58,7 +56,7 @@ suite('api/route', function() {
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
-    }, /Scope expressions must be objects/);
+    }, /Invalid scope expression/);
   });
 
   test('scope expression not rejected', function() {
