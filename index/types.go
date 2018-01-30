@@ -16,6 +16,8 @@ type (
 
 		// Data that was reported with the task. This is an arbitrary JSON object.
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/index/v1/indexed-task-response.json#/properties/data
 		Data json.RawMessage `json:"data"`
 
@@ -56,6 +58,8 @@ type (
 		// This is an arbitrary JSON object. Feel free to put whatever data you want
 		// here, but do limit it, you'll get errors if you store more than 32KB.
 		// So stay well, below that limit.
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#/properties/data
 		Data json.RawMessage `json:"data"`
@@ -185,6 +189,8 @@ type (
 
 			// Data that was reported with the task. This is an arbitrary JSON
 			// object.
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/index/v1/list-tasks-response.json#/properties/tasks/items/properties/data
 			Data json.RawMessage `json:"data"`

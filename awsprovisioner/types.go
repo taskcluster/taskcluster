@@ -45,6 +45,8 @@ type (
 
 			// LaunchSpecification entries unique to this AZ
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
 
@@ -57,12 +59,16 @@ type (
 			//
 			// Default:    {}
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets,omitempty"`
 
 			// UserData entries unique to this AZ
 			//
 			// Default:    {}
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/userData
 			UserData json.RawMessage `json:"userData,omitempty"`
@@ -103,6 +109,8 @@ type (
 
 			// LaunchSpecification entries unique to this InstanceType
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
 
@@ -114,10 +122,14 @@ type (
 
 			// Static Secrets unique to this InstanceType
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
 
 			// UserData entries unique to this InstanceType
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
@@ -131,6 +143,8 @@ type (
 		} `json:"instanceTypes"`
 
 		// Launch Specification entries which are used in all regions and all instance types
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/launchSpec
 		LaunchSpec json.RawMessage `json:"launchSpec"`
@@ -173,14 +187,20 @@ type (
 
 			// LaunchSpecification entries unique to this Region
 			//
+			// Defined properties:
+			//
+			//  struct {
+			//
+			//  	// Per-region AMI ImageId
+			//  	//
+			//  	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId
+			//  	ImageID string `json:"ImageId"`
+			//  }
+			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
-			LaunchSpec struct {
-
-				// Per-region AMI ImageId
-				//
-				// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-				ImageID string `json:"ImageId"`
-			} `json:"launchSpec"`
+			LaunchSpec json.RawMessage `json:"launchSpec"`
 
 			// The Amazon AWS Region being configured.  Example: us-west-1
 			//
@@ -202,10 +222,14 @@ type (
 
 			// Static Secrets unique to this Region
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
 
 			// UserData entries unique to this Region
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
@@ -233,16 +257,22 @@ type (
 
 		// Static secrets entries which are used in all regions and all instance types
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/secrets
 		Secrets json.RawMessage `json:"secrets"`
 
 		// UserData entries which are used in all regions and all instance types
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/userData
 		UserData json.RawMessage `json:"userData"`
 	}
 
 	// All of the launch specifications for a worker type
+	//
+	// Additional properties allowed
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
 	GetAllLaunchSpecsResponse json.RawMessage
@@ -265,6 +295,8 @@ type (
 		Scopes []string `json:"scopes"`
 
 		// Free form object which contains the secrets stored
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#/properties/secrets
 		Secrets json.RawMessage `json:"secrets"`
@@ -303,6 +335,8 @@ type (
 
 		// Free-form object which contains secrets from the worker type definition
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/data
 		Data json.RawMessage `json:"data"`
 
@@ -325,6 +359,8 @@ type (
 
 			// LaunchSpecification entries unique to this AZ
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
 
@@ -337,12 +373,16 @@ type (
 			//
 			// Default:    {}
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets,omitempty"`
 
 			// UserData entries unique to this AZ
 			//
 			// Default:    {}
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/userData
 			UserData json.RawMessage `json:"userData,omitempty"`
@@ -383,6 +423,8 @@ type (
 
 			// LaunchSpecification entries unique to this InstanceType
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/launchSpec
 			LaunchSpec json.RawMessage `json:"launchSpec"`
 
@@ -394,10 +436,14 @@ type (
 
 			// Static Secrets unique to this InstanceType
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
 
 			// UserData entries unique to this InstanceType
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
@@ -417,6 +463,8 @@ type (
 		LastModified tcclient.Time `json:"lastModified"`
 
 		// Launch Specification entries which are used in all regions and all instance types
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/launchSpec
 		LaunchSpec json.RawMessage `json:"launchSpec"`
@@ -459,14 +507,20 @@ type (
 
 			// LaunchSpecification entries unique to this Region
 			//
+			// Defined properties:
+			//
+			//  struct {
+			//
+			//  	// Per-region AMI ImageId
+			//  	//
+			//  	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId
+			//  	ImageID string `json:"ImageId"`
+			//  }
+			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
-			LaunchSpec struct {
-
-				// Per-region AMI ImageId
-				//
-				// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-				ImageID string `json:"ImageId"`
-			} `json:"launchSpec"`
+			LaunchSpec json.RawMessage `json:"launchSpec"`
 
 			// The Amazon AWS Region being configured.  Example: us-west-1
 			//
@@ -481,10 +535,14 @@ type (
 
 			// Static Secrets unique to this Region
 			//
+			// Additional properties allowed
+			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/secrets
 			Secrets json.RawMessage `json:"secrets"`
 
 			// UserData entries unique to this Region
+			//
+			// Additional properties allowed
 			//
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/userData
 			UserData json.RawMessage `json:"userData"`
@@ -512,10 +570,14 @@ type (
 
 		// Static secrets entries which are used in all regions and all instance types
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/secrets
 		Secrets json.RawMessage `json:"secrets"`
 
 		// UserData entries which are used in all regions and all instance types
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/userData
 		UserData json.RawMessage `json:"userData"`

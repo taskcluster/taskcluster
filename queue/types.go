@@ -1384,6 +1384,8 @@ type (
 		//
 		// Default:    {}
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 
@@ -1430,6 +1432,8 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
@@ -1530,9 +1534,11 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    {}
+
+		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
-		Tags json.RawMessage `json:"tags,omitempty"`
+		Tags map[string]string `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -1598,6 +1604,8 @@ type (
 		//
 		// Default:    {}
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
@@ -1644,6 +1652,8 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
@@ -1727,9 +1737,11 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
+
+		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
-		Tags json.RawMessage `json:"tags"`
+		Tags map[string]string `json:"tags"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the

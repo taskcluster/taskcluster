@@ -169,6 +169,8 @@ type (
 
 		// Extra information that Treeherder reads on a best-effort basis
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 

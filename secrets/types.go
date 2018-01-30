@@ -21,6 +21,8 @@ type (
 
 		// The secret value to be encrypted.
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret
 		Secret json.RawMessage `json:"secret"`
 	}

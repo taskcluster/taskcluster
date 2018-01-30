@@ -32,6 +32,8 @@ type (
 
 		// Metadata describing the pull request.
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
@@ -84,6 +86,8 @@ type (
 
 		// Metadata describing the push.
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
@@ -135,6 +139,8 @@ type (
 	GitHubReleaseMessage struct {
 
 		// Metadata describing the release.
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`

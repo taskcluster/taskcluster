@@ -18,6 +18,8 @@ type (
 		// The error that occurred when firing the task.  This is typically,
 		// but not always, an API error message.
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/error
 		Error json.RawMessage `json:"error"`
 
@@ -101,6 +103,8 @@ type (
 		//               "type": "object"
 		//             }
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
 		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
 	}
@@ -180,6 +184,8 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
 		Task TaskTemplate `json:"task"`
 
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema
 		TriggerSchema json.RawMessage `json:"triggerSchema"`
 	}
@@ -500,6 +506,8 @@ type (
 		//
 		// Default:    {}
 		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 
@@ -545,6 +553,8 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
@@ -623,9 +633,11 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    {}
+
+		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/tags
-		Tags json.RawMessage `json:"tags,omitempty"`
+		Tags map[string]string `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -648,6 +660,8 @@ type (
 	}
 
 	// Trigger context
+	//
+	// Additional properties allowed
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
 	TriggerContext json.RawMessage
