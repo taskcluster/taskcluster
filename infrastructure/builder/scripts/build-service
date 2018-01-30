@@ -1,0 +1,175 @@
+#! /usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+
+THIS_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+fail() {
+    echo "${@}" >&2
+    exit 1
+}
+
+SERVICE_REPO="${1}"
+SERVICE_REF="${2}"
+
+if [ -z "${SERVICE_REPO}" -o -z "${SERVICE_REF}" ]; then
+    fail "Usage: $0 <repo> <ref>"
+fi
+
+STEPS=''
+run_build_steps() {
+    local step
+    for step in $STEPS; do
+        echo "======> Executing step $step"
+        echo ""
+        $step
+        echo ""
+    done
+}
+
+STEPS="$STEPS setup_workdir"
+setup_workdir() {
+    WORKDIR=$(mktemp -d -p /tmp build-service-XXXXXX)
+    cd $WORKDIR
+    echo "Using workdir $WORKDIR"
+    cleanup() {
+        cd /
+        rm -rf $WORKDIR
+    }
+    trap 'cleanup' ERR EXIT
+}
+
+# ---
+
+STEPS="$STEPS clone_app"
+clone_app() {
+    git clone --depth 1 -b "${SERVICE_REF}" "${SERVICE_REPO}" app/
+}
+
+STEPS="$STEPS read_config"
+read_config() {
+    if [ -f "app/.build-config.sh" ]; then
+        echo "Reading .build-config.sh"
+        source "app/.build-config.sh"
+    fi
+
+    echo "BUILD_TYPE=${BUILD_TYPE:=heroku-buildpack}"
+    [ "${BUILD_TYPE}" = "heroku-buildpack" ] || fail "Invalid BUILD_TYPE"
+
+    echo "HEROKU_STACK=${HEROKU_STACK:=heroku-16}"
+    [ -n "${HEROKU_STACK}" ] || fail "Invalid HEROKU_STACK"
+
+    echo "HEROKU_BUILDPACK=${HEROKU_BUILDPACK:=https://github.com/heroku/heroku-buildpack-nodejs#master}"
+    [ -n "${HEROKU_BUILDPACK}" ] || fail "Invalid HEROKU_BUILDPACK"
+}
+
+STEPS="$STEPS clone_buildpack"
+clone_buildpack() {
+    local url="${HEROKU_BUILDPACK%%#*}"
+    local ref="${HEROKU_BUILDPACK##*#}"
+
+    if [ "${url}" = "${HEROKU_BUILDPACK}" ]; then
+        ref=master
+    fi
+
+    git clone --depth 1 -b "${ref}" "${url}" buildpack/
+}
+
+STEPS="$STEPS build_slug"
+build_slug() {
+    # See https://devcenter.heroku.com/articles/buildpack-api and
+    # https://devcenter.heroku.com/articles/slug-compiler
+    #
+    # Note that this is not a general slug compiler; it ignores features
+    # that Taskcluster does not use, such as .slugignore.
+
+    mkdir cache  # we do not use caching at the moment
+    mkdir env
+    mkdir slug
+
+    local stack_build_image="heroku/${HEROKU_STACK/-/:}-build"
+
+    echo ""
+    echo "===> Buildpack detect:"
+    echo ""
+
+    docker run --rm --volume "${WORKDIR}:/workdir" $stack_build_image \
+        /workdir/buildpack/bin/detect /workdir/app
+
+    # after this point, the workdir has some root-owned files, so we'll need
+    # to clean it up as root in the image
+    cleanup() {
+        local WORKDIR="${1}"
+        local stack_build_image="${2}"
+        cd /
+        docker run --rm --volume "${WORKDIR}:/workdir" $stack_build_image \
+            rm -rf /workdir/{app,slug,cache,docker}
+        rm -rf $WORKDIR
+    }
+    trap "cleanup \"${WORKDIR}\" \"${stack_build_image}\"" ERR EXIT
+
+    echo ""
+    echo "===> Buildpack compile:"
+    echo ""
+
+    docker run --rm --volume "${WORKDIR}:/workdir" $stack_build_image \
+        /workdir/buildpack/bin/compile /workdir/app /workdir/cache /workdir/env
+}
+
+STEPS="$STEPS generate_entrypoint"
+generate_entrypoint() {
+    # generate an entrypoint shell script based on release.yml
+    echo '#! /bin/bash' > entrypoint
+    echo 'cd /app' >> entrypoint
+    echo 'for f in /app/.profile.d/*.sh; do' >> entrypoint
+    echo '    source $f' >> entrypoint
+    echo 'done' >> entrypoint
+
+    # use some Python to translate Procfile into a shell script..
+    cat >procfile.py <<'EOF'
+import shlex
+import sys
+
+print('case "${1}" in')
+
+for line in open(sys.argv[1], "r"):
+    line = line.strip()
+    if not line or line.startswith('#'):
+        continue
+    name, command = line.split(':', 1)
+    name = name.strip()
+    command = command.strip()
+    print('    {}) exec bash -c {};;'.format(name, shlex.quote(command)))
+
+print('    *) exec "${@}";;');
+print('esac');
+EOF
+    python3 procfile.py app/Procfile >> entrypoint
+
+    cat entrypoint
+    chmod +x entrypoint
+}
+
+STEPS="$STEPS build_image"
+build_image() {
+    # use the non-build image to run the slug
+    local stack_image="heroku/${HEROKU_STACK/-/:}"
+
+    mkdir docker
+    echo "FROM $stack_image" >> docker/Dockerfile
+
+    mv app docker/app
+    echo 'ADD app /app' >> docker/Dockerfile
+    echo 'ENV HOME=/app' >> docker/Dockerfile
+
+    mv entrypoint docker/entrypoint
+    echo 'ADD entrypoint /entrypoint' >> docker/Dockerfile
+    echo 'ENTRYPOINT ["/entrypoint"]' >> docker/Dockerfile
+
+    docker build --no-cache docker
+}
+
+# ---
+
+run_build_steps

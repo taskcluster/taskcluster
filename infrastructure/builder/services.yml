@@ -1,0 +1,20 @@
+---
+defaults:
+  dockerOrg: imbstack
+  services:
+    - name: auth
+      source: https://github.com/taskcluster/taskcluster-auth#master
+    - name: queue
+      source: https://github.com/taskcluster/taskcluster-queue#master
+    - name: index
+      source: https://github.com/taskcluster/taskcluster-index#master
+    - name: github
+      source: https://github.com/taskcluster/taskcluster-github#master
+    - name: notify
+      source: https://github.com/taskcluster/taskcluster-notify#master
+    - name: purgeCache
+      source: https://github.com/taskcluster/taskcluster-purge-cache#master
+    - name: secrets
+      source: https://github.com/taskcluster/taskcluster-secrets#master
+    - name: hooks
+      source: https://github.com/taskcluster/taskcluster-hooks#master
