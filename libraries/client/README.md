@@ -121,17 +121,17 @@ var RawRoutingPattern = 'route.task.specific.routing.key';
 listener.bind(queueEvents.taskCompleted(RawRoutingPattern);
 ```
 
-### Web Listener
-Listening to  events can be done using a `WebListener`. All steps are identical to using `PulseListener` except in initializing the listener. While PulseListener opens a TCP socket
-to `pulse.mozilla.org` directly, a WebListener will connect to `events.taskcluster.net`
-using a websocket. In addition, `PulseListener` cannot be used on
-the browser.
+To bind to a custom exchange *and* routingKey, pass an object to `listener.bind`:
 
-```javascript
-var listener = new taskcluster.WebListener({
-  baseUrl: undefined // defaults to: https://events.taskcluster.net/v1
+```js
+listener.bind({
+  exchange: 'myservice/myexchange/v1';
+  routingKeyPattern: 'some.routing.#';
 });
 ```
+
+Note that the argument to the `message` event will not have the `routing`
+property described above, although the `routingKey` property will be present.
 
 ## Advanced Listening
 
