@@ -135,10 +135,10 @@ suite('api/auth', function() {
     route:        '/test-dyn-auth',
     name:         'testDynAuth',
     title:        'Test End-Point',
-    scopes:       {AllOf: [{for: 'scope', in: 'request.scopes', each: '<scope>'}]},
+    scopes:       {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
     description:  'Place we can call to test something',
   }, async function(req, res) {
-    await req.authorize({request: req.body});
+    await req.authorize({scopes: req.body.scopes});
     return res.status(200).json('OK');
   });
 
@@ -150,15 +150,16 @@ suite('api/auth', function() {
     title:        'Test End-Point',
     scopes:       {AllOf: [
       'queue:create-task:<provisionerId>/<workerType>',
-      {for: 'route', in: 'task.routes', each: 'queue:route:<route>'},
-      {for: 'scope', in: 'task.scopes', each: '<scope>'},
+      {for: 'route', in: 'routes', each: 'queue:route:<route>'},
+      {for: 'scope', in: 'scopes', each: '<scope>'},
     ]},
     description:  'Place we can call to test something',
   }, async function(req, res) {
     await req.authorize({
       provisionerId:    req.params.provisionerId,
       workerType:       req.params.workerType,
-      task:             req.body,
+      scopes:           req.body.scopes,
+      routes:           req.body.routes,
     });
     return res.status(200).json('OK');
   });
@@ -218,7 +219,7 @@ suite('api/auth', function() {
     route:        '/test-dyn-auth-no-authorize',
     name:         'testDynAuthNoAuthorize',
     title:        'Test End-Point',
-    scopes:       {AllOf: [{for: 'scope', in: 'request.scopes', each: '<scope>'}]},
+    scopes:       {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
     description:  'Place we can call to test something',
   }, function(req, res) {
     return res.reply({});
@@ -230,7 +231,7 @@ suite('api/auth', function() {
     route:        '/test-dyn-auth-missing-authorize',
     name:         'testDynAuthNoAuthorize',
     title:        'Test End-Point',
-    scopes:       {AllOf: [{for: 'scope', in: 'request.scopes', each: '<scope>'}]},
+    scopes:       {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
     description:  'Place we can call to test something',
   }, async function(req, res) {
     await req.authorize({foo: 'bar'});
