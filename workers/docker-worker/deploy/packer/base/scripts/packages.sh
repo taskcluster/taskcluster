@@ -10,7 +10,17 @@ lsb_release -a
 
 # add docker group and add current user to it
 sudo groupadd -f docker
-sudo usermod -a -G docker $SUDO_USER
+
+# Make sure we use add the calling user to docker
+# group. If the the script itself is called with sudo,
+# we must use SUDO_USER, otherwise, use USER.
+if [ -z "${VAGRANT_PROVISION}" ]; then
+    user=$USER
+else
+    user=$SUDO_USER
+fi
+
+sudo usermod -a -G docker $user
 
 sudo apt-get update -y
 
