@@ -3,8 +3,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
@@ -75,6 +77,14 @@ func main() {
 		URLs:        parseStandardIn(),
 	}
 	result, err := job.Execute()
+	if err != nil {
+		log.Printf("%#v", err)
+		switch j := err.(type) {
+		case *json.UnmarshalTypeError:
+			log.Printf("Error: %v", j.Error())
+			log.Printf("Field: %v", j.Field)
+		}
+	}
 	exitOnFail(err)
 	// simply output the generated file name, in the case of success, for
 	// super-easy parsing
