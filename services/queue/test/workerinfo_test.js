@@ -404,11 +404,23 @@ suite('provisioners and worker-types', () => {
 
   test('queue.quarantineWorker quarantines a worker', async () => {
     const Worker = await helper.load('Worker', helper.loadOptions);
-    const provisionerId = 'prov2';
+    const provisionerId = 'prov1';
     const workerType = 'gecko-b-2-linux';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
     const quarantineUntil = new Date();
+
+    const provisioner = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    };
+
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    await Provisioner.create(provisioner);
 
     await Worker.create({
       provisionerId,
@@ -438,13 +450,25 @@ suite('provisioners and worker-types', () => {
   test('queue.getWorkerType returns a worker-type', async () => {
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
     const wType = {
-      provisionerId: 'prov-A',
+      provisionerId: 'prov1',
       workerType: 'gecko-b-2-linux',
       expires: new Date('3017-07-29'),
       lastDateActive: new Date(),
       description: 'test-worker-type',
       stability: 'experimental',
     };
+
+    const provisioner = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    };
+
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    await Provisioner.create(provisioner);
 
     await WorkerType.create(wType);
 
@@ -515,7 +539,18 @@ suite('provisioners and worker-types', () => {
   });
 
   test('queue.declareWorkerType updates a worker-type', async () => {
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
+    const provisioner = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    };
+
+    await Provisioner.create(provisioner);
 
     const wType = await WorkerType.create({
       provisionerId: 'prov1',
@@ -699,7 +734,6 @@ suite('provisioners and worker-types', () => {
     prov.lastDateActive = taskcluster.fromNow('- 7h');
     prov.provisionerId = 'prov2';
 
-    await Provisioner.create(prov);
     await workerInfo.seen(prov.provisionerId);
 
     result = await helper.queue.getProvisioner(prov.provisionerId);
@@ -718,6 +752,16 @@ suite('provisioners and worker-types', () => {
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
     const recentTasks = [];
+    const provisioner = {
+      provisionerId,
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    };
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    await Provisioner.create(provisioner);
 
     recentTasks.push({taskId, runId: 0});
     recentTasks.push({taskId, runId: 1});
@@ -753,6 +797,17 @@ suite('provisioners and worker-types', () => {
   });
 
   test('queue.declareWorker updates a worker', async () => {
+    const provisioner = {
+      provisionerId: 'prov1',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    };
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    await Provisioner.create(provisioner);
+
     const Worker = await helper.load('Worker', helper.loadOptions);
     const taskId = slugid.v4();
 
