@@ -913,6 +913,17 @@ suite('provisioners and worker-types', () => {
     const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
+    const provisioner = {
+      provisionerId,
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    };
+    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
+    await Provisioner.create(provisioner);
+
     let taskIds = [];
 
     for (let i = 0; i < 30; i++) {
