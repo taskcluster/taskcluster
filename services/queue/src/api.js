@@ -2257,11 +2257,11 @@ api.declare({
       provisionerId,
       workerType,
       expires: Entity.op.greaterThan(new Date()),
-    }),
+    }, true),
     this.Provisioner.load({provisionerId}, true),
   ]);
 
-  if (!wType) {
+  if (!wType || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker-type {{workerType}} with Provisioner {{provisionerId}} not found. Are you sure it was created?', {
         workerType,
@@ -2432,7 +2432,7 @@ api.declare({
     await this.Provisioner.load({provisionerId}, true),
   ]);
 
-  if (!worker) {
+  if (!worker || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
       'worker-type {{workerType}} and provisionerId {{provisionerId}} not found.' +
