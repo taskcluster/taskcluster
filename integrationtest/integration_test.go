@@ -108,7 +108,7 @@ func TestDefineTask(t *testing.T) {
 		Scopes: []string{
 			"queue:task-priority:high",
 		},
-		Tags:        json.RawMessage(`{"createdForUser":"cbook@mozilla.com"}`),
+		Tags:        map[string]string{"createdForUser": "cbook@mozilla.com"},
 		Priority:    "high",
 		TaskGroupID: taskGroupID,
 		WorkerType:  "win2008-worker",
