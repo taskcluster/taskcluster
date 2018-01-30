@@ -140,9 +140,11 @@ var load = loader({
       let now = taskcluster.fromNow(cfg.app.expirationDelay);
 
       debug('Expiring namespaces');
-      await Namespace.expireEntries(now);
+      let namespaces = await Namespace.expireEntries(now);
+      debug(`Expired ${namespaces} namespaces`);
       debug('Expiring indexed tasks');
-      await IndexedTask.expireTasks(now);
+      let tasks = await IndexedTask.expireTasks(now);
+      debug(`Expired ${tasks} tasks`);
 
       monitor.count('expire.done');
       monitor.stopResourceMonitoring();
