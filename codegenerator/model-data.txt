@@ -1,4 +1,4 @@
-Generated: 1517311317
+Generated: 1517318553
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3836,7 +3836,7 @@ PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
 TYPE_NAME: GetSecretResponse
 additionalProperties:
-  Boolean: true
+  Boolean: false
   Properties: null
 description: |
   Secrets from the provisioner
@@ -3845,9 +3845,10 @@ properties:
   MemberNames:
     credentials: Credentials
     data: Data
+    scopes: Scopes
   Properties:
     credentials:
-      IS_REQUIRED: false
+      IS_REQUIRED: true
       PROPERTY_NAME: credentials
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials
       TYPE_NAME: Credentials
@@ -3891,17 +3892,34 @@ properties:
       - certificate
       type: object
     data:
-      IS_REQUIRED: false
+      IS_REQUIRED: true
       PROPERTY_NAME: data
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/data
       TYPE_NAME: Data
       description: |
         Free-form object which contains secrets from the worker type definition
       type: object
+    scopes:
+      IS_REQUIRED: true
+      PROPERTY_NAME: scopes
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/scopes
+      TYPE_NAME: Scopes
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: scopes entry
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/scopes/items
+        TYPE_NAME: ScopesEntry
+        type: string
+      type: array
   SortedPropertyNames:
   - credentials
   - data
+  - scopes
   SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties
+required:
+- data
+- credentials
+- scopes
 title: Get Secret Response
 type: object
 

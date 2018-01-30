@@ -299,12 +299,15 @@ type (
 
 			// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/credentials/properties/clientId
 			ClientID string `json:"clientId"`
-		} `json:"credentials,omitempty"`
+		} `json:"credentials"`
 
 		// Free-form object which contains secrets from the worker type definition
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/data
-		Data json.RawMessage `json:"data,omitempty"`
+		Data json.RawMessage `json:"data"`
+
+		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#/properties/scopes
+		Scopes []string `json:"scopes"`
 	}
 
 	// A worker launchSpecification and required metadata
