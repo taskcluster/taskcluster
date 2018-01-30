@@ -1,5 +1,5 @@
 const assert = require('assert');
-const expressions = require('../lib/expressions');
+const ScopeExpressionTemplate = require('../lib/expressions');
 
 suite('expression expansion success', function() {
 
@@ -7,7 +7,7 @@ suite('expression expansion success', function() {
     return () => {
       let missing = [];
       try {
-        assert.deepEqual(expressions.expandExpressionTemplate(expr, params, missing), result);
+        assert.deepEqual(new ScopeExpressionTemplate(expr).render(params), result);
       } catch (err) {
         if (shouldFail) {
           return;
@@ -27,7 +27,8 @@ suite('expression expansion success', function() {
     [{AllOf: ['abc:<foo>']}, {foo: 'hi'}, {AllOf: ['abc:hi']}],
     [{AllOf: ['abc:<foo>:<bar>']}, {foo: 'hi', bar: 'bye'}, {AllOf: ['abc:hi:bye']}],
     [{AllOf: ['abc:<foo>:<bar>:<baz>']}, {foo: 'hi', bar: 'bye', baz: 'bing'}, {AllOf: ['abc:hi:bye:bing']}],
-    [{if: 'foo', then: {AllOf: ['bar']}}, {foo: false}, undefined],
+    [{if: 'foo', then: {AllOf: ['bar']}}, {foo: false}, null],
+    [{if: 'foo', then: {AllOf: ['bar']}, else: 'test'}, {foo: false}, 'test'],
     [{if: 'foo', then: {AllOf: ['bar']}}, {foo: true}, {AllOf: ['bar']}],
     [{if: 'foo', then: {AllOf: ['bar:<baz>']}}, {foo: true, baz: 'hi'}, {AllOf: ['bar:hi']}],
     [{AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>'}]}, {bar: ['aaa', 'bbb']}, {AllOf: ['aa:aaa', 'aa:bbb']}],
@@ -53,26 +54,44 @@ suite('expression expansion success', function() {
   });
 });
 
-suite('expression expansion missing params', function() {
-
-  function scenario(expr, params, shouldBeMissing) {
-    return () => {
-      let missing = [];
-      expressions.expandExpressionTemplate(expr, params, missing);
-      assert.deepEqual(shouldBeMissing, missing);
-    };
-  }
-
+suite('ScopeExpressionTemplate can validate params', () => {
   [
-    [{AnyOf: ['abc:<foo>']}, {}, ['<foo>']],
-    [{AnyOf: ['abc:<foo>']}, {bar: 'a'}, ['<foo>']],
-    [{AnyOf: ['abc:<foo>', '<bar>']}, {}, ['<foo>', '<bar>']],
-    [{AnyOf: []}, {}, []],
-    [{AnyOf: ['abc:<foo>:<bar>']}, {}, ['<foo>', '<bar>']],
-    [{if: 'foo', then: {AllOf: ['bar']}}, {}, ['foo']],
-    [{AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>'}]}, {}, ['bar']],
-    [{AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>:<baz>'}]}, {bar: ['a']}, ['<baz>']],
-  ].map(([e, p, m]) => {
-    test(`${JSON.stringify(e)} with ${JSON.stringify(p)} is missing ${JSON.stringify(m)}`, scenario(e, p, m));
+    {
+      expr: {AnyOf: ['abc:<foo>']},
+      params: {foo: 'bar'},
+    },
+    {
+      expr: {AnyOf: ['abc:<foo>']},
+      params: {foo: 9},
+    },
+    {
+      expr: {AnyOf: ['abc:<foo>', '<bar>']},
+      params: {foo: 1, bar: 'hello'},
+    },
+    {
+      expr: {AnyOf: ['abc:<foo>:<bar>']},
+      params: {foo: 1, bar: 'hello'},
+    },
+    {
+      expr: {if: 'foo', then: {AllOf: ['bar']}},
+      params: {foo: true, bar: 'hello'},
+    },
+    {
+      expr: {if: 'foo', then: {AllOf: ['bar']}},
+      params: {foo: false, bar: 'hello'},
+    },
+    {
+      expr: {AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>'}]},
+      params: {bar: ['a', 'b']},
+    },
+    {
+      expr: {AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>:<baz>'}]},
+      params: {bar: ['a'], baz: '8'},
+    },
+  ].forEach(({expr, params}) => {
+    test(`${JSON.stringify(expr)} works with ${JSON.stringify(params)}`, () => {
+      const tmpl = new ScopeExpressionTemplate(expr);
+      assert(tmpl.validate(params), `Expected ${JSON.stringify(expr)} to validate ${JSON.stringify(params)}`);
+    });
   });
 });

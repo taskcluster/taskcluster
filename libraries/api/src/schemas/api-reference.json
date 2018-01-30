@@ -4,53 +4,58 @@
     "description": "Reference of methods implemented by API",
     "type": "object",
     "definitions": {
+      "scopeExpressionTemplateString": {
+        "title": "Required-Scope",
+        "type": "string",
+        "description": "The most basic element of a scope expression",
+        "pattern": "^[\\x20-\\x7e]*$"
+      },
+      "scopeExpressionTemplateAnyOf": {
+        "title": "Disjunction",
+        "type": "object",
+        "description": "AnyOf objects will evaluate to true if any subexpressions are true",
+        "properties": {
+          "AnyOf": {"type": "array", "items": {"$ref": "#/definitions/scopeExpressionTemplate"}}
+        },
+        "required": ["AnyOf"],
+        "additionalProperties": false
+      },
+      "scopeExpressionTemplateAllOf": {
+        "title": "Conjunction",
+        "type": "object",
+        "description": "AllOf objects will evaluate to true if all subexpressions are true",
+        "properties": {
+          "AllOf": {"type": "array", "items": {"$ref": "#/definitions/scopeExpressionTemplate"}}
+        },
+        "required": ["AllOf"],
+        "additionalProperties": false
+      },
+      "scopeExpressionTemplateIf": {
+        "title": "Conditional",
+        "type": "object",
+        "description": "if/then objects will replace themselves with the contents of then if the `if` is true",
+        "properties": {
+          "if": {"type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"},
+          "then": {"$ref": "#/definitions/scopeExpressionTemplate"},
+          "else": {"$ref": "#/definitions/scopeExpressionTemplate"}
+        },
+        "required": ["if", "then"],
+        "additionalProperties": false
+      },
       "scopeExpressionTemplate": {
         "oneOf": [
+          {"$ref": "#/definitions/scopeExpressionTemplateString"},
+          {"$ref": "#/definitions/scopeExpressionTemplateAnyOf"},
+          {"$ref": "#/definitions/scopeExpressionTemplateAllOf"},
+          {"$ref": "#/definitions/scopeExpressionTemplateIf"},
           {
-            "title": "Required Scope",
-            "type": "string",
-            "description": "The most basic element of a scope expression",
-            "pattern": "^[\\x20-\\x7e]*$"
-          },
-          {
-            "title": "Any Of",
-            "type": "object",
-            "description": "AnyOf objects will evaluate to true if any subexpressions are true",
-            "properties": {
-              "AnyOf": {"type": "array", "items": {"$ref": "#/definitions/scopeExpressionTemplate"}}
-            },
-            "required": ["AnyOf"],
-            "additionalProperties": false
-          },
-          {
-            "title": "All Of",
-            "type": "object",
-            "description": "AllOf objects will evaluate to true if all subexpressions are true",
-            "properties": {
-              "AllOf": {"type": "array", "items": {"$ref": "#/definitions/scopeExpressionTemplate"}}
-            },
-            "required": ["AllOf"],
-            "additionalProperties": false
-          },
-          {
-            "title": "If/Then",
-            "type": "object",
-            "description": "if/then objects will replace themselves with the contents of then if the `if` is true",
-            "properties": {
-              "if": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"},
-              "then": {"$ref": "#/definitions/scopeExpressionTemplate"}
-            },
-            "required": ["if", "then"],
-            "additionalProperties": false
-          },
-          {
-            "title": "For/Each/In",
+            "title": "For-All",
             "type": "object",
             "description": "for/each/in objects will replace themselves with an array of basic scopes. They will be flattened into the array this object is a part of.",
             "properties": {
-              "for": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"},
+              "for": {"type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"},
               "each": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"},
-              "in": {"type": "string", "pattern": "^[\\x20-\\x7e]*$"}
+              "in": {"type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"}
             },
             "required": ["for", "each", "in"],
             "additionalProperties": false
@@ -161,7 +166,12 @@
                     },
                     "scopes": {
                         "description": "Scope expression template specifying required scopes for a method. Not provided if authentication isn't required.",
-                        "$ref": "#/definitions/scopeExpressionTemplate"
+                        "oneOf": [
+                          {"$ref": "#/definitions/scopeExpressionTemplateString"},
+                          {"$ref": "#/definitions/scopeExpressionTemplateAnyOf"},
+                          {"$ref": "#/definitions/scopeExpressionTemplateAllOf"},
+                          {"$ref": "#/definitions/scopeExpressionTemplateIf"}
+                        ]
                     },
                     "input": {
                         "type": "string",
