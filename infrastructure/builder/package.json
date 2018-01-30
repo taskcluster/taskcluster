@@ -19,6 +19,7 @@
     "death": "^1.1.0",
     "dockerode": "^2.5.3",
     "dot": "^1.1.2",
+    "json-stable-stringify": "^1.0.1",
     "listr": "^0.13.0",
     "rimraf": "^2.6.2",
     "shell-quote": "^1.6.1",

@@ -2,6 +2,7 @@ const fs = require('fs');
 const config = require('typed-env-config');
 const ON_DEATH = require('death');
 const Listr = require('listr');
+const stringify = require('json-stable-stringify');
 const Steps = require('./steps');
 
 // This is being used a shell trap
@@ -18,16 +19,19 @@ const main = async () => {
   const cfg = config({
     files: ['services.yml'],
   });
+  const lockFile = JSON.parse(fs.readFileSync('services.lock'));
+  const context = {};
 
   const imageBuilder = new Listr(
     cfg.services.map(service => {
-      const steps = new Steps(service, cfg);
+      const steps = new Steps(service, cfg, lockFile[service.name], context);
       return {
         title: service.name,
+        skip: () => steps.shouldBuild(),
         task: () => new Listr([
           {
             title: 'Clone service repo',
-            task: (ctx) => steps.clone(ctx),
+            task: () => steps.clone(),
           },
           {
             title: 'Gather build configuration',
@@ -51,7 +55,7 @@ const main = async () => {
           },
           {
             title: 'Build image',
-            task: (ctx) => steps.buildFinalImage(ctx),
+            task: () => steps.buildFinalImage(),
           },
           {
             title: 'Clean',
@@ -63,8 +67,8 @@ const main = async () => {
     {concurrent: 1}
   );
 
-  const results = await imageBuilder.run();
-  fs.writeFileSync('services.lock', JSON.stringify(results, null, 4));
+  await imageBuilder.run();
+  fs.writeFileSync('services.lock', stringify(context, {space: 4}));
 };
 
 main().catch(console.error);

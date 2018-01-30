@@ -39,9 +39,12 @@ ENTRYPOINT ["/entrypoint"]
 `.trim());
 
 module.exports = class Steps {
-  constructor(service, cfg) {
+  constructor(service, cfg, lockInfo, context) {
     this.service = service;
     this.cfg = cfg;
+    this.lockInfo = lockInfo;
+    this.context = Object.assign({}, this.lockInfo);
+    context[service.name] = this.context;
     this.workDir = fs.mkdtempSync(path.join('/tmp', service.name + '-'));
     this.git = git(this.workDir);
     this.docker = new Docker();
@@ -52,11 +55,19 @@ module.exports = class Steps {
     };
   }
 
-  async clone(ctx) {
+  async shouldBuild() {
+    const [source, ref] = this.service.source.split('#');
+    let head = await this.git.listRemote([source, ref]);
+    if (head.split(/\s+/)[0] === this.lockInfo.commit) {
+      return 'Already up to date';
+    }
+  }
+
+  async clone() {
     const [source, ref] = this.service.source.split('#');
     await this.git.clone(source, 'app', ['--depth=1', `-b${ref}`]);
     const commit = (await git(path.join(this.workDir, 'app')).revparse(['HEAD'])).trim();
-    ctx[this.service.name] = {commit};
+    this.context.commit = commit;
   }
 
   async readConfig() {
@@ -130,7 +141,7 @@ module.exports = class Steps {
     fs.writeFileSync(path.join(this.workDir, 'entrypoint'), entrypoint, {mode: 0o777})
   }
 
-  async buildFinalImage(ctx) {
+  async buildFinalImage() {
     fs.mkdirSync(path.join(this.workDir, 'docker'));
     fs.renameSync(path.join(this.workDir, 'app'),path.join(this.workDir, 'docker', 'app'));
     fs.renameSync(path.join(this.workDir, 'entrypoint'),path.join(this.workDir, 'docker', 'entrypoint'));
@@ -152,7 +163,7 @@ module.exports = class Steps {
         if (event.stream) {
           observer.next(event.stream);
         } else if (event.aux) {
-          ctx[this.service.name].image = event.aux.ID.split(':')[1];
+          this.context.image = event.aux.ID.split(':')[1];
         }
       };
       this.docker.modem.followProgress(context, onFinished, onProgress);
