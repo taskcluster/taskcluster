@@ -257,22 +257,39 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			typ = "[]interface{}"
 		}
 	case "object":
-		if s := jsonSubSchema.Properties; s != nil {
+		ap := jsonSubSchema.AdditionalProperties
+		noExtraProperties := ap != nil && ap.Boolean != nil && !*ap.Boolean
+		if noExtraProperties {
+			// If we are sure no additional properties are allowed, we can
+			// generate a struct with all allowed property names.
 			typ = fmt.Sprintf("struct {\n")
-			for _, j := range s.SortedPropertyNames {
-				// recursive call to build structs inside structs
-				var subComment, subType string
-				subMember := s.MemberNames[j]
-				subComment, subType = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
-				jsonStructTagOptions := ""
-				if !s.Properties[j].IsRequired {
-					jsonStructTagOptions = ",omitempty"
+			if s := jsonSubSchema.Properties; s != nil {
+				for _, j := range s.SortedPropertyNames {
+					// recursive call to build structs inside structs
+					var subComment, subType string
+					subMember := s.MemberNames[j]
+					subComment, subType = s.Properties[j].typeDefinition(false, extraPackages, rawMessageTypes)
+					jsonStructTagOptions := ""
+					if !s.Properties[j].IsRequired {
+						jsonStructTagOptions = ",omitempty"
+					}
+					// struct member name and type, as part of struct definition
+					typ += fmt.Sprintf("\t%v%v %v `json:\"%v%v\"`\n", subComment, subMember, subType, j, jsonStructTagOptions)
 				}
-				// struct member name and type, as part of struct definition
-				typ += fmt.Sprintf("\t%v%v %v `json:\"%v%v\"`\n", subComment, subMember, subType, j, jsonStructTagOptions)
 			}
 			typ += "}"
+		} else if ap != nil && ap.Properties != nil && jsonSubSchema.Properties == nil {
+			// In the special case no properties have been specified, but
+			// additionalProperties is an object, we can create a
+			// map[string]<additionalProperties definition>.
+			_, subType := ap.Properties.typeDefinition(true, extraPackages, rawMessageTypes)
+			typ = "map[string]" + subType
 		} else {
+			// Either *arbitrarily structured* additional properties are
+			// allowed, or the additional properties are of a fixed form, but
+			// the explicitly listed properties may not conform to that form,
+			// so fall back to the most general option to ensure it can hold
+			// both listed properties and additional properties.
 			typ = "json.RawMessage"
 		}
 	case "number":
