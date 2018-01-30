@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 29 Jan 2018 at 21:22:00 UTC. The code was generated
+// Tue, 30 Jan 2018 at 02:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -317,13 +317,28 @@ func (myAuth *Auth) DeleteRole(roleId string) error {
 	return err
 }
 
+// Stability: *** DEPRECATED ***
+//
+// Return an expanded copy of the given scopeset, with scopes implied by any
+// roles included.
+//
+// This call uses the GET method with an HTTP body.  It remains only for
+// backward compatibility.
+//
+// See https://docs.taskcluster.net/reference/platform/auth/api-docs#expandScopesGet
+func (myAuth *Auth) ExpandScopesGet(payload *SetOfScopes) (*SetOfScopes, error) {
+	cd := tcclient.Client(*myAuth)
+	responseObject, _, err := (&cd).APICall(payload, "GET", "/scopes/expand", new(SetOfScopes), nil)
+	return responseObject.(*SetOfScopes), err
+}
+
 // Return an expanded copy of the given scopeset, with scopes implied by any
 // roles included.
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#expandScopes
 func (myAuth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 	cd := tcclient.Client(*myAuth)
-	responseObject, _, err := (&cd).APICall(payload, "GET", "/scopes/expand", new(SetOfScopes), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/scopes/expand", new(SetOfScopes), nil)
 	return responseObject.(*SetOfScopes), err
 }
 

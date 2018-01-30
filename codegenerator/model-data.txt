@@ -1,4 +1,4 @@
-Generated: 1517260953
+Generated: 1517278955
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -268,6 +268,23 @@ Entry 13    =
     Entry Route       = '/scopes/expand'
     Entry Args        = '[]'
     Entry Query        = '[]'
+    Entry Name        = 'expandScopesGet'
+    Entry Stability   = 'deprecated'
+    Entry Scopes      = ''
+    Entry Input       = 'http://schemas.taskcluster.net/auth/v1/scopeset.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/auth/v1/scopeset.json#'
+    Entry Title       = 'Expand Scopes'
+    Entry Description = 'Return an expanded copy of the given scopeset, with scopes implied by any
+roles included.
+
+This call uses the GET method with an HTTP body.  It remains only for
+backward compatibility.'
+Entry 14    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/scopes/expand'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
     Entry Name        = 'expandScopes'
     Entry Stability   = 'stable'
     Entry Scopes      = ''
@@ -276,7 +293,7 @@ Entry 13    =
     Entry Title       = 'Expand Scopes'
     Entry Description = 'Return an expanded copy of the given scopeset, with scopes implied by any
 roles included.'
-Entry 14    =
+Entry 15    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/scopes/current'
@@ -291,7 +308,7 @@ Entry 14    =
     Entry Description = 'Return the expanded scopes available in the request, taking into account all sources
 of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
 and roles).'
-Entry 15    =
+Entry 16    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/aws/s3/<level>/<bucket>/<prefix>'
@@ -368,7 +385,7 @@ with the JSON exposed by the EC2 metadata service. This aims to ease
 compatibility for libraries and tools built to auto-refresh credentials.
 For details on the format returned by EC2 metadata service see:
 [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).'
-Entry 16    =
+Entry 17    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/azure/accounts'
@@ -381,7 +398,7 @@ Entry 16    =
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#'
     Entry Title       = 'List Accounts Managed by Auth'
     Entry Description = 'Retrieve a list of all Azure accounts managed by Taskcluster Auth.'
-Entry 17    =
+Entry 18    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/azure/<account>/tables'
@@ -394,7 +411,7 @@ Entry 17    =
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#'
     Entry Title       = 'List Tables in an Account Managed by Auth'
     Entry Description = 'Retrieve a list of all tables in an account.'
-Entry 18    =
+Entry 19    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/azure/<account>/table/<table>/<level>'
@@ -412,7 +429,7 @@ Table Storage table.
 The `level` parameter can be `read-write` or `read-only` and determines
 which type of credentials are returned.  If level is read-write, it will create the
 table if it doesn't already exist.'
-Entry 19    =
+Entry 20    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/azure/<account>/containers/<container>/<level>'
@@ -430,7 +447,7 @@ Blob Storage container.
 The `level` parameter can be `read-write` or `read-only` and determines
 which type of credentials are returned.  If level is read-write, it will create the
 container if it doesn't already exist.'
-Entry 20    =
+Entry 21    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/sentry/<project>/dsn'
@@ -449,7 +466,7 @@ The credentials returned can be used with any Sentry client for up to
 If the project doesn't exist it will be created, and assigned to the
 initial team configured for this component. Contact a Sentry admin
 to have the project transferred to a team you have access to if needed'
-Entry 21    =
+Entry 22    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/statsum/<project>/token'
@@ -464,7 +481,7 @@ Entry 21    =
     Entry Description = 'Get temporary `token` and `baseUrl` for sending metrics to statsum.
 
 The token is valid for 24 hours, clients should refresh after expiration.'
-Entry 22    =
+Entry 23    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/webhooktunnel'
@@ -478,7 +495,7 @@ Entry 22    =
     Entry Title       = 'Get Token for Webhooktunnel Proxy'
     Entry Description = 'Get temporary `token` and `id` for connecting to webhooktunnel
 The token is valid for 96 hours, clients should refresh after expiration.'
-Entry 23    =
+Entry 24    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/authenticate-hawk'
@@ -496,7 +513,7 @@ that the authenticating client has.
 This method is used by other services that wish rely on Taskcluster
 credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.'
-Entry 24    =
+Entry 25    =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/test-authenticate'
@@ -519,7 +536,7 @@ The request is validated, with any certificate, authorizedScopes, etc.
 applied, and the resulting scopes are checked against `requiredScopes`
 from the request body. On success, the response contains the clientId
 and scopes as seen by the API method.'
-Entry 25    =
+Entry 26    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/test-authenticate-get/'
@@ -546,7 +563,7 @@ the API method.
 
 This method may later be extended to allow specification of client and
 required scopes via query arguments.'
-Entry 26    =
+Entry 27    =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'
