@@ -457,6 +457,17 @@ suite('provisioners and worker-types', () => {
     assert(new Date(result.expires).getTime() === wType.expires.getTime(), `expected ${wType.expires}`);
   });
 
+  test('queue.getWorkerType returns 404 for nonexistent workerType', async () => {
+    let err;
+    try {
+      await helper.queue.getWorkerType('prov-A', 'no-such');
+    } catch (e) {
+      err = e;
+    }
+    assert(err, 'expected an error');
+    assert(err.statusCode === 404, 'expected 404');
+  });
+
   test('queue.getWorkerType returns actions with the right context', async () => {
     const Provisioner = await helper.load('Provisioner', helper.loadOptions);
     const WorkerType = await helper.load('WorkerType', helper.loadOptions);
