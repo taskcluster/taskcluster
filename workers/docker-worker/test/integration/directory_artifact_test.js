@@ -95,11 +95,6 @@ suite('Directory artifact', function() {
   });
 
   test('retry directory upload', async () => {
-    // Avoid iptables on local environment
-    if (!process.env.WORKER_CI) {
-      return;
-    }
-
     this.timeout(480000);
 
     let ARTIFACT_COUNT = 3;
@@ -110,16 +105,12 @@ suite('Directory artifact', function() {
     var count = 0;
 
     let rejectConnection = function() {
-      // Delay iptables rejection to catch
-      // in the middle of the upload
-      setTimeout(function() {
-        iptables.reject({
-          chain: 'OUTPUT',
-          protocol: 'tcp',
-          dport: 443,
-          sudo: true
-        });
-      }, 100);
+      iptables.reject({
+        chain: 'OUTPUT',
+        protocol: 'tcp',
+        dport: 443,
+        sudo: true
+      });
     }
 
     let cmdArgs = ['mkdir "/xfoo"'];
