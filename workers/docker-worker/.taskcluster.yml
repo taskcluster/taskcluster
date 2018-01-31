@@ -88,7 +88,7 @@ tasks:
 
   - provisionerId: aws-provisioner-v1
     workerType: worker-ci-test
-    retries: 0
+    retries: 3
     scopes:
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
@@ -129,7 +129,7 @@ tasks:
 
   - provisionerId: aws-provisioner-v1
     workerType: worker-ci-test
-    retries: 0
+    retries: 3
     scopes:
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
@@ -170,7 +170,7 @@ tasks:
 
   - provisionerId: aws-provisioner-v1
     workerType: worker-ci-test
-    retries: 0
+    retries: 3
     scopes:
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
@@ -211,7 +211,7 @@ tasks:
 
   - provisionerId: aws-provisioner-v1
     workerType: worker-ci-test
-    retries: 0
+    retries: 3
     scopes:
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
@@ -252,7 +252,7 @@ tasks:
 
   - provisionerId: aws-provisioner-v1
     workerType: worker-ci-test
-    retries: 0
+    retries: 3
     scopes:
       - 'docker-worker:capability:privileged'
       - 'docker-worker:capability:device:loopbackAudio'
