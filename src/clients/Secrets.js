@@ -12,7 +12,7 @@ export default class Secrets extends Client {
     this.set.entry = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',scopes:[['secrets:set:<name>']],input:true}; // eslint-disable-line
     this.remove.entry = {type:'function',method:'delete',route:'/secret/<name>',query:[],args:['name'],name:'remove',stability:'stable',scopes:[['secrets:set:<name>']]}; // eslint-disable-line
     this.get.entry = {type:'function',method:'get',route:'/secret/<name>',query:[],args:['name'],name:'get',stability:'stable',scopes:[['secrets:get:<name>']],output:true}; // eslint-disable-line
-    this.list.entry = {type:'function',method:'get',route:'/secrets',query:[],args:[],name:'list',stability:'stable',output:true}; // eslint-disable-line
+    this.list.entry = {type:'function',method:'get',route:'/secrets',query:['continuationToken','limit'],args:[],name:'list',stability:'stable',output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 
@@ -38,9 +38,15 @@ export default class Secrets extends Client {
     return this.request(this.get.entry, args);
   }
 
-  // List the names of all secrets that you would have access to read. In
-  // other words, secret name `<X>` will only be returned if a) a secret
-  // with name `<X>` exists, and b) you posses the scope `secrets:get:<X>`.
+  // List the names of all secrets.
+  // By default this end-point will try to return up to 1000 secret names in one
+  // request. But it **may return less**, even if more tasks are available.
+  // It may also return a `continuationToken` even though there are no more
+  // results. However, you can only be sure to have seen all results if you
+  // keep calling `listTaskGroup` with the last `continuationToken` until you
+  // get a result without a `continuationToken`.
+  // If you are not interested in listing all the members at once, you may
+  // use the query-string option `limit` to return fewer.
   list(...args) {
     this.validate(this.list.entry, args);
     return this.request(this.list.entry, args);

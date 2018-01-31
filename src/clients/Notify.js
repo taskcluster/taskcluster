@@ -9,9 +9,9 @@ export default class Notify extends Client {
       exchangePrefix: '',
       ...options
     });
-    this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',scopes:[['notify:email:<address>']],input:true}; // eslint-disable-line
-    this.pulse.entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',scopes:[['notify:pulse:<routingKey>']],input:true}; // eslint-disable-line
-    this.irc.entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',scopes:[['notify:irc-channel:<channel>','notify:irc-user:<user>']],input:true}; // eslint-disable-line
+    this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',scopes:{AllOf:['notify:email:<address>']},input:true}; // eslint-disable-line
+    this.pulse.entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',scopes:{AllOf:['notify:pulse:<routingKey>']},input:true}; // eslint-disable-line
+    this.irc.entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',scopes:{AllOf:[{'if':'channelRequest',then:{AllOf:['notify:irc-channel:<channel>']}},{'if':'userRequest',then:{AllOf:['notify:irc-user:<user>']}}]},input:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
 

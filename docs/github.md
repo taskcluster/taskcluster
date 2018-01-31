@@ -1,4 +1,4 @@
-# TaskCluster GitHub API Documentation
+# Taskcluster GitHub API Documentation
 
 ##
 

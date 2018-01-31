@@ -14,12 +14,12 @@ export default class Hooks extends Client {
     this.hook.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'experimental',output:true}; // eslint-disable-line
     this.getHookStatus.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'experimental',output:true}; // eslint-disable-line
     this.getHookSchedule.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/schedule',query:[],args:['hookGroupId','hookId'],name:'getHookSchedule',stability:'deprecated',output:true}; // eslint-disable-line
-    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true}; // eslint-disable-line
-    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']],input:true,output:true}; // eslint-disable-line
-    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',scopes:[['hooks:modify-hook:<hookGroupId>/<hookId>']]}; // eslint-disable-line
-    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',scopes:[['hooks:trigger-hook:<hookGroupId>/<hookId>']],input:true,output:true}; // eslint-disable-line
-    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',scopes:[['hooks:get-trigger-token:<hookGroupId>/<hookId>']],output:true}; // eslint-disable-line
-    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',scopes:[['hooks:reset-trigger-token:<hookGroupId>/<hookId>']],output:true}; // eslint-disable-line
+    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
+    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
+    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>']}}; // eslint-disable-line
+    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',scopes:{AllOf:['hooks:trigger-hook:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
+    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',scopes:{AllOf:['hooks:get-trigger-token:<hookGroupId>/<hookId>']},output:true}; // eslint-disable-line
+    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',scopes:{AllOf:['hooks:reset-trigger-token:<hookGroupId>/<hookId>']},output:true}; // eslint-disable-line
     this.triggerHookWithToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'experimental',input:true,output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
@@ -81,6 +81,9 @@ export default class Hooks extends Client {
   }
 
   // This endpoint will trigger the creation of a task from a hook definition.
+  // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+  // provided as the `payload` property of the JSON-e context used to render the
+  // task template.
   triggerHook(...args) {
     this.validate(this.triggerHook.entry, args);
     return this.request(this.triggerHook.entry, args);
@@ -101,6 +104,9 @@ export default class Hooks extends Client {
   }
 
   // This endpoint triggers a defined hook with a valid token.
+  // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+  // provided as the `payload` property of the JSON-e context used to render the
+  // task template.
   triggerHookWithToken(...args) {
     this.validate(this.triggerHookWithToken.entry, args);
     return this.request(this.triggerHookWithToken.entry, args);
