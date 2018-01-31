@@ -28,7 +28,7 @@ class DockerSave {
       // repo name must be lower case and not contain underscores
       repo: imageName
     });
-    let image = task.runtime.docker.getImage(`${imageName}:latest`);
+    let image = await task.runtime.docker.getImage(`${imageName}:latest`);
     let imgStream = await image.get();
     let zipStream = zlib.createGzip();
     await new Promise((accept, reject) => {

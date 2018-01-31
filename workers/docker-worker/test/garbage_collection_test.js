@@ -287,7 +287,7 @@ suite('garbage collection tests', () => {
     var imageId = await imageManager.ensureImage(imageName, devnull());
     gc.markImage(imageId);
 
-    docker.getImage(imageId);
+    await docker.getImage(imageId);
     await removeImage(docker, imageId);
 
     await gc.sweep();

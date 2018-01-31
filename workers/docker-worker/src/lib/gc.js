@@ -171,7 +171,7 @@ GarbageCollector.prototype = {
       }
 
       if (runningImages.indexOf(image) === -1) {
-        var dockerImage = this.docker.getImage(image);
+        var dockerImage = await this.docker.getImage(image);
 
         try {
           await dockerImage.remove();
