@@ -111,6 +111,11 @@ queue.createArtifact(taskId, runId, name, payload)
 ```
 
 ```js
+// queue.completeArtifact :: (taskId -> runId -> name -> payload) -> Promise Nothing
+queue.completeArtifact(taskId, runId, name, payload)
+```
+
+```js
 // queue.getArtifact :: (taskId -> runId -> name) -> Promise Nothing
 queue.getArtifact(taskId, runId, name)
 ```

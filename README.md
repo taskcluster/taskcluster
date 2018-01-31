@@ -665,7 +665,7 @@ several other scripts for maintenance:
 - `yarn docs`: Generate the API documentation Markdown files from the API reference.
 - `yarn compile-clients`: Pull the latest API manifest from the schema endpoint and re-create the client classes.
 - `yarn list-clients`: Print a list of client APIs built into taskcluster-client-web based on the API reference.
-- `yarn show-client <client>`: Print the detailed schema information for a particular client, e.g. `yarm show Auth`.
+- `yarn show-client <client>`: Print the detailed schema information for a particular client, e.g. `yarn show Auth`.
 - `yarn test`: Run the test suites.
 - `yarn lint`: Manually lint the source code of the repo.
 

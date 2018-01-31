@@ -22,7 +22,8 @@ export default class Auth extends Client {
     this.createRole.entry = {type:'function',method:'put',route:'/roles/<roleId>',query:[],args:['roleId'],name:'createRole',stability:'stable',scopes:[['auth:create-role:<roleId>']],input:true,output:true}; // eslint-disable-line
     this.updateRole.entry = {type:'function',method:'post',route:'/roles/<roleId>',query:[],args:['roleId'],name:'updateRole',stability:'stable',scopes:[['auth:update-role:<roleId>']],input:true,output:true}; // eslint-disable-line
     this.deleteRole.entry = {type:'function',method:'delete',route:'/roles/<roleId>',query:[],args:['roleId'],name:'deleteRole',stability:'stable',scopes:[['auth:delete-role:<roleId>']]}; // eslint-disable-line
-    this.expandScopes.entry = {type:'function',method:'get',route:'/scopes/expand',query:[],args:[],name:'expandScopes',stability:'stable',input:true,output:true}; // eslint-disable-line
+    this.expandScopesGet.entry = {type:'function',method:'get',route:'/scopes/expand',query:[],args:[],name:'expandScopesGet',stability:'deprecated',input:true,output:true}; // eslint-disable-line
+    this.expandScopes.entry = {type:'function',method:'post',route:'/scopes/expand',query:[],args:[],name:'expandScopes',stability:'stable',input:true,output:true}; // eslint-disable-line
     this.currentScopes.entry = {type:'function',method:'get',route:'/scopes/current',query:[],args:[],name:'currentScopes',stability:'stable',output:true}; // eslint-disable-line
     this.awsS3Credentials.entry = {type:'function',method:'get',route:'/aws/s3/<level>/<bucket>/<prefix>',query:['format'],args:['level','bucket','prefix'],name:'awsS3Credentials',stability:'stable',scopes:[['auth:aws-s3:<level>:<bucket>/<prefix>']],output:true}; // eslint-disable-line
     this.azureAccounts.entry = {type:'function',method:'get',route:'/azure/accounts',query:[],args:[],name:'azureAccounts',stability:'stable',scopes:[['auth:azure-table:list-accounts']],output:true}; // eslint-disable-line
@@ -127,6 +128,8 @@ export default class Auth extends Client {
   // The caller's scopes must satisfy the new role's scopes.
   // If there already exists a role with the same `roleId` this operation
   // will fail. Use `updateRole` to modify an existing role.
+  // Creation of a role that will generate an infinite expansion will result
+  // in an error response.
   createRole(...args) {
     this.validate(this.createRole.entry, args);
     return this.request(this.createRole.entry, args);
@@ -135,6 +138,8 @@ export default class Auth extends Client {
   // Update an existing role.
   // The caller's scopes must satisfy all of the new scopes being added, but
   // need not satisfy all of the client's existing scopes.
+  // An update of a role that will generate an infinite expansion will result
+  // in an error response.
   updateRole(...args) {
     this.validate(this.updateRole.entry, args);
     return this.request(this.updateRole.entry, args);
@@ -145,6 +150,15 @@ export default class Auth extends Client {
   deleteRole(...args) {
     this.validate(this.deleteRole.entry, args);
     return this.request(this.deleteRole.entry, args);
+  }
+
+  // Return an expanded copy of the given scopeset, with scopes implied by any
+  // roles included.
+  // This call uses the GET method with an HTTP body.  It remains only for
+  // backward compatibility.
+  expandScopesGet(...args) {
+    this.validate(this.expandScopesGet.entry, args);
+    return this.request(this.expandScopesGet.entry, args);
   }
 
   // Return an expanded copy of the given scopeset, with scopes implied by any

@@ -1,4 +1,4 @@
-# TaskCluster-Github Exchanges
+# Taskcluster-Github Exchanges
 
 ##
 

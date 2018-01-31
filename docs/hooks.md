@@ -18,6 +18,10 @@ https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 1 * * *']` -- daily at 1:00 UTC
  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 
+The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
+https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+for more information.
+
 ## Hooks Client
 
 ```js
