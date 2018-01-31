@@ -105,7 +105,7 @@ suite('volume cache test', function () {
 
     assert.ok(instance5.key === instance2.key);
     assert.ok(instance5.path === instance2.path);
-    assert.ok(instance5.lastUsed > instance2.lastUsed);
+    assert.ok(instance5.lastUsed >= instance2.lastUsed);
   });
 
 

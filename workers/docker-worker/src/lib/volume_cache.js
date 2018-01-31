@@ -55,7 +55,7 @@ class VolumeCache {
       instancePath = path.join(cachePath, instanceId);
     }
 
-    if (!(await fs.exists(instancePath))) {
+    if (!fs.existsSync(instancePath)) {
       await makeDir(instancePath);
     }
 
@@ -128,7 +128,7 @@ class VolumeCache {
     var cachePath = path.join(this.rootCachePath, cacheName);
     this.cache[cacheName] = {};
 
-    if(!(await fs.exists(cachePath))) {
+    if(fs.existsSync(cachePath)) {
       await makeDir(cachePath);
       var cacheDetails = {cacheName: cacheName, cachPath: cachePath};
       this.log('cache volume created', cacheDetails);
