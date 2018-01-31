@@ -126,7 +126,7 @@ module.exports = async function uploadToS3 (
     // randomize the timeouts
     }, {randomize: true});
   } finally {
-    tmp.unlink();
+    tmp.unlinkSync();
   }
 
   return {digest, size};
