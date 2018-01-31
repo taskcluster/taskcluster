@@ -6,4 +6,4 @@ module.exports = (queue, taskId) => {
     } while (status.status.state === 'running');
     accept(status.status);
   });
-}
+};

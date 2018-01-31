@@ -30,12 +30,12 @@ class TaskclusterProxy {
     var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
     var cmd = [
-        '--client-id=' + task.claim.credentials.clientId,
-        '--access-token=' + task.claim.credentials.accessToken
+      '--client-id=' + task.claim.credentials.clientId,
+      '--access-token=' + task.claim.credentials.accessToken
     ];
     // only pass in a certificate if one has been set
     if (task.claim.credentials.certificate) {
-        cmd.push('--certificate=' + task.claim.credentials.certificate);
+      cmd.push('--certificate=' + task.claim.credentials.certificate);
     }
     const cert = JSON.parse(task.claim.credentials.certificate);
     cmd.push(`--task-id=${task.status.taskId}`);
@@ -72,7 +72,7 @@ class TaskclusterProxy {
     await this.container.start({});
 
     var inspect = await this.container.inspect();
-    var name = inspect.Name.slice(1)
+    var name = inspect.Name.slice(1);
 
     try {
       // wait for the initial server response...

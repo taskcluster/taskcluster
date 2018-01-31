@@ -40,7 +40,7 @@ function createRelease(github) {
     repo: 'docker-worker',
     tag_name: RELEASE_NAME,
     name: RELEASE_NAME,
-  })
+  });
 }
 
 // upload a file as a release asset

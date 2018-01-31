@@ -51,7 +51,7 @@ suite('Privileged containers', () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();
     let result = await worker.postToQueue({
-      scopes: ["docker-worker:capability:privileged"],
+      scopes: ['docker-worker:capability:privileged'],
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [
@@ -82,7 +82,7 @@ suite('Privileged containers', () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();
     let result = await worker.postToQueue({
-      scopes: ["docker-worker:capability:privileged"],
+      scopes: ['docker-worker:capability:privileged'],
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [
@@ -106,7 +106,7 @@ suite('Privileged containers', () => {
     worker = new TestWorker(DockerWorker);
     await worker.launch();
     let result = await worker.postToQueue({
-      scopes: ["docker-worker:capability:privileged"],
+      scopes: ['docker-worker:capability:privileged'],
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: [

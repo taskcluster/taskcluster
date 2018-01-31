@@ -15,4 +15,4 @@ module.exports = function waitForEvent(listener, event) {
       listener.removeListener(event, handler);
     });
   });
-}
+};

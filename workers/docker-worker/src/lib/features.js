@@ -126,10 +126,10 @@ const features = {
 
 // Basic sanity check for features
 _.forIn(features, ({title, description, defaults, module}) => {
-  assert(typeof title === 'string', "Expected title");
-  assert(typeof description === 'string', "Expected description");
-  assert(typeof defaults === 'boolean', "Expected a boolean default");
-  assert(module instanceof Function, "Expected module to be class");
+  assert(typeof title === 'string', 'Expected title');
+  assert(typeof description === 'string', 'Expected description');
+  assert(typeof defaults === 'boolean', 'Expected a boolean default');
+  assert(module instanceof Function, 'Expected module to be class');
 });
 
 // Export features

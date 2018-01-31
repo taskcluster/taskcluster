@@ -15,9 +15,9 @@ class VideoDeviceManager {
     let deviceFiles;
     try {
       deviceFiles = fs.readdirSync(BASE_DIR)
-                        .filter((deviceFile) => {
-                          return /^video[0-9]+$/.test(deviceFile);
-                        });
+        .filter((deviceFile) => {
+          return /^video[0-9]+$/.test(deviceFile);
+        });
     }
     catch (e) {
       debug(`Caught error when gathering video devices. ${e.stack || e}`);

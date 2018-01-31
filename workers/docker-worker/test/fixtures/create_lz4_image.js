@@ -10,7 +10,7 @@ const artifactDownload = require('../../src/lib/util/artifact_download');
 function removeFile(filename) {
   try {
     fs.unlinkSync(filename);
-  } catch(e) {}
+  } catch(e) {} // eslint-disable-line no-empty
 }
 
 function createQueue() {
@@ -59,7 +59,7 @@ function scheduleReclaim(queue, claim) {
         claim.status.taskId,
         claim.runId
       );
-    } catch (e) {}
+    } catch (e) {} // eslint-disable-line no-empty
   }, nextReclaim);
 }
 
@@ -87,9 +87,9 @@ async function main() {
 
   await uncompressZstFile(zstImagePath);
 
-  console.log(`Image uncompressed, creating lz4 image`);
+  console.log('Image uncompressed, creating lz4 image');
   await compressFile(tarImagePath);
-  console.log(`lz4 image created successfully, creating task`);
+  console.log('lz4 image created successfully, creating task');
 
   const taskId = taskcluster.slugid();
   await queue.createTask(taskId, {

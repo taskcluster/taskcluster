@@ -74,7 +74,7 @@ function o() {
 
 // Usage.
 program.usage(
-'[options] <profile> \n\n' +
+  '[options] <profile> \n\n' +
 '  Configuration is loaded in the following order (lower down overrides): ' +
 '\n\n' +
 '      1. docker-worker/config/defaults \n' +
@@ -262,7 +262,7 @@ program.parse(process.argv);
       uptime: uptime,
       interval: config.alivenessCheckInterval
     });
-    setTimeout(alivenessCheck, config.alivenessCheckInterval)
+    setTimeout(alivenessCheck, config.alivenessCheckInterval);
   }
 
   // Always run the initial aliveness check during startup.
@@ -285,5 +285,5 @@ program.parse(process.argv);
       taskListener.once('idle', halt);
     });
   }
-})()
+})();
 

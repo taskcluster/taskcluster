@@ -88,9 +88,9 @@ class DockerImage {
 
     let start = Date.now();
     let result = await this.pullImageStreamTo(this.runtime.docker,
-                                               dockerImageName,
-                                               this.stream,
-                                               pullOptions);
+      dockerImageName,
+      this.stream,
+      pullOptions);
     this.runtime.monitor.measure(
       'task.dockerImage.downloadTime',
       Date.now() - start

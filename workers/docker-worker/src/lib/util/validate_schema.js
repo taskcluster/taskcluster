@@ -21,7 +21,7 @@ module.exports = {
       let artifactExpiration = new Date(artifact.expires);
       if (artifactExpiration.getTime() > taskExpiration.getTime()) {
         let message = `Artifact expiration for '${name}' must not be greater ` +
-                      `than task expiration. Artifact expiration is ` +
+                      'than task expiration. Artifact expiration is ' +
                       `'${artifactExpiration}' but task expiration is '${taskExpiration}'`;
         payloadErrors.push(message);
       }
@@ -29,4 +29,4 @@ module.exports = {
 
     return payloadErrors;
   }
-}
+};

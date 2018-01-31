@@ -30,7 +30,7 @@ async function decompressLz4File(inputFile) {
 
   if (proc.exitCode !== 0) {
     throw new Error(
-        'Could not decompress image file.' +
+      'Could not decompress image file.' +
         `Exit Code: ${proc.exitCode} Errors: ${err.join('\n')}`);
   }
   return outputFile;
@@ -50,7 +50,7 @@ async function decompressZstdFile(inputFile) {
 
   if (proc.exitCode !== 0) {
     throw new Error(
-        'Could not decompress image file.' +
+      'Could not decompress image file.' +
         `Exit Code: ${proc.exitCode} Errors: ${err.join('\n')}`);
   }
   return outputFile;
@@ -113,31 +113,31 @@ class ArtifactImage {
 
     try {
       let hash = await downloadArtifact(
-          this.task.queue,
-          this.stream,
-          this.taskId,
-          this.artifactPath,
-          downloadedFile,
-          this.runtime.dockerConfig
+        this.task.queue,
+        this.stream,
+        this.taskId,
+        this.artifactPath,
+        downloadedFile,
+        this.runtime.dockerConfig
       );
       this.runtime.monitor.measure('task.taskImage.downloadTime', Date.now() - start);
 
       switch (path.extname(downloadedFile)) {
-        case '.lz4':
-          this.stream.write(fmtLog('Decompressing downloaded image'));
-          tarballPath = await decompressLz4File(downloadedFile);
-          fs.unlink(downloadedFile);
-          break;
-        case '.zst':
-          this.stream.write(fmtLog('Decompressing downloaded image'));
-          tarballPath = await decompressZstdFile(downloadedFile);
-          fs.unlink(downloadedFile);
-          break;
-        case '.tar':
-          tarballPath = downloadedFile;
-          break;
-        default:
-          throw new Error('Unsupported image file format. Expected tarball with extension: .tar.zst, .tar.lz4 or .tar');
+      case '.lz4':
+        this.stream.write(fmtLog('Decompressing downloaded image'));
+        tarballPath = await decompressLz4File(downloadedFile);
+        fs.unlink(downloadedFile);
+        break;
+      case '.zst':
+        this.stream.write(fmtLog('Decompressing downloaded image'));
+        tarballPath = await decompressZstdFile(downloadedFile);
+        fs.unlink(downloadedFile);
+        break;
+      case '.tar':
+        tarballPath = downloadedFile;
+        break;
+      default:
+        throw new Error('Unsupported image file format. Expected tarball with extension: .tar.zst, .tar.lz4 or .tar');
       }
 
       await this.renameAndLoad(this.imageName, tarballPath);
@@ -203,8 +203,8 @@ class ArtifactImage {
    */
   get imageName() {
     return createHash('md5')
-             .update(`${this.taskId}${this.artifactPath}`)
-             .digest('hex');
+      .update(`${this.taskId}${this.artifactPath}`)
+      .digest('hex');
 
   }
 
@@ -224,7 +224,7 @@ class ArtifactImage {
 
       return true;
     } catch(e) {
-      delete this.knownHashes[`${this.taskId}-${this.artifactPath}`]
+      delete this.knownHashes[`${this.taskId}-${this.artifactPath}`];
       return false;
     }
   }
@@ -270,7 +270,7 @@ class ArtifactImage {
 
     let keys = Object.keys(repoInfo);
     if (keys.length > 1) {
-      throw new Error("Image tarballs must only contain one image");
+      throw new Error('Image tarballs must only contain one image');
     }
 
     let oldRepoName = keys[0];
@@ -289,7 +289,7 @@ class ArtifactImage {
     if (fs.existsSync(manifestPath)) {
       let manifest = JSON.parse(fs.readFileSync(manifestPath));
       if (manifest.length > 1) {
-        throw new Error("Image tarballs must only contain one image");
+        throw new Error('Image tarballs must only contain one image');
       }
 
       manifest[0]['RepoTags'] = [`${imageName}:latest`];
@@ -306,7 +306,7 @@ class ArtifactImage {
     try {
       await removeDir(extractedPath);
     } catch(e) {
-      debug(`Error removing temporary task image directory. ` +
+      debug('Error removing temporary task image directory. ' +
             `Path: ${extractedPath}. Error: ${e.message}`);
     }
 

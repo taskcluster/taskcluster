@@ -37,7 +37,7 @@ suite('Reclaimer', function() {
       abort(reason) {
         taskAction = {action: 'abort', reason};
       }
-    };
+    }
 
     fakeRuntime = {
       task: {
@@ -69,10 +69,10 @@ suite('Reclaimer', function() {
       status: { taskId: taskId },
       runId,
       takenUntil,
-    }
+    };
   };
 
-  test("successful reclaim", async function() {
+  test('successful reclaim', async function() {
     var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
@@ -99,22 +99,22 @@ suite('Reclaimer', function() {
     assert.ok(updated);
   });
 
-  test("reclaim after stop does nothing", async function() {
+  test('reclaim after stop does nothing', async function() {
     var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
-    reclaimer.stop()
+    reclaimer.stop();
 
     await reclaimer.reclaimTask();
     assert.deepEqual(reclaims, []);
     assert.equal(taskAction, null);
   });
 
-  test("primary reclaim that fails with a 409 cancels the task", async function() {
+  test('primary reclaim that fails with a 409 cancels the task', async function() {
     var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
     var failReclaimTask = async function(taskId, runId) {
-      var err = new Error("uhoh");
+      var err = new Error('uhoh');
       err.statusCode = 409;
       throw err;
     };
@@ -127,12 +127,12 @@ suite('Reclaimer', function() {
     assert.equal(taskAction.action, 'cancel');
   });
 
-  test("primary reclaim that fails with a 401 aborts the task", async function() {
+  test('primary reclaim that fails with a 401 aborts the task', async function() {
     var claim = makeClaim('fakeTid', 0, soon);
     reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, claim);
 
     var failReclaimTask = async function(taskId, runId) {
-      var err = new Error("uhoh");
+      var err = new Error('uhoh');
       err.statusCode = 401;
       throw err;
     };
@@ -145,26 +145,26 @@ suite('Reclaimer', function() {
     assert.equal(taskAction.action, 'abort');
   });
 
-  test("non-primary reclaim that fails has no effect except to stop reclaims",
-       async function() {
-    var claim = makeClaim('fakeTid', 0, soon);
-    var secondClaim = makeClaim('fakeTid2', 0, soon);
-    reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, secondClaim);
+  test('non-primary reclaim that fails has no effect except to stop reclaims',
+    async function() {
+      var claim = makeClaim('fakeTid', 0, soon);
+      var secondClaim = makeClaim('fakeTid2', 0, soon);
+      reclaimer = new Reclaimer(fakeRuntime, fakeTask, claim, secondClaim);
 
-    var failReclaimTask = async function(taskId, runId) {
-      var err = new Error("uhoh");
-      err.statusCode = 409;
-      throw err;
-    };
+      var failReclaimTask = async function(taskId, runId) {
+        var err = new Error('uhoh');
+        err.statusCode = 409;
+        throw err;
+      };
 
-    fakeRuntime.queue.reclaimTask = failReclaimTask;
-    fakeTask.queue.reclaimTask = failReclaimTask;
+      fakeRuntime.queue.reclaimTask = failReclaimTask;
+      fakeTask.queue.reclaimTask = failReclaimTask;
 
-    await reclaimer.reclaimTask();
-    assert.deepEqual(reclaims, []);
-    assert.equal(taskAction, null);
-    assert.equal(reclaimer.stopped, true);
-  });
+      await reclaimer.reclaimTask();
+      assert.deepEqual(reclaims, []);
+      assert.equal(taskAction, null);
+      assert.equal(reclaimer.stopped, true);
+    });
 
   // the scheduled reclaims are adequately tested in integration tests
 });

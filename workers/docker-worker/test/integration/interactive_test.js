@@ -51,7 +51,7 @@ suite('use docker exec websocket server', () => {
       });
       assert.equal(res.statusCode, 303);
       return URL.parse(res.headers.location, true).query.socketUrl;
-    };
+    }
     let signedUrl = queue.buildSignedUrl(
       queue.getLatestArtifact,
       taskId,
@@ -59,7 +59,7 @@ suite('use docker exec websocket server', () => {
       {expiration: 60 * 5});
 
     return base.testing.poll(() => getWithoutRedirect(signedUrl), 45, 1000);
-  };
+  }
 
   test('cat', async () => {
     let taskId = slugid.v4();
@@ -92,7 +92,7 @@ suite('use docker exec websocket server', () => {
 
     client.stderr.on('data', (message) => {
       debug(message.toString());
-    })
+    });
     client.stdout.on('data', (message) => {
       debug(message.toString());
     });
@@ -155,9 +155,9 @@ suite('use docker exec websocket server', () => {
       wsopts: {rejectUnauthorized: false}
     });
     await failClient.execute().then(() => {
-      assert(false, "Expected an error");
+      assert(false, 'Expected an error');
     }, err => {
-      debug("Got error as expected: %s", err);
+      debug('Got error as expected: %s', err);
     });
     assert(connected, 'interactive session failed to connect');
   });
@@ -229,8 +229,6 @@ suite('use docker exec websocket server', () => {
     debug('posting to queue');
     worker.postToQueue(task, taskId);
 
-    let passed = false;
-
     let url = await getArtifact(worker.queue, taskId);
 
     //for testing, we don't care about https verification
@@ -245,7 +243,6 @@ suite('use docker exec websocket server', () => {
     const TEST_BUF_SIZE = 1024 * 1024;
 
     let buf = await Promise.denodeify(crypto.pseudoRandomBytes)(TEST_BUF_SIZE);
-    let pointer = 0;
     client.stdin.write(buf);
     client.stdin.end();
     let buffers = [];

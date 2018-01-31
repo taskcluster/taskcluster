@@ -8,8 +8,8 @@ const util = require('util');
 const uuid = require('uuid');
 const { PassThrough } = require('stream');
 const States = require('./states');
-const fs = require("mz/fs");
-const child_process = require("mz/child_process");
+const fs = require('mz/fs');
+const child_process = require('mz/child_process');
 const taskcluster = require('taskcluster-client');
 const base = require('taskcluster-base');
 const promiseRetry = require('promise-retry');
@@ -224,7 +224,7 @@ class Reclaimer {
     try {
       let queue = this.task.createQueue(this.claim.credentials);
       this.claim = await queue.reclaimTask(
-                    this.claim.status.taskId, this.claim.runId);
+        this.claim.status.taskId, this.claim.runId);
       // reclaim does not return the task, so carry that forward from the previous
       // claim
       this.claim.task = task;
@@ -410,9 +410,9 @@ class Task extends EventEmitter {
       let aa_profile = await this.makePtraceAppArmorProfile();
 
       // add the equivalent of --security-opt apparmor:docker-ptrace
-      let hc = procConfig.create.HostConfig
+      let hc = procConfig.create.HostConfig;
       hc.SecurityOpt = hc.SecurityOpt || [];
-      hc.SecurityOpt.push("apparmor:" + aa_profile);
+      hc.SecurityOpt.push('apparmor:' + aa_profile);
     }
 
     return procConfig;
@@ -420,27 +420,27 @@ class Task extends EventEmitter {
 
   async makePtraceAppArmorProfile() {
     // copy and modify the docker-default profile
-    let profile = await fs.readFile("/etc/apparmor.d/docker");
-    let name = "worker-" + this.status.taskId + '-' + this.runId;
+    let profile = await fs.readFile('/etc/apparmor.d/docker');
+    let name = 'worker-' + this.status.taskId + '-' + this.runId;
 
     // update the name of the profile
     profile = profile.toString('utf-8');
-    profile = profile.replace("profile docker-default", "profile " + name);
+    profile = profile.replace('profile docker-default', 'profile ' + name);
 
     // add a rule allowing ptrace to other processes with this policy, at
     // the very end
-    profile = profile.replace("\n}", "\n  ptrace (trace,read) peer=" + name + ",\n}");
+    profile = profile.replace('\n}', '\n  ptrace (trace,read) peer=' + name + ',\n}');
 
     // write out the new profile; note that these are not cleaned up, but since
     // instances are not long-lived and the profiles are small this is not a
     // big deal
-    let filename = "/etc/apparmor.d/" + name
-    await fs.writeFile(filename, profile)
+    let filename = '/etc/apparmor.d/' + name;
+    await fs.writeFile(filename, profile);
 
     // hand that to the apparmor parser to add the profile to the kernel
-    let stdout, stderr = await child_process.exec("apparmor_parser -a " + filename);
-    console.log("stdout from 'apparmor_parser': " + stdout);
-    console.log("stderr from 'apparmor_parser': " + stderr);
+    let stdout, stderr = await child_process.exec('apparmor_parser -a ' + filename);
+    console.log('stdout from \'apparmor_parser\': ' + stdout);
+    console.log('stderr from \'apparmor_parser\': ' + stderr);
 
     return name;
   }
@@ -545,7 +545,7 @@ class Task extends EventEmitter {
       // reason 'worker-shutdown', which means they stand to be retried
       // immediately
       await this.resolveSuperseded(this.status.taskId, this.runId,
-                                   false, 'worker-shutdown');
+        false, 'worker-shutdown');
 
       await reporter.apply(queue, reportDetails);
     }
@@ -592,7 +592,7 @@ class Task extends EventEmitter {
       let purgeStatuses = this.task.payload.onExitStatus && this.task.payload.onExitStatus.purgeCaches;
       if (purgeStatuses && purgeStatuses.includes(this.exitCode)) {
         for (let cacheKey of this.volumeCaches) {
-          this.runtime.volumeCache.purgeInstance(cacheKey)
+          this.runtime.volumeCache.purgeInstance(cacheKey);
         }
       }
     }
@@ -639,14 +639,14 @@ class Task extends EventEmitter {
         if (addArtifacts) {
           let task = c.task;
           // set the artifact expiration to match the task
-          let expiration = task.expires || taskcluster.fromNow(task.deadline, "1 year");
+          let expiration = task.expires || taskcluster.fromNow(task.deadline, '1 year');
           let content = {'taskId': primaryTaskId, 'runId': primaryRunId};
           let contentJson = JSON.stringify(content);
           await uploadToS3(queue, taskId, runId, contentJson,
-                           "public/superseded-by.json", expiration, {
-            'content-type': 'application/json',
-            'content-length': contentJson.length,
-          });
+            'public/superseded-by.json', expiration, {
+              'content-type': 'application/json',
+              'content-length': contentJson.length,
+            });
 
           supersedes.push({taskId, runId});
         }
@@ -654,7 +654,7 @@ class Task extends EventEmitter {
         // failing to resolve a non-primary claim is not a big deal: it will
         // either time out and go back in the queue, or it was cancelled or
         // otherwise modified while we were working on it.
-        log("while resolving superseded task: " + e, {
+        log('while resolving superseded task: ' + e, {
           primaryTaskId,
           primaryRunId,
           taskId,
@@ -665,13 +665,13 @@ class Task extends EventEmitter {
 
     if (addArtifacts && supersedes.length > 0) {
       let task = this.claim.task;
-      let expiration = task.expires || taskcluster.fromNow(task.deadline, "1 year");
-      let contentJson = JSON.stringify(supersedes)
+      let expiration = task.expires || taskcluster.fromNow(task.deadline, '1 year');
+      let contentJson = JSON.stringify(supersedes);
       await uploadToS3(this.queue, primaryTaskId, primaryRunId, contentJson,
-                       "public/supersedes.json", expiration, {
-        'content-type': 'application/json',
-        'content-length': contentJson.length,
-      });
+        'public/supersedes.json', expiration, {
+          'content-type': 'application/json',
+          'content-length': contentJson.length,
+        });
     }
   }
 
@@ -680,7 +680,7 @@ class Task extends EventEmitter {
    */
   scheduleReclaims() {
     this.reclaimers = this.claims.map(
-        c => new Reclaimer(this.runtime, this, this.claim, c));
+      c => new Reclaimer(this.runtime, this, this.claim, c));
   }
 
   stopReclaims() {
@@ -824,7 +824,7 @@ class Task extends EventEmitter {
         retries: 3,
         minTimeout: 2000,
         randomize: true
-      }
+      };
 
       // Build the list of container links... and base environment variables
       linkInfo = await promiseRetry(retry => {
@@ -875,9 +875,9 @@ class Task extends EventEmitter {
     try {
       let im = this.runtime.imageManager;
       imageId = await im.ensureImage(this.task.payload.image,
-                                     this.stream,
-                                     this,
-                                     this.task.scopes);
+        this.stream,
+        this,
+        this.task.scopes);
       this.imageHash = imageId;
       this.runtime.gc.markImage(imageId);
     } catch (e) {
@@ -1041,4 +1041,4 @@ module.exports = {
   PAYLOAD_SCHEMA,
   Reclaimer,
   Task
-}
+};

@@ -1,6 +1,7 @@
 const request = require('superagent-promise');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
+const assert = require('assert');
 
 const cmd = require('../helper/cmd');
 const DockerWorker = require('../../dockerworker');
@@ -62,13 +63,13 @@ suite('live logging', () => {
     worker.postToQueue(task, taskId);
     await waitForEvent(worker, 'task run');
 
-    let artifactUrl = `https:\/\/queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`
+    let artifactUrl = `https://queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`;
 
     // Don't follow redirect, we just care about where it's going
     let req = request.get(artifactUrl);
     let logUrl;
-    req.on('redirect', res => logUrl = res.headers.location)
-    let res = await req.end();
+    req.on('redirect', res => logUrl = res.headers.location);
+    await req.end();
     let token = /^http:\/\/localhost:[0-9]+\/log\/([a-zA-Z0-9_-]+)$/.exec(logUrl);
     token = token ? token[1] : '';
 
@@ -117,7 +118,7 @@ suite('live logging', () => {
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.equal(result.artifacts[CUSTOM_LOCATION].name, CUSTOM_LOCATION);
     assert.equal(result.artifacts['private/docker-worker-tests/logs/live_backing.log'].name,
-                 'private/docker-worker-tests/logs/live_backing.log');
+      'private/docker-worker-tests/logs/live_backing.log');
     assert.strictEqual(result.artifacts['public/logs/live.log'], undefined);
     assert.strictEqual(result.artifacts['public/logs/live_backing.log'], undefined);
   });

@@ -30,9 +30,9 @@ class RelengAPIProxy {
     var imageId = await task.runtime.imageManager.ensureImage(image, process.stdout, task);
 
     var cmd = [
-        `--relengapi-token=${task.runtime.features.relengAPIProxy.token}`,
-        '--',
-        task.status.taskId
+      `--relengapi-token=${task.runtime.features.relengAPIProxy.token}`,
+      '--',
+      task.status.taskId
     ];
 
     // create the container.

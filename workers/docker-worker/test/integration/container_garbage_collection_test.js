@@ -5,6 +5,7 @@ const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/lib/wait_for_event');
+const assert = require('assert');
 
 let docker = new Docker();
 

@@ -21,6 +21,7 @@ suite('volume cache test', function () {
   // Location on the machine running the test where the cache will live
   var localCacheDir = path.join('/tmp', 'test-cache');
 
+  // eslint-disable-next-line no-unused-vars
   var log = createLogger({
     source: 'top',
     provisionerId: 'test_provisioner',
@@ -33,9 +34,9 @@ suite('volume cache test', function () {
 
   setup(async () => {
     monitor = await monitoring({
-        credentials: {},
-        project: 'docker-worker-tests',
-        mock: true
+      credentials: {},
+      project: 'docker-worker-tests',
+      mock: true
     });
   }),
 
@@ -55,7 +56,6 @@ suite('volume cache test', function () {
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-    var fullPath = path.join(localCacheDir, cacheName);
 
     var instance1 = await cache.get(cacheName);
     var instance2 = await cache.get(cacheName);
@@ -89,11 +89,10 @@ suite('volume cache test', function () {
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-    var fullPath = path.join(localCacheDir, cacheName);
 
-    var instance1 = await cache.get(cacheName);
+    var instance1 = await cache.get(cacheName); // eslint-disable-line no-unused-vars
     var instance2 = await cache.get(cacheName);
-    var instance3 = await cache.get(cacheName);
+    var instance3 = await cache.get(cacheName); // eslint-disable-line no-unused-vars
     var instance4 = await cache.get(cacheName);
 
     // Release claim on cached volume
@@ -131,9 +130,6 @@ suite('volume cache test', function () {
 
     clearTimeout(gc.sweepTimeoutId);
 
-    var fullPath = path.join(localCacheDir, cacheName);
-
-
     var cacheInstance = await cache.get(cacheName);
 
     var c = cmd(
@@ -166,7 +162,7 @@ suite('volume cache test', function () {
     await container.start({});
     gc.removeContainer(create.id);
     gc.sweep();
-    var removedContainerId = await waitForEvent(gc, 'gc:container:removed');
+    await waitForEvent(gc, 'gc:container:removed');
 
     assert.ok(fs.existsSync(path.join(cacheInstance.path, 'blah.txt')));
   });
@@ -205,7 +201,6 @@ suite('volume cache test', function () {
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-    var fullPath = path.join(localCacheDir, cacheName);
 
     var instance1 = await cache.get(cacheName);
     var instance2 = await cache.get(cacheName);
@@ -252,7 +247,6 @@ suite('volume cache test', function () {
     });
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-    var fullPath = path.join(localCacheDir, cacheName);
 
     var purgedInstance = await cache.get(cacheName);
 

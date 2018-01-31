@@ -4,13 +4,11 @@ const cmd = require('./helper/cmd');
 const slugid = require('slugid');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
+const assert = require('assert');
 
 suite('Parallel workers', () => {
   // Ensure we don't leave behind our test configurations.
   teardown(settings.cleanup);
-
-  // Total of number of tasks to run...
-  var PARALLEL_TOTAL = 2;
 
   var workerA, workerB;
 
@@ -48,13 +46,13 @@ suite('Parallel workers', () => {
       waitForEvent(workerB, 'task resolved')
     ]);
 
-    var tasks = []
+    var tasks = [];
     for (var taskId of taskIds) {
-      var task = await workerA.queue.status(taskId);
+      let task = await workerA.queue.status(taskId);
       tasks.push(task);
     }
 
-    for (var task of tasks) {
+    for (let task of tasks) {
       assert.ok(task.status.runs[0].state, 'completed', 'each task ran successfully');
       assert.ok(task.status.runs[0].reasonResolved, 'completed', 'each task ran successfully');
     }

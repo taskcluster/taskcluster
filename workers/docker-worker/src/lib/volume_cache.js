@@ -48,7 +48,7 @@ class VolumeCache {
   @return {Object} Cached volume instance that is not mounted.
   */
   async add(cacheName, instancePath) {
-    var instanceId = uuid.v4()
+    var instanceId = uuid.v4();
 
     if (!instancePath) {
       var cachePath = path.join(this.rootCachePath, cacheName);
@@ -81,7 +81,6 @@ class VolumeCache {
   async removeCacheVolume(cacheName, instance) {
     var cacheKey = cacheName + KEY_DELIMITER + instance;
     var instancePath = this.cache[cacheName][instance].path;
-    var statName = 'cache.volume.' + cacheName + '.instance_removed';
     // Remove instance from the list of managed caches so another worker
     // does not try to claim it.
     delete this.cache[cacheName][instance];
@@ -195,13 +194,13 @@ class VolumeCache {
   @param {String} Cache key in the format of <cache name>::<instance id>
   */
   async release(cacheKey) {
-    this.set(cacheKey, {mounted: false, lastUsed: Date.now()})
-    this.log("cache volume release", {key: cacheKey});
+    this.set(cacheKey, {mounted: false, lastUsed: Date.now()});
+    this.log('cache volume release', {key: cacheKey});
   }
 
   purgeInstance(cacheKey) {
-    this.set(cacheKey, {purge: true})
-    this.log("cache volume purge", {key: cacheKey});
+    this.set(cacheKey, {purge: true});
+    this.log('cache volume purge', {key: cacheKey});
   }
 
   /**
@@ -283,8 +282,8 @@ class VolumeCache {
     let purgeRequests;
     try {
       purgeRequests = await this.purgeClient.purgeRequests(this.config.provisionerId,
-                                                           this.config.workerType,
-                                                           {since: this.lastPurgeRequest});
+        this.config.workerType,
+        {since: this.lastPurgeRequest});
       this.setNextPurgeRequestTime();
     } catch (e) {
       // Report the error, but do not set the last request time if this current

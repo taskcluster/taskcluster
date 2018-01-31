@@ -81,46 +81,6 @@ class TaskListener extends EventEmitter {
     this.cleanupRunningState(state);
   }
 
-  async listenForCancelEvents() {
-    // Until listeners are consolidated, do not listen for cancellation.  Next
-    // reclaim event will cause a 409 which should cause the task to abort.
-    return;
-
-    // Do not listen for events if pulse configuration is not supplied.  Since
-    // this is a state that should not happen in production, log an alert so that
-    // we can respond quickly to the event.
-    if (!this.runtime.pulse || !this.runtime.pulse.username || !this.runtime.pulse.password) {
-      this.runtime.log('[alert-operator] pulse credentials missing');
-      return;
-    }
-
-    var queue = this.runtime.queue;
-
-    var queueEvents = new taskcluster.QueueEvents();
-
-    var cancelListener = new taskcluster.PulseListener({
-      credentials: this.runtime.pulse
-    });
-
-    await cancelListener.bind(queueEvents.taskException({
-      workerId: this.runtime.workerId,
-      workerType: this.runtime.workerType,
-      workerGroup: this.runtime.workerGroup,
-      provisionerId: this.runtime.provisionerId
-    }));
-
-    cancelListener.on('message', this.cancelTask.bind(this));
-    cancelListener.on('error', (error) => {
-      // If an error occurs, log and remove the cancelListener.
-      // In the future errors could be handled on the PulseListener level.
-      this.runtime.log('[alert operator] listener error', { err: error });
-      delete this.cancelListener;
-    });
-
-    await cancelListener.resume();
-    return cancelListener;
-  }
-
   async availableCapacity() {
     // Note: Sometimes capacity could be zero (dynamic capacity changes based on
     // shutdown and other factors) so subtracting runningTasks could result in a
@@ -150,7 +110,7 @@ class TaskListener extends EventEmitter {
     if (hostCapacity < runningCapacity) {
       this.runtime.log('[info] host capacity adjusted',
         {
-          message: `The available running capacity of the host has been changed.` +
+          message: 'The available running capacity of the host has been changed.' +
                    ` Available Capacities: Device: ${deviceCapacity} ` +
                    `Running: ${runningCapacity} Adjusted Host Capacity: ${hostCapacity}`
         }
@@ -194,9 +154,9 @@ class TaskListener extends EventEmitter {
         await this.getTasks();
       } catch (e) {
         this.runtime.log('[alert-operator] task retrieval error', {
-            message: e.toString(),
-            err: e,
-            stack: e.stack
+          message: e.toString(),
+          err: e,
+          stack: e.stack
         });
       }
       this.scheduleTaskPoll();
@@ -209,8 +169,6 @@ class TaskListener extends EventEmitter {
     this.listenForShutdowns();
     this.taskQueue = new TaskQueue(this.runtime);
 
-    this.cancelListener = await this.listenForCancelEvents();
-
     // Scheduled the next poll very soon use the error handling it provides.
     this.scheduleTaskPoll(1);
   }
@@ -218,7 +176,6 @@ class TaskListener extends EventEmitter {
   async close() {
     clearInterval(this.reportCapacityStateIntervalId);
     clearTimeout(this.pollTimeoutId);
-    if (this.cancelListener) return await this.cancelListener.close();
   }
 
   /**
@@ -226,7 +183,6 @@ class TaskListener extends EventEmitter {
   */
   async pause() {
     clearTimeout(this.pollTimeoutId);
-    if (this.cancelListener) return await this.cancelListener.pause();
   }
 
   /**
@@ -234,7 +190,6 @@ class TaskListener extends EventEmitter {
   */
   async resume() {
     this.scheduleTaskPoll();
-    if (this.cancelListener) return await this.cancelListener.resume();
   }
 
   isIdle() {
@@ -284,7 +239,7 @@ class TaskListener extends EventEmitter {
   removeRunningTask(runningState) {
     let taskIndex = this.runningTasks.findIndex((runningTask) => {
       return (runningTask.taskId === runningState.taskId) &&
-        (runningTask.runId === runningState.runId)
+        (runningTask.runId === runningState.runId);
     });
 
     if (taskIndex === -1) {
@@ -371,8 +326,8 @@ class TaskListener extends EventEmitter {
     let uptime = this.host.billingCycleUptime();
     let efficiency = (totalRunTime / (this.capacity * (uptime * 1000))) * 100;
     this.runtime.log(
-        'reporting efficiency',
-        {efficiency, uptime, totalRunTime, capacity: this.capcity});
+      'reporting efficiency',
+      {efficiency, uptime, totalRunTime, capacity: this.capcity});
     this.runtime.workerTypeMonitor.measure('total-efficiency', efficiency);
   }
 
@@ -397,7 +352,7 @@ class TaskListener extends EventEmitter {
       let tasks = (await this.fetchSupersedingTasks(supersederUrl, taskId));
       if (!tasks || tasks.length == 0) {
         this.runtime.log('not superseding', {taskId, supersederUrl,
-                           message: 'no tasks supersede this one'});
+          message: 'no tasks supersede this one'});
         return [claim];
       }
 
@@ -405,7 +360,7 @@ class TaskListener extends EventEmitter {
       // the request; this is an invalid response from the superseder
       if (!tasks.includes(taskId)) {
         this.runtime.log('not superseding', {taskId, supersederUrl,
-                           message: 'initial taskId not included in result from superseder'});
+          message: 'initial taskId not included in result from superseder'});
         return [claim];
       }
 
@@ -422,7 +377,7 @@ class TaskListener extends EventEmitter {
             workerGroup: this.runtime.workerGroup,
           });
         } catch(e) {
-          this.runtime.log("while superseding - secondary claim failure", {
+          this.runtime.log('while superseding - secondary claim failure', {
             taskId: tid,
             runId: 0,
             message: e.toString(),
@@ -452,10 +407,10 @@ class TaskListener extends EventEmitter {
   }
 
   async fetchSupersedingTasks(url, taskId) {
-    url = url + "?taskId=" + taskId
+    url = url + '?taskId=' + taskId;
     let jsonData = await request.get(url).timeout(this.supersedingTimeout).buffer().end();
     if (!jsonData.ok || !jsonData.text) {
-      throw new Error("Failure fetching from superseding URL " + url);
+      throw new Error('Failure fetching from superseding URL ' + url);
     }
     return JSON.parse(jsonData.text)['supersedes'];
   }
@@ -489,7 +444,7 @@ class TaskListener extends EventEmitter {
       );
 
       // Look up full task definition in claim response.
-      var task = claim.task
+      var task = claim.task;
 
       // Date when the task was created.
       var created = new Date(task.created);
@@ -522,7 +477,7 @@ class TaskListener extends EventEmitter {
       var taskHandler = new Task(this.runtime, task, claims, options);
       runningState.handler = taskHandler;
 
-      this.addRunningTask(runningState)
+      this.addRunningTask(runningState);
 
       // Run the task and collect runtime metrics.
       await taskHandler.start();

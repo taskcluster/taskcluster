@@ -24,7 +24,7 @@ suite('encrypted private env variables', () => {
       dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
     });
 
-    var pubKeyArmored = fs.readFileSync('test\/docker-worker.pem', 'ascii');
+    var pubKeyArmored = fs.readFileSync('test/docker-worker.pem', 'ascii');
     pubKey = openpgp.key.readArmored(pubKeyArmored);
 
     // ensure that the image already exists because encrypted payload is time sensitive
@@ -38,7 +38,7 @@ suite('encrypted private env variables', () => {
 
     return Promise.all(payloadData.map((data) => {
 
-     // Create message to encrypt
+      // Create message to encrypt
       var message = {
         messageVersion: data.messageVersion || defaultMessageVersion,
         taskId: data.taskId,
@@ -68,14 +68,14 @@ suite('encrypted private env variables', () => {
     var taskPayload = {
       payload: {
         image: 'taskcluster/test-ubuntu',
-        command: ['/bin/bash', '-c', 'echo \"$' + envVar1 + '\";' + 'echo \"$' + envVar2 + '\";'],
+        command: ['/bin/bash', '-c', 'echo "$' + envVar1 + '";' + 'echo "$' + envVar2 + '";'],
         created: data.startTime || Date.now(),
         deadline: data.endTime || (Date.now() + 60000),
         env: { ENV_VAR: 'env var value'},
-        }
+      }
     };
     return getEncryptedEnvPayload(data).then(function(values) {
-      taskPayload.payload.encryptedEnv = [ values[0], values[1] ]
+      taskPayload.payload.encryptedEnv = [ values[0], values[1] ];
       return taskPayload;
     });
   }
@@ -88,7 +88,7 @@ suite('encrypted private env variables', () => {
         taskId: taskId,
         name: envVar1,
         value: secretDataContent1},
-       {messageVersion: '1',
+      {messageVersion: '1',
         taskId: taskId,
         name: envVar2,
         value: secretDataContent2}]
@@ -114,7 +114,7 @@ suite('encrypted private env variables', () => {
         value: secretDataContent1,
         name: envVar1,
         messageVersion: '1'},
-       {taskId: taskId,
+      {taskId: taskId,
         name: envVar2,
         value: secretDataContent2,
         messageVersion: '2'}]
@@ -136,7 +136,7 @@ suite('encrypted private env variables', () => {
       [{taskId: taskId,
         name: envVar1,
         value: secretDataContent1},
-       {taskId: taskId,
+      {taskId: taskId,
         name: envVar1,
         value: secretDataContent2}]
     );
@@ -157,7 +157,7 @@ suite('encrypted private env variables', () => {
       [{taskId: taskId,
         name: 'TASK_ID',
         value: secretDataContent1},
-       {taskId: taskId,
+      {taskId: taskId,
         name: envVar1,
         value: secretDataContent2}]
     );
@@ -178,7 +178,7 @@ suite('encrypted private env variables', () => {
       [{taskId: taskId,
         name: 'RUN_ID',
         value: secretDataContent1},
-       {taskId: taskId,
+      {taskId: taskId,
         name: envVar1,
         value: secretDataContent2}]
     );
@@ -200,7 +200,7 @@ suite('encrypted private env variables', () => {
         name: envVar1,
         value: secretDataContent1,
         messageVersion: '1'},
-       {taskId: taskId,
+      {taskId: taskId,
         name: envVar2,
         value: secretDataContent2,
         messageVersion: '1'}]
@@ -228,7 +228,7 @@ suite('encrypted private env variables', () => {
         name: envVar1,
         value: secretDataContent1,
         messageVersion: '1'},
-       {taskId: taskId,
+      {taskId: taskId,
         startTime: startTime,
         name: envVar2,
         value: secretDataContent2,
@@ -254,7 +254,7 @@ suite('encrypted private env variables', () => {
         name: envVar1,
         value: secretDataContent1,
         messageVersion: '1'},
-       {taskId: taskId,
+      {taskId: taskId,
         endTime: endTime,
         name: envVar2,
         value: secretDataContent2,
@@ -278,7 +278,7 @@ suite('encrypted private env variables', () => {
         name: envVar1,
         value: '1\n2\n3\n4',
         messageVersion: '1'},
-       {taskId: taskId,
+      {taskId: taskId,
         name: envVar2,
         value: secretDataContent2,
         messageVersion: '1'}]

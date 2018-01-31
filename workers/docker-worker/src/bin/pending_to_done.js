@@ -20,14 +20,14 @@ async function main () {
 
     console.log('begin claiming', taskId, runId);
     try {
-      var claim = await queue.claimTask(taskId, runId, {
+      await queue.claimTask(taskId, runId, {
         workerGroup: 'skip',
         workerId: 'skip'
       });
 
       await queue.reportCompleted(taskId, runId, { success: false });
     } catch (e) {
-      console.error("Could not complete %s %d", taskId, runId, e, JSON.stringify(e.body, null, 2));
+      console.error('Could not complete %s %d', taskId, runId, e, JSON.stringify(e.body, null, 2));
     }
   }
 }

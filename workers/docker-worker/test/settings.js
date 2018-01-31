@@ -48,4 +48,4 @@ module.exports = {
     unlink('nodeTermination');
     unlink('configure');
   }
-}
+};

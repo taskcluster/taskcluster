@@ -31,7 +31,7 @@ function* configure() {
   // Prompt for all the configurations.
   for (var key in VARIABLES) {
     var desc = VARIABLES[key].description;
-    var defaultValue = currentConfig[key] || VARIABLES[key].value
+    var defaultValue = currentConfig[key] || VARIABLES[key].value;
 
     var humanDesc =
       color.white(key + ': ') +
@@ -47,7 +47,7 @@ function* configure() {
   console.log();
 
   // Yeah bad things will happen if rejected too often...
-  if (!(yield prompt.confirm("Does this look right? "))) {
+  if (!(yield prompt.confirm('Does this look right? '))) {
     return yield configure();
   }
 

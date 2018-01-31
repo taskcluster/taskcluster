@@ -34,8 +34,8 @@ suite('pull image', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
 
     await removeImage(docker, hashedName);
 
@@ -59,8 +59,8 @@ suite('pull image', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${LZ4_TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${LZ4_TASK_ID}${image.path}`)
+      .digest('hex');
 
     await removeImage(docker, hashedName);
 
@@ -84,8 +84,8 @@ suite('pull image', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${ZSTD_TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${ZSTD_TASK_ID}${image.path}`)
+      .digest('hex');
 
     await removeImage(docker, hashedName);
 
@@ -109,8 +109,8 @@ suite('pull image', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
 
     await removeImage(docker, hashedName);
 
@@ -134,8 +134,8 @@ suite('pull image', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
 
     await removeImage(docker, hashedName);
 
@@ -160,8 +160,8 @@ suite('pull image', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
 
     await removeImage(docker, hashedName);
 

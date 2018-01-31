@@ -15,7 +15,7 @@ module.exports = function getHostname(config, expires) {
   assert(ip, 'Public IP is not specified in the configuration');
 
   let hostname;
-  ip = ip.split('.').map((octet) => { return parseInt(octet) });
+  ip = ip.split('.').map((octet) => { return parseInt(octet); });
   hostname  = statelessDNSServer.createHostname(
     ip,
     expires,
@@ -24,4 +24,4 @@ module.exports = function getHostname(config, expires) {
   );
 
   return hostname;
-}
+};

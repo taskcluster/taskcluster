@@ -20,8 +20,8 @@ suite('certificate of trust', () => {
       path: 'public/image.tar'
     };
     let hashedName = crypto.createHash('md5')
-                      .update(`${TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
     await removeImage(docker, hashedName);
 
     let expiration = expires();
@@ -61,11 +61,11 @@ suite('certificate of trust', () => {
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     let expectedArtifacts = ['public/logs/certified.log',
-                             'public/chainOfTrust.json.asc',
-                             'public/logs/live.log',
-                             'public/logs/live_backing.log',
-                             'public/xfoo',
-                             'public/bar'].sort();
+      'public/chainOfTrust.json.asc',
+      'public/logs/live.log',
+      'public/logs/live_backing.log',
+      'public/xfoo',
+      'public/bar'].sort();
     assert.deepEqual(Object.keys(result.artifacts).sort(), expectedArtifacts);
 
     let signedChainOfTrust = await getArtifact(result, 'public/chainOfTrust.json.asc');

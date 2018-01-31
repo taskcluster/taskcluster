@@ -38,53 +38,53 @@ function validateDecryptedData(taskPayload, decryptedData, taskId) {
 
     var incidentId = uuid.v4();
     debug('%s -- %s; incidentId: %s',
-          errorPrefix, debugMsg, incidentId);
+      errorPrefix, debugMsg, incidentId);
     throw new Error(util.format('%s -- %s; incidentId: %s',
-                                errorPrefix, logMsg, incidentId));
+      errorPrefix, logMsg, incidentId));
   }
 
   if (reservedKeys.includes(decryptedData.name)) {
-      var debugMsg = 'the environment variable (' + decryptedData.name + ') ' +
+    var debugMsg = 'the environment variable (' + decryptedData.name + ') ' +
                      'conflicts with a reserved environment variable';
-      var logMsg = 'an environment variable conflicts with an existing environment variable';
-      logAndThrow(debugMsg, logMsg);
+    var logMsg = 'an environment variable conflicts with an existing environment variable';
+    logAndThrow(debugMsg, logMsg);
   }
 
   if (taskPayload.env[decryptedData.name] !== undefined) {
-    var debugMsg = 'the environment variable (' + decryptedData.name + ') ' +
+    let debugMsg = 'the environment variable (' + decryptedData.name + ') ' +
                    'has been duplicated in the task payload';
-    var logMsg = 'an environment variable has been duplicated in the task payload';
+    let logMsg = 'an environment variable has been duplicated in the task payload';
     logAndThrow(debugMsg, logMsg);
   }
 
   if (decryptedData.messageVersion != 1) {
-    var debugMsg = 'the version of the message (' + decryptedData.messageVersion + ') ' +
+    let debugMsg = 'the version of the message (' + decryptedData.messageVersion + ') ' +
                    'is not supported';
-    var logMsg = 'the version of the message is not supported';
+    let logMsg = 'the version of the message is not supported';
     logAndThrow(debugMsg, logMsg);
   }
 
   if (decryptedData.taskId !== taskId) {
-    var debugMsg = 'the taskId of env payload (' + decryptedData.taskId + ') ' +
+    let debugMsg = 'the taskId of env payload (' + decryptedData.taskId + ') ' +
                    'does not match taskId of task (' + taskId + ')';
-    var logMsg = 'the taskId of the env payload does not match ' +
+    let logMsg = 'the taskId of the env payload does not match ' +
                  'the taskId of the task';
     logAndThrow(debugMsg, logMsg);
   }
 
   if (decryptedData.startTime > Date.now()) {
-    var debugMsg = 'the start time date in the env payload is in the future, ' +
+    let debugMsg = 'the start time date in the env payload is in the future, ' +
                    'now: ' + Date.now() + ', ' +
                    'env start time date: ' + decryptedData.startTime;
-    var logMsg = 'the start time in the env payload is in the future';
+    let logMsg = 'the start time in the env payload is in the future';
     logAndThrow(debugMsg, logMsg);
   }
 
   if (Date.now() > decryptedData.endTime) {
-    var debugMsg = 'the end time in the env payload is in the past, ' +
+    let debugMsg = 'the end time in the env payload is in the past, ' +
                    'now: ' + Date.now() + ', ' +
                    'end time: ' + decryptedData.endTime;
-    var logMsg = 'the end time in the env payload is in the past';
+    let logMsg = 'the end time in the env payload is in the past';
     logAndThrow(debugMsg, logMsg);
   }
 }

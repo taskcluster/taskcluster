@@ -49,4 +49,4 @@ module.exports = function (config) {
     stats.measure('hd.free', free);
     stats.measure('hd.used', total - free);
   });
-}
+};

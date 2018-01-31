@@ -15,4 +15,4 @@ module.exports = {
 
   // Zstandard compressed impage
   ZSTD_TASK_ID: 'd6hoilN7TduHjBDHPd-JgA'
-}
+};

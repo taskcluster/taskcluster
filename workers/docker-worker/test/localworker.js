@@ -23,7 +23,7 @@ class LocalWorker {
     this.process = null;
   }
 
-/** Launch the local worker instance as a subprocess */
+  /** Launch the local worker instance as a subprocess */
   launch() {
     return new Promise(function(accept, reject) {
       // Clone process environment variables.

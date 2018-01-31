@@ -173,4 +173,4 @@ module.exports = {
     let text = await getText(url);
     return text;
   }
-}
+};

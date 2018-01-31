@@ -55,11 +55,11 @@ class ChainOfTrust {
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
-                       logStream, 'public/logs/certified.log', expiration, {
-        'content-type': 'text/plain',
-        'content-length': stat.size,
-        'content-encoding': 'gzip'
-      });
+        logStream, 'public/logs/certified.log', expiration, {
+          'content-type': 'text/plain',
+          'content-length': stat.size,
+          'content-encoding': 'gzip'
+        });
       await fs.unlink(this.file.path);
     } catch (err) {
       debug(err);
@@ -105,10 +105,10 @@ class ChainOfTrust {
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
-                       bufferStream, 'public/chainOfTrust.json.asc', expiration, {
-        'content-type': 'text/plain',
-        'content-length': signedChainOfTrust.data.length
-      });
+        bufferStream, 'public/chainOfTrust.json.asc', expiration, {
+          'content-type': 'text/plain',
+          'content-length': signedChainOfTrust.data.length
+        });
     } catch (err) {
       debug(err);
       throw err;

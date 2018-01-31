@@ -24,9 +24,9 @@ const DOCKER_CONFIG = {
 suite('Image Manager', () => {
   setup(async () => {
     monitor = await monitoring({
-        credentials: {},
-        project: 'docker-worker-tests',
-        mock: true
+      credentials: {},
+      project: 'docker-worker-tests',
+      mock: true
     });
   });
   test('download docker image from registry', async () => {
@@ -55,8 +55,8 @@ suite('Image Manager', () => {
     };
 
     let hashedName = createHash('md5')
-                      .update(`${TASK_ID}${image.path}`)
-                      .digest('hex');
+      .update(`${TASK_ID}${image.path}`)
+      .digest('hex');
 
     await dockerUtils.removeImageIfExists(docker, hashedName);
 
@@ -94,8 +94,8 @@ suite('Image Manager', () => {
     let index = new Index();
     let {taskId} = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
-                      .update(`${taskId}${image.path}`)
-                      .digest('hex');
+      .update(`${taskId}${image.path}`)
+      .digest('hex');
 
     await dockerUtils.removeImageIfExists(docker, hashedName);
 
@@ -131,8 +131,8 @@ suite('Image Manager', () => {
     let index = new Index();
     let {taskId} = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
-                      .update(`${taskId}${image.path}`)
-                      .digest('hex');
+      .update(`${taskId}${image.path}`)
+      .digest('hex');
 
     await dockerUtils.removeImageIfExists(docker, hashedName);
 
@@ -173,8 +173,8 @@ suite('Image Manager', () => {
     let index = new Index();
     let {taskId} = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
-                      .update(`${taskId}${image.path}`)
-                      .digest('hex');
+      .update(`${taskId}${image.path}`)
+      .digest('hex');
 
     await dockerUtils.removeImageIfExists(docker, hashedName);
 
@@ -209,8 +209,8 @@ suite('Image Manager', () => {
     let index = new Index();
     let {taskId} = await index.findTask(image.namespace);
     let hashedName = createHash('md5')
-                      .update(`${taskId}${image.path}`)
-                      .digest('hex');
+      .update(`${taskId}${image.path}`)
+      .digest('hex');
 
     await dockerUtils.removeImageIfExists(docker, hashedName);
 
@@ -261,12 +261,12 @@ suite('Image Manager', () => {
     let im = new ImageManager(runtime);
     runtime.imageManager = im;
     try {
-      let imageId = await im.ensureImage(image, process.stdout, task, []);
+      await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
     } catch(e) {
       assert.ok(
         e.message.includes('Could not find a task associated'),
-        `Error message did not appear indicating a task could not be found.`
+        'Error message did not appear indicating a task could not be found.'
       );
     }
   });
@@ -296,7 +296,7 @@ suite('Image Manager', () => {
     let im = new ImageManager(runtime);
     runtime.imageManager = im;
     try {
-      let imageId = await im.ensureImage(image, process.stdout, task, []);
+      await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
     } catch(e) {
       assert.ok(

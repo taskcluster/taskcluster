@@ -168,7 +168,6 @@ suite('volume cache tests', () => {
 
   test('cached volumes can be reused between tasks', async () => {
     var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
-    var fullCacheDir = path.join(localCacheDir, cacheName);
     var neededScope = 'docker-worker:cache:' + cacheName;
 
     settings.configure({
@@ -207,11 +206,10 @@ suite('volume cache tests', () => {
 
     task.payload.cache[cacheName] = '/tmp-obj-dir';
 
-    var result1 = await Promise.all([
+    await Promise.all([
       worker.postToQueue(task),
       waitForEvent(worker, 'cache volume release')
     ]);
-    result1 = result1[0];
 
     task.payload.command = cmd('cat /tmp-obj-dir/foo.txt');
     task.payload.features.localLiveLog = true;
@@ -361,7 +359,6 @@ suite('volume cache tests', () => {
   test('cached volumes of aborted tasks are released', async () => {
     var cacheName = 'docker-worker-garbage-caches-tmp-obj-dir-' + Date.now().toString();
     var neededScope = 'docker-worker:cache:' + cacheName;
-    var fullCacheDir = path.join(localCacheDir, cacheName);
     settings.configure({
       cache: {
         volumeCachePath: localCacheDir
@@ -450,7 +447,7 @@ suite('volume cache tests', () => {
         worker.provisionerId,
         worker.workerType, {
           cacheName: cacheName
-      }),
+        }),
       waitForEvent(worker, 'cache volume removed')
     ]);
 
@@ -458,7 +455,7 @@ suite('volume cache tests', () => {
 
     try {
       assert.equal(fs.readdirSync(fullCacheDir).length, 0);
-    } catch(e) {
+    } catch(e) { // eslint-disable-line no-empty
     }
   });
 
@@ -502,7 +499,7 @@ suite('volume cache tests', () => {
           worker.provisionerId,
           worker.workerType, {
             cacheName: cacheName
-        }),
+          }),
         waitForEvent(worker, 'cache volume removed')
       ]);
 
@@ -576,7 +573,7 @@ suite('volume cache tests', () => {
 
     try {
       assert.equal(fs.readdirSync(fullCacheDir).length, 0);
-    } catch(e) {
+    } catch(e) { //eslint-disable-line no-empty
     }
   });
 });

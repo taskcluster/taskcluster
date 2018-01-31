@@ -1,4 +1,5 @@
 const uploadToS3 = require('../src/lib/upload_to_s3');
+const assert = require('assert');
 
 suite('upload to s3 test', function () {
   let temporary = require('temporary');
@@ -67,7 +68,7 @@ suite('upload to s3 test', function () {
 
     let httpHeader = {
       'content-length': DATA.length
-    }
+    };
 
     try {
       await uploadToS3(
@@ -75,7 +76,7 @@ suite('upload to s3 test', function () {
         1,
         0,
         await getTemporaryStream(tempFile.path, DATA),
-        "public/foo",
+        'public/foo',
         expiry,
         httpHeader,
         'https://localhost:8000',

@@ -29,7 +29,7 @@ class WorkerType {
     return promiseRetry(
       retry => this.client.state(this.name).catch(retry),
       this.retryOptions
-    )
+    );
   }
 
   update(wt) {
@@ -69,8 +69,9 @@ module.exports = {
             InstanceIds: instances.map(i => i.id),
             DryRun: false
           }).promise();
-      }));
+        }
+      ));
     });
   }
-}
+};
 

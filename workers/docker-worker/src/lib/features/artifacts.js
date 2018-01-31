@@ -147,7 +147,7 @@ class Artifacts {
         let start = process.hrtime();
 
         let {digest, size} = await uploadToS3(taskHandler.queue, taskId, runId, stream,
-                         entryName, expiry, headers);
+          entryName, expiry, headers);
 
         // save the time taken to upload the artifact
         let elapsedTime = process.hrtime(start);

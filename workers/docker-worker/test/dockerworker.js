@@ -64,7 +64,7 @@ class DockerWorker {
       Image: IMAGE,
       Cmd: [
         '/bin/bash', '-c',
-         [
+        [
           // mount the securityfs in the container so that we can access apparmor
           'mount',
           '-tsecurityfs',
@@ -80,7 +80,7 @@ class DockerWorker {
           '--provisioner-id', this.provisionerId,
           '--worker-type', this.workerType,
           'test'
-         ].join(' ')
+        ].join(' ')
       ],
       Env: [
         'DOCKER_CONTAINER_ID=' + this.workerId

@@ -15,9 +15,9 @@ class AudioDeviceManager {
     let deviceFiles;
     try {
       deviceFiles = fs.readdirSync(BASE_DIR)
-                        .filter((deviceFile) => {
-                          return /^controlC[0-9]+$/.test(deviceFile);
-                        });
+        .filter((deviceFile) => {
+          return /^controlC[0-9]+$/.test(deviceFile);
+        });
     }
     catch (e) {
       debug(`Caught error when gathering audio devices. ${e.stack || e}`);

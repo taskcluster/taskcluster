@@ -52,7 +52,7 @@ suite('interactive vnc', () => {
       });
       assert.equal(res.statusCode, 303, `Artifact returned code ${res.statusCode}`);
       return URL.parse(res.headers.location, true).query;
-    };
+    }
     let signedUrl = queue.buildSignedUrl(
       queue.getLatestArtifact,
       taskId,
@@ -60,7 +60,7 @@ suite('interactive vnc', () => {
       {expiration: 60 * 5});
 
     return base.testing.poll(() => getWithoutRedirect(signedUrl), 45, 1000);
-  };
+  }
 
   test('cat', async () => {
     let taskId = slugid.v4();

@@ -20,4 +20,4 @@ module.exports = {
 
     return scopeUtils.scopeMatch(expandedScopes.scopes, [neededScopes]);
   }
-}
+};

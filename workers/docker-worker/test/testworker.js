@@ -144,7 +144,7 @@ class TestWorker extends EventEmitter {
     var artifacts = await this.queue.listArtifacts(taskId, runId);
 
     // XXX: Ugh status.status...
-    var status = status.status;
+    status = status.status;
     var indexedArtifacts =
       artifacts.artifacts.reduce(function(result, artifact) {
         result[artifact.name] = artifact;
@@ -196,7 +196,7 @@ class TestWorker extends EventEmitter {
     // create a new pending run and publish to task-pending.  Tasks resolved by
     // another entity (canceled tasks) will report to task-exception prior to the worker
     // being finished.
-    var creation = await Promise.all([
+    await Promise.all([
       this.createTask(taskId, task),
       this.waitForTaskResolution(taskId)
     ]);

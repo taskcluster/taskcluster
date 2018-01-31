@@ -111,7 +111,7 @@ suite('Directory artifact', function() {
         dport: 443,
         sudo: true
       });
-    }
+    };
 
     let cmdArgs = ['mkdir "/xfoo"'];
     for (let i = 1; i <= ARTIFACT_COUNT; ++i) {

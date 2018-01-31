@@ -64,8 +64,6 @@ module.exports = class IndexedImage extends ArtifactImage {
         `namespace. ${e.message}`
       );
     }
-
-    return this.taskId;
   }
 
   /*
@@ -79,4 +77,4 @@ module.exports = class IndexedImage extends ArtifactImage {
     this.taskId = await this.getTaskIdForImage();
     return await this._checkIfImageExists();
   }
-}
+};

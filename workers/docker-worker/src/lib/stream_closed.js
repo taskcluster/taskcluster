@@ -17,4 +17,4 @@ module.exports = function waitForStream(stream) {
     stream.once('finish', accept);
     stream.once('error', reject);
   }.bind(this));
-}
+};

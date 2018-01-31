@@ -51,15 +51,15 @@ class BulkLog {
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
-                       diskStream, this.artifactName, expiration, {
-        'content-type': 'text/plain',
-        'content-length': stat.size,
-        'content-encoding': 'gzip'
-      });
+        diskStream, this.artifactName, expiration, {
+          'content-type': 'text/plain',
+          'content-length': stat.size,
+          'content-encoding': 'gzip'
+        });
     } catch (err) {
       debug(err);
       throw err;
-    };
+    }
 
 
     // Unlink the temp file.

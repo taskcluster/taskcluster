@@ -36,8 +36,6 @@ class TaskclusterLogs {
 
   async link(task) {
     debug('create live log container...');
-    let taskId = task.status.taskId;
-    let runId = task.runId;
 
     this.logsLocations = getLogsLocationsFromTask(task.task);
 
@@ -63,7 +61,7 @@ class TaskclusterLogs {
       Image: imageId,
       Tty: false,
       Env: [
-        "DEBUG=*",
+        'DEBUG=*',
         `ACCESS_TOKEN=${this.token}`
       ],
       //Env: envs,
@@ -114,7 +112,7 @@ class TaskclusterLogs {
       return;
     }
     // Log PUT url is only available on the host itself
-    let putUrl = `http:\/\/${inspect.NetworkSettings.IPAddress}:60022/log`;
+    let putUrl = `http://${inspect.NetworkSettings.IPAddress}:60022/log`;
     let opts = URL.parse(putUrl);
     opts.method = 'put';
 
@@ -140,8 +138,8 @@ class TaskclusterLogs {
       hostname: task.hostname,
       port: publicPort,
       pathname: `log/${this.token}`
-    })
-    debug('live log running: putUrl', putUrl)
+    });
+    debug('live log running: putUrl', putUrl);
     debug('live log running: publicUrl', this.publicUrl);
 
     let queue = task.queue;
@@ -170,7 +168,7 @@ class TaskclusterLogs {
   }
 
   async killed(task) {
-    debug('switching live log redirect to backing log...')
+    debug('switching live log redirect to backing log...');
     try {
       await this.container.stop();
     } catch (e) {

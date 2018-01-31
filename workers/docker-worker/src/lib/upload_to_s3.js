@@ -9,7 +9,7 @@ const { createLogger } = require('./log');
 const _ = require('lodash');
 const waitForEvent = require('./wait_for_event');
 
-var log = createLogger({source: "uploadToS3"});
+var log = createLogger({source: 'uploadToS3'});
 let debug = Debug('taskcluster-docker-worker:uploadToS3');
 
 // Upload an S3 artifact to the queue for the given taskId/runId.  Source can be
@@ -35,7 +35,7 @@ module.exports = async function uploadToS3 (
   try {
     // write the source out to a temporary file so that it can be
     // re-read into the request repeatedly
-    if (typeof source === "string") {
+    if (typeof source === 'string') {
       await tmp.writeFile(source);
     } else {
       await new Promise((accept, reject) => {
@@ -92,7 +92,7 @@ module.exports = async function uploadToS3 (
     await promiseRetry((retry, number) => {
       if (number > 1) { // if it's not the first attempt
         log('retrying artifact upload', _.defaults({}, logDetails, {
-            attemptNumber: number
+          attemptNumber: number
         }));
       }
 
@@ -130,4 +130,4 @@ module.exports = async function uploadToS3 (
   }
 
   return {digest, size};
-}
+};

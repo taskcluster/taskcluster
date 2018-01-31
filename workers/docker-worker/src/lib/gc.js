@@ -71,19 +71,19 @@ GarbageCollector.prototype = {
     for(let container of containers) {
       if (!(container.Id in this.markedContainers) &&
           (this.ignoredContainers.indexOf(container.Id) === -1)) {
-          var stale = await isContainerStale(
-            this.docker, container, this.containerExpiration
-          );
-          if (stale) {
-            this.log('[alert-operator] stale container', {
-              message: 'Container exited more than ' +
+        var stale = await isContainerStale(
+          this.docker, container, this.containerExpiration
+        );
+        if (stale) {
+          this.log('[alert-operator] stale container', {
+            message: 'Container exited more than ' +
                        `${this.containerExpiration/1000} seconds ago. Marking ` +
                        'for removal',
-              container: container.Id
-            });
+            container: container.Id
+          });
 
-            this.removeContainer(container.Id);
-          }
+          this.removeContainer(container.Id);
+        }
       }
     }
   },
@@ -144,15 +144,15 @@ GarbageCollector.prototype = {
 
           this.emit('gc:container:error', {message: message, container: containerId});
           this.log('container removal error.',
-                   {container: containerId, err: message});
+            {container: containerId, err: message});
         }
       } else {
         delete this.markedContainers[containerId];
         this.ignoredContainers.push(containerId);
         this.emit('gc:container:error',
-                  {message: 'Retry limit exceeded', container: containerId});
+          {message: 'Retry limit exceeded', container: containerId});
         this.log('container removal error',
-                 {container: containerId, err: 'Retry limit exceeded'});
+          {container: containerId, err: 'Retry limit exceeded'});
       }
     }
   },
@@ -188,13 +188,13 @@ GarbageCollector.prototype = {
 
           this.emit('gc:image:error', {message: message, image: image});
           this.log('image removal error.',
-                   {message: message, image: image});
+            {message: message, image: image});
         }
       } else {
         var warning = 'Cannot remove image while it is running.';
         this.emit('gc:image:warning', {message: warning, image: image});
         this.log('garbage collection warning',
-                 {message: warning, image: image});
+          {message: warning, image: image});
       }
     }
   },
@@ -211,20 +211,20 @@ GarbageCollector.prototype = {
     // for each available task the worker can claim.
     let availableCapacity = await this.taskListener.availableCapacity();
     var exceedsThreshold = await exceedsDiskspaceThreshold(this.dockerVolume,
-                             this.diskspaceThreshold,
-                             availableCapacity,
-                             this.log,
-                             this.monitor);
+      this.diskspaceThreshold,
+      availableCapacity,
+      this.log,
+      this.monitor);
     if (exceedsThreshold) {
       this.emit('gc:diskspace:warning',
-                {message: 'Diskspace threshold reached. ' +
+        {message: 'Diskspace threshold reached. ' +
                           'Removing all non-running images.'
-                });
+        });
     } else {
       this.emit('gc:diskspace:info',
-                {message: 'Diskspace threshold not reached. ' +
+        {message: 'Diskspace threshold not reached. ' +
                           'Removing only expired images.'
-                });
+        });
     }
 
     if (full) {

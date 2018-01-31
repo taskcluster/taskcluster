@@ -125,13 +125,13 @@ suite('artifact extration tests', () => {
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok('public/test.html' in result.artifacts,
-              'Artifact does not appear in the list of uploaded artifacts');
+      'Artifact does not appear in the list of uploaded artifacts');
 
     assert.ok(result.artifacts['public/test.html'].contentType === 'text/html');
 
     let testContents = await getArtifact(result, 'public/test.html');
     assert.ok(Buffer.byteLength(testContents) === 1000000,
-              'Size of uploaded contents does not match original.');
+      'Size of uploaded contents does not match original.');
   });
 
   test('upload binary artifact', async () => {
@@ -162,7 +162,7 @@ suite('artifact extration tests', () => {
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
     assert.ok('public/test' in result.artifacts,
-              'Artifact does not appear in the list of uploaded artifacts');
+      'Artifact does not appear in the list of uploaded artifacts');
     let contentType = 'application/octet-stream';
     assert.ok(result.artifacts['public/test'].contentType === contentType);
     // TODO handle response streams to validate content size

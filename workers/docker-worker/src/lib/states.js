@@ -46,13 +46,13 @@ class States {
 
     let errors = [];
     return Promise.all(
-        hooks.map(hook => {
-          return hook[method](task)
-            .then(info => { return info; })
-            .catch(err => {
-              errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err}`));
-            });
-        })
+      hooks.map(hook => {
+        return hook[method](task)
+          .then(info => { return info; })
+          .catch(err => {
+            errors.push(new Error(`Error calling '${method}' for ${hook.featureName} : ${err}`));
+          });
+      })
     ).then(results => {
       if (errors.length > 0) {
         throw new Error(errors.map(e => e).join(' | '));

@@ -9,8 +9,8 @@ const _ = require('lodash');
 const program = require('commander');
 
 program
-  .option('--no-backup', "Don't generate the backup file.")
-  .option('-t, --test', "Update only test worker types.")
+  .option('--no-backup', 'Don\'t generate the backup file.')
+  .option('-t, --test', 'Update only test worker types.')
   .parse(process.argv);
 
 const workerTypesList = program.test
@@ -51,7 +51,7 @@ async function updateWorkerTypes(client) {
       const workerType = new utils.WorkerType(client, name);
       const wt = await workerType.workerType();
 
-      for (region of wt.regions) {
+      for (let region of wt.regions) {
         region.launchSpec.ImageId = amis[i][region.region];
       }
       console.log(`Updating ${name}`);

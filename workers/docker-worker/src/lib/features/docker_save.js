@@ -24,7 +24,7 @@ class DockerSave {
     //temporary path for saved file
     let pathname = path.join(task.runtime.dockerVolume, slugid.v4() + '.tar');
 
-    let {Id: imageId} = await task.dockerProcess.container.commit({
+    await task.dockerProcess.container.commit({
       // repo name must be lower case and not contain underscores
       repo: imageName
     });
@@ -46,10 +46,10 @@ class DockerSave {
 
     await uploadToS3(task.queue, task.status.taskId, task.runId,
       uploadStream, 'public/dockerImage.tar', expiration, {
-      'content-type': 'application/x-tar',
-      'content-length': stat.size,
-      'content-encoding': 'gzip'
-    });
+        'content-type': 'application/x-tar',
+        'content-length': stat.size,
+        'content-encoding': 'gzip'
+      });
 
     debug('docker image uploaded');
 
@@ -86,7 +86,7 @@ class DockerSave {
         'content-type': 'application/x-tar',
         'content-length': stat.size,
         'content-encoding': 'gzip'
-    });
+      });
 
     debug('%s uploaded', cache.cacheName);
 
@@ -101,8 +101,8 @@ class DockerSave {
     let errors = [];
     let volumeCaches = task.volumeCaches || [];
 
-    await Promise.all(volumeCaches.map((cacheStr) => this.uploadCache(task, cacheStr).catch(err => error.push(err)))
-    .concat(this.uploadContainer(task).catch((err) => errors.push(err))));
+    await Promise.all(volumeCaches.map((cacheStr) => this.uploadCache(task, cacheStr).catch(err => err.push(err)))
+      .concat(this.uploadContainer(task).catch((err) => errors.push(err))));
 
     if (errors.length > 0) {
       let errorStr = 'cache could not be uploaded: ';

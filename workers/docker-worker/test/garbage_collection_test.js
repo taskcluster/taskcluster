@@ -38,9 +38,9 @@ suite('garbage collection tests', () => {
 
   setup(async () => {
     monitor = await monitoring({
-        credentials: {},
-        project: 'docker-worker-tests',
-        mock: true
+      credentials: {},
+      project: 'docker-worker-tests',
+      mock: true
     });
 
     imageManager = new ImageManager({
@@ -64,13 +64,12 @@ suite('garbage collection tests', () => {
 
   test('remove container', async () => {
     var imageId = await imageManager.ensureImage(IMAGE, devnull());
-    var testMarkedContainers = [];
 
     var gc = new GarbageCollector({
       capacity: 1,
       log: debug,
       docker: docker,
-      taskListener: { availableCapacity: async () => { return 0 } },
+      taskListener: { availableCapacity: async () => { return 0; } },
       monitor: monitor
     });
 
@@ -78,7 +77,7 @@ suite('garbage collection tests', () => {
     gc.removeContainer(container.id);
     await gc.sweep();
     assert.ok(!gc.markedContainers.length,
-              'List of marked containers is not empty when it should be');
+      'List of marked containers is not empty when it should be');
   }),
 
   test('remove running container', async () => {
@@ -99,12 +98,12 @@ suite('garbage collection tests', () => {
 
     gc.removeContainer(containerId);
     assert.ok(containerId in gc.markedContainers,
-              'Container was not found in the list of garbage ' +
+      'Container was not found in the list of garbage ' +
               'collected containers.');
 
     await gc.sweep();
     assert.ok(!(containerId in gc.markedContainers),
-              'Container was found in the list of garbage ' +
+      'Container was found in the list of garbage ' +
               'collected containers.');
   }),
 
@@ -114,7 +113,7 @@ suite('garbage collection tests', () => {
       capacity: 1,
       log: debug,
       docker: docker,
-      taskListener: { availableCapacity: async () => { return 0 } },
+      taskListener: { availableCapacity: async () => { return 0; } },
       monitor: monitor
     });
 
@@ -124,10 +123,10 @@ suite('garbage collection tests', () => {
     await gc.sweep();
 
     assert.ok(!(container.id in gc.markedContainers),
-              'Container has exceeded the retry limit but has not been ' +
+      'Container has exceeded the retry limit but has not been ' +
               'removed from the list of marked containers.');
     assert.ok(gc.ignoredContainers.indexOf(container.id) !== -1,
-              'Container has exceeded the retry limit but has not been ' +
+      'Container has exceeded the retry limit but has not been ' +
               'added to the list of ignored containers');
 
     var c = docker.getContainer(container.id);
@@ -140,7 +139,7 @@ suite('garbage collection tests', () => {
       capacity: 1,
       log: debug,
       docker: docker,
-      taskListener: { availableCapacity: async () => { return 0 } },
+      taskListener: { availableCapacity: async () => { return 0; } },
       monitor: monitor
     });
 
@@ -153,7 +152,7 @@ suite('garbage collection tests', () => {
     await gc.sweep();
 
     assert.ok(!(container.id in gc.markedContainers),
-              'Container does not exist anymore but has not been ' +
+      'Container does not exist anymore but has not been ' +
               'removed from the list of marked containers.');
   });
 
@@ -163,7 +162,7 @@ suite('garbage collection tests', () => {
       log: debug,
       docker: docker,
       dockerVolume: '/',
-      taskListener: { availableCapacity: async () => { return 1 } },
+      taskListener: { availableCapacity: async () => { return 1; } },
       diskspaceThreshold: 500000 * 100000000,
       imageExpiration: 5,
       containerExpiration: 5,
@@ -197,7 +196,7 @@ suite('garbage collection tests', () => {
       log: debug,
       docker: docker,
       dockerVolume: '/',
-      taskListener: { availableCapacity: async () => { return 1 } },
+      taskListener: { availableCapacity: async () => { return 1; } },
       diskspaceThreshold: 1 * 100000000,
       containerExpiration: 1,
       monitor: monitor
@@ -226,7 +225,7 @@ suite('garbage collection tests', () => {
         log: debug,
         docker: docker,
         dockerVolume: '/',
-        taskListener: { availableCapacity: async () => { return 1 } },
+        taskListener: { availableCapacity: async () => { return 1; } },
         diskspaceThreshold: 1 * 100000000,
         imageExpiration: 10000000,
         containerExpiration: 1,
@@ -246,7 +245,7 @@ suite('garbage collection tests', () => {
 
       imageId = await getImageId(docker, imageName);
       assert.ok(!imageId, 'Image has not been removed.');
-  });
+    });
 
   test('unexpired images are removed when diskspace threshold is reached',
     async () => {
@@ -255,7 +254,7 @@ suite('garbage collection tests', () => {
         log: debug,
         docker: docker,
         dockerVolume: '/',
-        taskListener: { availableCapacity: async () => { return 1 } },
+        taskListener: { availableCapacity: async () => { return 1; } },
         diskspaceThreshold: 5000000 * 100000000,
         imageExpiration: 1,
         monitor: monitor
@@ -278,7 +277,7 @@ suite('garbage collection tests', () => {
       log: debug,
       docker: docker,
       dockerVolume: '/',
-      taskListener: { availableCapacity: async () => { return 1 } },
+      taskListener: { availableCapacity: async () => { return 1; } },
       diskspaceThreshold: 1 * 100000000,
       imageExpiration: 5,
       monitor: monitor
@@ -288,13 +287,13 @@ suite('garbage collection tests', () => {
     var imageId = await imageManager.ensureImage(imageName, devnull());
     gc.markImage(imageId);
 
-    var image = docker.getImage(imageId);
+    docker.getImage(imageId);
     await removeImage(docker, imageId);
 
     await gc.sweep();
 
     assert.ok(!(imageName in gc.markedImages),
-              'Image still appears in the list of marked images');
+      'Image still appears in the list of marked images');
   });
 
   test('clear volume cache when diskspace threshold reached', async () => {
@@ -303,7 +302,7 @@ suite('garbage collection tests', () => {
       log: debug,
       docker: docker,
       dockerVolume: '/',
-      taskListener: { availableCapacity: async () => { return 1 } },
+      taskListener: { availableCapacity: async () => { return 1; } },
       diskspaceThreshold: 500000 * 100000000,
       imageExpiration: 5,
       monitor: monitor
@@ -320,7 +319,6 @@ suite('garbage collection tests', () => {
     gc.addManager(cache);
 
     var cacheName = 'tmp-obj-dir-' + Date.now().toString();
-    var fullPath = path.join(localCacheDir, cacheName);
 
     var instance1 = await cache.get(cacheName);
     var instance2 = await cache.get(cacheName);

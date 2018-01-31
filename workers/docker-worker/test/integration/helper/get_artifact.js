@@ -16,7 +16,7 @@ module.exports = async (result, path) => {
 
   let url = 'https://queue.taskcluster.net/v1/task/' +
             taskId + '/runs/' + runId + '/artifacts/' + path;
-  debug("get artifact: "+url);
+  debug('get artifact: '+url);
 
   return await get(url);
-}
+};

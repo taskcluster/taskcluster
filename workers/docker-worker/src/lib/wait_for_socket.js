@@ -20,7 +20,7 @@ let waitForSocket = async (path, timeout) => {
   } while (deadline > Date.now());
 
   // Throw error
-  throw new Error("waitForSocket: Timed out waiting for socket: " + path);
+  throw new Error('waitForSocket: Timed out waiting for socket: ' + path);
 };
 
 // Export waitForSocket

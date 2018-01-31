@@ -52,7 +52,7 @@ let listDisplays = async (container) => {
   });
 
   stdout = stdout.toString();
-  debug("output: %s", stdout);
+  debug('output: %s', stdout);
 
   // Split results into some nice JSON
   return stdout.trim('\n').split('\n').filter(line => {
@@ -60,7 +60,7 @@ let listDisplays = async (container) => {
   }).map(line => {
     let data = /^(.+)\t(\d+)x(\d+)$/.exec(line);
     if (!data) {
-      throw new Error("Unexpected response line: " + line);
+      throw new Error('Unexpected response line: ' + line);
     }
     return {
       display:  data[1],
@@ -159,12 +159,12 @@ class WebsocketServer {
     } else {
       httpServ = http.createServer();
     }
-    debug('server made')
+    debug('server made');
 
     let port;
     //searching for an open port between 32768 and 61000
     let attempts = 0;
-    while (true) {
+    for (;;) {
       port = Math.floor((Math.random() * (61000 - 32768)) + 32768);
       try {
         await new Promise((resolve, reject) => {
@@ -229,7 +229,7 @@ class WebsocketServer {
         res.status(200).json(displays);
       } catch (err) {
         debug('Failed to list displays: %j', err, err.stack);
-        res.status(500).json({message: "internal error"});
+        res.status(500).json({message: 'internal error'});
       }
     });
     // Make app handle requests
@@ -326,7 +326,7 @@ class WebsocketServer {
 
     let expiration = new Date(
       Math.min(Date.now() + task.task.payload.maxRunTime,
-      new Date(task.task.expires)));
+        new Date(task.task.expires)));
     let queue = task.queue;
 
     let toolsShellArtifact = queue.createArtifact(

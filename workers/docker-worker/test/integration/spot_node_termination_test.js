@@ -10,6 +10,7 @@ const settings = require('../settings');
 const getArtifact = require('./helper/get_artifact');
 const sleep = require('../../src/lib/util/sleep');
 const waitForEvent = require('../../src/lib/wait_for_event');
+const assert = require('assert');
 
 suite('Spot Node Termination', () => {
   let IMAGE = 'taskcluster/test-ubuntu:latest';
@@ -36,7 +37,7 @@ suite('Spot Node Termination', () => {
     }
   });
 
-  test("abort running task", async () => {
+  test('abort running task', async () => {
     let task = {
       payload: {
         image: IMAGE,
@@ -49,8 +50,8 @@ suite('Spot Node Termination', () => {
     let taskId = slugid.v4();
     worker = new TestWorker(DockerWorker);
     worker.on('task run', () => { settings.nodeTermination(); });
-    let launch = await worker.launch();
-    let result = await worker.postToQueue(task, taskId);
+    await worker.launch();
+    await worker.postToQueue(task, taskId);
     let taskStatus = await worker.queue.status(taskId);
 
     assert.equal(taskStatus.status.runs[0].state, 'exception',
@@ -69,14 +70,14 @@ suite('Spot Node Termination', () => {
       'Backing log should have been created when task was aborted'
     );
 
-    assert.notEqual(log.indexOf('Hello'), -1, 'Task should have started before being aborted.')
-    assert.equal(log.indexOf('Done'), -1, 'Task should have been aborted before finishing')
+    assert.notEqual(log.indexOf('Hello'), -1, 'Task should have started before being aborted.');
+    assert.equal(log.indexOf('Done'), -1, 'Task should have been aborted before finishing');
     assert.notEqual(log.indexOf('Task has been aborted prematurely. Reason: worker-shutdown'), -1,
       'Log should indicate that task was aborted with a reason of "worker-shutdown"'
     );
   });
 
-  test("abort task while pulling image", async () => {
+  test('abort task while pulling image', async () => {
     // Purposely using a large image that would take awhile to download.  Also,
     // this might need to be adjusted later to have a meaningful test.  If an
     // image is removed but the intermediate layers are used elsewhere, the image
@@ -99,8 +100,8 @@ suite('Spot Node Termination', () => {
     worker.on('ensure image', (msg) => {
       if (msg.image.name === image) { settings.nodeTermination(); }
     });
-    let launch = await worker.launch();
-    let result = await worker.postToQueue(task, taskId);
+    await worker.launch();
+    await worker.postToQueue(task, taskId);
     let taskStatus = await worker.queue.status(taskId);
 
     assert.equal(taskStatus.status.runs[0].state, 'exception',
@@ -119,7 +120,7 @@ suite('Spot Node Termination', () => {
       'Backing log should have been created when task was aborted'
     );
 
-    assert.equal(log.indexOf('Hello'), -1, 'Task should not have started after being aborted.')
+    assert.equal(log.indexOf('Hello'), -1, 'Task should not have started after being aborted.');
     assert.notEqual(log.indexOf('Task has been aborted prematurely. Reason: worker-shutdown'), -1,
       'Log should indicate that task was aborted with a reason of "worker-shutdown"'
     );

@@ -24,9 +24,9 @@ let debug = new Debug('artifactDownload');
 module.exports = async function(queue, stream, taskId, artifactPath, destination, retryConfig=RETRY_CONFIG) {
   let {maxAttempts, delayFactor, randomizationFactor} = retryConfig;
   let artifactUrl = queue.buildSignedUrl(
-      queue.getLatestArtifact,
-      taskId,
-      artifactPath
+    queue.getLatestArtifact,
+    taskId,
+    artifactPath
   );
   let attempts = 0;
 
@@ -39,7 +39,6 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
     try {
       let expectedSize = 0;
       let receivedSize;
-      let startTime = Date.now();
       let req = request.get(artifactUrl);
       req.on('response', (res) => {
         expectedSize = parseInt(res.headers['content-length']);
@@ -113,5 +112,5 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
       await sleep(exponentialDelay);
     }
   }
-}
+};
 

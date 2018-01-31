@@ -43,6 +43,6 @@ main().then(() => {
     throw err;
   }
 }).catch(err => {
-  console.error(`Error uploading schema`);
+  console.error('Error uploading schema');
   throw err;
 });

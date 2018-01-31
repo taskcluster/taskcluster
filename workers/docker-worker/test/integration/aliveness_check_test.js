@@ -2,6 +2,7 @@ const waitForEvent = require('../../src/lib/wait_for_event');
 const settings = require('../settings');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
+const assert = require('assert');
 
 suite('Aliveness check', function() {
   // Ensure we don't leave behind our test configurations.

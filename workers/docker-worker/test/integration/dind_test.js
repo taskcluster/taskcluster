@@ -37,20 +37,20 @@ suite('use dind-service', () => {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed',
-                 'task should be successful');
+      'task should be successful');
     assert.ok(result.log.indexOf('BusyBox is a multi-call binary') !== -1,
-              'Expected to see busybox --help message');
+      'Expected to see busybox --help message');
   });
 
   test('Build and index image', async () => {
     let result = await worker.postToQueue({
       payload: {
         image: 'taskcluster/dind-test:v1',
-        routes: "index.garbage.docker-worker-tests.docker-images." + slugid.v4(),
+        routes: 'index.garbage.docker-worker-tests.docker-images.' + slugid.v4(),
         command: cmd(
-          "mkdir artifacts",
-          "docker pull busybox:buildroot-2014.02",
-          "docker save busybox:buildroot-2014.02 > /artifacts/image.tar"
+          'mkdir artifacts',
+          'docker pull busybox:buildroot-2014.02',
+          'docker save busybox:buildroot-2014.02 > /artifacts/image.tar'
         ),
         features: {
           dind: true
@@ -68,6 +68,6 @@ suite('use dind-service', () => {
 
     assert.equal(result.run.state, 'completed', 'task should be successful');
     assert.equal(result.run.reasonResolved, 'completed',
-                 'task should be successful');
+      'task should be successful');
   });
 });

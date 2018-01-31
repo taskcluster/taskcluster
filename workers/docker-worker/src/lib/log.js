@@ -9,12 +9,12 @@ module.exports = {
   createLogger(details) {
     return function(type, values) {
       var logObject = { type: type };
-      for (var key in details) logObject[key] = details[key];
+      for (let key in details) logObject[key] = details[key];
       if (values) {
-        for (var key in values) logObject[key] = values[key];
+        for (let key in values) logObject[key] = values[key];
       }
       process.stdout.write(JSON.stringify(logObject) + '\n');
-    }
+    };
   },
 
   fmtLog() {
@@ -29,4 +29,4 @@ module.exports = {
     // where treeherder expects it, even if the last output was not newline-terminated
     return '\n[taskcluster:error] ' + util.format.apply(this, args) + '\n';
   }
-}
+};

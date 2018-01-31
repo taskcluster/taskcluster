@@ -19,7 +19,7 @@ const ALIAS = 'balrog';
 const INIT_TIMEOUT = 2000;
 
 // Address for Balrog update server
-const PROXY_ADDR = "https://balrog-admin.stage.mozaws.net/";
+const PROXY_ADDR = 'https://balrog-admin.stage.mozaws.net/';
 
 // Delay in between retries for vpn to be connected
 const RETRY_DELAY = 1000;
@@ -73,11 +73,11 @@ class BalrogStageVPNProxy {
       AttachStderr: true,
       HostConfig: {
         // Needed for creating tun device and manipulating routing tables
-        CapAdd: ["NET_ADMIN"],
+        CapAdd: ['NET_ADMIN'],
         ExtraHosts: [
           // XXX: hack for now.  Problem in taskcluster-vpn-proxy where resolv.conf
           // isn't updated when vpn'ed in so name resolution does not work.
-          "balrog-admin.stage.mozaws.net:52.71.237.144"
+          'balrog-admin.stage.mozaws.net:52.71.237.144'
         ]
       }
     });
@@ -103,7 +103,7 @@ class BalrogStageVPNProxy {
     let retries = MAX_RETRIES;
     while (retries-- > 0) {
       try {
-        let response = await request.get(`http:\/\/${ipAddress}`).end();
+        let response = await request.get(`http://${ipAddress}`).end();
         throw new Error(
           'Could not connect to balrog server and receive expected response ' +
           `Status code: ${response.status}`);
