@@ -11,7 +11,7 @@ const pipe = require('promisepipe');
 let debug = Debug('docker-worker:features:docker-save');
 
 function createImageName(taskId, runId) {
-  return `${taskId.toLowerCase().replace('_', '-')}-${runId}`;
+  return `${taskId.toLowerCase().replace(/[_-]/g, '0')}-${runId}`;
 }
 
 class DockerSave {
@@ -50,9 +50,11 @@ class DockerSave {
 
     await image.remove();
     //cleanup
-    fs.unlink(pathname).catch((err) => {
-      task.runtime.log('[alert-operator] could not delete cache save tarball, worker may run out of hdd space\r\n'
-        + err + err.stack);
+    fs.unlink(pathname, err => {
+      if (err) {
+        task.runtime.log('[alert-operator] could not delete cache save tarball, worker may run out of hdd space\r\n'
+          + err + err.stack);
+      }
     });
   }
 
@@ -85,9 +87,11 @@ class DockerSave {
     debug('%s uploaded', cache.cacheName);
 
     //cleanup
-    fs.unlink(pathname).catch((err) => {
-      task.runtime.log('[alert-operator] could not delete cache save tarball, worker may run out of hdd space\r\n'
-        + err + err.stack);
+    fs.unlink(pathname, err => {
+      if (err) {
+        task.runtime.log('[alert-operator] could not delete cache save tarball, worker may run out of hdd space\r\n'
+          + err + err.stack);
+      }
     });
   }
 

@@ -16,7 +16,7 @@ const pipe = require('promisepipe');
 let debug = Debug('docker-worker:test:docker-save-test');
 
 function createImageName(taskId, runId) {
-  return `${taskId.toLowerCase().replace('_', '-')}-${runId}`;
+  return `${taskId.toLowerCase().replace(/[_-]/g, '0')}-${runId}`;
 }
 
 suite('use docker-save', () => {
