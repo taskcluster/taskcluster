@@ -35,4 +35,4 @@ deploy:
   on:
     tags: true
     repo: taskcluster/taskcluster-lib-monitor
-    node: '5'
+    node: '8'
