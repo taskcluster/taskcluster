@@ -23,7 +23,6 @@ class FirehoseLog extends events.EventEmitter {
     this._firehose = new AWS.Firehose(aws);
     this._logName = logName;
     this._records = [];
-    this._flushTimer = null;
     this._flushTimer = setTimeout(this.flush.bind(this), this._flushInterval);
     this._reportErrors = reportAuditLogErrors;
   }
@@ -39,23 +38,23 @@ class FirehoseLog extends events.EventEmitter {
 
   log(record) {
     let line = JSON.stringify(record) + '\n';
-    let length = Buffer.byteLength(line, 'utf-8');
+    let size = Buffer.byteLength(line, 'utf-8');
 
     // Each line can have up to 1MB
-    if (length > MAX_RECORD_SIZE) {
-      let msg = `Tried to log too-long line! (${length} bytes > 1MB)`;
+    if (size > MAX_RECORD_SIZE) {
+      let msg = `Tried to log too-long line! (${size} bytes > 1MB)`;
       console.error(msg);
       if (this._reportErrors) {
         this.emit('error', new Error(msg));
       }
       return;
     }
-    this._records.push({line, retries: 0, length});
+    this._records.push({line, retries: 0, size});
     this._scheduleFlush();
   }
 
   _scheduleFlush() {
-    if (!this._flushTImer) {
+    if (!this._flushTimer) {
       this._flushTimer = setTimeout(this.flush.bind(this), this._flushInterval);
     }
   }
@@ -70,20 +69,25 @@ class FirehoseLog extends events.EventEmitter {
       return;
     }
 
-    let chunks = [[]];
+    let chunks = [{chunkSize: 0, records: []}];
     let c = 0;
+    let totalSize = 0;
 
     // First break up the records into chunks that kinesis will accept
     this._records.forEach(rec => {
-      if (chunks[c].reduce((a, r) => a + r.length, 0) + rec.length  > MAX_RECORD_SIZE) {
-        chunks[++c] = [];
+      if (chunks[c].chunkSize + rec.size > MAX_RECORD_SIZE) {
+        chunks[++c] = {chunkSize: 0, records: []};
       }
-      chunks[c].push(rec);
+      totalSize += rec.size;
+      chunks[c].chunkSize += rec.size;
+      chunks[c].records.push(rec);
     });
+    debug(`Audit log contained ${this._records.length} records with size of ${totalSize} bytes in ${c+1} chunks`);
     this._records = [];
 
     // Now submit the chunks
-    await Promise.map(chunks, async records => {
+    await Promise.map(chunks, async chunk => {
+      let {records} = chunk;
       let res;
       try {
         res = await this._firehose.putRecord({
