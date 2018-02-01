@@ -120,8 +120,21 @@ module.exports = async function uploadToS3 (
         log(`Uploading ${artifactName}`, logDetails);
         fs.createReadStream(tmp.path).pipe(req);
       }).catch(retry);
-    // randomize the timeouts
-    }, {randomize: true});
+    // The formula to calculate the next attempt timeout is:
+    // Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout)
+    // We have:
+    //  maxTimeout = 30 seconds
+    //  minTimeout = 1 second
+    //  10 attempts
+    //  random factor = 1..2
+    // The first parameter of the min function can have a maximum value of
+    //  2 * 1000 * Math.pow(factor, 10)
+    // This value is bounded by maxTimeout. To avoid early saturation of the
+    // calculated value, we must choose a value for factor that in the worst
+    // case scenario should not be greater than maxTimeout, i.e.:
+    //  2 * 1000 * Math.pow(factor, 10) <= 30000
+    // Solving the equation for factor gives factor=1.311
+    }, {maxTimeout: 30000, factor: 1.311, randomize: true});
   } finally {
     tmp.unlinkSync();
   }
