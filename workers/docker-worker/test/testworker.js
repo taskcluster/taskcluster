@@ -29,6 +29,14 @@ const DEFAULT_WORKER_PREFIX = 'dummy-worker';
 class TestWorker extends EventEmitter {
   constructor(Worker, workerType, workerId) {
     super();
+
+    // This is to avoid the node warning message:
+    //    MaxListenersExceededWarning: Possible EventEmitter memory leak
+    //    detected. 11 task resolved listeners added. Use
+    //    emitter.setMaxListeners() to increase limit
+    // During capacity tests
+    this.setMaxListeners(30);
+
     var config = base.config({
       files: [`${__dirname}/../config.yml`],
       profile: 'test',
