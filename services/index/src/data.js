@@ -170,7 +170,7 @@ Namespace.expireEntries = async function(now) {
     if (!data.continuation) {
       break;
     }
-    continuationToken = data.continuationToken;
+    continuationToken = data.continuation;
   }
 
   return count;
@@ -200,7 +200,7 @@ IndexedTask.expireTasks = async function(now) {
     if (!data.continuation) {
       break;
     }
-    continuationToken = data.continuationToken;
+    continuationToken = data.continuation;
   }
 
   return count;
