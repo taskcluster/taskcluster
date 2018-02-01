@@ -7,7 +7,7 @@ const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const iptables = require('iptables');
 
-suite('artifact extration tests', () => {
+suite('artifact extraction tests', () => {
   teardown(() => {
     iptables.deleteRule({
       chain: 'OUTPUT',
@@ -278,11 +278,6 @@ suite('artifact extration tests', () => {
   });
 
   test('upload retry', async () => {
-    // Avoid iptables on local environment
-    if (!process.env.WORKER_CI) {
-      return;
-    }
-
     let worker = new TestWorker(DockerWorker);
     await worker.launch();
 
