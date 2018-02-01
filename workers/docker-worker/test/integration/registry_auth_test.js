@@ -73,6 +73,8 @@ suite('Docker custom private registry', () => {
     assert.equal(result.run.state, 'completed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
     assert.ok(result.log.includes(registryImageName), 'correct image name');
+
+    await worker.terminate();
   });
 
   test('success - with star', async () => {
@@ -94,6 +96,8 @@ suite('Docker custom private registry', () => {
     assert.equal(result.run.state, 'completed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'completed', 'auth download works');
     assert.ok(result.log.includes(registryImageName), 'correct image name');
+
+    await worker.terminate();
   });
 
   test('failed scopes', async () => {
@@ -116,6 +120,8 @@ suite('Docker custom private registry', () => {
     assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
     assert.ok(result.log.includes(registryImageName), 'correct image name');
     assert.ok(result.log.includes('Not authorized to use'), 'correct error message');
+
+    await worker.terminate();
   });
 
   test('failed auth', async () => {
@@ -147,5 +153,7 @@ suite('Docker custom private registry', () => {
     assert.equal(result.run.state, 'failed', 'auth download works');
     assert.equal(result.run.reasonResolved, 'failed', 'auth download works');
     assert.ok(result.log.includes(`image ${REPO_IMAGE_NAME} not found`), 'authorization failed');
+
+    await worker.terminate();
   });
 });
