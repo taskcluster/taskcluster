@@ -146,6 +146,7 @@ Namespace.expireEntries = async function(now) {
   let count = 0;
 
   while (1) {
+    console.log(`scan with ct ${continuationToken}`);
     let data = await this.scan({
       expires: Entity.op.lessThan(now),
     },
