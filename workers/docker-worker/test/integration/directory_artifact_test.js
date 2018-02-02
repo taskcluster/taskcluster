@@ -5,20 +5,10 @@ const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
-const iptables = require('iptables');
 const _ = require('lodash');
+const retryUtil = require('./helper/retry_util');
 
 suite('Directory artifact', function() {
-  teardown(() => {
-    iptables.deleteRule({
-      chain: 'OUTPUT',
-      target: 'REJECT',
-      protocol: 'tcp',
-      dport: 443,
-      sudo: true
-    });
-  });
-
   test('attempt to upload file as directory', async () => {
     let result = await testworker({
       payload: {
@@ -95,82 +85,76 @@ suite('Directory artifact', function() {
   });
 
   test('retry directory upload', async () => {
-    this.timeout(480000);
+    await retryUtil.init();
 
-    let ARTIFACT_COUNT = 3;
+    try {
+      this.timeout(480000);
 
-    let worker = new TestWorker(DockerWorker);
-    await worker.launch();
+      let ARTIFACT_COUNT = 3;
 
-    var count = 0;
+      let worker = new TestWorker(DockerWorker);
+      await worker.launch();
 
-    let rejectConnection = function() {
-      iptables.reject({
-        chain: 'OUTPUT',
-        protocol: 'tcp',
-        dport: 443,
-        sudo: true
-      });
-    };
+      var count = 0;
 
-    let cmdArgs = ['mkdir "/xfoo"'];
-    for (let i = 1; i <= ARTIFACT_COUNT; ++i) {
-      cmdArgs.push(`dd if=/dev/zero of=/xfoo/test${i}.html bs=1 count=${1000000*i}`);
-      worker.once(`Uploading public/dir/test${i}.html`, rejectConnection);
-    }
+      let rejectConnection = function() {
+        retryUtil.blockArtifact();
+      };
 
-    worker.on('retrying artifact upload', function() {
-      iptables.deleteRule({
-        chain: 'OUTPUT',
-        target: 'REJECT',
-        protocol: 'tcp',
-        dport: 443,
-        sudo: true
-      });
-
-      ++count;
-    });
-
-    let result = await worker.postToQueue({
-      payload: {
-        image: 'taskcluster/test-ubuntu',
-        command: cmd.apply(this, cmdArgs),
-        features: {
-          localLiveLog: false
-        },
-        artifacts: {
-          'public/dir': {
-            type: 'directory',
-            path: '/xfoo/',
-            expires: expires()
-          },
-        },
-        maxRunTime: 5 * 60
+      let cmdArgs = ['mkdir "/xfoo"'];
+      for (let i = 1; i <= ARTIFACT_COUNT; ++i) {
+        cmdArgs.push(`dd if=/dev/zero of=/xfoo/test${i}.html bs=1 count=${1000000*i}`);
+        worker.once(`Uploading public/dir/test${i}.html`, rejectConnection);
       }
-    });
 
-    await worker.terminate();
+      worker.on('retrying artifact upload', function() {
+        retryUtil.allowArtifact();
+        ++count;
+      });
 
-    assert.equal(result.run.state, 'completed', 'task should be successful');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+      let result = await worker.postToQueue({
+        payload: {
+          image: 'taskcluster/test-ubuntu',
+          command: cmd.apply(this, cmdArgs),
+          features: {
+            localLiveLog: false
+          },
+          artifacts: {
+            'public/dir': {
+              type: 'directory',
+              path: '/xfoo/',
+              expires: expires()
+            },
+          },
+          maxRunTime: 5 * 60
+        }
+      });
 
-    let artifacts = [];
-    for (let i of _.range(1, ARTIFACT_COUNT+1)) {
-      artifacts.push(`public/dir/test${i}.html`);
-    }
+      await worker.terminate();
 
-    assert.deepEqual(
-      Object.keys(result.artifacts).sort(),
-      artifacts.sort()
-    );
+      assert.equal(result.run.state, 'completed', 'task should be successful');
+      assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
-    for (let i = 1; i <= ARTIFACT_COUNT; ++i) {
-      let testHtml = await getArtifact(result, 'public/dir/test' + i + '.html');
-      assert.ok(Buffer.byteLength(testHtml) === 1000000*i,
-        'Size of uploaded contents of test.html does not match original.'
+      let artifacts = [];
+      for (let i of _.range(1, ARTIFACT_COUNT+1)) {
+        artifacts.push(`public/dir/test${i}.html`);
+      }
+
+      assert.deepEqual(
+        Object.keys(result.artifacts).sort(),
+        artifacts.sort()
       );
-    }
 
-    assert.equal(count, ARTIFACT_COUNT, `Count value is ${count}`);
+      for (let i = 1; i <= ARTIFACT_COUNT; ++i) {
+        let testHtml = await getArtifact(result, 'public/dir/test' + i + '.html');
+        assert.ok(Buffer.byteLength(testHtml) === 1000000*i,
+          'Size of uploaded contents of test.html does not match original.'
+        );
+      }
+
+      assert.equal(count, ARTIFACT_COUNT, `Count value is ${count}`);
+    } finally {
+      retryUtil.allowArtifact();
+    }
   });
 });

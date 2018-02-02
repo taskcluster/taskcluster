@@ -5,19 +5,9 @@ const expires = require('./helper/expires');
 const testworker = require('../post_task');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
-const iptables = require('iptables');
+const retryUtil = require('./helper/retry_util');
 
 suite('artifact extraction tests', () => {
-  teardown(() => {
-    iptables.deleteRule({
-      chain: 'OUTPUT',
-      target: 'REJECT',
-      protocol: 'tcp',
-      dport: 443,
-      sudo: true
-    });
-  });
-
   test('extract artifact', async () => {
     let expiration = expires();
     let result = await testworker({
@@ -278,65 +268,59 @@ suite('artifact extraction tests', () => {
   });
 
   test('upload retry', async () => {
-    let worker = new TestWorker(DockerWorker);
-    await worker.launch();
+    await retryUtil.init();
 
-    worker.once('Uploading public/xfoo', function() {
-      iptables.reject({
-        chain: 'OUTPUT',
-        protocol: 'tcp',
-        dport: 443,
-        sudo: true
-      });
-    });
+    try {
+      let worker = new TestWorker(DockerWorker);
+      await worker.launch();
 
-    let retry = false;
-
-    worker.on('retrying artifact upload', function() {
-      iptables.deleteRule({
-        chain: 'OUTPUT',
-        target: 'REJECT',
-        protocol: 'tcp',
-        dport: 443,
-        sudo: true
+      worker.once('Uploading public/xfoo', function() {
+        retryUtil.blockArtifact();
       });
 
-      retry = true;
-    });
+      let retry = false;
 
-    let result = await worker.postToQueue({
-      payload: {
-        image: 'taskcluster/test-ubuntu',
-        command: cmd(
-          'mkdir /artifacts/',
-          'echo "xfoo" > /artifacts/xfoo.txt',
-          'ls /artifacts'
-        ),
-        features: {
-          localLiveLog: false
-        },
-        artifacts: {
-          'public/xfoo': {
-            type: 'file',
-            expires: expires(),
-            path: '/artifacts/xfoo.txt'
+      worker.on('retrying artifact upload', function() {
+        retryUtil.allowArtifact();
+        retry = true;
+      });
+
+      let result = await worker.postToQueue({
+        payload: {
+          image: 'taskcluster/test-ubuntu',
+          command: cmd(
+            'mkdir /artifacts/',
+            'echo "xfoo" > /artifacts/xfoo.txt',
+            'ls /artifacts'
+          ),
+          features: {
+            localLiveLog: false
           },
-        },
-        maxRunTime: 5 * 60
-      }
-    });
+          artifacts: {
+            'public/xfoo': {
+              type: 'file',
+              expires: expires(),
+              path: '/artifacts/xfoo.txt'
+            },
+          },
+          maxRunTime: 5 * 60
+        }
+      });
 
-    // Get task specific results
-    assert.equal(result.run.state, 'completed', 'task should be successful');
-    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+      // Get task specific results
+      assert.equal(result.run.state, 'completed', 'task should be successful');
+      assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
-    assert.deepEqual(
-      Object.keys(result.artifacts).sort(), ['public/xfoo'].sort()
-    );
+      assert.deepEqual(
+        Object.keys(result.artifacts).sort(), ['public/xfoo'].sort()
+      );
 
-    let xfoo = await getArtifact(result, 'public/xfoo');
+      let xfoo = await getArtifact(result, 'public/xfoo');
 
-    assert.equal(xfoo.trim(), 'xfoo');
-    assert.ok(retry);
+      assert.equal(xfoo.trim(), 'xfoo');
+      assert.ok(retry);
+    } finally {
+      retryUtil.allowArtifact();
+    }
   });
 });
