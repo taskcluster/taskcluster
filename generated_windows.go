@@ -115,6 +115,17 @@ type (
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
 		OSGroups []string `json:"osGroups,omitempty"`
 
+		// Specifies an artifact name for publishing RDP connection information.
+		// Since this is potentially sensitive data, care should be taken to publish
+		// to a suitably locked down path, such as `project/<project>/rdpinfo.json`.
+		// Use of this feature requires scope
+		// `generic-worker:allow-rdp:<provisionerId>/<workerType>`. The RDP
+		// connection data is published during task startup, so that a task can be
+		// watched during its execution. The worker will sleep for 12 hours after
+		// the task completes, before deleting the task account and running
+		// subsequent tasks.
+		RdpInfo string `json:"rdpInfo,omitempty"`
+
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
@@ -485,6 +496,11 @@ func taskPayloadSchema() string {
       },
       "title": "OS Groups",
       "type": "array"
+    },
+    "rdpInfo": {
+      "description": "Specifies an artifact name for publishing RDP connection information.\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as ` + "`" + `project/\u003cproject\u003e/rdpinfo.json` + "`" + `.\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `. The RDP\nconnection data is published during task startup, so that a task can be\nwatched during its execution. The worker will sleep for 12 hours after\nthe task completes, before deleting the task account and running\nsubsequent tasks.",
+      "title": "RDP Info",
+      "type": "string"
     },
     "supersederUrl": {
       "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See\n[superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)\nfor more detail.",

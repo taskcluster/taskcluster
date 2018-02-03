@@ -29,7 +29,9 @@ type TaskContext struct {
 }
 
 func platformFeatures() []Feature {
-	return []Feature{}
+	return []Feature{
+		&RDPFeature{},
+	}
 }
 
 func immediateReboot() {

@@ -142,6 +142,19 @@ properties:
       [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)
       for more detail.
     format: uri
+  rdpInfo:
+    type: string
+    title: RDP Info
+    description: |-
+      Specifies an artifact name for publishing RDP connection information.
+      Since this is potentially sensitive data, care should be taken to publish
+      to a suitably locked down path, such as `project/<project>/rdpinfo.json`.
+      Use of this feature requires scope
+      `generic-worker:allow-rdp:<provisionerId>/<workerType>`. The RDP
+      connection data is published during task startup, so that a task can be
+      watched during its execution. The worker will sleep for 12 hours after
+      the task completes, before deleting the task account and running
+      subsequent tasks.
 definitions:
   mount:
     title: Mount
