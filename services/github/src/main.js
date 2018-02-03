@@ -94,7 +94,7 @@ let load = loader({
         account: cfg.azure.account,
         table: cfg.app.buildTableName,
         credentials: cfg.taskcluster.credentials,
-        monitor: monitor.prefix(cfg.app.buildTableName.toLowerCase()),
+        monitor: monitor.prefix('table.builds'),
       });
 
       await build.ensureTable();
@@ -109,7 +109,7 @@ let load = loader({
         account: cfg.azure.account,
         table: cfg.app.ownersDirectoryTableName,
         credentials: cfg.taskcluster.credentials,
-        monitor: monitor.prefix(cfg.app.ownersDirectoryTableName.toLowerCase()),
+        monitor: monitor.prefix('table.ownersdirectory'),
       });
 
       await ownersDir.ensureTable();
