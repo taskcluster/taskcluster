@@ -21,21 +21,23 @@ var load = loader({
 
   // Configure IndexedTask and Namespace entities
   IndexedTask: {
-    requires: ['cfg'],
-    setup: ({cfg}) => data.IndexedTask.setup({
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => data.IndexedTask.setup({
       account:          cfg.app.azureAccount,
       table:            cfg.app.indexedTaskTableName,
       credentials:      cfg.taskcluster.credentials,
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
+      monitor:          monitor.prefix('table.indexedtasks'),
     }),
   },
   Namespace: {
-    requires: ['cfg'],
-    setup: ({cfg}) => data.Namespace.setup({
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => data.Namespace.setup({
       account:          cfg.app.azureAccount,
       table:            cfg.app.namespaceTableName,
       credentials:      cfg.taskcluster.credentials,
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
+      monitor:          monitor.prefix('table.namespaces'),
     }),
   },
 
