@@ -89,7 +89,8 @@ type (
 		//   "BAR_TOTAL": "3"
 		// }
 		// ```
-		Env json.RawMessage `json:"env,omitempty"`
+
+		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
 		Features struct {

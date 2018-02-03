@@ -231,7 +231,7 @@ func testTask(t *testing.T) *queue.TaskDefinitionRequest {
 		Routes:        []string{},
 		SchedulerID:   "test-scheduler",
 		Scopes:        []string{},
-		Tags:          json.RawMessage(`{"CI":"generic-worker"}`),
+		Tags:          map[string]string{"CI": "generic-worker"},
 		Priority:      "lowest",
 		TaskGroupID:   taskGroupID,
 		WorkerType:    config.WorkerType,

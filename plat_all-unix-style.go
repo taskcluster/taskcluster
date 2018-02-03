@@ -3,7 +3,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -105,11 +104,8 @@ func (task *TaskRun) EnvVars() []string {
 			taskEnv[spl[0]] = spl[1]
 		}
 	}
-	if task.Payload.Env != nil {
-		err := json.Unmarshal(task.Payload.Env, &taskEnv)
-		if err != nil {
-			panic(err)
-		}
+	for k, v := range task.Payload.Env {
+		taskEnv[k] = v
 	}
 	taskEnv["TASK_ID"] = task.TaskID
 	for i, j := range taskEnv {

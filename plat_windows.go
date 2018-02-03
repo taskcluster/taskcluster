@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -253,15 +252,12 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// directory
 	if index == 0 {
 		envVars := map[string]string{}
-		if task.Payload.Env != nil {
-			err := json.Unmarshal(task.Payload.Env, &envVars)
-			if err != nil {
-				return MalformedPayloadError(err)
-			}
-			for envVar, envValue := range envVars {
-				// log.Printf("Setting env var: %v=%v", envVar, envValue)
-				contents += "set " + envVar + "=" + envValue + "\r\n"
-			}
+		for k, v := range task.Payload.Env {
+			envVars[k] = v
+		}
+		for envVar, envValue := range envVars {
+			// log.Printf("Setting env var: %v=%v", envVar, envValue)
+			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"

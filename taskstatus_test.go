@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"testing"
 	"time"
 
@@ -43,21 +42,11 @@ func TestResolveResolvedTask(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	env := map[string]string{
+	payload.Env = map[string]string{
 		"TASKCLUSTER_CLIENT_ID":    tempCreds.ClientID,
 		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
 		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
 	}
-	jsonBytes, err := json.Marshal(&env)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	var envRawMessage json.RawMessage
-	err = json.Unmarshal(jsonBytes, &envRawMessage)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	payload.Env = envRawMessage
 
 	_ = scheduleAndExecute(t, td, payload)
 }
