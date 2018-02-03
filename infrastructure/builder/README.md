@@ -9,8 +9,8 @@ Write more here.
 yarn images
 ```
 
-#### Publish Images
+#### Release Images
 
 ```
-yarn publish
+yarn release
 ```

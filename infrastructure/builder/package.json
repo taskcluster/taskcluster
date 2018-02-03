@@ -5,7 +5,8 @@
   "description": "Build and deploy taskcluster clusters",
   "license": "MPL-2.0",
   "scripts": {
-    "images": "node src/build"
+    "images": "node src/build",
+    "release": "node src/release"
   },
   "files": [
     "lib"

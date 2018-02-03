@@ -57,10 +57,17 @@ module.exports = class Steps {
 
   async shouldBuild() {
     const [source, ref] = this.service.source.split('#');
-    let head = await this.git.listRemote([source, ref]);
-    if (head.split(/\s+/)[0] === this.lockInfo.commit) {
-      return 'Already up to date';
+    const head = await this.git.listRemote([source, ref]);
+    const gitSame = head.split(/\s+/)[0] === this.lockInfo.commit;
+
+    const imageExists = (await this.docker.listImages()).map(image =>
+      image.Id.split(':')[1]
+    ).indexOf(this.lockInfo.image) !== -1;
+
+    if (gitSame && imageExists) {
+      return 'Already up to date with repo';
     }
+
   }
 
   async clone() {
@@ -150,7 +157,8 @@ module.exports = class Steps {
     fs.writeFileSync(path.join(this.workDir, 'docker', 'Dockerfile'), dockerfile);
 
     const log = path.join(this.workDir, 'build.log');
-    let context = await this.docker.buildImage(tar.pack(path.join(this.workDir, 'docker')));
+    const tag = `${this.cfg.docker.org}/${this.cfg.docker.prefix}${this.service.name}`;
+    let context = await this.docker.buildImage(tar.pack(path.join(this.workDir, 'docker')), {t: tag});
     context.pipe(fs.createWriteStream(log));
     return new Observable(observer => {
       const onFinished = (err, output) => {

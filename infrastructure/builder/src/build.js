@@ -17,7 +17,8 @@ ON_DEATH((signal, err) => {
 
 const main = async () => {
   const cfg = config({
-    files: ['services.yml'],
+    files: ['services.yml', 'user-config.yml'],
+    profile: 'default',
   });
   const lockFile = JSON.parse(fs.readFileSync('services.lock'));
   const context = {};

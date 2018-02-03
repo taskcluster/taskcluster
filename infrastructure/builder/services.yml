@@ -1,6 +1,10 @@
 ---
 defaults:
-  dockerOrg: imbstack
+  docker:
+    org: !env DOCKER_ORG
+    prefix: !env DOCKER_PREFIX
+
+  # Note: All services must have all lowercase names!
   services:
     - name: auth
       source: https://github.com/taskcluster/taskcluster-auth#master
@@ -12,7 +16,7 @@ defaults:
       source: https://github.com/taskcluster/taskcluster-github#master
     - name: notify
       source: https://github.com/taskcluster/taskcluster-notify#master
-    - name: purgeCache
+    - name: purgecache
       source: https://github.com/taskcluster/taskcluster-purge-cache#master
     - name: secrets
       source: https://github.com/taskcluster/taskcluster-secrets#master
