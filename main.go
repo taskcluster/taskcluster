@@ -201,10 +201,14 @@ and reports back results to the queue.
                                             [default: 10240]
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
-                                            user, each time a task user is created. This is a
-                                            way to provide generic user initialisation logic
-                                            that should apply to all generated users (and thus
-                                            all tasks).
+                                            user, after the user has been created, the machine
+                                            has rebooted and the user has logged in, but before
+                                            a task is run as that user. This is a way to
+                                            provide generic user initialisation logic that
+                                            should apply to all generated users (and thus all
+                                            tasks) and be run as the task user itself. This
+                                            option does *not* support running a command as
+                                            Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
