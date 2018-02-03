@@ -41,7 +41,7 @@ let load = loader({
       account: cfg.azure.account,
       table: cfg.app.cachePurgeTableName,
       credentials: cfg.taskcluster.credentials,
-      monitor: monitor.prefix(cfg.app.cachePurgeTableName.toLowerCase()),
+      monitor: monitor.prefix('table.purgecaches'),
     }),
   },
 
