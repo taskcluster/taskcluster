@@ -47,7 +47,7 @@ var load = loader({
       table:            cfg.azure.tableName,
       cryptoKey:        cfg.azure.cryptoKey,
       signingKey:       cfg.azure.signingKey,
-      monitor:          monitor.prefix(cfg.azure.tableName.toLowerCase()),
+      monitor:          monitor.prefix('table.secrets'),
     }),
   },
 
