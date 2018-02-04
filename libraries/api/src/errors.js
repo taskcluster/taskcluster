@@ -1,5 +1,5 @@
 let uuid = require('uuid');
-let debug = require('debug')('base:api');
+let debug = require('debug')('api:errors');
 let _ = require('lodash');
 
 const ERROR_CODES = {
