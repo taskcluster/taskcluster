@@ -373,7 +373,7 @@ var createRemoteSignatureValidator = function(options) {
  * client satisfies the scope expression in `options.scopes` after the
  * parameters denoted by `<...>` and `{for: ..., each: ..., in: ...}` are
  * substituted in. If the client does not satisfy the scope expression, it
- * throws an expressions.AuthorizationError.
+ * throws an Error with code = 'AuthorizationError'.
  *
  * The `req.scopes()` method returns a Promise for the set of scopes the caller
  * has. Please, note that `req.scopes()` returns `[]` if there was an
@@ -512,7 +512,8 @@ var remoteAuthentication = function(options, entry) {
       /**
        * Create method to check if request satisfies the scope expression. Given
        * extra parameters.
-       * Return true, if successful and if unsuccessful it throws an expressions.AuthorizationError.
+       * Return true, if successful and if unsuccessful it throws an Error with
+       * code = 'AuthorizationError'.
        */
       req.authorize = async function(params) {
         result = await (result || authenticate(req));
@@ -533,24 +534,26 @@ var remoteAuthentication = function(options, entry) {
 
         if (!authed) {
           const err = new Error('Authorization failed'); // This way instead of subclassing due to babel/babel#3083
-          err.name =  'AuthorizationError';
-          err.code =  'AuthorizationError';
-          err.scopes = result.scopes;
-          err.expression = scopeExpression;
-          err.missing = scopes.removeGivenScopes(result.scopes, scopeExpression);
-          err.report = [
+          err.name = 'AuthorizationError';
+          err.code = 'AuthorizationError';
+          err.messageTemplate = [
             'You do not have sufficient scopes. You are missing the following scopes:',
             '',
-            '{{err.missing}}',
+            '{{unsatisfied}}',
             '',
             'You have the scopes:',
             '',
-            '{{err.scopes}}',
+            '{{scopes}}',
             '',
             'This request requires you to satisfy this scope expression:',
             '',
-            '{{scopeExpression}}',
+            '{{required}}',
           ].join('\n');
+          err.details = {
+            scopes: result.scopes,
+            required: scopeExpression,
+            unsatisfied: scopes.removeGivenScopes(result.scopes, scopeExpression),
+          };
           throw err;
         }
 
@@ -575,7 +578,7 @@ var remoteAuthentication = function(options, entry) {
       }
     } catch (err) {
       if (err.code === 'AuthorizationError') {
-        return res.reportError('InsufficientScopes', err.report, err);
+        return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
       }
       return res.reportInternalError(err, {apiMethodName: entry.name});
     };
@@ -604,7 +607,7 @@ var handle = function(handler, context, name) {
       }
     }).catch(function(err) {
       if (err.code === 'AuthorizationError') {
-        return res.reportError('InsufficientScopes', err.report, err);
+        return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
       }
       return res.reportInternalError(err, {apiMethodName: name});
     });
