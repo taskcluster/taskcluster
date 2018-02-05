@@ -1,4 +1,4 @@
-Generated: 1517851089
+Generated: 1517865752
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9415,7 +9415,7 @@ Version     = '[48]'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Login API'
 Description = 'The Login service serves as the interface between external authentication
-systems and TaskCluster credentials.'
+systems and Taskcluster credentials.'
 Base URL    = 'https://login.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -9428,7 +9428,7 @@ Entry 0     =
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json'
-    Entry Title       = 'Get TaskCluster credentials given a suitable `access_token`'
+    Entry Title       = 'Get Taskcluster credentials given a suitable `access_token`'
     Entry Description = 'Given an OIDC `access_token` from a trusted OpenID provider, return a
 set of Taskcluster credentials for use on behalf of the identified
 user.
