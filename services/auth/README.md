@@ -1,8 +1,6 @@
 Taskcluster - Authentication Server
 -----------------------------------
 
-<img src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
-
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-auth.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-auth)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](https://github.com/taskcluster/taskcluster-auth/blob/master/LICENSE)
 
