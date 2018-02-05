@@ -34,7 +34,7 @@ are for hacking on the worker itself.
 
 ## Requirements
 
-  - Node >= 6.0
+  - Node >= 8.5.0
   - Docker
   - Packer (to build AMI)
 
@@ -185,7 +185,7 @@ list](/deploy/checklist.md)
 
   - [packer](www.packer.io)
   - make
-  - node >= 6.0
+  - node >= 8.5.0
   - credentials for required services
 
 ### Amazon Credentials
@@ -224,7 +224,7 @@ are important.
       ```
 
   2. Building the [app](/deploy/packer/app.json) AMI. Do this when:
-      - You want to deploy new code/features.
+      - You want to test new code/features.
 
       - You need to update diamond/statsd/configs (not packages).
 
@@ -237,6 +237,8 @@ are important.
       ```sh
       ./deploy/bin/build app
       ```
+
+### Production deployment
 
 Everything related to the deployment of the worker is in the
 [deploy](/deploy) folder which has a number of other important sub
