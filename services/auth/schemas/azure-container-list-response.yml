@@ -1,14 +1,14 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:                      "Azure List Table Response"
+title:                      "Azure List Containers Response"
 description: |
-  A list of Azure tables in an account
+  A list of Azure containers in an account
 type:                       object
 properties:
-  tables:
-    title: Azure Tables
+  containers:
+    title: Azure Containers
     description: |
-      A list of tables that are in an account. These are
-      the tables that can have SAS credentials fetched for them.
+      A list of containers that are in an account.  Credentials are available for
+      these containers from the `azureBlobSAS` method.
     type:                 array
     items:
       type: string
@@ -17,12 +17,12 @@ properties:
     title:            Continuation Token
     description: |
       Opaque `continuationToken` to be given as query-string option to get the
-      next set of tables.
+      next set of containers.
       This property is only present if another request is necessary to fetch all
       results. In practice the next request with a `continuationToken` may not
       return additional results, but it can. Thus, you can only be sure to have
-      all the results if you've called `azureAccountTables` with `continuationToken`
+      all the results if you've called this method with `continuationToken`
       until you get a result without a `continuationToken`.
 additionalProperties:       false
 required:
-  - tables
+  - containers
