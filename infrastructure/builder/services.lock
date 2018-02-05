@@ -1,34 +1,42 @@
 {
     "auth": {
         "commit": "a41f55e30ac58183cf87f78fcb2f1a7d3835e1a2",
-        "image": "f7b87fe99e1a214f539e2139fbf7ad984ec0b9f57263b3cb91917d99337852b6"
+        "image": "f7b87fe99e1a214f539e2139fbf7ad984ec0b9f57263b3cb91917d99337852b6",
+        "tag": "taskcluster-auth"
     },
     "github": {
         "commit": "759a71bc5fea6c574bae1551a9990cc3f268e7b7",
-        "image": "6dff36970a0a54501ccab577eb1f131f0ac4c3e926b5313745bd64f2d28b3da4"
+        "image": "6dff36970a0a54501ccab577eb1f131f0ac4c3e926b5313745bd64f2d28b3da4",
+        "tag": "taskcluster-github"
     },
     "hooks": {
         "commit": "a8471d33f4057446c1ca04968e591cee8ae58662",
-        "image": "3cc095bb5e47b93d403f287e07001a986b90211f5d141bdcb6cb7350a4f55e1f"
+        "image": "3cc095bb5e47b93d403f287e07001a986b90211f5d141bdcb6cb7350a4f55e1f",
+        "tag": "taskcluster-hooks"
     },
     "index": {
         "commit": "76a8dae9389d4be82257e76f6084a43c32320a7f",
-        "image": "897f2d7a0d4d5bc0f9c1dabb710a5bbf67d136c9eca8b8a17b5e6ba54fa17c6f"
+        "image": "897f2d7a0d4d5bc0f9c1dabb710a5bbf67d136c9eca8b8a17b5e6ba54fa17c6f",
+        "tag": "taskcluster-index"
     },
     "notify": {
         "commit": "0862372f2530af7e75724ebfd5c9ff99a618c9fa",
-        "image": "bf45bac98eb1cec583c958ec150e89baa0b49f1a4b69a9b596f38f96a4f6c068"
+        "image": "bf45bac98eb1cec583c958ec150e89baa0b49f1a4b69a9b596f38f96a4f6c068",
+        "tag": "taskcluster-notify"
     },
     "purgecache": {
         "commit": "e713fd1e041ba4124613a00a24010bfe9f59934d",
-        "image": "e0b6063ebd8c745da76e708e46b9e5a50f0101d759a26fd5916ae5e4fb792dca"
+        "image": "e0b6063ebd8c745da76e708e46b9e5a50f0101d759a26fd5916ae5e4fb792dca",
+        "tag": "taskcluster-purgecache"
     },
     "queue": {
         "commit": "ce102d8e19d9de3085e600114ef2bfa5c50a2bfa",
-        "image": "97141537d52fb21ea38c58e4438b9aacc2ee256fedaa941f12f5cfbec8cbec4f"
+        "image": "97141537d52fb21ea38c58e4438b9aacc2ee256fedaa941f12f5cfbec8cbec4f",
+        "tag": "taskcluster-queue"
     },
     "secrets": {
         "commit": "0edd67698e2f9661266811b4fc8e46aeb37a6112",
-        "image": "a32309e3a49abbb6fea016b47e90946ea904bf9c5bbe4476d5ea2a1c64ae4fe7"
+        "image": "a32309e3a49abbb6fea016b47e90946ea904bf9c5bbe4476d5ea2a1c64ae4fe7",
+        "tag": "taskcluster-secrets"
     }
 }

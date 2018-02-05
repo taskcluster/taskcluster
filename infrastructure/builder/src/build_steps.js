@@ -9,7 +9,7 @@ const Docker = require('dockerode');
 const config = require('typed-env-config');;
 const doT = require('dot');
 const {quote} = require('shell-quote');
-const Observable = require("zen-observable");
+const Observable = require('zen-observable');
 const tar = require('tar-fs');
 
 doT.templateSettings.strip = false;
@@ -172,6 +172,7 @@ module.exports = class Steps {
           observer.next(event.stream);
         } else if (event.aux) {
           this.context.image = event.aux.ID.split(':')[1];
+          this.context.tag = tag;
         }
       };
       this.docker.modem.followProgress(context, onFinished, onProgress);

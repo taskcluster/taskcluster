@@ -1,7 +1,8 @@
 const fs = require('fs');
 const config = require('typed-env-config');
 const Listr = require('listr');
-const Docker = require('dockerode');
+const Observable = require('zen-observable');
+const {spawn} = require('child_process');
 
 const main = async () => {
   const cfg = config({
@@ -9,8 +10,6 @@ const main = async () => {
     profile: 'default',
   });
   const lockFile = JSON.parse(fs.readFileSync('services.lock'));
-
-  const docker = new Docker();
 
   const publisher = new Listr(
     Object.keys(lockFile).map(serviceName => {
@@ -21,10 +20,14 @@ const main = async () => {
           {
             title: 'Docker push',
             task: async () => {
-              const image = await docker.getImage(service.image);
-              await image.tag({
-                repo: cfg.docker.org + '\/' + service.name,
-              })
+              const cmd = spawn('docker', ['push', service.tag]);
+              return new Observable(observer => {
+                observer.next('waiting...');
+                cmd.on('error', observer.error);
+                cmd.on('close', observer.complete);
+                cmd.stdout.on('data', observer.next);
+                cmd.stderr.on('data', observer.next);
+              });
             },
           }
         ])
