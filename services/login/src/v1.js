@@ -6,7 +6,7 @@ var api = new API({
   title:         'Login API',
   description:   [
     'The Login service serves as the interface between external authentication',
-    'systems and TaskCluster credentials.',
+    'systems and Taskcluster credentials.',
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
   context: ['cfg', 'handlers', 'authorizer'],
@@ -21,7 +21,7 @@ api.declare({
   name:       'oidcCredentials',
   idempotent: false,
   output:     'oidc-credentials-response.json',
-  title:      'Get TaskCluster credentials given a suitable `access_token`',
+  title:      'Get Taskcluster credentials given a suitable `access_token`',
   stability:  API.stability.experimental,
   deferAuth:  true,
   description: [
