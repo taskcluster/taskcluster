@@ -2,6 +2,13 @@ var _           = require('lodash');
 var azure       = require('fast-azure-storage');
 var api         = require('./v1');
 
+// keyed by account/tableName, the last time createTable was called for the
+// given table.  This is used to avoid lots of redundant calls to createTable
+// for the same table.
+var tableLastCreated = {};
+// Similar for containers
+var containerLastCreated = {};
+
 api.declare({
   method:     'get',
   route:      '/azure/accounts',
@@ -94,14 +101,19 @@ api.declare({
     accessKey:  this.azureAccounts[account],
   });
 
-  // Create table ignore error, if it already exists
+  // Create table, ignore error, if it already exists
   if (level === 'read-write') {
-    try {
-      await table.createTable(tableName);
-    } catch (err) {
-      if (err.code !== 'TableAlreadyExists') {
-        throw err;
+    // only try to create if we haven't done so in this process recently
+    const key = `${account}/${tableName}`;
+    if (!tableLastCreated[key] || new Date() - tableLastCreated[key] > 6 * 3600 * 1000) {
+      try {
+        await table.createTable(tableName);
+      } catch (err) {
+        if (err.code !== 'TableAlreadyExists') {
+          throw err;
+        }
       }
+      tableLastCreated[key] = new Date();
     }
   }
 
@@ -206,12 +218,16 @@ api.declare({
 
   // Create container ignore error, if it already exists
   if (level === 'read-write') {
-    try {
-      await blob.createContainer(container);
-    } catch (err) {
-      if (err.code !== 'ContainerAlreadyExists') {
-        throw err;
+    const key = `${account}/${container}`;
+    if (!containerLastCreated[key] || new Date() - containerLastCreated[key] > 6 * 3600 * 1000) {
+      try {
+        await blob.createContainer(container);
+      } catch (err) {
+        if (err.code !== 'ContainerAlreadyExists') {
+          throw err;
+        }
       }
+      containerLastCreated[key] = new Date();
     }
   }
 
