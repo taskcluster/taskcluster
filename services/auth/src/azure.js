@@ -129,6 +129,40 @@ api.declare({
 
 api.declare({
   method:     'get',
+  route:      '/azure/:account/containers',
+  name:       'azureContainers',
+  query: {
+    continuationToken: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
+  },
+  input:      undefined,
+  output:     'azure-container-list-response.json#',
+  stability:  'stable',
+  scopes:     [['auth:azure-table:list-containers:<account>']],
+  title:      'List containers in an Account Managed by Auth',
+  description: [
+    'Retrieve a list of all containers in an account.',
+  ].join('\n'),
+}, async function(req, res) {
+  let account = req.params.account;
+  let continuationToken  = req.query.continuationToken || null;
+
+  if (!req.satisfies({account})) { return; }
+
+  let blob = new azure.Blob({
+    accountId:  account,
+    accessKey:  this.azureAccounts[account],
+  });
+
+  let result = await blob.listContainers({marker: continuationToken});
+  let data = {containers: result.containers.map(c => c.name)};
+  if (result.nextMarker) {
+    data.continuationToken = result.nextMarker;
+  }
+  return res.reply(data);
+});
+
+api.declare({
+  method:     'get',
   route:      '/azure/:account/containers/:container/:level',
   name:       'azureBlobSAS',
   input:      undefined,
