@@ -1,7 +1,7 @@
 $schema:    http://json-schema.org/draft-06/schema#
 title:              "Insert Task Request"
 description: |
-  Representation of an a task to be indexed.
+  Representation of the index entry to insert.
 type:               object
 properties:
   taskId:
