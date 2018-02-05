@@ -1,4 +1,4 @@
-Generated: 1517844132
+Generated: 1517847773
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1277,7 +1277,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#
-TYPE_NAME: AzureListAccountResponse1
+TYPE_NAME: AzureListTableResponse
 additionalProperties:
   Boolean: false
   Properties: null
@@ -1326,7 +1326,7 @@ properties:
   SourceURL: http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties
 required:
 - tables
-title: Azure List Account Response
+title: Azure List Table Response
 type: object
 
 

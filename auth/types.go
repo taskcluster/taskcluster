@@ -133,7 +133,7 @@ type (
 	// A list of Azure tables in an account
 	//
 	// See http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#
-	AzureListAccountResponse1 struct {
+	AzureListTableResponse struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
 		// next set of tables.

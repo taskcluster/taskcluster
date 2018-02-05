@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 5 Feb 2018 at 15:22:00 UTC. The code was generated
+// Mon, 5 Feb 2018 at 16:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -477,14 +477,14 @@ func (myAuth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, e
 //   auth:azure-table:list-tables:<account>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTables
-func (myAuth *Auth) AzureTables(account, continuationToken string) (*AzureListAccountResponse1, error) {
+func (myAuth *Auth) AzureTables(account, continuationToken string) (*AzureListTableResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*myAuth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/tables", new(AzureListAccountResponse1), v)
-	return responseObject.(*AzureListAccountResponse1), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/tables", new(AzureListTableResponse), v)
+	return responseObject.(*AzureListTableResponse), err
 }
 
 // Returns a signed URL for AzureTables, valid for the specified duration.
