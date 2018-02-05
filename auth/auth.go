@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 5 Feb 2018 at 16:22:00 UTC. The code was generated
+// Mon, 5 Feb 2018 at 17:18:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -528,6 +528,37 @@ func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
 func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), nil, duration)
+}
+
+// Retrieve a list of all containers in an account.
+//
+// Required scopes:
+//   auth:azure-table:list-containers:<account>
+//
+// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureContainers
+func (myAuth *Auth) AzureContainers(account, continuationToken string) (*AzureListContainersResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	cd := tcclient.Client(*myAuth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers", new(AzureListContainersResponse), v)
+	return responseObject.(*AzureListContainersResponse), err
+}
+
+// Returns a signed URL for AzureContainers, valid for the specified duration.
+//
+// Required scopes:
+//   auth:azure-table:list-containers:<account>
+//
+// See AzureContainers for more details.
+func (myAuth *Auth) AzureContainers_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	cd := tcclient.Client(*myAuth)
+	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers", v, duration)
 }
 
 // Get a shared access signature (SAS) string for use with a specific Azure
