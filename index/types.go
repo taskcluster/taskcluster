@@ -50,7 +50,7 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	// Representation of an a task to be indexed.
+	// Representation of the index entry to insert.
 	//
 	// See http://schemas.taskcluster.net/index/v1/insert-task-request.json#
 	InsertTaskRequest struct {
