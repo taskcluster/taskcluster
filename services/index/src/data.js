@@ -146,7 +146,6 @@ Namespace.expireEntries = async function(now) {
   let count = 0;
 
   while (1) {
-    console.log(`scan with ct ${continuationToken}`);
     let data = await this.scan({
       expires: Entity.op.lessThan(now),
     },
@@ -162,9 +161,6 @@ Namespace.expireEntries = async function(now) {
       // entry without checking its children.
       await entry.remove(false, true);
       count += 1;
-      if (count % 1000 === 0) {
-        console.log(`${count} entities removed`);
-      }
     }));
 
     if (!data.continuation) {
@@ -192,9 +188,6 @@ IndexedTask.expireTasks = async function(now) {
     await Promise.all(data.entries.map(async entry => {
       await entry.remove(false, true);
       count += 1;
-      if (count % 1000 === 0) {
-        console.log(`${count} entities removed`);
-      }
     }));
 
     if (!data.continuation) {
