@@ -194,6 +194,14 @@ suite('azure table and blob (sas)', function() {
     assert(result);
   });
 
+  test('azureContainers', async function() {
+    return helper.auth.azureContainers(
+      helper.testaccount,
+    ).then(function(result) {
+      assert(result.containers.includes('container-test'));
+    });
+  });
+
   test('azureBlobSAS (read-only)', async () => {
     let result = await helper.auth.azureBlobSAS(
       helper.testaccount,
