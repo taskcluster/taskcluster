@@ -16,7 +16,7 @@ api.declare({
   input:      undefined,
   output:     'azure-account-list-response.json#',
   stability:  'stable',
-  scopes:     [['auth:azure-table:list-accounts']],
+  scopes:     'auth:azure-table:list-accounts',
   title:      'List Accounts Managed by Auth',
   description: [
     'Retrieve a list of all Azure accounts managed by Taskcluster Auth.',
@@ -35,7 +35,7 @@ api.declare({
   input:      undefined,
   output:     'azure-table-list-response.json#',
   stability:  'stable',
-  scopes:     [['auth:azure-table:list-tables:<account>']],
+  scopes:     'auth:azure-table:list-tables:<account>',
   title:      'List Tables in an Account Managed by Auth',
   description: [
     'Retrieve a list of all tables in an account.',
@@ -44,7 +44,7 @@ api.declare({
   let account = req.params.account;
   let continuationToken  = req.query.continuationToken || null;
 
-  if (!req.satisfies({account})) { return; }
+  await req.authorize({account});
 
   let table = new azure.Table({
     accountId:  account,
@@ -65,9 +65,15 @@ api.declare({
   name:       'azureTableSAS',
   input:      undefined,
   output:     'azure-table-access-response.json#',
-  deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:azure-table:<level>:<account>/<table>']],
+  scopes: {
+    if: 'levelIsReadOnly',
+    then: {AnyOf: [
+      'auth:azure-table:read-only:<account>/<table>',
+      'auth:azure-table:read-write:<account>/<table>',
+    ]},
+    else: 'auth:azure-table:read-write:<account>/<table>',
+  },
   title:      'Get Shared-Access-Signature for Azure Table',
   description: [
     'Get a shared access signature (SAS) string for use with a specific Azure',
@@ -84,10 +90,12 @@ api.declare({
 
   // We have a complicated scope situation for read-only since we want
   // read-write to grant read-only permissions as well
-  if (!(level === 'read-only' && req.satisfies({account, table: tableName, level: 'read-write'}, true)) &&
-    !req.satisfies({account, table: tableName, level})) {
-    return;
-  }
+  await req.authorize({
+    account,
+    table: tableName,
+    level,
+    levelIsReadOnly: level == 'read-only',
+  });
 
   // Check that the account exists
   if (!this.azureAccounts[account]) {
@@ -179,9 +187,15 @@ api.declare({
   name:       'azureBlobSAS',
   input:      undefined,
   output:     'azure-blob-response.json#',
-  deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:azure-blob:<level>:<account>/<container>']],
+  scopes: {
+    if: 'levelIsReadOnly',
+    then: {AnyOf: [
+      'auth:azure-blob:read-only:<account>/<container>',
+      'auth:azure-blob:read-write:<account>/<container>',
+    ]},
+    else: 'auth:azure-blob:read-write:<account>/<container>',
+  },
   title:      'Get Shared-Access-Signature for Azure Blob',
   description: [
     'Get a shared access signature (SAS) string for use with a specific Azure',
@@ -198,11 +212,7 @@ api.declare({
   let level = req.params.level;
 
   // Check that the client is authorized to access given account and container
-  if (!(level === 'read-only' &&
-    req.satisfies({account, container, level: 'read-write'}, true)) &&
-    !req.satisfies({account, container, level})) {
-    return;
-  }
+  await req.authorize({level, account, container, levelIsReadOnly: level === 'read-only'});
 
   // Check that the account exists
   if (!this.azureAccounts[account]) {

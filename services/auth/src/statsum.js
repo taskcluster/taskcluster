@@ -8,9 +8,8 @@ api.declare({
   name:       'statsumToken',
   input:      undefined,
   output:     'statsum-token-response.json#',
-  deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:statsum:<project>']],
+  scopes:     'auth:statsum:<project>',
   title:      'Get Token for Statsum Project',
   description: [
     'Get temporary `token` and `baseUrl` for sending metrics to statsum.',
@@ -21,9 +20,7 @@ api.declare({
   let project = req.params.project;
 
   // Check scopes
-  if (!req.satisfies({project})) {
-    return;
-  }
+  await req.authorize({project});
 
   return res.reply({
     project,

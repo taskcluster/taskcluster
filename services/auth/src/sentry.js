@@ -7,9 +7,8 @@ api.declare({
   name:       'sentryDSN',
   input:      undefined,
   output:     'sentry-dsn-response.json#',
-  deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:sentry:<project>']],
+  scopes:     'auth:sentry:<project>',
   title:      'Get DSN for Sentry Project',
   description: [
     'Get temporary DSN (access credentials) for a sentry project.',
@@ -24,9 +23,7 @@ api.declare({
   let project = req.params.project;
 
   // Check scopes
-  if (!req.satisfies({project})) {
-    return;
-  }
+  await req.authorize({project});
 
   let key = await this.sentryManager.projectDSN(project);
 
