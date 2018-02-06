@@ -4,12 +4,15 @@ suite('Audit Logs', () => {
   let monitoring = require('../');
   let AWS = require('aws-sdk-mock');
   let testing = require('taskcluster-lib-testing');
+  let nock = require('nock');
+  let authmock = require('./authmock');
 
   let logName = 'mocked-stream';
   let monitor = null;
   let records = {};
 
   setup(async () => {
+    authmock.setup();
     AWS.mock('Firehose', 'describeDeliveryStream', (params, callback) => {
       records[params.DeliveryStreamName] = [];
       callback(null, {DeliveryStreamDescription: {DeliveryStreamStatus: 'ACTIVE'}});
@@ -40,7 +43,9 @@ suite('Audit Logs', () => {
     });
   });
 
-  teardown(() => {
+  teardown(async () => {
+    await monitor.flush();
+    authmock.teardown();
     AWS.restore();
     records = {};
   });
