@@ -190,11 +190,10 @@ let queryValidator = function(options = {}) {
       let pattern = options[key];
       if (!pattern) {
         // Allow the bewit key, it's used in signed strings
-        if (key === 'bewit') {
-          return;
+        if (key !== 'bewit') {
+          errors.push('Query-string parameter: ' + key + ' is not supported!');
         }
-        // Unsupported option
-        errors.push('Query-string parameter: ' + key + ' is not supported!');
+        return;
       }
       if (pattern instanceof RegExp) {
         if (!pattern.test(value)) {
