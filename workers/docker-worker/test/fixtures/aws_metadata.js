@@ -59,7 +59,8 @@ function route(context) {
   }
 }
 
-module.exports = app.use(() => {
+// eslint-disable-next-line require-yield
+module.exports = app.use(function *() {
   let data = route(this);
   this.body = data;
 });
