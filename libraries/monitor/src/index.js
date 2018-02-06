@@ -53,14 +53,6 @@ async function monitor(options) {
     return new MockMonitor(options);
   }
 
-  let auditlog;
-  if (options.aws && options.logName) {
-    auditlog = new auditlogs.FirehoseLog(options);
-  } else {
-    auditlog = new auditlogs.NoopLog();
-  }
-  await auditlog.setup();
-
   // Find functions for statsum and sentry
   let statsumToken = options.statsumToken;
   let sentryDSN = options.sentryDSN;
@@ -91,6 +83,14 @@ async function monitor(options) {
     project: options.project,
     emitErrors: options.reportStatsumErrors,
   });
+
+  let auditlog;
+  if (options.aws && options.logName) {
+    auditlog = new auditlogs.FirehoseLog(Object.assign({}, options, {statsum}));
+  } else {
+    auditlog = new auditlogs.NoopLog();
+  }
+  await auditlog.setup();
 
   let m = new Monitor(sentryDSN, null, statsum, auditlog, options);
 
