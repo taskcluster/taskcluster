@@ -10,7 +10,7 @@ api.declare({
   input:      undefined,
   output:     'webhooktunnel-token-response.json#',
   stability:  'stable',
-  scopes:     [['auth:webhooktunnel']],
+  scopes:     'auth:webhooktunnel',
   title:      'Get Token for Webhooktunnel Proxy',
   description: [
     'Get temporary `token` and `id` for connecting to webhooktunnel',

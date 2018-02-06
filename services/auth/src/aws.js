@@ -9,9 +9,15 @@ api.declare({
   query: {
     format:   /iam-role-compat/,
   },
-  deferAuth:  true,
   stability:  'stable',
-  scopes:     [['auth:aws-s3:<level>:<bucket>/<prefix>']],
+  scopes: {
+    if: 'levelIsReadOnly',
+    then: {AnyOf: [
+      'auth:aws-s3:read-only:<bucket>/<prefix>',
+      'auth:aws-s3:read-write:<bucket>/<prefix>',
+    ]},
+    else: 'auth:aws-s3:read-write:<bucket>/<prefix>',
+  },
   title:      'Get Temporary Read/Write Credentials S3',
   description: [
     'Get temporary AWS credentials for `read-write` or `read-only` access to',
@@ -88,21 +94,13 @@ api.declare({
 
   // Validate that a proper value was given for level
   if (level !== 'read-write' && level !== 'read-only') {
-    return res.reportError('InputError', 
+    return res.reportError('InputError',
       'the \'level\' URL parameter must be read-only or read-write; got {{levelGiven}}',
       {levelGiven: level});
   }
 
-  // Construct scope-sets requires (one of sets in the scopesets must be satisfied
-  let scopesets = [[`auth:aws-s3:${level}:${bucket}/${prefix}`]];
-  // If level is read-only, a scope with read-write should also be sufficient
-  if (level == 'read-only') {
-    scopesets.push([`auth:aws-s3:read-write:${bucket}/${prefix}`]);
-  }
   // Check that the client is authorized to access given bucket and prefix
-  if (!req.satisfies(scopesets)) {
-    return;
-  }
+  await req.authorize({level, bucket, prefix, levelIsReadOnly: level == 'read-only'});
 
   // Prevent prefix to start with a slash, this is bad behavior. Technically
   // we could easily support it, S3 does, but people rarely wants double

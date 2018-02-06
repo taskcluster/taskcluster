@@ -17,7 +17,7 @@ myapi.declare({
   method:       'get',
   route:        '/resource',
   name:         'resource',
-  scopes:       [['myapi:resource']],
+  scopes:       {AllOf: ['myapi:resource']},
   title:        'Get Resource',
   description:  '...',
 }, function(req, res) {
