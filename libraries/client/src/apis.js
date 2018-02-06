@@ -190,7 +190,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
-          "description": "Create a new role.\n\nThe caller's scopes must satisfy the new role's scopes.\n\nIf there already exists a role with the same `roleId` this operation\nwill fail. Use `updateRole` to modify an existing role.",
+          "description": "Create a new role.\n\nThe caller's scopes must satisfy the new role's scopes.\n\nIf there already exists a role with the same `roleId` this operation\nwill fail. Use `updateRole` to modify an existing role.\n\nCreation of a role that will generate an infinite expansion will result\nin an error response.",
           "input": "http://schemas.taskcluster.net/auth/v1/create-role-request.json#",
           "method": "put",
           "name": "createRole",
@@ -211,7 +211,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
-          "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the client's existing scopes.",
+          "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the client's existing scopes.\n\nAn update of a role that will generate an infinite expansion will result\nin an error response.",
           "input": "http://schemas.taskcluster.net/auth/v1/create-role-request.json#",
           "method": "post",
           "name": "updateRole",
@@ -250,9 +250,24 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.",
+          "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.\n\nThis call uses the GET method with an HTTP body.  It remains only for\nbackward compatibility.",
           "input": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
           "method": "get",
+          "name": "expandScopesGet",
+          "output": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
+          "query": [
+          ],
+          "route": "/scopes/expand",
+          "stability": "deprecated",
+          "title": "Expand Scopes",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.",
+          "input": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
+          "method": "post",
           "name": "expandScopes",
           "output": "http://schemas.taskcluster.net/auth/v1/scopeset.json#",
           "query": [
@@ -359,6 +374,27 @@ module.exports = {
           ],
           "stability": "stable",
           "title": "Get Shared-Access-Signature for Azure Table",
+          "type": "function"
+        },
+        {
+          "args": [
+            "account"
+          ],
+          "description": "Retrieve a list of all containers in an account.",
+          "method": "get",
+          "name": "azureContainers",
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#",
+          "query": [
+            "continuationToken"
+          ],
+          "route": "/azure/<account>/containers",
+          "scopes": [
+            [
+              "auth:azure-table:list-containers:<account>"
+            ]
+          ],
+          "stability": "stable",
+          "title": "List containers in an Account Managed by Auth",
           "type": "function"
         },
         {
@@ -1078,11 +1114,11 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/statuses/<sha>",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "github:create-status:<owner>/<repo>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Post a status against a given changeset",
           "type": "function"
@@ -1100,11 +1136,11 @@ module.exports = {
           "query": [
           ],
           "route": "/repository/<owner>/<repo>/issues/<number>/comments",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "github:create-comment:<owner>/<repo>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Post a comment on a given GitHub Issue or Pull Request",
           "type": "function"
@@ -1123,7 +1159,7 @@ module.exports = {
           "type": "function"
         }
       ],
-      "title": "TaskCluster GitHub API Documentation",
+      "title": "Taskcluster GitHub API Documentation",
       "version": 0
     },
     "referenceUrl": "http://references.taskcluster.net/github/v1/api.json"
@@ -1228,7 +1264,7 @@ module.exports = {
         }
       ],
       "exchangePrefix": "exchange/taskcluster-github/v1/",
-      "title": "TaskCluster-Github Exchanges",
+      "title": "Taskcluster-Github Exchanges",
       "version": 0
     },
     "referenceUrl": "http://references.taskcluster.net/github/v1/exchanges.json"
@@ -1237,7 +1273,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://hooks.taskcluster.net/v1",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\nhttps://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks\nfor more information.",
       "entries": [
         {
           "args": [
@@ -1329,12 +1365,12 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "hooks:modify-hook:<hookGroupId>/<hookId>",
               "assume:hook-id:<hookGroupId>/<hookId>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Create a hook",
           "type": "function"
@@ -1352,12 +1388,12 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "hooks:modify-hook:<hookGroupId>/<hookId>",
               "assume:hook-id:<hookGroupId>/<hookId>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Update a hook",
           "type": "function"
@@ -1373,11 +1409,11 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "hooks:modify-hook:<hookGroupId>/<hookId>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Delete a hook",
           "type": "function"
@@ -1387,19 +1423,19 @@ module.exports = {
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will trigger the creation of a task from a hook definition.",
-          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-payload.json",
+          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-context.json",
           "method": "post",
           "name": "triggerHook",
           "output": "http://schemas.taskcluster.net/hooks/v1/task-status.json",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "hooks:trigger-hook:<hookGroupId>/<hookId>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Trigger a hook",
           "type": "function"
@@ -1416,11 +1452,11 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/token",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "hooks:get-trigger-token:<hookGroupId>/<hookId>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Get a trigger token",
           "type": "function"
@@ -1437,11 +1473,11 @@ module.exports = {
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/token",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "hooks:reset-trigger-token:<hookGroupId>/<hookId>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Reset a trigger token",
           "type": "function"
@@ -1452,8 +1488,8 @@ module.exports = {
             "hookId",
             "token"
           ],
-          "description": "This endpoint triggers a defined hook with a valid token.",
-          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-payload.json",
+          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-context.json",
           "method": "post",
           "name": "triggerHookWithToken",
           "output": "http://schemas.taskcluster.net/hooks/v1/task-status.json",
@@ -1600,7 +1636,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://login.taskcluster.net/v1",
-      "description": "The Login service serves as the interface between external authentication\nsystems and TaskCluster credentials.",
+      "description": "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
       "entries": [
         {
           "args": [
@@ -1614,7 +1650,7 @@ module.exports = {
           ],
           "route": "/oidc-credentials/<provider>",
           "stability": "experimental",
-          "title": "Get TaskCluster credentials given a suitable `access_token`",
+          "title": "Get Taskcluster credentials given a suitable `access_token`",
           "type": "function"
         },
         {
@@ -1652,11 +1688,11 @@ module.exports = {
           "query": [
           ],
           "route": "/email",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "notify:email:<address>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Send an Email",
           "type": "function"
@@ -1671,11 +1707,11 @@ module.exports = {
           "query": [
           ],
           "route": "/pulse",
-          "scopes": [
-            [
+          "scopes": {
+            "AllOf": [
               "notify:pulse:<routingKey>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Publish a Pulse Message",
           "type": "function"
@@ -1690,12 +1726,26 @@ module.exports = {
           "query": [
           ],
           "route": "/irc",
-          "scopes": [
-            [
-              "notify:irc-channel:<channel>",
-              "notify:irc-user:<user>"
+          "scopes": {
+            "AllOf": [
+              {
+                "if": "channelRequest",
+                "then": {
+                  "AllOf": [
+                    "notify:irc-channel:<channel>"
+                  ]
+                }
+              },
+              {
+                "if": "userRequest",
+                "then": {
+                  "AllOf": [
+                    "notify:irc-user:<user>"
+                  ]
+                }
+              }
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Post IRC Message",
           "type": "function"
