@@ -72,9 +72,6 @@ class Artifacts {
 
     let tarExtract = tarStream.extract();
 
-    // Begin unpacking the tar.
-    contentStream.pipe(tarExtract);
-
     let checkedArtifactType = false;
 
     let entryHandler = async function (header, stream, cb) {
@@ -184,7 +181,12 @@ class Artifacts {
     tarExtract.on('entry', entryHandler);
 
     // Wait for the tar to be finished extracting.
-    await waitForEvent(tarExtract, 'finish');
+    const finishEvent = waitForEvent(tarExtract, 'finish');
+
+    // Begin unpacking the tar.
+    contentStream.pipe(tarExtract);
+
+    await finishEvent;
 
     if (errors.length) {
       throw new Error(errors.join(' | '));

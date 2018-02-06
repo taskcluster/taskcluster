@@ -50,14 +50,14 @@ module.exports = async function uploadToS3 (
     // Can this be done at the same time as piping to the write stream?
     let hash = crypto.createHash('sha256');
     let input = fs.createReadStream(tmp.path);
+    const inputEnd = waitForEvent(input, 'end');
     input.on('readable', () => {
       let data = input.read();
       if (data) {
         hash.update(data);
       }
     });
-
-    await waitForEvent(input, 'end');
+    await inputEnd;
 
     if (!putUrl) {
       var artifact = await queue.createArtifact(

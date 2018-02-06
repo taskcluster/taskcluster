@@ -5,7 +5,6 @@ var docker = require('../src/lib/docker')();
 var dockerOpts = require('dockerode-options');
 var DockerProc = require('dockerode-process');
 var dockerUtils = require('dockerode-process/utils');
-var waitForEvent = require('../src/lib/wait_for_event');
 var pipe = require('promisepipe');
 
 const IMAGE = 'taskcluster/docker-worker-test:latest';
