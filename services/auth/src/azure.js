@@ -157,7 +157,7 @@ api.declare({
   input:      undefined,
   output:     'azure-container-list-response.json#',
   stability:  'stable',
-  scopes:     [['auth:azure-table:list-containers:<account>']],
+  scopes:     'auth:azure-table:list-containers:<account>',
   title:      'List containers in an Account Managed by Auth',
   description: [
     'Retrieve a list of all containers in an account.',
@@ -165,8 +165,6 @@ api.declare({
 }, async function(req, res) {
   let account = req.params.account;
   let continuationToken  = req.query.continuationToken || null;
-
-  if (!req.satisfies({account})) { return; }
 
   let blob = new azure.Blob({
     accountId:  account,
