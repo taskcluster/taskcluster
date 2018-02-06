@@ -2,7 +2,7 @@ var _           = require('lodash');
 var assert      = require('assert');
 var taskcluster = require('taskcluster-client');
 var events      = require('events');
-var LRU         = require('lru-native');
+var LRU         = require('quick-lru');
 var debug       = require('debug')('auth:ScopeResolver');
 var {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
 var {generateTrie, executeTrie} = require('./trie');
@@ -325,7 +325,7 @@ class ScopeResolver extends events.EventEmitter {
 
     // LRU of resolved scope-sets, to increase probability of hits, we shall
     // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
-    let lru = new LRU({maxElements: 10000});
+    let lru = new LRU({maxSize: 10000});
 
     return (inputs) => {
       inputs.sort(scopeCompare);
