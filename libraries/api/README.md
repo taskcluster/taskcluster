@@ -131,7 +131,7 @@ Examples:
 Scopes should be specified in
 [scope expression form](https://github.com/taskcluster/taskcluster-lib-scopes#new-style).
 Parameters are substituted into scopes with `<paramName>`
-syntax.  For example, the following defintion allows the method when *either*
+syntax.  For example, the following definition allows the method when *either*
 the caller's scopes satisfy `queue:create-task..` for the given `provisionerId`
 and `workerType`, *or* the caller's scopes satisfy all of
 `queue:define-task:..`, `queue:task-group-id:..`, and `queue:schedule-task:..`.
@@ -174,7 +174,7 @@ this will evaluate to:
 
 You may also use if/then constructs in scope expressions. In this case, the `if`
 field should be a parameter and the `then` must be a scope expression that will
-be subsituted in for the if/then block if the `if` parameter is a boolean and is true.
+be substituted in for the if/then block if the `if` parameter is a boolean and is true.
 This will not do any truthiness conversions, you must do that yourself if desired.
 Given the following example:
 
@@ -185,18 +185,16 @@ Given the following example:
 We can call `async req.authorize({private: false})` and the method call will be permitted
 even if the client does not have the scope `foo:bar`.
 
-In addition, parameters can be nested objects and accessed with dotted notation.
-Given the parameter `task` that is `{extra: {treeherder: {symbol: 'F'}}}`, we can do
-the following:
+The if/then constructs can also have an optional `else` branch, in the following
+example the parameter `isReadOnly` determines which of the two branches must be
+satisfied.
 
 ```js
-  scopes: {AllOf: ['some:scope', 'some:scope:<task.extra.treeherder.symbol>']}
-```
-
-which evaluates to
-
-```js
-  scopes: {AllOf: ['some:scope', 'some:scope:F']}
+  scopes: {
+    if: 'isReadOnly',
+    then: {AnyOf: ['read-only', 'read-write']},
+    else: {AnyOf: ['read-write']},
+  }
 ```
 
 When you specify scopes required to access an endpoint, by default all of the params
