@@ -38,9 +38,14 @@ class User {
   scopes() {
     let scopes = this.roles.map(role => 'assume:' + role);
     // add permission to manage scopes prefixed by the identity
-    ['create-client', 'delete-client', 'update-client', 'reset-access-token'].forEach(v => {
-      scopes.push('auth:' + v + ':' + this.identity + '/*');
-    });
+    let id = this.identity;
+    scopes.push(
+      `auth:create-client:${id}/*`,
+      `auth:delete-client:${id}/*`,
+      `auth:update-client:${id}/*`,
+      `auth:reset-access-token:${id}/*`,
+      `queue:create-artifact:login-identity/${id}/*`,
+    );
     return scopes;
   }
 
