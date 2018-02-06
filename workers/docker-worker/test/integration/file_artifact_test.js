@@ -269,19 +269,27 @@ suite('artifact extraction tests', () => {
 
   test('upload retry', async () => {
     await retryUtil.init();
+    let retry = false;
+    let blocked = false;
 
-    try {
+    // we try the test a few times because there is a small
+    // chance of the test failing due to external factors
+    // (aka race conditions due to the asynchronous nature of
+    // nodejs)
+    for (let i = 0; !retry && i < 10; ++i) {
       let worker = new TestWorker(DockerWorker);
       await worker.launch();
 
       worker.once('Uploading public/xfoo', function() {
-        retryUtil.blockArtifact();
+        if (!blocked) {
+          retryUtil.blockArtifact();
+          blocked = true;
+        }
       });
-
-      let retry = false;
 
       worker.on('retrying artifact upload', function() {
         retryUtil.allowArtifact();
+        blocked = false;
         retry = true;
       });
 
@@ -307,6 +315,12 @@ suite('artifact extraction tests', () => {
         }
       });
 
+      if (blocked) {
+        retryUtil.allowArtifact();
+        blocked = false;
+        continue;
+      }
+
       // Get task specific results
       assert.equal(result.run.state, 'completed', 'task should be successful');
       assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
@@ -317,10 +331,10 @@ suite('artifact extraction tests', () => {
 
       let xfoo = await getArtifact(result, 'public/xfoo');
 
+      assert(xfoo, 'Error retrying artifact');
       assert.equal(xfoo.trim(), 'xfoo');
-      assert.ok(retry);
-    } finally {
-      retryUtil.allowArtifact();
     }
+
+    assert.ok(retry);
   });
 });
