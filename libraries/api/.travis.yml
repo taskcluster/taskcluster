@@ -1,7 +1,7 @@
 env:
   global:
   - CXX=g++-4.8
-  - DEBUG='* -superagent -express:* -mocha:* -babel -eslint'
+  - DEBUG='*,-superagent,-express:*,-mocha:*,-babel*,-eslint*'
 language: node_js
 sudo: false
 addons:
