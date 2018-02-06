@@ -25,7 +25,7 @@ exports.ERROR_CODES = ERROR_CODES;
  *
  * The `method` is the name of the API method, `errorCodes` is a mapping from
  * allowed error codes to HTTP status codes, and `monitor` is an instance of
- * `raven.Client` from the `raven` npm module or an instance of taskcluster-lib-monitor.
+ * `raven.Client` from an instance of taskcluster-lib-monitor.
  */
 let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
   return (req, res, next) => {
@@ -35,6 +35,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
       if (cleanPayload) {
         payload = cleanPayload(payload);
       }
+
       if (status === undefined || typeof message !== 'string') {
         message = 'Internal error, unknown error code: ' + code + '\n' +
                   (message || 'Missing message!');
@@ -48,12 +49,14 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
           monitor.reportError(err);
         }
       }
+
       let requestInfo = {
         method,
         params:  req.params,
         payload,
         time:    (new Date()).toJSON(),
       };
+
       message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
         let value = details.hasOwnProperty(key) ? details[key] : text;
         if (typeof value !== 'string') {
@@ -69,6 +72,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
         ].join('\n');
       res.status(status).json({code, message, requestInfo});
     };
+
     res.reportInternalError = (err, tags = {}) => {
       let incidentId = uuid.v4();
       res.reportError(
@@ -82,7 +86,14 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
       );
       if (monitor) {
         err.incidentId = incidentId;
-        monitor.reportError(err, tags);
+        err.method = method;
+        err.params = req.params;
+        let payload = req.body;
+        if (cleanPayload) {
+          payload = cleanPayload(payload);
+        }
+        err.payload = req.payload;
+        monitor.reportError(err, Object.assign(tags, {method}));
       }
     };
     next();
