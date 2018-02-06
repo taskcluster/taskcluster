@@ -218,12 +218,14 @@ var auth = new taskcluster.Auth(options);
  * `auth.createRole(roleId, payload) : result`
  * `auth.updateRole(roleId, payload) : result`
  * `auth.deleteRole(roleId) : void`
+ * `auth.expandScopesGet(payload) : result`
  * `auth.expandScopes(payload) : result`
  * `auth.currentScopes() : result`
  * `auth.awsS3Credentials(level, bucket, prefix, [options]) : result`
  * `auth.azureAccounts() : result`
  * `auth.azureTables(account, [options]) : result`
  * `auth.azureTableSAS(account, table, level) : result`
+ * `auth.azureContainers(account, [options]) : result`
  * `auth.azureBlobSAS(account, container, level) : result`
  * `auth.sentryDSN(project) : result`
  * `auth.statsumToken(project) : result`
