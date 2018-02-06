@@ -7,7 +7,6 @@ var Promise     = require('promise');
 var _           = require('lodash');
 var signaturevalidator = require('./signaturevalidator');
 let ScopeResolver      = require('./scoperesolver');
-var {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
@@ -180,8 +179,12 @@ api.declare({
   name:       'createClient',
   input:      'create-client-request.json#',
   output:     'create-client-response.json#',
-  scopes:     [['auth:create-client:<clientId>']],
-  deferAuth:  true,
+  scopes: {
+    AllOf: [
+      'auth:create-client:<clientId>',
+      {for: 'scope', in: 'scopes', each: '<scope>'},
+    ],
+  },
   stability:  'stable',
   title:      'Create Client',
   description: [
@@ -204,9 +207,7 @@ api.declare({
   let scopes    = input.scopes || [];
 
   // Check scopes
-  if (!req.satisfies({clientId}) || !req.satisfies([scopes])) {
-    return;
-  }
+  await req.authorize({clientId, scopes});
 
   var accessToken = slugid.v4() + slugid.v4();
   let client = await this.Client.create({
@@ -271,8 +272,7 @@ api.declare({
   name:       'resetAccessToken',
   input:      undefined,
   output:     'create-client-response.json#',
-  scopes:     [['auth:reset-access-token:<clientId>']],
-  deferAuth:  true,
+  scopes:     'auth:reset-access-token:<clientId>',
   stability:  'stable',
   title:      'Reset `accessToken`',
   description: [
@@ -288,9 +288,7 @@ api.declare({
   let input     = req.body;
 
   // Check scopes
-  if (!req.satisfies({clientId})) {
-    return;
-  }
+  await req.authorize({clientId});
 
   // Load client
   let client = await this.Client.load({clientId}, true);
@@ -323,8 +321,12 @@ api.declare({
   name:       'updateClient',
   input:      'create-client-request.json#',
   output:     'get-client-response.json#',
-  scopes:     [['auth:update-client:<clientId>']],
-  deferAuth:  true,
+  scopes: {
+    AllOf: [
+      'auth:update-client:<clientId>',
+      {for: 'scope', in: 'scopesAdded', each: '<scope>'},
+    ],
+  },
   stability:  'stable',
   title:      'Update Client',
   description: [
@@ -338,11 +340,6 @@ api.declare({
   let clientId  = req.params.clientId;
   let input     = req.body;
 
-  // Check scopes
-  if (!req.satisfies({clientId})) {
-    return;
-  }
-
   // Load client
   let client = await this.Client.load({clientId}, true);
   if (!client) {
@@ -351,10 +348,10 @@ api.declare({
 
   // the new scopes must be satisfied by the combination of the existing
   // scopes and the caller's scopes
-  let added = _.without.apply(_, [input.scopes].concat(client.scopes));
-  if (!req.satisfies([added])) {
-    return;
-  }
+  const scopesAdded = _.difference(input.scopes, client.scopes);
+
+  // Check scopes
+  await req.authorize({clientId, scopesAdded});
 
   // Update client
   await client.modify(client => {
@@ -383,8 +380,7 @@ api.declare({
   name:       'enableClient',
   input:      undefined,
   output:     'get-client-response.json#',
-  scopes:     [['auth:enable-client:<clientId>']],
-  deferAuth:  true,
+  scopes:     'auth:enable-client:<clientId>',
   stability:  'stable',
   title:      'Enable Client',
   description: [
@@ -398,9 +394,7 @@ api.declare({
   let clientId  = req.params.clientId;
 
   // Check scopes
-  if (!req.satisfies({clientId})) {
-    return;
-  }
+  await req.authorize({clientId});
 
   // Load client
   let client = await this.Client.load({clientId}, true);
@@ -429,8 +423,7 @@ api.declare({
   name:       'disableClient',
   input:      undefined,
   output:     'get-client-response.json#',
-  scopes:     [['auth:disable-client:<clientId>']],
-  deferAuth:  true,
+  scopes:     'auth:disable-client:<clientId>',
   stability:  'stable',
   title:      'Disable Client',
   description: [
@@ -443,9 +436,7 @@ api.declare({
   let clientId  = req.params.clientId;
 
   // Check scopes
-  if (!req.satisfies({clientId})) {
-    return;
-  }
+  await req.authorize({clientId});
 
   // Load client
   let client = await this.Client.load({clientId}, true);
@@ -472,8 +463,7 @@ api.declare({
   method:     'delete',
   route:      '/clients/:clientId',
   name:       'deleteClient',
-  scopes:     [['auth:delete-client:<clientId>']],
-  deferAuth:  true,
+  scopes:     'auth:delete-client:<clientId>',
   stability:  'stable',
   title:      'Delete Client',
   description: [
@@ -484,9 +474,7 @@ api.declare({
   let clientId  = req.params.clientId;
 
   // Check scopes
-  if (!req.satisfies({clientId})) {
-    return;
-  }
+  await req.authorize({clientId});
 
   await this.Client.remove({clientId}, true);
 
@@ -551,8 +539,12 @@ api.declare({
   name:       'createRole',
   input:      'create-role-request.json#',
   output:     'get-role-response.json#',
-  scopes:     [['auth:create-role:<roleId>']],
-  deferAuth:  true,
+  scopes: {
+    AllOf: [
+      'auth:create-role:<roleId>',
+      {for: 'scope', in: 'scopes', each: '<scope>'},
+    ],
+  },
   stability:  'stable',
   title:      'Create Role',
   description: [
@@ -577,11 +569,9 @@ api.declare({
   }
 
   // Check scopes
-  if (!req.satisfies({roleId}) || !req.satisfies([input.scopes])) {
-    return;
-  }
+  await req.authorize({roleId, scopes: input.scopes});
 
-  input.scopes.sort(scopeCompare);
+  input.scopes.sort(scopeUtils.scopeCompare);
 
   let when = new Date().toJSON();
   role = {
@@ -650,8 +640,12 @@ api.declare({
   name:       'updateRole',
   input:      'create-role-request.json#',
   output:     'get-role-response.json#',
-  scopes:     [['auth:update-role:<roleId>']],
-  deferAuth:  true,
+  scopes: {
+    AllOf: [
+      'auth:update-role:<roleId>',
+      {for: 'scope', in: 'scopesAdded', each: '<scope>'},
+    ],
+  },
   stability:  'stable',
   title:      'Update Role',
   description: [
@@ -674,11 +668,6 @@ api.declare({
       {});
   }
 
-  // Check scopes
-  if (!req.satisfies({roleId})) {
-    return;
-  }
-
   // Load role
   let callerScopes = await req.scopes();
   let reportError = (code, message, details) => {
@@ -688,31 +677,17 @@ api.declare({
     return err;
   };
   try {
-    await this.Roles.modify(roles => {
+    await this.Roles.modify(async (roles) => {
       let i = _.findIndex(roles, {roleId});
       if (i === -1) {
         throw reportError('ResourceNotFound', 'Role not found', {});
       }
       role = roles[i];
 
-      // Check that requester has all the scopes added.  The combined
-      // scopes of the caller and the existing role must satisfy the
-      // new scopes
-      let unionScopes = this.resolver.resolve(callerScopes.concat(role.scopes));
-      if (!scopeUtils.scopeMatch(unionScopes, [input.scopes])) {
-        throw reportError('InsufficientScopes', [
-          'You do not have sufficient scopes.  This request requires you',
-          'to have any new scopes you wish to add to the role.  More',
-          'precisely, the union of your scopes and the existing role scopes',
-          'must satisfy the scopes in the request.',
-          '',
-          'The combined scopes are:',
-          '{{unionScopes}}',
-          '',
-        ].join('\n'), {
-          unionScopes,
-        });
-      }
+      // Check scopes
+      const formerRoleScopes = this.resolver.resolve(role.scopes);
+      const scopesAdded = input.scopes.filter(s => !scopeUtils.scopeMatch(formerRoleScopes, [[s]]));
+      await req.authorize({roleId, scopesAdded});
 
       // check that this updated role does not introduce a cycle, careful not to modify
       // the original yet (since azure-blob-storage caches it)
@@ -752,8 +727,7 @@ api.declare({
   method:     'delete',
   route:      '/roles/:roleId',
   name:       'deleteRole',
-  scopes:     [['auth:delete-role:<roleId>']],
-  deferAuth:  true,
+  scopes:     'auth:delete-role:<roleId>',
   stability:  'stable',
   title:      'Delete Role',
   description: [
@@ -770,9 +744,7 @@ api.declare({
   }
 
   // Check scopes
-  if (!req.satisfies({roleId})) {
-    return;
-  }
+  await req.authorize({roleId});
 
   await this.Roles.modify(roles => {
     let i = _.findIndex(roles, {roleId});
@@ -901,7 +873,7 @@ api.declare({
     'and scopes as seen by the API method.',
   ].join('\n'),
 }, async function(req, res) {
-  API.remoteAuthentication({
+  await new Promise(next => API.remoteAuthentication({
     signatureValidator: signaturevalidator.createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
@@ -916,21 +888,17 @@ api.declare({
       monitor: this.monitor,
     }),
   }, {
-    scopes: [],
-    deferAuth: true,
-  })(req, res, () => {
-    if (!req.satisfies([req.body.requiredScopes])) {
-      return;
-    }
-    Promise.all([
-      req.clientId(),
-      req.scopes(),
-    ]).then(([clientId, scopes]) => {
-      res.reply({clientId, scopes});
-    }).catch(err => {
-      return res.reportInternalError(err);
-    });
-  });
+    route: '/test-authenticate',
+    scopes: {AllOf: [
+      {for: 'scope', in: 'requiredScopes', each: '<scope>'},
+    ]},
+  })(req, res, next));
+  await req.authorize({requiredScopes: req.body.requiredScopes || []});
+  const [clientId, scopes] = await Promise.all([
+    req.clientId(),
+    req.scopes(),
+  ]);
+  res.reply({clientId, scopes});
 });
 
 api.declare({
@@ -958,7 +926,7 @@ api.declare({
     'required scopes via query arguments.',
   ].join('\n'),
 }, async function(req, res) {
-  API.remoteAuthentication({
+  await new Promise(next => API.remoteAuthentication({
     signatureValidator: signaturevalidator.createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
@@ -973,16 +941,15 @@ api.declare({
       monitor: this.monitor,
     }),
   }, {
-    scopes: [['test:authenticate-get']],
-  })(req, res, () => {
-    Promise.all([
-      req.clientId(),
-      req.scopes(),
-    ]).then(([clientId, scopes]) => {
-      res.reply({clientId, scopes});
-    }).catch(err => {
-      return res.reportInternalError(err);
-    });
-  });
+    route: '/test-authenticate',
+    scopes: {AllOf: [
+      {for: 'scope', in: 'requiredScopes', each: '<scope>'},
+    ]},
+  })(req, res, next));
+  await req.authorize({requiredScopes: ['test:authenticate-get']});
+  const [clientId, scopes] = await Promise.all([
+    req.clientId(),
+    req.scopes(),
+  ]);
+  res.reply({clientId, scopes});
 });
-
