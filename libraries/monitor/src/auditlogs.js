@@ -3,6 +3,7 @@ let events = require('events');
 let _ = require('lodash');
 let Promise = require('bluebird');
 let AWS = require('aws-sdk');
+let utils = require('./utils');
 
 // These numbers come from the Firehose docs.
 const MAX_RECORD_SIZE = 1000 * 1000;
@@ -12,7 +13,7 @@ const MAX_RETRIES = 5;
 
 class FirehoseLog extends events.EventEmitter {
 
-  constructor({aws, logName, reportAuditLogErrors, resourceInterval, crashTimeout}) {
+  constructor({aws, logName, reportAuditLogErrors, resourceInterval, crashTimeout, statsum}) {
     super();
     if (!logName || !aws) {
       throw new Error('Must specify both aws credentials and stream name to have structured logs!');
@@ -25,6 +26,7 @@ class FirehoseLog extends events.EventEmitter {
     this._records = [];
     this._flushTimer = setTimeout(this.flush.bind(this), this._flushInterval);
     this._reportErrors = reportAuditLogErrors;
+    this._statsum = statsum;
   }
 
   async setup() {
@@ -49,6 +51,7 @@ class FirehoseLog extends events.EventEmitter {
       }
       return;
     }
+    this._statsum.count('auditlog.line', 1);
     this._records.push({line, retries: 0, size});
     this._scheduleFlush();
   }
@@ -82,11 +85,13 @@ class FirehoseLog extends events.EventEmitter {
       chunks[c].chunkSize += rec.size;
       chunks[c].records.push(rec);
     });
+    this._statsum.count('auditlog.chunks', c+1);
+    this._statsum.count('auditlog.size', totalSize);
     debug(`Audit log contained ${this._records.length} records with size of ${totalSize} bytes in ${c+1} chunks`);
     this._records = [];
 
     // Now submit the chunks
-    await Promise.map(chunks, async chunk => {
+    await utils.timer(this._statsum, 'auditlog.report', Promise.map(chunks, async chunk => {
       let {records} = chunk;
       let res;
       try {
@@ -124,7 +129,7 @@ class FirehoseLog extends events.EventEmitter {
       if (this._records.length) {
         this._scheduleFlush();
       }
-    });
+    }));
   }
 }
 
