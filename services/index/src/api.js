@@ -247,8 +247,7 @@ api.declare({
   route:          '/task/:namespace',
   name:           'insertTask',
   stability:      API.stability.stable,
-  deferAuth:      true,
-  scopes:         [['index:insert-task:<namespace>']],
+  scopes:         'index:insert-task:<namespace>',
   input:          'insert-task-request.json#',
   output:         'indexed-task-response.json#',
   title:          'Insert Task into Index',
@@ -259,17 +258,13 @@ api.declare({
     'Please see the introduction above for information',
     'about indexing successfully completed tasks automatically using custom routes.',
   ].join('\n'),
-}, function(req, res) {
+}, async function(req, res) {
   var that   = this;
   var input = req.body;
   var namespace = req.params.namespace || '';
 
   // Authenticate request by providing parameters
-  if (!req.satisfies({
-    namespace:       namespace,
-  })) {
-    return;
-  }
+  await req.authorize({namespace});
 
   // Parse date string
   input.expires = new Date(input.expires);
@@ -290,8 +285,7 @@ api.declare({
   route:          '/task/:indexPath/artifacts/:name(*)',
   name:           'findArtifactFromTask',
   stability:      API.stability.stable,
-  deferAuth:      true,
-  scopes:         [['queue:get-artifact:<name>']],
+  scopes:         {if: 'private', then: 'queue:get-artifact:<name>'},
   title:          'Get Artifact From Indexed Task',
   description: [
     'Find a task by index path and redirect to the artifact on the most recent',
@@ -309,17 +303,15 @@ api.declare({
     '',
     'If no task exists for the given index path, this API end-point responds with 404.',
   ].join('\n'),
-}, function(req, res) {
+}, async function(req, res) {
   var that = this;
   var indexPath = req.params.indexPath || '';
   var artifactName = req.params.name;
 
-  // Authenticate request by providing parameters
-  if (!/^public\//.test(artifactName) && !req.satisfies({
-    name:     artifactName,
-  })) {
-    return;
-  }
+  await req.authorize({
+    private: !/^public\//.test(artifactName),
+    name: artifactName,
+  });
 
   // Get indexPath and ensure that we have a least one dot
   indexPath = indexPath.split('.');
