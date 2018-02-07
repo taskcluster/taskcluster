@@ -20,7 +20,7 @@ api.declare({
   method:       'post',
   route:        '/email',
   name:         'email',
-  scopes:       {AllOf: ['notify:email:<address>']},
+  scopes:       'notify:email:<address>',
   input:        'email-request.json',
   title:        'Send an Email',
   description: [
@@ -40,7 +40,7 @@ api.declare({
   method:       'post',
   route:        '/pulse',
   name:         'pulse',
-  scopes:       {AllOf: ['notify:pulse:<routingKey>']},
+  scopes:       'notify:pulse:<routingKey>',
   input:        'pulse-request.json',
   title:        'Publish a Pulse Message',
   description: [
@@ -57,15 +57,11 @@ api.declare({
   method:       'post',
   route:        '/irc',
   name:         'irc',
-  scopes:       {AllOf: [
-    {
-      if: 'channelRequest',
-      then: {AllOf: ['notify:irc-channel:<channel>']},
-    }, {
-      if: 'userRequest',
-      then: {AllOf: ['notify:irc-user:<user>']},
-    },
-  ]},
+  scopes:       {
+    if:   'channelRequest',
+    then: 'notify:irc-channel:<channel>',
+    else: 'notify:irc-user:<user>',
+  },
   input:        'irc-request.json',
   title:        'Post IRC Message',
   description: [
@@ -87,7 +83,6 @@ api.declare({
   debug(`Received request to send irc message to ${input.channel || input.user}`);
   await req.authorize({
     channelRequest: input.channel !== undefined,
-    userRequest: input.user !== undefined,
     channel: input.channel,
     user: input.user,
   });
