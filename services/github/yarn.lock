@@ -2185,9 +2185,9 @@ pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
-pulse-publisher@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-3.0.2.tgz#d6d8f8c2bac1a03be2b00eb87130b9e56227be4b"
+pulse-publisher@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-3.0.3.tgz#d79e01e3ff760cb66d979601d2f2d7ce55d3b527"
   dependencies:
     ajv "^5.3.0"
     amqplib "^0.5.1"
@@ -2872,9 +2872,9 @@ taskcluster-client@^3.0.3, taskcluster-client@^3.1.0:
     slugid "^1.1.0"
     superagent "~3.8.1"
 
-taskcluster-lib-api@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-5.0.0.tgz#752cbc79257989bd82007ffbc3c15e82b70333bd"
+taskcluster-lib-api@6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-6.0.3.tgz#18043be12a8937549a33de08381250224b32e98d"
   dependencies:
     ajv "^5.3.0"
     aws-sdk "^2.151.0"
@@ -2887,7 +2887,7 @@ taskcluster-lib-api@5.0.0:
     promise "^8.0.1"
     slugid "^1.1.0"
     taskcluster-client "^3.1.0"
-    taskcluster-lib-scopes "^1.8.1"
+    taskcluster-lib-scopes "^1.9.0"
     type-is "^1.6.15"
     uuid "^3.1.0"
 
@@ -2948,9 +2948,9 @@ taskcluster-lib-monitor@^4.6.3:
     taskcluster-client "^1.0.1"
     usage "^0.7.1"
 
-taskcluster-lib-scopes@^1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.8.1.tgz#e85162a0435a2fd187cdbf8f5c25a96271127be7"
+taskcluster-lib-scopes@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.9.0.tgz#c8d6113d386d432b96eb73cfb182a335c5f49a90"
   dependencies:
     babel-runtime "^6.26.0"
 
