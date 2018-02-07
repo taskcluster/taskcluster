@@ -37,7 +37,7 @@
     "passport-local": "^1.0.0",
     "superagent": "^3.8.1",
     "taskcluster-client": "^3.1.1",
-    "taskcluster-lib-api": "^4.0.0",
+    "taskcluster-lib-api": "^6.0.3",
     "taskcluster-lib-app": "^2.1.0",
     "taskcluster-lib-config": "^0.9.1",
     "taskcluster-lib-docs": "^4.0.0",
