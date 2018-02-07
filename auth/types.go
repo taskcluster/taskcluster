@@ -655,19 +655,19 @@ type (
 	// Response to a request for an Shared-Access-Signature to access an Azure
 	// Blob Storage container.
 	//
-	// See http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#
+	// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#
 	Var1 struct {
 
 		// Date and time of when the Shared-Access-Signature expires.
 		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#/properties/expiry
+		// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#/properties/expiry
 		Expiry tcclient.Time `json:"expiry"`
 
 		// Shared-Access-Signature string. This is the querystring parameters to
 		// be appened after `?` or `&` depending on whether or not a querystring is
 		// already present in the URL.
 		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#/properties/sas
+		// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#/properties/sas
 		Sas string `json:"sas"`
 	}
 

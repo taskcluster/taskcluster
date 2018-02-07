@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 7 Feb 2018 at 00:22:00 UTC. The code was generated
+// Wed, 7 Feb 2018 at 17:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -553,7 +553,7 @@ func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, durati
 // Retrieve a list of all containers in an account.
 //
 // Required scopes:
-//   auth:azure-table:list-containers:<account>
+//   auth:azure-container:list-containers:<account>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureContainers
 func (myAuth *Auth) AzureContainers(account, continuationToken string) (*AzureListContainersResponse, error) {
@@ -569,7 +569,7 @@ func (myAuth *Auth) AzureContainers(account, continuationToken string) (*AzureLi
 // Returns a signed URL for AzureContainers, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-table:list-containers:<account>
+//   auth:azure-container:list-containers:<account>
 //
 // See AzureContainers for more details.
 func (myAuth *Auth) AzureContainers_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
@@ -591,26 +591,26 @@ func (myAuth *Auth) AzureContainers_SignedURL(account, continuationToken string,
 // Required scopes:
 //   If levelIsReadOnly:
 //     Any of:
-//     - auth:azure-blob:read-only:<account>/<container>
-//     - auth:azure-blob:read-write:<account>/<container>
+//     - auth:azure-container:read-only:<account>/<container>
+//     - auth:azure-container:read-write:<account>/<container>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureBlobSAS
-func (myAuth *Auth) AzureBlobSAS(account, container, level string) (*Var1, error) {
+// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureContainerSAS
+func (myAuth *Auth) AzureContainerSAS(account, container, level string) (*Var1, error) {
 	cd := tcclient.Client(*myAuth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(Var1), nil)
 	return responseObject.(*Var1), err
 }
 
-// Returns a signed URL for AzureBlobSAS, valid for the specified duration.
+// Returns a signed URL for AzureContainerSAS, valid for the specified duration.
 //
 // Required scopes:
 //   If levelIsReadOnly:
 //     Any of:
-//     - auth:azure-blob:read-only:<account>/<container>
-//     - auth:azure-blob:read-write:<account>/<container>
+//     - auth:azure-container:read-only:<account>/<container>
+//     - auth:azure-container:read-write:<account>/<container>
 //
-// See AzureBlobSAS for more details.
-func (myAuth *Auth) AzureBlobSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
+// See AzureContainerSAS for more details.
+func (myAuth *Auth) AzureContainerSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*myAuth)
 	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), nil, duration)
 }
