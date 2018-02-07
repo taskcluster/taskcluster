@@ -33,7 +33,7 @@ api.declare({
   route:       '/secret/:name(*)',
   name:        'set',
   input:       SCHEMA_PREFIX_CONST + 'secret.json#',
-  scopes:      [['secrets:set:<name>']],
+  scopes:      'secrets:set:<name>',
   title:       'Set Secret',
   stability:    'stable',
   cleanPayload,
@@ -67,7 +67,7 @@ api.declare({
   method:      'delete',
   route:       '/secret/:name(*)',
   name:        'remove',
-  scopes:      [['secrets:set:<name>']],
+  scopes:      'secrets:set:<name>',
   title:       'Delete Secret',
   stability:    'stable',
   description: [
@@ -92,7 +92,7 @@ api.declare({
   route:       '/secret/:name(*)',
   name:        'get',
   output:      SCHEMA_PREFIX_CONST + 'secret.json#',
-  scopes:      [['secrets:get:<name>']],
+  scopes:      'secrets:get:<name>',
   title:       'Read Secret',
   stability:    'stable',
   description: [
@@ -123,11 +123,10 @@ api.declare({
 api.declare({
   method:      'get',
   route:       '/secrets',
-  deferAuth:   true,
   name:        'list',
   output:      SCHEMA_PREFIX_CONST + 'secret-list.json#',
   title:       'List Secrets',
-  stability:    'stable',
+  stability:   'stable',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
