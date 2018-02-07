@@ -23,7 +23,6 @@ api.declare({
   output:     'oidc-credentials-response.json',
   title:      'Get Taskcluster credentials given a suitable `access_token`',
   stability:  API.stability.experimental,
-  deferAuth:  true,
   description: [
     'Given an OIDC `access_token` from a trusted OpenID provider, return a',
     'set of Taskcluster credentials for use on behalf of the identified',
