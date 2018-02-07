@@ -40,10 +40,7 @@ api.declare({
   method:     'post',
   route:      '/purge-cache/:provisionerId/:workerType',
   name:       'purgeCache',
-  scopes:     [
-    ['purge-cache:<provisionerId>/<workerType>:<cacheName>'],
-  ],
-  deferAuth:  true,
+  scopes:     'purge-cache:<provisionerId>/<workerType>:<cacheName>',
   input:      SCHEMA_PREFIX_CONST + 'purge-cache-request.json#',
   title:      'Purge Worker Cache',
   description: [
@@ -57,12 +54,7 @@ api.declare({
 
   debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
 
-  // Authenticate request by providing parameters, and then validate that the
-  // requester satisfies all the scopes assigned to the task
-  if (!req.satisfies({provisionerId, workerType, cacheName})) {
-    debug('Request did not have proper scopes. Aborting.');
-    return;
-  }
+  await req.authorize({provisionerId, workerType, cacheName});
 
   // Publish message
   await this.publisher.purgeCache({provisionerId, workerType, cacheName});
