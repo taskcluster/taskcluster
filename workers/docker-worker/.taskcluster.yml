@@ -110,6 +110,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
+        DEBUG: '*docker-worker*'
       features:
         taskclusterProxy: true
     metadata:
@@ -151,6 +152,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
+        DEBUG: '*docker-worker*'
       features:
         taskclusterProxy: true
     metadata:
@@ -192,6 +194,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
+        DEBUG: '*docker-worker*'
       features:
         taskclusterProxy: true
     metadata:
@@ -233,6 +236,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
+        DEBUG: '*docker-worker*'
       features:
         taskclusterProxy: true
     metadata:
@@ -274,6 +278,7 @@ tasks:
           loopbackVideo: true
       env:
         WORKER_CI: '1'
+        DEBUG: '*docker-worker*'
       features:
         taskclusterProxy: true
     metadata:
