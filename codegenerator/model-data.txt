@@ -1,4 +1,4 @@
-Generated: 1518031358
+Generated: 1518034958
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -9612,11 +9612,8 @@ Entry 2     =
     Entry Query        = '[]'
     Entry Name        = 'irc'
     Entry Stability   = 'experimental'
-    Entry Scopes      = 'All of:
-* If channelRequest:
-    notify:irc-channel:<channel>
-* If userRequest:
-    notify:irc-user:<user>'
+    Entry Scopes      = 'If channelRequest:
+  notify:irc-channel:<channel>'
     Entry Input       = 'http://schemas.taskcluster.net/notify/v1/irc-request.json'
     Entry Output      = ''
     Entry Title       = 'Post IRC Message'

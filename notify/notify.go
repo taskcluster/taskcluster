@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/notify/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 7 Feb 2018 at 19:22:00 UTC. The code was generated
+// Wed, 7 Feb 2018 at 20:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package notify
 
@@ -130,11 +130,8 @@ func (myNotify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 // in mind that IRC is a best-effort service.
 //
 // Required scopes:
-//   All of:
-//   * If channelRequest:
-//       notify:irc-channel:<channel>
-//   * If userRequest:
-//       notify:irc-user:<user>
+//   If channelRequest:
+//     notify:irc-channel:<channel>
 //
 // See https://docs.taskcluster.net/reference/core/notify/api-docs#irc
 func (myNotify *Notify) Irc(payload *PostIRCMessageRequest) error {
