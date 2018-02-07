@@ -226,7 +226,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.azureTables(account, [options]) : result`
  * `auth.azureTableSAS(account, table, level) : result`
  * `auth.azureContainers(account, [options]) : result`
- * `auth.azureBlobSAS(account, container, level) : result`
+ * `auth.azureContainerSAS(account, container, level) : result`
  * `auth.sentryDSN(project) : result`
  * `auth.statsumToken(project) : result`
  * `auth.webhooktunnelToken() : result`
