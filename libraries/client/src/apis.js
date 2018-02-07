@@ -48,11 +48,16 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>",
-          "scopes": [
-            [
-              "auth:create-client:<clientId>"
+          "scopes": {
+            "AllOf": [
+              "auth:create-client:<clientId>",
+              {
+                "each": "<scope>",
+                "for": "scope",
+                "in": "scopes"
+              }
             ]
-          ],
+          },
           "stability": "stable",
           "title": "Create Client",
           "type": "function"
@@ -68,11 +73,7 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>/reset",
-          "scopes": [
-            [
-              "auth:reset-access-token:<clientId>"
-            ]
-          ],
+          "scopes": "auth:reset-access-token:<clientId>",
           "stability": "stable",
           "title": "Reset `accessToken`",
           "type": "function"
@@ -89,11 +90,16 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>",
-          "scopes": [
-            [
-              "auth:update-client:<clientId>"
+          "scopes": {
+            "AllOf": [
+              "auth:update-client:<clientId>",
+              {
+                "each": "<scope>",
+                "for": "scope",
+                "in": "scopesAdded"
+              }
             ]
-          ],
+          },
           "stability": "stable",
           "title": "Update Client",
           "type": "function"
@@ -109,11 +115,7 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>/enable",
-          "scopes": [
-            [
-              "auth:enable-client:<clientId>"
-            ]
-          ],
+          "scopes": "auth:enable-client:<clientId>",
           "stability": "stable",
           "title": "Enable Client",
           "type": "function"
@@ -129,11 +131,7 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>/disable",
-          "scopes": [
-            [
-              "auth:disable-client:<clientId>"
-            ]
-          ],
+          "scopes": "auth:disable-client:<clientId>",
           "stability": "stable",
           "title": "Disable Client",
           "type": "function"
@@ -148,11 +146,7 @@ module.exports = {
           "query": [
           ],
           "route": "/clients/<clientId>",
-          "scopes": [
-            [
-              "auth:delete-client:<clientId>"
-            ]
-          ],
+          "scopes": "auth:delete-client:<clientId>",
           "stability": "stable",
           "title": "Delete Client",
           "type": "function"
@@ -198,11 +192,16 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/<roleId>",
-          "scopes": [
-            [
-              "auth:create-role:<roleId>"
+          "scopes": {
+            "AllOf": [
+              "auth:create-role:<roleId>",
+              {
+                "each": "<scope>",
+                "for": "scope",
+                "in": "scopes"
+              }
             ]
-          ],
+          },
           "stability": "stable",
           "title": "Create Role",
           "type": "function"
@@ -219,11 +218,16 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/<roleId>",
-          "scopes": [
-            [
-              "auth:update-role:<roleId>"
+          "scopes": {
+            "AllOf": [
+              "auth:update-role:<roleId>",
+              {
+                "each": "<scope>",
+                "for": "scope",
+                "in": "scopesAdded"
+              }
             ]
-          ],
+          },
           "stability": "stable",
           "title": "Update Role",
           "type": "function"
@@ -238,11 +242,7 @@ module.exports = {
           "query": [
           ],
           "route": "/roles/<roleId>",
-          "scopes": [
-            [
-              "auth:delete-role:<roleId>"
-            ]
-          ],
+          "scopes": "auth:delete-role:<roleId>",
           "stability": "stable",
           "title": "Delete Role",
           "type": "function"
@@ -305,11 +305,16 @@ module.exports = {
             "format"
           ],
           "route": "/aws/s3/<level>/<bucket>/<prefix>",
-          "scopes": [
-            [
-              "auth:aws-s3:<level>:<bucket>/<prefix>"
-            ]
-          ],
+          "scopes": {
+            "else": "auth:aws-s3:read-write:<bucket>/<prefix>",
+            "if": "levelIsReadOnly",
+            "then": {
+              "AnyOf": [
+                "auth:aws-s3:read-only:<bucket>/<prefix>",
+                "auth:aws-s3:read-write:<bucket>/<prefix>"
+              ]
+            }
+          },
           "stability": "stable",
           "title": "Get Temporary Read/Write Credentials S3",
           "type": "function"
@@ -324,11 +329,7 @@ module.exports = {
           "query": [
           ],
           "route": "/azure/accounts",
-          "scopes": [
-            [
-              "auth:azure-table:list-accounts"
-            ]
-          ],
+          "scopes": "auth:azure-table:list-accounts",
           "stability": "stable",
           "title": "List Accounts Managed by Auth",
           "type": "function"
@@ -345,11 +346,7 @@ module.exports = {
             "continuationToken"
           ],
           "route": "/azure/<account>/tables",
-          "scopes": [
-            [
-              "auth:azure-table:list-tables:<account>"
-            ]
-          ],
+          "scopes": "auth:azure-table:list-tables:<account>",
           "stability": "stable",
           "title": "List Tables in an Account Managed by Auth",
           "type": "function"
@@ -367,11 +364,16 @@ module.exports = {
           "query": [
           ],
           "route": "/azure/<account>/table/<table>/<level>",
-          "scopes": [
-            [
-              "auth:azure-table:<level>:<account>/<table>"
-            ]
-          ],
+          "scopes": {
+            "else": "auth:azure-table:read-write:<account>/<table>",
+            "if": "levelIsReadOnly",
+            "then": {
+              "AnyOf": [
+                "auth:azure-table:read-only:<account>/<table>",
+                "auth:azure-table:read-write:<account>/<table>"
+              ]
+            }
+          },
           "stability": "stable",
           "title": "Get Shared-Access-Signature for Azure Table",
           "type": "function"
@@ -388,11 +390,7 @@ module.exports = {
             "continuationToken"
           ],
           "route": "/azure/<account>/containers",
-          "scopes": [
-            [
-              "auth:azure-table:list-containers:<account>"
-            ]
-          ],
+          "scopes": "auth:azure-container:list-containers:<account>",
           "stability": "stable",
           "title": "List containers in an Account Managed by Auth",
           "type": "function"
@@ -405,18 +403,23 @@ module.exports = {
           ],
           "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
           "method": "get",
-          "name": "azureBlobSAS",
-          "output": "http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#",
+          "name": "azureContainerSAS",
+          "output": "http://schemas.taskcluster.net/auth/v1/azure-container-response.json#",
           "query": [
           ],
           "route": "/azure/<account>/containers/<container>/<level>",
-          "scopes": [
-            [
-              "auth:azure-blob:<level>:<account>/<container>"
-            ]
-          ],
+          "scopes": {
+            "else": "auth:azure-container:read-write:<account>/<container>",
+            "if": "levelIsReadOnly",
+            "then": {
+              "AnyOf": [
+                "auth:azure-container:read-only:<account>/<container>",
+                "auth:azure-container:read-write:<account>/<container>"
+              ]
+            }
+          },
           "stability": "stable",
-          "title": "Get Shared-Access-Signature for Azure Blob",
+          "title": "Get Shared-Access-Signature for Azure Container",
           "type": "function"
         },
         {
@@ -430,11 +433,7 @@ module.exports = {
           "query": [
           ],
           "route": "/sentry/<project>/dsn",
-          "scopes": [
-            [
-              "auth:sentry:<project>"
-            ]
-          ],
+          "scopes": "auth:sentry:<project>",
           "stability": "stable",
           "title": "Get DSN for Sentry Project",
           "type": "function"
@@ -450,11 +449,7 @@ module.exports = {
           "query": [
           ],
           "route": "/statsum/<project>/token",
-          "scopes": [
-            [
-              "auth:statsum:<project>"
-            ]
-          ],
+          "scopes": "auth:statsum:<project>",
           "stability": "stable",
           "title": "Get Token for Statsum Project",
           "type": "function"
@@ -469,11 +464,7 @@ module.exports = {
           "query": [
           ],
           "route": "/webhooktunnel",
-          "scopes": [
-            [
-              "auth:webhooktunnel"
-            ]
-          ],
+          "scopes": "auth:webhooktunnel",
           "stability": "stable",
           "title": "Get Token for Webhooktunnel Proxy",
           "type": "function"
