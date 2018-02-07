@@ -2493,9 +2493,9 @@ taskcluster-client@^3.0.3, taskcluster-client@^3.1.0, taskcluster-client@^3.1.1:
     slugid "^1.1.0"
     superagent "~3.8.1"
 
-taskcluster-lib-api@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-5.0.0.tgz#752cbc79257989bd82007ffbc3c15e82b70333bd"
+taskcluster-lib-api@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-6.0.3.tgz#18043be12a8937549a33de08381250224b32e98d"
   dependencies:
     ajv "^5.3.0"
     aws-sdk "^2.151.0"
@@ -2508,7 +2508,7 @@ taskcluster-lib-api@^5.0.0:
     promise "^8.0.1"
     slugid "^1.1.0"
     taskcluster-client "^3.1.0"
-    taskcluster-lib-scopes "^1.8.1"
+    taskcluster-lib-scopes "^1.9.0"
     type-is "^1.6.15"
     uuid "^3.1.0"
 
@@ -2569,9 +2569,9 @@ taskcluster-lib-monitor@^4.3.4:
     taskcluster-client "^1.0.1"
     usage "^0.7.1"
 
-taskcluster-lib-scopes@^1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.8.1.tgz#e85162a0435a2fd187cdbf8f5c25a96271127be7"
+taskcluster-lib-scopes@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.9.0.tgz#c8d6113d386d432b96eb73cfb182a335c5f49a90"
   dependencies:
     babel-runtime "^6.26.0"
 
