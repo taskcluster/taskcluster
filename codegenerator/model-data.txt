@@ -1,4 +1,4 @@
-Generated: 1517865752
+Generated: 1517962950
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -82,7 +82,9 @@ Entry 2     =
     Entry Query        = '[]'
     Entry Name        = 'createClient'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:create-client:<clientId>'
+    Entry Scopes      = 'All of:
+* auth:create-client:<clientId>
+* For scope in scopes each <scope>'
     Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/create-client-response.json#'
     Entry Title       = 'Create Client'
@@ -124,7 +126,9 @@ Entry 4     =
     Entry Query        = '[]'
     Entry Name        = 'updateClient'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:update-client:<clientId>'
+    Entry Scopes      = 'All of:
+* auth:update-client:<clientId>
+* For scope in scopesAdded each <scope>'
     Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-client-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
     Entry Title       = 'Update Client'
@@ -216,7 +220,9 @@ Entry 10    =
     Entry Query        = '[]'
     Entry Name        = 'createRole'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:create-role:<roleId>'
+    Entry Scopes      = 'All of:
+* auth:create-role:<roleId>
+* For scope in scopes each <scope>'
     Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#'
     Entry Title       = 'Create Role'
@@ -237,7 +243,9 @@ Entry 11    =
     Entry Query        = '[]'
     Entry Name        = 'updateRole'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:update-role:<roleId>'
+    Entry Scopes      = 'All of:
+* auth:update-role:<roleId>
+* For scope in scopesAdded each <scope>'
     Entry Input       = 'http://schemas.taskcluster.net/auth/v1/create-role-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/get-role-response.json#'
     Entry Title       = 'Update Role'
@@ -316,7 +324,10 @@ Entry 16    =
     Entry Query        = '[format]'
     Entry Name        = 'awsS3Credentials'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:aws-s3:<level>:<bucket>/<prefix>'
+    Entry Scopes      = 'If levelIsReadOnly:
+  Any of:
+  - auth:aws-s3:read-only:<bucket>/<prefix>
+  - auth:aws-s3:read-write:<bucket>/<prefix>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#'
     Entry Title       = 'Get Temporary Read/Write Credentials S3'
@@ -419,7 +430,10 @@ Entry 19    =
     Entry Query        = '[]'
     Entry Name        = 'azureTableSAS'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:azure-table:<level>:<account>/<table>'
+    Entry Scopes      = 'If levelIsReadOnly:
+  Any of:
+  - auth:azure-table:read-only:<account>/<table>
+  - auth:azure-table:read-write:<account>/<table>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#'
     Entry Title       = 'Get Shared-Access-Signature for Azure Table'
@@ -450,7 +464,10 @@ Entry 21    =
     Entry Query        = '[]'
     Entry Name        = 'azureBlobSAS'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'auth:azure-blob:<level>:<account>/<container>'
+    Entry Scopes      = 'If levelIsReadOnly:
+  Any of:
+  - auth:azure-blob:read-only:<account>/<container>
+  - auth:azure-blob:read-write:<account>/<container>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#'
     Entry Title       = 'Get Shared-Access-Signature for Azure Blob'

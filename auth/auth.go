@@ -68,7 +68,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 5 Feb 2018 at 21:22:00 UTC. The code was generated
+// Wed, 7 Feb 2018 at 00:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -160,7 +160,9 @@ func (myAuth *Auth) Client(clientId string) (*GetClientResponse, error) {
 // The caller's scopes must satisfy `scopes`.
 //
 // Required scopes:
-//   auth:create-client:<clientId>
+//   All of:
+//   * auth:create-client:<clientId>
+//   * For scope in scopes each <scope>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#createClient
 func (myAuth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
@@ -193,7 +195,9 @@ func (myAuth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, er
 // unchanged
 //
 // Required scopes:
-//   auth:update-client:<clientId>
+//   All of:
+//   * auth:update-client:<clientId>
+//   * For scope in scopesAdded each <scope>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateClient
 func (myAuth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
@@ -277,7 +281,9 @@ func (myAuth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 // in an error response.
 //
 // Required scopes:
-//   auth:create-role:<roleId>
+//   All of:
+//   * auth:create-role:<roleId>
+//   * For scope in scopes each <scope>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#createRole
 func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
@@ -295,7 +301,9 @@ func (myAuth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetR
 // in an error response.
 //
 // Required scopes:
-//   auth:update-role:<roleId>
+//   All of:
+//   * auth:update-role:<roleId>
+//   * For scope in scopesAdded each <scope>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateRole
 func (myAuth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
@@ -420,7 +428,10 @@ func (myAuth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
 //
 // Required scopes:
-//   auth:aws-s3:<level>:<bucket>/<prefix>
+//   If levelIsReadOnly:
+//     Any of:
+//     - auth:aws-s3:read-only:<bucket>/<prefix>
+//     - auth:aws-s3:read-write:<bucket>/<prefix>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#awsS3Credentials
 func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3CredentialsResponse, error) {
@@ -436,7 +447,10 @@ func (myAuth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWS
 // Returns a signed URL for AwsS3Credentials, valid for the specified duration.
 //
 // Required scopes:
-//   auth:aws-s3:<level>:<bucket>/<prefix>
+//   If levelIsReadOnly:
+//     Any of:
+//     - auth:aws-s3:read-only:<bucket>/<prefix>
+//     - auth:aws-s3:read-write:<bucket>/<prefix>
 //
 // See AwsS3Credentials for more details.
 func (myAuth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format string, duration time.Duration) (*url.URL, error) {
@@ -510,7 +524,10 @@ func (myAuth *Auth) AzureTables_SignedURL(account, continuationToken string, dur
 // table if it doesn't already exist.
 //
 // Required scopes:
-//   auth:azure-table:<level>:<account>/<table>
+//   If levelIsReadOnly:
+//     Any of:
+//     - auth:azure-table:read-only:<account>/<table>
+//     - auth:azure-table:read-write:<account>/<table>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
 func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
@@ -522,7 +539,10 @@ func (myAuth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-table:<level>:<account>/<table>
+//   If levelIsReadOnly:
+//     Any of:
+//     - auth:azure-table:read-only:<account>/<table>
+//     - auth:azure-table:read-write:<account>/<table>
 //
 // See AzureTableSAS for more details.
 func (myAuth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
@@ -569,7 +589,10 @@ func (myAuth *Auth) AzureContainers_SignedURL(account, continuationToken string,
 // container if it doesn't already exist.
 //
 // Required scopes:
-//   auth:azure-blob:<level>:<account>/<container>
+//   If levelIsReadOnly:
+//     Any of:
+//     - auth:azure-blob:read-only:<account>/<container>
+//     - auth:azure-blob:read-write:<account>/<container>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureBlobSAS
 func (myAuth *Auth) AzureBlobSAS(account, container, level string) (*Var1, error) {
@@ -581,7 +604,10 @@ func (myAuth *Auth) AzureBlobSAS(account, container, level string) (*Var1, error
 // Returns a signed URL for AzureBlobSAS, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-blob:<level>:<account>/<container>
+//   If levelIsReadOnly:
+//     Any of:
+//     - auth:azure-blob:read-only:<account>/<container>
+//     - auth:azure-blob:read-write:<account>/<container>
 //
 // See AzureBlobSAS for more details.
 func (myAuth *Auth) AzureBlobSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
