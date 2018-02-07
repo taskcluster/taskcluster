@@ -1,4 +1,4 @@
-Generated: 1518024150
+Generated: 1518031358
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -8884,7 +8884,8 @@ Entry 4     =
     Entry Query        = '[]'
     Entry Name        = 'findArtifactFromTask'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'queue:get-artifact:<name>'
+    Entry Scopes      = 'If private:
+  queue:get-artifact:<name>'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Get Artifact From Indexed Task'
