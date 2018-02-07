@@ -37,15 +37,8 @@ class User {
 
   scopes() {
     let scopes = this.roles.map(role => 'assume:' + role);
-    // add permission to manage scopes prefixed by the identity
-    let id = this.identity;
-    scopes.push(
-      `auth:create-client:${id}/*`,
-      `auth:delete-client:${id}/*`,
-      `auth:update-client:${id}/*`,
-      `auth:reset-access-token:${id}/*`,
-      `queue:create-artifact:login-identity/${id}/*`,
-    );
+    // the `login-identity:*` role defines what each user gets access to.
+    scopes.push(`assume:login-identity:${this.identity}`);
     return scopes;
   }
 
