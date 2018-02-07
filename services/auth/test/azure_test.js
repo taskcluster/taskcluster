@@ -163,8 +163,8 @@ suite('azure table and blob (sas)', function() {
     });
   });
 
-  test('azureBlobSAS', async () => {
-    let result = await helper.auth.azureBlobSAS(
+  test('azureContainerSAS', async () => {
+    let result = await helper.auth.azureContainerSAS(
       helper.testaccount,
       'container-test',
       'read-write'
@@ -175,8 +175,8 @@ suite('azure table and blob (sas)', function() {
       'Expected expiry to be in the future');
   });
 
-  test('azureBlobSAS (read-write)', async () => {
-    let result = await helper.auth.azureBlobSAS(
+  test('azureContainerSAS (read-write)', async () => {
+    let result = await helper.auth.azureContainerSAS(
       helper.testaccount,
       'container-test',
       'read-write',
@@ -202,8 +202,8 @@ suite('azure table and blob (sas)', function() {
     });
   });
 
-  test('azureBlobSAS (read-only)', async () => {
-    let result = await helper.auth.azureBlobSAS(
+  test('azureContainerSAS (read-only)', async () => {
+    let result = await helper.auth.azureContainerSAS(
       helper.testaccount,
       'container-test',
       'read-only',
@@ -226,9 +226,9 @@ suite('azure table and blob (sas)', function() {
     assert(false, 'This should have thrown an error because the write is not allowed.');
   });
 
-  test('azureBlobSAS (invalid level)', async () => {
+  test('azureContainerSAS (invalid level)', async () => {
     try {
-      await helper.auth.azureBlobSAS(
+      await helper.auth.azureContainerSAS(
         helper.testaccount,
         'container-test',
         'foo-bar-baz',
@@ -240,12 +240,12 @@ suite('azure table and blob (sas)', function() {
     assert(false, 'This should have thrown an error');
   });
 
-  test('azureBlobSAS (allowed container)', async () => {
+  test('azureContainerSAS (allowed container)', async () => {
     helper.scopes(
-      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
+      'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
     );
 
-    let result = await helper.auth.azureBlobSAS(
+    let result = await helper.auth.azureContainerSAS(
       helper.testaccount,
       'allowed-container',
       'read-write'
@@ -256,12 +256,12 @@ suite('azure table and blob (sas)', function() {
       'Expected expiry to be in the future');
   });
 
-  test('azureBlobSAS (allowed read-write -> read-only)', async () => {
+  test('azureContainerSAS (allowed read-write -> read-only)', async () => {
     helper.scopes(
-      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
+      'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
     );
 
-    let result = await helper.auth.azureBlobSAS(
+    let result = await helper.auth.azureContainerSAS(
       helper.testaccount,
       'allowed-container',
       'read-only',
@@ -271,12 +271,12 @@ suite('azure table and blob (sas)', function() {
       'Expected expiry to be in the future');
   });
 
-  test('azureBlobSAS (unauthorized container)', async () => {
+  test('azureContainerSAS (unauthorized container)', async () => {
     helper.scopes(
-      'auth:azure-blob:read-write:' + helper.testaccount + '/allowed-container',
+      'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
     );
     try {
-      await helper.auth.azureBlobSAS(
+      await helper.auth.azureContainerSAS(
         helper.testaccount,
         'unauthorized-container',
         'read-write'
