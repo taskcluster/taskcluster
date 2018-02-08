@@ -18,9 +18,10 @@ async function validator(options) {
   let schemas = {};
   let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
 
+  let defaultFolder = path.join(rootdir.get(), 'schemas');
   let cfg = _.defaults(options, {
-    constants: path.join(rootdir.get(), 'schemas', 'constants.yml'),
-    folder: path.join(rootdir.get(), 'schemas'),
+    folder: defaultFolder,
+    constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),
     publish: process.env.NODE_ENV == 'production',
     baseUrl: 'http://schemas.taskcluster.net/',
     bucket: 'schemas.taskcluster.net',
