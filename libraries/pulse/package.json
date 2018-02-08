@@ -1,0 +1,17 @@
+{
+  "name": "taskcluster-lib-pulse",
+  "version": "0.0.0",
+  "description": "Library for interacting with Pulse and Taskcluster-Pulse",
+  "main": "src/index.js",
+  "repository": "git@github.com:taskcluster/taskcluster-lib-pulse.git",
+  "author": "Dustin J. Mitchell <dustin@mozilla.com>",
+  "license": "MPL-2.0",
+  "private": false,
+  "files": [
+    "src"
+  ],
+  "engines": {
+      "node": ">=8"
+  },
+  "engineStrict": true
+}
