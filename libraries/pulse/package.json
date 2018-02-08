@@ -7,11 +7,19 @@
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "private": false,
+  "scripts": {
+    "test": "mocha test/*_test.js",
+    "lint": "eslint src/*.js test/*.js",
+    "pretest": "yarn lint"
+  },
   "files": [
     "src"
   ],
   "engines": {
-      "node": ">=8"
+    "node": ">=8"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "devDependencies": {
+    "eslint-config-taskcluster": "^3.1.0"
+  }
 }
