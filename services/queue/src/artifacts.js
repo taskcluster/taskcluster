@@ -12,15 +12,13 @@ api.declare({
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'createArtifact',
   stability:  API.stability.stable,
-  scopes: [
-    [
+  scopes: {AnyOf: [
+    'queue:create-artifact:<taskId>/<runId>',
+    {AllOf: [
       'queue:create-artifact:<name>',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ], [
-      'queue:create-artifact:<taskId>/<runId>',
-    ],
-  ],
-  deferAuth:  true,
+    ]},
+  ]},
   input:      'post-artifact-request.json#',
   output:     'post-artifact-response.json#',
   title:      'Create Artifact',
@@ -146,16 +144,13 @@ api.declare({
       {});
   }
 
-  // Authenticate request by providing parameters
-  if (!req.satisfies({
+  await req.authorize({
     taskId,
     runId,
     workerGroup,
     workerId,
     name,
-  })) {
-    return;
-  }
+  });
 
   // Validate expires <= task.expires
   if (expires.getTime() > task.expires.getTime()) {
@@ -616,15 +611,13 @@ api.declare({
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'completeArtifact',
   stability:  API.stability.experimental,
-  scopes: [
-    [
+  scopes: {AnyOf: [
+    'queue:create-artifact:<taskId>/<runId>',
+    {AllOf: [
       'queue:create-artifact:<name>',
       'assume:worker-id:<workerGroup>/<workerId>',
-    ], [
-      'queue:create-artifact:<taskId>/<runId>',
-    ],
-  ],
-  deferAuth:  true,
+    ]},
+  ]},
   input:      'put-artifact-request.json#',
   title:      'Complete Artifact',
   description: [
@@ -659,16 +652,13 @@ api.declare({
   let workerGroup = run.workerGroup;
   let workerId = run.workerId;
 
-  // Authenticate request by providing parameters
-  if (!req.satisfies({
+  await req.authorize({
     taskId,
     runId,
     workerGroup,
     workerId,
     name,
-  })) {
-    return;
-  }
+  });
 
   // Ensure that the run is running 
   if (run.state !== 'running') { 
@@ -767,10 +757,12 @@ api.declare({
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'getArtifact',
   stability:  API.stability.stable,
-  scopes: [
-    ['queue:get-artifact:<name>'],
-  ],
-  deferAuth:  true,
+  scopes: {
+    if: 'private',
+    then: {
+      AllOf: ['queue:get-artifact:<name>'],
+    },
+  },
   title:      'Get Artifact from Run',
   description: [
     'Get artifact by `<name>` from a specific run.',
@@ -797,11 +789,10 @@ api.declare({
   var runId  = parseInt(req.params.runId, 10);
   var name   = req.params.name;
 
-  // Check if this artifact is in the public/ folder, or require request
-  // to be authenticated by providing parameters
-  if (!/^public\//.test(name) && !req.satisfies({name})) {
-    return;
-  }
+  await req.authorize({
+    private: !/^public\//.test(name),
+    name,
+  });
 
   return replyWithArtifact.call(this, taskId, runId, name, req, res);
 });
@@ -812,10 +803,12 @@ api.declare({
   route:      '/task/:taskId/artifacts/:name(*)',
   name:       'getLatestArtifact',
   stability:  API.stability.stable,
-  scopes: [
-    ['queue:get-artifact:<name>'],
-  ],
-  deferAuth:  true,
+  scopes: {
+    if: 'private',
+    then: {
+      AllOf: ['queue:get-artifact:<name>'],
+    },
+  },
   title:      'Get Artifact from Latest Run',
   description: [
     'Get artifact by `<name>` from the last run of a task.',
@@ -838,11 +831,10 @@ api.declare({
   var taskId = req.params.taskId;
   var name   = req.params.name;
 
-  // Check if this artifact is in the public/ folder, or require request
-  // to be authenticated by providing parameterss
-  if (!/^public\//.test(name) && !req.satisfies({name})) {
-    return;
-  }
+  await req.authorize({
+    private: !/^public\//.test(name),
+    name,
+  });
 
   // Load task status structure from table
   var task = await this.Task.load({taskId}, true);
