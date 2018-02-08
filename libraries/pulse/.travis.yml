@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+- '0.11'
+- '0.10'
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  api_key:
+    secure: XOXBxo+TntpWO/lkCh1h4O0UOTb4+KUntwZFhnNj1W76LBBUm1fIIUjLJgpE09VET5uTLRUBcwGSnkPOxYlfC/ymAFhTM+nvPMB/GDJNgrcWF+q93PkmnlvzL543dvKc97BGsgr/advn7C+dMkVL2BVeh8+2zoJZ9zMKEipwVVM/qyg1RyWdOVPiRmOA0fnomdpQPE6cPBiNatH1+LJu6tDF3k8qc2fu+FsEaG051SxI7yKprhvYUd+bIPy7x0JgNUDqCBRhsV9uKDO/LHaOuvmbD0aEBFpA4UmBXxlmVCcpXfw9xVV1xEpMoINCOuL+12jcZ/HqREhtNdk6oH30uybv8rdLRScFJulAfr5VrMbXzDExiRWPnqXkNrciXK4hFoVs8kcp2UsKJBWhBM2cR/MZ+ozI0jc0doF15hQMvvwtplaD92zlWMMB5wMT2vhU1lca9bLj0Y781GMb+Wu3a7DNQfWoB4Pd47JHXw5LfQpaXTqV/wqv/jp6wVQZ5WSbyklkBTub6A8wHZiZS+7GBhe1lBdwfoeFkCw1mUBks4pfmLW0zZ7BkDQyKCEA7DZ0O8xk6ANQ34Am/QwZjq1q38qSsq237uKwzugALAeMwr727H4l8W7EhEqbSRo8BgxZnVXS4AXaIzhu2a9cGJPs0VSogM8AAs6eh9gE6FxMtDI=
+  on:
+    tags: true
+    repo: taskcluster/taskcluster-lib-pulse
