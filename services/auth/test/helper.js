@@ -51,7 +51,7 @@ class FakeRoles {
   }
 
   async modify(modifier) {
-    modifier(this.roles);
+    await modifier(this.roles);
   }
 }
 
