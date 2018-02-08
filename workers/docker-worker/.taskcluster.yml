@@ -61,7 +61,7 @@ tasks:
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && node_modules/.bin/eslint src test deploy
+          while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && node_modules/.bin/eslint src test deploy
       capabilities:
         privileged: true
         devices:
@@ -101,7 +101,7 @@ tasks:
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && ./build.sh &&
+          while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
           ./test/docker-worker-test --this-chunk 1 --total-chunks 5
       capabilities:
         privileged: true
@@ -143,7 +143,7 @@ tasks:
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && ./build.sh &&
+          while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
           ./test/docker-worker-test --this-chunk 2 --total-chunks 5
       capabilities:
         privileged: true
@@ -185,7 +185,7 @@ tasks:
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && ./build.sh &&
+          while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
           ./test/docker-worker-test --this-chunk 3 --total-chunks 5
       capabilities:
         privileged: true
@@ -227,7 +227,7 @@ tasks:
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && ./build.sh &&
+          while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
           ./test/docker-worker-test --this-chunk 4 --total-chunks 5
       capabilities:
         privileged: true
@@ -269,7 +269,7 @@ tasks:
       maxRunTime: 10800
       command:
         - >-
-          yarn install --frozen-lockfile && ./build.sh &&
+          while ! yarn install --frozen-lockfile; do rm -rf node_modules; sleep 30; done && ./build.sh &&
           ./test/docker-worker-test --this-chunk 5 --total-chunks 5
       capabilities:
         privileged: true

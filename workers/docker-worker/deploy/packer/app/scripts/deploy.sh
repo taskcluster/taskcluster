@@ -29,7 +29,10 @@ sudo chown -R $USER:$USER /home/ubuntu/docker_worker
 
 sudo npm install -g yarn@1.0.2
 
-yarn install --frozen-lockfile
+while ! yarn install --frozen-lockfile; do
+    rm -rf node_modules
+    sleep 30
+done
 
 # Initialize video and sound loopback modules
 sudo modprobe v4l2loopback
