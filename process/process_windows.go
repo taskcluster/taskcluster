@@ -20,7 +20,7 @@ const (
 	CRASH                 = Verdict(2)
 	TIME_LIMIT_EXCEEDED   = Verdict(3)
 	MEMORY_LIMIT_EXCEEDED = Verdict(4)
-	IDLE                  = Verdict(5)
+	MAX_RUNTIME_EXCEEDED  = Verdict(5)
 	SECURITY_VIOLATION    = Verdict(6)
 )
 
@@ -36,8 +36,8 @@ func (v Verdict) String() string {
 		return "TIME_LIMIT_EXCEEDED"
 	case MEMORY_LIMIT_EXCEEDED:
 		return "MEMORY_LIMIT_EXCEEDED"
-	case IDLE:
-		return "IDLENESS_LIMIT_EXCEEDED"
+	case MAX_RUNTIME_EXCEEDED:
+		return "MAX_RUNTIME_EXCEEDED"
 	case SECURITY_VIOLATION:
 		return "SECURITY_VIOLATION"
 	}
@@ -53,7 +53,7 @@ func GetVerdict(r *Result) Verdict {
 	case r.SuccessCode&(subprocess.EF_PROCESS_LIMIT_HIT|subprocess.EF_PROCESS_LIMIT_HIT_POST) != 0:
 		return SECURITY_VIOLATION
 	case r.SuccessCode&(subprocess.EF_INACTIVE|subprocess.EF_TIME_LIMIT_HARD) != 0:
-		return IDLE
+		return MAX_RUNTIME_EXCEEDED
 	case r.SuccessCode&(subprocess.EF_TIME_LIMIT_HIT|subprocess.EF_TIME_LIMIT_HIT_POST) != 0:
 		return TIME_LIMIT_EXCEEDED
 	case r.SuccessCode&(subprocess.EF_MEMORY_LIMIT_HIT|subprocess.EF_MEMORY_LIMIT_HIT_POST) != 0:
