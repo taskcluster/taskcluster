@@ -38,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 7 Feb 2018 at 20:22:00 UTC. The code was generated
+// Thu, 8 Feb 2018 at 01:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package queue
 
@@ -202,8 +202,19 @@ func (myQueue *Queue) ListDependentTasks(taskId, continuationToken, limit string
 //
 // Required scopes:
 //   All of:
-//   * queue:create-task:<priority>:<provisionerId>/<workerType>
-//   * queue:scheduler-id:<schedulerId>
+//   * For scope in scopes each <scope>
+//   * For route in routes each queue:route:<route>
+//   * Any of:
+//     - All of:
+//       * queue:scheduler-id:<schedulerId>
+//       * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
+//     - If legacyScopes:
+//         Any of:
+//         - queue:create-task:<provisionerId>/<workerType>
+//         - All of:
+//           * queue:define-task:<provisionerId>/<workerType>
+//           * queue:task-group-id:<schedulerId>/<taskGroupId>
+//           * queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#createTask
 func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
@@ -219,8 +230,19 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 //
 // Required scopes:
 //   All of:
-//   * queue:create-task:<priority>:<provisionerId>/<workerType>
-//   * queue:scheduler-id:<schedulerId>
+//   * For scope in scopes each <scope>
+//   * For route in routes each queue:route:<route>
+//   * Any of:
+//     - All of:
+//       * queue:scheduler-id:<schedulerId>
+//       * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
+//     - If legacyScopes:
+//         Any of:
+//         - queue:define-task:<provisionerId>/<workerType>
+//         - queue:create-task:<provisionerId>/<workerType>
+//         - All of:
+//           * queue:define-task:<provisionerId>/<workerType>
+//           * queue:task-group-id:<schedulerId>/<taskGroupId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#defineTask
 func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, error) {
@@ -246,10 +268,10 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) 
 //
 // Required scopes:
 //   Any of:
+//   - queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
 //   - All of:
 //     * queue:schedule-task
 //     * assume:scheduler-id:<schedulerId>/<taskGroupId>
-//   - queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#scheduleTask
 func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
@@ -275,10 +297,10 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, error) {
 //
 // Required scopes:
 //   Any of:
+//   - queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
 //   - All of:
 //     * queue:rerun-task
 //     * assume:scheduler-id:<schedulerId>/<taskGroupId>
-//   - queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#rerunTask
 func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
@@ -302,10 +324,10 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, error) {
 //
 // Required scopes:
 //   Any of:
+//   - queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
 //   - All of:
 //     * queue:cancel-task
 //     * assume:scheduler-id:<schedulerId>/<taskGroupId>
-//   - queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#cancelTask
 func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
@@ -320,10 +342,10 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 //
 // Required scopes:
 //   Any of:
+//   - queue:poll-task-urls:<provisionerId>/<workerType>
 //   - All of:
 //     * queue:poll-task-urls
 //     * assume:worker-type:<provisionerId>/<workerType>
-//   - queue:poll-task-urls:<provisionerId>/<workerType>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#pollTaskUrls
 func (myQueue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskUrlsResponse, error) {
@@ -336,10 +358,10 @@ func (myQueue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskU
 //
 // Required scopes:
 //   Any of:
+//   - queue:poll-task-urls:<provisionerId>/<workerType>
 //   - All of:
 //     * queue:poll-task-urls
 //     * assume:worker-type:<provisionerId>/<workerType>
-//   - queue:poll-task-urls:<provisionerId>/<workerType>
 //
 // See PollTaskUrls for more details.
 func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
@@ -366,12 +388,12 @@ func (myQueue *Queue) ClaimWork(provisionerId, workerType string, payload *Claim
 // Required scopes:
 //   Any of:
 //   - All of:
+//     * queue:claim-task:<provisionerId>/<workerType>
+//     * queue:worker-id:<workerGroup>/<workerId>
+//   - All of:
 //     * queue:claim-task
 //     * assume:worker-type:<provisionerId>/<workerType>
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - All of:
-//     * queue:claim-task:<provisionerId>/<workerType>
-//     * queue:worker-id:<workerGroup>/<workerId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#claimTask
 func (myQueue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, error) {
@@ -404,10 +426,10 @@ func (myQueue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest)
 //
 // Required scopes:
 //   Any of:
+//   - queue:reclaim-task:<taskId>/<runId>
 //   - All of:
 //     * queue:claim-task
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - queue:reclaim-task:<taskId>/<runId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#reclaimTask
 func (myQueue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, error) {
@@ -420,10 +442,10 @@ func (myQueue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, e
 //
 // Required scopes:
 //   Any of:
+//   - queue:resolve-task:<taskId>/<runId>
 //   - All of:
 //     * queue:resolve-task
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - queue:resolve-task:<taskId>/<runId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#reportCompleted
 func (myQueue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, error) {
@@ -442,10 +464,10 @@ func (myQueue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse
 //
 // Required scopes:
 //   Any of:
+//   - queue:resolve-task:<taskId>/<runId>
 //   - All of:
 //     * queue:resolve-task
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - queue:resolve-task:<taskId>/<runId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#reportFailed
 func (myQueue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, error) {
@@ -470,10 +492,10 @@ func (myQueue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, e
 //
 // Required scopes:
 //   Any of:
+//   - queue:resolve-task:<taskId>/<runId>
 //   - All of:
 //     * queue:resolve-task
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - queue:resolve-task:<taskId>/<runId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#reportException
 func (myQueue *Queue) ReportException(taskId, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, error) {
@@ -554,10 +576,10 @@ func (myQueue *Queue) ReportException(taskId, runId string, payload *TaskExcepti
 //
 // Required scopes:
 //   Any of:
+//   - queue:create-artifact:<taskId>/<runId>
 //   - All of:
 //     * queue:create-artifact:<name>
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - queue:create-artifact:<taskId>/<runId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#createArtifact
 func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArtifactRequest) (*PostArtifactResponse, error) {
@@ -580,10 +602,10 @@ func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostAr
 //
 // Required scopes:
 //   Any of:
+//   - queue:create-artifact:<taskId>/<runId>
 //   - All of:
 //     * queue:create-artifact:<name>
 //     * assume:worker-id:<workerGroup>/<workerId>
-//   - queue:create-artifact:<taskId>/<runId>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#completeArtifact
 func (myQueue *Queue) CompleteArtifact(taskId, runId, name string, payload *CompleteArtifactRequest) error {
@@ -612,7 +634,8 @@ func (myQueue *Queue) CompleteArtifact(taskId, runId, name string, payload *Comp
 // (This feature may be disabled in the future, use is sparingly!)
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   If private:
+//     queue:get-artifact:<name>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#getArtifact
 func (myQueue *Queue) GetArtifact(taskId, runId, name string) error {
@@ -624,7 +647,8 @@ func (myQueue *Queue) GetArtifact(taskId, runId, name string) error {
 // Returns a signed URL for GetArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   If private:
+//     queue:get-artifact:<name>
 //
 // See GetArtifact for more details.
 func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
@@ -649,7 +673,8 @@ func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration
 // the latest run. Otherwise, just us the most convenient API end-point.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   If private:
+//     queue:get-artifact:<name>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#getLatestArtifact
 func (myQueue *Queue) GetLatestArtifact(taskId, name string) error {
@@ -661,7 +686,8 @@ func (myQueue *Queue) GetLatestArtifact(taskId, name string) error {
 // Returns a signed URL for GetLatestArtifact, valid for the specified duration.
 //
 // Required scopes:
-//   queue:get-artifact:<name>
+//   If private:
+//     queue:get-artifact:<name>
 //
 // See GetLatestArtifact for more details.
 func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
@@ -778,7 +804,7 @@ func (myQueue *Queue) GetProvisioner(provisionerId string) (*ProvisionerResponse
 // provisioning activity.
 //
 // Required scopes:
-//   queue:declare-provisioner:<provisionerId>#<property>
+//   For property in properties each queue:declare-provisioner:<provisionerId>#<property>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#declareProvisioner
 func (myQueue *Queue) DeclareProvisioner(provisionerId string, payload *ProvisionerRequest) (*ProvisionerResponse, error) {
@@ -846,7 +872,7 @@ func (myQueue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerTy
 // `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
 //
 // Required scopes:
-//   queue:declare-worker-type:<provisionerId>/<workerType>#<property>
+//   For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#declareWorkerType
 func (myQueue *Queue) DeclareWorkerType(provisionerId, workerType string, payload *WorkerTypeRequest) (*WorkerTypeResponse, error) {
@@ -918,7 +944,7 @@ func (myQueue *Queue) QuarantineWorker(provisionerId, workerType, workerGroup, w
 // possessed.
 //
 // Required scopes:
-//   queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>
+//   For property in properties each queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>
 //
 // See https://docs.taskcluster.net/reference/platform/queue/api-docs#declareWorker
 func (myQueue *Queue) DeclareWorker(provisionerId, workerType, workerGroup, workerId string, payload *WorkerRequest) (*WorkerResponse, error) {

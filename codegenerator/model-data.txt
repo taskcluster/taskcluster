@@ -1,4 +1,4 @@
-Generated: 1518034958
+Generated: 1518052958
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10943,8 +10943,19 @@ Entry 4     =
     Entry Name        = 'createTask'
     Entry Stability   = 'stable'
     Entry Scopes      = 'All of:
-* queue:create-task:<priority>:<provisionerId>/<workerType>
-* queue:scheduler-id:<schedulerId>'
+* For scope in scopes each <scope>
+* For route in routes each queue:route:<route>
+* Any of:
+  - All of:
+    * queue:scheduler-id:<schedulerId>
+    * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
+  - If legacyScopes:
+      Any of:
+      - queue:create-task:<provisionerId>/<workerType>
+      - All of:
+        * queue:define-task:<provisionerId>/<workerType>
+        * queue:task-group-id:<schedulerId>/<taskGroupId>
+        * queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Create New Task'
@@ -10981,8 +10992,19 @@ Entry 5     =
     Entry Name        = 'defineTask'
     Entry Stability   = 'deprecated'
     Entry Scopes      = 'All of:
-* queue:create-task:<priority>:<provisionerId>/<workerType>
-* queue:scheduler-id:<schedulerId>'
+* For scope in scopes each <scope>
+* For route in routes each queue:route:<route>
+* Any of:
+  - All of:
+    * queue:scheduler-id:<schedulerId>
+    * For priority in priorities each queue:create-task:<priority>:<provisionerId>/<workerType>
+  - If legacyScopes:
+      Any of:
+      - queue:define-task:<provisionerId>/<workerType>
+      - queue:create-task:<provisionerId>/<workerType>
+      - All of:
+        * queue:define-task:<provisionerId>/<workerType>
+        * queue:task-group-id:<schedulerId>/<taskGroupId>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Define Task'
@@ -10997,10 +11019,10 @@ Entry 6     =
     Entry Name        = 'scheduleTask'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>
 - All of:
   * queue:schedule-task
-  * assume:scheduler-id:<schedulerId>/<taskGroupId>
-- queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>'
+  * assume:scheduler-id:<schedulerId>/<taskGroupId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Schedule Defined Task'
@@ -11027,10 +11049,10 @@ Entry 7     =
     Entry Name        = 'rerunTask'
     Entry Stability   = 'deprecated'
     Entry Scopes      = 'Any of:
+- queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>
 - All of:
   * queue:rerun-task
-  * assume:scheduler-id:<schedulerId>/<taskGroupId>
-- queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>'
+  * assume:scheduler-id:<schedulerId>/<taskGroupId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Rerun a Resolved Task'
@@ -11055,10 +11077,10 @@ Entry 8     =
     Entry Name        = 'cancelTask'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>
 - All of:
   * queue:cancel-task
-  * assume:scheduler-id:<schedulerId>/<taskGroupId>
-- queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>'
+  * assume:scheduler-id:<schedulerId>/<taskGroupId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Cancel Task'
@@ -11083,10 +11105,10 @@ Entry 9     =
     Entry Name        = 'pollTaskUrls'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:poll-task-urls:<provisionerId>/<workerType>
 - All of:
   * queue:poll-task-urls
-  * assume:worker-type:<provisionerId>/<workerType>
-- queue:poll-task-urls:<provisionerId>/<workerType>'
+  * assume:worker-type:<provisionerId>/<workerType>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#'
     Entry Title       = 'Get Urls to Poll Pending Tasks'
@@ -11118,12 +11140,12 @@ Entry 11    =
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
 - All of:
+  * queue:claim-task:<provisionerId>/<workerType>
+  * queue:worker-id:<workerGroup>/<workerId>
+- All of:
   * queue:claim-task
   * assume:worker-type:<provisionerId>/<workerType>
-  * assume:worker-id:<workerGroup>/<workerId>
-- All of:
-  * queue:claim-task:<provisionerId>/<workerType>
-  * queue:worker-id:<workerGroup>/<workerId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#'
     Entry Title       = 'Claim Task'
@@ -11137,10 +11159,10 @@ Entry 12    =
     Entry Name        = 'reclaimTask'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:reclaim-task:<taskId>/<runId>
 - All of:
   * queue:claim-task
-  * assume:worker-id:<workerGroup>/<workerId>
-- queue:reclaim-task:<taskId>/<runId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#'
     Entry Title       = 'Reclaim task'
@@ -11174,10 +11196,10 @@ Entry 13    =
     Entry Name        = 'reportCompleted'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:resolve-task:<taskId>/<runId>
 - All of:
   * queue:resolve-task
-  * assume:worker-id:<workerGroup>/<workerId>
-- queue:resolve-task:<taskId>/<runId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Run Completed'
@@ -11191,10 +11213,10 @@ Entry 14    =
     Entry Name        = 'reportFailed'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:resolve-task:<taskId>/<runId>
 - All of:
   * queue:resolve-task
-  * assume:worker-id:<workerGroup>/<workerId>
-- queue:resolve-task:<taskId>/<runId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Run Failed'
@@ -11214,10 +11236,10 @@ Entry 15    =
     Entry Name        = 'reportException'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:resolve-task:<taskId>/<runId>
 - All of:
   * queue:resolve-task
-  * assume:worker-id:<workerGroup>/<workerId>
-- queue:resolve-task:<taskId>/<runId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#'
     Entry Title       = 'Report Task Exception'
@@ -11243,10 +11265,10 @@ Entry 16    =
     Entry Name        = 'createArtifact'
     Entry Stability   = 'stable'
     Entry Scopes      = 'Any of:
+- queue:create-artifact:<taskId>/<runId>
 - All of:
   * queue:create-artifact:<name>
-  * assume:worker-id:<workerGroup>/<workerId>
-- queue:create-artifact:<taskId>/<runId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#'
     Entry Title       = 'Create Artifact'
@@ -11328,10 +11350,10 @@ Entry 17    =
     Entry Name        = 'completeArtifact'
     Entry Stability   = 'experimental'
     Entry Scopes      = 'Any of:
+- queue:create-artifact:<taskId>/<runId>
 - All of:
   * queue:create-artifact:<name>
-  * assume:worker-id:<workerGroup>/<workerId>
-- queue:create-artifact:<taskId>/<runId>'
+  * assume:worker-id:<workerGroup>/<workerId>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#'
     Entry Output      = ''
     Entry Title       = 'Complete Artifact'
@@ -11352,7 +11374,8 @@ Entry 18    =
     Entry Query        = '[]'
     Entry Name        = 'getArtifact'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'queue:get-artifact:<name>'
+    Entry Scopes      = 'If private:
+  queue:get-artifact:<name>'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Get Artifact from Run'
@@ -11382,7 +11405,8 @@ Entry 19    =
     Entry Query        = '[]'
     Entry Name        = 'getLatestArtifact'
     Entry Stability   = 'stable'
-    Entry Scopes      = 'queue:get-artifact:<name>'
+    Entry Scopes      = 'If private:
+  queue:get-artifact:<name>'
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'Get Artifact from Latest Run'
@@ -11491,7 +11515,7 @@ Entry 24    =
     Entry Query        = '[]'
     Entry Name        = 'declareProvisioner'
     Entry Stability   = 'experimental'
-    Entry Scopes      = 'queue:declare-provisioner:<provisionerId>#<property>'
+    Entry Scopes      = 'For property in properties each queue:declare-provisioner:<provisionerId>#<property>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#'
     Entry Title       = 'Update a provisioner'
@@ -11563,7 +11587,7 @@ Entry 28    =
     Entry Query        = '[]'
     Entry Name        = 'declareWorkerType'
     Entry Stability   = 'experimental'
-    Entry Scopes      = 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>'
+    Entry Scopes      = 'For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#'
     Entry Title       = 'Update a worker-type'
@@ -11629,7 +11653,7 @@ Entry 32    =
     Entry Query        = '[]'
     Entry Name        = 'declareWorker'
     Entry Stability   = 'experimental'
-    Entry Scopes      = 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>'
+    Entry Scopes      = 'For property in properties each queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>'
     Entry Input       = 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/queue/v1/worker-response.json#'
     Entry Title       = 'Declare a worker'
