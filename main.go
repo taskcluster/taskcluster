@@ -726,7 +726,7 @@ func FindAndRunTask() bool {
 func (task *TaskRun) reportPossibleError(err error) {
 	if err != nil {
 		log.Printf("ERROR encountered: %v", err)
-		task.Log(err.Error())
+		task.Error(err.Error())
 	}
 }
 
@@ -770,7 +770,7 @@ func (task *TaskRun) setReclaimTimer() {
 				} else {
 					log.Printf("Encountered exception when reclaiming task %v: %v", task.TaskID, err)
 					log.Printf("Killing task %v since I cannot reclaim it", task.TaskID)
-					task.Logf("Killing process since task reclaim resulted in exception: %v", err)
+					task.Errorf("Killing process since task reclaim resulted in exception: %v", err)
 					task.kill()
 				}
 			},
@@ -795,9 +795,9 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		return MalformedPayloadError(err)
 	}
 	if !result.Valid() {
-		task.Log("TASK FAIL since the task payload is invalid. See errors:")
+		task.Error("TASK FAIL since the task payload is invalid. See errors:")
 		for _, desc := range result.Errors() {
-			task.Logf("- %s", desc)
+			task.Errorf("- %s", desc)
 		}
 		// Dealing with Invalid Task Payloads
 		// ----------------------------------
@@ -883,14 +883,29 @@ func Failure(err error) *CommandExecutionError {
 	return executionError("", failed, err)
 }
 
-func (task *TaskRun) Logf(format string, v ...interface{}) {
-	task.Log(fmt.Sprintf(format, v...))
+func (task *TaskRun) Infof(format string, v ...interface{}) {
+	task.Info(fmt.Sprintf(format, v...))
 }
 
-func (task *TaskRun) Log(message string) {
+func (task *TaskRun) Errorf(format string, v ...interface{}) {
+	task.Error(fmt.Sprintf(format, v...))
+}
+
+func (task *TaskRun) Info(message string) {
+	now := tcclient.Time(time.Now()).String()
+	task.Log("[taskcluster "+now+"] ", message)
+}
+
+func (task *TaskRun) Error(message string) {
+	task.Log("[taskcluster:error] ", message)
+}
+
+// Log lines like:
+//  [taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
+func (task *TaskRun) Log(prefix, message string) {
 	if task.logWriter != nil {
 		for _, line := range strings.Split(message, "\n") {
-			task.logWriter.Write([]byte("[taskcluster " + tcclient.Time(time.Now()).String() + "] " + line + "\n"))
+			task.logWriter.Write([]byte(prefix + line + "\n"))
 		}
 	} else {
 		log.Print("Unloggable task log message (no task log writer): " + message)
@@ -902,7 +917,7 @@ func (err *CommandExecutionError) Error() string {
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
-	task.Logf("Executing command %v: %v", index, task.formatCommand(index))
+	task.Infof("Executing command %v: %v", index, task.formatCommand(index))
 	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
 	cee := task.prepareCommand(index)
 	if cee != nil {
@@ -910,7 +925,11 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	}
 
 	result := task.Commands[index].Execute()
-	task.Logf("%v", result)
+	if result.Succeeded() {
+		task.Infof("%v", result)
+	} else {
+		task.Errorf("%v", result)
+	}
 
 	switch {
 	case result.Failed():
@@ -1003,10 +1022,10 @@ func (task *TaskRun) logHeader() {
 	if err != nil {
 		panic(err)
 	}
-	task.Log("Worker Type (" + config.WorkerType + ") settings:")
-	task.Log("  " + string(jsonBytes))
-	task.Log("Task ID: " + task.TaskID)
-	task.Log("=== Task Starting ===")
+	task.Info("Worker Type (" + config.WorkerType + ") settings:")
+	task.Info("  " + string(jsonBytes))
+	task.Info("Task ID: " + task.TaskID)
+	task.Info("=== Task Starting ===")
 }
 
 func (task *TaskRun) Run() (err *executionErrors) {
@@ -1051,12 +1070,12 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	defer func() {
 		// log any errors that occurred
 		if err.Occurred() {
-			task.Log(err.Error())
+			task.Error(err.Error())
 		}
 		if r := recover(); r != nil {
-			task.Log(string(debug.Stack()))
-			task.Logf("%#v", r)
-			task.Logf("%v", r)
+			task.Error(string(debug.Stack()))
+			task.Errorf("%#v", r)
+			task.Errorf("%v", r)
 			defer panic(r)
 		}
 		task.closeLog(logHandle)
@@ -1134,7 +1153,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			// public/ directory artifact that includes
 			// public/logs/live_backing.log inadvertently.
 			if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
-				task.Logf("WARNING - not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
+				task.Infof("WARNING - not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
 				continue
 			}
 			err.add(task.uploadArtifact(artifact))
@@ -1146,7 +1165,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			case *ErrorArtifact:
 				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
 				err.add(fail)
-				task.Logf("TASK FAILURE during artifact upload: %v", fail)
+				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
 			}
 		}
 	}()
@@ -1169,9 +1188,9 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	started := time.Now()
 	defer func() {
 		finished := time.Now()
-		task.Log("=== Task Finished ===")
+		task.Info("=== Task Finished ===")
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		task.Log("Task Duration: " + finished.Round(0).Sub(started).String())
+		task.Info("Task Duration: " + finished.Round(0).Sub(started).String())
 	}()
 
 	for i := range task.Payload.Command {

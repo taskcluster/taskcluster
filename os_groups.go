@@ -51,13 +51,13 @@ func (osGroups *OSGroups) Start() (err *CommandExecutionError) {
 	groups := osGroups.Task.Payload.OSGroups
 	if config.RunTasksAsCurrentUser {
 		if len(groups) > 0 {
-			osGroups.Task.Logf("Not adding user to groups %v since we are running as current user.", groups)
+			osGroups.Task.Infof("Not adding user to groups %v since we are running as current user.", groups)
 		}
 		return nil
 	}
 	err = MalformedPayloadError(osGroups.Task.addGroupsToUser(groups))
 	if err != nil {
-		osGroups.Task.Logf("Could not add os group(s) to task user: %v\n%v", groups, err)
+		osGroups.Task.Errorf("Could not add os group(s) to task user: %v\n%v", groups, err)
 	}
 	return
 }

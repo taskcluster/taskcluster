@@ -74,7 +74,7 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 }
 
 func (artifact *RedirectArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Logf("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", artifact.Name, artifact.URL, artifact.ContentType, artifact.Expires)
+	task.Infof("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", artifact.Name, artifact.URL, artifact.ContentType, artifact.Expires)
 	// nothing to do
 	return nil
 }
@@ -93,7 +93,7 @@ func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
 }
 
 func (artifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Logf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", artifact.Name, artifact.Path, artifact.Message, artifact.Reason, artifact.Expires)
+	task.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", artifact.Name, artifact.Path, artifact.Message, artifact.Reason, artifact.Expires)
 	// TODO: process error response
 	return nil
 }
@@ -183,7 +183,7 @@ func (artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (er
 	response := resp.(*queue.S3ArtifactResponse)
 
 	artifact.ChooseContentEncoding()
-	task.Logf("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", artifact.Name, artifact.Path, artifact.ContentEncoding, artifact.ContentType, artifact.Expires)
+	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", artifact.Name, artifact.Path, artifact.ContentEncoding, artifact.ContentType, artifact.Expires)
 	transferContentFile := artifact.CreateTempFileForPUTBody()
 	defer os.Remove(transferContentFile)
 
@@ -480,7 +480,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	e = artifact.ProcessResponse(resp, task)
 	// note: this only returns an error, if ProcessResponse returns an error...
 	if e != nil {
-		task.Logf("Error uploading artifact: %v", e)
+		task.Errorf("Error uploading artifact: %v", e)
 	}
 	return ResourceUnavailable(e)
 }
