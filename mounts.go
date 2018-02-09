@@ -329,8 +329,8 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	// services has an outage. Although 1) could not be part of an obscure
 	// attack strategy (although releases shouldn't use caches).
 	if err != nil {
-		taskMount.task.Error("WARNING: Could not reach purgecache service to see if caches need purging!")
-		taskMount.task.Error(err.Error())
+		taskMount.task.Warn("Could not reach purgecache service to see if caches need purging!")
+		taskMount.task.Warn(err.Error())
 	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {

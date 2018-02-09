@@ -103,27 +103,39 @@ func TestLogFormat(t *testing.T) {
 	testCases := []LogFormatTest{
 		LogFormatTest{
 			LogCall: func() {
-				tr.Info("Another day for you and me in paradise.")
+				tr.Info("Another day for you and me in paradise")
 			},
-			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] Another day for you and me in paradise.` + "\n$",
+			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] Another day for you and me in paradise` + "\n$",
 		},
 		LogFormatTest{
 			LogCall: func() {
-				tr.Error("Well lawdy, lawdy, lawdy Miss Clawdy.")
+				tr.Warn("I believe in a thing called love")
 			},
-			ResultFormat: `^\[taskcluster:error\] Well lawdy, lawdy, lawdy Miss Clawdy.` + "\n$",
+			ResultFormat: `^\[taskcluster:warn 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] I believe in a thing called love` + "\n$",
 		},
 		LogFormatTest{
 			LogCall: func() {
-				tr.Infof("It only takes a minute %v.", "girl")
+				tr.Error("Well lawdy, lawdy, lawdy Miss Clawdy")
 			},
-			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] It only takes a minute girl.` + "\n$",
+			ResultFormat: `^\[taskcluster:error\] Well lawdy, lawdy, lawdy Miss Clawdy` + "\n$",
 		},
 		LogFormatTest{
 			LogCall: func() {
-				tr.Errorf("Thought I saw a man %v to life.", "brought")
+				tr.Infof("It only takes a minute %v", "girl")
 			},
-			ResultFormat: `^\[taskcluster:error\] Thought I saw a man brought to life.` + "\n$",
+			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] It only takes a minute girl` + "\n$",
+		},
+		LogFormatTest{
+			LogCall: func() {
+				tr.Warnf("When you %v %v best, but you don't succeed", "try", "your")
+			},
+			ResultFormat: `^\[taskcluster:warn 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] When you try your best, but you don't succeed` + "\n$",
+		},
+		LogFormatTest{
+			LogCall: func() {
+				tr.Errorf("Thought I saw a man %v to life", "brought")
+			},
+			ResultFormat: `^\[taskcluster:error\] Thought I saw a man brought to life` + "\n$",
 		},
 	}
 	for _, test := range testCases {

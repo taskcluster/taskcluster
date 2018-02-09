@@ -887,6 +887,10 @@ func (task *TaskRun) Infof(format string, v ...interface{}) {
 	task.Info(fmt.Sprintf(format, v...))
 }
 
+func (task *TaskRun) Warnf(format string, v ...interface{}) {
+	task.Warn(fmt.Sprintf(format, v...))
+}
+
 func (task *TaskRun) Errorf(format string, v ...interface{}) {
 	task.Error(fmt.Sprintf(format, v...))
 }
@@ -894,6 +898,11 @@ func (task *TaskRun) Errorf(format string, v ...interface{}) {
 func (task *TaskRun) Info(message string) {
 	now := tcclient.Time(time.Now()).String()
 	task.Log("[taskcluster "+now+"] ", message)
+}
+
+func (task *TaskRun) Warn(message string) {
+	now := tcclient.Time(time.Now()).String()
+	task.Log("[taskcluster:warn "+now+"] ", message)
 }
 
 func (task *TaskRun) Error(message string) {
@@ -1153,7 +1162,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			// public/ directory artifact that includes
 			// public/logs/live_backing.log inadvertently.
 			if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
-				task.Infof("WARNING - not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
+				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
 				continue
 			}
 			err.add(task.uploadArtifact(artifact))
