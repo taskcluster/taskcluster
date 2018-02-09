@@ -68,8 +68,8 @@ func (l *SupersedeTask) Start() *CommandExecutionError {
 	resp, _, err := httpbackoff.Get(supersederURL)
 	if err != nil {
 		// if problem with superseder service, let's run all tasks, and not resolve them all as exception
-		l.task.Logf("WARNING: problem accessing supersederUrl: %v", err)
-		l.task.Log("Not able to see if this task has been superseded!")
+		l.task.Warnf("Problem accessing supersederUrl: %v", err)
+		l.task.Warn("Not able to see if this task has been superseded!")
 		return nil
 	}
 	decoder := json.NewDecoder(resp.Body)
@@ -77,8 +77,8 @@ func (l *SupersedeTask) Start() *CommandExecutionError {
 	err = decoder.Decode(&supersedes)
 	if err != nil {
 		// if problem with superseder service, let's run all tasks, and not resolve them all as exception
-		l.task.Logf("WARNING: not able to interpret response from supersederUrl %v as json list of task IDs: %v", supersederURL, err)
-		l.task.Logf("Not able to see if this task has been superseded!")
+		l.task.Warnf("Not able to interpret response from supersederUrl %v as json list of task IDs: %v", supersederURL, err)
+		l.task.Warn("Not able to see if this task has been superseded!")
 		return nil
 	}
 	taskIDs := supersedes.TaskIDs

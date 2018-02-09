@@ -147,7 +147,7 @@ func (tsm *TaskStatusManager) Abort() error {
 		aborted,
 		func(task *TaskRun) error {
 			log.Printf("Aborting task %v - max run time exceeded!", task.TaskID)
-			task.Log("Aborting task - max run time exceeded!")
+			task.Error("Aborting task - max run time exceeded!")
 			// defer func() {
 			// 	if r := recover(); r != nil {
 			// 		log.Printf("Panic occured when killing process - ignoring!\n%v", r)

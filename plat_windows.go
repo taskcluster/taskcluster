@@ -217,7 +217,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	if !config.RunTasksAsCurrentUser {
 		hToken, err := win32.InteractiveUserToken(time.Minute)
 		if err != nil {
-			task.Log("Cannot get handle of interactive user")
+			task.Error("Cannot get handle of interactive user")
 			return err
 		}
 		loginInfo.HUser = hToken
