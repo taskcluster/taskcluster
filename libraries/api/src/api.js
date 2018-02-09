@@ -520,8 +520,12 @@ var remoteAuthentication = function(options, entry) {
         // If authentication failed
         if (result.status === 'auth-failed') {
           res.set('www-authenticate', 'hawk');
-          res.reportError('AuthenticationFailed', result.message, result);
-          return false;
+          const err = new Error('Authentication failed'); // This way instead of subclassing due to babel/babel#3083
+          err.name = 'AuthenticationError';
+          err.code = 'AuthenticationError';
+          err.message = result.message;
+          err.details = result;
+          throw err;
         }
 
         // Render the scope expression template
@@ -578,6 +582,8 @@ var remoteAuthentication = function(options, entry) {
     } catch (err) {
       if (err.code === 'AuthorizationError') {
         return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
+      } else if (err.code === 'AuthenticationError') {
+        return res.reportError('AuthenticationFailed', err.message, err.details);
       }
       return res.reportInternalError(err);
     };
@@ -607,6 +613,8 @@ var handle = function(handler, context, name) {
     }).catch(function(err) {
       if (err.code === 'AuthorizationError') {
         return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
+      } else if (err.code === 'AuthenticationError') {
+        return res.reportError('AuthenticationFailed', err.message, err.details);
       }
       return res.reportInternalError(err);
     });
