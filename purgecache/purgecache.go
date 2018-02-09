@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 8 Feb 2018 at 01:22:00 UTC. The code was generated
+// Fri, 9 Feb 2018 at 17:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package purgecache
 
@@ -89,8 +89,6 @@ func NewNoAuth() *PurgeCache {
 	return &purgeCache
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Publish a purge-cache message to purge caches named `cacheName` with
 // `provisionerId` and `workerType` in the routing-key. Workers should
 // be listening for this message and purge caches when they see it.
@@ -105,8 +103,6 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This is useful mostly for administors to view
 // the set of open purge requests. It should not
 // be used by workers. They should use the purgeRequests
@@ -127,8 +123,6 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 	return responseObject.(*OpenAllPurgeRequestsList), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // List of caches that need to be purged if they are from before
 // a certain time. This is safe to be used in automation from
 // workers.

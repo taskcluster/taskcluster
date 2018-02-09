@@ -1,4 +1,4 @@
-Generated: 1518052958
+Generated: 1518196960
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10424,7 +10424,7 @@ Entry 0     =
     Entry Args        = '[provisionerId workerType]'
     Entry Query        = '[]'
     Entry Name        = 'purgeCache'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'purge-cache:<provisionerId>/<workerType>:<cacheName>'
     Entry Input       = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#'
     Entry Output      = ''
@@ -10439,7 +10439,7 @@ Entry 1     =
     Entry Args        = '[]'
     Entry Query        = '[continuationToken limit]'
     Entry Name        = 'allPurgeRequests'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#'
@@ -10456,7 +10456,7 @@ Entry 2     =
     Entry Args        = '[provisionerId workerType]'
     Entry Query        = '[since]'
     Entry Name        = 'purgeRequests'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#'
