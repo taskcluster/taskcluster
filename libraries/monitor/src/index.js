@@ -137,7 +137,7 @@ async function monitor(options) {
       let err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
       console.log(err);
       if (!options.bailOnUnhandledRejection) {
-        await m.reportError(err, 'warning');
+        await m.reportError(err, 'error', {sort: 'unhandledRejection'});
         return;
       }
       setTimeout(() => {
