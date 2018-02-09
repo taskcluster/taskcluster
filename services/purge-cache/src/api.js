@@ -43,6 +43,7 @@ api.declare({
   scopes:     'purge-cache:<provisionerId>/<workerType>:<cacheName>',
   input:      SCHEMA_PREFIX_CONST + 'purge-cache-request.json#',
   title:      'Purge Worker Cache',
+  stability:  API.stability.stable,
   description: [
     'Publish a purge-cache message to purge caches named `cacheName` with',
     '`provisionerId` and `workerType` in the routing-key. Workers should',
@@ -97,6 +98,7 @@ api.declare({
   name:     'allPurgeRequests',
   output:   SCHEMA_PREFIX_CONST + 'all-purge-cache-request-list.json#',
   title:    'All Open Purge Requests',
+  stability:  API.stability.stable,
   description: [
     'This is useful mostly for administors to view',
     'the set of open purge requests. It should not',
@@ -130,6 +132,7 @@ api.declare({
   name:     'purgeRequests',
   output:   SCHEMA_PREFIX_CONST + 'purge-cache-request-list.json#',
   title:    'Open Purge Requests for a provisionerId/workerType pair',
+  stability:  API.stability.stable,
   description: [
     'List of caches that need to be purged if they are from before',
     'a certain time. This is safe to be used in automation from',
