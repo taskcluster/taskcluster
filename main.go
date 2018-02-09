@@ -599,9 +599,13 @@ func RunWorker() (exitCode ExitCode) {
 		}
 		// make sure at least 5 seconds passes between iterations
 		wait5Seconds := time.NewTimer(time.Second * 5)
-		taskFound := FindAndRunTask()
+		task := ClaimWork()
 
-		if taskFound {
+		if task != nil {
+			execErr := task.Run()
+			if execErr.Occurred() {
+				task.reportPossibleError(execErr)
+			}
 			err := taskCleanup()
 			if err != nil {
 				log.Printf("Error cleaning up after task!\n%v", err)
@@ -665,12 +669,8 @@ func RunWorker() (exitCode ExitCode) {
 	}
 }
 
-// FindAndRunTask queries the Taskcluster Queue to find a task to
-// run. If it finds one, it handles all the bookkeeping, as well as running the
-// task. Returns true if it successfully claimed a task (regardless of whether
-// the task ran successfully) otherwise false.
-func FindAndRunTask() bool {
-	taskFound := false
+// ClaimWork queries the Queue to find a task.
+func ClaimWork() *TaskRun {
 	req := &queue.ClaimWorkRequest{
 		Tasks:       1,
 		WorkerGroup: config.WorkerGroup,
@@ -680,11 +680,22 @@ func FindAndRunTask() bool {
 	resp, err := Queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
 	if err != nil {
 		log.Printf("Could not claim work. %v", err)
-		return taskFound
+		return nil
 	}
+	switch {
 
-	for _, taskResponse := range resp.Tasks {
-		taskFound = true
+	// no tasks - nothing to return
+	case len(resp.Tasks) < 1:
+		return nil
+
+	// more than one task - BUG!
+	case len(resp.Tasks) > 1:
+		panic(fmt.Sprintf("SERIOUS BUG: too many tasks returned from queue - only 1 requested, but %v returned", len(resp.Tasks)))
+
+	// exactly one task - process it!
+	default:
+		log.Print("Task found")
+		taskResponse := resp.Tasks[0]
 		taskQueue, err := queue.New(
 			&tcclient.Credentials{
 				ClientID:    taskResponse.Credentials.ClientID,
@@ -693,7 +704,7 @@ func FindAndRunTask() bool {
 			},
 		)
 		if err != nil {
-			log.Printf("SERIOUS BUG: invalid credentials from queue for task %v", taskResponse.Status.TaskID)
+			panic(fmt.Sprintf("SERIOUS BUG: invalid credentials from queue for task %v", taskResponse.Status.TaskID))
 		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
@@ -707,20 +718,9 @@ func FindAndRunTask() bool {
 				logName: "Native Log",
 			},
 		}
-
 		task.StatusManager = NewTaskStatusManager(task)
-
-		// Now we found a task, run it, and then exit the loop.  Work is returned
-		// by the queue in the order of priority.  Higher priority tasks will be claimed
-		// and returned before lower priority tasks.
-		log.Print("Task found")
-		execErr := task.Run()
-		if execErr.Occurred() {
-			task.reportPossibleError(execErr)
-		}
-		break
+		return task
 	}
-	return taskFound
 }
 
 func (task *TaskRun) reportPossibleError(err error) {
