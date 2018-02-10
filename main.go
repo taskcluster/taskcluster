@@ -602,9 +602,10 @@ func RunWorker() (exitCode ExitCode) {
 		task := ClaimWork()
 
 		if task != nil {
-			execErr := task.Run()
-			if execErr.Occurred() {
-				task.reportPossibleError(execErr)
+			errors := task.Run()
+			if errors.Occurred() {
+				log.Printf("ERROR(s) encountered: %v", errors)
+				task.Error(errors.Error())
 			}
 			err := taskCleanup()
 			if err != nil {
@@ -720,13 +721,6 @@ func ClaimWork() *TaskRun {
 		}
 		task.StatusManager = NewTaskStatusManager(task)
 		return task
-	}
-}
-
-func (task *TaskRun) reportPossibleError(err error) {
-	if err != nil {
-		log.Printf("ERROR encountered: %v", err)
-		task.Error(err.Error())
 	}
 }
 
