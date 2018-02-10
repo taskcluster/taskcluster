@@ -69,7 +69,7 @@ tasks:
       maxRunTime: 3600
       command:
         - set GOPATH=%CD%\gopath1.9.4
-        - set GOROOT=%CD%\go1.9.4
+        - set GOROOT=%CD%\go1.9.4\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -116,7 +116,7 @@ tasks:
           directory: gopath1.9.4\src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.windows-amd64.zip
-          directory: .
+          directory: go1.9.4
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
@@ -147,7 +147,7 @@ tasks:
       maxRunTime: 3600
       command:
         - set GOPATH=%CD%\gopath1.9.4
-        - set GOROOT=%CD%\go1.9.4
+        - set GOROOT=%CD%\go1.9.4\go
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -185,7 +185,7 @@ tasks:
           directory: gopath1.9.4\src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.windows-386.zip
-          directory: .
+          directory: go1.9.4
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
@@ -216,7 +216,7 @@ tasks:
       maxRunTime: 3600
       command:
         - set GOPATH=%CD%\gopath1.9.4
-        - set GOROOT=%CD%\go1.9.4
+        - set GOROOT=%CD%\go1.9.4\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -263,7 +263,7 @@ tasks:
           directory: gopath1.9.4\src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.windows-amd64.zip
-          directory: .
+          directory: go1.9.4
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
