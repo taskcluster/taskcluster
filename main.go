@@ -704,7 +704,7 @@ func ClaimWork() *TaskRun {
 			},
 		)
 		if err != nil {
-			panic(fmt.Sprintf("SERIOUS BUG: invalid credentials from queue for task %v", taskResponse.Status.TaskID))
+			panic(fmt.Sprintf("SERIOUS BUG: invalid credentials from queue for task %v: %v", taskResponse.Status.TaskID, err))
 		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
