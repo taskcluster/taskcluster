@@ -68,7 +68,7 @@ tasks:
     payload:
       maxRunTime: 3600
       command:
-        - set GOPATH=%CD%\gopath
+        - set GOPATH=%CD%\gopath1.9.4
         - set GOROOT=%CD%\go1.9.4
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
@@ -108,12 +108,12 @@ tasks:
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath\bin\generic-worker.exe
+          path: gopath1.9.4\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath\src
+          directory: gopath1.9.4\src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.windows-amd64.zip
           directory: .
@@ -146,7 +146,7 @@ tasks:
     payload:
       maxRunTime: 3600
       command:
-        - set GOPATH=%CD%\gopath
+        - set GOPATH=%CD%\gopath1.9.4
         - set GOROOT=%CD%\go1.9.4
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
@@ -177,12 +177,12 @@ tasks:
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-386.exe
-          path: gopath\bin\generic-worker.exe
+          path: gopath1.9.4\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath\src
+          directory: gopath1.9.4\src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.windows-386.zip
           directory: .
@@ -215,7 +215,7 @@ tasks:
     payload:
       maxRunTime: 3600
       command:
-        - set GOPATH=%CD%\gopath
+        - set GOPATH=%CD%\gopath1.9.4
         - set GOROOT=%CD%\go1.9.4
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
@@ -255,12 +255,12 @@ tasks:
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath\bin\generic-worker.exe
+          path: gopath1.9.4\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath\src
+          directory: gopath1.9.4\src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.windows-amd64.zip
           directory: .
@@ -299,7 +299,7 @@ tasks:
           - -vxec
           - |
             export GOROOT="$(pwd)/go1.9.4/go"
-            export GOPATH="$(pwd)/gopath"
+            export GOPATH="$(pwd)/gopath1.9.4"
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
@@ -325,12 +325,12 @@ tasks:
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
-          path: gopath/bin/generic-worker
+          path: gopath1.9.4/bin/generic-worker
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath/src
+          directory: gopath1.9.4/src
         - content:
             url: https://storage.googleapis.com/golang/go1.9.4.darwin-amd64.tar.gz
           directory: go1.9.4
@@ -369,7 +369,7 @@ tasks:
   #         - -vxec
   #         - |
   #           export GOROOT="$(pwd)/go1.9.4/go"
-  #           export GOPATH="$(pwd)/gopath"
+  #           export GOPATH="$(pwd)/gopath1.9.4"
   #           export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
   #           export CGO_ENABLED=0
   #           go version
@@ -395,12 +395,12 @@ tasks:
   #           ineffassign .
   #     artifacts:
   #       - name: public/build/generic-worker-linux-armv6l
-  #         path: gopath/bin/generic-worker
+  #         path: gopath1.9.4/bin/generic-worker
   #         expires: "{{ '2 weeks' | $fromNow }}"
   #         type: file
   #     mounts:
   #       - cacheName: generic-worker-checkout
-  #         directory: gopath/src
+  #         directory: gopath1.9.4/src
   #       - content:
   #           url: https://storage.googleapis.com/golang/go1.9.4.linux-armv6l.tar.gz
   #         directory: go1.9.4
