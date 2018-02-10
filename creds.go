@@ -216,21 +216,24 @@ func (cert *Certificate) Validate() error {
 	if cert == nil {
 		return fmt.Errorf("nil certificate does not pass certificate validation")
 	}
-	if cert.Version < 1 {
-		return fmt.Errorf("Certificate version less than 1: %v", cert.Version)
+	if cert.Version != 1 {
+		return fmt.Errorf("Certificate version not 1: %v", cert.Version)
 	}
 	now := time.Now().UnixNano() / 1e6
-	if now < cert.Start {
-		return fmt.Errorf("Certificate validity starts in the future (now = %v; start = %v)", now, cert.Start)
+	// See https://github.com/taskcluster/taskcluster-auth/pull/117/files
+	// A five minute tolerance is allowed. This is important, if we receive
+	// credentials from a different machine.
+	if cert.Start > now+5*60*1000 {
+		return fmt.Errorf("Certificate validity starts more than five minutes in the future (now = %v; start = %v)", now, cert.Start)
 	}
-	if now > cert.Expiry {
-		return fmt.Errorf("Certificate has expired (now = %v; expiry = %v)", now, cert.Expiry)
+	if cert.Expiry < now-5*60*1000 {
+		return fmt.Errorf("Certificate expired more than five minutes ago (now = %v; expiry = %v)", now, cert.Expiry)
 	}
 	if durationMillis := cert.Expiry - cert.Start; durationMillis > 31*24*60*60*1000 {
 		return fmt.Errorf("Certificate is valid for more than 31 days (%v milliseconds)", durationMillis)
 	}
-	if len(cert.Seed) < 44 {
-		return fmt.Errorf("Certificate seed not at least 44 bytes: '%v'", cert.Seed)
+	if len(cert.Seed) != 44 {
+		return fmt.Errorf("Certificate seed not 44 bytes: '%v'", cert.Seed)
 	}
 	if _, err := base64.StdEncoding.DecodeString(cert.Signature); err != nil {
 		return fmt.Errorf("Certificate signature is not valid base64 content: %v", err)
