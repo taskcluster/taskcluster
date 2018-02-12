@@ -117,13 +117,19 @@ type (
 
 		// Specifies an artifact name for publishing RDP connection information.
 		// Since this is potentially sensitive data, care should be taken to publish
-		// to a suitably locked down path, such as `project/<project>/rdpinfo.json`.
-		// Use of this feature requires scope
-		// `generic-worker:allow-rdp:<provisionerId>/<workerType>`. The RDP
-		// connection data is published during task startup, so that a task can be
-		// watched during its execution. The worker will sleep for 12 hours after
-		// the task completes, before deleting the task account and running
-		// subsequent tasks.
+		// to a suitably locked down path, such as
+		// `login-identity/<login-identity>/rdpinfo.json` which is only readable for
+		// the given login identity (for example
+		// `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt`). See the
+		// [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information. Use of this feature requires scope
+		// `generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be
+		// declared as a task scope. The RDP connection data is published during
+		// task startup, so that a task can be watched during its execution. The
+		// worker will sleep for 12 hours after the task completes, before deleting
+		// the task's Windows user account and running subsequent tasks. No
+		// guarantees are given about the resolution status of the interactive task,
+		// since the task is inherently non-reproducible and no automation should
+		// rely on this value.
 		RdpInfo string `json:"rdpInfo,omitempty"`
 
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
@@ -498,7 +504,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "rdpInfo": {
-      "description": "Specifies an artifact name for publishing RDP connection information.\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as ` + "`" + `project/\u003cproject\u003e/rdpinfo.json` + "`" + `.\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `. The RDP\nconnection data is published during task startup, so that a task can be\nwatched during its execution. The worker will sleep for 12 hours after\nthe task completes, before deleting the task account and running\nsubsequent tasks.",
+      "description": "Specifies an artifact name for publishing RDP connection information.\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information. Use of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope. The RDP connection data is published during\ntask startup, so that a task can be watched during its execution. The\nworker will sleep for 12 hours after the task completes, before deleting\nthe task's Windows user account and running subsequent tasks. No\nguarantees are given about the resolution status of the interactive task,\nsince the task is inherently non-reproducible and no automation should\nrely on this value.",
       "title": "RDP Info",
       "type": "string"
     },

@@ -148,13 +148,19 @@ properties:
     description: |-
       Specifies an artifact name for publishing RDP connection information.
       Since this is potentially sensitive data, care should be taken to publish
-      to a suitably locked down path, such as `project/<project>/rdpinfo.json`.
-      Use of this feature requires scope
-      `generic-worker:allow-rdp:<provisionerId>/<workerType>`. The RDP
-      connection data is published during task startup, so that a task can be
-      watched during its execution. The worker will sleep for 12 hours after
-      the task completes, before deleting the task account and running
-      subsequent tasks.
+      to a suitably locked down path, such as
+      `login-identity/<login-identity>/rdpinfo.json` which is only readable for
+      the given login identity (for example
+      `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt`). See the
+      [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information. Use of this feature requires scope
+      `generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be
+      declared as a task scope. The RDP connection data is published during
+      task startup, so that a task can be watched during its execution. The
+      worker will sleep for 12 hours after the task completes, before deleting
+      the task's Windows user account and running subsequent tasks. No
+      guarantees are given about the resolution status of the interactive task,
+      since the task is inherently non-reproducible and no automation should
+      rely on this value.
 definitions:
   mount:
     title: Mount
