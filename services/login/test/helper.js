@@ -2,7 +2,7 @@ const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
 const v1 = require('../src/v1');
-const load = require('../src/server');
+const load = require('../src/main');
 const config = require('taskcluster-lib-config');
 const _ = require('lodash');
 

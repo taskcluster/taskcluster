@@ -1,26 +1,19 @@
-const express = require('express');
-const passport = require('passport');
 const _ = require('lodash');
-const sslify = require('express-sslify');
 const http = require('http');
 const path = require('path');
-const session = require('cookie-session');
 const config = require('taskcluster-lib-config');
-const bodyParser = require('body-parser');
 const User = require('./user');
 const querystring = require('querystring');
 const loader = require('taskcluster-lib-loader');
 const taskcluster = require('taskcluster-client');
-const flash = require('connect-flash');
 const scanner = require('./scanner');
 const Authorizer = require('./authz');
 const v1 = require('./v1');
 const LDAPClient = require('./ldap');
-const tcApp = require('taskcluster-lib-app');
+const App = require('taskcluster-lib-app');
 const validator = require('taskcluster-lib-validate');
 const monitor = require('taskcluster-lib-monitor');
 const docs = require('taskcluster-lib-docs');
-const csp = require('content-security-policy');
 
 let load = loader({
   cfg: {
@@ -36,30 +29,6 @@ let load = loader({
       let authorizer = new Authorizer(cfg);
       await authorizer.setup();
       return authorizer;
-    },
-  },
-
-  authenticators: {
-    requires: ['cfg', 'authorizer'],
-    setup: ({cfg, authorizer}) => {
-      let authenticators = {};
-
-      // carry out the authorization process, either with a done callback
-      // or returning a promise
-      let authorize = (user, done) => {
-        let promise = authorizer.authorize(user);
-        if (done) {
-          promise.then(() => done(null, user), (err) => done(err, null));
-        } else {
-          return promise;
-        }
-      };
-
-      cfg.app.authenticators.forEach((name) => {
-        let Authn = require('./authn/' + name);
-        authenticators[name] = new Authn({cfg, authorize});
-      });
-      return authenticators;
     },
   },
 
@@ -130,92 +99,26 @@ let load = loader({
   },
 
   app: {
-    requires: ['cfg', 'authenticators', 'router'],
-    setup: ({cfg, authenticators, router}) => {
+    requires: ['cfg', 'docs', 'router'],
+    setup: ({cfg, docs, router}) => {
       // Create application
-      let app = tcApp(_.defaults({}, cfg.server, {contentSecurityPolic: false}));
-
-      // setup 'trust proxy', which tc-lib-app does not do
-      app.set('trust proxy', cfg.server.trustProxy);
-
-      // Setup API
+      let app = App({
+        port: cfg.server.port,
+        publicUrl: cfg.server.publicUrl,
+        env: cfg.server.env,
+        forceSSL: cfg.server.forceSSL,
+        trustProxy: cfg.server.trustProxy,
+        rootDocsLink: true, // doesn't work?
+        docs,
+      });
       app.use('/v1', router);
-
-      // Setup views and assets
-      app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
-      app.set('views', path.join(__dirname, '..', 'views'));
-      app.set('view engine', 'jade');
-
-      // build a CSP that's appropriate to this app..
-      app.use(csp.getCSP({
-        'default-src': csp.SRC_NONE,
-        'frame-ancestors': csp.SRC_NONE,
-        'base-uri': csp.SRC_NONE,
-        'report-uri': '/__cspreport__',
-        'font-src': csp.SRC_SELF,
-        'script-src': [csp.SRC_SELF, '\'unsafe-inline\''],
-        'style-src': [csp.SRC_SELF, '\'unsafe-inline\''],
-      }));
-
-      // Parse request bodies
-      app.use(bodyParser.urlencoded({extended: false}));
-
-      // Store session in a signed cookie
-      app.use(session({
-        name: 'taskcluster-login',
-        keys: cfg.app.cookieSecrets,
-        secure: cfg.server.forceSSL,
-        secureProxy: cfg.server.trustProxy,
-        httpOnly: true,
-        signed: true,
-        maxAge: 5 * 60 * 1000,
-      }));
-
-      // Set up message flashing
-      app.use(flash());
-
-      // Initialize passport
-      app.use(passport.initialize());
-      app.use(passport.session());
-
-      // Read and write user from signed cookie
-      passport.serializeUser((user, done) => done(null, user.serialize()));
-      passport.deserializeUser((data, done) => done(null, User.deserialize(data)));
-
-      // set up authenticators' sub-paths
-      _.forIn(authenticators, (authn, name) => {
-        app.use('/' + name, authn.router());
-      });
-
-      // Add logout method
-      app.post('/logout', (req, res) => {
-        req.logout();
-        res.redirect('/');
-      });
-
-      // Render index
-      app.get('/', (req, res) => {
-        let user = User.get(req);
-        let {credentials} = user.createCredentials(cfg.app.temporaryCredentials);
-        res.render('index', {
-          user, credentials,
-          querystring,
-          allowedHosts: cfg.app.allowedRedirectHosts,
-          query: req.query,
-          flash: req.flash(),
-          session: req.session,
-          auth0_domain: cfg.auth0.domain,
-          auth0_client_id: cfg.auth0.clientId,
-        });
-      });
-
       return app;
     },
   },
 
   server: {
-    requires: ['cfg', 'app', 'docs'],
-    setup: async ({cfg, app, docs}) => {
+    requires: ['cfg', 'app'],
+    setup: async ({cfg, app}) => {
       // Create server and start listening
       return app.createServer();
     },
