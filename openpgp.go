@@ -6,6 +6,7 @@ import (
 
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
+	"golang.org/x/crypto/openpgp/packet"
 )
 
 func generateOpenPGPKeypair(privateKeyFile string) error {
@@ -13,7 +14,9 @@ func generateOpenPGPKeypair(privateKeyFile string) error {
 		"Generic-Worker", // `Name-Real`
 		"",               // `Comment`
 		"taskcluster-accounts+gpgsigning@mozilla.com", // `Name-Email`
-		nil, // Default config (RSA 2048 bits)
+		&packet.Config{
+			RSABits: 4096,
+		},
 	)
 	if err != nil {
 		return err
