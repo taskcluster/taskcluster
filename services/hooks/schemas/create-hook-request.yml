@@ -37,4 +37,3 @@ additionalProperties:     false
 required:
   - metadata
   - task
-  - deadline
