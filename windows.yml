@@ -27,6 +27,8 @@ properties:
         "set GOPATH=C:\\Go"
       ]
       ```
+
+      Since: generic-worker 0.0.1
   env:
     title: Env vars
     description: |-
@@ -39,13 +41,18 @@ properties:
         "BAR_TOTAL": "3"
       }
       ```
+
+      Since: generic-worker 0.0.1
     type: object
     additionalProperties:
       type: string
   maxRunTime:
     type: integer
     title: Maximum run time in seconds
-    description: Maximum time the task container can run in seconds
+    description: |-
+      Maximum time the task container can run in seconds.
+
+      Since: generic-worker 0.0.1
     multipleOf: 1
     minimum: 1
     maximum: 86400
@@ -54,6 +61,8 @@ properties:
     title: Artifacts to be published
     description: |-
       Artifacts to be published.
+
+      Since: generic-worker 1.0.0
     items:
       type: object
       title: Artifact
@@ -68,6 +77,8 @@ properties:
           description: |-
             Artifacts can be either an individual `file` or a `directory` containing
             potentially multiple files with recursively included subdirectories.
+
+            Since: generic-worker 1.0.0
         path:
           title: Artifact location
           type: string
@@ -76,6 +87,8 @@ properties:
             path as is typically used in docker-worker, since the absolute task directory name is not
             known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
             forward slashes or backslashes are used.
+
+            Since: generic-worker 1.0.0
         name:
           title: Name of the artifact
           type: string
@@ -94,6 +107,8 @@ properties:
           description: |-
             Date when artifact should expire must be in the future, no earlier than task deadline, but
             no later than task expiry. If not set, defaults to task expiry.
+
+            Since: generic-worker 1.0.0
         contentType:
           title: Content-Type header when serving artifact over HTTP
           type: string
@@ -106,12 +121,17 @@ properties:
             apply the same contentType to all files contained in the directory.
 
             See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+
+            Since: generic-worker 10.4.0
       required:
       - type
       - path
   features:
     title: Feature flags
-    description: Feature flags enable additional functionality.
+    description: |-
+      Feature flags enable additional functionality.
+
+      Since: generic-worker 5.3.0
     type: object
     additionalProperties: false
     properties:
@@ -202,9 +222,15 @@ definitions:
       file:
         title: File
         type: string
-        description: The filesystem location to mount the file
+        description: |-
+          The filesystem location to mount the file.
+
+          Since: generic-worker 5.4.0
       content:
-        description: Content of the file to be mounted
+        description: |-
+          Content of the file to be mounted.
+
+          Since: generic-worker 5.4.0
         "$ref": "#/definitions/content"
     additionalProperties: false
     required:
@@ -217,23 +243,35 @@ definitions:
       directory:
         title: Directory Volume
         type: string
-        description: The filesystem location to mount the directory volume
+        description: |-
+          The filesystem location to mount the directory volume.
+
+          Since: generic-worker 5.4.0
       cacheName:
         title: Cache Name
         type: string
-        description: Implies a read/write cache directory volume. A unique name
-          for the cache volume. Requires scope `generic-worker:cache:<cache-name>`.
+        description: |-
+          Implies a read/write cache directory volume. A unique name for the
+          cache volume. Requires scope `generic-worker:cache:<cache-name>`.
           Note if this cache is loaded from an artifact, you will also require
           scope `queue:get-artifact:<artifact-name>` to use this cache.
+
+          Since: generic-worker 5.4.0
       content:
         title: Content
-        description: Optional content to be preloaded when initially creating the
-          cache (if set, `format` must also be provided).
+        description: |-
+          Optional content to be preloaded when initially creating the cache
+          (if set, `format` must also be provided).
+
+          Since: generic-worker 5.4.0
         "$ref": "#/definitions/content"
       format:
         title: Format
         type: string
-        description: Archive format of the preloaded content (if `content` provided).
+        description: |-
+          Archive format of the preloaded content (if `content` provided).
+
+          Since: generic-worker 5.4.0
         enum:
         - rar
         - tar.bz2
@@ -255,15 +293,24 @@ definitions:
       directory:
         title: Directory
         type: string
-        description: The filesystem location to mount the directory volume
+        description: |-
+          The filesystem location to mount the directory volume.
+
+          Since: generic-worker 5.4.0
       content:
         title: Content
-        description: Contents of read only directory.
+        description: |-
+          Contents of read only directory.
+
+          Since: generic-worker 5.4.0
         "$ref": "#/definitions/content"
       format:
         title: Format
         type: string
-        description: Archive format of content for read only directory
+        description: |-
+          Archive format of content for read only directory.
+
+          Since: generic-worker 5.4.0
         enum:
         - rar
         - tar.bz2
@@ -277,7 +324,10 @@ definitions:
   content:
     oneOf:
     - title: Artifact Content
-      description: Requires scope `queue:get-artifact:<artifact-name>`
+      description: |-
+        Requires scope `queue:get-artifact:<artifact-name>`.
+
+        Since: generic-worker 5.4.0
       type: object
       properties:
         taskId:
@@ -291,13 +341,19 @@ definitions:
       - taskId
       - artifact
     - title: URL Content
-      description: URL to download content from
+      description: |-
+        URL to download content from.
+
+        Since: generic-worker 5.4.0
       type: object
       properties:
         url:
           type: string
           title: URL
-          description: URL to download content from
+          description: |-
+            URL to download content from.
+
+            Since: generic-worker 5.4.0
           format: uri
       additionalProperties: false
       required:

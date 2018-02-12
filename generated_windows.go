@@ -10,7 +10,9 @@ import (
 )
 
 type (
-	// Requires scope `queue:get-artifact:<artifact-name>`
+	// Requires scope `queue:get-artifact:<artifact-name>`.
+	//
+	// Since: generic-worker 5.4.0
 	ArtifactContent struct {
 
 		// Max length: 1024
@@ -24,10 +26,14 @@ type (
 
 	FileMount struct {
 
-		// Content of the file to be mounted
+		// Content of the file to be mounted.
+		//
+		// Since: generic-worker 5.4.0
 		Content Content `json:"content"`
 
-		// The filesystem location to mount the file
+		// The filesystem location to mount the file.
+		//
+		// Since: generic-worker 5.4.0
 		File string `json:"file"`
 	}
 
@@ -36,6 +42,8 @@ type (
 	GenericWorkerPayload struct {
 
 		// Artifacts to be published.
+		//
+		// Since: generic-worker 1.0.0
 		Artifacts []struct {
 
 			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
@@ -46,10 +54,14 @@ type (
 			// apply the same contentType to all files contained in the directory.
 			//
 			// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+			//
+			// Since: generic-worker 10.4.0
 			ContentType string `json:"contentType,omitempty"`
 
 			// Date when artifact should expire must be in the future, no earlier than task deadline, but
 			// no later than task expiry. If not set, defaults to task expiry.
+			//
+			// Since: generic-worker 1.0.0
 			Expires tcclient.Time `json:"expires,omitempty"`
 
 			// Name of the artifact, as it will be published. If not set, `path` will be used.
@@ -65,10 +77,14 @@ type (
 			// path as is typically used in docker-worker, since the absolute task directory name is not
 			// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
 			// forward slashes or backslashes are used.
+			//
+			// Since: generic-worker 1.0.0
 			Path string `json:"path"`
 
 			// Artifacts can be either an individual `file` or a `directory` containing
 			// potentially multiple files with recursively included subdirectories.
+			//
+			// Since: generic-worker 1.0.0
 			//
 			// Possible values:
 			//   * "file"
@@ -85,6 +101,8 @@ type (
 		//   "set GOPATH=C:\\Go"
 		// ]
 		// ```
+		//
+		// Since: generic-worker 0.0.1
 		Command []string `json:"command"`
 
 		// Env vars must be string to __string__ mappings (not number or boolean). For example:
@@ -96,10 +114,14 @@ type (
 		//   "BAR_TOTAL": "3"
 		// }
 		// ```
+		//
+		// Since: generic-worker 0.0.1
 
 		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
+		//
+		// Since: generic-worker 5.3.0
 		Features struct {
 
 			// An artifact named `public/chainOfTrust.json.asc` should be generated
@@ -111,7 +133,9 @@ type (
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 		} `json:"features,omitempty"`
 
-		// Maximum time the task container can run in seconds
+		// Maximum time the task container can run in seconds.
+		//
+		// Since: generic-worker 0.0.1
 		//
 		// Mininum:    1
 		// Maximum:    86400
@@ -173,12 +197,18 @@ type (
 	ReadOnlyDirectory struct {
 
 		// Contents of read only directory.
+		//
+		// Since: generic-worker 5.4.0
 		Content Content `json:"content"`
 
-		// The filesystem location to mount the directory volume
+		// The filesystem location to mount the directory volume.
+		//
+		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
 
-		// Archive format of content for read only directory
+		// Archive format of content for read only directory.
+		//
+		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
 		//   * "rar"
@@ -188,10 +218,14 @@ type (
 		Format string `json:"format"`
 	}
 
-	// URL to download content from
+	// URL to download content from.
+	//
+	// Since: generic-worker 5.4.0
 	URLContent struct {
 
-		// URL to download content from
+		// URL to download content from.
+		//
+		// Since: generic-worker 5.4.0
 		URL string `json:"url"`
 	}
 
@@ -203,16 +237,28 @@ type (
 
 	WritableDirectoryCache struct {
 
-		// Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope `generic-worker:cache:<cache-name>`. Note if this cache is loaded from an artifact, you will also require scope `queue:get-artifact:<artifact-name>` to use this cache.
+		// Implies a read/write cache directory volume. A unique name for the
+		// cache volume. Requires scope `generic-worker:cache:<cache-name>`.
+		// Note if this cache is loaded from an artifact, you will also require
+		// scope `queue:get-artifact:<artifact-name>` to use this cache.
+		//
+		// Since: generic-worker 5.4.0
 		CacheName string `json:"cacheName"`
 
-		// Optional content to be preloaded when initially creating the cache (if set, `format` must also be provided).
+		// Optional content to be preloaded when initially creating the cache
+		// (if set, `format` must also be provided).
+		//
+		// Since: generic-worker 5.4.0
 		Content Content `json:"content,omitempty"`
 
-		// The filesystem location to mount the directory volume
+		// The filesystem location to mount the directory volume.
+		//
+		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
 
 		// Archive format of the preloaded content (if `content` provided).
+		//
+		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
 		//   * "rar"
@@ -276,7 +322,7 @@ func taskPayloadSchema() string {
       "oneOf": [
         {
           "additionalProperties": false,
-          "description": "Requires scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + `",
+          "description": "Requires scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + `.\n\nSince: generic-worker 5.4.0",
           "properties": {
             "artifact": {
               "maxLength": 1024,
@@ -296,10 +342,10 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
-          "description": "URL to download content from",
+          "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
           "properties": {
             "url": {
-              "description": "URL to download content from",
+              "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
               "format": "uri",
               "title": "URL",
               "type": "string"
@@ -318,10 +364,10 @@ func taskPayloadSchema() string {
       "properties": {
         "content": {
           "$ref": "#/definitions/content",
-          "description": "Content of the file to be mounted"
+          "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
         },
         "file": {
-          "description": "The filesystem location to mount the file",
+          "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
         }
@@ -352,16 +398,16 @@ func taskPayloadSchema() string {
       "properties": {
         "content": {
           "$ref": "#/definitions/content",
-          "description": "Contents of read only directory.",
+          "description": "Contents of read only directory.\n\nSince: generic-worker 5.4.0",
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume",
+          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
           "title": "Directory",
           "type": "string"
         },
         "format": {
-          "description": "Archive format of content for read only directory",
+          "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
           "enum": [
             "rar",
             "tar.bz2",
@@ -392,22 +438,22 @@ func taskPayloadSchema() string {
       },
       "properties": {
         "cacheName": {
-          "description": "Implies a read/write cache directory volume. A unique name for the cache volume. Requires scope ` + "`" + `generic-worker:cache:\u003ccache-name\u003e` + "`" + `. Note if this cache is loaded from an artifact, you will also require scope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.",
+          "description": "Implies a read/write cache directory volume. A unique name for the\ncache volume. Requires scope ` + "`" + `generic-worker:cache:\u003ccache-name\u003e` + "`" + `.\nNote if this cache is loaded from an artifact, you will also require\nscope ` + "`" + `queue:get-artifact:\u003cartifact-name\u003e` + "`" + ` to use this cache.\n\nSince: generic-worker 5.4.0",
           "title": "Cache Name",
           "type": "string"
         },
         "content": {
           "$ref": "#/definitions/content",
-          "description": "Optional content to be preloaded when initially creating the cache (if set, ` + "`" + `format` + "`" + ` must also be provided).",
+          "description": "Optional content to be preloaded when initially creating the cache\n(if set, ` + "`" + `format` + "`" + ` must also be provided).\n\nSince: generic-worker 5.4.0",
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume",
+          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },
         "format": {
-          "description": "Archive format of the preloaded content (if ` + "`" + `content` + "`" + ` provided).",
+          "description": "Archive format of the preloaded content (if ` + "`" + `content` + "`" + ` provided).\n\nSince: generic-worker 5.4.0",
           "enum": [
             "rar",
             "tar.bz2",
@@ -430,17 +476,17 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {
-      "description": "Artifacts to be published.",
+      "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
       "items": {
         "additionalProperties": false,
         "properties": {
           "contentType": {
-            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in the Windows registry. Note, setting ` + "`" + `contentType` + "`" + ` on a directory artifact will\napply the same contentType to all files contained in the directory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).",
+            "description": "Explicitly set the value of the HTTP ` + "`" + `Content-Type` + "`" + ` response header when the artifact(s)\nis/are served over HTTP(S). If not provided (this property is optional) the worker will\nguess the content type of artifacts based on the filename extension of the file storing\nthe artifact content. It does this by looking at the system filename-to-mimetype mappings\ndefined in the Windows registry. Note, setting ` + "`" + `contentType` + "`" + ` on a directory artifact will\napply the same contentType to all files contained in the directory.\n\nSee [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).\n\nSince: generic-worker 10.4.0",
             "title": "Content-Type header when serving artifact over HTTP",
             "type": "string"
           },
           "expires": {
-            "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.",
+            "description": "Date when artifact should expire must be in the future, no earlier than task deadline, but\nno later than task expiry. If not set, defaults to task expiry.\n\nSince: generic-worker 1.0.0",
             "format": "date-time",
             "title": "Expiry date and time",
             "type": "string"
@@ -451,12 +497,12 @@ func taskPayloadSchema() string {
             "type": "string"
           },
           "path": {
-            "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.",
+            "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
             "title": "Artifact location",
             "type": "string"
           },
           "type": {
-            "description": "Artifacts can be either an individual ` + "`" + `file` + "`" + ` or a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories.",
+            "description": "Artifacts can be either an individual ` + "`" + `file` + "`" + ` or a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories.\n\nSince: generic-worker 1.0.0",
             "enum": [
               "file",
               "directory"
@@ -476,7 +522,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "command": {
-      "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n` + "`" + `` + "`" + `` + "`" + `\n[\n  \"set\",\n  \"echo hello world \u003e hello_world.txt\",\n  \"set GOPATH=C:\\\\Go\"\n]\n` + "`" + `` + "`" + `` + "`" + `",
+      "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n` + "`" + `` + "`" + `` + "`" + `\n[\n  \"set\",\n  \"echo hello world \u003e hello_world.txt\",\n  \"set GOPATH=C:\\\\Go\"\n]\n` + "`" + `` + "`" + `` + "`" + `\n\nSince: generic-worker 0.0.1",
       "items": {
         "type": "string"
       },
@@ -488,13 +534,13 @@ func taskPayloadSchema() string {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
+      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nSince: generic-worker 0.0.1",
       "title": "Env vars",
       "type": "object"
     },
     "features": {
       "additionalProperties": false,
-      "description": "Feature flags enable additional functionality.",
+      "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
         "chainOfTrust": {
           "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.\n\nSince: generic-worker 5.3.0",
@@ -506,7 +552,7 @@ func taskPayloadSchema() string {
       "type": "object"
     },
     "maxRunTime": {
-      "description": "Maximum time the task container can run in seconds",
+      "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
       "maximum": 86400,
       "minimum": 1,
       "multipleOf": 1,
