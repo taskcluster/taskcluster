@@ -1,15 +1,8 @@
 Defaults:
   app:
-    authenticators:
-      - auth0
     authorizers:
       - ldap
       - mozillians
-    cookieSecrets: !env:list COOKIE_SECRETS
-    allowedRedirectHosts:
-      - localhost
-      - tools.taskcluster.net
-      - docs.taskcluster.net
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
@@ -79,7 +72,6 @@ Profiles:
     handlers:
       test:
     app:
-      cookieSecrets: ['Shhh']
       temporaryCredentials:
         credentials:
           clientId:     'dummy'
@@ -98,7 +90,6 @@ Profiles:
     handlers:
       test:
     app:
-      cookieSecrets: ['Shhh']
       temporaryCredentials:
         credentials:
           clientId:     'dummy'
