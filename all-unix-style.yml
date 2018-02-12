@@ -50,7 +50,13 @@ properties:
     title: Artifacts to be published
     description: |-
       Artifacts to be published. For example:
-      `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
+      ```
+      {
+        "type": "file",
+        "path": "builds/firefox",
+        "expires": "2015-08-19T17:30:00.000Z"
+      }
+      ```
     items:
       type: object
       title: Artifact
@@ -141,9 +147,7 @@ properties:
       will be appended as a query argument `taskId`. The service should return an object with
       a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
       tasks should be ordered such that each task supersedes all tasks appearing later in the
-      list.  See
-      [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)
-      for more detail.
+      list.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
     format: uri
 definitions:
   mount:

@@ -37,7 +37,13 @@ type (
 	GenericWorkerPayload struct {
 
 		// Artifacts to be published. For example:
-		// `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
+		// ```
+		// {
+		//   "type": "file",
+		//   "path": "builds/firefox",
+		//   "expires": "2015-08-19T17:30:00.000Z"
+		// }
+		// ```
 		Artifacts []struct {
 
 			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
@@ -120,9 +126,7 @@ type (
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
 		// tasks should be ordered such that each task supersedes all tasks appearing later in the
-		// list.  See
-		// [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)
-		// for more detail.
+		// list.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
@@ -388,7 +392,7 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {
-      "description": "Artifacts to be published. For example:\n` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
+      "description": "Artifacts to be published. For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"type\": \"file\",\n  \"path\": \"builds/firefox\",\n  \"expires\": \"2015-08-19T17:30:00.000Z\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
       "items": {
         "additionalProperties": false,
         "properties": {
@@ -492,7 +496,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "supersederUrl": {
-      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See\n[superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)\nfor more detail.",
+      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
       "format": "uri",
       "title": "Superseder URL",
       "type": "string"

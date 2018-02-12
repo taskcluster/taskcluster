@@ -36,7 +36,13 @@ type (
 	GenericWorkerPayload struct {
 
 		// Artifacts to be published. For example:
-		// `{ "type": "file", "path": "builds\\firefox.exe", "expires": "2015-08-19T17:30:00.000Z" }`
+		// ```
+		// {
+		//   "type": "file",
+		//   "path": "builds\\firefox.exe",
+		//   "expires": "2015-08-19T17:30:00.000Z"
+		// }
+		// ```
 		Artifacts []struct {
 
 			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
@@ -116,29 +122,38 @@ type (
 		OSGroups []string `json:"osGroups,omitempty"`
 
 		// Specifies an artifact name for publishing RDP connection information.
+		//
 		// Since this is potentially sensitive data, care should be taken to publish
 		// to a suitably locked down path, such as
 		// `login-identity/<login-identity>/rdpinfo.json` which is only readable for
 		// the given login identity (for example
 		// `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt`). See the
-		// [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information. Use of this feature requires scope
+		// [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.
+		//
+		// Use of this feature requires scope
 		// `generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be
-		// declared as a task scope. The RDP connection data is published during
-		// task startup, so that a task can be watched during its execution. The
-		// worker will sleep for 12 hours after the task completes, before deleting
-		// the task's Windows user account and running subsequent tasks. No
-		// guarantees are given about the resolution status of the interactive task,
-		// since the task is inherently non-reproducible and no automation should
-		// rely on this value.
+		// declared as a task scope.
+		//
+		// The RDP connection data is published during task startup so that a user
+		// may interact with the running task.
+		//
+		// The task environment will be retained for 12 hours after the task
+		// completes, to enable an interactive user to perform investigative tasks.
+		// After these 12 hours, the worker will delete the task's Windows user
+		// account, and then continue with other tasks.
+		//
+		// No guarantees are given about the resolution status of the interactive
+		// task, since the task is inherently non-reproducible and no automation
+		// should rely on this value.
+		//
+		// Available since generic-worker 10.5.0.
 		RdpInfo string `json:"rdpInfo,omitempty"`
 
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
 		// tasks should be ordered such that each task supersedes all tasks appearing later in the
-		// list.  See
-		// [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)
-		// for more detail.
+		// list.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
@@ -404,7 +419,7 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {
-      "description": "Artifacts to be published. For example:\n` + "`" + `{ \"type\": \"file\", \"path\": \"builds\\\\firefox.exe\", \"expires\": \"2015-08-19T17:30:00.000Z\" }` + "`" + `",
+      "description": "Artifacts to be published. For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"type\": \"file\",\n  \"path\": \"builds\\\\firefox.exe\",\n  \"expires\": \"2015-08-19T17:30:00.000Z\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
       "items": {
         "additionalProperties": false,
         "properties": {
@@ -504,12 +519,12 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "rdpInfo": {
-      "description": "Specifies an artifact name for publishing RDP connection information.\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information. Use of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope. The RDP connection data is published during\ntask startup, so that a task can be watched during its execution. The\nworker will sleep for 12 hours after the task completes, before deleting\nthe task's Windows user account and running subsequent tasks. No\nguarantees are given about the resolution status of the interactive task,\nsince the task is inherently non-reproducible and no automation should\nrely on this value.",
+      "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nAvailable since generic-worker 10.5.0.",
       "title": "RDP Info",
       "type": "string"
     },
     "supersederUrl": {
-      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See\n[superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding)\nfor more detail.",
+      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
       "format": "uri",
       "title": "Superseder URL",
       "type": "string"
