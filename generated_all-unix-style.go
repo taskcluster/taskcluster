@@ -66,6 +66,8 @@ type (
 			// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
 			// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
 			// download the artifact). See the Queue documentation for more information.
+			//
+			// Since: generic-worker 8.1.0
 			Name string `json:"name,omitempty"`
 
 			// Relative path of the file/directory from the task directory. Note this is not an absolute
@@ -106,6 +108,8 @@ type (
 			// which will include information for downstream tasks to build a level
 			// of trust for the artifacts produced by the task and the environment
 			// it ran in.
+			//
+			// Since: generic-worker 5.3.0
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 		} `json:"features,omitempty"`
 
@@ -115,18 +119,26 @@ type (
 		// Maximum:    86400
 		MaxRunTime int64 `json:"maxRunTime"`
 
-		// Directories and/or files to be mounted
+		// Directories and/or files to be mounted.
+		//
+		// Since: generic-worker 5.4.0
 		Mounts []Mount `json:"mounts,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
+		//
+		// Since: generic-worker 6.0.0
 		OSGroups []string `json:"osGroups,omitempty"`
 
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
 		// tasks should be ordered such that each task supersedes all tasks appearing later in the
-		// list.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
+		// list.
+		//
+		// See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
+		//
+		// Since: generic-worker 10.2.2
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
@@ -408,7 +420,7 @@ func taskPayloadSchema() string {
             "type": "string"
           },
           "name": {
-            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.",
+            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
             "title": "Name of the artifact",
             "type": "string"
           },
@@ -463,7 +475,7 @@ func taskPayloadSchema() string {
       "description": "Feature flags enable additional functionality.",
       "properties": {
         "chainOfTrust": {
-          "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.",
+          "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of a openpgp signed Chain of Trust artifact",
           "type": "boolean"
         }
@@ -480,7 +492,7 @@ func taskPayloadSchema() string {
       "type": "integer"
     },
     "mounts": {
-      "description": "Directories and/or files to be mounted",
+      "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
       "items": {
         "$ref": "#/definitions/mount",
         "title": "Mount"
@@ -488,7 +500,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.",
+      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.\n\nSince: generic-worker 6.0.0",
       "items": {
         "type": "string"
       },
@@ -496,7 +508,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "supersederUrl": {
-      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
+      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
       "format": "uri",
       "title": "Superseder URL",
       "type": "string"

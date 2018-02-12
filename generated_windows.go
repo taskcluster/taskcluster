@@ -64,6 +64,8 @@ type (
 			// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
 			// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
 			// download the artifact). See the Queue documentation for more information.
+			//
+			// Since: generic-worker 8.1.0
 			Name string `json:"name,omitempty"`
 
 			// Relative path of the file/directory from the task directory. Note this is not an absolute
@@ -105,6 +107,8 @@ type (
 			// which will include information for downstream tasks to build a level
 			// of trust for the artifacts produced by the task and the environment
 			// it ran in.
+			//
+			// Since: generic-worker 5.3.0
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 		} `json:"features,omitempty"`
 
@@ -114,11 +118,15 @@ type (
 		// Maximum:    86400
 		MaxRunTime int64 `json:"maxRunTime"`
 
-		// Directories and/or files to be mounted
+		// Directories and/or files to be mounted.
+		//
+		// Since: generic-worker 5.4.0
 		Mounts []Mount `json:"mounts,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
+		//
+		// Since: generic-worker 6.0.0
 		OSGroups []string `json:"osGroups,omitempty"`
 
 		// Specifies an artifact name for publishing RDP connection information.
@@ -146,14 +154,18 @@ type (
 		// task, since the task is inherently non-reproducible and no automation
 		// should rely on this value.
 		//
-		// Available since generic-worker 10.5.0.
+		// Since: generic-worker 10.5.0
 		RdpInfo string `json:"rdpInfo,omitempty"`
 
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
 		// tasks should be ordered such that each task supersedes all tasks appearing later in the
-		// list.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
+		// list.
+		//
+		// See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
+		//
+		// Since: generic-worker 10.2.2
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
@@ -435,7 +447,7 @@ func taskPayloadSchema() string {
             "type": "string"
           },
           "name": {
-            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.",
+            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
             "title": "Name of the artifact",
             "type": "string"
           },
@@ -486,7 +498,7 @@ func taskPayloadSchema() string {
       "description": "Feature flags enable additional functionality.",
       "properties": {
         "chainOfTrust": {
-          "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.",
+          "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of a openpgp signed Chain of Trust artifact",
           "type": "boolean"
         }
@@ -503,7 +515,7 @@ func taskPayloadSchema() string {
       "type": "integer"
     },
     "mounts": {
-      "description": "Directories and/or files to be mounted",
+      "description": "Directories and/or files to be mounted.\n\nSince: generic-worker 5.4.0",
       "items": {
         "$ref": "#/definitions/mount",
         "title": "Mount"
@@ -511,7 +523,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.",
+      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.\n\nSince: generic-worker 6.0.0",
       "items": {
         "type": "string"
       },
@@ -519,12 +531,12 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "rdpInfo": {
-      "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nAvailable since generic-worker 10.5.0.",
+      "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
       "title": "RDP Info",
       "type": "string"
     },
     "supersederUrl": {
-      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
+      "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
       "format": "uri",
       "title": "Superseder URL",
       "type": "string"

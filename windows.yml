@@ -86,6 +86,8 @@ properties:
             `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
             Artifact names not beginning `public/` are scope-protected (caller requires scopes to
             download the artifact). See the Queue documentation for more information.
+
+            Since: generic-worker 8.1.0
         expires:
           title: Expiry date and time
           type: string
@@ -122,9 +124,14 @@ properties:
           which will include information for downstream tasks to build a level
           of trust for the artifacts produced by the task and the environment
           it ran in.
+
+          Since: generic-worker 5.3.0
   mounts:
     type: array
-    description: Directories and/or files to be mounted
+    description: |-
+      Directories and/or files to be mounted.
+
+      Since: generic-worker 5.4.0
     items:
       title: Mount
       "$ref": "#/definitions/mount"
@@ -134,6 +141,8 @@ properties:
     description: |-
       A list of OS Groups that the task user should be a member of. Requires
       scope `generic-worker:os-group:<os-group>` for each group listed.
+
+      Since: generic-worker 6.0.0
     items:
       type: string
   supersederUrl:
@@ -144,7 +153,11 @@ properties:
       will be appended as a query argument `taskId`. The service should return an object with
       a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
       tasks should be ordered such that each task supersedes all tasks appearing later in the
-      list.  See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
+      list.
+
+      See [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.
+
+      Since: generic-worker 10.2.2
     format: uri
   rdpInfo:
     type: string
@@ -158,14 +171,14 @@ properties:
       the given login identity (for example
       `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpInfo.txt`). See the
       [artifact namespace guide](https://docs.taskcluster.net/manual/design/namespaces#artifacts) for more information.
-      
+
       Use of this feature requires scope
       `generic-worker:allow-rdp:<provisionerId>/<workerType>` which must be
       declared as a task scope.
-      
+
       The RDP connection data is published during task startup so that a user
       may interact with the running task.
-     
+
       The task environment will be retained for 12 hours after the task
       completes, to enable an interactive user to perform investigative tasks.
       After these 12 hours, the worker will delete the task's Windows user
@@ -175,7 +188,7 @@ properties:
       task, since the task is inherently non-reproducible and no automation
       should rely on this value.
 
-      Available since generic-worker 10.5.0.
+      Since: generic-worker 10.5.0
 definitions:
   mount:
     title: Mount
