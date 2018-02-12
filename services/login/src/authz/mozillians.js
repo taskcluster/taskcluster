@@ -12,7 +12,7 @@ class MozilliansAuthorizer {
     assert(options.cfg.mozillians, 'options.cfg.mozillians is required');
     assert(options.cfg.mozillians.apiKey, 'options.cfg.mozillians.apiKey is required');
     assert(options.cfg.mozillians.allowedGroups,
-        'options.cfg.mozillians.allowedGroups is required');
+      'options.cfg.mozillians.allowedGroups is required');
 
     this.mozillians = new Mozillians(options.cfg.mozillians.apiKey, {
       // note that this retries on transient errors only
