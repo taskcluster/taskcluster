@@ -64,6 +64,21 @@ The context is similar to that for `triggerHook`:
 
 ## Task Times
 
-The `created`, `deadline`, and `expires` attributes of the task are set
-automatically, based on the relative times in `hook.deadline` and
-`hook.expires`.
+The timestamps in the task are best set using JSON-e's `$fromNow` operator.
+A feature of JSON-e is that all timestamps in a template are rendered from the
+same base time, meaning that times will add up precisely.  Use something like
+
+```
+{
+  task: {
+    created: {$fromNow: '0 seconds'},
+    deadline: {$fromNow: '1 day'},
+    expires: {$fromNow: '1 month'},
+  }
+}
+```
+
+If the `created`, `deadline`, and `expires` attributes of the task are not set,
+they will be filled in based on the relative times given in `hook.deadline` and
+`hook.expires`.  However, this behavior is deprecated and you are encouraged to
+use `$fromNow` instead.
