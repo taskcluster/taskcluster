@@ -40,14 +40,14 @@ type (
 	// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
 	HookCreationRequest struct {
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
 		//
 		// Default:    "1 day"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
-		Deadline string `json:"deadline"`
+		Deadline string `json:"deadline,omitempty"`
 
-		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
 		//
 		// Default:    "3 months"
 		//
@@ -114,14 +114,14 @@ type (
 	// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
 	HookDefinition struct {
 
-		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
 		//
 		// Default:    "1 day"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
-		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+		// Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
 		//
 		// Default:    "3 months"
 		//
@@ -297,14 +297,14 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status
 		Status struct {
 
-			// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+			// Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
 			//
 			// Default:    "1 day"
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/deadline
 			Deadline string `json:"deadline"`
 
-			// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+			// Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
 			//
 			// Default:    "3 months"
 			//

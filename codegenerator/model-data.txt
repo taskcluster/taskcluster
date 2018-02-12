@@ -1,4 +1,4 @@
-Generated: 1518196960
+Generated: 1518452560
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6036,13 +6036,13 @@ properties:
     triggerSchema: TriggerSchema
   Properties:
     deadline:
-      IS_REQUIRED: true
+      IS_REQUIRED: false
       PROPERTY_NAME: deadline
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
       TYPE_NAME: Deadline
       default: 1 day
       description: |
-        Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+        Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
       title: Deadline
       type: string
     expires:
@@ -6052,7 +6052,7 @@ properties:
       TYPE_NAME: Expiration
       default: 3 months
       description: |
-        Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+        Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
       title: Expiration
       type: string
     metadata:
@@ -6487,7 +6487,6 @@ properties:
 required:
 - metadata
 - task
-- deadline
 title: Hook creation request
 type: object
 
@@ -6523,7 +6522,7 @@ properties:
       TYPE_NAME: Deadline
       default: 1 day
       description: |
-        Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+        Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
       title: Deadline
       type: string
     expires:
@@ -6533,7 +6532,7 @@ properties:
       TYPE_NAME: Expiration
       default: 3 months
       description: |
-        Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+        Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
       title: Expiration
       type: string
     hookGroupId:
@@ -7465,7 +7464,7 @@ properties:
                 TYPE_NAME: Deadline
                 default: 1 day
                 description: |
-                  Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+                  Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
                 title: Deadline
                 type: string
               expires:
@@ -7475,7 +7474,7 @@ properties:
                 TYPE_NAME: Expiration
                 default: 3 months
                 description: |
-                  Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+                  Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
                 title: Expiration
                 type: string
               hookGroupId:
@@ -8010,7 +8009,7 @@ properties:
             TYPE_NAME: Deadline
             default: 1 day
             description: |
-              Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+              Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
             title: Deadline
             type: string
           expires:
@@ -8020,7 +8019,7 @@ properties:
             TYPE_NAME: Expiration
             default: 3 months
             description: |
-              Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
+              Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
             title: Expiration
             type: string
           provisionerId:
