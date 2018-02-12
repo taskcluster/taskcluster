@@ -36,14 +36,7 @@ type (
 	// Taskcluster Task definition.
 	GenericWorkerPayload struct {
 
-		// Artifacts to be published. For example:
-		// ```
-		// {
-		//   "type": "file",
-		//   "path": "builds/firefox",
-		//   "expires": "2015-08-19T17:30:00.000Z"
-		// }
-		// ```
+		// Artifacts to be published.
 		Artifacts []struct {
 
 			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
@@ -404,7 +397,7 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {
-      "description": "Artifacts to be published. For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"type\": \"file\",\n  \"path\": \"builds/firefox\",\n  \"expires\": \"2015-08-19T17:30:00.000Z\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
+      "description": "Artifacts to be published.",
       "items": {
         "additionalProperties": false,
         "properties": {

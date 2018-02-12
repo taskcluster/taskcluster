@@ -20,7 +20,13 @@ properties:
     description: |-
       One entry per command (consider each entry to be interpreted as a full line of
       a Windows™ .bat file). For example:
-      `["set", "echo hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
+      ```
+      [
+        "set",
+        "echo hello world > hello_world.txt",
+        "set GOPATH=C:\\Go"
+      ]
+      ```
   env:
     title: Env vars
     description: |-
@@ -47,14 +53,7 @@ properties:
     type: array
     title: Artifacts to be published
     description: |-
-      Artifacts to be published. For example:
-      ```
-      {
-        "type": "file",
-        "path": "builds\\firefox.exe",
-        "expires": "2015-08-19T17:30:00.000Z"
-      }
-      ```
+      Artifacts to be published.
     items:
       type: object
       title: Artifact

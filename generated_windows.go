@@ -35,14 +35,7 @@ type (
 	// Taskcluster Task definition.
 	GenericWorkerPayload struct {
 
-		// Artifacts to be published. For example:
-		// ```
-		// {
-		//   "type": "file",
-		//   "path": "builds\\firefox.exe",
-		//   "expires": "2015-08-19T17:30:00.000Z"
-		// }
-		// ```
+		// Artifacts to be published.
 		Artifacts []struct {
 
 			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
@@ -85,7 +78,13 @@ type (
 
 		// One entry per command (consider each entry to be interpreted as a full line of
 		// a Windows™ .bat file). For example:
-		// `["set", "echo hello world > hello_world.txt", "set GOPATH=C:\\Go"]`.
+		// ```
+		// [
+		//   "set",
+		//   "echo hello world > hello_world.txt",
+		//   "set GOPATH=C:\\Go"
+		// ]
+		// ```
 		Command []string `json:"command"`
 
 		// Env vars must be string to __string__ mappings (not number or boolean). For example:
@@ -431,7 +430,7 @@ func taskPayloadSchema() string {
   "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {
-      "description": "Artifacts to be published. For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"type\": \"file\",\n  \"path\": \"builds\\\\firefox.exe\",\n  \"expires\": \"2015-08-19T17:30:00.000Z\"\n}\n` + "`" + `` + "`" + `` + "`" + `",
+      "description": "Artifacts to be published.",
       "items": {
         "additionalProperties": false,
         "properties": {
@@ -477,7 +476,7 @@ func taskPayloadSchema() string {
       "type": "array"
     },
     "command": {
-      "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n` + "`" + `[\"set\", \"echo hello world \u003e hello_world.txt\", \"set GOPATH=C:\\\\Go\"]` + "`" + `.",
+      "description": "One entry per command (consider each entry to be interpreted as a full line of\na Windows™ .bat file). For example:\n` + "`" + `` + "`" + `` + "`" + `\n[\n  \"set\",\n  \"echo hello world \u003e hello_world.txt\",\n  \"set GOPATH=C:\\\\Go\"\n]\n` + "`" + `` + "`" + `` + "`" + `",
       "items": {
         "type": "string"
       },
