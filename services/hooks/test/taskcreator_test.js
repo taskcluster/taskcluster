@@ -5,6 +5,7 @@ suite('TaskCreator', function() {
   var helper            = require('./helper');
   var data              = require('../src/data');
   var taskcluster       = require('taskcluster-client');
+  var _                 = require('lodash');
 
   this.slow(500);
   helper.setup();
@@ -29,40 +30,56 @@ suite('TaskCreator', function() {
     creator = await helper.load('taskcreator', helper.loadOptions);
   });
 
-  var createTestHook = async function(scopes, extra) {
-    return await helper.Hook.create({
-      hookGroupId:        'tc-hooks-tests',
-      hookId:             'tc-test-hook',
-      metadata:           {},
-      task:               {
-        provisionerId:    'no-provisioner',
-        workerType:       'test-worker',
-        schedulerId:      'my-scheduler',
-        taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-        scopes:           scopes,
-        payload:          {},
-        metadata:         {
-          name:           'Unit testing task',
-          description:    'Task created during unit tests',
-          owner:          'amiyaguchi@mozilla.com',
-          source:         'http://github.com/',
-        },
-        tags: {
-          purpose:        'taskcluster-testing',
-        },
-        extra,
+  var defaultHook = {
+    hookGroupId:        'tc-hooks-tests',
+    hookId:             'tc-test-hook',
+    metadata:           {},
+    task:               {
+      provisionerId:    'no-provisioner',
+      workerType:       'test-worker',
+      schedulerId:      'my-scheduler',
+      taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+      scopes:           [],
+      payload:          {},
+      metadata:         {
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
+        owner:          'amiyaguchi@mozilla.com',
+        source:         'http://github.com/',
       },
-      bindings:           [],
-      deadline:           '1 day',
-      expires:            '1 day',
-      schedule:           {format: {type: 'none'}},
-      triggerToken:       taskcluster.slugid(),
-      lastFire:           {},
-      nextTaskId:         taskcluster.slugid(),
-      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
-      triggerSchema:      {type: 'object', properties:{location:{type: 'string', default: 'Niskayuna, NY'}, 
-        otherVariable: {type: 'integer', default: '12'}}, additionalProperties: false},
-    });
+      tags: {
+        purpose:        'taskcluster-testing',
+      },
+    },
+    bindings:           [],
+    deadline:           '1 day',
+    expires:            '1 day',
+    schedule:           {format: {type: 'none'}},
+    triggerToken:       taskcluster.slugid(),
+    lastFire:           {},
+    nextTaskId:         taskcluster.slugid(),
+    nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+    triggerSchema:      {
+      type: 'object',
+      properties: {
+        location: {
+          type: 'string',
+          default: 'Niskayuna, NY',
+        }, 
+        otherVariable: {
+          type: 'integer',
+          default: '12',
+        },
+      },
+      additionalProperties: false,
+    },
+  };
+
+  var createTestHook = async function(scopes, extra) {
+    let hook = _.cloneDeep(defaultHook);
+    hook.task.extra = extra;
+    hook.task.scopes = scopes;
+    return await helper.Hook.create(hook);
   };
 
   test('firing a real task succeeds', async function() {
@@ -91,6 +108,20 @@ suite('TaskCreator', function() {
       context: {valueFromContext: 55, flattenedDeep:[1, 2, 3, 4, 5, 6], firedBy: 'schedule'},
     });
   });   
+
+  test('firing a real task that sets its own task times works', async function() {
+    let hook = _.cloneDeep(defaultHook);
+    hook.task.created = {$fromNow: '0 seconds'};
+    hook.task.deadline = {$fromNow: '1 minute'};
+    hook.task.expires = {$fromNow: '2 minutes'};
+    return await helper.Hook.create(hook);
+    let taskId = taskcluster.slugid();
+    let resp = await creator.fire(hook, {}, {taskId});
+    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
+    let task = await queue.task(taskId);
+    assume(new Date(task.expires) - new Date(task.created)).to.equal(60000);
+    assume(new Date(task.deadline) - new Date(task.created)).to.equal(120000);
+  });
 
   test('triggerSchema', async function() {
     let hook = await createTestHook([], {
