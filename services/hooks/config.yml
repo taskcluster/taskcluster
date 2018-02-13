@@ -3,7 +3,7 @@ defaults:
   app:
     component:        hooks
     hookTable:        !env HOOK_TABLE_NAME
-    publishMetaData:  !env:flag PUBLISH_METADATA
+    publishMetaData:  !env:bool PUBLISH_METADATA
     scheduler:
       pollingDelay:   60000
   influx:
@@ -23,7 +23,7 @@ defaults:
     port:             !env:number PORT
     publicUrl:        !env PUBLIC_URL
     env:              !env NODE_ENV
-    forceSSL:         !env:flag FORCE_SSL
+    forceSSL:         !env:bool FORCE_SSL
     trustProxy:       false
   #pulse:
   #  username: !env PULSE_USERNAME
