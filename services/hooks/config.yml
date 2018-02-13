@@ -45,8 +45,6 @@ defaults:
       apiVersion:       2014-01-01
 
 production:
-  app:
-    hookTable:        Hooks
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1
   server:
