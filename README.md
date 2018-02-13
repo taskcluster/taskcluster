@@ -24,6 +24,11 @@ to the start or expiry time - this is handled by the auth service directly.
 ```python
 import datetime
 
+start = datetime.datetime.now()
+expiry = start + datetime.timedelta(0,60)
+scopes = ['ScopeA', 'ScopeB']
+name = 'foo'
+
 credentials = taskcluster.createTemporaryCredentials(
     # issuing clientId
     clientId,
@@ -34,9 +39,9 @@ credentials = taskcluster.createTemporaryCredentials(
     # Expiration of temporary credentials, in timestamp
     expiry,
     # Scopes to grant the temporary credentials
-    scopes: ['ScopeA', 'ScopeB', ...],
+    scopes,
     # credential name (optional)
-    name='...'
+    name
 )
 ```
 
