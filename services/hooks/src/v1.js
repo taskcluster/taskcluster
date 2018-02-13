@@ -375,7 +375,9 @@ api.declare({
   if (validate && payload) {
     let valid = validate(payload);
     if (!valid) {
-      return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
+      return res.reportError('InputError', '{{message}}', {
+        message: ajv.errorsText(validate.errors, {separator: '; '}
+        )});
     }
   } 
   // build the context for the task creation
