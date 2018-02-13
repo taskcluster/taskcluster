@@ -11,7 +11,7 @@
     },
     "AZURE_ACCOUNT": "jungle",
     "DEBUG": "*",
-    "HOOK_TABLE_NAME": "HooksWithPulse",
+    "HOOK_TABLE_NAME": "Hooks",
     "NODE_MODULES_CACHE": {
       "required": true
     },
@@ -35,10 +35,12 @@
       "required": true
     },
     "TASKCLUSTER_ACCESS_TOKEN": {
-      "required": true
+      "required": true,
+      "value": "must set this"
     },
     "TASKCLUSTER_CLIENT_ID": {
-      "required": true
+      "required": true,
+      "value": "must set this"
     },
     "TRUST_PROXY": {
       "required": true
