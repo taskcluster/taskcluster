@@ -1,0 +1,63 @@
+{
+  "name": "taskcluster-hooks",
+  "scripts": {
+  },
+  "env": {
+    "AWS_ACCESS_KEY_ID": {
+      "required": true
+    },
+    "AWS_SECRET_ACCESS_KEY": {
+      "required": true
+    },
+    "AZURE_ACCOUNT": "jungle",
+    "DEBUG": "*",
+    "HOOK_TABLE_NAME": "HooksWithPulse",
+    "NODE_MODULES_CACHE": {
+      "required": true
+    },
+    "OWNER_EMAIL": {
+      "required": true
+    },
+    "PROFILE": {
+      "required": true
+    },
+    "PUBLIC_URL": {
+      "required": true
+    },
+    "PUBLISH_METADATA": "false",
+    "SENTRY_DSN": {
+      "required": true
+    },
+    "TABLE_CRYPTO_KEY": {
+      "required": true
+    },
+    "TABLE_SIGNING_KEY": {
+      "required": true
+    },
+    "TASKCLUSTER_ACCESS_TOKEN": {
+      "required": true
+    },
+    "TASKCLUSTER_CLIENT_ID": {
+      "required": true
+    },
+    "TRUST_PROXY": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    },
+    "scheduler": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
