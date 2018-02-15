@@ -183,6 +183,73 @@ let load = loader({
       process.exit(0);
     },
   },
+
+  'show-mozillians-user': {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      const Mozillians = require('mozillians-client');
+      let email = process.argv[3];
+      if (!email) {
+        console.error('Specify an email address on the command line');
+        process.exit(1);
+        return;
+      }
+
+      try {
+        const mozillians = new Mozillians(cfg.mozillians.apiKey, {
+          // note that this retries on transient errors only
+          retries: 5,
+          delayFactor: 100,
+          maxDelay: 30 * 1000,
+        });
+
+        // Find the user
+        let userLookup = await mozillians.users({email});
+        let mozilliansUser, vouched;
+        if (userLookup.results.length === 1) {
+          let u = userLookup.results[0];
+          vouched = u.is_vouched;
+          mozilliansUser = u.username;
+        } else {
+          // If there is no associated mozillians user at all, do nothing.
+          console.log(`no mozillian user found with email ${email} - is the record public?`);
+          return;
+        }
+
+        console.log(`found mozillians username ${mozilliansUser}; vouched: ${vouched}`);
+
+        // unvouched users just get the "mozillians-unvouched" role, and no
+        // group-based roles.  This allows them to complete the tutorial.
+        if (!vouched) {
+          console.log('not vouched');
+          return;
+        }
+
+        // For each group to be considered we check if the user is a member
+        let groupLookups = await Promise.all(
+          cfg.mozillians.allowedGroups.map(group => {
+            return mozillians.users({email, group}).then(result => {
+              result.group = group;
+              return result;
+            });
+          })
+        );
+        groupLookups.forEach(g => {
+          if (g.results.length === 1) {
+            let u = g.results[0];
+            if (u.is_vouched && u.username === mozilliansUser) {
+              console.log(`found group ${g.group}`);
+            }
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        process.exit(1);
+      } finally {
+        process.exit(0);
+      }
+    },
+  },
 }, ['profile', 'process']);
 
 if (!module.parent) {
