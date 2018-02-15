@@ -89,7 +89,7 @@ class Handler {
     // TODO: remove full-user-credentials after updating tools, treeherder, and docs to reference the new scope
     // Bug 1437116
     let scopes = req.user.scope ? req.user.scope.split(' ') : [];
-    if (!scopes.includes('full-user-credentials') || !scopes.includes('taskcluster-credentials')) {
+    if (!scopes.includes('full-user-credentials') && !scopes.includes('taskcluster-credentials')) {
       debug(`request did not have the 'full-user-credentials' or 'taskcluster-credentials' scope\
         ; had ${req.user.scope}`);
       return;
