@@ -46,7 +46,7 @@ Auth0 documentation is quite thorough.
 
 The keys to later using this sign-in for access to Taskcluster are:
  * the OIDC audience must include `login.taskcluster.net`
- * the OIDC scopes must include `full-user-credentials` and `openid`
+ * the OIDC scopes must include `taskcluster-credentials` and `openid`
 
 When the sign-in is complete, Auth0 will redirect back to your application with
 an `id_token` and an `access_token`. The `id_token` can be used by your app to
