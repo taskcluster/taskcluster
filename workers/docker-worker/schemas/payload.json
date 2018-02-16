@@ -186,7 +186,7 @@
     },
     "encryptedEnv": {
       "title": "List of encrypted environment variable mappings.",
-      "description": "List of base64 encoded asymmetric encrypted environment variables. See https://docs.taskcluster.net/manual/execution/workers/docker-worker#encrypted-environment-variables",
+      "description": "List of base64 encoded asymmetric encrypted environment variables. See https://docs.taskcluster.net/reference/workers/docker-worker/environment#encrypted-environment-variables",
       "type": "array",
       "items": {
         "title": "Base64 encoded encrypted environment variable object.",
