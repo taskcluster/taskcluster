@@ -44,6 +44,12 @@ class IRCBot {
       debug: options.debug || false,
       showErrors: true,
     });
+    this.client.on('error', err => {
+      if (err.command !== 'err_nosuchnick') {
+        throw new Error(err);
+      }
+      console.log('ignoring irc client error');
+    });
     this.sqs = new aws.SQS(options.aws);
     this.queueName = options.queueName;
     this.stopping = false;
