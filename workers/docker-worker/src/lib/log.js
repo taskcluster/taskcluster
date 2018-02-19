@@ -9,9 +9,11 @@ module.exports = {
   createLogger(details) {
     return function(type, values) {
       var logObject = { type: type };
-      for (let key in details) logObject[key] = details[key];
-      if (values) {
-        for (let key in values) logObject[key] = values[key];
+      Object.assign(logObject, details);
+      if (typeof values === 'object') {
+        Object.assign(logObject, values);
+      } else {
+        logObject.value = values;
       }
       process.stdout.write(JSON.stringify(logObject) + '\n');
     };
