@@ -73,6 +73,7 @@ func setup(t *testing.T, testName string) {
 		Region: "outer-space",
 		RequiredDiskSpaceMegabytes:     1024,
 		RunTasksAsCurrentUser:          true,
+		SentryProject:                  "generic-worker-tests",
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,
 		SigningKeyLocation:             filepath.Join("testdata", "private-opengpg-key"),
