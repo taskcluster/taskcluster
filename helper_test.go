@@ -13,6 +13,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -40,10 +42,6 @@ var (
 
 func setup(t *testing.T, testName string) {
 	// some basic setup...
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Test failed during setup phase!")
-	}
 	testdataDir = filepath.Join(cwd, "testdata")
 
 	// configure the worker
@@ -254,6 +252,62 @@ func checkSHA256(t *testing.T, sha256Hex string, file string) {
 	}
 }
 
+type ArtifactTraits struct {
+	Extracts        []string
+	ContentType     string
+	ContentEncoding string
+	Expires         tcclient.Time
+}
+
+type ExpectedArtifacts map[string]ArtifactTraits
+
+func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
+
+	artifacts, err := myQueue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
+
+	if err != nil {
+		t.Fatalf("Error listing artifacts: %v", err)
+	}
+
+	actualArtifacts := make(map[string]struct {
+		ContentType string        `json:"contentType"`
+		Expires     tcclient.Time `json:"expires"`
+		Name        string        `json:"name"`
+		StorageType string        `json:"storageType"`
+	}, len(artifacts.Artifacts))
+
+	for _, actualArtifact := range artifacts.Artifacts {
+		actualArtifacts[actualArtifact.Name] = actualArtifact
+	}
+
+	for artifact, expected := range expectedArtifacts {
+		if actual, ok := actualArtifacts[artifact]; ok {
+			if actual.ContentType != expected.ContentType {
+				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expected.ContentType, actual.ContentType)
+			}
+			if !time.Time(expected.Expires).IsZero() {
+				if actual.Expires.String() != expected.Expires.String() {
+					t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, expected.Expires, actual.Expires)
+				}
+			}
+		} else {
+			t.Errorf("Artifact '%s' not created", artifact)
+		}
+		b, rawResp, resp, url := getArtifactContent(t, taskID, artifact)
+		for _, requiredSubstring := range expected.Extracts {
+			if strings.Index(string(b), requiredSubstring) < 0 {
+				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
+			}
+		}
+		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != expected.ContentEncoding {
+			t.Fatalf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", expected.ContentEncoding, actualContentEncoding, artifact, url)
+		}
+		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != expected.ContentType {
+			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, expected.ContentType)
+		}
+	}
+}
+
 func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
 	url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
 	if err != nil {
@@ -287,4 +341,21 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 	if status.Status.State != state || status.Status.Runs[0].ReasonResolved != reason {
 		t.Fatalf("Expected task %v to resolve as '%v/%v' but resolved as '%v/%v'", taskID, state, reason, status.Status.State, status.Status.Runs[0].ReasonResolved)
 	}
+}
+
+func expectChainOfTrustKeyNotSecureMessage(t *testing.T, taskID string) {
+	ensureResolution(t, taskID, "exception", "malformed-payload")
+
+	expectedArtifacts := ExpectedArtifacts{
+		"public/logs/live_backing.log": {
+			Extracts: []string{
+				ChainOfTrustKeyNotSecureMessage,
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+		},
+	}
+
+	expectedArtifacts.Validate(t, taskID, 0)
+	return
 }

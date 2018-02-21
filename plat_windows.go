@@ -127,7 +127,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 		}
 		if script := config.RunAfterUserCreation; script != "" {
 			var noDeadline time.Time
-			command, err := process.NewCommand(loginInfo, script, &taskContext.TaskDir, nil, noDeadline)
+			command, err := process.NewCommand(loginInfo, nil, &script, &taskContext.TaskDir, nil, noDeadline)
 			if err != nil {
 				panic(err)
 			}
@@ -213,22 +213,31 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	loginInfo := &subprocess.LoginInfo{}
-	if !config.RunTasksAsCurrentUser {
-		hToken, err := win32.InteractiveUserToken(time.Minute)
-		if err != nil {
-			task.Error("Cannot get handle of interactive user")
-			return err
-		}
-		loginInfo.HUser = hToken
+	loginInfo, err := TaskUserLoginInfo()
+	if err != nil {
+		task.Errorf("Cannot get handle of interactive user: %v", err)
+		return err
 	}
-	command, err := process.NewCommand(loginInfo, wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline)
+	command, err := process.NewCommand(loginInfo, nil, &wrapper, &taskContext.TaskDir, nil, task.maxRunTimeDeadline)
 	if err != nil {
 		return err
 	}
 	command.DirectOutput(task.logWriter)
 	task.Commands[index] = command
 	return nil
+}
+
+func TaskUserLoginInfo() (loginInfo *subprocess.LoginInfo, err error) {
+	loginInfo = &subprocess.LoginInfo{}
+	if !config.RunTasksAsCurrentUser {
+		var hToken syscall.Handle
+		hToken, err = win32.InteractiveUserToken(time.Minute)
+		if err != nil {
+			return
+		}
+		loginInfo.HUser = hToken
+	}
+	return
 }
 
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {

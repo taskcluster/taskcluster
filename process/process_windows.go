@@ -143,7 +143,7 @@ func (c *Command) Execute() (r *Result) {
 	}
 }
 
-func NewCommand(loginInfo *subprocess.LoginInfo, commandLine string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {
+func NewCommand(loginInfo *subprocess.LoginInfo, applicationName *string, commandLine *string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {
 	if deadline.IsZero() {
 		log.Print("No deadline!")
 	} else {
@@ -153,9 +153,9 @@ func NewCommand(loginInfo *subprocess.LoginInfo, commandLine string, workingDire
 		Subprocess: &subprocess.Subprocess{
 			TimeQuantum: time.Second / 4,
 			Cmd: &subprocess.CommandLine{
-				ApplicationName: nil,
-				CommandLine:     &commandLine,
-				Parameters:      nil,
+				ApplicationName: applicationName,
+				CommandLine:     commandLine,
+				Parameters:      nil, // unused on windows
 			},
 			CurrentDirectory:    workingDirectory,
 			TimeLimit:           0,
@@ -179,7 +179,7 @@ func NewCommand(loginInfo *subprocess.LoginInfo, commandLine string, workingDire
 		},
 		Deadline: deadline,
 	}
-	log.Printf("Created command: %v", commandLine)
+	log.Printf("Created command: %v to run from folder %v", *commandLine, *workingDirectory)
 	return command, nil
 }
 
