@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks
 func TestAppDataNotShared(t *testing.T) {
@@ -94,4 +97,41 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	taskID := scheduleAndExecute(t, td, payload)
 
 	ensureResolution(t, taskID, "completed", "completed")
+}
+
+func TestChainOfTrustWithAdministratorPrivs(t *testing.T) {
+	setup(t, "TestChainOfTrustWithAdministratorPrivs")
+	defer teardown(t)
+	payload := GenericWorkerPayload{
+		Command: []string{
+			`type "` + filepath.Join(cwd, config.SigningKeyLocation) + `"`,
+		},
+		MaxRunTime: 5,
+		OSGroups:   []string{"Administrators"},
+		Features: struct {
+			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+		}{
+			ChainOfTrust: true,
+		},
+	}
+	td := testTask(t)
+	td.Scopes = []string{
+		"generic-worker:os-group:Administrators",
+	}
+	taskID := scheduleAndExecute(t, td, payload)
+
+	if config.RunTasksAsCurrentUser {
+		// When running as current user, chain of trust key is not private so
+		// generic-worker should detect that it isn't secured from task user
+		// and cause malformed-payload exception.
+		expectChainOfTrustKeyNotSecureMessage(t, taskID)
+		return
+
+	}
+
+	// When bug 1439588 lands, if runAsAdministrator feature is enabled, the
+	// task resolution should be "exception" / "malformed-payload". However,
+	// without process elevation, Administrator rights are not available, so
+	// the task should resolve as "failed" / "failed".
+	ensureResolution(t, taskID, "failed", "failed")
 }

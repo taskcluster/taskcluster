@@ -32,6 +32,8 @@ import (
 )
 
 var (
+	// Current working directory of process
+	cwd string
 	// Whether we are running under the aws provisioner
 	configureForAws bool
 	// General platform independent user settings, such as home directory, username...
@@ -303,9 +305,12 @@ func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
 		&OSGroupsFeature{},
-		&ChainOfTrustFeature{},
 		&MountsFeature{},
 		&SupersedeFeature{},
+		// keep chain of trust as low down as possible, as it checks permissions
+		// of signing key file, and a feature could change them, so we want these
+		// checks as late as possible
+		&ChainOfTrustFeature{},
 	}
 	Features = append(Features, platformFeatures()...)
 	for _, feature := range Features {
@@ -529,6 +534,12 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}()
 
+	var err error
+	cwd, err = os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
 	log.Printf("Detected %s platform", runtime.GOOS)
 	// number of tasks resolved since worker first ran
 	// stored in a json file, since we may reboot between tasks etc
@@ -540,7 +551,7 @@ func RunWorker() (exitCode ExitCode) {
 			panic(err)
 		}
 	}(&tasksResolved)
-	err := taskCleanup()
+	err = taskCleanup()
 	// any errors are fatal
 	if err != nil {
 		log.Printf("OH NO!!!\n\n%#v", err)
@@ -1104,11 +1115,18 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		}
 	}
 
-	taskFeatures := []TaskFeature{}
+	// tracks which Feature created which TaskFeature
+	type TaskFeatureOrigin struct {
+		t TaskFeature
+		f Feature
+	}
+
+	taskFeatures := []TaskFeatureOrigin{}
 
 	// create task features
 	for _, feature := range Features {
 		if feature.IsEnabled(task) {
+			log.Printf("Creating task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
 			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.NewNoAuth())
@@ -1130,7 +1148,13 @@ func (task *TaskRun) Run() (err *executionErrors) {
 					task.featureArtifacts[a] = feature.Name()
 				}
 			}
-			taskFeatures = append(taskFeatures, taskFeature)
+			taskFeatures = append(
+				taskFeatures,
+				TaskFeatureOrigin{
+					t: taskFeature,
+					f: feature,
+				},
+			)
 		}
 	}
 	if err.Occurred() {
@@ -1139,13 +1163,15 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	// start task features
 	for _, taskFeature := range taskFeatures {
-		err.add(taskFeature.Start())
+
+		log.Printf("Starting task feature %v...", taskFeature.f.Name())
+		err.add(taskFeature.t.Start())
 		if err.Occurred() {
 			return
 		}
 		defer func(taskFeature TaskFeature) {
 			err.add(taskFeature.Stop())
-		}(taskFeature)
+		}(taskFeature.t)
 	}
 
 	defer func() {

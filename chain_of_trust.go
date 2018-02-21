@@ -11,9 +11,14 @@ import (
 
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
+	"golang.org/x/crypto/openpgp/packet"
 
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	"github.com/taskcluster/taskcluster-client-go/queue"
+)
+
+const (
+	ChainOfTrustKeyNotSecureMessage = "Was expecting attempt to read private chain of trust key as task user to fail - however, it did not!"
 )
 
 var (
@@ -24,6 +29,7 @@ var (
 )
 
 type ChainOfTrustFeature struct {
+	PrivateKey *packet.PrivateKey
 }
 
 type ArtifactHash struct {
@@ -50,7 +56,8 @@ type ChainOfTrustData struct {
 }
 
 type ChainOfTrustTaskFeature struct {
-	task *TaskRun
+	task    *TaskRun
+	privKey *packet.PrivateKey
 }
 
 func (feature *ChainOfTrustFeature) Name() string {
@@ -61,8 +68,32 @@ func (feature *ChainOfTrustFeature) PersistState() error {
 	return nil
 }
 
-func (feature *ChainOfTrustFeature) Initialise() error {
-	return nil
+func (feature *ChainOfTrustFeature) Initialise() (err error) {
+	feature.PrivateKey, err = readPrivateKey()
+	if err != nil {
+		return
+	}
+
+	// platform-specific mechanism to lock down file permissions
+	// of private signing key
+	err = secureSigningKey()
+	return
+}
+
+func readPrivateKey() (privateKey *packet.PrivateKey, err error) {
+	var privKeyFile *os.File
+	privKeyFile, err = os.Open(config.SigningKeyLocation)
+	if err != nil {
+		return
+	}
+	defer privKeyFile.Close()
+	var entityList openpgp.EntityList
+	entityList, err = openpgp.ReadArmoredKeyRing(privKeyFile)
+	if err != nil {
+		return
+	}
+	privateKey = entityList[0].PrivateKey
+	return
 }
 
 func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
@@ -71,7 +102,8 @@ func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
 
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &ChainOfTrustTaskFeature{
-		task: task,
+		task:    task,
+		privKey: feature.PrivateKey,
 	}
 }
 
@@ -88,6 +120,15 @@ func (cot *ChainOfTrustTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
+	// Return an error if the task user can read the private key file.
+	// We shouldn't be able to read the private key, if we can let's raise
+	// MalformedPayloadError, as it could be a problem with the task definition
+	// (for example, enabling chainOfTrust on a worker type that has
+	// runTasksAsCurrentUser enabled).
+	err := cot.ensureTaskUserCantReadPrivateCotKey()
+	if err != nil {
+		return MalformedPayloadError(err)
+	}
 	return nil
 }
 
@@ -149,17 +190,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	}
 	defer out.Close()
 
-	privKeyFile, e := os.Open(config.SigningKeyLocation)
-	if e != nil {
-		panic(e)
-	}
-	defer privKeyFile.Close()
-	entityList, e := openpgp.ReadArmoredKeyRing(privKeyFile)
-	if e != nil {
-		panic(e)
-	}
-	privKey := entityList[0].PrivateKey
-	w, e := clearsign.Encode(out, privKey, nil)
+	w, e := clearsign.Encode(out, cot.privKey, nil)
 	if e != nil {
 		panic(e)
 	}

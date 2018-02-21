@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -490,6 +489,13 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 
 	taskID := scheduleAndExecute(t, td, payload)
 
+	// Chain of trust is not allowed when running as current user
+	// since signing key cannot be secured
+	if config.RunTasksAsCurrentUser {
+		expectChainOfTrustKeyNotSecureMessage(t, taskID)
+		return
+	}
+
 	ensureResolution(t, taskID, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
@@ -813,146 +819,103 @@ func TestUpload(t *testing.T) {
 
 	taskID := scheduleAndExecute(t, td, payload)
 
+	// Chain of trust is not allowed when running as current user
+	// since signing key cannot be secured
+	if config.RunTasksAsCurrentUser {
+		expectChainOfTrustKeyNotSecureMessage(t, taskID)
+		return
+	}
+
 	// some required substrings - not all, just a selection
-	expectedArtifacts := map[string]struct {
-		extracts        []string
-		contentType     string
-		contentEncoding string
-		expires         tcclient.Time
-	}{
+	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
-			extracts: []string{
+			Extracts: []string{
 				"hello world!",
 				"goodbye world!",
 				`"instance-type": "p3.enormous"`,
 			},
-			contentType:     "text/plain; charset=utf-8",
-			contentEncoding: "gzip",
-			expires:         td.Expires,
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
 		},
 		"public/logs/live.log": {
-			extracts: []string{
+			Extracts: []string{
 				"hello world!",
 				"goodbye world!",
 				"=== Task Finished ===",
 				"Exit Code: 0",
 			},
-			contentType:     "text/plain; charset=utf-8",
-			contentEncoding: "gzip",
-			expires:         td.Expires,
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
 		},
 		"public/logs/certified.log": {
-			extracts: []string{
+			Extracts: []string{
 				"hello world!",
 				"goodbye world!",
 				"=== Task Finished ===",
 				"Exit Code: 0",
 			},
-			contentType:     "text/plain; charset=utf-8",
-			contentEncoding: "gzip",
-			expires:         td.Expires,
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
 		},
 		"public/chainOfTrust.json.asc": {
 			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
 			// 8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f  ./_/X.txt
 			// a0ed21ab50992121f08da55365da0336062205fd6e7953dbff781a7de0d625b7  ./b/c/d.jpg
-			extracts: []string{
+			Extracts: []string{
 				"8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
 			},
-			contentType:     "text/plain; charset=utf-8",
-			contentEncoding: "gzip",
-			expires:         td.Expires,
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
 		},
 		"public/build/X.txt": {
-			extracts: []string{
+			Extracts: []string{
 				"test artifact",
 			},
-			contentType:     "text/plain; charset=utf-8",
-			contentEncoding: "gzip",
-			expires:         payload.Artifacts[0].Expires,
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         payload.Artifacts[0].Expires,
 		},
 		"SampleArtifacts/b/c/d.jpg": {
-			extracts:        []string{},
-			contentType:     "image/jpeg",
-			contentEncoding: "", // jpg files are blacklisted against gzip compression
-			expires:         payload.Artifacts[0].Expires,
+			Extracts:        []string{},
+			ContentType:     "image/jpeg",
+			ContentEncoding: "", // jpg files are blacklisted against gzip compression
+			Expires:         payload.Artifacts[0].Expires,
 		},
 	}
 
-	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	expectedArtifacts.Validate(t, taskID, 0)
 
+	b, _, _, _ := getArtifactContent(t, taskID, "public/chainOfTrust.json.asc")
+	if len(b) == 0 {
+		t.Fatalf("Could not retrieve content of public/chainOfTrust.json.asc")
+	}
+
+	// check openpgp signature is valid
+	pubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
 	if err != nil {
-		t.Fatalf("Error listing artifacts: %v", err)
+		t.Fatalf("Error opening public key file")
 	}
-
-	actualArtifacts := make(map[string]struct {
-		ContentType string        `json:"contentType"`
-		Expires     tcclient.Time `json:"expires"`
-		Name        string        `json:"name"`
-		StorageType string        `json:"storageType"`
-	}, len(artifacts.Artifacts))
-
-	for _, actualArtifact := range artifacts.Artifacts {
-		actualArtifacts[actualArtifact.Name] = actualArtifact
+	defer pubKey.Close()
+	entityList, err := openpgp.ReadArmoredKeyRing(pubKey)
+	if err != nil {
+		t.Fatalf("Error decoding public key file")
 	}
-
-	for artifact := range expectedArtifacts {
-		if a, ok := actualArtifacts[artifact]; ok {
-			if a.ContentType != expectedArtifacts[artifact].contentType {
-				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifact, expectedArtifacts[artifact].contentType, a.ContentType)
-			}
-			if a.Expires.String() != expectedArtifacts[artifact].expires.String() {
-				t.Errorf("Artifact %s should have expiry '%s' but has '%s'", artifact, expires, a.Expires)
-			}
-		} else {
-			t.Errorf("Artifact '%s' not created", artifact)
-		}
-	}
-
-	// now check content was uploaded to Amazon, and is correct
-
+	block, _ := clearsign.Decode(b)
 	// signer of public/chainOfTrust.json.asc
-	signer := &openpgp.Entity{}
-	cotCert := &ChainOfTrustData{}
+	signer, err := openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
+	if err != nil {
+		t.Fatalf("Not able to validate openpgp signature of public/chainOfTrust.json.asc")
+	}
+	var cotCert ChainOfTrustData
+	err = json.Unmarshal(block.Plaintext, &cotCert)
+	if err != nil {
+		t.Fatalf("Could not interpret public/chainOfTrust.json as json")
+	}
 
-	for artifact, content := range expectedArtifacts {
-		b, rawResp, resp, url := getArtifactContent(t, taskID, artifact)
-		for _, requiredSubstring := range content.extracts {
-			if strings.Index(string(b), requiredSubstring) < 0 {
-				t.Errorf("Artifact '%s': Could not find substring %q in '%s'", artifact, requiredSubstring, string(b))
-			}
-		}
-		if actualContentEncoding := rawResp.Header.Get("Content-Encoding"); actualContentEncoding != content.contentEncoding {
-			t.Fatalf("Expected Content-Encoding %q but got Content-Encoding %q for artifact %q from url %v", content.contentEncoding, actualContentEncoding, artifact, url)
-		}
-		if actualContentType := resp.Header.Get("Content-Type"); actualContentType != content.contentType {
-			t.Fatalf("Content-Type in Signed URL %v response (%v) does not match Content-Type of artifact (%v)", url, actualContentType, content.contentType)
-		}
-		// check openpgp signature is valid
-		if artifact == "public/chainOfTrust.json.asc" {
-			pubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
-			if err != nil {
-				t.Fatalf("Error opening public key file")
-			}
-			defer pubKey.Close()
-			entityList, err := openpgp.ReadArmoredKeyRing(pubKey)
-			if err != nil {
-				t.Fatalf("Error decoding public key file")
-			}
-			block, _ := clearsign.Decode(b)
-			signer, err = openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
-			if err != nil {
-				t.Fatalf("Not able to validate openpgp signature of public/chainOfTrust.json.asc")
-			}
-			err = json.Unmarshal(block.Plaintext, cotCert)
-			if err != nil {
-				t.Fatalf("Could not interpret public/chainOfTrust.json as json")
-			}
-		}
-	}
-	if signer == nil {
-		t.Fatalf("Signer of public/chainOfTrust.json.asc could not be established (is nil)")
-	}
 	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
 		t.Fatalf("Did not get correct signer identity in public/chainOfTrust.json.asc - %#v", signer.Identities)
 	}
@@ -960,7 +923,7 @@ func TestUpload(t *testing.T) {
 	// This trickery is to convert a TaskDefinitionResponse into a
 	// TaskDefinitionRequest in order that we can compare. We cannot cast, so
 	// need to transform to json as an intermediary step.
-	b, err := json.Marshal(cotCert.Task)
+	b, err = json.Marshal(cotCert.Task)
 	if err != nil {
 		t.Fatalf("Cannot marshal task into json - %#v\n%v", cotCert.Task, err)
 	}
