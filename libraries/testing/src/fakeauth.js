@@ -18,16 +18,24 @@ exports.start = function(clients) {
       if (body.authorization) {
         let authorization = hawk.utils.parseAuthorizationHeader(body.authorization);
         clientId = authorization.id;
-        scopes = clients[clientId] || [];
+        if (!(clientId in clients)) {
+          debug(`rejecting access to ${body.resource} by ${clientId}`);
+          return {status: 'auth-failed', message: `client ${clientId} not configured in fakeauth`};
+        }
+        scopes = clients[clientId];
         ext = authorization.ext;
       } else {
-      // The following is a hacky reproduction of the bewit logic in
-      // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
+        // The following is a hacky reproduction of the bewit logic in
+        // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
         let bewitString = url.parse(body.resource, true).query.bewit;
         if (bewitString) {
           let bewit = new Buffer(bewitString, 'base64').toString('utf-8');
           let bewitParts = bewit.split('\\');
           clientId = bewitParts[0];
+          if (!(clientId in clients)) {
+            debug(`rejecting access to ${body.resource} by ${clientId}`);
+            return {status: 'auth-failed', message: `client ${clientId} not configured in fakeauth`};
+          }
           scopes = clients[clientId];
           ext = bewitParts[3] || '';
         }
