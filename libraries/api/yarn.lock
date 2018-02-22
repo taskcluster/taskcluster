@@ -2718,9 +2718,9 @@ taskcluster-lib-scopes@^1.9.0:
   dependencies:
     babel-runtime "^6.26.0"
 
-taskcluster-lib-testing@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-testing/-/taskcluster-lib-testing-2.0.2.tgz#4b0d846083b3a24a0e8339cacabcc0ed32e72f99"
+taskcluster-lib-testing@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-testing/-/taskcluster-lib-testing-3.0.0.tgz#328c83ac5b109dfd30e15a0eca3c351103d71cc4"
   dependencies:
     aws-sdk "^2.144.0"
     azure-table-node "1.5.0"
@@ -2736,24 +2736,8 @@ taskcluster-lib-testing@^2.0.2:
     superagent "3.8.0"
     superagent-hawk "0.0.6"
     taskcluster-client "3.0.3"
-    taskcluster-lib-validate "^3.0.1"
+    taskcluster-lib-validate "^3.0.3"
     uuid "^3.1.0"
-
-taskcluster-lib-validate@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-3.0.1.tgz#100280e7137bb065bcb7c27570e23238a7781afd"
-  dependencies:
-    ajv "^5.3.0"
-    app-root-dir "^1.0.2"
-    aws-sdk "^2.142.0"
-    babel-runtime "^6.26.0"
-    debug "^3.1.0"
-    js-yaml "^3.10.0"
-    lodash "^4.5.1"
-    promise "^8.0.1"
-    rimraf "^2.6.2"
-    url-join "^2.0.2"
-    walk "^2.3.9"
 
 taskcluster-lib-validate@^3.0.3:
   version "3.0.3"

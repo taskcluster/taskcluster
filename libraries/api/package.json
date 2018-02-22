@@ -44,7 +44,7 @@
     "superagent-hawk": "^0.0.6",
     "taskcluster-lib-app": "^2.0.3",
     "taskcluster-lib-monitor": "^4.6.3",
-    "taskcluster-lib-testing": "^2.0.2",
+    "taskcluster-lib-testing": "^3.0.0",
     "taskcluster-lib-validate": "^3.0.3",
     "typed-env-config": "^1.1.1"
   },
