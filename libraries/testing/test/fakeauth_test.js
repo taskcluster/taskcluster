@@ -1,3 +1,4 @@
+var debug        = require('debug')('test');
 var _            = require('lodash');
 var nock         = require('nock');
 var hawk         = require('hawk');
@@ -19,14 +20,19 @@ testApi.declare({
   method:       'get',
   route:        '/test',
   name:         'test',
-  scopes:       [[]],
-  deferAuth:    true,
+  scopes:       'test.scope',
   title:        'Test function',
   description:  'for testing',
-}, function(req, res) {
-  return res.status(200).json({
-    hasTestScope: req.satisfies([['test.scope']], true),
-  });
+}, async function(req, res) {
+  try {
+    await req.authorize();
+    return res.reply({hasTestScope: true});
+  } catch (err) {
+    if (err.code !== 'AuthorizationError') {
+      throw err;
+    }
+    return res.reply({hasTestScope: false});
+  }
 });
 
 suite('fakeauth', function() {
@@ -96,13 +102,13 @@ suite('fakeauth', function() {
         .get(reqUrl)
         .set('Authorization', header.field)
         .then(function(res) {
-          console.log(res.body);
+          debug(res.body);
           return res;
         }),
       request
         .get(bewitUrl)
         .then(function(res) {
-          console.log(res.body);
+          debug(res.body);
           return res;
         }),
     ]);
@@ -115,6 +121,15 @@ suite('fakeauth', function() {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
+  });
+
+  test('using an unconfigured rawClientId', function() {
+    fakeauth.start({client1: ['test.scope']});
+    return callApi('unconfiguredClient')
+      .then(() => {assert(false, 'should have failed');})
+      .catch(function(err) {
+        assert(err.status === 401, 'wrong error code returned');
+      });
   });
 
   test('using authorizedScopes', function() {
