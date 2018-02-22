@@ -771,7 +771,7 @@ API.prototype.declare = function(options, handler) {
   });
   assert(!options.deferAuth,
     'deferAuth is deprecated! https://github.com/taskcluster/taskcluster-lib-api#request-handlers');
-  if ('scopes' in options && !ScopeExpressionTemplate.validate(options.scopes)) {
+  if (options.scopes && !ScopeExpressionTemplate.validate(options.scopes)) {
     throw new Error(`Invalid scope expression template: ${JSON.stringify(options.scopes, null, 2)}`);
   }
   options.handler = handler;
