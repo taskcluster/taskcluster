@@ -1,0 +1,38 @@
+{
+  "name": "taskcluster-graphql-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Eli Perelman <eli@eliperelman.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "neutrino build",
+    "start": ".scripts/start.sh",
+    "lint": "neutrino lint"
+  },
+  "devDependencies": {
+    "@neutrinojs/airbnb-base": "^8.1.1",
+    "@neutrinojs/node": "^8.1.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.0",
+    "neutrino": "^8.1.1",
+    "prettier": "^1.10.2"
+  },
+  "dependencies": {
+    "cors": "^2.8.4",
+    "dataloader": "^1.4.0",
+    "deepmerge": "^2.0.1",
+    "express": "^4.16.2",
+    "express-blank-favicon": "^1.0.1",
+    "express-graphql": "^0.6.12",
+    "express-jwt": "^5.3.0",
+    "graphql": "^0.13.1",
+    "graphql-iso-date": "^3.5.0",
+    "graphql-playground-middleware-express": "^1.5.6",
+    "graphql-tools": "^2.21.0",
+    "graphql-type-json": "^0.1.4",
+    "jwks-rsa": "^1.2.1",
+    "node-fetch": "^2.0.0",
+    "taskcluster-client": "^3.2.1"
+  }
+}
