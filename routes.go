@@ -32,6 +32,8 @@ var httpClient = &http.Client{}
 func (self *Routes) setHeaders(res http.ResponseWriter) {
 	headersToSend := res.Header()
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
+	self.lock.RLock()
+	defer self.lock.RUnlock()
 	cert, err := self.Credentials.Cert()
 	if err != nil {
 		res.WriteHeader(500)
