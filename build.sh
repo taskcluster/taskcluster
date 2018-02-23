@@ -2,7 +2,9 @@
 
 cd "$(dirname "${0}")"
 
-# Support go 1.8 or later
+# Support go 1 release 1.10 or higher
+GO_MAJOR_VERSION=1
+MIN_GO_MINOR_VERSION=10
 
 unset CGO_ENABLED
 unset GOOS
@@ -12,14 +14,15 @@ GO_MIN="$(echo "${GO_VERSION}" | cut -f2 -d'.')"
 if [ -z "${GO_VERSION}" ]; then
   echo "Have you installed go? I get no result from \`go version\` command." >&2
   exit 64
-elif [ "${GO_MAJ}" != "go1" ] || [ "${GO_MIN}" -lt 8 ]; then
-  echo "Go version go1.x needed, where x >= 8, but the version I found is: '${GO_VERSION}'" >&2
+elif [ "${GO_MAJ}" != "go${GO_MAJOR_VERSION}" ] || [ "${GO_MIN}" -lt "${MIN_GO_MINOR_VERSION}" ]; then
+  echo "Go version go${GO_MAJOR_VERSION}.x needed, where x >= ${MIN_GO_MINOR_VERSION}, but the version I found is: '${GO_VERSION}'" >&2
   echo "I found it here:" >&2
   which go >&2
   echo "The complete output of \`go version\` command is:" >&2
   go version >&2
   exit 65
 fi
+echo "Go version ok (${GO_VERSION} >= go${GO_MAJOR_VERSION}.${MIN_GO_MINOR_VERSION})"
 TEST=false
 OUTPUT_ALL_PLATFORMS="Building just for the native platform (build.sh -a argument NOT specified)"
 OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
