@@ -85,7 +85,7 @@ suite('intree config', () => {
     });
 
   buildConfigTest(
-    'Pull Event, Single Task Config',
+    'Push Event, Single Task Config',
     configPath + 'taskcluster.single.yml',
     {
       payload:    buildMessage({details: {'event.type': 'push'}}),
