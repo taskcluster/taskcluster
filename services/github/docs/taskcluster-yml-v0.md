@@ -63,7 +63,7 @@ The available events are:
   * `pull_request.synchronize` (a new commit is pushed to the branch in the PR. NOTE: There is no 'd' at the end of 'synchronize')
   * `push`                     (a push is made directly to the repo)
   * `release`                  (a new release published in any branch of the repo. NOTE: New tags are actually push events in github)
-
+  * `tag`                      (a tag is pushed to the repo)
 
 In almost all cases, you'll only want `[push, pull_request.opened, pull_request.synchronize]`.
 
@@ -226,3 +226,24 @@ milliseconds.
                          | "{{ event.zip }}"              | https://api.github.com/repos/taskcluster/generic-worker/zipball/v7.2.6
 ```
 
+## Tag Metadata
+
+```
+  Environment Variable   | Token Placeholder              | Example Value
+  -----------------------+--------------------------------+-----------------------------------------
+  GITHUB_EVENT           | "{{ event.type }}"             | tag
+                         |                                |
+  GITHUB_BASE_USER       | "{{ event.base.user.login }}"  | maryscott
+  GITHUB_BASE_REPO_NAME  | "{{ event.base.repo.name }}"   | somerepo
+  GITHUB_BASE_REPO_URL   | "{{ event.base.repo.url }}"    | https://github.com/maryscott/somerepo
+  GITHUB_BASE_SHA        | "{{ event.base.sha }}"         | 0000000000000000000000000000000000000000
+  GITHUB_BASE_REF        | "{{ event.base.ref }}"         | refs/tags/v1.0.2
+                         |                                |
+  GITHUB_HEAD_USER       | "{{ event.head.user.login }}"  | maryscott
+  GITHUB_HEAD_REPO_NAME  | "{{ event.head.repo.name }}"   | somerepo
+  GITHUB_HEAD_REPO_URL   | "{{ event.head.repo.url }}"    | https://github.com/maryscott/somerepo
+  GITHUB_HEAD_SHA        | "{{ event.head.sha }}"         | e8f57659c7400e225d2f70f8d17ed11b7f914abb
+  GITHUB_HEAD_TAG        | "{{ event.head.tag }}"         | v1.0.2
+  GITHUB_HEAD_REF        | "{{ event.head.ref }}"         | refs/tags/v1.0.2
+  GITHUB_HEAD_USER_EMAIL | "{{ event.head.user.email }}"  | mary.scott@buccleuch.co.uk
+```
