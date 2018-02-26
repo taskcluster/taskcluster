@@ -198,4 +198,28 @@ suite('intree config', () => {
     {},
     0,
     true);
+
+  buildConfigTest(
+    'Tag Event, Single Task Config',
+    configPath + 'taskcluster.tag_single.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'}}),
+    },
+    {
+      'tasks[0].task.extra.github.events': ['tag'],
+      'metadata.owner': 'test@test.com',
+      scopes: ['assume:repo:github.com/testorg/testrepo:tag:v1.0.2'],
+    });
+
+  buildConfigTest(
+    'Tag Event, Single Task Config, Branch Limited (off branch)',
+    configPath + 'taskcluster.tag.branchlimited.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'}}),
+    },
+    {
+      'tasks[0].task.extra.github.events': ['tag'],
+      'metadata.owner': 'test@test.com',
+      scopes: ['assume:repo:github.com/testorg/testrepo:tag:v1.0.2'],
+    });
 });

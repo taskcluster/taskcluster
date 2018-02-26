@@ -24,6 +24,7 @@ suite('webhook', () => {
   statusTest('Pull Request Closed', 'webhook.pull_request.close.json', 204);
   statusTest('Push', 'webhook.push.json', 204);
   statusTest('Release', 'webhook.release.json', 204);
+  statusTest('Tag', 'webhook.tag_push.json', 204);
 
   // Bad data: should all return 400 responses
   statusTest('Push without secret', 'webhook.push.no_secret.json', 400);

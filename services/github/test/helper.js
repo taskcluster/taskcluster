@@ -36,17 +36,16 @@ helper.jsonHttpRequest = function(jsonFile, options) {
     path: '/v1/github',
     method: 'POST',
   };
-
   options = _.defaultsDeep(options, defaultOptions);
-
   let jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
+  
   return new Promise (function(accept, reject) {
     try {
       let req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));
       req.end();
-    } catch (e) {
+    } catch (e) { 
       reject(e);
     }
   });

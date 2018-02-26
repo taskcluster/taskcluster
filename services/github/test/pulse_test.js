@@ -135,4 +135,29 @@ suite('pulse', () => {
     },
     jsonFile:     'webhook.release.json',
   });
+
+  pulseTest({
+    testName:     'Publish Tag Push',
+    listenFor:    'push',
+    exchangeFunc: 'push',
+    routingKey:   'primary.TaskClusterRobot.hooks-testing',
+    eventId: '9637a980-d8fb-11e6-9830-1244ca57c95f',
+    details:      {
+      'event.base.ref': 'refs/tags/v1.0.2',
+      'event.base.repo.name': 'hooks-testing',
+      'event.base.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
+      'event.base.sha': '0000000000000000000000000000000000000000',
+      'event.base.user.login': 'owlishDeveloper',
+      'event.head.ref': 'refs/tags/v1.0.2',
+      'event.head.tag': 'v1.0.2',
+      'event.head.repo.name': 'hooks-testing',
+      'event.head.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
+      'event.head.sha': 'b79ce60be819cdc482c9c6a84dc3c457959aa66f',
+      'event.head.user.login': 'owlishDeveloper',
+      'event.head.user.id': 18102552,
+      'event.type': 'tag',
+      'event.head.user.email': 'anotheruser@github.com',
+    },
+    jsonFile:     'webhook.tag_push.json',
+  });
 });
