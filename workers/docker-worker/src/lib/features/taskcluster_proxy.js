@@ -37,9 +37,9 @@ class TaskclusterProxy {
     if (task.claim.credentials.certificate) {
       cmd.push('--certificate=' + task.claim.credentials.certificate);
     }
-    const cert = JSON.parse(task.claim.credentials.certificate);
-    cmd.push(`--task-id=${task.status.taskId}`);
-    cmd = cmd.concat(cert.scopes);
+
+    // supply the task's scopes, limiting what can be done via the proxy
+    cmd = cmd.concat(task.task.scopes);
 
     // create the container.
     this.container = await docker.createContainer({
