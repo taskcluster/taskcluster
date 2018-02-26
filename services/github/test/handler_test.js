@@ -47,6 +47,23 @@ suite('handlers', () => {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
 
+        let details = {
+          'event.type': eventType,
+          'event.base.repo.branch': 'tc-gh-tests',
+          'event.head.repo.branch': 'tc-gh-tests',
+          'event.head.user.login': user,
+          'event.head.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
+          'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+          'event.head.ref': 'refs/heads/tc-gh-tests',
+          'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
+          'event.head.user.id': 190790,
+        }; 
+        if (eventType === 'tag') {
+          details['event.head.tag'] = 'v1.0.2';
+          delete details['event.head.repo.branch'];
+          delete details['event.base.repo.branch'];
+        }
+
         debug(`publishing ${JSON.stringify({user, head, base, eventType})}`);
         const message = {
           exchange: 'exchange/taskcluster-github/v1/release',
@@ -54,17 +71,7 @@ suite('handlers', () => {
           routes: [],
           payload: {
             organization: 'TaskClusterRobot',
-            details: {
-              'event.type': eventType,
-              'event.base.repo.branch': 'tc-gh-tests',
-              'event.head.repo.branch': 'tc-gh-tests',
-              'event.head.user.login': user,
-              'event.head.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
-              'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-              'event.head.ref': 'refs/heads/tc-gh-tests',
-              'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
-              'event.head.user.id': 190790,
-            },
+            details: details,
             repository: 'hooks-testing',
             eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
             installationId: 5828,
@@ -154,6 +161,38 @@ suite('handlers', () => {
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
+      debug('Created task group: ' + args.target_url);
+      assert(args.target_url.startsWith(URL_PREFIX));
+      let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+      let build = await helper.Builds.load({taskGroupId});
+      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.repository, 'hooks-testing');
+      assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(build.state, 'pending');
+    });
+
+    test('valid tag push (but not collaborator) creates a taskGroup', async function() {
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskClusterRobot',
+        repo: 'hooks-testing',
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
+        content: require('./valid-yaml.json'),
+      });
+      await simulateJobMessage({
+        user: 'TaskClusterRobotCollaborator', 
+        base: '0000000000000000000000000000000000000000', 
+        eventType: 'tag'}
+      );
+      
+      assert(github.inst(5828).repos.createStatus.calledOnce, 'Status was never updated!');
+      assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
+      let args = github.inst(5828).repos.createStatus.firstCall.args[0];
+      assert.equal(args.owner, 'TaskClusterRobot');
+      assert.equal(args.repo, 'hooks-testing');
+      assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+      assert.equal(args.state, 'pending');
+      assert.equal(args.description, 'TaskGroup: Pending (for tag)');
+      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'tag');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
       let taskGroupId = args.target_url.substr(URL_PREFIX.length);

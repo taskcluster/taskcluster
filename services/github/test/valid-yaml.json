@@ -17,7 +17,8 @@
             "pull_request.opened",
             "pull_request.synchronize",
             "pull_request.reopened",
-            "push"
+            "push",
+            "tag"
           ]
         }
       },
