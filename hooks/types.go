@@ -86,6 +86,11 @@ type (
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/pulseExchanges
+		PulseExchanges []interface{} `json:"pulseExchanges,omitempty"`
+
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.
@@ -171,6 +176,9 @@ type (
 			// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
 			Owner string `json:"owner"`
 		} `json:"metadata"`
+
+		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/pulseExchanges
+		PulseExchanges []interface{} `json:"pulseExchanges"`
 
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
