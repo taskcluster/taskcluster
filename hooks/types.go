@@ -86,11 +86,6 @@ type (
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
-		// Default:    []
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/pulseExchanges
-		PulseExchanges []interface{} `json:"pulseExchanges,omitempty"`
-
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.
@@ -100,8 +95,14 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule
 		Schedule []string `json:"schedule,omitempty"`
 
+		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
+		// as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
+		// a task definition that is submitted to the Queue service.
+		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
-		Task TaskTemplate `json:"task"`
+		Task json.RawMessage `json:"task"`
 
 		// Default:    {
 		//               "additionalProperties": false,
@@ -177,9 +178,6 @@ type (
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/pulseExchanges
-		PulseExchanges []interface{} `json:"pulseExchanges"`
-
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.  Note that tasks may not be created
@@ -189,8 +187,14 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/schedule
 		Schedule json.RawMessage `json:"schedule"`
 
+		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
+		// as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
+		// a task definition that is submitted to the Queue service.
+		//
+		// Additional properties allowed
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
-		Task TaskTemplate `json:"task"`
+		Task json.RawMessage `json:"task"`
 
 		// Additional properties allowed
 		//
@@ -495,176 +499,6 @@ type (
 			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/workerType
 			WorkerType string `json:"workerType"`
 		} `json:"status"`
-	}
-
-	// Definition of a task embedded in a hook
-	//
-	// See http://schemas.taskcluster.net/hooks/v1/task-template.json#
-	TaskTemplate struct {
-
-		// Object with properties that can hold any kind of extra data that should be
-		// associated with the task. This can be data for the task which doesn't
-		// fit into `payload`, or it can supplementary data for use in services
-		// listening for events from this task. For example this could be details to
-		// display on _treeherder_, or information for indexing the task. Please, try
-		// to put all related information under one property, so `extra` data keys
-		// for treeherder reporting and task indexing don't conflict, hence, we have
-		// reusable services. **Warning**, do not stuff large data-sets in here,
-		// task definitions should not take-up multiple MiBs.
-		//
-		// Default:    {}
-		//
-		// Additional properties allowed
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/extra
-		Extra json.RawMessage `json:"extra,omitempty"`
-
-		// Required task metadata
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata
-		Metadata struct {
-
-			// Human readable description of the task, please **explain** what the
-			// task does. A few lines of documentation is not going to hurt you.
-			//
-			// Max length: 32768
-			//
-			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/description
-			Description string `json:"description"`
-
-			// Human readable name of task, used to very briefly given an idea about
-			// what the task does.
-			//
-			// Max length: 255
-			//
-			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/name
-			Name string `json:"name"`
-
-			// E-mail of person who caused this task, e.g. the person who did
-			// `hg push`. The person we should contact to ask why this task is here.
-			//
-			// Max length: 255
-			//
-			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/owner
-			Owner string `json:"owner"`
-
-			// Link to source of this task, should specify a file, revision and
-			// repository. This should be place someone can go an do a git/hg blame
-			// to who came up with recipe for this task.
-			//
-			// Max length: 4096
-			//
-			// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/metadata/properties/source
-			Source string `json:"source"`
-		} `json:"metadata"`
-
-		// Task-specific payload following worker-specific format. For example the
-		// `docker-worker` requires keys like: `image`, `commands` and
-		// `features`. Refer to the documentation of `docker-worker` for details.
-		//
-		// Additional properties allowed
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/payload
-		Payload json.RawMessage `json:"payload"`
-
-		// Priority of task, this defaults to `normal`. Additional levels may be
-		// added later.
-		// **Task submitter required scopes** `queue:task-priority:high` for high
-		// priority tasks.
-		//
-		// Possible values:
-		//   * "high"
-		//   * "normal"
-		//
-		// Default:    "normal"
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/priority
-		Priority string `json:"priority,omitempty"`
-
-		// Unique identifier for a provisioner, that can supply specified
-		// `workerType`
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/provisionerId
-		ProvisionerID string `json:"provisionerId"`
-
-		// Number of times to retry the task in case of infrastructure issues.
-		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
-		// these events are to be expected.
-		//
-		// Default:    5
-		// Mininum:    0
-		// Maximum:    49
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/retries
-		Retries int64 `json:"retries,omitempty"`
-
-		// List of task specific routes, AMQP messages will be CC'ed to these routes.
-		// **Task submitter required scopes** `queue:route:<route>` for
-		// each route given.
-		//
-		// Default:    []
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/routes
-		Routes []string `json:"routes,omitempty"`
-
-		// Identifier for the scheduler that _defined_ this task, this can be an
-		// identifier for a user or a service like the `"task-graph-scheduler"`.
-		// **Task submitter required scopes**
-		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
-		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
-		// task.
-		//
-		// Default:    "-"
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/schedulerId
-		SchedulerID string `json:"schedulerId,omitempty"`
-
-		// List of scopes (or scope-patterns) that the task is
-		// authorized to use.
-		//
-		// Default:    []
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/scopes
-		Scopes []string `json:"scopes,omitempty"`
-
-		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal meta-data to a task. Use this for informal tags that
-		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal meta-data. Something like
-		// `purpose: 'build' || 'test'` is a good example.
-		//
-		// Default:    {}
-
-		// Max length: 4096
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/tags
-		Tags map[string]string `json:"tags,omitempty"`
-
-		// Identifier for a group of tasks scheduled together with this task, by
-		// scheduler identified by `schedulerId`. For tasks scheduled by the
-		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
-		// property isn't specified.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/taskGroupId
-		TaskGroupID string `json:"taskGroupId,omitempty"`
-
-		// Unique identifier for a worker-type within a specific provisioner
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/task-template.json#/properties/workerType
-		WorkerType string `json:"workerType"`
 	}
 
 	// Trigger context
