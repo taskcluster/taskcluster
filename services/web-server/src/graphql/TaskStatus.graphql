@@ -1,0 +1,26 @@
+enum TaskState {
+  UNSCHEDULED
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  EXCEPTION
+}
+
+type TaskStatus {
+  taskId: ID!
+  provisionerId: String!
+  workerType: String!
+  schedulerId: String!
+  taskGroupId: String!
+  deadline: DateTime!
+  expires: DateTime!
+  retriesLeft: Int!
+  state: TaskState!
+  runs(filter: JSON): [TaskRun]!
+  task(taskId: ID = taskId): Task
+}
+
+extend type Query {
+  status(taskId: ID!): TaskStatus
+}

@@ -1,5 +1,12 @@
-import queue from './queue';
+// eslint-disable-next-line padding-line-between-statements
+const importer = require.context('./', true, /\.js/);
+const keys = [
+  ...new Set([...importer.keys().filter(key => key !== './index.js')]),
+];
+const loaders = keys.map(key => importer(key).default);
 
-export default clients => ({
-  ...queue(clients.queue),
-});
+module.exports = (clients, isAuthed) =>
+  loaders.reduce(
+    (loaders, loader) => ({ ...loaders, ...loader(clients, isAuthed) }),
+    {}
+  );

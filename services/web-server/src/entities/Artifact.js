@@ -1,11 +1,11 @@
 export default class Artifact {
-  constructor(taskId, runId, data, url) {
+  constructor(taskId, data, runId) {
     this.taskId = taskId;
-    this.runId = runId;
-    Object.assign(this, data);
 
-    if (url) {
-      this.url = url;
+    if (runId) {
+      this.runId = runId;
     }
+
+    Object.assign(this, data);
   }
 }

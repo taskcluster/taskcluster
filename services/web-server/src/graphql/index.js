@@ -1,20 +1,6 @@
-import Schema from '../entities/Schema';
-import * as Root from './Root';
-import * as TaskRun from './TaskRun';
-import * as Task from './Task';
-import * as TaskStatus from './TaskStatus';
-import * as TaskGroup from './TaskGroup';
-import * as Artifact from './Artifact';
-import * as LinkTaskAndStatus from './links/LinkTaskAndStatus';
-import * as LinkTaskRunAndArtifacts from './links/LinkTaskRunAndArtifacts';
+const importer = require.context('./', true, /\.graphql$/);
+const keys = [...new Set(['./Root.graphql', ...importer.keys()])];
 
-export default new Schema()
-  .use(Root)
-  .use(TaskRun)
-  .use(Task)
-  .use(TaskStatus)
-  .use(TaskGroup)
-  .use(Artifact)
-  .use(LinkTaskAndStatus)
-  .use(LinkTaskRunAndArtifacts)
-  .output();
+module.exports = [
+  ...keys.reduce((typeDefs, key) => typeDefs.add(importer(key)), new Set()),
+].join('\n');

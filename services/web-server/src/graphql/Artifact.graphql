@@ -1,0 +1,26 @@
+type Artifact {
+  taskId: ID!
+  runId: Int
+  storageType: ArtifactStorageType!
+  name: String!
+  expires: Date!
+  contentType: String!
+  url: String
+}
+
+input ArtifactFilter {
+  name: String
+  contentType: String
+}
+
+enum ArtifactStorageType {
+  BLOB
+  S3
+  AZURE
+  REFERENCE
+  ERROR
+}
+
+extend type Query {
+  artifact(taskId: ID!, runId: Int!, name: String!): Artifact
+}

@@ -41,5 +41,12 @@ module.exports = {
         ],
       },
     }],
+    (neutrino) => {
+      neutrino.config.module
+        .rule('graphql')
+          .test(/\.graphql$/)
+          .use('raw')
+            .loader(require.resolve('raw-loader'));
+    }
   ],
 };

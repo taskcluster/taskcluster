@@ -1,43 +1,58 @@
-import express from 'express';
-import cors from 'cors';
-import favicon from 'express-blank-favicon';
-import playground from 'graphql-playground-middleware-express';
+import { GraphQLServer } from 'graphql-yoga';
+import compression from 'compression';
 import jwt from './jwt';
 import credentials from './credentials';
-import gql from './gql';
+import typeDefs from './graphql';
+import resolvers from './resolvers';
+import loaders from './loaders';
+import clients from './clients';
 
-let app;
-const load = () => {
-  const app = express();
+let graphQLServer;
+const load = async props => {
+  if (!graphQLServer) {
+    graphQLServer = new GraphQLServer(props);
+  } else {
+    await graphQLServer.reload(() => props);
+  }
 
-  app.use(favicon);
-  app.use(cors());
-  app.use(
+  graphQLServer.express.use(
     jwt({
       jwksUri: process.env.JWKS_URI,
       issuer: process.env.JWT_ISSUER,
     })
   );
-  app.use(
+  graphQLServer.express.use(
     credentials({
-      url: 'https://login.taskcluster.net/v1/oidc-credentials/mozilla-auth0',
+      url: process.env.LOGIN_URL,
     })
   );
-  app.use('/playground', playground({ endpointUrl: '/graphql' }));
-  app.use(gql());
-
-  return app;
+  graphQLServer.express.use(compression());
 };
 
-if (module.hot) {
-  module.hot.accept(['./jwt', './credentials', './gql'], () => {
-    const next = load();
+const props = () => ({
+  typeDefs,
+  resolvers,
+  context({ request }) {
+    const currentClients = clients(request.user);
+    const currentLoaders = loaders(currentClients, !!request.user);
 
-    app.removeListener('request', app);
-    app.on('request', next);
-    app = next;
+    return {
+      clients: currentClients,
+      loaders: currentLoaders,
+    };
+  },
+});
+
+load(props()).then(() =>
+  graphQLServer.start({
+    port: process.env.PORT,
+    tracing: true,
+    cacheControl: true,
+  })
+);
+
+if (module.hot) {
+  module.hot.accept(['./graphql', './resolvers', './loaders'], () => {
+    load(props());
   });
 }
-
-app = load();
-app.listen(process.env.PORT || 3050);

@@ -1,0 +1,14 @@
+type ArtifactsEdge implements Edge {
+  cursor: String
+  node: Artifact
+}
+
+type ArtifactsConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [ArtifactsEdge]
+}
+
+extend type Query {
+  artifacts(taskId: ID!, runId: Int!): ArtifactsConnection
+  latestArtifacts(taskId: ID!): ArtifactsConnection
+}

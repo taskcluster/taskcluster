@@ -1,0 +1,42 @@
+scalar Date
+scalar Time
+scalar DateTime
+scalar JSON
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+input PageConnection {
+  limit: Int
+  startCursor: String
+  endCursor: String
+}
+
+union Node = Artifact | Task
+
+interface Edge {
+  cursor: String
+  node: Node
+}
+
+interface Connection {
+  pageInfo: PageInfo
+  edges: [Edge]
+}
+
+type Query {
+  root: Boolean
+}
+
+type Mutation {
+  root: Boolean
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}

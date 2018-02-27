@@ -1,0 +1,79 @@
+type TaskMetadata {
+  name: String!
+  description: String!
+  owner: String!
+  source: String!
+}
+
+input TaskMetadataInput {
+  name: String!
+  description: String!
+  owner: String!
+  source: String!
+}
+
+enum TaskPriority {
+  HIGHEST
+  VERY_HIGH
+  HIGH
+  MEDIUM
+  LOW
+  VERY_LOW
+  LOWEST
+}
+
+enum TaskRequire {
+  ALL_COMPLETED
+  ALL_RESOLVED
+}
+
+type Task {
+  taskId: ID!
+  provisionerId: String!
+  workerType: String!
+  schedulerId: String!
+  taskGroupId: String!
+  dependencies: [String]!
+  requires: TaskRequire!
+  routes: [String]!
+  priority: TaskPriority!
+  retries: Int!
+  created: DateTime!
+  deadline: DateTime!
+  expires: DateTime
+  scopes: [String]!
+  payload: JSON!
+  metadata: TaskMetadata!
+  tags: JSON!
+  extra: JSON!
+
+  status(taskId: ID = taskId): TaskStatus!
+}
+
+input TaskInput {
+  provisionerId: String!
+  workerType: String!
+  schedulerId: String
+  taskGroupId: String
+  dependencies: [String]
+  requires: TaskRequire
+  routes: [String]
+  priority: TaskPriority
+  retries: Int
+  created: DateTime!
+  deadline: DateTime!
+  expires: DateTime
+  scopes: [String]
+  payload: JSON!
+  metadata: TaskMetadataInput!
+  tags: JSON
+  extra: JSON
+}
+
+extend type Query {
+  task(taskId: ID!): Task
+}
+
+extend type Mutation {
+  createTask(taskId: ID!, task: TaskInput!): TaskStatus
+}
