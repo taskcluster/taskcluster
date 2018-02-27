@@ -40,14 +40,14 @@ type (
 	// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#
 	HookCreationRequest struct {
 
-		// Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "1 day"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
-		Deadline string `json:"deadline,omitempty"`
+		Deadline string `json:"deadline"`
 
-		// Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
 		//
@@ -86,11 +86,6 @@ type (
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
-		// Default:    []
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/pulseExchanges
-		PulseExchanges []interface{} `json:"pulseExchanges,omitempty"`
-
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.
@@ -102,16 +97,6 @@ type (
 
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
 		Task TaskTemplate `json:"task"`
-
-		// Default:    {
-		//               "additionalProperties": false,
-		//               "type": "object"
-		//             }
-		//
-		// Additional properties allowed
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
-		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
 	}
 
 	// Definition of a hook that will create tasks when defined events occur.
@@ -119,14 +104,14 @@ type (
 	// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
 	HookDefinition struct {
 
-		// Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+		// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "1 day"
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/deadline
 		Deadline string `json:"deadline"`
 
-		// Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+		// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 		//
 		// Default:    "3 months"
 		//
@@ -177,9 +162,6 @@ type (
 			Owner string `json:"owner"`
 		} `json:"metadata"`
 
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/pulseExchanges
-		PulseExchanges []interface{} `json:"pulseExchanges"`
-
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.  Note that tasks may not be created
@@ -191,11 +173,6 @@ type (
 
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
 		Task TaskTemplate `json:"task"`
-
-		// Additional properties allowed
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema
-		TriggerSchema json.RawMessage `json:"triggerSchema"`
 	}
 
 	// List of `hookGroupIds`.
@@ -239,6 +216,8 @@ type (
 
 		// Information about the last time this hook fired.  This property is only present
 		// if the hook has fired at least once.
+		//
+		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire
 		LastFire json.RawMessage `json:"lastFire"`
@@ -305,14 +284,14 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status
 		Status struct {
 
-			// Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+			// Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 			//
 			// Default:    "1 day"
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/deadline
 			Deadline string `json:"deadline"`
 
-			// Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+			// Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
 			//
 			// Default:    "3 months"
 			//
@@ -667,12 +646,12 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
-	// Trigger context
+	// Trigger payload
 	//
 	// Additional properties allowed
 	//
-	// See http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-	TriggerContext json.RawMessage
+	// See http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#
+	TriggerPayload json.RawMessage
 
 	// Secret token for a trigger
 	//
@@ -685,16 +664,16 @@ type (
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// TriggerContext is of type json.RawMessage...
-func (this *TriggerContext) MarshalJSON() ([]byte, error) {
+// TriggerPayload is of type json.RawMessage...
+func (this *TriggerPayload) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerContext) UnmarshalJSON(data []byte) error {
+func (this *TriggerPayload) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("TriggerContext: UnmarshalJSON on nil pointer")
+		return errors.New("TriggerPayload: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

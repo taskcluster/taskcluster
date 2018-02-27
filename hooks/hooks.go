@@ -24,10 +24,6 @@
 //  * `['0 0 1 * * *']` -- daily at 1:00 UTC
 //  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 //
-// The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-// https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
-// for more information.
-//
 // See: https://docs.taskcluster.net/reference/core/hooks/api-docs
 //
 // How to use this package
@@ -48,7 +44,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 27 Feb 2018 at 02:22:00 UTC. The code was generated
+// Tue, 27 Feb 2018 at 19:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -217,15 +213,11 @@ func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 //
 // This endpoint will trigger the creation of a task from a hook definition.
 //
-// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
-// provided as the `payload` property of the JSON-e context used to render the
-// task template.
-//
 // Required scopes:
 //   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
-func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerContext) (*TaskStatusStructure, error) {
+func (myHooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerPayload) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*myHooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err
@@ -276,12 +268,8 @@ func (myHooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTok
 //
 // This endpoint triggers a defined hook with a valid token.
 //
-// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
-// provided as the `payload` property of the JSON-e context used to render the
-// task template.
-//
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
-func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerContext) (*TaskStatusStructure, error) {
+func (myHooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerPayload) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*myHooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err

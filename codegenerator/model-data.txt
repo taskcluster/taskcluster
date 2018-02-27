@@ -1,4 +1,4 @@
-Generated: 1519698147
+Generated: 1519759349
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5811,11 +5811,7 @@ Hooks can have a "schedule" indicating specific times that new tasks should
 be created.  Each schedule is in a simple cron format, per 
 https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 1 * * *']` -- daily at 1:00 UTC
- * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
-
-The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
-for more information.'
+ * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon'
 Base URL    = 'https://hooks.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
@@ -5944,14 +5940,10 @@ Entry 8     =
     Entry Name        = 'triggerHook'
     Entry Stability   = 'experimental'
     Entry Scopes      = 'hooks:trigger-hook:<hookGroupId>/<hookId>'
-    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json'
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook'
-    Entry Description = 'This endpoint will trigger the creation of a task from a hook definition.
-
-The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
-provided as the `payload` property of the JSON-e context used to render the
-task template.'
+    Entry Description = 'This endpoint will trigger the creation of a task from a hook definition.'
 Entry 9     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -5989,14 +5981,10 @@ Entry 11    =
     Entry Name        = 'triggerHookWithToken'
     Entry Stability   = 'experimental'
     Entry Scopes      = ''
-    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json'
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook with a token'
-    Entry Description = 'This endpoint triggers a defined hook with a valid token.
-
-The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
-provided as the `payload` property of the JSON-e context used to render the
-task template.'
+    Entry Description = 'This endpoint triggers a defined hook with a valid token.'
 Entry 12    =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -6031,19 +6019,17 @@ properties:
     deadline: Deadline
     expires: Expires
     metadata: Metadata
-    pulseExchanges: PulseExchanges
     schedule: Schedule
     task: Task
-    triggerSchema: TriggerSchema
   Properties:
     deadline:
-      IS_REQUIRED: false
+      IS_REQUIRED: true
       PROPERTY_NAME: deadline
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/deadline
       TYPE_NAME: Deadline
       default: 1 day
       description: |
-        Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+        Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
       title: Deadline
       type: string
     expires:
@@ -6053,7 +6039,7 @@ properties:
       TYPE_NAME: Expiration
       default: 3 months
       description: |
-        Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+        Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
       title: Expiration
       type: string
     metadata:
@@ -6118,13 +6104,6 @@ properties:
       - description
       - owner
       type: object
-    pulseExchanges:
-      IS_REQUIRED: false
-      PROPERTY_NAME: pulseExchanges
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/pulseExchanges
-      TYPE_NAME: PulseExchanges
-      default: []
-      type: array
     schedule:
       IS_REQUIRED: false
       PROPERTY_NAME: schedule
@@ -6475,27 +6454,17 @@ properties:
         type: object
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
       TYPE_NAME: Task
-    triggerSchema:
-      IS_REQUIRED: false
-      PROPERTY_NAME: triggerSchema
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
-      TYPE_NAME: TriggerSchema
-      default:
-        additionalProperties: false
-        type: object
-      type: object
   SortedPropertyNames:
   - deadline
   - expires
   - metadata
-  - pulseExchanges
   - schedule
   - task
-  - triggerSchema
   SourceURL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties
 required:
 - metadata
 - task
+- deadline
 title: Hook creation request
 type: object
 
@@ -6520,10 +6489,8 @@ properties:
     hookGroupId: HookGroupID
     hookId: HookID
     metadata: Metadata
-    pulseExchanges: PulseExchanges
     schedule: Schedule
     task: Task
-    triggerSchema: TriggerSchema
   Properties:
     deadline:
       IS_REQUIRED: true
@@ -6532,7 +6499,7 @@ properties:
       TYPE_NAME: Deadline
       default: 1 day
       description: |
-        Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+        Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
       title: Deadline
       type: string
     expires:
@@ -6542,7 +6509,7 @@ properties:
       TYPE_NAME: Expiration
       default: 3 months
       description: |
-        Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+        Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
       title: Expiration
       type: string
     hookGroupId:
@@ -6623,12 +6590,6 @@ properties:
       - description
       - owner
       type: object
-    pulseExchanges:
-      IS_REQUIRED: true
-      PROPERTY_NAME: pulseExchanges
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/pulseExchanges
-      TYPE_NAME: PulseExchanges
-      type: array
     schedule:
       IS_REQUIRED: true
       PROPERTY_NAME: schedule
@@ -6966,22 +6927,14 @@ properties:
         type: object
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
       TYPE_NAME: Task
-    triggerSchema:
-      IS_REQUIRED: true
-      PROPERTY_NAME: triggerSchema
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema
-      TYPE_NAME: TriggerSchema
-      type: object
   SortedPropertyNames:
   - deadline
   - expires
   - hookGroupId
   - hookId
   - metadata
-  - pulseExchanges
   - schedule
   - task
-  - triggerSchema
   SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties
 required:
 - hookGroupId
@@ -6991,8 +6944,6 @@ required:
 - schedule
 - expires
 - deadline
-- triggerSchema
-- pulseExchanges
 title: Hook definition
 type: object
 
@@ -7226,6 +7177,7 @@ properties:
           title: No Fire
           type: object
         SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf
+      type: object
     nextScheduledDate:
       IS_REQUIRED: false
       PROPERTY_NAME: nextScheduledDate
@@ -7471,10 +7423,8 @@ properties:
               hookGroupId: HookGroupID
               hookId: HookID
               metadata: Metadata
-              pulseExchanges: PulseExchanges
               schedule: Schedule
               task: Task
-              triggerSchema: TriggerSchema
             Properties:
               deadline:
                 IS_REQUIRED: true
@@ -7483,7 +7433,7 @@ properties:
                 TYPE_NAME: Deadline
                 default: 1 day
                 description: |
-                  Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+                  Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
                 title: Deadline
                 type: string
               expires:
@@ -7493,7 +7443,7 @@ properties:
                 TYPE_NAME: Expiration
                 default: 3 months
                 description: |
-                  Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+                  Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
                 title: Expiration
                 type: string
               hookGroupId:
@@ -7576,12 +7526,6 @@ properties:
                 - description
                 - owner
                 type: object
-              pulseExchanges:
-                IS_REQUIRED: true
-                PROPERTY_NAME: pulseExchanges
-                SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/pulseExchanges
-                TYPE_NAME: PulseExchanges
-                type: array
               schedule:
                 IS_REQUIRED: true
                 PROPERTY_NAME: schedule
@@ -7919,22 +7863,14 @@ properties:
                   type: object
                 SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
                 TYPE_NAME: Task
-              triggerSchema:
-                IS_REQUIRED: true
-                PROPERTY_NAME: triggerSchema
-                SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema
-                TYPE_NAME: TriggerSchema
-                type: object
             SortedPropertyNames:
             - deadline
             - expires
             - hookGroupId
             - hookId
             - metadata
-            - pulseExchanges
             - schedule
             - task
-            - triggerSchema
             SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties
           required:
           - hookGroupId
@@ -7944,8 +7880,6 @@ properties:
           - schedule
           - expires
           - deadline
-          - triggerSchema
-          - pulseExchanges
           title: Hook definition
           type: object
         SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#/properties/hooks/items
@@ -8036,7 +7970,7 @@ properties:
             TYPE_NAME: Deadline
             default: 1 day
             description: |
-              Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
+              Deadline of the task, `pending` and `running` runs are resolved as **failed** if not resolved by other means before the deadline. Note, deadline cannot be more than 5 days into the future. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
             title: Deadline
             type: string
           expires:
@@ -8046,7 +7980,7 @@ properties:
             TYPE_NAME: Expiration
             default: 3 months
             description: |
-              Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
+              Task expiration, time at which task definition and status is deleted. Notice that all artifacts for the must have an expiration that is no later than this. Must be specified as `A years B months C days D hours E minutes F seconds`, though you may leave out zeros. For more details see: `taskcluster.fromNow` in [taskcluster-client](https://github.com/taskcluster/taskcluster-client)
             title: Expiration
             type: string
           provisionerId:
@@ -8685,17 +8619,17 @@ title: Task Template
 type: object
 
 
-http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
+http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#
 =============================================================
 $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-TYPE_NAME: TriggerContext
+SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#
+TYPE_NAME: TriggerPayload
 description: |
-  Trigger context
-id: http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-title: trigger context
+  Trigger payload
+id: http://schemas.taskcluster.net/hooks/v1/trigger-payload.json#
+title: trigger payload
 type: object
 
 
