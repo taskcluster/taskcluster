@@ -3,10 +3,10 @@ go:
   - 1.10
 
 env:
-  - "GIMME_OS=linux GIMME_ARCH=amd64"
-  - "GIMME_OS=darwin GIMME_ARCH=amd64"
-  - "GIMME_OS=windows GIMME_ARCH=amd64"
-  - "GIMME_OS=windows GIMME_ARCH=386"
+  - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=amd64"
+  - "CGO_ENABLED=0 GIMME_OS=darwin GIMME_ARCH=amd64"
+  - "CGO_ENABLED=0 GIMME_OS=windows GIMME_ARCH=amd64"
+  - "CGO_ENABLED=0 GIMME_OS=windows GIMME_ARCH=386"
 
 install:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get github.com/mattn/goveralls github.com/taskcluster/livelog github.com/gordonklaus/ineffassign"
