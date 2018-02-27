@@ -29,7 +29,13 @@ properties:
     default: []
   expires:                {$const: expires}
   deadline:               {$const: deadline}
-  task:                   {$ref: "http://schemas.taskcluster.net/hooks/v1/task-template.json"}
+  task:
+    title:                "Task Template"
+    description: |
+      Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
+      as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
+      a task definition that is submitted to the Queue service.
+    type:                 object
   triggerSchema:
     type:                 'object'          
     default:              {type: "object", additionalProperties: false}
