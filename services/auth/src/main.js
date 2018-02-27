@@ -250,14 +250,6 @@ let load = Loader({
       await monitor.flush();
     },
   },
-
-  dumpBlob: {
-    requires: ['cfg', 'Roles'],
-    setup: async ({cfg, Roles}) => {
-      let roles = await Roles.get();
-      console.log(JSON.stringify(roles, null, 2));
-    },
-  },
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument
