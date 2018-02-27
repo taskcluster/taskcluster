@@ -109,7 +109,8 @@ func TestChainOfTrustWithAdministratorPrivs(t *testing.T) {
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
 		Features: struct {
-			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+			ChainOfTrust     bool `json:"chainOfTrust,omitempty"`
+			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
 		}{
 			ChainOfTrust: true,
 		},

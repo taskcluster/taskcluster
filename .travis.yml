@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.10
+  - 1.9.4
 
 env:
   - "GIMME_OS=linux GIMME_ARCH=amd64"
@@ -9,7 +9,7 @@ env:
   - "GIMME_OS=windows GIMME_ARCH=386"
 
 install:
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get github.com/mattn/goveralls github.com/taskcluster/livelog github.com/gordonklaus/ineffassign"
+  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get github.com/mattn/goveralls github.com/taskcluster/taskcluster-proxy github.com/taskcluster/livelog github.com/gordonklaus/ineffassign"
 
 script:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get ./gw-codegen"

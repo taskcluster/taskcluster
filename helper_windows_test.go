@@ -49,16 +49,26 @@ func incrementCounterInCache() []string {
 	return []string{command}
 }
 
+func goEnv() []string {
+	return []string{
+		"go env",
+		"set",
+		"where go",
+		"go version",
+	}
+}
+
 func sleep(seconds uint) []string {
 	return []string{
 		"ping 127.0.0.1 -n " + strconv.Itoa(int(seconds+1)) + " > nul",
 	}
 }
 
-func goRun(goFile string) []string {
-	return []string{
-		"go run \"" + goFile + "\"",
-	}
+func goRun(goFile string, args ...string) []string {
+	copy := copyArtifact(goFile)
+	command := []string{`"` + goFile + `"`}
+	commandWithArgs := append(command, args...)
+	return append(copy, `go run `+strings.Join(commandWithArgs, ` `))
 }
 
 func copyArtifact(path string) []string {

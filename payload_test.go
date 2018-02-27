@@ -13,8 +13,8 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-func taskWithPayload(payload string) TaskRun {
-	return TaskRun{
+func taskWithPayload(payload string) *TaskRun {
+	return &TaskRun{
 		TaskID: slugid.Nice(),
 		Definition: queue.TaskDefinitionResponse{
 			Payload: json.RawMessage(payload),
@@ -23,16 +23,15 @@ func taskWithPayload(payload string) TaskRun {
 	}
 }
 
-func ensureValidPayload(t *testing.T, task TaskRun) {
+func ensureValidPayload(t *testing.T, task *TaskRun) {
 	err := task.validatePayload()
 	if err != nil {
-		t.Logf("Task log:\n%v", task.logWriter)
 		t.Logf("%v", err.Cause)
 		t.Fatalf("Valid task payload should have passed validation")
 	}
 }
 
-func ensureMalformedPayload(t *testing.T, task TaskRun) {
+func ensureMalformedPayload(t *testing.T, task *TaskRun) {
 	err := task.validatePayload()
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")

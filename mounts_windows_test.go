@@ -16,10 +16,6 @@ func TestRenameCrossDevice(t *testing.T) {
 	if !exists {
 		t.Skip("Skipping test as Z: drive does not exist on this environment")
 	}
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Could not access current directory")
-	}
 	if strings.HasPrefix(cwd, "Z:\\") {
 		t.Skip("Skipping test as current directory is already on Z: so rename would not be cross device (Z: -> Z:)")
 	}

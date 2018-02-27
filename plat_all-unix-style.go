@@ -76,6 +76,8 @@ func (task *TaskRun) generateCommand(index int) error {
 	if err != nil {
 		return err
 	}
+	task.logMux.RLock()
+	defer task.logMux.RUnlock()
 	task.Commands[index].DirectOutput(task.logWriter)
 	return nil
 }

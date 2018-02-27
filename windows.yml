@@ -145,6 +145,15 @@ properties:
           it ran in.
 
           Since: generic-worker 5.3.0
+      taskclusterProxy:
+        type: boolean
+        title: Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services
+        description: |-
+          The taskcluster proxy provides an easy and safe way to make authenticated
+          taskcluster requests within the scope(s) of a particular task. See
+          [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
+
+          Since: generic-worker 10.6.0
   mounts:
     type: array
     description: |-

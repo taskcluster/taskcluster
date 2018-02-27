@@ -43,6 +43,8 @@ type (
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		SigningKeyLocation             string                 `json:"signingKeyLocation,omitempty"`
 		Subdomain                      string                 `json:"subdomain,omitempty"`
+		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable,omitempty"`
+		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort,omitempty"`
 		TasksDir                       string                 `json:"tasksDir,omitempty"`
 		WorkerGroup                    string                 `json:"workerGroup,omitempty"`
 		WorkerID                       string                 `json:"workerId,omitempty"`
