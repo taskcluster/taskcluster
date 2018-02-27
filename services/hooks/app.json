@@ -42,6 +42,14 @@
       "required": true,
       "value": "must set this"
     },
+    "PULSE_USERNAME": {
+      "required": true,
+      "value": "must set this"
+    },
+    "PULSE_PASSWORD": {
+      "required": true,
+      "value": "must set this"
+    },
     "TRUST_PROXY": {
       "required": true
     }
