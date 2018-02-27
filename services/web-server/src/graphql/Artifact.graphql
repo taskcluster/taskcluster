@@ -8,11 +8,6 @@ type Artifact {
   url: String
 }
 
-input ArtifactFilter {
-  name: String
-  contentType: String
-}
-
 enum ArtifactStorageType {
   BLOB
   S3
