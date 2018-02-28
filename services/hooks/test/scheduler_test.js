@@ -110,7 +110,17 @@ suite('Scheduler', function() {
           owner: 'example@example.com',
           emailOnError: true,
         },
-        task:               {},
+        task:               {
+          provisionerId: 'no-provisioner',
+          workerType: 'test-worker',
+          metadata: {
+            name: 'test task',
+            description: 'task created by tc-hooks tests',
+            owner: 'taskcluster@mozilla.com',
+            source: 'http://taskcluster.net',
+          },
+          payload: {},
+        },
         bindings:           [],
         deadline:           '1 day',
         expires:            '1 day',
