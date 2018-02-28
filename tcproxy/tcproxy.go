@@ -9,6 +9,7 @@ import (
 	"net"
 	"os/exec"
 	"strconv"
+	"sync"
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -16,6 +17,7 @@ import (
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.
 type TaskclusterProxy struct {
+	mut      sync.Mutex
 	command  *exec.Cmd
 	HTTPPort uint16
 	Pid      int
@@ -35,6 +37,9 @@ func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Cre
 	if taskID != "" {
 		args = append(args, "--task-id", taskID)
 	}
+	for _, scope := range creds.AuthorizedScopes {
+		args = append(args, scope)
+	}
 	l := &TaskclusterProxy{
 		command:  exec.Command(taskclusterProxyExecutable, args...),
 		HTTPPort: httpPort,
@@ -53,8 +58,19 @@ func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Cre
 }
 
 func (l *TaskclusterProxy) Terminate() error {
+	l.mut.Lock()
+	defer func() {
+		l.mut.Unlock()
+	}()
+	if l.command == nil {
+		// if process has already died by other means, mission accomplished, nothing more to do
+		return nil
+	}
 	defer func() {
 		log.Printf("Stopped taskcluster proxy process (PID %v)", l.Pid)
+		l.HTTPPort = 0
+		l.Pid = 0
+		l.command = nil
 	}()
 	return l.command.Process.Kill()
 }

@@ -19,11 +19,12 @@ func TestTaskclusterProxy(t *testing.T) {
 		executable = "taskcluster-proxy"
 	}
 	creds := &tcclient.Credentials{
-		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		ClientID:         os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		AccessToken:      os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		Certificate:      os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, 34569, creds, "KTBKfEgxR5GdfIIREQIvFQ")
+	ll, err := New(executable, 34569, creds, "")
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	defer func() {
