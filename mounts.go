@@ -308,18 +308,9 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	if taskMount.payloadError != nil {
 		return MalformedPayloadError(taskMount.payloadError)
 	}
-	// Let's perform a garbage collection here before running the task. In
-	// taskcluster-worker this will run in its own thread, and here it only
-	// works as we have a single job running at a time, so we don't need to
-	// worry about concurrency etc. But it is ugly to do it here, but
-	// sufficient for generic worker.
-	err := garbageCollection()
-	if err != nil {
-		panic(err)
-	}
 	// Check if any caches need to be purged. See:
 	//   https://docs.taskcluster.net/reference/core/purge-cache
-	err = taskMount.purgeCaches()
+	err := taskMount.purgeCaches()
 	// Two possible strategies if we can't reach purgecache service:
 	//
 	//   1) be optimistic, assume caches are ok, and don't purge them

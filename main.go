@@ -608,9 +608,17 @@ func RunWorker() (exitCode ExitCode) {
 				return NONCURRENT_DEPLOYMENT_ID
 			}
 		}
-		// make sure at least 5 seconds passes between iterations
-		wait5Seconds := time.NewTimer(time.Second * 5)
+
+		// Ensure there is enough disk space *before* claiming a task
+		err := garbageCollection()
+		if err != nil {
+			panic(err)
+		}
+
 		task := ClaimWork()
+
+		// make sure at least 5 seconds pass between queue.claimWork API calls
+		wait5Seconds := time.NewTimer(time.Second * 5)
 
 		if task != nil {
 			errors := task.Run()
