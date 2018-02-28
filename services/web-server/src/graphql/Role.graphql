@@ -1,0 +1,13 @@
+type Role {
+  roleId: ID!
+  scopes: [String]!
+  description: String!
+  created: DateTime!
+  lastModified: DateTime!
+  expandedScopes: [String]!
+}
+
+extend type Query {
+  roles(filter: JSON): [Role]
+  role(roleId: ID!): Role
+}
