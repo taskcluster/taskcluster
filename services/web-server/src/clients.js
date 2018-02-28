@@ -1,4 +1,4 @@
-import { Queue } from 'taskcluster-client';
+import { Auth, Queue } from 'taskcluster-client';
 
 export default user => {
   const credentials = user && user.oidc.credentials;
@@ -6,5 +6,6 @@ export default user => {
 
   return {
     queue: new Queue(options),
+    auth: new Auth(options),
   };
 };
