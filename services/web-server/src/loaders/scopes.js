@@ -11,8 +11,18 @@ export default ({ auth }) => {
       })
     )
   );
+  const expandScopes = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ scopes, filter }) => {
+        const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
+
+        return filter ? sift(filter, expandedScopes) : expandedScopes;
+      })
+    )
+  );
 
   return {
     currentScopes,
+    expandScopes,
   };
 };

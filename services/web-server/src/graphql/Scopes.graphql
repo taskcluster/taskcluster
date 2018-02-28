@@ -1,3 +1,4 @@
 extend type Query {
   currentScopes(filter: JSON): [String]!
+  expandScopes(scopes: [String]!, filter: JSON): [String]!
 }
