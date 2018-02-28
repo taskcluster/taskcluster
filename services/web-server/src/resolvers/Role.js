@@ -7,4 +7,17 @@ export default {
       return loaders.role.load(roleId);
     },
   },
+  Mutation: {
+    createRole(parent, { roleId, role }, { clients }) {
+      return clients.auth.createRole(roleId, role);
+    },
+    updateRole(parent, { roleId, role }, { clients }) {
+      return clients.auth.updateRole(roleId, role);
+    },
+    async deleteRole(parent, { roleId }, { clients }) {
+      await clients.auth.deleteRole(roleId);
+
+      return roleId;
+    },
+  },
 };

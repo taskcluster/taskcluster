@@ -7,7 +7,18 @@ type Role {
   expandedScopes: [String]!
 }
 
+input RoleInput {
+  scopes: [String]!
+  description: String!
+}
+
 extend type Query {
   roles(filter: JSON): [Role]
   role(roleId: ID!): Role
+}
+
+extend type Mutation {
+  createRole(roleId: ID!, role: RoleInput!): Role
+  updateRole(roleId: ID!, role: RoleInput!): Role
+  deleteRole(roleId: ID!): ID!
 }
