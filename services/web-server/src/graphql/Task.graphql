@@ -76,4 +76,6 @@ extend type Query {
 
 extend type Mutation {
   createTask(taskId: ID!, task: TaskInput!): TaskStatus
+  scheduleTask(taskId: ID!): TaskStatus
+  cancelTask(taskId: ID!): TaskStatus
 }

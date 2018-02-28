@@ -15,8 +15,8 @@ export default {
     ALL_RESOLVED: 'all-resolved',
   },
   Task: {
-    status(parent, args, { loaders }) {
-      return loaders.status.load(parent.taskId);
+    status({ taskId }, args, { loaders }) {
+      return loaders.status.load(taskId);
     },
   },
   Query: {
@@ -27,6 +27,16 @@ export default {
   Mutation: {
     async createTask(parent, { taskId, task }, { clients }) {
       const { status } = await clients.queue.createTask(taskId, task);
+
+      return new TaskStatus(taskId, status);
+    },
+    async scheduleTask(parent, { taskId }, { clients }) {
+      const { status } = await clients.queue.scheduleTask(taskId);
+
+      return new TaskStatus(taskId, status);
+    },
+    async cancelTask(parent, { taskId }, { clients }) {
+      const { status } = await clients.queue.cancelTask(taskId);
 
       return new TaskStatus(taskId, status);
     },

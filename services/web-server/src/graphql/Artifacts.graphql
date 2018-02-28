@@ -9,6 +9,6 @@ type ArtifactsConnection implements Connection {
 }
 
 extend type Query {
-  artifacts(taskId: ID!, runId: Int!): ArtifactsConnection
-  latestArtifacts(taskId: ID!): ArtifactsConnection
+  artifacts(taskId: ID!, runId: Int!, connection: PageConnection, filter: JSON): ArtifactsConnection
+  latestArtifacts(taskId: ID!, connection: PageConnection, filter: JSON): ArtifactsConnection
 }

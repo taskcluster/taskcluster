@@ -3,7 +3,7 @@ type Artifact {
   runId: Int
   storageType: ArtifactStorageType!
   name: String!
-  expires: Date!
+  expires: DateTime!
   contentType: String!
   url: String
 }
@@ -18,4 +18,5 @@ enum ArtifactStorageType {
 
 extend type Query {
   artifact(taskId: ID!, runId: Int!, name: String!): Artifact
+  latestArtifact(taskId: ID!, runId: Int!): Artifact
 }

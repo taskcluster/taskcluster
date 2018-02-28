@@ -31,6 +31,7 @@
     "jwks-rsa": "^1.2.1",
     "node-fetch": "^2.0.0",
     "sift": "^5.1.0",
+    "source-map-support": "^0.5.3",
     "taskcluster-client": "^3.2.1"
   }
 }

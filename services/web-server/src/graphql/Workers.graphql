@@ -1,0 +1,23 @@
+type WorkersCompactEdge implements Edge {
+  cursor: String
+  node: WorkerCompact
+}
+
+type WorkersCompactConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkersCompactEdge]
+}
+
+type WorkersEdge implements Edge {
+  cursor: String
+  node: Worker
+}
+
+type WorkersConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkersEdge]
+}
+
+extend type Query {
+  workers(provisionerId: ID!, workerType: String! connection: PageConnection, filter: JSON): WorkersCompactConnection
+}

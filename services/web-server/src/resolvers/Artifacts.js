@@ -1,10 +1,10 @@
 export default {
   Query: {
-    artifacts(parent, args, { loaders }) {
-      return loaders.artifacts.load(args);
+    artifacts(parent, { taskId, runId, connection, filter }, { loaders }) {
+      return loaders.artifacts.load({ taskId, runId, connection, filter });
     },
-    latestArtifacts(parent, args, { loaders }) {
-      return loaders.latestArtifacts.load(args);
+    latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
+      return loaders.latestArtifacts.load({ taskId, connection, filter });
     },
   },
 };

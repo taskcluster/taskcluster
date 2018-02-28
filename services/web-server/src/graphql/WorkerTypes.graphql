@@ -1,0 +1,13 @@
+type WorkerTypesEdge implements Edge {
+  cursor: String
+  node: WorkerType
+}
+
+type WorkerTypesConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerTypesEdge]
+}
+
+extend type Query {
+  workerTypes(provisionerId: ID!, connection: PageConnection, filter: JSON): WorkerTypesConnection
+}

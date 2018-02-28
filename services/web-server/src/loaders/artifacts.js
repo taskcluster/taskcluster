@@ -1,62 +1,48 @@
 import DataLoader from 'dataloader';
 import sift from 'sift';
+import ConnectionLoader from '../ConnectionLoader';
 import Artifact from '../entities/Artifact';
 import Artifacts from '../entities/Artifacts';
 
 export default ({ queue }, isAuthed) => {
-  const createArtifactsConnection = (taskId, runId, filter, artifacts) => {
-    const withUrls = artifacts.map(
-      artifact =>
-        isAuthed
-          ? {
-              ...artifact,
-              url: queue.buildSignedUrl(
-                queue.getArtifact,
-                taskId,
-                runId,
-                artifact.name
-              ),
-            }
-          : artifact
-    );
-    const filtered = filter ? sift(filter, withUrls) : withUrls;
+  const withUrl = (taskId, runId, artifact) => {
+    const url = isAuthed
+      ? queue.buildSignedUrl(queue.getArtifact, taskId, runId, artifact.name)
+      : queue.buildUrl(queue.getArtifact, taskId, runId, artifact.name);
 
-    return new Artifacts(
-      taskId,
-      null,
-      filtered.map(artifact => new Artifact(taskId, artifact, runId))
-    );
+    return { ...artifact, url };
   };
 
   const artifact = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ taskId, runId, name }) => {
         const artifact = await queue.getArtifact(taskId, runId, name);
-        const url =
-          isAuthed &&
-          queue.buildSignedUrl(queue.getArtifact, taskId, runId, name);
 
-        return new Artifact(taskId, runId, artifact, url);
+        return new Artifact(taskId, withUrl(taskId, runId, artifact), runId);
       })
     )
   );
-  const artifacts = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ taskId, runId, filter }) => {
-        const { artifacts } = await queue.listArtifacts(taskId, runId);
+  const artifacts = new ConnectionLoader(
+    async ({ taskId, runId, filter, options }) => {
+      const raw = await queue.listArtifacts(taskId, runId, options);
+      const withUrls = raw.artifacts.map(artifact =>
+        withUrl(taskId, runId, artifact)
+      );
+      const artifacts = filter ? sift(filter, withUrls) : withUrls;
 
-        return createArtifactsConnection(taskId, runId, filter, artifacts);
-      })
-    )
+      return new Artifacts(taskId, runId, { ...raw, artifacts });
+    }
   );
-  const latestArtifacts = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ taskId, filter }) => {
-        const { artifacts } = await queue.latestArtifacts(taskId);
+  const latestArtifacts = new ConnectionLoader(
+    async ({ taskId, runId, filter, options }) => {
+      const raw = await queue.listLatestArtifacts(taskId, runId, options);
+      const withUrls = raw.artifacts.map(artifact =>
+        withUrl(taskId, runId, artifact)
+      );
+      const artifacts = filter ? sift(filter, withUrls) : withUrls;
 
-        return createArtifactsConnection(taskId, null, filter, artifacts);
-      })
-    )
+      return new Artifacts(taskId, runId, { ...raw, artifacts });
+    }
   );
 
   return {

@@ -1,0 +1,13 @@
+type ProvisionersEdge implements Edge {
+  cursor: String
+  node: Provisioner
+}
+
+type ProvisionersConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [ProvisionersEdge]
+}
+
+extend type Query {
+  provisioners(connection: PageConnection, filter: JSON): ProvisionersConnection
+}

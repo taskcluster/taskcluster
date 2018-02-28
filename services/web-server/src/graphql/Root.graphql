@@ -16,7 +16,8 @@ input PageConnection {
   endCursor: String
 }
 
-union Node = Artifact | Task
+# Every new edge implementation needs to declare its Node type here :(
+union Node = Artifact | Task | Provisioner | WorkerType | Worker | WorkerCompact
 
 interface Edge {
   cursor: String

@@ -9,7 +9,7 @@ module.exports = {
         },
         plugins: ['eslint-plugin-prettier'],
         rules: {
-          'no-shadow': 'off',
+          'class-methods-use-this': 'off',
           'prettier/prettier': [
             'error',
             {
@@ -30,6 +30,7 @@ module.exports = {
           ],
           'no-console': process.env.NODE_ENV === 'development' ? 'off' : 'error',
           'no-nested-ternary': 'off',
+          'no-shadow': 'off',
           'no-underscore-dangle': 'off',
         }
       }
