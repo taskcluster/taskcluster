@@ -34,6 +34,23 @@ suite('TaskCreator', function() {
     hookGroupId:        'tc-hooks-tests',
     hookId:             'tc-test-hook',
     metadata:           {},
+    task:               {
+      provisionerId:    'no-provisioner',
+      workerType:       'test-worker',
+      schedulerId:      'my-scheduler',
+      taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+      scopes:           [],
+      payload:          {},
+      metadata:         {
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
+        owner:          'amiyaguchi@mozilla.com',
+        source:         'http://github.com/',
+      },
+      tags: {
+        purpose:        'taskcluster-testing',
+      },
+    },
     bindings:           [],
     deadline:           '1 day',
     expires:            '1 day',
@@ -55,11 +72,6 @@ suite('TaskCreator', function() {
         },
       },
       additionalProperties: false,
-    },
-    task:               {
-      $let: {
-        random: 1,
-      },
     },
   };
 
