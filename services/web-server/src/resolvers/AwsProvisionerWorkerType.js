@@ -15,4 +15,25 @@ export default {
       return loaders.awsProvisionerWorkerTypeSummaries.load({ filter });
     },
   },
+  Mutation: {
+    createAwsProvisionerWorkerType(
+      parent,
+      { workerType, payload },
+      { clients }
+    ) {
+      return clients.awsProvisioner.createWorkerType(workerType, payload);
+    },
+    updateAwsProvisionerWorkerType(
+      parent,
+      { workerType, payload },
+      { clients }
+    ) {
+      return clients.awsProvisioner.updateWorkerType(workerType, payload);
+    },
+    async deleteAwsProvisionerWorkerType(parent, { workerType }, { clients }) {
+      await clients.awsProvisioner.removeWorkerType(workerType);
+
+      return workerType;
+    },
+  },
 };

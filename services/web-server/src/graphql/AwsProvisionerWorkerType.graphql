@@ -2,11 +2,25 @@ type AwsProvisionerWorkerTypeLaunchSpec {
   ImageId: ID!
 }
 
+input AwsProvisionerWorkerTypeLaunchSpecInput {
+  ImageId: ID!
+}
+
 type AwsProvisionerWorkerTypeInstanceType {
   instanceType: String!
   capacity: Int!
   utility: Float!
   launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  secrets: JSON!
+  userData: JSON!
+  scopes: [String]!
+}
+
+input AwsProvisionerWorkerTypeInstanceTypeInput {
+  instanceType: String!
+  capacity: Int!
+  utility: Float!
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
   secrets: JSON!
   userData: JSON!
   scopes: [String]!
@@ -20,10 +34,26 @@ type AwsProvisionerWorkerTypeRegion {
   scopes: [String]!
 }
 
+input AwsProvisionerWorkerTypeRegionInput {
+  region: String!
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
+  secrets: JSON!
+  userData: JSON!
+  scopes: [String]!
+}
+
 type AwsProvisionerWorkerTypeAvailabilityZone {
   availabilityZone: String!
   region: String
   launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  secrets: JSON
+  userData: JSON
+}
+
+input AwsProvisionerWorkerTypeAvailabilityZoneInput {
+  availabilityZone: String!
+  region: String
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
   secrets: JSON
   userData: JSON
 }
@@ -68,8 +98,33 @@ type AwsProvisionerWorkerTypeState {
   summary: AwsProvisionerWorkerTypeSummary
 }
 
+input AwsProvisionerWorkerTypeInput {
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
+  description: String!
+  owner: String!
+  secrets: JSON!
+  userData: JSON!
+  scopes: [String!]!
+  minCapacity: Int
+  maxCapacity: Int!
+  scalingRatio: Float!
+  minPrice: Float!
+  maxPrice: Float!
+  canUseOnDemand: Boolean
+  canUseSpot: Boolean
+  instanceTypes: [AwsProvisionerWorkerTypeInstanceTypeInput!]!
+  regions: [AwsProvisionerWorkerTypeRegionInput!]!
+  availabilityZones: [AwsProvisionerWorkerTypeAvailabilityZoneInput]
+}
+
 extend type Query {
   awsProvisionerWorkerTypeSummaries(filter: JSON): [AwsProvisionerWorkerTypeSummary]
   awsProvisionerWorkerType(workerType: String!): AwsProvisionerWorkerType
   awsProvisionerWorkerTypeState(workerType: String!): AwsProvisionerWorkerTypeState
+}
+
+extend type Mutation {
+  createAwsProvisionerWorkerType(workerType: String!, payload: AwsProvisionerWorkerTypeInput!): AwsProvisionerWorkerType
+  updateAwsProvisionerWorkerType(workerType: String!, payload: AwsProvisionerWorkerTypeInput!): AwsProvisionerWorkerType
+  deleteAwsProvisionerWorkerType(workerType: String!): String
 }
