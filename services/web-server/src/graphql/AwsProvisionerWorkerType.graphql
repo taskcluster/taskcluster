@@ -73,7 +73,7 @@ type AwsProvisionerWorkerType {
   maxPrice: Float!
   canUseOnDemand: Boolean
   canUseSpot: Boolean
-  lastModified: Date!
+  lastModified: DateTime!
   instanceTypes: [AwsProvisionerWorkerTypeInstanceType]!
   regions: [AwsProvisionerWorkerTypeRegion]!
   availabilityZones: [AwsProvisionerWorkerTypeAvailabilityZone]

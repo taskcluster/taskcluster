@@ -1,0 +1,70 @@
+type HookMetadata {
+  name: String!
+  description: String!
+  owner: String!
+  emailOnError: Boolean
+}
+
+type HookTask {
+  provisionerId: ID!
+  workerType: String!
+  schedulerId: ID
+  taskGroupId: ID
+  routes: [String]
+  priority: TaskPriority
+  retries: Int
+  scopes: [String]
+  payload: JSON!
+  metadata: TaskMetadata!
+  tags: JSON
+  extra: JSON
+}
+
+enum HookFireResult {
+  SUCCESS
+  ERROR
+  NO_FIRE
+}
+
+type HookSuccessfulFire {
+  result: HookFireResult!
+  taskId: String!
+  time: DateTime!
+}
+
+type HookFailedFire {
+  result: HookFireResult!
+  error: JSON!
+  time: DateTime!
+}
+
+type NoFire {
+  result: HookFireResult!
+}
+
+union LastFire = HookSuccessfulFire | HookFailedFire | NoFire
+
+type HookStatus {
+  lastFire: LastFire!
+  nextScheduledDate: DateTime
+}
+
+type Hook {
+  hookGroupId: ID!
+  hookId: ID!
+  metadata: HookMetadata!
+  schedule: [String]!
+  task: HookTask!
+  expires: DateTime!
+  deadline: DateTime!
+  triggerSchema: JSON!
+
+  status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
+}
+
+extend type Query {
+  hookGroups(filter: JSON): [ID]
+  hooks(hookGroupId: ID!, filter: JSON): [Hook]
+  hook(hookGroupId: ID!, hookId: ID!): Hook
+  hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
+}
