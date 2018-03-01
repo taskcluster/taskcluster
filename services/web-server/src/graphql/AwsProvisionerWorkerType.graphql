@@ -1,0 +1,75 @@
+type AwsProvisionerWorkerTypeLaunchSpec {
+  ImageId: ID!
+}
+
+type AwsProvisionerWorkerTypeInstanceType {
+  instanceType: String!
+  capacity: Int!
+  utility: Float!
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  secrets: JSON!
+  userData: JSON!
+  scopes: [String]!
+}
+
+type AwsProvisionerWorkerTypeRegion {
+  region: String!
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  secrets: JSON!
+  userData: JSON!
+  scopes: [String]!
+}
+
+type AwsProvisionerWorkerTypeAvailabilityZone {
+  availabilityZone: String!
+  region: String
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  secrets: JSON
+  userData: JSON
+}
+
+type AwsProvisionerWorkerType {
+  workerType: String!
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  description: String!
+  owner: String!
+  secrets: JSON!
+  userData: JSON!
+  scopes: [String]!
+  minCapacity: Int!
+  maxCapacity: Int!
+  scalingRatio: Float!
+  minPrice: Float!
+  maxPrice: Float!
+  canUseOnDemand: Boolean
+  canUseSpot: Boolean
+  lastModified: Date!
+  instanceTypes: [AwsProvisionerWorkerTypeInstanceType]!
+  regions: [AwsProvisionerWorkerTypeRegion]!
+  availabilityZones: [AwsProvisionerWorkerTypeAvailabilityZone]
+
+  state(workerType: String = workerType): AwsProvisionerWorkerTypeState
+}
+
+type AwsProvisionerWorkerTypeSummary {
+  workerType: String!
+  minCapacity: Int!
+  maxCapacity: Int!
+  requestedCapacity: Int!
+  pendingCapacity: Int!
+  runningCapacity: Int!
+}
+
+type AwsProvisionerWorkerTypeState {
+  workerType: String!
+  instances: [AwsProvisionerWorkerTypeInstanceType]!
+  requests: [JSON]
+  internalTrackedRequests: [JSON]
+  summary: AwsProvisionerWorkerTypeSummary
+}
+
+extend type Query {
+  awsProvisionerWorkerTypeSummaries(filter: JSON): [AwsProvisionerWorkerTypeSummary]
+  awsProvisionerWorkerType(workerType: String!): AwsProvisionerWorkerType
+  awsProvisionerWorkerTypeState(workerType: String!): AwsProvisionerWorkerTypeState
+}
