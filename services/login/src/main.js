@@ -1,15 +1,7 @@
-const _ = require('lodash');
-const http = require('http');
-const path = require('path');
 const config = require('taskcluster-lib-config');
-const User = require('./user');
-const querystring = require('querystring');
 const loader = require('taskcluster-lib-loader');
-const taskcluster = require('taskcluster-client');
 const scanner = require('./scanner');
-const Authorizer = require('./authz');
 const v1 = require('./v1');
-const LDAPClient = require('./ldap');
 const App = require('taskcluster-lib-app');
 const validator = require('taskcluster-lib-validate');
 const monitor = require('taskcluster-lib-monitor');
@@ -20,15 +12,6 @@ let load = loader({
     requires: ['profile'],
     setup: ({profile}) => {
       return config({profile});
-    },
-  },
-
-  authorizer: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let authorizer = new Authorizer(cfg);
-      await authorizer.setup();
-      return authorizer;
     },
   },
 
@@ -67,8 +50,8 @@ let load = loader({
   },
 
   router: {
-    requires: ['cfg', 'validator', 'monitor', 'handlers', 'authorizer'],
-    setup: ({cfg, validator, monitor, handlers, authorizer}) => {
+    requires: ['cfg', 'validator', 'monitor', 'handlers'],
+    setup: ({cfg, validator, monitor, handlers}) => {
       return v1.setup({
         context: {},
         validator,
@@ -78,7 +61,7 @@ let load = loader({
         referencePrefix:  'login/v1/api.json',
         aws:              cfg.aws,
         monitor:          monitor.prefix('api'),
-        context:          {cfg, handlers, authorizer},
+        context:          {cfg, handlers},
       });
     },
   },
@@ -125,129 +108,12 @@ let load = loader({
   },
 
   scanner: {
-    requires: ['cfg', 'authorizer'],
-    setup: async ({cfg, authorizer}) => {
-      await scanner(cfg, authorizer);
+    requires: ['cfg', 'handlers'],
+    setup: async ({cfg, handlers}) => {
+      await scanner(cfg, handlers);
       // the LDAP connection is still open, so we must exit
       // explicitly or node will wait forever for it to die.
       process.exit(0);
-    },
-  },
-
-  // utility function to show LDAP groups for a user
-  'show-ldap-user': {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      let email = process.argv[3];
-      if (!email) {
-        console.error('Specify an email address on the command line');
-        process.exit(1);
-        return;
-      }
-
-      let client = new LDAPClient(cfg.ldap);
-      client.bind(cfg.ldap.user, cfg.ldap.password);
-
-      let userDn = await client.dnForEmail(email);
-
-      if (!userDn) {
-        console.error(`no user found for ${email}; skipping LDAP groups`);
-        process.exit(1);
-        return;
-      }
-
-      let entries = await client.search(
-        'dc=mozilla', {
-          scope: 'sub',
-          filter: '(&(objectClass=groupOfNames)(member=' + userDn + '))',
-          attributes: ['cn'],
-          timeLimit: 10,
-        });
-      let groups = entries.map(entry => entry.object.cn);
-
-      // SCM groups are posixGroup objects with the email in the memberUid
-      // field.  This code does not capture other POSIX groups (which have the
-      // user's uid field in the memberUid field).
-      entries = await client.search(
-        'dc=mozilla', {
-          scope: 'sub',
-          filter: '(&(objectClass=posixGroup)(memberUid=' + email + '))',
-          attributes: ['cn'],
-          timeLimit: 10,
-        });
-      groups = groups.concat(entries.map(entry => entry.object.cn));
-
-      groups.sort();
-      groups.forEach(gp => console.log(gp));
-
-      process.exit(0);
-    },
-  },
-
-  'show-mozillians-user': {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      const Mozillians = require('mozillians-client');
-      let email = process.argv[3];
-      if (!email) {
-        console.error('Specify an email address on the command line');
-        process.exit(1);
-        return;
-      }
-
-      try {
-        const mozillians = new Mozillians(cfg.mozillians.apiKey, {
-          // note that this retries on transient errors only
-          retries: 5,
-          delayFactor: 100,
-          maxDelay: 30 * 1000,
-        });
-
-        // Find the user
-        let userLookup = await mozillians.users({email});
-        let mozilliansUser, vouched;
-        if (userLookup.results.length === 1) {
-          let u = userLookup.results[0];
-          vouched = u.is_vouched;
-          mozilliansUser = u.username;
-        } else {
-          // If there is no associated mozillians user at all, do nothing.
-          console.log(`no mozillian user found with email ${email} - is the record public?`);
-          return;
-        }
-
-        console.log(`found mozillians username ${mozilliansUser}; vouched: ${vouched}`);
-
-        // unvouched users just get the "mozillians-unvouched" role, and no
-        // group-based roles.  This allows them to complete the tutorial.
-        if (!vouched) {
-          console.log('not vouched');
-          return;
-        }
-
-        // For each group to be considered we check if the user is a member
-        let groupLookups = await Promise.all(
-          cfg.mozillians.allowedGroups.map(group => {
-            return mozillians.users({email, group}).then(result => {
-              result.group = group;
-              return result;
-            });
-          })
-        );
-        groupLookups.forEach(g => {
-          if (g.results.length === 1) {
-            let u = g.results[0];
-            if (u.is_vouched && u.username === mozilliansUser) {
-              console.log(`found group ${g.group}`);
-            }
-          }
-        });
-      } catch (err) {
-        console.error(err);
-        process.exit(1);
-      } finally {
-        process.exit(0);
-      }
     },
   },
 }, ['profile', 'process']);

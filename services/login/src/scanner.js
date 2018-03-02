@@ -1,15 +1,14 @@
 const taskcluster = require('taskcluster-client');
 const scopeUtils = require('taskcluster-lib-scopes');
-const User = require('./user');
-const _ = require('lodash');
+const {CLIENT_ID_PATTERN} = require('./utils');
 const Debug = require('debug');
 
-var debug = Debug('scanner');
+const debug = Debug('scanner');
 
-async function scanner(cfg, authorizer) {
+async function scanner(cfg, handlers) {
   // * get the set of identityProviderIds
   // * for each:
-  //   * fetch all clients, sort by identity
+  //   * fetch all clients
   //   * for each identity:
   //     * get roles from providers, expand
   //     * for each client in that identity:
@@ -19,50 +18,45 @@ async function scanner(cfg, authorizer) {
   // for scans to take longer than for the auth service to be overloaded.
   let auth = new taskcluster.Auth({credentials: cfg.app.credentials});
 
-  // gather all identityProviderIds used in any authorizer
-  let identityProviders = authorizer.identityProviders;
+  const scan = async h => {
+    const handler = handlers[h];
+    const clients = await auth.listClients({prefix: `${handler.identityProviderId}/`});
 
-  // enumerate all clients for any of those identity providers
-  let clients = [];
-  for (let idp of identityProviders) {
-    clients = clients.concat(await auth.listClients({prefix: idp + '/'}));
-  }
+    // iterate through the clients, constructing a new User as necessary, comparing
+    // the client's scopes to the User's scopes and disabling where necessary.
+    let user, userScopes;
 
-  // sort by clientId, so that each identity (a prefix of the clientId) appears
-  // contiguously
-  clients = _.sortBy(clients, 'clientId');
+    for (let client of clients) {
+      debug('examining client', client.clientId);
+      if (!client.clientId.match(CLIENT_ID_PATTERN) || client.disabled) {
+        continue;
+      }
 
-  // iterate through the clients, constructing a new User as necessary, comparing
-  // the client's scopes to the User's scopes and disabling where necessary.
-  let user, userScopes;
-  let idPattern = /^([^\/]*\/[^\/]*)\/.+$/;
-  for (let client of clients.sort()) {
-    debug('examining client', client.clientId);
-    if (!client.clientId.match(idPattern) || client.disabled) {
-      continue;
+      if (!user || user.identity !== handler.identityFromClientId(client.clientId)) {
+        user = await handler.userFromClientId(client.clientId);
+
+        if (!user) {
+          continue;
+        }
+
+        userScopes = (await auth.expandScopes({scopes: user.scopes()})).scopes;
+
+        debug('..against user', user.identity);
+      }
+
+      // if this client's expandedScopes are not satisfied by the user's expanded
+      // scopes, disable the client.
+      if (!scopeUtils.scopeMatch(userScopes, [client.expandedScopes])) {
+        await auth.disableClient(client.clientId);
+      }
     }
+  };
 
-    // refresh the user if it does not correspond to this client
-    let clientIdentity = client.clientId.replace(idPattern, '$1');
-    if (!user || user.identity != clientIdentity) {
-      user = new User();
-      user.identity = clientIdentity;
-
-      await authorizer.authorize(user);
-
-      userScopes = (await auth.expandScopes({scopes: user.scopes()})).scopes;
-      // allow the implicit 'assume:client-id:<clientId> auth adds for each client
-      userScopes.push('assume:client-id:' + clientIdentity + '/*');
-
-      debug('..against user', user.identity);
-    }
-
-    // if this client's expandedScopes are not satisfied by the user's expanded
-    // scopes, disable the client.
-    if (!scopeUtils.scopeMatch(userScopes, [client.expandedScopes])) {
-      await auth.disableClient(client.clientId);
-    }
-  }
+  await Promise.all(
+    Object
+      .keys(cfg.handlers)
+      .map(scan)
+  );
 }
 
 module.exports = scanner;

@@ -18,8 +18,10 @@ class Handler {
       debug('invalid token');
       return;
     }
-    let user = new User();
+    const user = new User();
     user.identity = 'test/' + accessToken;
+    user.addRole('test:' + user.identityId);
+
     return user;
   }
 }
