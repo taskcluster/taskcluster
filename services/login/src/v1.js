@@ -1,15 +1,13 @@
 const API = require('taskcluster-lib-api');
-const User = require('./user');
-const _ = require('lodash');
 
-var api = new API({
+const api = new API({
   title:         'Login API',
   description:   [
     'The Login service serves as the interface between external authentication',
     'systems and Taskcluster credentials.',
   ].join('\n'),
   schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
-  context: ['cfg', 'handlers', 'authorizer'],
+  context: ['cfg', 'handlers'],
 });
 
 // Export api
@@ -49,6 +47,7 @@ api.declare({
 }, async function(req, res) {
   // handlers are loaded from src/handlers based on cfg.handlers
   let handler = this.handlers[req.params.provider];
+
   if (!handler) {
     return res.reportError('InputError',
       'Invalid accessToken provider {{provider}}',
@@ -56,6 +55,7 @@ api.declare({
   }
 
   let user = await handler.userFromRequest(req, res);
+
   if (!user) {
     // don't report much to the user, to avoid revealing sensitive information, although
     // it is likely in the service logs.
@@ -63,9 +63,6 @@ api.declare({
       'Could not generate credentials for this access token',
       {});
   }
-
-  // add scopes for this user based on matching authorizers
-  await this.authorizer.authorize(user);
 
   // create and return temporary credentials, limiting expires to a max of 15 minutes
   let {credentials: issuer, startOffset} = this.cfg.app.temporaryCredentials;
