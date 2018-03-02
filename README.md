@@ -150,7 +150,7 @@ TODO:
 7. Start docker daemon, if not already running (e.g. `boot2docker start`)
 8. Refresh your environment in case you have cached dependencies with `go get -u ./...`
 9. `./build.sh taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix)
-10. `docker tag -f taskcluster/taskcluster-proxy:X.Y.Z taskcluster/taskcluster-proxy:latest` (no `v` prefix in version)
+10. `docker tag taskcluster/taskcluster-proxy:X.Y.Z taskcluster/taskcluster-proxy:latest` (no `v` prefix in version)
 11. `docker push taskcluster/taskcluster-proxy:X.Y.Z` (no `v` prefix in version)
 12. `docker push taskcluster/taskcluster-proxy:latest`
 13. Confirm releases `X.Y.Z` and `latest` appear [here](https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/)

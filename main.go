@@ -34,20 +34,24 @@ task id.
 `
 
 func main() {
-	// Parse the docopt string and exit on any error or help message.
-	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
+	routes, port := ParseCommandArgs(os.Args[1:])
 
-	port, err := strconv.Atoi(arguments["--port"].(string))
+	http.HandleFunc("/bewit", routes.BewitHandler)
+	http.HandleFunc("/credentials", routes.CredentialsHandler)
+	http.HandleFunc("/", routes.RootHandler)
+
+	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if startError != nil {
+		log.Fatal(startError)
+	}
+}
+
+func ParseCommandArgs(argv []string) (routes Routes, port int) {
+	arguments, err := docopt.Parse(usage, argv, true, version, false, true)
+
+	port, err = strconv.Atoi(arguments["--port"].(string))
 	if err != nil {
 		log.Fatalf("Failed to convert port to integer")
-	}
-
-	// Parse out additional scopes to add...
-	var additionalScopes []string
-	if arguments["<scope>"] != nil {
-		additionalScopes = arguments["<scope>"].([]string)
-	} else {
-		additionalScopes = make([]string, 0)
 	}
 
 	clientId := arguments["--client-id"]
@@ -79,10 +83,11 @@ func main() {
 		log.Printf("certificate: '%v'", certificate)
 	}
 
-	creds := &tcclient.Credentials{
-		ClientID:    clientId.(string),
-		AccessToken: accessToken.(string),
-		Certificate: certificate.(string),
+	// initially grant no scopes
+	var authorizedScopes []string = []string{}
+
+	if arguments["<scope>"] != nil {
+		authorizedScopes = append(authorizedScopes, arguments["<scope>"].([]string)...)
 	}
 
 	if arguments["--task-id"] != nil {
@@ -96,29 +101,32 @@ func main() {
 			log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
 		}
 
-		creds.AuthorizedScopes = append(additionalScopes, task.Scopes...)
+		authorizedScopes = append(authorizedScopes, task.Scopes...)
 	}
 
-	if len(creds.AuthorizedScopes) == 0 {
-		creds.AuthorizedScopes = nil
+	// if no --task-id specified, AND no scopes were specified, don't restrict AuthorizedScopes
+	if arguments["--task-id"] == nil && len(authorizedScopes) == 0 {
+		authorizedScopes = nil
+	}
+
+	creds := &tcclient.Credentials{
+		ClientID:         clientId.(string),
+		AccessToken:      accessToken.(string),
+		Certificate:      certificate.(string),
+		AuthorizedScopes: authorizedScopes,
+	}
+
+	if authorizedScopes == nil {
 		log.Print("Proxy has full scopes of provided credentials - no scope reduction being applied")
 	} else {
-		log.Println("Proxy with scopes: ", creds.AuthorizedScopes)
+		log.Println("Proxy with scopes: ", authorizedScopes)
 	}
 
-	routes := Routes{
+	routes = Routes{
 		Client: tcclient.Client{
 			Authenticate: true,
 			Credentials:  creds,
 		},
 	}
-
-	http.HandleFunc("/bewit", routes.BewitHandler)
-	http.HandleFunc("/credentials", routes.CredentialsHandler)
-	http.HandleFunc("/", routes.RootHandler)
-
-	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-	if startError != nil {
-		log.Fatal(startError)
-	}
+	return
 }

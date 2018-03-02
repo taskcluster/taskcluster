@@ -1,0 +1,48 @@
+{
+  "provisionerId": "test-provisioner",
+  "workerType": "Ga6sJQoGRz225-RGnvbpgQ",
+  "schedulerId": "test-scheduler",
+  "taskGroupId": "OY0sHU3VTrykGZLTGZ_goQ",
+  "dependencies": [],
+  "requires": "all-completed",
+  "routes": [],
+  "priority": "lowest",
+  "retries": 1,
+  "created": "2016-09-19T12:09:54.000Z",
+  "deadline": "2016-09-20T12:09:54.000Z",
+  "expires": "2021-09-19T12:09:54.000Z",
+  "scopes": [],
+  "payload": {
+    "command": [
+      [
+        "echo",
+        "hello world!"
+      ],
+      [
+        "echo",
+        "goodbye world!"
+      ]
+    ],
+    "maxRunTime": 7200,
+    "artifacts": [
+      {
+        "path": "SampleArtifacts/_/X.txt",
+        "expires": "2021-09-19T12:09:54.000Z",
+        "type": "file"
+      }
+    ],
+    "features": {
+      "chainOfTrust": true
+    }
+  },
+  "metadata": {
+    "description": "Test task",
+    "name": "[TC] TestUpload",
+    "owner": "pmoore@mozilla.com",
+    "source": "https://github.com/taskcluster/generic-worker/blob/master/artifacts_test.go"
+  },
+  "tags": {
+    "createdForUser": "pmoore@mozilla.com"
+  },
+  "extra": {}
+}

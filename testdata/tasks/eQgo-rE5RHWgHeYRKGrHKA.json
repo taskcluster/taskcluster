@@ -1,0 +1,33 @@
+{
+  "provisionerId": "win2012r2",
+  "workerType": "aws-provisioner-v1",
+  "schedulerId": "-",
+  "taskGroupId": "eQgo-rE5RHWgHeYRKGrHKA",
+  "dependencies": [],
+  "requires": "all-completed",
+  "routes": [],
+  "priority": "lowest",
+  "retries": 1,
+  "created": "2018-03-02T11:07:02.080Z",
+  "deadline": "2018-03-03T11:07:02.080Z",
+  "expires": "2023-03-02T11:07:02.080Z",
+  "scopes": [
+    "queue:get-artifact:SampleArtifacts/_/X.txt"
+  ],
+  "payload": {
+    "command": [
+      "echo hello world!"
+    ],
+    "maxRunTime": 7200
+  },
+  "metadata": {
+    "description": "Test task for taskcluster-proxy unit tests",
+    "name": "TestWithTaskWithScopes",
+    "owner": "pmoore@mozilla.com",
+    "source": "https://github.com/taskcluster/taskcluster-proxy/blob/master/parse_test.go"
+  },
+  "tags": {
+    "createdForUser": "pmoore@mozilla.com"
+  },
+  "extra": {}
+}
