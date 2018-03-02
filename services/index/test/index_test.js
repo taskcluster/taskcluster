@@ -213,4 +213,51 @@ suite('Indexing', () => {
     
   });
 
+  var insert10Tasks = async function(myns) {
+    var expiry = new Date();
+    expiry.setDate(expiry.getDate() + 10);
+    var res = [];
+    for (var i = 1; i <= 10; i++) {
+      let taskId = slugid.nice();
+      await helper.index.insertTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i), {
+        taskId:     taskId,
+        rank:       i,
+        data:       {hello: 'world ' + _.toString(i)},
+        expires:    expiry.toJSON(),
+      });
+      let result = await helper.index.findTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i));
+      res.push(result);
+      assert(result.taskId === taskId, 'Wrong taskId');
+    }
+    return res;
+  };
+
+  test('list top-level namespaces test limit and continuationToken params', async function() {
+    var myns = slugid.v4();
+    let tasks = await insert10Tasks(myns);
+    debug('listNamespaces returns continuationToken after limit = 10');
+
+    let i = 1;
+    let continuationToken = undefined;
+    do {
+      let query = {limit: 1};
+      if (!_.isUndefined(continuationToken)) {
+        _.extend(query, {continuationToken});
+      }
+      let result = await helper.index.listNamespaces(myns, query);
+      debug('listNamespaces returns 1 entry');
+      assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');
+      let obj = result.namespaces[0];
+      debug('listNamespaces entries match the namespace regex');
+      assert.equal(
+        new RegExp(myns + '.my-task').test(obj.namespace) &&
+        new RegExp('my-task').test(obj.name),
+        true, 'Expect namespace to match regex');
+      continuationToken = result.continuationToken;
+      i ++;
+    }
+    while (!_.isUndefined(continuationToken));
+    assert(i >= 10, 'continuationToken is valid till 10 listNamespaces');
+  });
+
 });
