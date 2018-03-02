@@ -1,5 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const _ = require('lodash');
+const {encode} = require('./utils');
 const assert = require('assert');
 
 class User {
@@ -13,19 +13,15 @@ class User {
   }
 
   set identity(identity) {
-    assert(identity.split('/').length == 2,
-      'identity must have exactly one '/' character');
     this._identity = identity;
     // always reset roles when changing identity
     this.roles = [];
   }
 
-  get identityProviderId() {
-    return this._identity.split('/', 2)[0];
-  }
-
   get identityId() {
-    return this._identity.split('/', 2)[1];
+    return this._identity.split('/')
+      .slice(1)
+      .join('|');
   }
 
   addRole(role) {
@@ -83,6 +79,7 @@ class User {
       user._identity = data.identity;
       user.roles = data.roles || [];
     }
+
     return user;
   }
 
