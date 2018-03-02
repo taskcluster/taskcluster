@@ -1,4 +1,11 @@
-import { Auth, AwsProvisioner, Hooks, Index, Queue } from 'taskcluster-client';
+import {
+  Auth,
+  AwsProvisioner,
+  Hooks,
+  Index,
+  PurgeCache,
+  Queue,
+} from 'taskcluster-client';
 
 export default user => {
   const credentials = user && user.oidc.credentials;
@@ -10,5 +17,6 @@ export default user => {
     awsProvisioner: new AwsProvisioner(options),
     hooks: new Hooks(options),
     index: new Index(options),
+    purgeCache: new PurgeCache(options),
   };
 };

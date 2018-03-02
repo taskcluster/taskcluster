@@ -1,0 +1,20 @@
+type CachePurge {
+  provisionerId: ID!
+  workerType: String!
+  cacheName: String!
+  before: DateTime!
+}
+
+type CachePurgesEdge implements Edge {
+  cursor: String
+  node: CachePurge
+}
+
+type CachePurgesConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [CachePurgesEdge]
+}
+
+extend type Query {
+  cachePurges(filter: JSON): CachePurgesConnection
+}

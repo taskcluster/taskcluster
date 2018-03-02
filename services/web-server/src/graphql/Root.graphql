@@ -17,7 +17,7 @@ input PageConnection {
 }
 
 # Every new edge implementation needs to declare its Node type here :(
-union Node = Artifact | Task | Provisioner | WorkerType | Worker | WorkerCompact | Namespace | IndexedTask
+union Node = Artifact | Task | Provisioner | WorkerType | Worker | WorkerCompact | Namespace | IndexedTask | CachePurge
 
 interface Edge {
   cursor: String
