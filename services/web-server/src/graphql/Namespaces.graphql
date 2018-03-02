@@ -1,0 +1,30 @@
+type Namespace {
+  namespace: String!
+  name: String!
+  expires: DateTime!
+}
+
+type TaskNamespaceEdge implements Edge {
+  cursor: String
+  node: IndexedTask
+}
+
+type TaskNamespaceConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [TaskNamespaceEdge]
+}
+
+type NamespacesEdge implements Edge {
+  cursor: String
+  node: Namespace
+}
+
+type NamespacesConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [NamespacesEdge]
+}
+
+extend type Query {
+  taskNamespace(namespace: String!, connection: PageConnection, filter: JSON): TaskNamespaceConnection
+  namespaces(namespace: String = "", connection: PageConnection, filter: JSON): NamespacesConnection
+}

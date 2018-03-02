@@ -1,3 +1,21 @@
+type Artifact {
+  taskId: ID!
+  runId: Int
+  storageType: ArtifactStorageType!
+  name: String!
+  expires: DateTime!
+  contentType: String!
+  url: String
+}
+
+enum ArtifactStorageType {
+  BLOB
+  S3
+  AZURE
+  REFERENCE
+  ERROR
+}
+
 type ArtifactsEdge implements Edge {
   cursor: String
   node: Artifact
@@ -9,6 +27,8 @@ type ArtifactsConnection implements Connection {
 }
 
 extend type Query {
+  artifact(taskId: ID!, runId: Int!, name: String!): Artifact
+  latestArtifact(taskId: ID!, runId: Int!): Artifact
   artifacts(taskId: ID!, runId: Int!, connection: PageConnection, filter: JSON): ArtifactsConnection
   latestArtifacts(taskId: ID!, connection: PageConnection, filter: JSON): ArtifactsConnection
 }

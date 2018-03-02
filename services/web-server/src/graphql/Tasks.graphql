@@ -70,8 +70,28 @@ input TaskInput {
   extra: JSON
 }
 
+type IndexedTask {
+  namespace: String!
+  taskId: ID!
+  rank: Int!
+  data: JSON!
+  expires: DateTime!
+}
+
+type TasksEdge implements Edge {
+  cursor: String
+  node: Task
+}
+
+type TasksConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [TasksEdge]
+}
+
 extend type Query {
   task(taskId: ID!): Task
+  indexedTask(indexPath: String!): IndexedTask
+  tasks(taskGroupId: ID!, connection: PageConnection, filter: JSON): TasksConnection
 }
 
 extend type Mutation {

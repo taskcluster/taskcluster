@@ -23,6 +23,12 @@ export default {
     task(parent, { taskId }, { loaders }) {
       return loaders.task.load(taskId);
     },
+    indexedTask(parent, { indexPath }, { loaders }) {
+      return loaders.indexedTask.load(indexPath);
+    },
+    tasks(parent, { taskGroupId, connection }, { loaders }) {
+      return loaders.tasks.load({ taskGroupId, connection });
+    },
   },
   Mutation: {
     async createTask(parent, { taskId, task }, { clients }) {

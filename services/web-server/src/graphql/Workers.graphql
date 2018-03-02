@@ -1,3 +1,34 @@
+type LatestTask {
+  taskId: ID!
+  runId: Int!
+}
+
+type WorkerCompact {
+  workerId: ID!
+  workerGroup: String!
+  firstClaim: DateTime!
+  latestTask: LatestTask
+  quarantineUntil: DateTime
+  provisionerId: ID!
+  workerType: String!
+}
+
+type Worker {
+  provisionerId: String!
+  workerType: String!
+  workerGroup: String!
+  workerId: String!
+  recentTasks: [LatestTask]!
+  expires: DateTime!
+  quarantineUntil: DateTime
+  firstClaim: Date!
+  actions: [ProvisionerAction]!
+}
+
+input WorkerQuarantine {
+  quarantineUntil: DateTime
+}
+
 type WorkersCompactEdge implements Edge {
   cursor: String
   node: WorkerCompact
@@ -19,5 +50,16 @@ type WorkersConnection implements Connection {
 }
 
 extend type Query {
+  worker(provisionerId: ID!, workerType: String!, workerGroup: String!, workerId: ID!): Worker
   workers(provisionerId: ID!, workerType: String! connection: PageConnection, filter: JSON): WorkersCompactConnection
+}
+
+extend type Mutation {
+  quarantineWorker(
+    provisionerId: ID!,
+    workerType: String!,
+    workerGroup: String!,
+    workerId: ID!,
+    payload: WorkerQuarantine
+  ): Worker
 }
