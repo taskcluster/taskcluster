@@ -21,7 +21,7 @@ Defaults:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
     authBaseUrl:      https://auth.taskcluster.net/v1
-    publishMetaData:  false
+    publishMetaData:  !env:bool PUBLISH_METADATA
   raven:
     # This can be grabbed from the settings of the sentry project
     # and is a string that looks like:
@@ -66,8 +66,6 @@ Profiles:
         clientSecret:   !env AUTH0_CLIENT_SECRET
     server:
       forceSSL: true
-    app:
-      publishMetaData:  true
   test:
     handlers:
       test:
