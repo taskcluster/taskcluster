@@ -1,4 +1,4 @@
-Generated: 1520004146
+Generated: 1520014947
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7551,12 +7551,31 @@ Entry 0     =
 task exists for the given path, this API end-point will respond with a 404 status.'
 Entry 1     =
     Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/namespaces/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Query        = '[continuationToken limit]'
+    Entry Name        = 'listNamespaces'
+    Entry Stability   = 'stable'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#'
+    Entry Title       = 'List Namespaces'
+    Entry Description = 'List the namespaces immediately under a given namespace.
+
+This endpoint
+lists up to 1000 namespaces. If more namespaces are present, a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.'
+Entry 2     =
+    Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/namespaces/<namespace>'
     Entry Args        = '[namespace]'
     Entry Query        = '[]'
-    Entry Name        = 'listNamespaces'
-    Entry Stability   = 'stable'
+    Entry Name        = 'listNamespacesPost'
+    Entry Stability   = 'deprecated'
     Entry Scopes      = ''
     Entry Input       = 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#'
@@ -7568,7 +7587,7 @@ lists up to 1000 namespaces. If more namespaces are present, a
 `continuationToken` will be returned, which can be given in the next
 request. For the initial request, the payload should be an empty JSON
 object.'
-Entry 2     =
+Entry 3     =
     Entry Type        = 'function'
     Entry Method      = 'post'
     Entry Route       = '/tasks/<namespace>'
@@ -7590,7 +7609,7 @@ object.
 
 **Remark**, this end-point is designed for humans browsing for tasks, not
 services, as that makes little sense.'
-Entry 3     =
+Entry 4     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/task/<namespace>'
@@ -7607,7 +7626,7 @@ at the given index path, the task is not indexed but the response is still 200 O
 
 Please see the introduction above for information
 about indexing successfully completed tasks automatically using custom routes.'
-Entry 4     =
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<indexPath>/artifacts/<name>'
@@ -7634,7 +7653,7 @@ This problem be remedied by including the revision in the index path or by bundl
 installer and debug symbols into a single artifact.
 
 If no task exists for the given index path, this API end-point responds with 404.'
-Entry 5     =
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'

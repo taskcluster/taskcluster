@@ -121,7 +121,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 2 Mar 2018 at 15:22:00 UTC. The code was generated
+// Fri, 2 Mar 2018 at 18:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -195,7 +195,31 @@ func (myIndex *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 // object.
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#listNamespaces
-func (myIndex *Index) ListNamespaces(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, error) {
+func (myIndex *Index) ListNamespaces(namespace, continuationToken, limit string) (*ListNamespacesResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*myIndex)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), v)
+	return responseObject.(*ListNamespacesResponse), err
+}
+
+// Stability: *** DEPRECATED ***
+//
+// List the namespaces immediately under a given namespace.
+//
+// This endpoint
+// lists up to 1000 namespaces. If more namespaces are present, a
+// `continuationToken` will be returned, which can be given in the next
+// request. For the initial request, the payload should be an empty JSON
+// object.
+//
+// See https://docs.taskcluster.net/reference/core/index/api-docs#listNamespacesPost
+func (myIndex *Index) ListNamespacesPost(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, error) {
 	cd := tcclient.Client(*myIndex)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
 	return responseObject.(*ListNamespacesResponse), err
