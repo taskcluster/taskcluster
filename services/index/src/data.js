@@ -86,7 +86,6 @@ Namespace.ensureNamespace = function(namespace, expires) {
   if (!(namespace instanceof Array)) {
     namespace = namespace.split('.');
   }
-
   // Find parent and folder name
   var name    = namespace.pop() || '';
   var parent  = namespace.join('.');
