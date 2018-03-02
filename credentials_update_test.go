@@ -44,13 +44,13 @@ func TestCredentialsUpdate(t *testing.T) {
 	response = routes.request("PUT", []byte("{\"badJS0n!"))
 	if response.Code != 400 {
 		content, _ := ioutil.ReadAll(response.Body)
-		t.Fatal("Request error %d: %s", response.Code, string(content))
+		t.Fatalf("Request error %d: %s", response.Code, string(content))
 	}
 
 	response = routes.request("PUT", body)
 	if response.Code != 200 {
 		content, _ := ioutil.ReadAll(response.Body)
-		t.Fatal("Request error %d: %s", response.Code, string(content))
+		t.Fatalf("Request error %d: %s", response.Code, string(content))
 	}
 
 	if routes.Credentials.ClientID != newCreds.ClientId {
