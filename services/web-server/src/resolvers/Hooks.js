@@ -34,4 +34,20 @@ export default {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
   },
+  Mutation: {
+    triggerHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+      return clients.hooks.triggerHook(hookGroupId, hookId, payload);
+    },
+    createHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+      return clients.hooks.createHook(hookGroupId, hookId, payload);
+    },
+    updateHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+      return clients.hooks.updateHook(hookGroupId, hookId, payload);
+    },
+    async deleteHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+      await clients.hooks.removeHook(hookGroupId, hookId, payload);
+
+      return hookId;
+    },
+  },
 };

@@ -5,6 +5,13 @@ type HookMetadata {
   emailOnError: Boolean
 }
 
+type HookMetadataInput {
+  name: String!
+  description: String!
+  owner: String!
+  emailOnError: Boolean
+}
+
 type HookTask {
   provisionerId: ID!
   workerType: String!
@@ -62,9 +69,25 @@ type Hook {
   status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
 }
 
+input HookInput {
+  metadata: HookMetadataInput!
+  schedule: [String]
+  expires: String
+  deadline: String
+  task: JSON!
+  triggerSchema: JSON
+}
+
 extend type Query {
   hookGroups(filter: JSON): [ID]
   hooks(hookGroupId: ID!, filter: JSON): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
+}
+
+extend type Mutation {
+  triggerHook(hookGroupId: ID!, hookId: ID!, payload: JSON!): TaskStatus
+  createHook(hookGroupId: ID!, hookId: ID!, hook: HookInput!): Hook
+  updateHook(hookGroupId: ID!, hookId: ID!, hook: HookInput!): Hook
+  deleteHook(hookGroupId: ID!, hookId: ID!): String
 }
