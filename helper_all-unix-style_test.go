@@ -69,6 +69,26 @@ func incrementCounterInCache() [][]string {
 	}
 }
 
+func goEnv() [][]string {
+	return [][]string{
+		{
+			"go",
+			"env",
+		},
+		{
+			"env",
+		},
+		{
+			"which",
+			"go",
+		},
+		{
+			"go",
+			"version",
+		},
+	}
+}
+
 func sleep(seconds uint) [][]string {
 	return [][]string{
 		{
@@ -78,14 +98,15 @@ func sleep(seconds uint) [][]string {
 	}
 }
 
-func goRun(goFile string) [][]string {
-	return [][]string{
-		{
-			"go",
-			"run",
-			goFile,
-		},
+func goRun(goFile string, args ...string) [][]string {
+	copy := copyArtifact(goFile)
+	run := []string{
+		"go",
+		"run",
+		goFile,
 	}
+	runWithArgs := append(run, args...)
+	return append(copy, runWithArgs)
 }
 
 func copyArtifact(path string) [][]string {

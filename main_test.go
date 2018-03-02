@@ -92,57 +92,60 @@ func TestRevisionNumberStored(t *testing.T) {
 // TestLogFormat tests the formatting of the various logging methods as
 // required by treeherder log parsing.
 func TestLogFormat(t *testing.T) {
-	logWriter := new(bytes.Buffer)
-	tr := &TaskRun{
-		logWriter: logWriter,
-	}
 	type LogFormatTest struct {
-		LogCall      func()
+		LogCall      func(task *TaskRun)
 		ResultFormat string
 	}
 	testCases := []LogFormatTest{
 		LogFormatTest{
-			LogCall: func() {
-				tr.Info("Another day for you and me in paradise")
+			LogCall: func(task *TaskRun) {
+				task.Info("Another day for you and me in paradise")
 			},
 			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] Another day for you and me in paradise` + "\n$",
 		},
 		LogFormatTest{
-			LogCall: func() {
-				tr.Warn("I believe in a thing called love")
+			LogCall: func(task *TaskRun) {
+				task.Warn("I believe in a thing called love")
 			},
 			ResultFormat: `^\[taskcluster:warn 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] I believe in a thing called love` + "\n$",
 		},
 		LogFormatTest{
-			LogCall: func() {
-				tr.Error("Well lawdy, lawdy, lawdy Miss Clawdy")
+			LogCall: func(task *TaskRun) {
+				task.Error("Well lawdy, lawdy, lawdy Miss Clawdy")
 			},
 			ResultFormat: `^\[taskcluster:error\] Well lawdy, lawdy, lawdy Miss Clawdy` + "\n$",
 		},
 		LogFormatTest{
-			LogCall: func() {
-				tr.Infof("It only takes a minute %v", "girl")
+			LogCall: func(task *TaskRun) {
+				task.Infof("It only takes a minute %v", "girl")
 			},
 			ResultFormat: `^\[taskcluster 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] It only takes a minute girl` + "\n$",
 		},
 		LogFormatTest{
-			LogCall: func() {
-				tr.Warnf("When you %v %v best, but you don't succeed", "try", "your")
+			LogCall: func(task *TaskRun) {
+				task.Warnf("When you %v %v best, but you don't succeed", "try", "your")
 			},
 			ResultFormat: `^\[taskcluster:warn 20\d{2}-[01]\d-[0123]\dT[012]\d:[012345]\d:[012345]\d\.\d{3}Z\] When you try your best, but you don't succeed` + "\n$",
 		},
 		LogFormatTest{
-			LogCall: func() {
-				tr.Errorf("Thought I saw a man %v to life", "brought")
+			LogCall: func(task *TaskRun) {
+				task.Errorf("Thought I saw a man %v to life", "brought")
 			},
 			ResultFormat: `^\[taskcluster:error\] Thought I saw a man brought to life` + "\n$",
 		},
 	}
 	for _, test := range testCases {
-		logWriter.Truncate(0)
-		test.LogCall()
-		if !regexp.MustCompile(test.ResultFormat).MatchString(logWriter.String()) {
-			t.Fatalf("Expected log line '%v' to match regexp '%v' but it didn't.", logWriter.String(), test.ResultFormat)
+		logWriter := new(bytes.Buffer)
+		task := &TaskRun{
+			logWriter: logWriter,
+		}
+		test.LogCall(task)
+		{
+			task.logMux.RLock()
+			defer task.logMux.RUnlock()
+			if !regexp.MustCompile(test.ResultFormat).MatchString(logWriter.String()) {
+				t.Fatalf("Expected log line '%v' to match regexp '%v' but it didn't.", logWriter.String(), test.ResultFormat)
+			}
 		}
 	}
 }

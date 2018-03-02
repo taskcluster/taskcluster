@@ -131,6 +131,13 @@ type (
 			//
 			// Since: generic-worker 5.3.0
 			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+			// The taskcluster proxy provides an easy and safe way to make authenticated
+			// taskcluster requests within the scope(s) of a particular task. See
+			// [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
+			//
+			// Since: generic-worker 10.6.0
+			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
 		} `json:"features,omitempty"`
 
 		// Maximum time the task container can run in seconds.
@@ -545,6 +552,11 @@ func taskPayloadSchema() string {
         "chainOfTrust": {
           "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.\n\nSince: generic-worker 5.3.0",
           "title": "Enable generation of a openpgp signed Chain of Trust artifact",
+          "type": "boolean"
+        },
+        "taskclusterProxy": {
+          "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
+          "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
           "type": "boolean"
         }
       },

@@ -34,9 +34,26 @@ const (
 	intermittentTask    TaskUpdateReason = "intermittent-task"
 )
 
+type TaskStatusChangeListener struct {
+	Name     string
+	Callback func(ts TaskStatus)
+}
+
 type TaskStatusManager struct {
 	sync.Mutex
-	task *TaskRun
+	task       *TaskRun
+	takenUntil tcclient.Time
+	status     queue.TaskStatusStructure
+	// callback functions to call when status changes
+	statusChangeListeners map[*TaskStatusChangeListener]bool
+}
+
+func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListener) {
+	delete(tsm.statusChangeListeners, listener)
+}
+
+func (tsm *TaskStatusManager) RegisterListener(listener *TaskStatusChangeListener) {
+	tsm.statusChangeListeners[listener] = true
 }
 
 type TaskStatusUpdateError struct {
@@ -59,8 +76,8 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 				log.Printf("%v", err)
 				return err
 			}
-			task.TaskClaimResponse.Status = tsr.Status
-			log.Print(task.String())
+			tsm.status = tsr.Status
+			tsm.takenUntil = tcclient.Time{}
 			return nil
 		},
 		claimed,
@@ -79,8 +96,8 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 				log.Printf("%v", err)
 				return err
 			}
-			task.TaskClaimResponse.Status = tsr.Status
-			// log.Print(task.String())
+			tsm.status = tsr.Status
+			tsm.takenUntil = tcclient.Time{}
 			return nil
 		},
 		claimed,
@@ -100,8 +117,8 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 				log.Printf("%v", err)
 				return err
 			}
-			task.TaskClaimResponse.Status = tsr.Status
-			// log.Print(task.String())
+			tsm.status = tsr.Status
+			tsm.takenUntil = tcclient.Time{}
 			return nil
 		},
 		claimed,
@@ -131,6 +148,8 @@ func (tsm *TaskStatusManager) Reclaim() error {
 				AccessToken: tcrsp.Credentials.AccessToken,
 				Certificate: tcrsp.Credentials.Certificate,
 			})
+			tsm.status = tcrsp.Status
+			tsm.takenUntil = tcrsp.TakenUntil
 			if err != nil {
 				log.Printf("SERIOUS BUG: invalid credentials in queue claim response body: %v", err)
 			}
@@ -140,6 +159,12 @@ func (tsm *TaskStatusManager) Reclaim() error {
 		claimed,
 		reclaimed,
 	)
+}
+
+func (tsm *TaskStatusManager) TakenUntil() tcclient.Time {
+	tsm.Lock()
+	defer tsm.Unlock()
+	return tsm.takenUntil
 }
 
 func (tsm *TaskStatusManager) Abort() error {
@@ -219,13 +244,9 @@ func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 }
 
 func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) error {
-	log.Printf("Waiting for task status lock for task %v...", tsm.task.TaskID)
 	tsm.Lock()
-	log.Printf("Lock for task status for task %v acquired.", tsm.task.TaskID)
 	defer func() {
-		log.Printf("Releasing task status lock for task %v...", tsm.task.TaskID)
 		tsm.Unlock()
-		log.Printf("Lock for task status for task %v released.", tsm.task.TaskID)
 	}()
 	currentStatus := tsm.task.Status
 	for _, allowedStatus := range fromStatuses {
@@ -239,6 +260,10 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 				}
 			}
 			tsm.task.Status = ts
+			for listener := range tsm.statusChangeListeners {
+				log.Printf("Notifying listener %v of state change", listener.Name)
+				listener.Callback(ts)
+			}
 			return nil
 		}
 	}
@@ -252,6 +277,9 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 
 func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 	return &TaskStatusManager{
-		task: task,
+		task:                  task,
+		takenUntil:            task.TaskClaimResponse.TakenUntil,
+		status:                task.TaskClaimResponse.Status,
+		statusChangeListeners: map[*TaskStatusChangeListener]bool{},
 	}
 }

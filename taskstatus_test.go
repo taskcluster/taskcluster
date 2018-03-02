@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -47,6 +48,17 @@ func TestResolveResolvedTask(t *testing.T) {
 		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
 		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
 	}
+	for _, envVar := range []string{
+		"PATH",
+		"GOPATH",
+		"GOROOT",
+	} {
+		if v, exists := os.LookupEnv(envVar); exists {
+			payload.Env[envVar] = v
+		}
+	}
 
-	_ = scheduleAndExecute(t, td, payload)
+	taskID := scheduleAndExecute(t, td, payload)
+
+	ensureResolution(t, taskID, "exception", "canceled")
 }

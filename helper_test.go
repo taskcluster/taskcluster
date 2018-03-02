@@ -76,6 +76,8 @@ func setup(t *testing.T, testName string) {
 		ShutdownMachineOnInternalError: false,
 		SigningKeyLocation:             filepath.Join("testdata", "private-opengpg-key"),
 		Subdomain:                      "taskcluster-worker.net",
+		TaskclusterProxyExecutable:     "taskcluster-proxy",
+		TaskclusterProxyPort:           34569,
 		TasksDir:                       filepath.Join(testdataDir, testName),
 		WorkerGroup:                    "test-worker-group",
 		WorkerID:                       "test-worker-id",
@@ -204,8 +206,8 @@ func testTask(t *testing.T) *queue.TaskDefinitionRequest {
 	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
 	// deadline in one hour' time
 	deadline := created.Add(15 * time.Minute)
-	// expiry in one day, in case we need test results
-	expires := created.AddDate(0, 0, 1)
+	// expiry in two weeks, in case we need test results
+	expires := created.AddDate(0, 0, 14)
 	return &queue.TaskDefinitionRequest{
 		Created:      tcclient.Time(created),
 		Deadline:     tcclient.Time(deadline),

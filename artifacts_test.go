@@ -480,7 +480,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			},
 		},
 		Features: struct {
-			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+			ChainOfTrust     bool `json:"chainOfTrust,omitempty"`
+			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
 		}{
 			ChainOfTrust: true,
 		},
@@ -810,7 +811,8 @@ func TestUpload(t *testing.T) {
 			},
 		},
 		Features: struct {
-			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+			ChainOfTrust     bool `json:"chainOfTrust,omitempty"`
+			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
 		}{
 			ChainOfTrust: true,
 		},
@@ -889,12 +891,11 @@ func TestUpload(t *testing.T) {
 
 	expectedArtifacts.Validate(t, taskID, 0)
 
+	// check openpgp signature is valid
 	b, _, _, _ := getArtifactContent(t, taskID, "public/chainOfTrust.json.asc")
 	if len(b) == 0 {
 		t.Fatalf("Could not retrieve content of public/chainOfTrust.json.asc")
 	}
-
-	// check openpgp signature is valid
 	pubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
 	if err != nil {
 		t.Fatalf("Error opening public key file")
@@ -905,6 +906,7 @@ func TestUpload(t *testing.T) {
 		t.Fatalf("Error decoding public key file")
 	}
 	block, _ := clearsign.Decode(b)
+
 	// signer of public/chainOfTrust.json.asc
 	signer, err := openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
 	if err != nil {
@@ -915,7 +917,6 @@ func TestUpload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not interpret public/chainOfTrust.json as json")
 	}
-
 	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
 		t.Fatalf("Did not get correct signer identity in public/chainOfTrust.json.asc - %#v", signer.Identities)
 	}

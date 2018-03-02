@@ -74,28 +74,10 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 		return nil
 	}
 	l.liveLog = liveLog
-	// store current writer so it can be reinstated later when stopping livelog
-	l.backingLogFile = l.task.logWriter.(*os.File)
-	// write logs written so far to livelog
-	// first rewind to beginning of backing log...
-	_, err = l.backingLogFile.Seek(0, 0)
-	if err != nil {
-		log.Printf("Could not seek to start of backing log file: %s", err)
-		// then run without livelog, is only a "best effort" service
-		return nil
+	updateErr := l.updateTaskLogWriter(liveLog.LogWriter)
+	if updateErr != nil {
+		return updateErr
 	}
-	// now copy from backing log into livelog
-	_, err = io.Copy(liveLog.LogWriter, l.backingLogFile)
-	if err != nil {
-		log.Printf("Could not copy from backing log to livelog: %s", err)
-		// then run without livelog, is only a "best effort" service
-		return nil
-	}
-	// from now on, all output should go to both the backing log and the livelog...
-	l.task.logWriter = io.MultiWriter(liveLog.LogWriter, l.backingLogFile)
-
-	// make sure task also logs to the new multiwriter
-	setCommandLogWriters(l.task.Commands, l.task.logWriter)
 
 	err = l.uploadLiveLog()
 	if err != nil {
@@ -104,13 +86,40 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 	return nil
 }
 
+func (l *LiveLogTask) updateTaskLogWriter(liveLogWriter io.Writer) *CommandExecutionError {
+	// store current writer so it can be reinstated later when stopping livelog
+	l.task.logMux.Lock()
+	defer l.task.logMux.Unlock()
+	l.backingLogFile = l.task.logWriter.(*os.File)
+	// write logs written so far to livelog
+	// first rewind to beginning of backing log...
+	_, err := l.backingLogFile.Seek(0, 0)
+	if err != nil {
+		log.Printf("Could not seek to start of backing log file: %s", err)
+		// then run without livelog, is only a "best effort" service
+		return nil
+	}
+	// now copy from backing log into livelog
+	_, err = io.Copy(liveLogWriter, l.backingLogFile)
+	if err != nil {
+		log.Printf("Could not copy from backing log to livelog: %s", err)
+		// then run without livelog, is only a "best effort" service
+		return nil
+	}
+	// from now on, all output should go to both the backing log and the livelog...
+	l.task.logWriter = io.MultiWriter(liveLogWriter, l.backingLogFile)
+
+	// make sure task also logs to the new multiwriter
+	setCommandLogWriters(l.task.Commands, l.task.logWriter)
+	return nil
+}
+
 func (l *LiveLogTask) Stop() *CommandExecutionError {
 	// if livelog couldn't be started, nothing to do here...
 	if l.liveLog == nil {
 		return nil
 	}
-	// reinstate direct log
-	l.task.logWriter = l.backingLogFile
+	l.reinstateBackingLog()
 	errClose := l.liveLog.LogWriter.Close()
 	if errClose != nil {
 		// no need to raise an exception
@@ -140,8 +149,14 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 	return nil
 }
 
+func (l *LiveLogTask) reinstateBackingLog() {
+	l.task.logMux.Lock()
+	defer l.task.logMux.Unlock()
+	l.task.logWriter = l.backingLogFile
+}
+
 func (l *LiveLogTask) uploadLiveLog() error {
-	maxRunTimeDeadline := time.Time(l.task.TaskClaimResponse.Status.Runs[l.task.RunID].Started).Add(time.Duration(l.task.Payload.MaxRunTime) * time.Second)
+	maxRunTimeDeadline := l.task.LocalClaimTime.Add(time.Duration(l.task.Payload.MaxRunTime) * time.Second)
 	// deduce stateless DNS name to use
 	statelessHostname := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
 	getURL, err := url.Parse(l.liveLog.GetURL)

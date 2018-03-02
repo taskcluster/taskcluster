@@ -18,6 +18,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
@@ -32,8 +33,11 @@ import (
 )
 
 var (
+	// a horrible simple hack for testing reclaims
+	reclaimOftenMux      sync.Mutex
+	reclaimEvery5Seconds = false
 	// Current working directory of process
-	cwd string
+	cwd = CwdOrPanic()
 	// Whether we are running under the aws provisioner
 	configureForAws bool
 	// General platform independent user settings, such as home directory, username...
@@ -239,6 +243,11 @@ and reports back results to the queue.
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: taskcluster-worker.net]
+          taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
+                                            https://github.com/taskcluster/taskcluster-proxy
+                                            [default: taskcluster-proxy]
+          taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
+                                            [default: 80]
           tasksDir                          The location where task directories should be
                                             created on the worker. [default: ` + defaultTasksDir() + `]
           workerGroup                       Typically this would be an aws region - an
@@ -304,6 +313,7 @@ func persistFeaturesState() (err error) {
 func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
+		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
 		&MountsFeature{},
 		&SupersedeFeature{},
@@ -422,6 +432,8 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		ShutdownMachineOnInternalError: false,
 		ShutdownMachineOnIdle:          false,
 		Subdomain:                      "taskcluster-worker.net",
+		TaskclusterProxyExecutable:     "taskcluster-proxy",
+		TaskclusterProxyPort:           80,
 		TasksDir:                       defaultTasksDir(),
 		WorkerGroup:                    "test-worker-group",
 		WorkerTypeMetadata:             map[string]interface{}{},
@@ -526,6 +538,16 @@ func HandleCrash(r interface{}) {
 	ReportCrashToSentry(r)
 }
 
+// We need this at package initialisation for tests, so no choice but to panic
+// if we can't fetch it - so no reporting to sentry
+func CwdOrPanic() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return cwd
+}
+
 func RunWorker() (exitCode ExitCode) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -533,12 +555,6 @@ func RunWorker() (exitCode ExitCode) {
 			exitCode = INTERNAL_ERROR
 		}
 	}()
-
-	var err error
-	cwd, err = os.Getwd()
-	if err != nil {
-		panic(err)
-	}
 
 	log.Printf("Detected %s platform", runtime.GOOS)
 	// number of tasks resolved since worker first ran
@@ -551,7 +567,7 @@ func RunWorker() (exitCode ExitCode) {
 			panic(err)
 		}
 	}(&tasksResolved)
-	err = taskCleanup()
+	err := taskCleanup()
 	// any errors are fatal
 	if err != nil {
 		log.Printf("OH NO!!!\n\n%#v", err)
@@ -689,6 +705,9 @@ func ClaimWork() *TaskRun {
 		WorkerID:    config.WorkerID,
 	}
 
+	// Store local clock time when claiming, rather than queue's claim time, to
+	// avoid problems with clock skew.
+	localClaimTime := time.Now()
 	resp, err := Queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
 	if err != nil {
 		log.Printf("Could not claim work. %v", err)
@@ -729,6 +748,7 @@ func ClaimWork() *TaskRun {
 			featureArtifacts: map[string]string{
 				logName: "Native Log",
 			},
+			LocalClaimTime: localClaimTime,
 		}
 		task.StatusManager = NewTaskStatusManager(task)
 		return task
@@ -747,23 +767,28 @@ func (task *TaskRun) setReclaimTimer() {
 
 	// First time we need to check claim response, after that, need to check reclaim response
 	log.Print("Setting reclaim timer...")
-	var takenUntil time.Time
-	if len(task.TaskReclaimResponse.Status.Runs) > 0 {
-		takenUntil = time.Time(task.TaskReclaimResponse.Status.Runs[task.RunID].TakenUntil)
-	} else {
-		takenUntil = time.Time(task.TaskClaimResponse.Status.Runs[task.RunID].TakenUntil)
-	}
+	takenUntil := time.Time(task.StatusManager.TakenUntil())
 	log.Printf("Current claim will expire at %v", takenUntil)
 
-	// Attempt to reclaim 3 mins earlier...
-	reclaimTime := takenUntil.Add(time.Minute * -3)
-	log.Printf("Reclaiming 3 mins earlier, at %v", reclaimTime)
+	// horrible hack for testing reclaims
+	var reclaimTime time.Time
+	reclaimOftenMux.Lock()
+	defer reclaimOftenMux.Unlock()
+	if reclaimEvery5Seconds {
+		// Reclaim in 5 seconds...
+		reclaimTime = time.Now().Add(time.Second * 5)
+	} else {
+		// Reclaim 3 mins before current claim expires...
+		reclaimTime = takenUntil.Add(time.Minute * -3)
+	}
+	log.Printf("Reclaiming  at %v", reclaimTime)
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	waitTimeUntilReclaim := reclaimTime.Round(0).Sub(time.Now())
 	log.Printf("Time to wait until then is %v", waitTimeUntilReclaim)
-	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue
-	if waitTimeUntilReclaim.Seconds() > 30 {
-		log.Print("This is more than 30 seconds away - so setting a timer")
+	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue in production
+	if reclaimEvery5Seconds || waitTimeUntilReclaim.Seconds() > 30 {
+		task.reclaimMux.Lock()
+		defer task.reclaimMux.Unlock()
 		task.reclaimTimer = time.AfterFunc(
 			waitTimeUntilReclaim, func() {
 				log.Printf("About to reclaim task %v...", task.TaskID)
@@ -780,14 +805,9 @@ func (task *TaskRun) setReclaimTimer() {
 				}
 			},
 		)
-	} else {
-		log.Print("WARNING ******************** This is NOT more than 30 seconds away - so NOT setting a timer")
+		return
 	}
-}
-
-func (task *TaskRun) fetchTaskDefinition() {
-	// Fetch task definition
-	task.Definition = task.TaskClaimResponse.Task
+	log.Print("WARNING ******************** This is NOT more than 30 seconds away - so NOT setting a timer")
 }
 
 func (task *TaskRun) validatePayload() *CommandExecutionError {
@@ -917,6 +937,8 @@ func (task *TaskRun) Error(message string) {
 // Log lines like:
 //  [taskcluster 2017-01-25T23:31:13.787Z] Hey, hey, we're The Monkees.
 func (task *TaskRun) Log(prefix, message string) {
+	task.logMux.RLock()
+	defer task.logMux.RUnlock()
 	if task.logWriter != nil {
 		for _, line := range strings.Split(message, "\n") {
 			task.logWriter.Write([]byte(prefix + line + "\n"))
@@ -1027,6 +1049,8 @@ func (task *TaskRun) createLogFile() *os.File {
 	if err != nil {
 		panic(err)
 	}
+	task.logMux.Lock()
+	defer task.logMux.Unlock()
 	task.logWriter = logFileHandle
 	return logFileHandle
 }
@@ -1075,10 +1099,10 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		// if !task.reclaimTimer.Stop() {
 		// <-task.reclaimTimer.C
 		// }
+		task.reclaimMux.Lock()
+		defer task.reclaimMux.Unlock()
 		task.reclaimTimer.Stop()
 	}()
-
-	task.fetchTaskDefinition()
 
 	logHandle := task.createLogFile()
 	defer func() {
@@ -1117,11 +1141,11 @@ func (task *TaskRun) Run() (err *executionErrors) {
 
 	// tracks which Feature created which TaskFeature
 	type TaskFeatureOrigin struct {
-		t TaskFeature
-		f Feature
+		taskFeature TaskFeature
+		feature     Feature
 	}
 
-	taskFeatures := []TaskFeatureOrigin{}
+	taskFeatureOrigins := []TaskFeatureOrigin{}
 
 	// create task features
 	for _, feature := range Features {
@@ -1148,11 +1172,11 @@ func (task *TaskRun) Run() (err *executionErrors) {
 					task.featureArtifacts[a] = feature.Name()
 				}
 			}
-			taskFeatures = append(
-				taskFeatures,
+			taskFeatureOrigins = append(
+				taskFeatureOrigins,
 				TaskFeatureOrigin{
-					t: taskFeature,
-					f: feature,
+					taskFeature: taskFeature,
+					feature:     feature,
 				},
 			)
 		}
@@ -1162,16 +1186,17 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	}
 
 	// start task features
-	for _, taskFeature := range taskFeatures {
+	for _, taskFeatureOrigin := range taskFeatureOrigins {
 
-		log.Printf("Starting task feature %v...", taskFeature.f.Name())
-		err.add(taskFeature.t.Start())
+		log.Printf("Starting task feature %v...", taskFeatureOrigin.feature.Name())
+		err.add(taskFeatureOrigin.taskFeature.Start())
 		if err.Occurred() {
 			return
 		}
-		defer func(taskFeature TaskFeature) {
-			err.add(taskFeature.Stop())
-		}(taskFeature.t)
+		defer func(taskFeatureOrigin TaskFeatureOrigin) {
+			log.Printf("Stopping task feature %v...", taskFeatureOrigin.feature.Name())
+			err.add(taskFeatureOrigin.taskFeature.Stop())
+		}(taskFeatureOrigin)
 	}
 
 	defer func() {

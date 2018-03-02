@@ -2,9 +2,11 @@
 
 cd "$(dirname "${0}")"
 
-# Support go 1 release 1.10 or higher
+# Support go 1 release 1.9 or higher. Let's not move this to 1.10 until
+# https://bugzil.la/1441889 is resolved, and travis-ci.org works correctly with
+# go 1.10 (currently, if you specify go 1.10, you get go 1.1).
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=10
+MIN_GO_MINOR_VERSION=9
 
 unset CGO_ENABLED
 unset GOOS

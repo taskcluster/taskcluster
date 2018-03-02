@@ -222,6 +222,8 @@ func (task *TaskRun) generateCommand(index int) error {
 	if err != nil {
 		return err
 	}
+	task.logMux.RLock()
+	defer task.logMux.RUnlock()
 	command.DirectOutput(task.logWriter)
 	task.Commands[index] = command
 	return nil

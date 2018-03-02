@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/taskcluster/generic-worker/process"
@@ -24,11 +25,13 @@ type (
 		Status    TaskStatus          `json:"-"`
 		Commands  []*process.Command  `json:"-"`
 		// not exported
+		logMux             sync.RWMutex
 		logWriter          io.Writer
 		reclaimTimer       *time.Timer
 		maxRunTimeDeadline time.Time
 		Queue              *queue.Queue       `json:"-"`
 		StatusManager      *TaskStatusManager `json:"-"`
+		LocalClaimTime     time.Time          `json:"-"`
 		// This is a map of artifact names to internal feature names for
 		// reserving artifact names that are uploaded implicitly rather than
 		// being listed in the task.payload.artifacts section, such as logs,
@@ -40,6 +43,7 @@ type (
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
 		featureArtifacts map[string]string
+		reclaimMux       sync.Mutex
 	}
 
 	S3ArtifactResponse struct {
