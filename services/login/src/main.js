@@ -72,6 +72,7 @@ let load = loader({
       credentials: cfg.app.credentials,
       tier: 'integrations',
       schemas: validator.schemas,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
