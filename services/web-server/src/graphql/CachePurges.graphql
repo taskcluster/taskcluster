@@ -16,5 +16,5 @@ type CachePurgesConnection implements Connection {
 }
 
 extend type Query {
-  cachePurges(filter: JSON): CachePurgesConnection
+  cachePurges(filter: JSON, connection: PageConnection): CachePurgesConnection
 }

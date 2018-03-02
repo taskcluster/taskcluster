@@ -5,6 +5,7 @@ import {
   Index,
   PurgeCache,
   Queue,
+  Secrets,
 } from 'taskcluster-client';
 
 export default user => {
@@ -18,5 +19,6 @@ export default user => {
     hooks: new Hooks(options),
     index: new Index(options),
     purgeCache: new PurgeCache(options),
+    secrets: new Secrets(options),
   };
 };
