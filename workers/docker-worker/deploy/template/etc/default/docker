@@ -12,4 +12,4 @@ if [ ! -e /mnt/var/lib/docker ]; then
 fi
 
 export TMPDIR="/mnt/docker-tmp"
-export DOCKER_OPTS=" -g /mnt/var/lib/docker -s overlay2 --icc=false --iptables=true"
+export DOCKER_OPTS="--ipv6 --fixed-cidr-v6=fd15:4ba5:5a2b:100a::/64 -g /mnt/var/lib/docker -s overlay2 --icc=false --iptables=true"
