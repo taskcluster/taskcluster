@@ -5,6 +5,15 @@ type CachePurge {
   before: DateTime!
 }
 
+input PurgeCacheInput {
+  cacheName: String
+}
+
+type PurgeCache {
+  provisionerId: ID
+  workerType: ID
+}
+
 type CachePurgesEdge implements Edge {
   cursor: String
   node: CachePurge
@@ -17,4 +26,8 @@ type CachePurgesConnection implements Connection {
 
 extend type Query {
   cachePurges(filter: JSON, connection: PageConnection): CachePurgesConnection
+}
+
+extend type Mutation {
+  purgeCache(provisionerId: ID!, workerType: ID!, payload: PurgeCacheInput): PurgeCache
 }

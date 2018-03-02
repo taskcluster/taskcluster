@@ -69,6 +69,11 @@ type Hook {
   status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
 }
 
+type DeleteHook {
+  hookGroupId: ID
+  hookId: ID
+}
+
 input HookInput {
   metadata: HookMetadataInput!
   schedule: [String]
@@ -89,5 +94,5 @@ extend type Mutation {
   triggerHook(hookGroupId: ID!, hookId: ID!, payload: JSON!): TaskStatus
   createHook(hookGroupId: ID!, hookId: ID!, hook: HookInput!): Hook
   updateHook(hookGroupId: ID!, hookId: ID!, hook: HookInput!): Hook
-  deleteHook(hookGroupId: ID!, hookId: ID!): String
+  deleteHook(hookGroupId: ID!, hookId: ID!): DeleteHook
 }
