@@ -4,9 +4,9 @@ export default {
       subscribe(parent, { exchange, pattern }, { clients }) {
         return clients.pulseSubscription.asyncIterator({
           exchange,
-          pattern
+          pattern,
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };

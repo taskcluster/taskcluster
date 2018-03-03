@@ -16,6 +16,6 @@ export default class PulseSubscription {
     });
     await this.listener.resume();
 
-    return emitter.asyncIterator(channel);
+    return this.emitter.asyncIterator(channel);
   }
 }

@@ -93,6 +93,12 @@ type TaskDefined {
   status: TaskStatus!
 }
 
+type TaskPending {
+  version: Int!
+  status: TaskStatus!
+  runId: Int!
+}
+
 type TaskRunning {
   version: Int!
   status: TaskStatus!

@@ -24,7 +24,7 @@ export default {
           'artifactCreated',
           clients.queueEvents.artifactCreated({ taskGroupId })
         );
-      }
-    }
-  }
+      },
+    },
+  },
 };

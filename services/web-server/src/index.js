@@ -48,6 +48,8 @@ const props = () => ({
         clients: clients(connection.user, emitter),
       };
     }
+
+    return {};
   },
 });
 
