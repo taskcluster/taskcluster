@@ -17,4 +17,14 @@ export default {
       return loaders.latestArtifacts.load({ taskId, connection, filter });
     },
   },
+  Subscription: {
+    artifactsCreated: {
+      subscribe(parent, { taskGroupId }, { clients }) {
+        return clients.pulseSubscription.asyncIterator(
+          'artifactCreated',
+          clients.queueEvents.artifactCreated({ taskGroupId })
+        );
+      }
+    }
+  }
 };

@@ -88,6 +88,44 @@ type TasksConnection implements Connection {
   edges: [TasksEdge]
 }
 
+type TaskDefined {
+  version: Int!
+  status: TaskStatus!
+}
+
+type TaskRunning {
+  version: Int!
+  status: TaskStatus!
+  runId: Int!
+  workerGroup: String!
+  workerId: ID!
+  takenUntil: DateTime!
+}
+
+type TaskCompleted {
+  version: Int!
+  status: TaskStatus!
+  runId: Int!
+  workerGroup: String!
+  workerId: ID!
+}
+
+type TaskFailed {
+  version: Int!
+  status: TaskStatus!
+  runId: Int!
+  workerGroup: String!
+  workerId: ID!
+}
+
+type TaskException {
+  version: Int!
+  status: TaskStatus!
+  runId: Int
+  workerGroup: String
+  workerId: ID
+}
+
 extend type Query {
   task(taskId: ID!): Task
   indexedTask(indexPath: String!): IndexedTask
@@ -98,4 +136,13 @@ extend type Mutation {
   createTask(taskId: ID!, task: TaskInput!): TaskStatus
   scheduleTask(taskId: ID!): TaskStatus
   cancelTask(taskId: ID!): TaskStatus
+}
+
+extend type Subscription {
+  tasksDefined(taskGroupId: ID!): TaskDefined
+  tasksPending(taskGroupId: ID!): TaskPending
+  tasksRunning(taskGroupId: ID!): TaskRunning
+  tasksCompleted(taskGroupId: ID!): TaskCompleted
+  tasksFailed(taskGroupId: ID!): TaskFailed
+  tasksException(taskGroupId: ID!): TaskException
 }

@@ -47,7 +47,12 @@ type Mutation {
   root: Boolean
 }
 
+type Subscription {
+  root: Boolean
+}
+
 schema {
   query: Query
   mutation: Mutation
+  subscription: Subscription
 }

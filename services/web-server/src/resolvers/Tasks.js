@@ -1,5 +1,18 @@
 import TaskStatus from '../entities/TaskStatus';
 
+class TasksSubscription {
+  constructor(eventName) {
+    this.eventName = eventName;
+  }
+
+  subscribe(parent, { taskGroupId }, { clients }) {
+    return clients.pulseSubscription.asyncIterator(
+      clients.queueEvents[this.eventName]({ taskGroupId }),
+      this.eventName
+    );
+  }
+}
+
 export default {
   TaskPriority: {
     HIGHEST: 'highest',
@@ -46,5 +59,13 @@ export default {
 
       return new TaskStatus(taskId, status);
     },
+  },
+  Subscription: {
+    tasksDefined: new TasksSubscription('tasksDefined'),
+    tasksPending: new TasksSubscription('tasksPending'),
+    tasksRunning: new TasksSubscription('tasksRunning'),
+    tasksCompleted: new TasksSubscription('tasksCompleted'),
+    tasksFailed: new TasksSubscription('tasksFailed'),
+    tasksException: new TasksSubscription('tasksException'),
   },
 };

@@ -26,9 +26,29 @@ type ArtifactsConnection implements Connection {
   edges: [ArtifactsEdge]
 }
 
+type ArtifactCreatedArtifact {
+  storageType: ArtifactStorageType!
+  name: String!
+  expires: DateTime!
+  contentType: String!
+}
+
+type ArtifactCreated {
+  version: Int!
+  status: TaskStatus!
+  runId: Int!
+  workerGroup: String!
+  workerId: ID!
+  artifact: ArtifactCreatedArtifact!
+}
+
 extend type Query {
   artifact(taskId: ID!, runId: Int!, name: String!): Artifact
   latestArtifact(taskId: ID!, runId: Int!): Artifact
   artifacts(taskId: ID!, runId: Int!, connection: PageConnection, filter: JSON): ArtifactsConnection
   latestArtifacts(taskId: ID!, connection: PageConnection, filter: JSON): ArtifactsConnection
+}
+
+extend type Subscription {
+  artifactsCreated(taskGroupId: ID!): ArtifactCreated
 }

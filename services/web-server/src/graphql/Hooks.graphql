@@ -5,7 +5,7 @@ type HookMetadata {
   emailOnError: Boolean
 }
 
-type HookMetadataInput {
+input HookMetadataInput {
   name: String!
   description: String!
   owner: String!
