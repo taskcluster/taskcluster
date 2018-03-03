@@ -14,7 +14,7 @@ class MockMonitor {
   }
 
   async reportError(err, level='error', tags={}) {
-    debug('reportError: %j', err);
+    debug('reportError: %s level=%s tags=%j', err, level, tags, err && err.stack);
     this.errors.push(err);
     return true;
   }
