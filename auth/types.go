@@ -70,7 +70,7 @@ type (
 		// for logging, auditing, and identifying the credential but **must** not be
 		// used for access control.  That's what scopes are for.
 		//
-		// Syntax:     ^[A-Za-z0-9@/:.+|_-]+$
+		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/clientId
 		ClientID string `json:"clientId"`
@@ -225,7 +225,7 @@ type (
 
 		// ClientId of the client
 		//
-		// Syntax:     ^[A-Za-z0-9@/:.+|_-]+$
+		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/clientId
 		ClientID string `json:"clientId"`
@@ -320,7 +320,7 @@ type (
 
 		// ClientId of the client scopes is requested about
 		//
-		// Syntax:     ^[A-Za-z0-9@/:.+|_-]+$
+		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/clientId
 		ClientID string `json:"clientId"`
@@ -620,7 +620,7 @@ type (
 
 		// ClientId from the request as it will be logged
 		//
-		// Syntax:     ^[A-Za-z0-9@/:.+|_-]+$
+		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
 		//
 		// See http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/clientId
 		ClientID string `json:"clientId,omitempty"`
