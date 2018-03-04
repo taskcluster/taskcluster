@@ -848,6 +848,7 @@ API.prototype.router = function(options) {
   if (options.allowedCORSOrigin) {
     router.use(function(req, res, next) {
       res.header('Access-Control-Allow-Origin',   options.allowedCORSOrigin);
+      res.header('Access-Control-Max-Age', 900);
       res.header('Access-Control-Allow-Methods', [
         'OPTIONS',
         'GET',
