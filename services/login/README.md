@@ -25,6 +25,10 @@ client](https://mozilla.service-now.com/sp?id=sc_cat_item&sys_id=1e9746c20f76aa0
  * Non-Interactive Client
  * Access to the Auth0 management API with the `read:users` scope
 
+### Instances
+
+`taskcluster-login` exists on two instances, stage for pre-deployment validation, and production for actual use.
+
 ## Service Owner
 
 Service Owner: dustin@mozilla.com
