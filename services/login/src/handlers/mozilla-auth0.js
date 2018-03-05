@@ -235,7 +235,6 @@ class Handler {
       }
     });
 
-    user.addRole(`mozilla-user:${user.identityId}`);
     ldapGroups.forEach(group => user.addRole(`mozilla-group:${group}`));
 
     // add mozillians roles to everyone
