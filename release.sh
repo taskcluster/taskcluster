@@ -43,6 +43,10 @@ if [ "${OLD_VERSION}" == "${NEW_VERSION}" ]; then
   exit 66
 fi
 
+# The format of the sed -i option is slightly different on macOS and linux
+# and therefore this is a platform independent implementation, *sigh*
+# GNU sed: -i[SUFFIX], --in-place[=SUFFIX]
+# BSD sed: -i extension
 function inline_sed {
   tempfile="$(mktemp -t inline_sed.XXXXXX)"
   local file="${1}"
@@ -114,13 +118,16 @@ git push "${OFFICIAL_GIT_REPO}" "+refs/tags/v${NEW_VERSION}:refs/tags/v${NEW_VER
 
 echo "Now waiting for travis to push release to github..."
 
-while ! curl -I "https://github.com/taskcluster/taskcluster-proxy/releases/download/v${NEW_VERSION}/taskcluster-proxy-linux-amd64" | head -1 | grep '302 Found'; do
+while ! curl -s -I "https://github.com/taskcluster/taskcluster-proxy/releases/download/v${NEW_VERSION}/taskcluster-proxy-linux-amd64" | head -1 | grep -q '302 Found'; do
   sleep 3
   echo -n '.'
 done
 echo
+echo "======================================================================================================
+echo "The github release of taskcluster-proxy ${NEW_VERSION} has been published to:"
+echo "  * https://github.com/taskcluster/taskcluster-proxy/releases"
+echo "======================================================================================================
 echo
-echo "The github release of taskcluster-proxy ${NEW_VERSION} has been published to https://github.com/taskcluster/taskcluster-proxy/releases"
 
 uid="$(date +%s)"
 
@@ -134,11 +141,20 @@ docker cp "${uid}:/etc/ssl/certs/ca-certificates.crt" target
 docker rm -v "${uid}"
 
 echo "Downloading proxy server release from github..."
-curl -L "https://github.com/taskcluster/taskcluster-proxy/releases/download/v${NEW_VERSION}/taskcluster-proxy-linux-amd64" > target/taskcluster-proxy
+curl -s -L "https://github.com/taskcluster/taskcluster-proxy/releases/download/v${NEW_VERSION}/taskcluster-proxy-linux-amd64" > target/taskcluster-proxy
+chmod a+x target/taskcluster-proxy
 
 echo "Building docker image for proxy server"
-docker build -t $1 .
+docker build -t "taskcluster/taskcluster-proxy:${NEW_VERSION}" .
 docker tag "taskcluster/taskcluster-proxy:${NEW_VERSION}" "taskcluster/taskcluster-proxy:latest"
-docker push "taskcluster/taskcluster-proxy:${NEW_VERISON}"
+docker push "taskcluster/taskcluster-proxy:${NEW_VERSION}"
 docker push "taskcluster/taskcluster-proxy:latest"
-echo "The docker image for taskcluster-proxy ${NEW_VERSION} has been published to https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags"
+echo
+echo
+echo "======================================================================================================
+echo "The docker image for taskcluster-proxy ${NEW_VERSION} has been published to:"
+echo "  * https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/"
+echo "======================================================================================================
+echo
+echo "It is HIGHLY RECOMMENDED to test the new docker-worker release before using it:"
+echo "  * https://github.com/taskcluster/taskcluster-proxy/tree/v${NEW_VERSION}#testing-your-locally-built-docker-container)."

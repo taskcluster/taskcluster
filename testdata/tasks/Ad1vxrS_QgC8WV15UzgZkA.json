@@ -1,0 +1,41 @@
+{
+  "provisionerId": "pmoore-manual",
+  "workerType": "mac-os-x",
+  "schedulerId": "-",
+  "taskGroupId": "Ad1vxrS_QgC8WV15UzgZkA",
+  "dependencies": [],
+  "requires": "all-completed",
+  "routes": [],
+  "priority": "lowest",
+  "retries": 5,
+  "created": "2018-03-05T14:59:35.396Z",
+  "deadline": "2018-03-05T15:59:35.396Z",
+  "expires": "2028-03-20T18:55:47.815Z",
+  "scopes": [],
+  "payload": {
+    "command": [
+      [
+        "/bin/bash",
+        "-c",
+        "head -c 512 /dev/urandom > 512-random-bytes"
+      ]
+    ],
+    "maxRunTime": 30,
+    "artifacts": [
+      {
+        "path": "512-random-bytes",
+        "name": "taskcluster-proxy-test/512-random-bytes",
+        "type": "file",
+        "expires": "2028-03-20T18:55:47.815Z"
+      }
+    ]
+  },
+  "metadata": {
+    "owner": "pmoore@mozilla.com",
+    "source": "https://github.com/taskcluster/taskcluster-proxy/blob/master/authorization_test.go",
+    "description": "This task generates a private artifact that is needed by TestBewit test in taskcluster-proxy",
+    "name": "TestBewit artifact generator"
+  },
+  "tags": {},
+  "extra": {}
+}

@@ -15,13 +15,16 @@ import (
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
+// Routes represents the context of the running service
 type Routes struct {
 	tcclient.Client
 	lock sync.RWMutex
 }
 
+// CredentialsUpdate is the internal representation of the json body which is
+// used to update the internal client credentials
 type CredentialsUpdate struct {
-	ClientId    string `json:"clientId"`
+	ClientID    string `json:"clientId"`
 	AccessToken string `json:"accessToken"`
 	Certificate string `json:"certificate"`
 }
@@ -29,28 +32,29 @@ type CredentialsUpdate struct {
 var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
 
-func (self *Routes) setHeaders(res http.ResponseWriter) {
+func (routes *Routes) setHeaders(res http.ResponseWriter) {
 	headersToSend := res.Header()
 	headersToSend.Set("X-Taskcluster-Proxy-Version", version)
-	self.lock.RLock()
-	defer self.lock.RUnlock()
-	cert, err := self.Credentials.Cert()
+	headersToSend.Set("X-Taskcluster-Proxy-Revision", revision)
+	routes.lock.RLock()
+	defer routes.lock.RUnlock()
+	cert, err := routes.Credentials.Cert()
 	if err != nil {
 		res.WriteHeader(500)
 		// Note, self.Credentials does not expose secrets when rendered as a string
-		fmt.Fprintf(res, "Taskcluster Proxy has invalid certificate: %v\n%v", self.Credentials, err)
+		fmt.Fprintf(res, "Taskcluster Proxy has invalid certificate: %v\n%s", routes.Credentials, err)
 		return
 	}
 	if cert == nil {
-		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", self.Credentials.ClientID))
+		headersToSend.Set("X-Taskcluster-Proxy-Perm-ClientId", fmt.Sprintf("%s", routes.Credentials.ClientID))
 	} else {
-		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", fmt.Sprintf("%s", self.Credentials.ClientID))
+		headersToSend.Set("X-Taskcluster-Proxy-Temp-ClientId", fmt.Sprintf("%s", routes.Credentials.ClientID))
 		jsonTempScopes, err := json.Marshal(cert.Scopes)
 		if err == nil {
 			headersToSend.Set("X-Taskcluster-Proxy-Temp-Scopes", string(jsonTempScopes))
 		}
 	}
-	if authScopes := self.Credentials.AuthorizedScopes; authScopes != nil {
+	if authScopes := routes.Credentials.AuthorizedScopes; authScopes != nil {
 		jsonAuthScopes, err := json.Marshal(authScopes)
 		if err == nil {
 			headersToSend.Set("X-Taskcluster-Authorized-Scopes", string(jsonAuthScopes))
@@ -58,39 +62,39 @@ func (self *Routes) setHeaders(res http.ResponseWriter) {
 	}
 }
 
-// HTTP Handling for /bewit
-func (self *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
+// BewitHandler is the http handler that provides Hawk signed urls (bewits)
+func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 	// Using ReadAll could be sketchy here since we are reading unbounded data
 	// into memory...
-	self.setHeaders(res)
+	routes.setHeaders(res)
 	body, err := ioutil.ReadAll(req.Body)
 
 	if err != nil {
 		res.WriteHeader(500)
-		fmt.Fprintf(res, "Error reading body")
+		fmt.Fprintf(res, "Error reading body: %s", err)
 		return
 	}
 
 	urlString := strings.TrimSpace(string(body))
 
-	cd := tcclient.Client(self.Client)
-	bewitUrl, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
+	cd := tcclient.Client(routes.Client)
+	bewitURL, err := (&cd).SignedURL(urlString, nil, time.Hour*1)
 
 	if err != nil {
 		res.WriteHeader(500)
-		fmt.Fprintf(res, "Error creating bewit url")
+		fmt.Fprintf(res, "Error creating bewit url: %s", err)
 		return
 	}
 
 	headers := res.Header()
-	headers.Set("Location", bewitUrl.String())
+	headers.Set("Location", bewitURL.String())
 	res.WriteHeader(303)
-	fmt.Fprintf(res, bewitUrl.String())
+	fmt.Fprint(res, bewitURL)
 }
 
-// HTTP Handling for /credentials
-func (self *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Request) {
-	self.setHeaders(res)
+// CredentialsHandler is the HTTP Handler for serving the /credentials endpoint
+func (routes *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Request) {
+	routes.setHeaders(res)
 	if req.Method != "PUT" {
 		log.Printf("Invalid method %s\n", req.Method)
 		res.WriteHeader(405)
@@ -108,20 +112,20 @@ func (self *Routes) CredentialsHandler(res http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	self.lock.Lock()
-	defer self.lock.Unlock()
-	self.Credentials.ClientID = credentials.ClientId
-	self.Credentials.AccessToken = credentials.AccessToken
-	self.Credentials.Certificate = credentials.Certificate
+	routes.lock.Lock()
+	defer routes.lock.Unlock()
+	routes.Credentials.ClientID = credentials.ClientID
+	routes.Credentials.AccessToken = credentials.AccessToken
+	routes.Credentials.Certificate = credentials.Certificate
 
 	res.WriteHeader(200)
 }
 
-// HTTP Handling for /
-func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
-	self.setHeaders(res)
-	self.lock.RLock()
-	defer self.lock.RUnlock()
+// RootHandler is the HTTP Handler for / endpoint
+func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
+	routes.setHeaders(res)
+	routes.lock.RLock()
+	defer routes.lock.RUnlock()
 
 	targetPath, err := tcServices.ConvertPath(req.URL)
 
@@ -158,7 +162,7 @@ func (self *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	cd := tcclient.Client(self.Client)
+	cd := tcclient.Client(routes.Client)
 	cs, err := (&cd).Request(body, req.Method, targetPath.String(), nil)
 	// If we fail to create a request notify the client.
 	if err != nil {

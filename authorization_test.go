@@ -63,6 +63,7 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		res,
 		map[string]string{
 			"X-Taskcluster-Proxy-Version":       version,
+			"X-Taskcluster-Proxy-Revision":      revision,
 			"X-Taskcluster-Proxy-Perm-ClientId": permCredentials.ClientID,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
@@ -75,13 +76,7 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
 	skipIfNoPermCreds(t)
 	tempScopes := []string{
-		"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe",
-		"queue:create-task:high:win-provisioner/win2008-worker",
-		"queue:get-artifact:private/build/sources.xml",
-		"queue:route:tc-treeherder.mozilla-inbound.*",
-		"queue:route:tc-treeherder-stage.mozilla-inbound.*",
-		"queue:scheduler-id:go-test-test-scheduler",
-		"queue:get-artifact:SampleArtifacts/_/X.txt",
+		"assume:project:taskcluster:taskcluster-proxy-tester",
 	}
 
 	tempScopesBytes, err := json.Marshal(tempScopes)
@@ -90,8 +85,8 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 	}
 	tempScopesJSON := string(tempScopesBytes)
 
-	tempCredsClientId := "garbage/" + slugid.Nice()
-	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientId, 1*time.Hour, tempScopes...)
+	tempCredsClientID := "garbage/" + slugid.Nice()
+	tempCredentials, err := permCredentials.CreateNamedTemporaryCredentials(tempCredsClientID, 1*time.Hour, tempScopes...)
 	if err != nil {
 		t.Fatalf("Could not generate temp credentials")
 	}
@@ -106,7 +101,8 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 		res,
 		map[string]string{
 			"X-Taskcluster-Proxy-Version":       version,
-			"X-Taskcluster-Proxy-Temp-ClientId": tempCredsClientId,
+			"X-Taskcluster-Proxy-Revision":      revision,
+			"X-Taskcluster-Proxy-Temp-ClientId": tempCredsClientID,
 			"X-Taskcluster-Proxy-Temp-Scopes":   tempScopesJSON,
 			// N.B. the http library does not distinguish between header entries
 			// that have an empty "" value, and non-existing entries
@@ -165,7 +161,7 @@ func TestBewit(t *testing.T) {
 		req, err := http.NewRequest(
 			"POST",
 			"http://localhost:60024/bewit",
-			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/CWrFcq90Sb6ZT1eGn6ZWMA/runs/0/artifacts/private%2Fbuild%2Fsources.xml"),
+			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/Ad1vxrS_QgC8WV15UzgZkA/runs/0/artifacts/taskcluster-proxy-test%2F512-random-bytes"),
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -176,12 +172,16 @@ func TestBewit(t *testing.T) {
 		routes.BewitHandler(res, req)
 
 		// Validate results
-		bewitUrl := res.Header().Get("Location")
-		_, err = url.Parse(bewitUrl)
-		if err != nil {
-			t.Fatalf("Bewit URL returned is invalid: %q", bewitUrl)
+		bewitURLFromLocation := res.Header().Get("Location")
+		bewitURLFromResponseBody := res.Body.String()
+		if bewitURLFromLocation != bewitURLFromResponseBody {
+			t.Fatalf("Got inconsistent results between Location header (%v) and Response body (%v).", bewitURLFromLocation, bewitURLFromResponseBody)
 		}
-		resp, _, err := newTestClient().Get(bewitUrl)
+		_, err = url.Parse(bewitURLFromLocation)
+		if err != nil {
+			t.Fatalf("Bewit URL returned is invalid: %q", bewitURLFromLocation)
+		}
+		resp, _, err := newTestClient().Get(bewitURLFromLocation)
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
 		}
@@ -189,9 +189,9 @@ func TestBewit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
 		}
-		if len(respBody) != 18170 {
+		if len(respBody) != 512 {
 			t.Logf("Response received:\n%s", string(respBody))
-			t.Fatalf("Expected response body to be 18170 bytes, but was %v bytes", len(respBody))
+			t.Fatalf("Expected response body to be 512 bytes, but was %v bytes", len(respBody))
 		}
 		return res
 	}
@@ -240,8 +240,8 @@ func TestAuthorizationDelegate(t *testing.T) {
 	}
 	testWithPermCreds(t, test("A", []string{"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"}), 404)
 	testWithTempCreds(t, test("B", []string{"auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"}), 404)
-	testWithPermCreds(t, test("C", []string{"queue:get-artifact:private/build/sources.xml"}), 403)
-	testWithTempCreds(t, test("D", []string{"queue:get-artifact:private/build/sources.xml"}), 403)
+	testWithPermCreds(t, test("C", []string{"queue:get-artifact:taskcluster-proxy-test/512-random-bytes"}), 403)
+	testWithTempCreds(t, test("D", []string{"queue:get-artifact:taskcluster-proxy-test/512-random-bytes"}), 403)
 }
 
 func TestAPICallWithPayload(t *testing.T) {
@@ -254,25 +254,25 @@ func TestAPICallWithPayload(t *testing.T) {
 				Credentials:  creds,
 			},
 		}
-		taskId := slugid.Nice()
-		taskGroupId := slugid.Nice()
+		taskID := slugid.Nice()
+		taskGroupID := slugid.Nice()
 		created := time.Now()
 		deadline := created.AddDate(0, 0, 1)
 		expires := deadline
 
 		req, err := http.NewRequest(
 			"POST",
-			"http://localhost:60024/queue/v1/task/"+taskId+"/define",
+			"http://localhost:60024/queue/v1/task/"+taskID+"/define",
 			bytes.NewBufferString(
 				`
 {
   "provisionerId": "win-provisioner",
   "workerType": "win2008-worker",
   "schedulerId": "go-test-test-scheduler",
-  "taskGroupId": "`+taskGroupId+`",
+  "taskGroupId": "`+taskGroupID+`",
   "routes": [
-    "tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
-    "tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163"
+    "garbage.dummy.route.12345",
+    "garbage.dummy.route.54321"
   ],
   "priority": "high",
   "retries": 5,
@@ -312,7 +312,7 @@ func TestAPICallWithPayload(t *testing.T) {
 		// Function to test
 		routes.RootHandler(res, req)
 
-		t.Logf("Created task https://queue.taskcluster.net/v1/task/%v", taskId)
+		t.Logf("Created task https://queue.taskcluster.net/v1/task/%v", taskID)
 		return res
 	}
 	testWithPermCreds(t, test, 200)
@@ -329,11 +329,11 @@ func TestNon200HasErrorBody(t *testing.T) {
 				Credentials:  creds,
 			},
 		}
-		taskId := slugid.Nice()
+		taskID := slugid.Nice()
 
 		req, err := http.NewRequest(
 			"POST",
-			"http://localhost:60024/queue/v1/task/"+taskId+"/define",
+			"http://localhost:60024/queue/v1/task/"+taskID+"/define",
 			bytes.NewBufferString(
 				`{"comment": "Valid json so that we hit endpoint, but should not result in http 200"}`,
 			),
