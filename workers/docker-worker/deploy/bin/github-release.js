@@ -5,7 +5,7 @@ const mime = require('mime');
 const path = require('path');
 const dateformat = require('dateformat');
 
-const RELEASE_NAME = dateformat(new Date(), 'vyyyymmddHHMM');
+const RELEASE_NAME = dateformat(new Date(), 'vyyyymmddHHMM', true);
 const OWNER = 'taskcluster';
 const REPO = 'docker-worker';
 
