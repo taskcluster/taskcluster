@@ -12,6 +12,9 @@
         "url": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges"
     }, {
+        "url": "https://references.taskcluster.net/ec2-manager/v1/api.json",
+        "docroot": "https://docs.taskcluster.net/reference/core/ec2-manager/api-docs"
+    }, {
         "url": "http://references.taskcluster.net/github/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/github/api-docs"
     }, {
