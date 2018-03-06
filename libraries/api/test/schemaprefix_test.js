@@ -13,6 +13,7 @@ suite('api/schemaPrefix', function() {
     title:        'Test Api',
     description:  'Another test api',
     schemaPrefix: 'http://localhost:4321/',
+    name:         'test',
   });
 
   // Declare a method we can test input with
