@@ -87,6 +87,13 @@
             "type": "string",
             "format": "uri"
         },
+        "name": {
+            "description": "Name of service for automation. Will be consumed by client generators to produce URLs",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+        },
         "entries": {
             "type": "array",
             "title": "Entries",
@@ -224,6 +231,7 @@
         "title",
         "description",
         "baseUrl",
+        "name",
         "entries"
     ]
 }

@@ -10,6 +10,7 @@ suite('api/responsetimer', function() {
   var api = new subject({
     title:        'Test Api',
     description:  'Another test api',
+    name:         'test',
   });
 
   api.declare({

@@ -9,6 +9,7 @@ suite('api/route', function() {
   var api = new subject({
     title:        'Test Api',
     description:  'Another test api',
+    name:         'test',
   });
 
   test('no scopes is OK', function() {
