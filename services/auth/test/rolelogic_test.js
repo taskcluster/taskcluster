@@ -6,6 +6,12 @@ suite('api (role logic)', function() {
   var taskcluster = require('taskcluster-client');
   var mocha       = require('mocha');
 
+  if (!helper.hasPulseCredentials()) {
+    setup(function() {
+      this.skip();
+    });
+  }
+
   /**
    * Customized test function, taking an object as follows:
    * test('...', {
