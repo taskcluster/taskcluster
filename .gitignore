@@ -3,3 +3,6 @@
 
 # Coverage report
 coverage.report
+
+# generated when compiling tests
+/taskcluster-proxy.test*

@@ -18,7 +18,7 @@ type RoutesTest struct {
 
 func TestCredentialsUpdate(t *testing.T) {
 	newCreds := CredentialsUpdate{
-		ClientId:    "newClientId",
+		ClientID:    "newClientId",
 		AccessToken: "newAccessToken",
 		Certificate: `{"version":1,"scopes":["scope1"]}`,
 	}
@@ -53,10 +53,10 @@ func TestCredentialsUpdate(t *testing.T) {
 		t.Fatalf("Request error %d: %s", response.Code, string(content))
 	}
 
-	if routes.Credentials.ClientID != newCreds.ClientId {
+	if routes.Credentials.ClientID != newCreds.ClientID {
 		t.Errorf(
 			"ClientId should be \"%s\", but got \"%s\"",
-			newCreds.ClientId,
+			newCreds.ClientID,
 			routes.Credentials.ClientID,
 		)
 	}
@@ -78,7 +78,7 @@ func TestCredentialsUpdate(t *testing.T) {
 	}
 }
 
-func (self *RoutesTest) request(method string, content []byte) (res *httptest.ResponseRecorder) {
+func (routesTest *RoutesTest) request(method string, content []byte) (res *httptest.ResponseRecorder) {
 	req, err := http.NewRequest(
 		method,
 		"http://localhost:8080/credentials",
@@ -86,12 +86,12 @@ func (self *RoutesTest) request(method string, content []byte) (res *httptest.Re
 	)
 
 	if err != nil {
-		self.t.Fatal(err)
+		routesTest.t.Fatal(err)
 	}
 
 	req.ContentLength = int64(len(content))
 	res = httptest.NewRecorder()
-	self.CredentialsHandler(res, req)
+	routesTest.CredentialsHandler(res, req)
 	return
 }
 

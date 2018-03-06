@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,8 +13,10 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/queue"
 )
 
-var version = "Taskcluster proxy 4.0.5"
-var usage = `
+var (
+	version  = "4.0.1"
+	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
+	usage    = `
 Taskcluster authentication proxy. By default this pulls all scopes from a
 particular task but additional scopes may be added by specifying them after the
 task id.
@@ -27,41 +30,81 @@ task id.
     -h --help                       Show this help screen.
     --version                       Show the taskcluster-proxy version number.
     -p --port <port>                Port to bind the proxy server to [default: 8080].
+    -i --ip-address <address>       IPv4 or IPv6 address of network interface to bind listener to.
+                                    If not provided, will bind listener to all available network
+                                    interfaces [default: ].
     -t --task-id <taskId>           Restrict given scopes to those defined in taskId.
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
     --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
 `
+)
 
 func main() {
-	routes, port := ParseCommandArgs(os.Args[1:])
+	routes, address, err := ParseCommandArgs(os.Args[1:], true)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
 
 	http.HandleFunc("/bewit", routes.BewitHandler)
 	http.HandleFunc("/credentials", routes.CredentialsHandler)
 	http.HandleFunc("/", routes.RootHandler)
 
-	startError := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	// Only listen on loopback interface to reduce attack surface. If we later
+	// wish to make this service available over the network, we could add
+	// configuration settings for this, but for now, let's lock it down.
+	startError := http.ListenAndServe(address, nil)
 	if startError != nil {
 		log.Fatal(startError)
 	}
 }
 
-func ParseCommandArgs(argv []string) (routes Routes, port int) {
-	arguments, err := docopt.Parse(usage, argv, true, version, false, true)
-
-	port, err = strconv.Atoi(arguments["--port"].(string))
+// ParseCommandArgs converts command line arguments into a configured Routes
+// and port.
+func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, err error) {
+	fullversion := "Taskcluster proxy " + version
+	if revision == "" {
+		fullversion += " (unknown git revision)"
+	} else {
+		fullversion += " (git revision " + revision + ")"
+	}
+	log.Printf("Version: %v", fullversion)
+	var arguments map[string]interface{}
+	arguments, err = docopt.Parse(usage, argv, true, fullversion, false, exit)
 	if err != nil {
-		log.Fatalf("Failed to convert port to integer")
+		return
 	}
 
-	clientId := arguments["--client-id"]
-	if clientId == nil || clientId == "" {
-		clientId = os.Getenv("TASKCLUSTER_CLIENT_ID")
+	portStr := arguments["--port"].(string)
+	var port int
+	port, err = strconv.Atoi(portStr)
+	if err != nil {
+		return
 	}
-	if clientId == "" {
+
+	if port < 0 || port > 65535 {
+		err = fmt.Errorf("Port %v is not in range [0,65535]", port)
+		return
+	}
+
+	ipAddress := arguments["--ip-address"].(string)
+	if ipAddress != "" {
+		if net.ParseIP(ipAddress) == nil {
+			err = fmt.Errorf("Invalid IPv4/IPv6 address specified - cannot parse: %v", ipAddress)
+			return
+		}
+	}
+	address = ipAddress + ":" + portStr
+	log.Printf("Listening on: %v", address)
+
+	clientID := arguments["--client-id"]
+	if clientID == nil || clientID == "" {
+		clientID = os.Getenv("TASKCLUSTER_CLIENT_ID")
+	}
+	if clientID == "" {
 		log.Fatal("Client ID must be passed via environment variable TASKCLUSTER_CLIENT_ID or command line option --client-id")
 	}
-	log.Printf("clientId: '%v'", clientId)
+	log.Printf("Client ID: '%v'", clientID)
 
 	accessToken := arguments["--access-token"]
 	if accessToken == nil || accessToken == "" {
@@ -70,7 +113,7 @@ func ParseCommandArgs(argv []string) (routes Routes, port int) {
 	if accessToken == "" {
 		log.Fatal("Access token must be passed via environment variable TASKCLUSTER_ACCESS_TOKEN or command line option --access-token")
 	}
-	log.Print("accessToken: <not shown>")
+	log.Print("Access Token: <not shown>")
 
 	certificate := arguments["--certificate"]
 	if certificate == nil || certificate == "" {
@@ -80,25 +123,27 @@ func ParseCommandArgs(argv []string) (routes Routes, port int) {
 	if certificate == "" {
 		log.Println("Warning - no taskcluster certificate set - assuming permanent credentials are being used")
 	} else {
-		log.Printf("certificate: '%v'", certificate)
+		log.Printf("Certificate: '%v'", certificate)
 	}
 
 	// initially grant no scopes
-	var authorizedScopes []string = []string{}
+	var authorizedScopes = []string{}
 
 	if arguments["<scope>"] != nil {
 		authorizedScopes = append(authorizedScopes, arguments["<scope>"].([]string)...)
 	}
 
 	if arguments["--task-id"] != nil {
-		taskId := arguments["--task-id"].(string)
-		log.Printf("taskId: '%v'", taskId)
+		taskID := arguments["--task-id"].(string)
+		log.Printf("taskId: '%v'", taskID)
 		myQueue := queue.NewNoAuth()
 
 		// Fetch the task to get the scopes we should be using...
-		task, err := myQueue.Task(taskId)
+		var task *queue.TaskDefinitionResponse
+		task, err = myQueue.Task(taskID)
 		if err != nil {
-			log.Fatalf("Could not fetch taskcluster task '%s' : %s", taskId, err)
+			err = fmt.Errorf("Could not fetch taskcluster task '%s' : %s", taskID, err)
+			return
 		}
 
 		authorizedScopes = append(authorizedScopes, task.Scopes...)
@@ -110,7 +155,7 @@ func ParseCommandArgs(argv []string) (routes Routes, port int) {
 	}
 
 	creds := &tcclient.Credentials{
-		ClientID:         clientId.(string),
+		ClientID:         clientID.(string),
 		AccessToken:      accessToken.(string),
 		Certificate:      certificate.(string),
 		AuthorizedScopes: authorizedScopes,
