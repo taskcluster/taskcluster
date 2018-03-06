@@ -10,7 +10,8 @@ suite('api/errors', function() {
   var api = new subject({
     title:        'Test Api',
     description:  'Yet another test api',
-    errorCodes: {TooManyFoos: 472},
+    errorCodes:   {TooManyFoos: 472},
+    name:         'test',
   });
 
   // Create a mock authentication server

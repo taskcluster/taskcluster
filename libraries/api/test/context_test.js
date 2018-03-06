@@ -13,6 +13,7 @@ suite('API (context)', function() {
     var api = new subject({
       title:        'Test Api',
       description:  'Another test api',
+      name:         'test',
     });
 
     api.declare({
@@ -67,6 +68,7 @@ suite('API (context)', function() {
       title:        'Test Api',
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
+      name:         'test',
     });
 
     var value = slugid.v4();
@@ -93,6 +95,7 @@ suite('API (context)', function() {
       title:        'Test Api',
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
+      name:         'test',
     });
 
     var value = slugid.v4();
