@@ -30,15 +30,18 @@ helper.cfg = cfg;
 helper.testaccount = _.keys(cfg.app.azureAccounts)[0];
 helper.rootAccessToken = cfg.app.rootAccessToken;
 
-// Skip tests if no pulse credentials are configured
-if (!cfg.pulse.password) {
-  console.log('Skip tests for due to missing pulse credentials; ' +
-              'create user-config.yml');
-  process.exit(1);
-}
+helper.hasPulseCredentials = function() {
+  return cfg.pulse.hasOwnProperty('password') && cfg.pulse.password;
+};
+
+helper.hasAzureCredentials = function() {
+  return cfg.app.hasOwnProperty('azureAccounts') && cfg.app.azureAccounts;
+};
 
 // Configure PulseTestReceiver
-helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
+if (cfg.pulse.password) {
+  helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
+};
 
 // fake "Roles" container
 class FakeRoles {
@@ -63,9 +66,6 @@ mocha.before(async () => {
   helper.overwrites = overwrites;
   helper.load = serverLoad;
 
-  overwrites.resolver = helper.resolver =
-    await serverLoad('resolver', overwrites);
-
   // if we don't have an azure account/key, use the inmemory version
   if (!cfg.azure || !cfg.azure.accountName) {
     let signingKey = cfg.app.tableSigningKey;
@@ -87,65 +87,67 @@ mocha.before(async () => {
     await helper.Roles.setup();
   }
 
-  webServer = await serverLoad('server', overwrites);
-  webServer.setTimeout(3500); // >3s because Azure can be sloooow
+  if (!helper.hasPulseCredentials()) {
+    return;
+  } else {
+    overwrites.resolver = helper.resolver =
+      await serverLoad('resolver', overwrites);
 
-  // Create client for working with API
-  helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-  var reference = v1.reference({baseUrl: helper.baseUrl});
-  helper.Auth = taskcluster.createClient(reference);
-  helper.scopes = (...scopes) => {
-    helper.auth = new helper.Auth({
-      baseUrl:          helper.baseUrl,
-      credentials: {
-        clientId:       'root',
-        accessToken:    cfg.app.rootAccessToken,
-      },
-      authorizedScopes: scopes.length > 0 ? scopes : undefined,
+    webServer = await serverLoad('server', overwrites);
+    webServer.setTimeout(3500); // >3s because Azure can be sloooow
+
+    // Create client for working with API
+    helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
+    var reference = v1.reference({baseUrl: helper.baseUrl});
+    helper.Auth = taskcluster.createClient(reference);
+    helper.scopes = (...scopes) => {
+      helper.auth = new helper.Auth({
+        baseUrl:          helper.baseUrl,
+        credentials: {
+          clientId:       'root',
+          accessToken:    cfg.app.rootAccessToken,
+        },
+        authorizedScopes: scopes.length > 0 ? scopes : undefined,
+      });
+    };
+    helper.scopes();
+
+    // Create test server
+    let {
+      server:     testServer_,
+      reference:  testReference,
+      baseUrl:    testBaseUrl,
+      Client:     TestClient,
+      client:     testClient,
+    } = await testserver({
+      authBaseUrl: helper.baseUrl,
+      rootAccessToken: cfg.app.rootAccessToken,
     });
-  };
-  helper.scopes();
 
-  // Create test server
-  let {
-    server:     testServer_,
-    reference:  testReference,
-    baseUrl:    testBaseUrl,
-    Client:     TestClient,
-    client:     testClient,
-  } = await testserver({
-    authBaseUrl: helper.baseUrl,
-    rootAccessToken: cfg.app.rootAccessToken,
-  });
+    testServer = testServer_;
+    helper.testReference  = testReference;
+    helper.testBaseUrl    = testBaseUrl;
+    helper.TestClient     = TestClient;
+    helper.testClient     = testClient;
 
-  testServer = testServer_;
-  helper.testReference  = testReference;
-  helper.testBaseUrl    = testBaseUrl;
-  helper.TestClient     = TestClient;
-  helper.testClient     = testClient;
-
-  var exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.app.exchangePrefix,
-    credentials:      cfg.pulse,
-  });
-  helper.AuthEvents = taskcluster.createClient(exchangeReference);
-  helper.authEvents = new helper.AuthEvents();
+    var exchangeReference = exchanges.reference({
+      exchangePrefix:   cfg.app.exchangePrefix,
+      credentials:      cfg.pulse,
+    });
+    helper.AuthEvents = taskcluster.createClient(exchangeReference);
+    helper.authEvents = new helper.AuthEvents();
+  }
 });
 
 mocha.beforeEach(() => {
   // Setup client with all scopes
-  helper.scopes();
+  if (helper.hasPulseCredentials()) {
+    helper.scopes();
+  }
 });
 
 // Cleanup after tests
 mocha.after(async () => {
-  // Kill servers
-  if (testServer) {
-    await testServer.terminate();
-  }
-  if (webServer) {
-    await webServer.terminate();
-  }
   if (cfg.azure && cfg.azure.accountName && cfg.azure.accountKey) {
     const blobService = new azure.Blob({
       accountId: cfg.azure.accountName,
@@ -162,6 +164,16 @@ mocha.after(async () => {
       // before the tests are complete, so we "leak" containers despite this effort to
       // clean them up.
     }
+  }
+  if (!helper.hasPulseCredentials()) {
+    return;
+  }
+  // Kill servers
+  if (testServer) {
+    await testServer.terminate();
+  }
+  if (webServer) {
+    await webServer.terminate();
   }
 
 });
