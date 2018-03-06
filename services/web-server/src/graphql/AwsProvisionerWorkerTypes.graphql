@@ -7,12 +7,30 @@ input AwsProvisionerWorkerTypeLaunchSpecInput {
 }
 
 type AwsProvisionerWorkerTypeInstanceType {
+  # InstanceType name for Amazon.
   instanceType: String!
+
+  # The number of tasks that this instance type is capable of running
+  # concurrently. This is used by the provisioner to know how many
+  # pending tasks to offset a pending instance of this type by.
   capacity: Int!
+
+  # A relative measure of performance between two instance types. It is
+  # multiplied by the spot price from Amazon to figure out which instance
+  # type is the cheapest one.
   utility: Float!
+
+  # LaunchSpecification entries unique to this InstanceType.
   launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+
+  # Static Secrets unique to this InstanceType.
   secrets: JSON!
+
+  # UserData entries unique to this InstanceType.
   userData: JSON!
+
+  # Scopes which should be included for this InstanceType. Scopes must
+  # be composed of printable ASCII characters and spaces.
   scopes: [String]!
 }
 
@@ -27,10 +45,20 @@ input AwsProvisionerWorkerTypeInstanceTypeInput {
 }
 
 type AwsProvisionerWorkerTypeRegion {
+  # The Amazon AWS Region being configured. Example: `"us-west-1"`.
   region: String!
+
+  # LaunchSpecification entries unique to this Region.
   launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+
+  # Static Secrets unique to this Region.
   secrets: JSON!
+
+  # UserData entries unique to this Region.
   userData: JSON!
+
+  # Scopes which should be included for this Region. Scopes must be
+  # composed of printable ASCII characters and spaces.
   scopes: [String]!
 }
 
@@ -43,10 +71,19 @@ input AwsProvisionerWorkerTypeRegionInput {
 }
 
 type AwsProvisionerWorkerTypeAvailabilityZone {
+  # The AWS availability zone being configured. Example: `"eu-central-1b"`.
   availabilityZone: String!
+
+  # The AWS region containing this availability zone. Example: `"eu-central-1"`.
   region: String
+
+  # LaunchSpecification entries unique to this AZ.
   launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+
+  # Static Secrets unique to this AZ.
   secrets: JSON
+
+  # UserData entries unique to this AZ.
   userData: JSON
 }
 
@@ -58,26 +95,85 @@ input AwsProvisionerWorkerTypeAvailabilityZoneInput {
   userData: JSON
 }
 
+# A worker launch specification with required metadata.
 type AwsProvisionerWorkerType {
+  # The ID of the worker-type.
   workerType: String!
+
+  # Launch Specification entries which are used in all regions and all instance types.
   launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+
+  # A string which describes what this image is for and hints on using it.
   description: String!
+
+  # A string which identifies the owner of this worker-type.
   owner: String!
+
+  # Static secrets entries which are used in all regions and all instance types.
   secrets: JSON!
+
+  # `UserData` entries which are used in all regions and all instance types.
   userData: JSON!
+
+  # Scopes to issue credentials to for all regions. Scopes must be composed
+  # of printable ASCII characters and spaces.
   scopes: [String]!
+
+  # Minimum number of capacity units to be provisioned. A capacity unit
+  # is an abstract unit of capacity, where one capacity unit is roughly
+  # one task which should be taken off the queue.
   minCapacity: Int!
+
+  # Maximum number of capacity units to be provisioned.
   maxCapacity: Int!
+
+  # A scaling ratio of `0.2` means that the provisioner will attempt to keep
+  # the number of pending tasks around 20% of the provisioned capacity.
+  # This results in pending tasks waiting 20% of the average task execution
+  # time before starting to run. A higher scaling ratio often results in
+  # better utilization and longer waiting times. For worker-types running
+  # long tasks, a short scaling ratio may be preferred, but for worker-types
+  # running quick tasks a higher scaling ratio may increase utilization
+  # without major delays. If using a scaling ratio of `0`, the provisioner
+  # will attempt to keep the capacity of pending spot requests equal to the
+  # number of pending tasks.
   scalingRatio: Float!
+
+  # Minimum price to pay for an instance. A price is considered to be the
+  # Amazon Spot Price multiplied by the utility factor of the `InstantType`
+  # as specified in the `instanceTypes` list. For example, if the `minPrice`
+  # is set to `0.5` and the utility factor is `2`, the actual minimum bid
+  # used will be $0.25.
   minPrice: Float!
+
+  # The maximum price to pay. Like `minPrice`, this takes into account the
+  # utility factor when figuring out what the actual `SpotPrice` submitted
+  # to Amazon will be.
   maxPrice: Float!
+
+  # Whether this worker-type is allowed on-demand instances. Currently ignored.
   canUseOnDemand: Boolean
+
+  # Whether this worker-type is allowed spot instances. Currently ignored
+  # as all instances are Spot.
   canUseSpot: Boolean
+
+  # The time when this worker-type definition was last altered, inclusive of creation.
   lastModified: DateTime!
+
+  # List of Instance Type configurations.
   instanceTypes: [AwsProvisionerWorkerTypeInstanceType]!
+
+  # List of Region configurations.
   regions: [AwsProvisionerWorkerTypeRegion]!
+
+  # List of Availability zone configurations.
   availabilityZones: [AwsProvisionerWorkerTypeAvailabilityZone]
 
+  # The state of this worker-type as stored by the provisioner.
+  # This state is stored: one for running instances, one for pending requests.
+  # The `summary` property contains an updated summary similar to that returned
+  # from `awsProvisionerWorkerTypeSummaries`.
   state(workerType: String = workerType): AwsProvisionerWorkerTypeState
 }
 
@@ -118,13 +214,60 @@ input AwsProvisionerWorkerTypeInput {
 }
 
 extend type Query {
+  # Query an unorderred list of worker types, including some summary information
+  # about current capacity for each. While this list includes all defined worker
+  # types, there may be running EC2 instances for deleted worker types that are
+  # not included.
   awsProvisionerWorkerTypeSummaries(filter: JSON): [AwsProvisionerWorkerTypeSummary]
+
+  # Query a copy of the requested worker type definition. This copy contains a
+  # `lastModified` field as well as the worker type name. As such, it will require
+  # manipulation to be able to use the results of this method to submit data to
+  # the update mutation.
   awsProvisionerWorkerType(workerType: String!): AwsProvisionerWorkerType
+
+  # Query the state of a given worker-type as stored by the provisioner.
+  # This state is stored: one for running instances, one for pending requests.
+  # The `summary` property contains an updated summary similar to that returned
+  # from `awsProvisionerWorkerTypeSummaries`.
   awsProvisionerWorkerTypeState(workerType: String!): AwsProvisionerWorkerTypeState
 }
 
 extend type Mutation {
+  # Create a worker-type. A worker-type contains all the configuration needed for
+  # the provisioner to manage the instances. Each worker type knows which regions
+  # and which instance types are allowed for that worker type. Note: capacity is
+  # the number of concurrent tasks that can be run on a given EC2 resource and
+  # that utility is the relative performance rate between different instance types.
+  # There is no way to configure different regions to have different sets of
+  # instance types so ensure that all instance types are available in all regions.
+  # This mutation is idempotent. Once a worker-type is in the provisioner, a
+  # background process will begin creating instances for it based on its capacity
+  # bounds and its pending task count from the Queue. It is the worker's
+  # responsibility to shut itself down. The provisioner has a limit
+  # (currently 96hours) for all instances to prevent zombie instances from running
+  # indefinitely. The provisioner will ensure that all instances created are
+  # tagged with AWS resource tags containing the provisioner ID and the worker-type.
+  # If provided, the secrets in the global, region, and instance type sections
+  # are available using the secrets API. If specified, the scopes provided will
+  # be used to generate a set of temporary credentials available with the other secrets.
   createAwsProvisionerWorkerType(workerType: String!, payload: AwsProvisionerWorkerTypeInput!): AwsProvisionerWorkerType
+
+  # Provide a new copy of a worker-type to replace the existing one. This will
+  # overwrite the existing worker-type definition if there is already a worker-type of
+  # that name. Note: if you are using the result of a query of a worker-type,
+  # you will need to delete the `lastModified` and `workerType` keys from the object
+  # returned since those fields are not allowed in the payload for this mutation.
+  # Otherwise, all input requirements and actions are the same as `createAwsProvisionerWorkerType`.
   updateAwsProvisionerWorkerType(workerType: String!, payload: AwsProvisionerWorkerTypeInput!): AwsProvisionerWorkerType
+
+  # Delete a worker-type definition. This mutation will only delete the worker-type
+  # definition from the storage table. The actual deletion will be handled by a
+  # background worker. As soon as this mutation is called for a worker-type, the
+  # background worker will immediately submit requests to cancel all spot requests
+  # for this worker-type as well as killing all instances regardless of their state.
+  # If you want to gracefully remove a worker-type, you must either ensure that no
+  # tasks are created with that worker-type name or you could theoretically set
+  # `maxCapacity` to `0`, though this is not a supported or tested action.
   deleteAwsProvisionerWorkerType(workerType: String!): String
 }
