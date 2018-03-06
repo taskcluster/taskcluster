@@ -1,10 +1,27 @@
 type Artifact {
+  # Unique task identifier, this is UUID encoded as
+  # [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+  # stripped of `=` padding.
   taskId: ID!
+
+  # Numeric ID of the task run this artifact is associated with.
   runId: Int
+
+  # Storage type for the request that was used to create the artifact.
   storageType: ArtifactStorageType!
+
+  # Name of the artifact that was created.
   name: String!
+
+  # Time after which the artifact will be automatically deleted by the queue.
   expires: DateTime!
+
+  # Mime-type for the artifact.
   contentType: String!
+
+  # URL to the artifact. This will be a signed URL if credentials were used
+  # to fetch this artifact metadata, otherwise a public URL will be generated,
+  # or not available for private artifacts.
   url: String
 }
 
@@ -43,12 +60,44 @@ type ArtifactCreated {
 }
 
 extend type Query {
+  # Get an artifact by `name` from a specific task run.
+  # In order to get a public artifact you need the scope `queue:get-artifact:<name>`,
+  # where `<name>` is the name of the artifact. If the artifact `name` starts with `public/`,
+  # authentication and authorization is not necessary to fetch the artifact.
+  # Artifacts may be cached in data-centers closer to the workers in order to reduce
+  # bandwidth costs. This can lead to longer response times.
   artifact(taskId: ID!, runId: Int!, name: String!): Artifact
+
+  # Get an artifact by `name` from the last run of a specific task.
+  # In order to get a public artifact you need the scope `queue:get-artifact:<name>`,
+  # where `<name>` is the name of the artifact. If the artifact `name` starts with `public/`,
+  # authentication and authorization is not necessary to fetch the artifact.
+  # Artifacts may be cached in data-centers closer to the workers in order to reduce
+  # bandwidth costs. This can lead to longer response times.
+  # Note: this query can be slightly slower than the querying directly for an artifact,
+  # so if you already know the `runId` of the latest run, consider querying it directly.
   latestArtifact(taskId: ID!, runId: Int!): Artifact
+
+  # Returns a list of artifacts and associated metadata for a particular task run.
+  # As a task run may have many artifacts, this may return cursors to page through artifacts.
+  # To continue listing artifacts, use the returned connection with the desired
+  # front or back cursor. This query can return a maximum of up to 100 artifacts in a single page.
+  # It **may return less**, even if more artifacts are available.
+  # It may also return a page connection even though there are no more results.
+  # Use the connection limit to specify smaller page sizes.
   artifacts(taskId: ID!, runId: Int!, connection: PageConnection, filter: JSON): ArtifactsConnection
+
+  # Returns a list of the artifacts and associated metadata for latest run of a task.
+  # As a task run may have many artifacts, this may return cursors to page through artifacts.
+  # To continue listing artifacts, use the returned connection with the desired
+  # front or back cursor. This query can return a maximum of up to 100 artifacts in a single page.
+  # It **may return less**, even if more artifacts are available.
+  # It may also return a page connection even though there are no more results.
+  # Use the connection limit to specify smaller page sizes.
   latestArtifacts(taskId: ID!, connection: PageConnection, filter: JSON): ArtifactsConnection
 }
 
 extend type Subscription {
+  # Subscribe to the creation of artifacts within a task group.
   artifactsCreated(taskGroupId: ID!): ArtifactCreated
 }

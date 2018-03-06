@@ -51,7 +51,6 @@ type TaskStatus {
   # Always starts at `0`.
   runs(filter: JSON): [TaskRun]!
 
-
   # The task definition associated with this status.
   task(taskId: ID = taskId): Task
 }
