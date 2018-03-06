@@ -9,12 +9,18 @@ suite('user stories', function() {
   var taskcluster = require('taskcluster-client');
 
   suite('charlene creates permanent credentials for a test runner', function() {
-    let cleanup = async () => {
-      await helper.auth.deleteRole('client-id:test-users/test');
-      await helper.auth.deleteClient('test-users');
-      await helper.auth.deleteClient('test-users/charlene/travis-tests');
-    };
-    before(cleanup);
+    if (!helper.hasPulseCredentials()) {
+      setup(function() {
+        this.skip();
+      });
+    } else {
+      let cleanup = async () => {
+        await helper.auth.deleteRole('client-id:test-users/test');
+        await helper.auth.deleteClient('test-users');
+        await helper.auth.deleteClient('test-users/charlene/travis-tests');
+      };
+      before(cleanup);
+    }
 
     // NOTE: these tests run in order
     var identityProvider,

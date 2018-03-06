@@ -9,6 +9,12 @@ suite('api (roles)', function() {
   var testing     = require('taskcluster-lib-testing');
   var taskcluster = require('taskcluster-client');
 
+  setup(function() {
+    if (!helper.hasPulseCredentials()) {
+      this.skip();
+    }
+  });
+
   let sorted = (arr) => {
     arr.sort();
     return arr;
@@ -204,34 +210,40 @@ suite('api (roles)', function() {
     let roleId2 = `sub-thing:${clientId}`;
     let auth;
 
-    setup(async function() {
-      auth = new helper.Auth({
-        credentials: {clientId: 'root', accessToken: helper.rootAccessToken},
-        authorizedScopes: [
-          'auth:update-role:*',
-          'scope:role-has:a',
-          'scope:caller-has:a',
-          'scope:caller-has:b*',
-        ],
+    if (!helper.hasPulseCredentials()) {
+      setup(function() {
+        this.skip();
+      });
+    } else {
+      setup(async function() {
+        auth = new helper.Auth({
+          credentials: {clientId: 'root', accessToken: helper.rootAccessToken},
+          authorizedScopes: [
+            'auth:update-role:*',
+            'scope:role-has:a',
+            'scope:caller-has:a',
+            'scope:caller-has:b*',
+          ],
+        });
+
+        // clear stuff out
+        await helper.Roles.modify((roles) => roles.splice(0));
+
+        await helper.auth.createRole(roleId, {
+          description: 'a role',
+          scopes: ['scope:role-has:*', `assume:${roleId2}`],
+        });
+
+        await helper.auth.createRole(roleId2, {
+          description: 'another role',
+          scopes: ['scope:sub-role-has:*'],
+        });
       });
 
-      // clear stuff out
-      await helper.Roles.modify((roles) => roles.splice(0));
-
-      await helper.auth.createRole(roleId, {
-        description: 'a role',
-        scopes: ['scope:role-has:*', `assume:${roleId2}`],
+      teardown(async function() {
+        await helper.Roles.modify((roles) => roles.splice(0));
       });
-
-      await helper.auth.createRole(roleId2, {
-        description: 'another role',
-        scopes: ['scope:sub-role-has:*'],
-      });
-    });
-
-    teardown(async function() {
-      await helper.Roles.modify((roles) => roles.splice(0));
-    });
+    }
 
     test('caller has new scope verbatim', async () => {
       await auth.updateRole(roleId, {
