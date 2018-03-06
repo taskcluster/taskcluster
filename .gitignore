@@ -4,3 +4,4 @@ node_modules
 .idea/
 .log
 .Rhistory
+yarn-error.log
