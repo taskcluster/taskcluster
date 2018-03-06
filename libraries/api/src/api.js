@@ -644,9 +644,10 @@ var handle = function(handler, context, name) {
  * API.
  */
 var API = function(options) {
-  ['title', 'description'].forEach(function(key) {
+  ['title', 'description', 'name'].forEach(function(key) {
     assert(options[key], 'Option \'' + key + '\' must be provided');
   });
+  assert(/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(options.name), `api name "${options.name}" is not valid`);
   this._options = _.defaults({
     errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
   }, options, {
@@ -956,15 +957,15 @@ const cleanRouteAndParams = (route) => {
  * }
  */
 API.prototype.reference = function(options) {
-  assert(options,         'Options is required');
+  assert(options, '\'Options\' is required');
   assert(options.baseUrl, 'A \'baseUrl\' must be provided');
   var reference = {
     version:            0,
-    $schema:          'http://schemas.taskcluster.net/base/v1/' +
-                        'api-reference.json#',
+    $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
     title:              this._options.title,
     description:        this._options.description,
     baseUrl:            options.baseUrl,
+    name:               this._options.name,
     entries: _.concat(this._entries, [ping]).filter(entry => !entry.noPublish).map(function(entry) {
       const [route, params] = cleanRouteAndParams(entry.route);
       var retval = {
@@ -1056,9 +1057,9 @@ API.prototype.publish = function(options) {
  *   validator:           new base.validator()      // JSON schema validator
  *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
  *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
- *   publish:             true,                    // Publish API reference
- *   baseUrl:             'https://example.com/v1' // URL under which routes are mounted
- *   referencePrefix:     'queue/v1/api.json'      // Prefix within S3 bucket
+ *   publish:             true,                     // Publish API reference
+ *   baseUrl:             'https://example.com/v1'  // URL under which routes are mounted
+ *   referencePrefix:     'queue/v1/api.json'       // Prefix within S3 bucket
  *   referenceBucket:     'reference.taskcluster.net',
  *   aws: {               // AWS credentials and region
  *    accessKeyId:        '...',

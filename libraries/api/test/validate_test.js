@@ -10,6 +10,7 @@ suite('api/validate', function() {
   var api = new subject({
     title:        'Test Api',
     description:  'Another test api',
+    name:         'test',
   });
 
   // Declare a method we can test input with

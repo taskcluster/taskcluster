@@ -19,6 +19,7 @@ suite('api/publish', function() {
     var api = new subject({
       title:        'Test Api',
       description:  'Another test api',
+      name:         'test',
     });
 
     // Declare a simple method
