@@ -1,0 +1,27 @@
+{
+  "name": "taskcluster-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "neutrino build",
+    "start": "neutrino start",
+    "lint": "neutrino lint"
+  },
+  "dependencies": {
+    "classnames": "^2.2.5",
+    "material-ui": "^1.0.0-beta.35",
+    "material-ui-icons": "^1.0.0-beta.35",
+    "prop-types": "^15.6.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-helmet": "^5.2.0",
+    "react-hot-loader": "^4.0.0",
+    "react-loadable": "^5.3.1",
+    "react-router-dom": "^4.2.2"
+  },
+  "devDependencies": {
+    "neutrino": "^8.1.2",
+    "neutrino-preset-mozilla-frontend-infra": "^1.0.4"
+  }
+}
