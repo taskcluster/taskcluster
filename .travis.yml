@@ -4,6 +4,8 @@ go:
 
 env:
   - "GIMME_OS=linux GIMME_ARCH=amd64"
+  - "GIMME_OS=linux GIMME_ARCH=arm"
+  - "GIMME_OS=linux GIMME_ARCH=arm64"
   - "GIMME_OS=darwin GIMME_ARCH=amd64"
   - "GIMME_OS=windows GIMME_ARCH=amd64"
   - "GIMME_OS=windows GIMME_ARCH=386"
