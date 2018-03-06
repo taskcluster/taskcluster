@@ -1,3 +1,5 @@
+# Task state representation. This is derived from state
+# of latest run, or `unscheduled` if none.
 enum TaskState {
   UNSCHEDULED
   PENDING
@@ -7,20 +9,54 @@ enum TaskState {
   EXCEPTION
 }
 
+# A representation of task status as known by the queue.
 type TaskStatus {
+  # Unique task identifier, this is UUID encoded as
+  # [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+  # stripped of `=` padding.
   taskId: ID!
+
+  # Unique identifier for the provisioner that this task must be scheduled on.
   provisionerId: String!
+
+  # Identifier for worker type within the specified provisioner.
   workerType: String!
+
+  # Identifier for the scheduler that _defined_ this task.
   schedulerId: String!
+
+  # Identifier for a group of tasks scheduled together with this task, by
+  # scheduler identified by `schedulerId`. For tasks scheduled by the
+  # task-graph scheduler, this is the `taskGraphId`.
   taskGroupId: String!
+
+  # Deadline of the task, `pending` and `running` runs are
+  # resolved as **exception** if not resolved by other means
+  # before the deadline. Note, deadline cannot be more than
+  # 5 days in the future.
   deadline: DateTime!
+
+  # The task expiration, or time at which task definition and
+  # status are deleted. Note that all artifacts for the task
+  # must have an expiration no later than this.
   expires: DateTime!
+
+  # Number of retries left for the task in case of infrastructure issues.
   retriesLeft: Int!
+
+  # State of this task.
   state: TaskState!
+
+  # Ordered list of runs where run `n` is at `runs[n]`, e.g. Run 0 is `runs[0]`.
+  # Always starts at `0`.
   runs(filter: JSON): [TaskRun]!
+
+
+  # The task definition associated with this status.
   task(taskId: ID = taskId): Task
 }
 
 extend type Query {
+  # Get a task status structure from a `taskId`.
   status(taskId: ID!): TaskStatus
 }

@@ -17,7 +17,7 @@ type Worker {
   provisionerId: String!
   workerType: String!
   workerGroup: String!
-  workerId: String!
+  workerId: ID!
   recentTasks: [LatestTask]!
   expires: DateTime!
   quarantineUntil: DateTime

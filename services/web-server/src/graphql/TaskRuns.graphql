@@ -1,3 +1,5 @@
+# Reason for the creation of a task run.
+# _Note: more reasons may be added in the future._
 enum RunReasonCreated {
   SCHEDULED
   RETRY
@@ -6,6 +8,8 @@ enum RunReasonCreated {
   EXCEPTION
 }
 
+# Reason for the resolution of a task run.
+# _Note: more reasons may be added in the future._
 enum RunReasonResolved {
   COMPLETED
   FAILED
@@ -20,6 +24,7 @@ enum RunReasonResolved {
   INTERMITTENT_TASK
 }
 
+# Run state representation.
 enum RunState {
   PENDING
   RUNNING
@@ -28,19 +33,61 @@ enum RunState {
   EXCEPTION
 }
 
+# Representation of a single task run.
 type TaskRun {
+  # Unique task identifier, this is UUID encoded as
+  # [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+  # stripped of `=` padding.
   taskId: ID!
+
+  # Numeric ID of this task run.
   runId: Int!
+
+  # State of this task run.
   state: RunState!
+
+  # Reason for the creation of this run.
   reasonCreated: RunReasonCreated!
+
+  # Reason for the resolution of this run.
+  # This value is only available after the run is resolved.
+  # Some of these reasons, notably `INTERMITTENT_TASK`, `WORKER_SHUTDOWN`,
+  # and `CLAIM_EXPIRED`, will trigger an automatic retry of the task.
   reasonResolved: RunReasonResolved
+
+  # Identifier for group that worker which executed this run is a part of.
+  # This identifier is mainly used for efficient routing.
+  # Note: this property is only present after the run is claimed.
   workerGroup: String
-  workerId: String
+
+  # Identifier for worker evaluating this run within given `workerGroup`.
+  # Note: this property is only available after the run has been claimed.
+  workerId: ID
+
+  # Time at which the run expires and is resolved as `failed` if the
+  # run isn't reclaimed. Note: only present after the run has been claimed.
   takenUntil: DateTime
+
+  # Time at which this run was scheduled, i.e. when the run was created in
+  # state `pending`.
   scheduled: DateTime!
+
+  # Time at which this run was claimed, i.e. when the run changed
+  # state from `pending` to `running`. This property is only present
+  # after the run has been claimed.
   started: DateTime
+
+  # Time at which this run was resolved, i.e. when the run changed
+  # state from `running` to either `completed`, `failed`, or `exception`.
+  # This property is only present after the run has been resolved.
   resolved: DateTime
 
+  # Returns a list of artifacts and associated metadata for this task run.
+  # As a task run may have many artifacts, this may return cursors to page through artifacts.
+  # To continue listing artifacts, use the returned connection with the desired
+  # front or back cursor. This query can return a maximum of up to 100 artifacts in a single page.
+  # It **may return less**, even if more artifacts are available.
+  # It may also return a page connection even though there are no more results.
+  # Use the connection limit to specify smaller page sizes.
   artifacts(taskId: ID = taskId, runId: Int = runId, filter: JSON): ArtifactsConnection
-  latestArtifact(taskId: ID = taskId, runId: Int = runId): Artifact
 }

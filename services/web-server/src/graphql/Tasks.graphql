@@ -59,6 +59,9 @@ enum TaskRequire {
 # If an optional property is not specified the queue
 # may provide a default value.
 type Task {
+  # Unique task identifier, this is UUID encoded as
+  # [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+  # stripped of `=` padding.
   taskId: ID!
 
   # Unique identifier for a provisioner, that can supply a specified `workerType`.
@@ -147,7 +150,17 @@ type Task {
   # Task definitions should not take-up multiple MBs.
   extra: JSON!
 
+  # Get task status structure
   status(taskId: ID = taskId): TaskStatus!
+
+  # Returns a list of the artifacts and associated metadata for latest run of this task.
+  # As a task run may have many artifacts, this may return cursors to page through artifacts.
+  # To continue listing artifacts, use the returned connection with the desired
+  # front or back cursor. This query can return a maximum of up to 100 artifacts in a single page.
+  # It **may return less**, even if more artifacts are available.
+  # It may also return a page connection even though there are no more results.
+  # Use the connection limit to specify smaller page sizes.
+  latestArtifacts(taskId: ID! = taskId, connection: PageConnection, filter: JSON): ArtifactsConnection
 }
 
 input TaskInput {
@@ -340,17 +353,55 @@ extend type Query {
 }
 
 extend type Mutation {
+  # Create a new task. This is an **idempotent** operation, so you may repeat it if
+  # the operation fails.
   createTask(taskId: ID!, task: TaskInput!): TaskStatus
+
+  # Schedule a task to be executed, even if it has unresolved dependencies.
+  # A task would otherwise only be scheduled if its dependencies were resolved.
+  # This is useful if you have defined a task that depends on itself or on some
+  # other task that has not been resolved, but you wish the task to be
+  # scheduled immediately. This will announce the task as pending and workers
+  # will be allowed to claim it and resolve the task.
+  # Note: this operation is **idempotent** and will not fail if called with a
+  # `taskId` that is already scheduled or resolved. To reschedule a task
+  # previously resolved, use `rerunTask`.
   scheduleTask(taskId: ID!): TaskStatus
+
+  # Cancel a task that is either `unscheduled`, `pending` or `running`. It will
+  # resolve the current run as `EXCEPTION` with `reasonResolved` set to `CANCELED`.
+  # If the task isn't scheduled yet, i.e. it doesn't have any runs, an initial
+  # run will be added and resolved as described previously. Hence, after canceling
+  # a task, it cannot be scheduled with `scheduleTask`, but a new run can be
+  # created with `rerun`. These semantics are equivalent to calling `scheduleTask`
+  # immediately followed by `cancelTask`.
+  # Note: this operation is idempotent. If you try to cancel a task that isn't
+  # `UNSCHEDULED`, `PENDING`, or `RUNNING`, this operation will return the current
+  # task status.
   cancelTask(taskId: ID!): TaskStatus
 }
 
 extend type Subscription {
+  # Subscribe to the definition of tasks within a task group.
   tasksDefined(taskGroupId: ID!): TaskDefined
+
+  # Subscribe to the tasks entering the `PENDING` state within a task group.
   tasksPending(taskGroupId: ID!): TaskPending
+
+  # Subscribe to the tasks entering the `RUNNING` state within a task group.
   tasksRunning(taskGroupId: ID!): TaskRunning
+
+  # Subscribe to the tasks entering the `COMPLETED` state within a task group.
   tasksCompleted(taskGroupId: ID!): TaskCompleted
+
+  # Subscribe to the tasks entering the `FAILED` state within a task group.
   tasksFailed(taskGroupId: ID!): TaskFailed
+
+  # Subscribe to the tasks entering the `EXCEPTION` state within a task group.
   tasksException(taskGroupId: ID!): TaskException
+
+  # Subscribe to multiple task group subscriptions. For example, instead of
+  # using the `tasksRunning()` and `tasksFailed()` subscriptions separately,
+  # you can bind to multiple subscriptions with `["tasksRunning", "tasksFailed"]`.
   tasksSubscriptions(taskGroupId: ID!, subscriptions: [TaskSubscriptions]!): TaskSubscription
 }
