@@ -1,7 +1,15 @@
 type CachePurge {
+  # ProvisionerId associated with the workerType.
   provisionerId: ID!
+
+  # Workertype cache exists on.
   workerType: String!
+
+  # Name of cache to purge.
   cacheName: String!
+
+  # All caches that match this provisionerId, workerType, and cacheName
+  # must be destroyed if they were created _before_ this time.
   before: DateTime!
 }
 
@@ -25,9 +33,15 @@ type CachePurgesConnection implements Connection {
 }
 
 extend type Query {
+  # Query the list of open purge requests. It should not be used by workers.
+  # Workers should use the `purgeRequests` endpoint that is specific to their
+  # `workerType` and `provisionerId`.
   cachePurges(filter: JSON, connection: PageConnection): CachePurgesConnection
 }
 
 extend type Mutation {
+  # Publish a purge-cache message to purge caches in payload with `cacheName`
+  # for a `provisionerId` and `workerType`. Workers should be listening for
+  # this message and purge caches when they see it.
   purgeCache(provisionerId: ID!, workerType: ID!, payload: PurgeCacheInput): PurgeCache
 }
