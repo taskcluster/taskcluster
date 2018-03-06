@@ -1,11 +1,16 @@
 export default {
   Subscription: {
     pulseMessages: {
-      subscribe(parent, { exchange, pattern }, { clients }) {
-        return clients.pulseSubscription.asyncIterator({
-          exchange,
-          pattern,
-        });
+      subscribe(parent, { subscriptions }, { pulseEngine }) {
+        const triggers = subscriptions.reduce(
+          (triggers, { exchange, pattern }) => ({
+            ...triggers,
+            [pattern]: exchange,
+          }),
+          {}
+        );
+
+        return pulseEngine.asyncIterator('pulseMessages', triggers);
       },
     },
   },

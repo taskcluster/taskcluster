@@ -19,11 +19,13 @@ export default {
   },
   Subscription: {
     artifactsCreated: {
-      subscribe(parent, { taskGroupId }, { clients }) {
-        return clients.pulseSubscription.asyncIterator(
-          'artifactCreated',
-          clients.queueEvents.artifactCreated({ taskGroupId })
-        );
+      subscribe(parent, { taskGroupId }, { clients, pulseEngine }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.artifactCreated(routingKey);
+
+        return pulseEngine.asyncIterator('artifactsCreated', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
       },
     },
   },

@@ -1,18 +1,5 @@
 import TaskStatus from '../entities/TaskStatus';
 
-class TasksSubscription {
-  constructor(eventName) {
-    this.eventName = eventName;
-  }
-
-  subscribe(parent, { taskGroupId }, { clients }) {
-    return clients.pulseSubscription.asyncIterator(
-      clients.queueEvents[this.eventName]({ taskGroupId }),
-      this.eventName
-    );
-  }
-}
-
 export default {
   TaskPriority: {
     HIGHEST: 'highest',
@@ -26,6 +13,34 @@ export default {
   TaskRequire: {
     ALL_COMPLETED: 'all-completed',
     ALL_RESOLVED: 'all-resolved',
+  },
+  TaskSubscription: {
+    // eslint-disable-next-line consistent-return
+    __resolveType(obj) {
+      // eslint-disable-next-line default-case
+      switch (obj.status.state) {
+        case 'unscheduled':
+          return 'TaskDefined';
+        case 'pending':
+          return 'TaskPending';
+        case 'running':
+          return 'TaskRunning';
+        case 'completed':
+          return 'TaskCompleted';
+        case 'failed':
+          return 'TaskFailed';
+        case 'exception':
+          return 'TaskException';
+      }
+    },
+  },
+  TaskSubscriptions: {
+    tasksDefined: 'tasksDefined',
+    tasksPending: 'tasksPending',
+    tasksRunning: 'tasksRunning',
+    tasksCompleted: 'tasksCompleted',
+    tasksFailed: 'tasksFailed',
+    tasksException: 'tasksException',
   },
   Task: {
     status({ taskId }, args, { loaders }) {
@@ -61,11 +76,88 @@ export default {
     },
   },
   Subscription: {
-    tasksDefined: new TasksSubscription('tasksDefined'),
-    tasksPending: new TasksSubscription('tasksPending'),
-    tasksRunning: new TasksSubscription('tasksRunning'),
-    tasksCompleted: new TasksSubscription('tasksCompleted'),
-    tasksFailed: new TasksSubscription('tasksFailed'),
-    tasksException: new TasksSubscription('tasksException'),
+    tasksDefined: {
+      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.taskDefined(routingKey);
+
+        return pulseEngine.asyncIterator('tasksDefined', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
+      },
+    },
+    tasksPending: {
+      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.taskPending(routingKey);
+
+        return pulseEngine.asyncIterator('tasksPending', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
+      },
+    },
+    tasksRunning: {
+      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.taskRunning(routingKey);
+
+        return pulseEngine.asyncIterator('tasksRunning', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
+      },
+    },
+    tasksCompleted: {
+      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.taskCompleted(routingKey);
+
+        return pulseEngine.asyncIterator('tasksCompleted', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
+      },
+    },
+    tasksFailed: {
+      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.taskFailed(routingKey);
+
+        return pulseEngine.asyncIterator('tasksFailed', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
+      },
+    },
+    tasksException: {
+      subscribe(parent, { taskGroupId }, { pulseEngine, clients }) {
+        const routingKey = { taskGroupId };
+        const binding = clients.queueEvents.taskException(routingKey);
+
+        return pulseEngine.asyncIterator('tasksException', {
+          [binding.routingKeyPattern]: [binding.exchange],
+        });
+      },
+    },
+    tasksSubscriptions: {
+      subscribe(
+        parent,
+        { taskGroupId, subscriptions },
+        { pulseEngine, clients }
+      ) {
+        const routingKey = { taskGroupId };
+        const triggers = subscriptions.reduce((triggers, eventName) => {
+          const method = eventName.replace('tasks', 'task');
+          const binding = clients.queueEvents[method](routingKey);
+
+          return {
+            ...triggers,
+            [binding.routingKeyPattern]: [
+              ...(triggers[binding.routingKeyPattern] || []),
+              binding.exchange,
+            ],
+          };
+        }, {});
+
+        return pulseEngine.asyncIterator('tasksSubscriptions', triggers);
+      },
+    },
   },
 };

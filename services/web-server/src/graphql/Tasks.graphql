@@ -1,17 +1,43 @@
+# Required task metadata
 type TaskMetadata {
+  # Human-readable name of task, used to very briefly give an
+  # idea about what the task does.
   name: String!
+
+  # Human readable description of the task which should explain what the task does.
   description: String!
+
+  # Email address of person who caused this task, e.g. the person who
+  # created a commit to trigger the task.
+  # This usually is the person to contact to ask why this task is here.
   owner: String!
+
+  # Link to source of this task. Should specify a file, revision, and repository.
+  # This should be the place a user can go an do a source control `blame` to who
+  # came up with the recipe for this task.
   source: String!
 }
 
 input TaskMetadataInput {
+  # Human-readable name of task, used to very briefly give an
+  # idea about what the task does.
   name: String!
+
+  # Human readable description of the task which should explain what the task does.
   description: String!
+
+  # Email address of person who caused this task, e.g. the person who
+  # created a commit to trigger the task.
+  # This usually is the person to contact to ask why this task is here.
   owner: String!
+
+  # Link to source of this task. Should specify a file, revision, and repository.
+  # This should be the place a user can go an do a source control `blame` to who
+  # came up with the recipe for this task.
   source: String!
 }
 
+# Priority of task.
 enum TaskPriority {
   HIGHEST
   VERY_HIGH
@@ -22,6 +48,7 @@ enum TaskPriority {
   LOWEST
 }
 
+# Dependency requirement semantics; the task's relation to its dependencies
 enum TaskRequire {
   ALL_COMPLETED
   ALL_RESOLVED
@@ -124,22 +151,90 @@ type Task {
 }
 
 input TaskInput {
+  # Unique identifier for a provisioner, that can supply a specified `workerType`.
   provisionerId: String!
+
+  # Unique identifier for a worker-type within a specific provisioner.
   workerType: String!
+
+  # Identifier for the scheduler that _defined_ this task.
+  # This can be an identifier for a user or a service like `"task-graph-scheduler"`.
+  # Along with the `taskGroupId`, this is used to form the permission scope
+  # `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`
+  # This scope is necessary to _schedule_ a defined task, or _rerun_ a task.
   schedulerId: String
+
+  # Identifier for a group of tasks scheduled together with this task,
+  # by the scheduler identified by `schedulerId`. For tasks scheduled by the
+  # task-graph scheduler, this is the `taskGraphId`.
+  # Defaults to `taskId` if property isn't specified.
   taskGroupId: String
+
+  # List of dependent tasks. These must either be _completed_ or _resolved_
+  # before this task is scheduled. See `requires` for semantics.
   dependencies: [String]
+
+  # The task's relation to its dependencies. This property specifies the
+  # semantics of the `task.dependencies` property. If `ALL_COMPLETED` is given
+  # the task will be scheduled when all dependencies are resolved _completed_
+  # (successful resolution). If `ALL_RESOLVED` is given the task will be
+  # scheduled when all dependencies have been resolved, regardless of what
+  # their resolution is.
   requires: TaskRequire
+
+  # List of task-specific routes. AMQP messages will be CC'd to these routes.
   routes: [String]
+
+  # Priority of task. this defaults to `LOWEST` and the scope
+  # `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+  # to define a task with `<priority>`.
   priority: TaskPriority
+
+  # Number of times to retry the task in case of infrastructure issues.
+  # An _infrastructure issue_ is a worker node that crashes or is shutdown.
   retries: Int
+
+  # Creation time of task.
   created: DateTime!
+
+  # Deadline of the task. `pending` and `running` runs are resolved as **exception**
+  # if not resolved by other means before the deadline. _Note: deadline cannot be
+  # more than 5 days into the future._
   deadline: DateTime!
+
+  # Time at which task definition and status are expired and deleted. Notice that
+  # all artifacts for the task must have an expiration that is no later than this.
+  # If this property isn't set, it will be set to `deadline` plus one year.
+  # This default may subject to change.
   expires: DateTime
+
+  # List of scopes or scope patterns that the task is authorized to use.
   scopes: [String]
+
+  # Task-specific payload following a worker-specific format. For example,
+  # `docker-worker` requires keys like: `image`, `commands`, and `features`.
+  # Refer to the documentation of `docker-worker` for details.
   payload: JSON!
+
+  # Required task metadata.
   metadata: TaskMetadataInput!
+
+  # Arbitrary key-value tags. Only accepts strings limited to 4KB.
+  # These can be used to attach arbitrary metadata to a task.
+  # Use this for informal tags that tasks can be classified by.
+  # You can also think of strings here as candidates for formal metadata,
+  # e.g. `purpose: 'build' || 'test'`.
   tags: JSON
+
+  # Object with properties that can hold any kind of extra data that should be
+  # associated with the task. This can be data for the task which doesn't fit
+  # into `payload`, or it can be supplementary data for use in services
+  # listening for events from this task. For example this could be details to
+  # display on _Treeherder_, or information for indexing the task. Try to put
+  # all related information under one property, so `extra` data keys for
+  # Treeherder reporting and task indexing don't conflict.
+  # **Warning**, do not stuff large datasets in here.
+  # Task definitions should not take-up multiple MBs.
   extra: JSON
 }
 
@@ -205,9 +300,42 @@ type TaskException {
   workerId: ID
 }
 
+enum TaskSubscriptions {
+  tasksDefined
+  tasksPending
+  tasksRunning
+  tasksCompleted
+  tasksFailed
+  tasksException
+}
+
+union TaskSubscription =
+  TaskDefined |
+  TaskPending |
+  TaskRunning |
+  TaskCompleted |
+  TaskFailed |
+  TaskException
+
 extend type Query {
+  # Definition of a task that can be scheduled.
+  # _A task definition may have been modified by the queue._
+  # If an optional property is not specified the queue
+  # may provide a default value.
   task(taskId: ID!): Task
+
+  # Find a task by index path, returning the highest-ranked task with that path.
+  # Will be empty if no task exists for the given path.
   indexedTask(indexPath: String!): IndexedTask
+
+  # List tasks sharing the same `taskGroupId`.
+  # As a task group may contain an unbounded number of tasks,
+  # this may return cursors to page through tasks. To continue listing tasks,
+  # use the returned connection with the desired front or back cursor.
+  # This query can return a maximum of up to 100 tasks in a single page.
+  # It **may return less**, even if more tasks are available.
+  # It may also return a page connection even though there are no more results.
+  # Use the connection limit to specify smaller page sizes.
   tasks(taskGroupId: ID!, connection: PageConnection, filter: JSON): TasksConnection
 }
 
@@ -224,4 +352,5 @@ extend type Subscription {
   tasksCompleted(taskGroupId: ID!): TaskCompleted
   tasksFailed(taskGroupId: ID!): TaskFailed
   tasksException(taskGroupId: ID!): TaskException
+  tasksSubscriptions(taskGroupId: ID!, subscriptions: [TaskSubscriptions]!): TaskSubscription
 }

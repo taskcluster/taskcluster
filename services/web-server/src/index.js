@@ -1,4 +1,4 @@
-import { GraphQLServer, PubSub } from 'graphql-yoga';
+import { GraphQLServer } from 'graphql-yoga';
 import compression from 'compression';
 import jwt from './jwt';
 import credentials from './credentials';
@@ -6,6 +6,12 @@ import typeDefs from './graphql';
 import resolvers from './resolvers';
 import loaders from './loaders';
 import clients from './clients';
+import PulseEngine from './PulseEngine';
+
+process.on('unhandledRejection', reason => {
+  console.log(reason); // eslint-disable-line no-console
+  process.exit(1);
+});
 
 let graphQLServer;
 const load = async props => {
@@ -29,7 +35,12 @@ const load = async props => {
   graphQLServer.express.use(compression());
 };
 
-const emitter = new PubSub();
+const pulseEngine = new PulseEngine({
+  connection: {
+    username: process.env.PULSE_USERNAME,
+    password: process.env.PULSE_PASSWORD,
+  },
+});
 const props = () => ({
   typeDefs,
   resolvers,
@@ -44,8 +55,8 @@ const props = () => ({
       };
     } else if (connection) {
       return {
-        emitter,
-        clients: clients(connection.user, emitter),
+        pulseEngine,
+        clients: clients(connection.user),
       };
     }
 

@@ -3,24 +3,15 @@ import {
   AwsProvisioner,
   Hooks,
   Index,
-  PulseConnection,
-  PulseListener,
   PurgeCache,
   Queue,
   QueueEvents,
   Secrets,
 } from 'taskcluster-client';
-import PulseSubscription from './PulseSubscription';
 
-const connection = new PulseConnection({
-  username: process.env.PULSE_USERNAME,
-  password: process.env.PULSE_PASSWORD,
-});
-
-export default (user, emitter) => {
+export default user => {
   const credentials = user && user.oidc.credentials;
   const options = credentials ? { credentials } : undefined;
-  const listener = emitter && new PulseListener({ connection });
 
   return {
     auth: new Auth(options),
@@ -30,7 +21,6 @@ export default (user, emitter) => {
     purgeCache: new PurgeCache(options),
     queue: new Queue(options),
     secrets: new Secrets(options),
-    queueEvents: emitter && new QueueEvents(options),
-    pulseSubscription: emitter && new PulseSubscription({ listener, emitter }),
+    queueEvents: new QueueEvents(options),
   };
 };
