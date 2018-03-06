@@ -9,13 +9,19 @@ suite('api (client)', function() {
   var testing     = require('taskcluster-lib-testing');
   var taskcluster = require('taskcluster-client');
 
-  const cleanup = async () => {
-    // Delete all clients and roles
-    await helper.Client.scan({}, {handler: c => c.clientId === 'root' ? null : c.remove()});
-    await helper.Roles.modify((roles) => roles.splice(0));
-  };
-  setup(cleanup);
-  teardown(cleanup);
+  if (!helper.hasPulseCredentials()) {
+    setup(function() {
+      this.skip();
+    });
+  } else {
+    const cleanup = async () => {
+      // Delete all clients and roles
+      await helper.Client.scan({}, {handler: c => c.clientId === 'root' ? null : c.remove()});
+      await helper.Roles.modify((roles) => roles.splice(0));
+    };
+    setup(cleanup);
+    teardown(cleanup);
+  }
 
   test('ping', async () => {
     await helper.auth.ping();
