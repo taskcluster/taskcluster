@@ -16,11 +16,13 @@ This library provides the following packages to interface with Taskcluster:
 ### HTTP APIs
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisioner
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/ec2manager
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/github
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/hooks
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/index
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/login
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/notify
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/pulse
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/secrets
