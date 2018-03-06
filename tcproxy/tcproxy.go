@@ -30,6 +30,7 @@ func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Cre
 		"--port", strconv.Itoa(int(httpPort)),
 		"--client-id", creds.ClientID,
 		"--access-token", creds.AccessToken,
+		"--ip-address", "127.0.0.1",
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
