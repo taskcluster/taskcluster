@@ -43,8 +43,12 @@ export default {
     tasksException: 'tasksException',
   },
   Task: {
-    status({ taskId }, args, { loaders }) {
-      return loaders.status.load(taskId);
+    status(parent, args, { loaders }) {
+      if (parent.status) {
+        return parent.status;
+      }
+
+      return loaders.status.load(parent.taskId);
     },
   },
   Query: {

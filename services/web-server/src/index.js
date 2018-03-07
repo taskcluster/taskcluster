@@ -1,4 +1,6 @@
 import { GraphQLServer } from '@eliperelman/graphql-yoga';
+import depthLimit from 'graphql-depth-limit';
+import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import compression from 'compression';
 import jwt from './jwt';
 import credentials from './credentials';
@@ -44,6 +46,7 @@ const pulseEngine = new PulseEngine({
 const props = () => ({
   typeDefs,
   resolvers,
+  validationRules: [depthLimit(10), createComplexityLimitRule(1000)],
   context({ request, connection }) {
     if (request) {
       const currentClients = clients(request.user);
@@ -95,6 +98,7 @@ load(props()).then(async () => {
     },
   });
 
+  /* eslint-disable no-console */
   console.log(
     `\n\nTaskcluster GraphQL server running on port ${process.env.PORT}.`
   );
@@ -102,6 +106,7 @@ load(props()).then(async () => {
     `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
     http://localhost:${process.env.PORT}\n`
   );
+  /* eslint-enable no-console */
 });
 
 if (module.hot) {

@@ -2919,6 +2919,12 @@ graphql-config@2.0.0:
     lodash "^4.17.4"
     minimatch "^3.0.4"
 
+graphql-depth-limit@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/graphql-depth-limit/-/graphql-depth-limit-1.1.0.tgz#59fe6b2acea0ab30ee7344f4c75df39cc18244e8"
+  dependencies:
+    arrify "^1.0.1"
+
 graphql-extensions@^0.0.x:
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/graphql-extensions/-/graphql-extensions-0.0.8.tgz#d14d6e06db466a7f90fb97d75b657ae730278b09"
@@ -2979,6 +2985,12 @@ graphql-tools@^2.18.0:
 graphql-type-json@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/graphql-type-json/-/graphql-type-json-0.2.0.tgz#34c1a5fc2b7707a367c436482b253dbeebf1130e"
+
+graphql-validation-complexity@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/graphql-validation-complexity/-/graphql-validation-complexity-0.2.2.tgz#8626d6e96df3f5d5e1f64431d531acdc3c54821b"
+  dependencies:
+    warning "^3.0.0"
 
 "graphql@^0.11.0 || ^0.12.0 || ^0.13.0":
   version "0.13.1"
@@ -5889,6 +5901,12 @@ vm-browserify@0.0.4:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-0.0.4.tgz#5d7ea45bbef9e4a6ff65f95438e0a87c357d5a73"
   dependencies:
     indexof "0.0.1"
+
+warning@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/warning/-/warning-3.0.0.tgz#32e5377cb572de4ab04753bdf8821c01ed605b7c"
+  dependencies:
+    loose-envify "^1.0.0"
 
 watchpack@^1.4.0:
   version "1.4.0"
