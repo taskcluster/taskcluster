@@ -23,7 +23,7 @@ export default ({ queue, index }) => {
 
       return {
         ...raw,
-        tasks: tasks.map(
+        items: tasks.map(
           ({ task, status }) => new Task(status.taskId, status, task)
         ),
       };
