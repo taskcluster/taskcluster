@@ -85,6 +85,29 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
+"@eliperelman/graphql-yoga@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@eliperelman/graphql-yoga/-/graphql-yoga-1.0.0.tgz#ba18bc10e73ca851029d3c856c5909a9a06b4e89"
+  dependencies:
+    "@types/cors" "^2.8.3"
+    "@types/express" "^4.0.39"
+    "@types/graphql" "^0.12.0"
+    "@types/zen-observable" "^0.5.3"
+    apollo-server-express "^1.3.2"
+    apollo-server-lambda "1.3.2"
+    apollo-upload-server "^4.0.0-alpha.1"
+    aws-lambda "^0.1.2"
+    body-parser-graphql "1.0.0"
+    cors "^2.8.4"
+    express "^4.16.2"
+    graphql "^0.11.0 || ^0.12.0 || ^0.13.0"
+    graphql-import "^0.4.4"
+    graphql-playground-middleware-express "1.5.7"
+    graphql-playground-middleware-lambda "1.4.3"
+    graphql-subscriptions "^0.5.8"
+    graphql-tools "^2.18.0"
+    subscriptions-transport-ws "^0.9.6"
+
 "@neutrinojs/airbnb-base@^8.1.1":
   version "8.1.2"
   resolved "https://registry.yarnpkg.com/@neutrinojs/airbnb-base/-/airbnb-base-8.1.2.tgz#53ff0da184eaaaa745a8af8b8bf66e2c76afe29c"
@@ -2956,29 +2979,6 @@ graphql-tools@^2.18.0:
 graphql-type-json@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/graphql-type-json/-/graphql-type-json-0.2.0.tgz#34c1a5fc2b7707a367c436482b253dbeebf1130e"
-
-graphql-yoga@^1.3.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/graphql-yoga/-/graphql-yoga-1.4.3.tgz#a5e17c131454a4c244f1df65eeddf5afb7ab3f26"
-  dependencies:
-    "@types/cors" "^2.8.3"
-    "@types/express" "^4.0.39"
-    "@types/graphql" "^0.12.0"
-    "@types/zen-observable" "^0.5.3"
-    apollo-server-express "^1.3.2"
-    apollo-server-lambda "1.3.2"
-    apollo-upload-server "^4.0.0-alpha.1"
-    aws-lambda "^0.1.2"
-    body-parser-graphql "1.0.0"
-    cors "^2.8.4"
-    express "^4.16.2"
-    graphql "^0.11.0 || ^0.12.0 || ^0.13.0"
-    graphql-import "^0.4.4"
-    graphql-playground-middleware-express "1.5.7"
-    graphql-playground-middleware-lambda "1.4.3"
-    graphql-subscriptions "^0.5.8"
-    graphql-tools "^2.18.0"
-    subscriptions-transport-ws "^0.9.6"
 
 "graphql@^0.11.0 || ^0.12.0 || ^0.13.0":
   version "0.13.1"

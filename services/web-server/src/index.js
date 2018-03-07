@@ -1,4 +1,4 @@
-import { GraphQLServer } from 'graphql-yoga';
+import { GraphQLServer } from '@eliperelman/graphql-yoga';
 import compression from 'compression';
 import jwt from './jwt';
 import credentials from './credentials';
