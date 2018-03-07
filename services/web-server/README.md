@@ -9,8 +9,9 @@ by web applications.
 
 ## Environment variables
 
-To launch this service, place a `.env` file in the root of this
-repo with the following environment variables:
+To launch this service, either set the following environment variables or
+place a `.env` file in the root of this repo with the following environment variables
+inside of it:
 
 ```sh
 # Network port to bind the service to:
@@ -58,7 +59,7 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 }
 ```
 
-![authorization header](https://cldup.com/XDpBc-qY5Q.png)
+<img src="https://cldup.com/XDpBc-qY5Q.png" alt="authorization header" height="75%" width="75%" />
 
 _Tip: you can get a copy of your Taskcluster Tools auth0 token by running the following
 in the devtools console:_
@@ -66,3 +67,140 @@ in the devtools console:_
 ```js
 copy(JSON.parse(localStorage.getItem('userSession')).accessToken)
 ```
+
+## Sample Queries
+
+Query a task, selecting status state and name:
+
+```graphql
+query Sample {
+  task(taskId: "XeC1Y4NjQp25SbK0o8ab7w") {
+    status {
+      state
+    }
+    
+    metadata {
+      name
+    }
+  }
+}
+```
+
+Select the taskId for all tasks in a task group,
+and select whether there is another page:
+
+```graphql
+query Sample {
+  tasks(taskGroupId: "AMfy-mopRaOCQlNW5IhOeQ") {
+    pageInfo {
+      hasNextPage
+    }
+
+    edges {
+      node {
+        taskId
+      }
+    }
+  }
+}
+```
+
+## Sample mutations
+
+Create a tutorial task:
+
+```graphql
+mutation Sample($taskId: ID!, $task: TaskInput!) {
+  createTask(taskId: $taskId, task: $task) {
+    state
+  }
+}
+```
+
+Variables:
+
+```json
+{
+  "taskId": "fN1SbArXTPSVFNUvaOlinQ",
+  "task": {
+    "provisionerId": "aws-provisioner-v1",
+    "workerType": "tutorial",
+    "retries": 0,
+    "created": "2018-03-07T05:53:06.683Z",
+    "deadline": "2018-03-07T06:03:06.683Z",
+    "expires": "2019-03-07T06:03:06.683Z",
+    "payload": {
+      "image": "ubuntu:13.10",
+      "command": [
+        "/bin/bash",
+        "-c",
+        "for ((i=1;i<=600;i++)); do echo $i; sleep 1; done"
+      ],
+      "maxRunTime": 600
+    },
+    "metadata": {
+      "name": "GraphQL Tutorial Task",
+      "description": "Task created via GraphQL",
+      "owner": "eli@eliperelman.com",
+      "source": "https://localhost:3050/"
+    }
+  }
+}
+```
+
+## Sample subscriptions
+
+Subscribe to the tasks entering the `PENDING` state within a task group,
+selecting its state:
+
+```graphql
+subscription Sample {
+  tasksPending(taskGroupId: "fN1SbArXTPSVFNUvaOlinQ") {
+    status {
+      state
+    }
+  }
+}
+```
+
+Subscribe to multiple task group subscriptions, selecting the state
+from each status change:
+
+```graphql
+subscription Sample($taskGroupId: ID!, $subscriptions: [TaskSubscriptions]!) {
+  tasksSubscriptions(taskGroupId: $taskGroupId, subscriptions: $subscriptions) {
+    ...on TaskFailed {
+      status {
+        state
+      }
+    }
+    ...on TaskException {
+      status {
+        state
+      }
+    }
+    ...on TaskCompleted {
+      status {
+        state
+      }
+    }
+  }
+}
+```
+
+Variables:
+
+```json
+{
+  "taskGroupId": "fN1SbArXTPSVFNUvaOlinQ",
+  "subscriptions": [
+    "tasksException",
+    "tasksFailed",
+    "tasksCompleted"
+  ]
+}
+```
+
+## Data Flow Diagram
+
+![data flow](https://cldup.com/e3lrkf28ab.png)
