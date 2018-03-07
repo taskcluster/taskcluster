@@ -58,11 +58,11 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 }
 ```
 
+![authorization header](https://cldup.com/XDpBc-qY5Q.png)
+
 _Tip: you can get a copy of your Taskcluster Tools auth0 token by running the following
 in the devtools console:_
 
 ```js
 copy(JSON.parse(localStorage.getItem('userSession')).accessToken)
 ```
-
-![authorization header](https://cldup.com/XDpBc-qY5Q.png)
