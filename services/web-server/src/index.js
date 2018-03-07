@@ -64,8 +64,8 @@ const props = () => ({
   },
 });
 
-load(props()).then(() => {
-  graphQLServer.start({
+load(props()).then(async () => {
+  await graphQLServer.start({
     port: process.env.PORT,
     tracing: true,
     cacheControl: true,
@@ -94,6 +94,14 @@ load(props()).then(() => {
       },
     },
   });
+
+  console.log(
+    `\n\nTaskcluster GraphQL server running on port ${process.env.PORT}.`
+  );
+  console.log(
+    `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
+    http://localhost:${process.env.PORT}\n`
+  );
 });
 
 if (module.hot) {
