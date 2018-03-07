@@ -30,6 +30,7 @@ var api = new API({
     'https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks',
     'for more information.',
   ].join('\n'),
+  name: 'hooks',
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
 
