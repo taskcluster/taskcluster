@@ -50,7 +50,7 @@ Open the interactive GraphQL Playground, schema explorer and docs in your browse
 
 To pass credentials to the service from the GraphQL Playground, click the "HTTP Headers"
 section, and paste a JSON object with a key of "Authorization" with a value of
-"Bearer <auth0 access token>", such as:
+"Bearer YOUR_ACCESS_TOKEN", such as:
 
 ```json
 {
