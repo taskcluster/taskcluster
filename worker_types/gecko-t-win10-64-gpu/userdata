@@ -1,5 +1,8 @@
 <powershell>
 
+# use TLS 1.2 (see bug 1443595)
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 # capture env
 Get-ChildItem Env: | Out-File "C:\install_env.txt"
 
@@ -32,7 +35,7 @@ Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /qui
 $client.DownloadFile("https://papertrailapp.com/tools/papertrail-bundle.pem", "C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem")
 
 # NxLogPaperTrailConfiguration: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win10-grenade-elk-debug.conf", "C:\Program Files (x86)\nxlog\conf\nxlog.conf")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win10.conf", "C:\Program Files (x86)\nxlog\conf\nxlog.conf")
 
 # Start_nxlog: Maintenance Toolchain - not essential for building firefox
 Set-Service "nxlog" -StartupType Automatic -Status Running
@@ -136,12 +139,6 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 
 # SetDefaultPrinter
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/SetDefaultPrinter.ps1", "C:\generic-worker\SetDefaultPrinter.ps1")
-
-# fakemon
-$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/fakemon.vbs", "C:\Windows\System32\fakemon.vbs")
-
-# configmymonitor
-$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/fakemon/configmymonitor.exe", "C:\Windows\System32\configmymonitor.exe")
 
 # GenericWorkerStateWait
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-format-and-reboot.bat", "C:\generic-worker\run-generic-worker.bat")

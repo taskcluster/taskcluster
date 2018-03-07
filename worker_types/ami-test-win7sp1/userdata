@@ -1,5 +1,8 @@
 <powershell>
 
+# use TLS 1.2 (see bug 1443595)
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 # capture env
 Get-ChildItem Env: | Out-File "C:\install_env.txt"
 

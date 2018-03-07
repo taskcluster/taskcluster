@@ -1,5 +1,8 @@
 <powershell>
 
+# use TLS 1.2 (see bug 1443595)
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 # capture env
 Get-ChildItem Env: | Out-File "C:\install_env.txt"
 
@@ -123,7 +126,7 @@ $client.DownloadFile("https://go.microsoft.com/fwlink/p/?LinkID=698771", "C:\bin
 Start-Process "C:\binaries\sdksetup.exe" -ArgumentList "/features + /quiet /norestart /ceip off /log C:\log\windowssdk10setup.log" -Wait -NoNewWindow
 
 # BinScope: https://dxr.mozilla.org/mozilla-central/search?q=BinScope&redirect=false&case=false
-$client.DownloadFile("https://github.com/mozilla-releng/OpenCloudConfig/raw/master/userdata/Configuration/FirefoxBuildResources/BinScope_x64.msi", "C:\binaries\BinScope_x64.msi")
+$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/binscope/BinScope_x64.msi", "C:\binaries\BinScope_x64.msi")
 Start-Process "msiexec" -ArgumentList "/i C:\binaries\BinScope_x64.msi /quiet" -Wait -NoNewWindow
 
 # MozillaBuildSetup: Base Firefox on Windows build requirement

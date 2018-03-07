@@ -98,6 +98,9 @@ func main() {
 
 	fmt.Println(`<powershell>`)
 	fmt.Println(``)
+	fmt.Println(`# use TLS 1.2 (see bug 1443595)`)
+	fmt.Println(`[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12`)
+	fmt.Println(``)
 	fmt.Println(`# capture env`)
 	fmt.Println(`Get-ChildItem Env: | Out-File "C:\install_env.txt"`)
 	fmt.Println(``)
