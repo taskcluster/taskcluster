@@ -47,6 +47,7 @@
     "object.omit": "^3.0.0"
   },
   "dependencies": {
+    "fast-mutex": "^1.0.2",
     "hawk": "^6.0.2",
     "query-string": "^5.0.0"
   }
