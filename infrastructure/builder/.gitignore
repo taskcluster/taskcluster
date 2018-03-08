@@ -1,2 +1,4 @@
 user-config.yml
 /logs
+node_modules/
+yarn-error.log
