@@ -1,4 +1,4 @@
-Generated: 1520515351
+Generated: 1520518945
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -791,7 +791,7 @@ oneOf:
             may be embedded in the payload.  In any case, this clientId can be used
             for logging, auditing, and identifying the credential but **must** not be
             used for access control.  That's what scopes are for.
-          pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+          pattern: ^[A-Za-z0-9@/:.+|_-]+$
           type: string
         expires:
           IS_REQUIRED: true
@@ -942,7 +942,7 @@ properties:
         may be embedded in the payload.  In any case, this clientId can be used
         for logging, auditing, and identifying the credential but **must** not be
         used for access control.  That's what scopes are for.
-      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      pattern: ^[A-Za-z0-9@/:.+|_-]+$
       type: string
     expires:
       IS_REQUIRED: true
@@ -1545,7 +1545,7 @@ properties:
       TYPE_NAME: ClientID
       description: |
         ClientId of the client
-      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      pattern: ^[A-Za-z0-9@/:.+|_-]+$
       type: string
     created:
       IS_REQUIRED: true
@@ -1783,7 +1783,7 @@ properties:
       TYPE_NAME: ClientID
       description: |
         ClientId of the client scopes is requested about
-      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      pattern: ^[A-Za-z0-9@/:.+|_-]+$
       type: string
     created:
       IS_REQUIRED: true
@@ -2089,7 +2089,7 @@ items:
           TYPE_NAME: ClientID
           description: |
             ClientId of the client scopes is requested about
-          pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+          pattern: ^[A-Za-z0-9@/:.+|_-]+$
           type: string
         created:
           IS_REQUIRED: true
@@ -2670,7 +2670,7 @@ properties:
       TYPE_NAME: ClientID
       description: |
         ClientId from the request as it will be logged
-      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      pattern: ^[A-Za-z0-9@/:.+|_-]+$
       type: string
     scopes:
       IS_REQUIRED: false
@@ -2876,7 +2876,7 @@ properties:
       TYPE_NAME: ClientID
       description: |
         `clientId` of the client that was changed
-      pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+      pattern: ^[A-Za-z0-9@/:.+|_-]+$
       type: string
     version:
       IS_REQUIRED: true
