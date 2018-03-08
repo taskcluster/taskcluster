@@ -154,8 +154,8 @@ Expand-ZIPFile -File "C:\go1.7.5.windows-amd64.zip" -Destination "C:\" -Url "htt
 # Expand-ZIPFile -File "C:\PSTools\PSTools.zip" -Destination "C:\PSTools" -Url "https://download.sysinternals.com/files/PSTools.zip"
 
 # install git
-$client.DownloadFile("https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20150319/Git-1.9.5-preview20150319.exe", "C:\git-1.9.5-installer.exe")
-Start-Process "C:\git-1.9.5-installer.exe" -ArgumentList "/SILENT" -Wait -PassThru
+$client.DownloadFile("https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe", "C:\Git-2.16.2-64-bit.exe")
+Start-Process "C:\Git-2.16.2-64-bit.exe" -ArgumentList "/SILENT" -Wait -PassThru
 
 # install AZCopy (azure table storage backup utility - for bstack)
 $client.DownloadFile("http://aka.ms/downloadazcopy", "C:\AZCopy.msi")
