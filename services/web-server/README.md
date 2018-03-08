@@ -204,3 +204,9 @@ Variables:
 ## Data Flow Diagram
 
 ![data flow](https://cldup.com/e3lrkf28ab.png)
+
+
+## Apollo Engine
+
+You can enable tracing and caching to the Apollo Engine service by setting the
+`APOLLO_ENGINE_KEY` environment variable.

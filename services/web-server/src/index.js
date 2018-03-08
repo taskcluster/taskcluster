@@ -10,9 +10,13 @@ import loaders from './loaders';
 import clients from './clients';
 import PulseEngine from './PulseEngine';
 
-process.on('unhandledRejection', reason => {
-  console.log(reason); // eslint-disable-line no-console
+process.on('uncaughtException', err => {
+  console.error(err); // eslint-disable-line no-console
   process.exit(1);
+});
+
+process.on('unhandledRejection', reason => {
+  console.error(reason); // eslint-disable-line no-console
 });
 
 let graphQLServer;
@@ -69,6 +73,7 @@ const props = () => ({
 
 load(props()).then(async () => {
   await graphQLServer.start({
+    apolloEngineKey: process.env.APOLLO_ENGINE_KEY,
     port: process.env.PORT,
     tracing: true,
     cacheControl: true,

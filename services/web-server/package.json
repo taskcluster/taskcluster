@@ -20,7 +20,7 @@
     "raw-loader": "^0.5.1"
   },
   "dependencies": {
-    "@eliperelman/graphql-yoga": "^1.0.0",
+    "@eliperelman/graphql-yoga": "^1.1.0",
     "amqp-match": "^0.0.0",
     "compression": "^1.7.2",
     "dataloader": "^1.4.0",
