@@ -64,7 +64,7 @@ var api = new API({
   schemaPrefix: 'http://schemas.taskcluster.net/auth/v1/',
   params: {
     // Patterns for auth
-    clientId:   /^[A-Za-z0-9!@/:.+|_-]+$/, // should match schemas/constants.yml
+    clientId:   /^[A-Za-z0-9!@/:.+|_-]+$/, // should match schemas/constants.yml, prefix below
     roleId:     /^[\x20-\x7e]+$/,
 
     // Patterns for Azure
@@ -119,7 +119,7 @@ api.declare({
   method:     'get',
   route:      '/clients/',
   query: {
-    prefix: /^[A-Za-z0-9@/:._-]+$/,
+    prefix:  /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
   },
   name:       'listClients',
   input:      undefined,
