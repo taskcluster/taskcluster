@@ -57,3 +57,4 @@ echo
 
 rm -rf "${GO_DOWNLOAD_DIR}"
 rm -rf "${GOPATH}"
+rm target/go.tar.gz
