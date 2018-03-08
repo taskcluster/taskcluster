@@ -5,6 +5,7 @@ access-token-pattern:     "^[a-zA-Z0-9_-]{22,66}$"
 # Printable ascii string for roleId
 roleId: "^[\\x20-\\x7e]+$"
 
+# should match src/v1.js
 clientId: "^[A-Za-z0-9!@/:.+|_-]+$"
 
 # Slugid pattern, for when-ever that is useful
