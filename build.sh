@@ -47,17 +47,17 @@ go generate ./...
 
 function install {
   if [ "${1}" != 'native' ]; then
-    GOOS="${1}" GOARCH="${2}" go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
+    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     GOOS="${1}" GOARCH="${2}" go vet ./...
     # note, this just builds tests, it doesn't run them!
-    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker
-    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/generic-worker/livelog
+    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker
+    GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker/livelog
   else
-    go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
+    CGO_ENABLED=0 go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     go vet ./...
     # note, this just builds tests, it doesn't run them!
-    go test -c github.com/taskcluster/generic-worker
-    go test -c github.com/taskcluster/generic-worker/livelog
+    CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker
+    CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker/livelog
   fi
 }
 
@@ -103,7 +103,7 @@ fi
 
 find "${GOPATH}/bin" -name 'generic-worker*'
 
-go get github.com/taskcluster/livelog
+CGO_ENABLED=0 go get github.com/taskcluster/livelog
 # capital X here ... we only want to delete things that are ignored!
 git clean -fdX
 
