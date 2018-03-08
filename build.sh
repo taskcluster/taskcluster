@@ -71,6 +71,8 @@ if ${ALL_PLATFORMS}; then
   # linux
   install linux      386
   install linux      amd64
+  install linux      arm
+  install linux      arm64
 else
   install native
 fi
