@@ -6,6 +6,7 @@ const api = new API({
     'The Login service serves as the interface between external authentication',
     'systems and Taskcluster credentials.',
   ].join('\n'),
+  name: 'login',
   schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
   context: ['cfg', 'handlers'],
 });
