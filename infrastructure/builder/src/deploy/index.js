@@ -1,14 +1,10 @@
 const fs = require('fs');
-const config = require('typed-env-config');
 const Listr = require('listr');
 const Observable = require('zen-observable');
 const {spawn} = require('child_process');
 
 const main = async () => {
-  const cfg = config({
-    files: ['services.yml', 'user-config.yml'],
-    profile: 'default',
-  });
+  const cfg = {};
   const lockFile = JSON.parse(fs.readFileSync('services.lock'));
 
   const publisher = new Listr(
@@ -39,4 +35,4 @@ const main = async () => {
   await publisher.run();
 };
 
-main().catch(console.error);
+module.exports = main;

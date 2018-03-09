@@ -1,0 +1,11 @@
+---
+version: 1
+docker:
+  repositoryPrefix: djmitche/taskcluster-
+
+# Note: All services must have all lowercase names!
+services:
+  - name: ping
+    # note: this is a relative reference, which isn't a great idea as it means the
+    # build may include a different version in different runs
+    source: https://github.com/djmitche/taskcluster-ping#master
