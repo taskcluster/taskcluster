@@ -133,7 +133,7 @@ Start-Process "msiexec" -ArgumentList "/i C:\NodeSetup.msi /quiet" -Wait -NoNewW
 
 # set permanent env vars
 [Environment]::SetEnvironmentVariable("GOROOT", "C:\go", "Machine")
-[Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\Program Files\Vim\vim80;C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd;C:\Program Files\nodejs", "Machine")
+[Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\Program Files\Vim\vim80;C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files\Git\cmd;C:\Program Files\nodejs", "Machine")
 [Environment]::SetEnvironmentVariable("GOPATH", "C:\gopath", "Machine")
 
 # upgrade python libraries
@@ -142,7 +142,7 @@ Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "-m pip install
 # set env vars for the currently running process
 $env:GOROOT = "C:\go"
 $env:GOPATH = "C:\gopath"
-$env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files (x86)\Git\cmd"
+$env:PATH   = $env:PATH + ";C:\go\bin;C:\gopath\bin;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\Program Files\Git\cmd"
 
 # get generic-worker and livelog source code (note required, but useful)
 Start-Process "go" -ArgumentList "get -t github.com/taskcluster/generic-worker github.com/taskcluster/livelog" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\generic-worker\go-get_install.log" -RedirectStandardError "C:\generic-worker\go-get_install.err"
