@@ -83,6 +83,21 @@ tasks:
           - master
 ```
 
+You can even choose to exclude certain branches from your task run. The task will run only if it is not on one of the excluded branches. For example, the task defined below will only run for pushes **not** to the master branch:
+
+```yaml
+version: 0
+tasks:
+  - ...
+    extra:
+      github:
+        events:
+          - push
+        excludeBranches:
+          - master
+```
+
+If a branch is present in both, `task.extra.github.branches` is given preference over `task.extra.github.excludeBranches`.
 Branch filtering doesn't work for releases.
 
 ### Roles
