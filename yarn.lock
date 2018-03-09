@@ -2709,12 +2709,6 @@ fast-levenshtein@~2.0.4:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
 
-fast-mutex@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/fast-mutex/-/fast-mutex-1.0.2.tgz#29a00d621f3b5af1f244c2762bdef7681c000a45"
-  dependencies:
-    debug "^2.2.0"
-
 fastparse@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/fastparse/-/fastparse-1.1.1.tgz#d1e2643b38a94d7583b479060e6c4affc94071f8"
