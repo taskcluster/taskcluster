@@ -647,7 +647,7 @@ var API = function(options) {
   ['title', 'description', 'name'].forEach(function(key) {
     assert(options[key], 'Option \'' + key + '\' must be provided');
   });
-  assert(/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(options.name), `api name "${options.name}" is not valid`);
+  assert(/^[a-z][a-z0-9_-]*$/.test(options.name), `api name "${options.name}" is not valid`);
   this._options = _.defaults({
     errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
   }, options, {
