@@ -15,7 +15,7 @@ let API = require('taskcluster-lib-api');
 let api = new API({
   // Title and description for docs
   title: 'My API',
-  name: 'my-api', // Must match /^[a-zA-Z][a-zA-Z0-9_-]*$/
+  name: 'my-api', // Must match /^[a-z][a-z0-9_-]*$/
   description: [
     "Long string with **markdown** support, used for writing docs",
     "typically written using [].join('\n') to allow for long strings"
@@ -77,7 +77,8 @@ The available options are:
  * `title` (required) - the title of the API (the microservice name)
  * `description` (required) - a description of the service, treated as markdown
  * `name` (required) - a simple name for the service that will become part of a url
-   This must match the regex `/^[a-zA-Z][a-zA-Z0-9_-]*$/`
+   This must match the regex `/^[a-z][a-z0-9_-]*$/`. It will be the following part of a url:
+   `https://whatever.net/api/<name>/v1/endpoint`.
  * `schemaPrefix` - the prefix for the schema definitions for this service
  * `params` - patterns for URL parameters that apply to all methods (see below)
  * `context` - a list of context entries that must be passed to `api.setup`.  Each
