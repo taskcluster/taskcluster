@@ -149,7 +149,7 @@ class BuildService {
     const configFile = path.join(this.workDir, 'app', '.build-config.yml');
     if (fs.existsSync(configFile)) {
       const config = yaml.safeLoad(configFile);
-			this.buildConfig = Object.assign({}, this.buildConfig, config);
+      this.buildConfig = Object.assign({}, this.buildConfig, config);
     }
   }
 
@@ -232,19 +232,23 @@ class BuildService {
       return {name, command: quote([command.trim()])};
     }).filter(l => l !== null);
     const entrypoint = ENTRYPOINT_TEMPLATE({procs});
-    fs.writeFileSync(path.join(this.workDir, 'entrypoint'), entrypoint, {mode: 0o777})
+    fs.writeFileSync(path.join(this.workDir, 'entrypoint'), entrypoint, {mode: 0o777});
   }
 
   async buildFinalImage() {
     fs.mkdirSync(path.join(this.workDir, 'docker'));
-    fs.renameSync(path.join(this.workDir, 'app'),path.join(this.workDir, 'docker', 'app'));
-    fs.renameSync(path.join(this.workDir, 'entrypoint'),path.join(this.workDir, 'docker', 'entrypoint'));
+    fs.renameSync(path.join(this.workDir, 'app'),
+      path.join(this.workDir, 'docker', 'app'));
+    fs.renameSync(path.join(this.workDir, 'entrypoint'),
+      path.join(this.workDir, 'docker', 'entrypoint'));
 
     const dockerfile = DOCKERFILE_TEMPLATE({buildImage: this.buildImage});
     fs.writeFileSync(path.join(this.workDir, 'docker', 'Dockerfile'), dockerfile);
 
     const log = path.join(this.workDir, 'build.log');
-    let context = await this.docker.buildImage(tar.pack(path.join(this.workDir, 'docker')), {t: this.serviceRelease.dockerImage});
+    let context = await this.docker.buildImage(
+      tar.pack(path.join(this.workDir, 'docker')),
+      {t: this.serviceRelease.dockerImage});
     context.pipe(fs.createWriteStream(log));
     return new Observable(observer => {
       const onFinished = (err, output) => {

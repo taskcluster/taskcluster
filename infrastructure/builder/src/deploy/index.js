@@ -25,8 +25,8 @@ const main = async () => {
                 cmd.stderr.on('data', observer.next);
               });
             },
-          }
-        ])
+          },
+        ]),
       };
     }),
     {concurrent: 1}
