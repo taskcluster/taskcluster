@@ -35,24 +35,34 @@ class BuildService {
 
     this.git = git(this.workDir);
 
-    this.docker = new Docker();
-    // when running a docker container, always remove the container when finished, 
-    // mount the workdir at /workdir, and run as the current (non-container) user
-    // so that file ownership remains as expected
-    this.dockerRunOpts = {
-      AutoRemove: true,
-      User: `${os.userInfo().uid}:${os.userInfo().gid}`,
-      Binds: [
-        '/etc/passwd:/etc/passwd:ro',
-        '/etc/group:/etc/group:ro',
-        `${this.workDir}:/workdir`,
-      ],
-    };
+    this._dockerSetup();
 
     this.buildConfig = {
       buildType: 'heroku-buildpack',
       stack: 'heroku-16',
       buildpack: 'https://github.com/heroku/heroku-buildpack-nodejs',
+    };
+  }
+
+  _dockerSetup() {
+    this.docker = new Docker();
+    // when running a docker container, always remove the container when finished, 
+    // mount the workdir at /workdir, and run as the current (non-container) user
+    // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
+    // to define names for those uid/gid, too.
+    const {uid, gid} = os.userInfo();
+    fs.writeFileSync(path.join(this.workDir, 'passwd'),
+      `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`);
+    fs.writeFileSync(path.join(this.workDir, 'group'),
+      `root:x:0:\nbuilder:x:${gid}:\n`);
+    this.dockerRunOpts = {
+      AutoRemove: true,
+      User: `${uid}:${gid}`,
+      Binds: [
+        `${this.workDir}/passwd:/etc/passwd:ro`,
+        `${this.workDir}/group:/etc/group:ro`,
+        `${this.workDir}:/workdir`,
+      ],
     };
   }
 
