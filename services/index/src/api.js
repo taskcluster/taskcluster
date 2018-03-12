@@ -237,8 +237,50 @@ api.declare({
 api.declare({
   method:         'post',
   route:          '/tasks/:namespace?',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
   name:           'listTasks',
   stability:      API.stability.stable,
+  output:         'list-tasks-response.json#',
+  title:          'List Tasks',
+  description: [
+    'List the tasks immediately under a given namespace.',
+    '',
+    'This endpoint',
+    'lists up to 1000 tasks. If more tasks are present, a',
+    '`continuationToken` will be returned, which can be given in the next',
+    'request. For the initial request, the payload should be an empty JSON',
+    'object.',
+    '',
+    '**Remark**, this end-point is designed for humans browsing for tasks, not',
+    'services, as that makes little sense.',
+  ].join('\n'),
+}, function(req, res) {
+  var that       = this;
+  let namespace = req.params.namespace || '';
+  let query = {
+    namespace,
+  };
+
+  let limit = parseInt(req.query.limit || 1000, 10);
+  let continuation = req.query.continuationToken || null;
+
+  return helpers.listTableEntries({
+    query,
+    limit,
+    continuation,
+    key: 'tasks',
+    Table: that.IndexedTask,
+  }, (error, retval) => res.reply(retval));
+});
+
+api.declare({
+  method:         'post',
+  route:          '/tasks/:namespace?',
+  name:           'listTasksPost',
+  stability:      'deprecated',
   input:          'list-tasks-request.json#',
   output:         'list-tasks-response.json#',
   title:          'List Tasks',
