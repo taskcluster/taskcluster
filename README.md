@@ -21,8 +21,8 @@ You can browse a list of available icons at:
 https://materialdesignicons.com/
 
 These can be imported into the app by using the Pascal-cased name of the icon from the
-[`mdi-react`](https://github.com/levrik/mdi-react) package. For example, if you
-would like to use the `book-open-page-variant` icon, you can import it with:
+[`mdi-react`](https://github.com/levrik/mdi-react) package<sup>*</sup>.
+For example, if you would like to use the `book-open-page-variant` icon, you can import it with:
 
 ```jsx
 import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
@@ -31,3 +31,5 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 
 <BookOpenPageVariantIcon />
 ```
+
+<sup>* We use this library because it provides substantially more icons with minimal file-system headaches.</sup>
