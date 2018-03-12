@@ -3,6 +3,7 @@ import { arrayOf, node, string } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Collapse from 'material-ui/transitions/Collapse';
 import List from 'material-ui/List';
+import Divider from 'material-ui/Divider';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import SidebarListItem from './SidebarListItem';
@@ -51,6 +52,7 @@ export default class SidebarListGroup extends Component {
           <List component="div" disablePadding className={classes.listGroup}>
             {children}
           </List>
+          <Divider />
         </Collapse>
       </Fragment>
     );

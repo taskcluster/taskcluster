@@ -6,6 +6,18 @@ import HumanIcon from 'mdi-react/HumanIcon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
+import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
+import HelpCircleOutlineIcon from 'mdi-react/HelpCircleOutlineIcon';
+import MixcloudIcon from 'mdi-react/MixcloudIcon';
+import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
+import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
+import AccountStarIcon from 'mdi-react/AccountStarIcon';
+import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
+import AccountSwitchIcon from 'mdi-react/AccountSwitchIcon';
+import FileTreeIcon from 'mdi-react/FileTreeIcon';
+import WebhookIcon from 'mdi-react/WebhookIcon';
+import KeyIcon from 'mdi-react/KeyIcon';
+import PulseIcon from 'mdi-react/PulseIcon';
 import SidebarListGroup from './SidebarListGroup';
 import SidebarListItem from './SidebarListItem';
 
@@ -25,7 +37,16 @@ export default class SidebarList extends Component {
             icon={<BookOpenPageVariantIcon />}>
             References
           </SidebarListItem>
+          <SidebarListItem
+            to="/docs/resources"
+            icon={<HelpCircleOutlineIcon />}>
+            Resources
+          </SidebarListItem>
+          <SidebarListItem to="/docs/people" icon={<AccountMultipleIcon />}>
+            People
+          </SidebarListItem>
         </SidebarListGroup>
+
         <SidebarListGroup
           to="/tasks"
           title="Tasks"
@@ -36,7 +57,48 @@ export default class SidebarList extends Component {
           <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
             Task Groups
           </SidebarListItem>
+          <SidebarListItem to="/tasks/index" icon={<FileTreeIcon />}>
+            Task Index
+          </SidebarListItem>
         </SidebarListGroup>
+
+        <SidebarListGroup
+          to="/auth"
+          title="Authorization"
+          icon={<AccountKeyIcon />}>
+          <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
+            Clients
+          </SidebarListItem>
+          <SidebarListItem to="/auth/roles" icon={<AccountStarIcon />}>
+            Roles
+          </SidebarListItem>
+          <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
+            Scopes
+          </SidebarListItem>
+          <SidebarListItem to="/auth/grants" icon={<AccountSwitchIcon />}>
+            Scope Grants
+          </SidebarListItem>
+        </SidebarListGroup>
+
+        <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
+          Provisioners
+        </SidebarListItem>
+
+        <SidebarListItem to="/caches" icon={<BackupRestoreIcon />}>
+          Caches
+        </SidebarListItem>
+
+        <SidebarListItem to="/hooks" icon={<WebhookIcon />}>
+          Hooks
+        </SidebarListItem>
+
+        <SidebarListItem to="/secrets" icon={<KeyIcon />}>
+          Secrets
+        </SidebarListItem>
+
+        <SidebarListItem to="/pulse-messages" icon={<PulseIcon />}>
+          Pulse Messages
+        </SidebarListItem>
       </List>
     );
   }

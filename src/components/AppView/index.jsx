@@ -27,7 +27,7 @@ import SidebarList from './SidebarList';
       width: '100vw'
     },
     appBar: {
-      position: 'absolute',
+      position: 'fixed',
       backgroundColor: theme.palette.secondary.main,
       zIndex: theme.zIndex.drawer + 1,
       [theme.breakpoints.up('md')]: {
@@ -51,9 +51,8 @@ import SidebarList from './SidebarList';
     drawerPaper: {
       color: theme.palette.secondary.contrastText,
       width: theme.drawerWidth,
-      // position: 'relative',
       [theme.breakpoints.up('md')]: {
-        position: 'relative'
+        position: 'fixed'
       }
     },
     title: {
@@ -62,7 +61,8 @@ import SidebarList from './SidebarList';
     content: {
       flexGrow: 1,
       padding: theme.spacing.triple,
-      width: '100%',
+      marginLeft: theme.drawerWidth,
+      width: `calc(100% - ${theme.drawerWidth}px)`,
       paddingBottom: theme.spacing.unit * 12,
       overflowY: 'auto',
       height: 'calc(100% - 56px)',
