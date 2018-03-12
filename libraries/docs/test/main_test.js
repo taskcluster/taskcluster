@@ -11,6 +11,8 @@ suite('End to End', () => {
   let API = require('taskcluster-lib-api');
   let Exchanges = require('pulse-publisher');
 
+  let mockS3UploadStream = require('./mockS3UploadStream');
+
   let validate = null;
   let api = null;
   let exchanges = null;
@@ -116,18 +118,17 @@ suite('End to End', () => {
   });
 
   test('test publish tarball', async function() {
-    if (!credentials.clientId) {
-      this.skip();
-    }
+
     let doc = await documenter({
       project: 'docs-testing',
       schemas: validate.schemas,
       tier,
-      credentials,
+      aws: {accessKeyId: 'fake', secretAccessKey: 'fake'},
       docsFolder: './test/docs/',
       references,
       bucket: cfg.bucket,
       publish: true,
+      S3UploadStream: mockS3UploadStream,
     });
     assert.ok(doc.tgz);
   });
