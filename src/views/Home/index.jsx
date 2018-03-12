@@ -1,3 +1,15 @@
-const Home = () => <div>Home</div>;
+import { hot } from 'react-hot-loader';
+import { Component } from 'react';
+import Typography from 'material-ui/Typography';
+import AppView from '../../components/AppView';
 
-export default Home;
+@hot(module)
+export default class Home extends Component {
+  render() {
+    return (
+      <AppView>
+        <Typography variant="display1">Home</Typography>
+      </AppView>
+    );
+  }
+}

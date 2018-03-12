@@ -6,13 +6,13 @@ import { withStyles } from 'material-ui/styles';
 import { MenuItem } from 'material-ui/Menu';
 import List, { ListItemIcon, ListItemText } from 'material-ui/List';
 import Collapse from 'material-ui/transitions/Collapse';
-import ExpandLess from 'material-ui-icons/ExpandLess';
-import ExpandMore from 'material-ui-icons/ExpandMore';
+import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
+import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 
-const styles = theme => {
+@withStyles(theme => {
   const menuSelected = {
     backgroundColor: theme.palette.primary.main,
-    '& $primary, & $icon': {
+    '& $icon': {
       color: theme.palette.common.white
     }
   };
@@ -30,9 +30,8 @@ const styles = theme => {
     },
     icon: {}
   };
-};
-
-class DrawerListItem extends Component {
+})
+export default class DrawerListItem extends Component {
   static propTypes = {
     classes: object.isRequired,
     label: string.isRequired,
@@ -70,7 +69,8 @@ class DrawerListItem extends Component {
           <Icon />
         </ListItemIcon>
         <ListItemText primary={label} />
-        {props.items && (this.state.open ? <ExpandLess /> : <ExpandMore />)}
+        {props.items &&
+          (this.state.open ? <ChevronUpIcon /> : <ChevronDownIcon />)}
       </MenuItem>
     );
   }
@@ -89,7 +89,7 @@ class DrawerListItem extends Component {
                   [classes.menuItemSelected]: window.location.pathname === to
                 })}>
                 <ListItemIcon className={classes.icon}>
-                  <Icon />
+                  {Icon && <Icon />}
                 </ListItemIcon>
                 <ListItemText inset primary={label} />
               </MenuItem>
@@ -112,5 +112,3 @@ class DrawerListItem extends Component {
     );
   }
 }
-
-export default withStyles(styles)(DrawerListItem);

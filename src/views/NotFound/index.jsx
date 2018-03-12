@@ -1,23 +1,15 @@
+import { hot } from 'react-hot-loader';
 import { Component } from 'react';
-import { object } from 'prop-types';
+import Typography from 'material-ui/Typography';
+import AppView from '../../components/AppView';
 
+@hot(module)
 export default class NotFound extends Component {
-  static propTypes = {
-    location: object.isRequired
-  };
-
   render() {
-    const ex = Object.assign(
-      new Error(
-        `The requested route ${this.props.location.pathname} was not found.`
-      ),
-      {
-        response: {
-          status: 404
-        }
-      }
+    return (
+      <AppView>
+        <Typography variant="display1">Not Found</Typography>
+      </AppView>
     );
-
-    return <div>{ex.toString()}</div>;
   }
 }

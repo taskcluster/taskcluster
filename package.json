@@ -6,24 +6,25 @@
   "scripts": {
     "build": "neutrino build --require dotenv/config",
     "start": "neutrino start --require dotenv/config",
-    "lint": "neutrino lint --require dotenv/config"
+    "lint": "neutrino lint",
+    "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,jsx}": [
-      "yarn lint"
-    ]
+    "*.{js,jsx}": "yarn lint"
   },
   "dependencies": {
     "classnames": "^2.2.5",
-    "material-ui": "^1.0.0-beta.35",
-    "material-ui-icons": "^1.0.0-beta.35",
+    "material-ui": "^1.0.0-beta.37",
+    "mdi-react": "^2.1.19",
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-fout-stager": "^2.0.1",
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^4.0.0",
     "react-loadable": "^5.3.1",
-    "react-router-dom": "^4.2.2"
+    "react-router-dom": "^4.2.2",
+    "typeface-roboto": "^0.0.54"
   },
   "devDependencies": {
     "@neutrinojs/env": "^8.1.2",
@@ -31,6 +32,6 @@
     "husky": "^0.14.3",
     "lint-staged": "^7.0.0",
     "neutrino": "^8.1.2",
-    "neutrino-preset-mozilla-frontend-infra": "^1.0.4"
+    "neutrino-preset-mozilla-frontend-infra": "^1.1.0"
   }
 }

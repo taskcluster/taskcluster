@@ -1,63 +1,30 @@
-import {
-  LocalLibrary,
-  Accessibility,
-  ChromeReaderMode,
-  HelpOutline,
-  PersonPin,
-  PlayForWork,
-  GroupWork,
-  CloudQueue,
-  Assignment,
-  Cloud,
-  Delete,
-  PermIdentity,
-  AddCircleOutline,
-  WebAsset,
-  FindInPage,
-  AddToQueue,
-  FiberManualRecord,
-  CompareArrows,
-  LockOutline,
-  LowPriority,
-  Attachment,
-  Message
-} from 'material-ui-icons';
-
-// export default [
-//   {
-//     label: 'Documentation',
-//     icon: LocalLibrary,
-//     key: 'taskcluster-documentation',
-//   },
-// ];
-
 export default [
   {
     label: 'Documentation',
-    icon: LocalLibrary,
+    // icon: LocalLibrary,
     key: 'taskcluster-documentation',
     items: [
       {
         key: 'taskcluster-tutorial',
         label: 'Tutorial',
-        to: '/tutorial',
-        icon: Accessibility
+        to: '/tutorial'
+        // icon: Accessibility
       },
       {
         key: 'taskcluster-reference',
-        icon: ChromeReaderMode,
+        // icon: ChromeReaderMode,
         to: '/references',
         label: 'Reference'
       },
       {
         key: 'taskcluster-resources',
-        icon: HelpOutline,
+        // icon: HelpOutline,
         label: 'Resources',
         to: '/resources'
       },
       {
         key: 'taskcluster-people',
-        icon: PersonPin,
+        // icon: PersonPin,
         label: 'People',
         to: '/people'
       }
@@ -67,17 +34,17 @@ export default [
     key: 'taskcluster-tasks',
     defaultVisible: true,
     label: 'Tasks',
-    icon: PlayForWork,
+    // icon: PlayForWork,
     items: [
       {
         key: 'taskcluster-create-task',
-        icon: AddCircleOutline,
+        // icon: AddCircleOutline,
         to: '/tasks/create',
         label: 'Create task'
       },
       {
         key: 'taskcluster-task-groups',
-        icon: GroupWork,
+        // icon: GroupWork,
         to: '/groups',
         label: 'Inspect task(s)'
       }
@@ -87,23 +54,23 @@ export default [
     key: 'taskcluster-entities',
     defaultVisible: true,
     label: 'Provisioners',
-    icon: CloudQueue,
+    // icon: CloudQueue,
     items: [
       {
         key: 'taskcluster-provisioners',
-        icon: Assignment,
+        // icon: Assignment,
         to: '/provisioners',
         label: 'Provisioners'
       },
       {
         key: 'taskcluster-aws-provisioner',
-        icon: Cloud,
+        // icon: Cloud,
         to: '/aws-provisioner',
         label: 'AWS Provisioner'
       },
       {
         key: 'taskcluster-cache-purge',
-        icon: Delete,
+        // icon: Delete,
         to: '/pulse-caches',
         label: 'Purge Caches'
       }
@@ -112,29 +79,29 @@ export default [
   {
     key: 'taskcluster-authentication',
     label: 'Authentication',
-    icon: PermIdentity,
+    // icon: PermIdentity,
     items: [
       {
         key: 'taskcluster-authentication-clients',
-        icon: AddCircleOutline,
+        // icon: AddCircleOutline,
         to: '/auth/clients',
         label: 'Client Manager'
       },
       {
         key: 'taskcluster-authentication-roles',
-        icon: WebAsset,
+        // icon: WebAsset,
         to: '/auth/roles',
         label: 'Role Manager'
       },
       {
         key: 'taskcluster-authentication-scopes',
-        icon: FindInPage,
+        // icon: FindInPage,
         to: '/auth/scopes',
         label: 'Scope Inspector'
       },
       {
         key: 'taskcluster-authentication-grants',
-        icon: AddToQueue,
+        // icon: AddToQueue,
         to: '/auth/grants',
         label: 'Scope Grants'
       }
@@ -143,29 +110,29 @@ export default [
   {
     key: 'taskcluster-core-services',
     label: 'Core Services',
-    icon: FiberManualRecord,
+    // icon: FiberManualRecord,
     items: [
       {
         key: 'taskcluster-hooks',
-        icon: CompareArrows,
+        // icon: CompareArrows,
         to: '/hooks',
         label: 'Hooks'
       },
       {
         key: 'taskcluster-secrets',
-        icon: LockOutline,
+        // icon: LockOutline,
         to: '/secrets',
         label: 'Secrets'
       },
       {
         key: 'taskcluster-indexed-tasks',
-        icon: LowPriority,
+        // icon: LowPriority,
         to: '/index',
         label: 'Indexed Tasks'
       },
       {
         key: 'taskcluster-indexed-artifacts',
-        icon: Attachment,
+        // icon: Attachment,
         to: '/index/artifacts',
         label: 'Indexed Artifacts'
       }
@@ -174,7 +141,7 @@ export default [
   {
     key: 'taskcluster-pulse-exchanges',
     label: 'Pulse exchanges',
-    to: '/pulse-inspector',
-    icon: Message
+    to: '/pulse-inspector'
+    // icon: Message
   }
 ];
