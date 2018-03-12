@@ -216,7 +216,16 @@ api.declare({
   var hookId    = req.params.hookId;
   var hookDef   = req.body;
 
-  hookDef = _.defaults({hookGroupId, hookId}, hookDef);
+  if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
+    return res.reportError('InputError', 'Hook Group Ids do not match', {});
+  }
+
+  if (req.body.hookId && hookId !== req.body.hookId) {
+    return res.reportError('InputError', 'Hook Ids do not match', {});
+  }
+
+  hookDef.hookGroupId = hookGroupId;
+  hookDef.hookId = hookId;
 
   await req.authorize({hookGroupId, hookId});
 
@@ -278,6 +287,17 @@ api.declare({
   var hookGroupId = req.params.hookGroupId;
   var hookId = req.params.hookId;
   var hookDef = req.body;
+
+  if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
+    return res.reportError('InputError', 'Hook Group Ids do not match', {});
+  }
+
+  if (req.body.hookId && hookId !== req.body.hookId) {
+    return res.reportError('InputError', 'Hook Ids do not match', {});
+  }
+
+  hookDef.hookGroupId = hookGroupId;
+  hookDef.hookId = hookId;
 
   await req.authorize({hookGroupId, hookId});
 

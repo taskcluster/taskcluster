@@ -26,6 +26,35 @@ suite('API', function() {
     },
   }, hookDef);
 
+  let hookWithHookIds = {
+    task: {
+      provisionerId:  'no-provisioner',
+      workerType:     'test-worker',
+      schedulerId:    'my-scheduler',
+      taskGroupId:    'dSlITZ4yQgmvxxAi4A8fHQ',
+      scopes:         [],
+      payload:        {},
+      metadata:       {
+        name:         'Unit testing task',
+        description:  'Task created during unit tests',
+        owner:        'amiyaguchi@mozilla.com',
+        source:       'http://github.com/',
+      },
+      tags: {
+        purpose:      'taskcluster-testing',
+      },
+    },
+    expires:          '10 days',
+    deadline:         '3 days',
+    hookId:           'bar',
+    hookGroupId:      'foo',
+    metadata: {
+      name:           'Unit testing hook',
+      description:    'Hook created during unit tests',
+      owner:          'amiyaguchi@mozilla.com',
+    },
+  };
+
   let dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
   }, hookWithTriggerSchema);
@@ -44,7 +73,7 @@ suite('API', function() {
       var r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
     });
-
+    
     test('with invalid scopes', async () => {
       helper.scopes('hooks:modify-hook:wrong/scope');
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema).then(
@@ -89,7 +118,18 @@ suite('API', function() {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => { assume(err.statusCode).equals(400); });
+    }); 
+
+    test('succeeds if hookIds match', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithHookIds);
     });
+
+    test('fails with invalid hookIds', async () => {
+      await helper.hooks.createHook('bar', 'foo', hookWithHookIds).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.statusCode).equals(400); });
+    });
+
   });
 
   suite('updateHook', function() {
@@ -115,6 +155,18 @@ suite('API', function() {
     test('fails if new schedule is invalid', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.updateHook('foo', 'bar', invalidHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.statusCode).equals(400); });
+    });
+
+    test('succeeds if hookIds match', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.updateHook('foo', 'bar', hookWithHookIds);
+    });
+
+    test('fails with invalid hookIds', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.updateHook('bar', 'foo', hookWithHookIds).then(
         () => { throw new Error('Expected an error'); },
         (err) => { assume(err.statusCode).equals(400); });
     });
