@@ -16,15 +16,16 @@ tasks:
       features:
         taskclusterProxy: true
       maxRunTime: 3600
-      image: node
+      image: node:8
       command:
         - /bin/bash
         - '--login'
         - '-c'
         - >-
           git clone {{event.head.repo.url}} repo && cd repo && git config
-          advice.detachedHead false && git checkout {{event.head.sha}} && npm
-          install . && npm test
+          advice.detachedHead false && git checkout {{event.head.sha}} &&
+          yarn &&
+          yarn test
     metadata:
       name: taskcluster-hooks tests
       description: Run tests for taskcluster-hooks in Taskcluster
