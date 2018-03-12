@@ -598,6 +598,32 @@ var auth = new taskcluster.Auth({
 });
 ```
 
+### Configuring API Root URL
+If you use the builtin API Client classes documented above you can configure
+the `rootUrl` when creating an instance of the client. As illustrated below:
+
+```js
+var auth = new taskcluster.Auth({
+  credentials:  {...},
+  rootUrl:      "http://whatever.com/api"
+});
+```
+
+This will be the supported way moving forward of pointing taskcluster at
+different instances of taskcluster. This can also be set by setting a
+`TASKCLUSTER_ROOT` env var before importing taskcluster-client. You can also
+use global config options as below:
+
+```js
+// Configure default options
+taskcluster.config({
+  rootUrl: "https://somesite.com",
+});
+
+// No rootUrl needed here
+var auth = new taskcluster.Auth();
+```
+
 ### Configuring Credentials
 When creating an instance of a Client class the credentials can be provided
 in options. For example:
