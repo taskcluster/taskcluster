@@ -30,7 +30,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/ec2-manager/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 8 Mar 2018 at 17:22:00 UTC. The code was generated
+// Mon, 12 Mar 2018 at 15:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package ec2manager
 
@@ -297,8 +297,8 @@ func (eC2Manager *EC2Manager) Regions_SignedURL(duration time.Duration) (*url.UR
 // List AMIs and their usage by returning a list of objects in the form:
 // {
 // region: string
-// 	volumetype: string
-// 	lastused: timestamp
+//   volumetype: string
+//   lastused: timestamp
 // }
 //
 // Required scopes:
@@ -324,14 +324,15 @@ func (eC2Manager *EC2Manager) AmiUsage_SignedURL(duration time.Duration) (*url.U
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Lists current EBS volume usage by returning a list of objects that are uniquely defined by {region, volumetype, state} in the form:
+// Lists current EBS volume usage by returning a list of objects
+// that are uniquely defined by {region, volumetype, state} in the form:
 // {
 // region: string,
-// 	volumetype: string,
-// 	state: string,
-// 	totalcount: integer,
-// 	totalgb: integer,
-// 	touched: timestamp (last time that information was updated),
+//   volumetype: string,
+//   state: string,
+//   totalcount: integer,
+//   totalgb: integer,
+//   touched: timestamp (last time that information was updated),
 // }
 //
 // Required scopes:

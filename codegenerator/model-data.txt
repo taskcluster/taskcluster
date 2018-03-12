@@ -1,4 +1,4 @@
-Generated: 1520529752
+Generated: 1520868174
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -25479,8 +25479,8 @@ Entry 15    =
     Entry Description = 'List AMIs and their usage by returning a list of objects in the form:
 {
 region: string
-	volumetype: string
-	lastused: timestamp
+  volumetype: string
+  lastused: timestamp
 }'
 Entry 16    =
     Entry Type        = 'function'
@@ -25494,14 +25494,15 @@ Entry 16    =
     Entry Input       = ''
     Entry Output      = ''
     Entry Title       = 'See the current EBS volume usage list'
-    Entry Description = 'Lists current EBS volume usage by returning a list of objects that are uniquely defined by {region, volumetype, state} in the form:
+    Entry Description = 'Lists current EBS volume usage by returning a list of objects
+that are uniquely defined by {region, volumetype, state} in the form:
 {
 region: string,
-	volumetype: string,
-	state: string,
-	totalcount: integer,
-	totalgb: integer,
-	touched: timestamp (last time that information was updated),
+  volumetype: string,
+  state: string,
+  totalcount: integer,
+  totalgb: integer,
+  touched: timestamp (last time that information was updated),
 }'
 Entry 17    =
     Entry Type        = 'function'
