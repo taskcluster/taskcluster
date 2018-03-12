@@ -18,6 +18,7 @@ let api = new API({
     'longer be read.  This is useful for short-term secrets such as a temporary',
     'service credential or a one-time signing key.',
   ].join('\n'),
+  name:          'secrets',
 });
 
 // Export API
