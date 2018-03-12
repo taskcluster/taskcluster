@@ -1,4 +1,4 @@
-Generated: 1520878950
+Generated: 1520889766
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7612,9 +7612,31 @@ Entry 3     =
     Entry Method      = 'post'
     Entry Route       = '/tasks/<namespace>'
     Entry Args        = '[namespace]'
-    Entry Query        = '[]'
+    Entry Query        = '[continuationToken limit]'
     Entry Name        = 'listTasks'
     Entry Stability   = 'stable'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'
+    Entry Title       = 'List Tasks'
+    Entry Description = 'List the tasks immediately under a given namespace.
+
+This endpoint
+lists up to 1000 tasks. If more tasks are present, a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+**Remark**, this end-point is designed for humans browsing for tasks, not
+services, as that makes little sense.'
+Entry 4     =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/tasks/<namespace>'
+    Entry Args        = '[namespace]'
+    Entry Query        = '[]'
+    Entry Name        = 'listTasksPost'
+    Entry Stability   = 'deprecated'
     Entry Scopes      = ''
     Entry Input       = 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#'
     Entry Output      = 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#'
@@ -7629,7 +7651,7 @@ object.
 
 **Remark**, this end-point is designed for humans browsing for tasks, not
 services, as that makes little sense.'
-Entry 4     =
+Entry 5     =
     Entry Type        = 'function'
     Entry Method      = 'put'
     Entry Route       = '/task/<namespace>'
@@ -7646,7 +7668,7 @@ at the given index path, the task is not indexed but the response is still 200 O
 
 Please see the introduction above for information
 about indexing successfully completed tasks automatically using custom routes.'
-Entry 5     =
+Entry 6     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/task/<indexPath>/artifacts/<name>'
@@ -7673,7 +7695,7 @@ This problem be remedied by including the revision in the index path or by bundl
 installer and debug symbols into a single artifact.
 
 If no task exists for the given index path, this API end-point responds with 404.'
-Entry 6     =
+Entry 7     =
     Entry Type        = 'function'
     Entry Method      = 'get'
     Entry Route       = '/ping'

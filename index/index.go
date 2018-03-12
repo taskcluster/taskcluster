@@ -121,7 +121,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 12 Mar 2018 at 18:22:00 UTC. The code was generated
+// Mon, 12 Mar 2018 at 21:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -237,7 +237,34 @@ func (myIndex *Index) ListNamespacesPost(namespace string, payload *ListNamespac
 // services, as that makes little sense.
 //
 // See https://docs.taskcluster.net/reference/core/index/api-docs#listTasks
-func (myIndex *Index) ListTasks(namespace string, payload *ListTasksRequest) (*ListTasksResponse, error) {
+func (myIndex *Index) ListTasks(namespace, continuationToken, limit string) (*ListTasksResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*myIndex)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), v)
+	return responseObject.(*ListTasksResponse), err
+}
+
+// Stability: *** DEPRECATED ***
+//
+// List the tasks immediately under a given namespace.
+//
+// This endpoint
+// lists up to 1000 tasks. If more tasks are present, a
+// `continuationToken` will be returned, which can be given in the next
+// request. For the initial request, the payload should be an empty JSON
+// object.
+//
+// **Remark**, this end-point is designed for humans browsing for tasks, not
+// services, as that makes little sense.
+//
+// See https://docs.taskcluster.net/reference/core/index/api-docs#listTasksPost
+func (myIndex *Index) ListTasksPost(namespace string, payload *ListTasksRequest) (*ListTasksResponse, error) {
 	cd := tcclient.Client(*myIndex)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
 	return responseObject.(*ListTasksResponse), err
