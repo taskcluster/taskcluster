@@ -11,7 +11,7 @@ suite('TaskCreator', function() {
   helper.setup();
 
   // these tests require real TaskCluster credentials (for the queue insert)
-  if (!helper.haveRealCredentials) {
+  if (!helper.haveRealCredentials && !process.env.TASK_ID) {
     this.pending = true;
   }
 
@@ -25,6 +25,8 @@ suite('TaskCreator', function() {
    */
 
   var creator = null;
+
+  var secret = null;
 
   setup(async () => {
     creator = await helper.load('taskcreator', helper.loadOptions);

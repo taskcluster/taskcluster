@@ -11,7 +11,11 @@ tasks:
           - pull_request.synchronize
           - push
           - release
+    scopes:
+        - 'secrets:get:repo:github.com/taskcluster/taskcluster-hooks'
     payload:
+      features:
+        taskclusterProxy: true
       maxRunTime: 3600
       image: node
       command:
