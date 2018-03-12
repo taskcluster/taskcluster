@@ -1,4 +1,4 @@
-Generated: 1520868174
+Generated: 1520878950
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6030,6 +6030,8 @@ properties:
   MemberNames:
     deadline: Deadline
     expires: Expires
+    hookGroupId: HookGroupID
+    hookId: HookID
     metadata: Metadata
     schedule: Schedule
     task: Task
@@ -6054,6 +6056,22 @@ properties:
       description: |
         Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
       title: Expiration
+      type: string
+    hookGroupId:
+      IS_REQUIRED: false
+      PROPERTY_NAME: hookGroupId
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookGroupId
+      TYPE_NAME: HookGroupID
+      maxLength: 22
+      minLength: 1
+      pattern: ^([a-zA-Z0-9-_]*)$
+      type: string
+    hookId:
+      IS_REQUIRED: false
+      PROPERTY_NAME: hookId
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookId
+      TYPE_NAME: HookID
+      maxLength: 255
       type: string
     metadata:
       IS_REQUIRED: true
@@ -6164,6 +6182,8 @@ properties:
   SortedPropertyNames:
   - deadline
   - expires
+  - hookGroupId
+  - hookId
   - metadata
   - schedule
   - task

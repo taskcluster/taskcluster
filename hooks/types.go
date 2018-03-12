@@ -54,6 +54,18 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/expires
 		Expires string `json:"expires,omitempty"`
 
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookGroupId
+		HookGroupID string `json:"hookGroupId,omitempty"`
+
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookId
+		HookID string `json:"hookId,omitempty"`
+
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
 		Metadata struct {
 
