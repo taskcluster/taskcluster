@@ -238,8 +238,11 @@ class BuildService {
       if (!line || line.startsWith('#')) {
         return null;
       }
-      const [name, command] = line.split(/:?\s+/);
-      return {name, command: quote([command.trim()])};
+      const parts = /^([^:]+):?\s+(.*)$/.exec(line.trim());
+      if (!parts) {
+        throw new Error(`unexpected line in Procfile: ${line}`);
+      }
+      return {name: parts[1], command: quote([parts[2]])};
     }).filter(l => l !== null);
     const entrypoint = ENTRYPOINT_TEMPLATE({procs});
     fs.writeFileSync(path.join(this.workDir, 'entrypoint'), entrypoint, {mode: 0o777});
@@ -269,7 +272,7 @@ class BuildService {
       };
       const onProgress = event => {
         if (event.stream) {
-          observer.next(event.stream);
+          observer.next(event.stream.trimRight());
         }
       };
       this.docker.modem.followProgress(context, onFinished, onProgress);
