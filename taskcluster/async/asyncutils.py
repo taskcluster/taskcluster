@@ -22,43 +22,55 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
     """ Make an HTTP request and retry it until success, return request """
     retry = -1
     response = None
-    while True:
-        retry += 1
-        # if this isn't the first retry then we sleep
-        if retry > 0:
-            snooze = float(retry * retry) / 10.0
-            log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
-            await asyncio.sleep(snooze)
+    implicit = False
+    if session is None:
+        implicit = True
+        session = aiohttp.ClientSession()
 
-        # Seek payload to start, if it is a file
-        if hasattr(payload, 'seek'):
-            payload.seek(0)
+    def cleanup():
+        if implicit:
+            session.close()
 
-        log.debug('Making attempt %d', retry)
-        try:
-            with async_timeout.timeout(60):
-                response = await makeSingleHttpRequest(method, url, payload, headers, session)
-        except aiohttp.ClientError as rerr:
-            if retry < retries:
-                log.warn('Retrying because of: %s' % rerr)
-                continue
-            # raise a connection exception
-            raise rerr
-        except ValueError as rerr:
-            log.warn('ValueError from aiohttp: redirect to non-http or https')
-            raise rerr
-        except RuntimeError as rerr:
-            log.warn('RuntimeError from aiohttp: session closed')
-            raise rerr
-        # Handle non 2xx status code and retry if possible
-        status = response.status
-        if 500 <= status and status < 600 and retry < retries:
-            if retry < retries:
-                log.warn('Retrying because of: %d status' % status)
-                continue
-            else:
-                raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
-        return response
+    try:
+        while True:
+            retry += 1
+            # if this isn't the first retry then we sleep
+            if retry > 0:
+                snooze = float(retry * retry) / 10.0
+                log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+                await asyncio.sleep(snooze)
+
+            # Seek payload to start, if it is a file
+            if hasattr(payload, 'seek'):
+                payload.seek(0)
+
+            log.debug('Making attempt %d', retry)
+            try:
+                with async_timeout.timeout(60):
+                    response = await makeSingleHttpRequest(method, url, payload, headers, session)
+            except aiohttp.ClientError as rerr:
+                if retry < retries:
+                    log.warn('Retrying because of: %s' % rerr)
+                    continue
+                # raise a connection exception
+                raise rerr
+            except ValueError as rerr:
+                log.warn('ValueError from aiohttp: redirect to non-http or https')
+                raise rerr
+            except RuntimeError as rerr:
+                log.warn('RuntimeError from aiohttp: session closed')
+                raise rerr
+            # Handle non 2xx status code and retry if possible
+            status = response.status
+            if 500 <= status and status < 600 and retry < retries:
+                if retry < retries:
+                    log.warn('Retrying because of: %d status' % status)
+                    continue
+                else:
+                    raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
+            return response
+    finally:
+        cleanup()
     # This code-path should be unreachable
     assert False, "Error from last retry should have been raised!"
 
@@ -68,19 +80,27 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
     log.debug('Making a %s request to %s', method, url)
     log.debug('HTTP Headers: %s' % str(headers))
     log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
-    sessionObj = session or createSession()
+    implicit = False
+    if session is None:
+        implicit = True
+        session = aiohttp.ClientSession()
+
     skip_auto_headers = [aiohttp.hdrs.CONTENT_TYPE]
 
-    async with sessionObj.request(
-        method, url, data=payload, headers=headers,
-        skip_auto_headers=skip_auto_headers, compress=False
-    ) as resp:
-        response_text = await resp.text()
-        log.debug('Received HTTP Status:    %s' % resp.status)
-        log.debug('Received HTTP Headers: %s' % str(resp.headers))
-        log.debug('Received HTTP Payload: %s (limit 1024 char)' %
-                  six.text_type(response_text)[:1024])
-        return resp
+    try:
+        async with session.request(
+            method, url, data=payload, headers=headers,
+            skip_auto_headers=skip_auto_headers, compress=False
+        ) as resp:
+            response_text = await resp.text()
+            log.debug('Received HTTP Status:    %s' % resp.status)
+            log.debug('Received HTTP Headers: %s' % str(resp.headers))
+            log.debug('Received HTTP Payload: %s (limit 1024 char)' %
+                      six.text_type(response_text)[:1024])
+            return resp
+    finally:
+        if implicit:
+            session.close()
 
 
 async def putFile(filename, url, contentType, session=None):

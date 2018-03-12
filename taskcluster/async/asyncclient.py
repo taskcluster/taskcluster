@@ -38,7 +38,21 @@ _defaultConfig = config = {
 
 def createSession(*args, **kwargs):
     """ Create a new aiohttp session.  This passes through all positional and
-    keyword arguments to the aiohttp.CreateSession() constructor
+    keyword arguments to the asyncutils.createSession() constructor.
+
+    It's preferred to do something like
+
+        async with createSession(...) as session:
+            queue = Queue(session=session)
+            await queue.ping()
+
+    or
+
+        async with createSession(...) as session:
+            async with Queue(session=session) as queue:
+                await queue.ping()
+
+    in the client code.
     """
     return asyncutils.createSession(*args, **kwargs)
 
@@ -50,10 +64,22 @@ class AsyncBaseClient(BaseClient):
     help with this.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(AsyncBaseClient, self).__init__(*args, **kwargs)
+        self._implicitSession = False
+        if self.session is None:
+            self._implicitSession = True
+
     def _createSession(self):
-        """ Create a new aiohttp session.
+        """ If self.session isn't set, don't create an implicit.
+
+        To avoid `session.close()` warnings at the end of tasks, and
+        various strongly-worded aiohttp warnings about using `async with`,
+        let's set `self.session` to `None` if no session is passed in to
+        `__init__`. The `asyncutils` functions will create a new session
+        per call in that case.
         """
-        return createSession()
+        return None
 
     async def _makeApiCall(self, entry, *args, **kwargs):
         """ This function is used to dispatch calls to other functions
@@ -206,6 +232,16 @@ class AsyncBaseClient(BaseClient):
 
         # This code-path should be unreachable
         assert False, "Error from last retry should have been raised!"
+
+    async def __aenter__(self):
+        if self._implicitSession and not self.session:
+            self.session = createSession()
+        return self
+
+    async def __aexit__(self, *args):
+        if self._implicitSession and self.session:
+            await self.session.close()
+            self.session = None
 
 
 def createApiClient(name, api):
