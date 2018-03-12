@@ -61,6 +61,7 @@ var api = new API({
     'Taskcluster credentials to grant access to a third-party service used',
     'by many Taskcluster components.',
   ].join('\n'),
+  name:         'auth', 
   schemaPrefix: 'http://schemas.taskcluster.net/auth/v1/',
   params: {
     // Patterns for auth
