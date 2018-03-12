@@ -169,6 +169,7 @@ let api = new API({
     'When Github forbids an action, this service returns an HTTP 403',
     'with code ForbiddenByGithub.',
   ].join('\n'),
+  name: 'github',
   schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
   context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv'],
   errorCodes: {
