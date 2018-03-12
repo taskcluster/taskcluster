@@ -11,6 +11,7 @@ const PORT = 60321;
 let myapi = new API({
   title:        'Test API Server',
   description:  'API server for testing',
+  name:         'authtest', 
 });
 
 myapi.declare({
