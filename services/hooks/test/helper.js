@@ -7,15 +7,16 @@ var load        = require('../src/main');
 var config      = require('typed-env-config');
 var _           = require('lodash');
 
-var cfg = config({profile: 'test'});
-
 var helper = module.exports = {};
 
 helper.load = load;
 helper.loadOptions = {profile: 'test', process: 'test-helper'};
 
-helper.haveRealCredentials = !!cfg.taskcluster.credentials.accessToken;
-
+helper.getSecrets = function() {
+  console.log('Fetching secrets');
+  var secrets = new taskcluster.Secrets({baseUrl: 'http://taskcluster/secrets/v1/'});
+  return secrets.get('repo:github.com/taskcluster/taskcluster-hooks');
+};
 // Call this in suites or tests that make API calls, hooks etc; it will set up
 // what's required to respond to those calls.
 helper.setup = function() {
@@ -28,6 +29,16 @@ helper.setup = function() {
     testing.fakeauth.start({
       'test-client': ['*'],
     });
+
+    if (process.env.TASK_ID) {
+      secret = await helper.getSecrets();
+      process.env.TASKCLUSTER_CLIENT_ID = secret.secret.credentials.clientId;
+      process.env.TASKCLUSTER_ACCESS_TOKEN = secret.secret.credentials.accessToken;
+    }
+
+    var cfg = config({profile: 'test'});
+
+    helper.haveRealCredentials = !!cfg.taskcluster.credentials.accessToken;
 
     // Create Hooks table
     helper.Hook = await load('Hook', helper.loadOptions);
@@ -47,6 +58,7 @@ helper.setup = function() {
     helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
     var reference = v1.reference({baseUrl: helper.baseUrl});
     helper.Hooks = taskcluster.createClient(reference);
+
     // Utility to create an Hooks instance with limited scopes
     helper.scopes = (...scopes) => {
       helper.hooks = new helper.Hooks({
