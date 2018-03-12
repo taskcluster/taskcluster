@@ -2,6 +2,7 @@ build
 node_modules
 *.swp
 .idea/
-.log
+*.log
 .Rhistory
-yarn-error.log
+.env
+styleguide

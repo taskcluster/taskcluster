@@ -4,9 +4,14 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "neutrino build",
-    "start": "neutrino start",
-    "lint": "neutrino lint"
+    "build": "neutrino build --require dotenv/config",
+    "start": "neutrino start --require dotenv/config",
+    "lint": "neutrino lint --require dotenv/config"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "yarn lint"
+    ]
   },
   "dependencies": {
     "classnames": "^2.2.5",
@@ -21,6 +26,10 @@
     "react-router-dom": "^4.2.2"
   },
   "devDependencies": {
+    "@neutrinojs/env": "^8.1.2",
+    "dotenv": "^5.0.1",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.0.0",
     "neutrino": "^8.1.2",
     "neutrino-preset-mozilla-frontend-infra": "^1.0.4"
   }

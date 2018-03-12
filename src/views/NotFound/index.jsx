@@ -1,7 +1,7 @@
-import { PureComponent } from 'react';
+import { Component } from 'react';
 import { object } from 'prop-types';
 
-export default class NotFound extends PureComponent {
+export default class NotFound extends Component {
   static propTypes = {
     location: object.isRequired
   };

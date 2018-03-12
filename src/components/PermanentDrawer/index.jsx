@@ -11,8 +11,8 @@ import Avatar from 'material-ui/Avatar';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Typography from 'material-ui/Typography';
 import Divider from 'material-ui/Divider';
-import DrawerListItem from './DrawerListItem';
-import menuItems from '../App/menuItems';
+import DrawerListItem from '../DrawerListItem';
+import menuItems from '../../App/menuItems';
 
 const drawerWidth = 240;
 const styles = theme => ({
