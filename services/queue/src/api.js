@@ -98,6 +98,7 @@ var api = new API({
     ' * Workers, who execute tasks, and',
     ' * Tools, that wants to inspect the state of a task.',
   ].join('\n'),
+  name:               'queue',
   schemaPrefix:       'http://schemas.taskcluster.net/queue/v1/',
   params: {
     taskId:           SLUGID_PATTERN,
