@@ -3,14 +3,14 @@ module.exports = {
     ['neutrino-preset-mozilla-frontend-infra', {
       react: {
         html: {
-          title: process.env.APPLICATION_TITLE
+          title: process.env.APPLICATION_NAME
         },
         devServer: {
-          port: process.env.PORT
+          port: +process.env.PORT || 9000
         }
       }
     }],
-    ['@neutrinojs/env', ['NODE_ENV', 'APPLICATION_TITLE']],
+    ['@neutrinojs/env', ['NODE_ENV', 'APPLICATION_NAME']],
     (neutrino) => {
       // Hacks to replace react-hot-loader with latest version (v4)
       neutrino.config

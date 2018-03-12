@@ -12,8 +12,8 @@ export default class PageTitle extends PureComponent {
       <Helmet>
         <title>
           {this.props.children
-            ? `${this.props.children} - ${process.env.APPLICATION_TITLE}`
-            : process.env.APPLICATION_TITLE}
+            ? `${this.props.children} - ${process.env.APPLICATION_NAME}`
+            : process.env.APPLICATION_NAME}
         </title>
       </Helmet>
     );

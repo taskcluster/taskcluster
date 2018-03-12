@@ -9,6 +9,5 @@ To get started local development, create a file in the root of the repo named
 `.env` with the following content, or whatever content you wish:
 
 ```bash
-APPLICATION_TITLE="Taskcluster"
-PORT="9000"
+APPLICATION_NAME="Taskcluster"
 ```

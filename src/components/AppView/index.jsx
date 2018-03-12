@@ -98,7 +98,7 @@ export default class AppView extends Component {
       <div>
         <div className={classes.toolbar}>
           <Typography variant="title" className={classes.title}>
-            {process.env.APPLICATION_TITLE}
+            {process.env.APPLICATION_NAME}
           </Typography>
         </div>
         <Divider />
