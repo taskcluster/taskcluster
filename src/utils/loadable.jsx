@@ -2,7 +2,6 @@ import { PureComponent } from 'react';
 import Loadable from 'react-loadable';
 import { withStyles } from 'material-ui/styles';
 import { CircularProgress } from 'material-ui/Progress';
-import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
 
 @withStyles(theme => ({
   view: {
@@ -32,7 +31,7 @@ class Loading extends PureComponent {
     const { classes, error, timedOut, pastDelay } = this.props;
 
     if (error) {
-      return <AlertCircleOutlineIcon className={classes.errorIcon} />;
+      throw error;
     } else if (timedOut || pastDelay) {
       return (
         <CircularProgress

@@ -1,43 +1,42 @@
 import { Component } from 'react';
-import { NavLink } from 'react-router-dom';
-import { withStyles } from 'material-ui/styles';
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+import List from 'material-ui/List';
 import LibraryIcon from 'mdi-react/LibraryIcon';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
+import HumanIcon from 'mdi-react/HumanIcon';
+import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
+import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
+import GroupIcon from 'mdi-react/GroupIcon';
+import SidebarListGroup from './SidebarListGroup';
+import SidebarListItem from './SidebarListItem';
 
-@withStyles(theme => ({
-  active: {
-    backgroundColor: theme.palette.text.active
-  }
-}))
 export default class SidebarList extends Component {
   render() {
-    const { classes } = this.props;
-
     return (
-      <List>
-        <ListItem
-          button
-          component={NavLink}
-          activeClassName={classes.active}
-          to="/docs">
-          <ListItemIcon>
-            <LibraryIcon />
-          </ListItemIcon>
-          <ListItemText primary="Documentation" />
-        </ListItem>
-
-        <ListItem
-          button
-          component={NavLink}
-          activeClassName={classes.active}
-          exact
-          to="/">
-          <ListItemIcon>
-            <HexagonMultipleIcon />
-          </ListItemIcon>
-          <ListItemText primary="Tasks" />
-        </ListItem>
+      <List disablePadding>
+        <SidebarListGroup
+          to="/docs"
+          title="Documentation"
+          icon={<LibraryIcon />}>
+          <SidebarListItem to="/docs/tutorial" icon={<HumanIcon />}>
+            Tutorial
+          </SidebarListItem>
+          <SidebarListItem
+            to="/docs/references"
+            icon={<BookOpenPageVariantIcon />}>
+            References
+          </SidebarListItem>
+        </SidebarListGroup>
+        <SidebarListGroup
+          to="/tasks"
+          title="Tasks"
+          icon={<HexagonMultipleIcon />}>
+          <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
+            Create task
+          </SidebarListItem>
+          <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
+            Task Groups
+          </SidebarListItem>
+        </SidebarListGroup>
       </List>
     );
   }

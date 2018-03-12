@@ -5,6 +5,7 @@ import { MuiThemeProvider } from 'material-ui/styles';
 import CssBaseline from 'material-ui/CssBaseline';
 import RouteWithProps from '../components/RouteWithProps';
 import FontStager from '../components/FontStager';
+import ErrorPanel from '../components/ErrorPanel';
 import loadable from '../utils/loadable';
 import theme from '../theme';
 import './globals.css';
@@ -21,11 +22,22 @@ const NotFound = loadable(() =>
 
 @hot(module)
 export default class App extends Component {
+  state = {
+    error: null
+  };
+
+  componentDidCatch(error) {
+    this.setState({ error });
+  }
+
   render() {
+    const { error } = this.state;
+
     return (
       <MuiThemeProvider theme={theme}>
         <FontStager />
         <CssBaseline />
+        {error && <ErrorPanel error={error} />}
         <BrowserRouter>
           <Switch>
             <RouteWithProps path="/docs" component={Documentation} />

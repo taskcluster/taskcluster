@@ -11,6 +11,7 @@ import Hidden from 'material-ui/Hidden';
 import Divider from 'material-ui/Divider';
 import MenuIcon from 'mdi-react/MenuIcon';
 import PageTitle from '../PageTitle';
+import ErrorPanel from '../ErrorPanel';
 import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 
@@ -85,8 +86,13 @@ export default class AppView extends Component {
   };
 
   state = {
-    mobileOpen: false
+    mobileOpen: false,
+    error: null
   };
+
+  componentDidCatch(error) {
+    this.setState({ error });
+  }
 
   handleDrawerToggle = () => {
     this.setState({ mobileOpen: !this.state.mobileOpen });
@@ -94,6 +100,7 @@ export default class AppView extends Component {
 
   render() {
     const { classes, className, children, theme, title, ...props } = this.props;
+    const { error, mobileOpen } = this.state;
     const drawer = (
       <div>
         <div className={classes.toolbar}>
@@ -129,7 +136,7 @@ export default class AppView extends Component {
           <Drawer
             variant="temporary"
             anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={this.state.mobileOpen}
+            open={mobileOpen}
             onClose={this.handleDrawerToggle}
             classes={{
               paper: classes.drawerPaper
@@ -151,7 +158,7 @@ export default class AppView extends Component {
           </Drawer>
         </Hidden>
         <main className={classNames(classes.content, className)} {...props}>
-          {children}
+          {error ? <ErrorPanel error={error} /> : children}
         </main>
       </div>
     );

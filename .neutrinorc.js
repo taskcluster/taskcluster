@@ -6,12 +6,15 @@ module.exports = {
           title: process.env.APPLICATION_NAME
         },
         devServer: {
-          port: +process.env.PORT || 9000
+          port: +process.env.PORT || 9000,
+          historyApiFallback: { disableDotRule: true }
         }
       }
     }],
     ['@neutrinojs/env', ['NODE_ENV', 'APPLICATION_NAME']],
     (neutrino) => {
+      neutrino.config.output.publicPath('/');
+
       // Hacks to replace react-hot-loader with latest version (v4)
       neutrino.config
         .entry('index')
