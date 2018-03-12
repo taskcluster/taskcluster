@@ -38,7 +38,8 @@ async function documenter(options) {
     'workers',
   ];
   assert(tiers.indexOf(options.tier) !== -1,
-    `options.tier must be one of ${tiers.join(', ')}`);
+    `options.tier must be one of ${tiers.join(', ')}`
+  );
 
   if (!options.project) {
     let pack = require(path.join(rootdir.get(), 'package.json'));
@@ -115,7 +116,7 @@ async function documenter(options) {
     }
 
     let s3 = new aws.S3(creds.credentials);
-    let s3Stream = S3UploadStream(s3);
+    let s3Stream = (options.S3UploadStream || S3UploadStream)(s3);
 
     let upload = s3Stream.upload({
       Bucket: options.bucket,
