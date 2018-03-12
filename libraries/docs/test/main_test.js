@@ -1,18 +1,78 @@
-suite('End to End', () => {
-  let assert = require('assert');
-  let {documenter, downloader} = require('../');
-  let debug = require('debug')('test');
-  let _ = require('lodash');
-  let tar = require('tar-stream');
-  let rootdir = require('app-root-dir');
-  let zlib = require('zlib');
-  let validator = require('taskcluster-lib-validate');
-  let config = require('typed-env-config');
-  let API = require('taskcluster-lib-api');
-  let Exchanges = require('pulse-publisher');
+const assert = require('assert');
+const {documenter, downloader} = require('../');
+const debug = require('debug')('test');
+const _ = require('lodash');
+const tar = require('tar-stream');
+const rootdir = require('app-root-dir');
+const zlib = require('zlib');
+const validator = require('taskcluster-lib-validate');
+const config = require('typed-env-config');
+const API = require('taskcluster-lib-api');
+const Exchanges = require('pulse-publisher');
+const mockS3UploadStream = require('./mockS3UploadStream');
 
-  let mockS3UploadStream = require('./mockS3UploadStream');
+async function getObjectsInStream(inStream) {
+  let output = {};
+  let extractor = tar.extract();
 
+  let downloadPromise = new Promise((resolve, reject) => {
+    extractor.on('entry', (header, stream, callback) => {
+      let data = [];
+
+      stream.on('data', function(chunk) {
+        data.push(chunk);
+      });
+
+      stream.on('end', () => {
+        output[header.name] = data.join('');
+        callback(); //ready for next entry
+      });
+
+      stream.resume(); //just auto drain the stream
+    });
+
+    extractor.on('finish', function() {
+      // all entries read
+      resolve();
+    });
+
+    extractor.on('error', function() {
+      reject();
+    });
+  });
+  inStream.pipe(extractor);
+  await downloadPromise;
+  return output;
+}
+
+function assertInTarball(shoulds, tarball) {
+  shoulds.push('metadata.json');
+  shoulds.push('README.md');
+  let contains = [];
+  let extractor = tar.extract();
+  extractor.on('entry', (header, stream, callback) => {
+    stream.on('end', () => {
+      contains.push(header.name);
+      callback(); // ready for next entry
+    });
+    stream.resume(); // just auto drain the stream
+  });
+
+  return new Promise((resolve, reject) => {
+    extractor.on('finish', function() {
+      try {
+        assert.deepEqual(contains.sort(), shoulds.sort());
+      } catch (e) {
+        reject(e);
+      }
+      resolve();
+    });
+
+    tarball.pipe(zlib.Unzip()).pipe(extractor);
+  });
+}
+
+suite('documenter', () => {
   let validate = null;
   let api = null;
   let exchanges = null;
@@ -41,67 +101,6 @@ suite('End to End', () => {
     ];
   });
 
-  async function getObjectsInStream(inStream) {
-    let output = {};
-    let extractor = tar.extract();
-
-    let downloadPromise = new Promise((resolve, reject) => {
-      extractor.on('entry', (header, stream, callback) => {
-        let data = [];
-
-        stream.on('data', function(chunk) {
-          data.push(chunk);
-        });
-
-        stream.on('end', () => {
-          output[header.name] = data.join('');
-          callback(); //ready for next entry
-        });
-
-        stream.resume(); //just auto drain the stream
-      });
-
-      extractor.on('finish', function() {
-        // all entries read
-        resolve();
-      });
-
-      extractor.on('error', function() {
-        reject();
-      });
-    });
-    inStream.pipe(extractor);
-    await downloadPromise;
-    return output;
-  }
-
-  function assertInTarball(shoulds, tarball) {
-    shoulds.push('metadata.json');
-    shoulds.push('README.md');
-    let contains = [];
-    let extractor = tar.extract();
-    extractor.on('entry', (header, stream, callback) => {
-      stream.on('end', () => {
-        contains.push(header.name);
-        callback(); // ready for next entry
-      });
-      stream.resume(); // just auto drain the stream
-    });
-
-    return new Promise((resolve, reject) => {
-      extractor.on('finish', function() {
-        try {
-          assert.deepEqual(contains.sort(), shoulds.sort());
-        } catch (e) {
-          reject(e);
-        }
-        resolve();
-      });
-
-      tarball.pipe(zlib.Unzip()).pipe(extractor);
-    });
-  }
-
   test('tarball exists', async function() {
     let doc = await documenter({
       schemas: validate.schemas,
@@ -115,22 +114,6 @@ suite('End to End', () => {
       tier,
     });
     assert.equal(doc.tgz, null);
-  });
-
-  test('test publish tarball', async function() {
-
-    let doc = await documenter({
-      project: 'docs-testing',
-      schemas: validate.schemas,
-      tier,
-      aws: {accessKeyId: 'fake', secretAccessKey: 'fake'},
-      docsFolder: './test/docs/',
-      references,
-      bucket: cfg.bucket,
-      publish: true,
-      S3UploadStream: mockS3UploadStream,
-    });
-    assert.ok(doc.tgz);
   });
 
   test('tarball contains docs and metadata', async function() {
@@ -184,7 +167,48 @@ suite('End to End', () => {
     return assertInTarball(shoulds, doc.tgz);
   });
 
-  test('download tarball contains project', async function() {
+  const publishTest = async function(mock) {
+    const options = {
+      project: 'docs-testing',
+      schemas: validate.schemas,
+      tier,
+      docsFolder: './test/docs/',
+      references,
+      bucket: cfg.bucket,
+      publish: true,
+    };
+    if (mock) {
+      options.aws = {accessKeyId: 'fake', secretAccessKey: 'fake'};
+      options.S3UploadStream = mockS3UploadStream;
+    } else {
+      if (!credentials.clientId) {
+        this.skip();
+      }
+      options.credentials = credentials;
+    }
+
+    const doc = await documenter(options);
+    assert.ok(doc.tgz);
+  };
+
+  test('test publish tarball (real)', function() {
+    return publishTest.call(this, false);
+  });
+  test('test publish tarball (mock)', function() {
+    return publishTest.call(this, true);
+  });
+});
+
+suite('downloader', function() {
+  let cfg = config({});
+  let credentials = cfg.taskcluster.credentials;
+
+  const downloadTest = async function(mock) {
+    if (mock) {
+      // See https://bugzilla.mozilla.org/show_bug.cgi?id=1443019
+      this.skip();
+    }
+
     if (!credentials.clientId) {
       this.skip();
     }
@@ -204,5 +228,13 @@ suite('End to End', () => {
     for (let should of shoulds) {
       assert.ok(files[should]);
     }
+  };
+
+  test('download tarball contains project (real)', function() {
+    return downloadTest.call(this, false);
+  });
+
+  test('download tarball contains project (mock)', function() {
+    return downloadTest.call(this, true);
   });
 });
