@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { node, string } from 'prop-types';
+import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { withStyles } from 'material-ui/styles';
 import Drawer from 'material-ui/Drawer';
@@ -41,12 +42,11 @@ import SidebarList from './SidebarList';
     },
     toolbar: {
       ...theme.mixins.toolbar,
-      paddingLeft: theme.spacing.triple,
+      paddingLeft: theme.spacing.double,
       display: 'flex',
       flexGrow: 1,
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      justifyContent: 'center'
+      flexDirection: 'row',
+      alignItems: 'center'
     },
     drawerPaper: {
       color: theme.palette.secondary.contrastText,
@@ -56,13 +56,12 @@ import SidebarList from './SidebarList';
       }
     },
     title: {
-      color: theme.palette.common.white
+      color: theme.palette.common.white,
+      textDecoration: 'none'
     },
     content: {
       flexGrow: 1,
       padding: theme.spacing.triple,
-      marginLeft: theme.drawerWidth,
-      width: `calc(100% - ${theme.drawerWidth}px)`,
       paddingBottom: theme.spacing.unit * 12,
       overflowY: 'auto',
       height: 'calc(100% - 56px)',
@@ -70,6 +69,10 @@ import SidebarList from './SidebarList';
       [theme.breakpoints.up('sm')]: {
         height: 'calc(100% - 64px)',
         marginTop: 64
+      },
+      [theme.breakpoints.up('md')]: {
+        marginLeft: theme.drawerWidth,
+        width: `calc(100% - ${theme.drawerWidth}px)`
       }
     }
   }),
@@ -104,7 +107,19 @@ export default class AppView extends Component {
     const drawer = (
       <div>
         <div className={classes.toolbar}>
-          <Typography variant="title" className={classes.title}>
+          <IconButton
+            color="inherit"
+            aria-label="close drawer"
+            onClick={this.handleDrawerToggle}
+            className={classes.navIconHide}>
+            <MenuIcon />
+          </IconButton>
+          <Typography
+            component={Link}
+            to="/"
+            variant="title"
+            noWrap
+            className={classes.title}>
             {process.env.APPLICATION_NAME}
           </Typography>
         </div>
