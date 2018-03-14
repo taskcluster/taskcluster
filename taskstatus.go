@@ -46,6 +46,7 @@ type TaskStatusManager struct {
 	status     queue.TaskStatusStructure
 	// callback functions to call when status changes
 	statusChangeListeners map[*TaskStatusChangeListener]bool
+	abortException        *CommandExecutionError
 }
 
 func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListener) {
@@ -161,24 +162,24 @@ func (tsm *TaskStatusManager) Reclaim() error {
 	)
 }
 
+func (tsm *TaskStatusManager) AbortException() *CommandExecutionError {
+	tsm.Lock()
+	defer tsm.Unlock()
+	return tsm.abortException
+}
+
 func (tsm *TaskStatusManager) TakenUntil() tcclient.Time {
 	tsm.Lock()
 	defer tsm.Unlock()
 	return tsm.takenUntil
 }
 
-func (tsm *TaskStatusManager) Abort() error {
+func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
-			log.Printf("Aborting task %v - max run time exceeded!", task.TaskID)
-			task.Error("Aborting task - max run time exceeded!")
-			// defer func() {
-			// 	if r := recover(); r != nil {
-			// 		log.Printf("Panic occured when killing process - ignoring!\n%v", r)
-			// 	}
-			// }()
 			task.kill()
+			tsm.abortException = cee
 			return nil
 		},
 		claimed,

@@ -6,11 +6,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,9 +21,16 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
 )
 
+var (
+	// not a const, because in testing we swap this out
+	EC2MetadataBaseURL = "http://169.254.169.254/latest"
+	// for querying deploymentId
+	Provisioner *awsprovisioner.AwsProvisioner
+)
+
 func queryUserData() (*UserData, error) {
 	// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-user-data-retrieval
-	resp, _, err := httpbackoff.Get("http://169.254.169.254/latest/user-data")
+	resp, _, err := httpbackoff.Get(EC2MetadataBaseURL + "/user-data")
 	if err != nil {
 		return nil, err
 	}
@@ -46,15 +53,19 @@ func queryMetaData(url string) (string, error) {
 	return string(content), err
 }
 
+// taken from https://github.com/taskcluster/aws-provisioner/blob/5a01a94141c38447968ec75232fd86a86cca366a/src/worker-type.js#L601-L615
 type UserData struct {
 	Data                interface{} `json:"data"`
 	Capacity            int         `json:"capacity"`
 	WorkerType          string      `json:"workerType"`
 	ProvisionerID       string      `json:"provisionerId"`
 	Region              string      `json:"region"`
+	AvailabilityZone    string      `json:"availabilityZone"`
 	InstanceType        string      `json:"instanceType"`
+	SpotBid             float64     `json:"spotBid"`
+	Price               float64     `json:"price"`
 	LaunchSpecGenerated time.Time   `json:"launchSpecGenerated"`
-	WorkerModified      time.Time   `json:"workerModified"`
+	LastModified        time.Time   `json:"lastModified"`
 	ProvisionerBaseURL  string      `json:"provisionerBaseUrl"`
 	SecurityToken       string      `json:"securityToken"`
 }
@@ -92,6 +103,7 @@ func (f File) ExtractFile() error {
 		if err != nil {
 			return err
 		}
+		log.Printf("Writing %v to path %v", f.Description, f.Path)
 		return ioutil.WriteFile(f.Path, data, 0777)
 	default:
 		return errors.New("Unsupported encoding " + f.Encoding + " for file secret in worker type definition")
@@ -105,6 +117,7 @@ func (f File) ExtractZip() error {
 		if err != nil {
 			return err
 		}
+		log.Printf("Unzipping %v to path %v", f.Description, f.Path)
 		return Unzip(data, f.Path)
 	default:
 		return errors.New("Unsupported encoding " + f.Encoding + " for zip secret in worker type definition")
@@ -178,15 +191,19 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 		return err
 	}
 	c.ProvisionerID = userData.ProvisionerID
+	c.Region = userData.Region
+	c.ProvisionerBaseURL = userData.ProvisionerBaseURL
+
 	awsprov := awsprovisioner.AwsProvisioner{
 		Authenticate: false,
 		BaseURL:      userData.ProvisionerBaseURL,
 	}
+
 	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
 	// remove secrets even if we couldn't retrieve them!
 	removeErr := awsprov.RemoveSecret(userData.SecurityToken)
 	if getErr != nil {
-		return err
+		return getErr
 	}
 	if removeErr != nil {
 		return removeErr
@@ -199,13 +216,13 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 
 	awsMetadata := map[string]interface{}{}
 	for _, url := range []string{
-		"http://169.254.169.254/latest/meta-data/ami-id",
-		"http://169.254.169.254/latest/meta-data/instance-id",
-		"http://169.254.169.254/latest/meta-data/instance-type",
-		"http://169.254.169.254/latest/meta-data/public-ipv4",
-		"http://169.254.169.254/latest/meta-data/placement/availability-zone",
-		"http://169.254.169.254/latest/meta-data/public-hostname",
-		"http://169.254.169.254/latest/meta-data/local-ipv4",
+		EC2MetadataBaseURL + "/meta-data/ami-id",
+		EC2MetadataBaseURL + "/meta-data/instance-id",
+		EC2MetadataBaseURL + "/meta-data/instance-type",
+		EC2MetadataBaseURL + "/meta-data/public-ipv4",
+		EC2MetadataBaseURL + "/meta-data/placement/availability-zone",
+		EC2MetadataBaseURL + "/meta-data/public-hostname",
+		EC2MetadataBaseURL + "/meta-data/local-ipv4",
 	} {
 		key := url[strings.LastIndex(url, "/")+1:]
 		value, err := queryMetaData(url)
@@ -220,7 +237,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.PrivateIP = net.ParseIP(awsMetadata["local-ipv4"].(string))
 	c.InstanceID = awsMetadata["instance-id"].(string)
 	c.InstanceType = awsMetadata["instance-type"].(string)
-	c.Region = awsMetadata["availability-zone"].(string)
+	c.AvailabilityZone = awsMetadata["availability-zone"].(string)
 
 	secrets := new(Secrets)
 	err = json.Unmarshal(secToken.Data, secrets)
@@ -233,8 +250,6 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("\n\nConfig\n\n%#v\n\n", c)
 
 	// Now put secret files in place...
 	for _, f := range secrets.Files {
@@ -275,4 +290,26 @@ func deploymentIDUpdated() bool {
 	}
 	log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
 	return true
+}
+
+func handleWorkerShutdown(abort func()) func() {
+	// Bug 1180187: poll this url every 5 seconds:
+	// http://169.254.169.254/latest/meta-data/spot/termination-time
+	ticker := time.NewTicker(time.Second * 5)
+	go func() {
+		for _ = range ticker.C {
+			resp, err := http.Get(EC2MetadataBaseURL + "/meta-data/spot/termination-time")
+			// intermittent errors calling this endpoint should be ignored, but can be logged
+			if err != nil {
+				log.Printf("WARNING: error when calling AWS EC2 spot termination endpoint: %v", err)
+				continue
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode == 200 {
+				abort()
+				break
+			}
+		}
+	}()
+	return ticker.Stop
 }

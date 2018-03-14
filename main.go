@@ -45,11 +45,10 @@ var (
 	taskContext *TaskContext = &TaskContext{}
 	// Queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
-	Queue       *queue.Queue
-	Provisioner *awsprovisioner.AwsProvisioner
-	config      *gwconfig.Config
-	configFile  string
-	Features    []Feature
+	Queue      *queue.Queue
+	config     *gwconfig.Config
+	configFile string
+	Features   []Feature
 
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
@@ -197,6 +196,9 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          provisionerBaseUrl                The base URL for API calls to the provisioner in
+                                            order to determine if there is a new deploymentId.
+                                            [default: ]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
@@ -286,6 +288,8 @@ and reports back results to the queue.
            this worker environment is no longer up-to-date. Typcially workers should
            terminate.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
+    72     The worker is running on spot infrastructure in AWS EC2 and has been served a
+           spot termination notice, and therefore has shut down.
 `
 )
 
@@ -298,6 +302,7 @@ const (
 	INTERNAL_ERROR           ExitCode = 69
 	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
 	WORKER_STOPPED           ExitCode = 71
+	WORKER_SHUTDOWN          ExitCode = 72
 )
 
 func persistFeaturesState() (err error) {
@@ -425,6 +430,7 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		NumberOfTasksToRun:             0,
 		SentryProject:                  "",
 		ProvisionerID:                  "test-provisioner",
+		ProvisionerBaseURL:             "",
 		RefreshUrlsPrematurelySecs:     310,
 		RequiredDiskSpaceMegabytes:     10240,
 		RunAfterUserCreation:           "",
@@ -556,6 +562,9 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}()
 
+	// This *DOESN'T* output secret fields, so is SAFE
+	log.Printf("Config: %v", config)
+
 	log.Printf("Detected %s platform", runtime.GOOS)
 	// number of tasks resolved since worker first ran
 	// stored in a json file, since we may reboot between tasks etc
@@ -589,6 +598,7 @@ func RunWorker() (exitCode ExitCode) {
 		log.Print("Invalid taskcluster credentials!!!")
 		panic(err)
 	}
+	Provisioner.BaseURL = config.ProvisionerBaseURL
 
 	err = initialiseFeatures()
 	if err != nil {
@@ -641,6 +651,9 @@ func RunWorker() (exitCode ExitCode) {
 			if errors.Occurred() {
 				log.Printf("ERROR(s) encountered: %v", errors)
 				task.Error(errors.Error())
+			}
+			if errors.WorkerShutdown() {
+				return WORKER_SHUTDOWN
 			}
 			err := taskCleanup()
 			if err != nil {
@@ -967,8 +980,10 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	if cee != nil {
 		panic(cee)
 	}
-
 	result := task.Commands[index].Execute()
+	if ae := task.StatusManager.AbortException(); ae != nil {
+		return ae
+	}
 	if result.Succeeded() {
 		task.Infof("%v", result)
 	} else {
@@ -1011,6 +1026,19 @@ func (err *executionErrors) Error() string {
 	return text
 }
 
+// Return true if any of the accumlated errors is a worker-shutdown
+func (err *executionErrors) WorkerShutdown() bool {
+	if !err.Occurred() {
+		return false
+	}
+	for _, e := range *err {
+		if e.TaskStatus == aborted && e.Reason == workerShutdown {
+			return true
+		}
+	}
+	return false
+}
+
 func (err *executionErrors) Occurred() bool {
 	return len(*err) > 0
 }
@@ -1027,20 +1055,13 @@ func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
 }
 
 func (task *TaskRun) setMaxRunTimer() *time.Timer {
-	// Terminating the Worker Early
-	// ----------------------------
-	// If the worker finds itself having to terminate early, for example a spot
-	// nodes that detects pending termination. Or a physical machine ordered to
-	// be provisioned for another purpose, the worker should report exception
-	// with the reason `worker-shutdown`. Upon such report the queue will
-	// resolve the run as exception and create a new run, if the task has
-	// additional retries left.
 	return time.AfterFunc(
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 		task.maxRunTimeDeadline.Round(0).Sub(time.Now()),
 		func() {
-			// ignore any error - in the wrong go routine to properly handle it
-			task.StatusManager.Abort()
+			// ignore any error the Abort function returns - we are in the
+			// wrong go routine to properly handle it
+			task.StatusManager.Abort(Failure(fmt.Errorf("Aborting task - max run time exceeded!")))
 		},
 	)
 }
@@ -1246,6 +1267,27 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		// }
 		t.Stop()
 	}()
+
+	// Terminating the Worker Early
+	// ----------------------------
+	// If the worker finds itself having to terminate early, for example a spot
+	// nodes that detects pending termination. Or a physical machine ordered to
+	// be provisioned for another purpose, the worker should report exception
+	// with the reason `worker-shutdown`. Upon such report the queue will
+	// resolve the run as exception and create a new run, if the task has
+	// additional retries left.
+	if configureForAws {
+		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
+			task.StatusManager.Abort(
+				&CommandExecutionError{
+					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
+					Reason:     workerShutdown,
+					TaskStatus: aborted,
+				},
+			)
+		})
+		defer stopHandlingWorkerShutdown()
+	}
 
 	started := time.Now()
 	defer func() {
