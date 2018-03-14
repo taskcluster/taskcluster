@@ -27,8 +27,7 @@ func toMountArray(t *testing.T, x interface{}) []Mount {
 
 func TestMounts(t *testing.T) {
 
-	setup(t, "TestMounts")
-	defer teardown(t)
+	defer setup(t, "TestMounts")()
 
 	mounts := []MountEntry{
 
@@ -125,10 +124,8 @@ func TestMounts(t *testing.T) {
 		"generic-worker:cache:devtools-app",
 	}
 
-	taskID := scheduleAndExecute(t, td, payload)
-
 	// check task succeeded
-	ensureResolution(t, taskID, "completed", "completed")
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 	checkSHA256(
 		t,
@@ -173,8 +170,7 @@ func TestMounts(t *testing.T) {
 }
 
 func TestMissingScopes(t *testing.T) {
-	setup(t, "TestMissingScopes")
-	defer teardown(t)
+	defer setup(t, "TestMissingScopes")()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&FileMount{
@@ -201,9 +197,7 @@ func TestMissingScopes(t *testing.T) {
 	td := testTask(t)
 	// don't set any scopes
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "exception", "malformed-payload")
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	// check log mentions both missing scopes
 	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
@@ -217,8 +211,7 @@ func TestMissingScopes(t *testing.T) {
 }
 
 func TestCachesCanBeModified(t *testing.T) {
-	setup(t, "TestCachesCanBeModified")
-	defer teardown(t)
+	defer setup(t, "TestCachesCanBeModified")()
 	// We're going to run three consecutive tasks here. The first will create
 	// a file called `counter` in the cache and the contents of the file will
 	// be `1`. The next task will overwrite this file with the number `2`. The
@@ -241,7 +234,7 @@ func TestCachesCanBeModified(t *testing.T) {
 	execute := func() {
 		td := testTask(t)
 		td.Scopes = []string{"generic-worker:cache:test-modifications"}
-		scheduleAndExecute(t, td, payload)
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
 	}
 
 	getCounter := func() int {
@@ -279,8 +272,7 @@ func Test32BitOverflow(t *testing.T) {
 }
 
 func TestCorruptZipDoesntCrashWorker(t *testing.T) {
-	setup(t, "TestCorruptZipDoesntCrashWorker")
-	defer teardown(t)
+	defer setup(t, "TestCorruptZipDoesntCrashWorker")()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&ReadOnlyDirectory{
@@ -303,9 +295,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "failed", "failed")
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
 	// check log mentions zip file is invalid
 	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))

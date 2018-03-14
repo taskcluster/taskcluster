@@ -9,18 +9,16 @@ import (
 )
 
 func TestMissingScopesOSGroups(t *testing.T) {
-	setup(t, "TestMissingScopesOSGroups")
-	defer teardown(t)
+	defer setup(t, "TestMissingScopesOSGroups")()
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 1,
 		OSGroups:   []string{"abc", "def"},
 	}
 	td := testTask(t)
-	// don't set any scopes
-	taskID := scheduleAndExecute(t, td, payload)
 
-	ensureResolution(t, taskID, "exception", "malformed-payload")
+	// don't set any scopes
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	// check log mentions both missing scopes
 	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
@@ -34,8 +32,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 }
 
 func TestOSGroupsRespected(t *testing.T) {
-	setup(t, "TestOSGroupsRespected")
-	defer teardown(t)
+	defer setup(t, "TestOSGroupsRespected")()
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 30,
@@ -43,10 +40,9 @@ func TestOSGroupsRespected(t *testing.T) {
 	}
 	td := testTask(t)
 	td.Scopes = []string{"generic-worker:os-group:abc", "generic-worker:os-group:def"}
-	taskID := scheduleAndExecute(t, td, payload)
 
 	if config.RunTasksAsCurrentUser {
-		ensureResolution(t, taskID, "completed", "completed")
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 		// check log mentions both missing scopes
 		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
@@ -61,7 +57,7 @@ func TestOSGroupsRespected(t *testing.T) {
 		}
 	} else {
 		// check task had malformed payload, due to non existent groups
-		ensureResolution(t, taskID, "exception", "malformed-payload")
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 		// check log mentions both missing scopes
 		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))

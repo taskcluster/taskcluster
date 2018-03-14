@@ -59,8 +59,7 @@ func validateArtifacts(
 
 func TestFileArtifactWithNames(t *testing.T) {
 
-	setup(t, "TestFileArtifactWithNames")
-	defer teardown(t)
+	defer setup(t, "TestFileArtifactWithNames")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -88,8 +87,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 func TestFileArtifactWithContentType(t *testing.T) {
 
-	setup(t, "TestFileArtifactWithContentType")
-	defer teardown(t)
+	defer setup(t, "TestFileArtifactWithContentType")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -118,8 +116,7 @@ func TestFileArtifactWithContentType(t *testing.T) {
 
 func TestDirectoryArtifactWithNames(t *testing.T) {
 
-	setup(t, "TestDirectoryArtifactWithNames")
-	defer teardown(t)
+	defer setup(t, "TestDirectoryArtifactWithNames")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -163,8 +160,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 
 func TestDirectoryArtifactWithContentType(t *testing.T) {
 
-	setup(t, "TestDirectoryArtifactWithContentType")
-	defer teardown(t)
+	defer setup(t, "TestDirectoryArtifactWithContentType")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -213,8 +209,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 // artifacts.
 func TestDirectoryArtifacts(t *testing.T) {
 
-	setup(t, "TestDirectoryArtifacts")
-	defer teardown(t)
+	defer setup(t, "TestDirectoryArtifacts")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -256,8 +251,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 // Task payload specifies a file artifact which doesn't exist on worker
 func TestMissingFileArtifact(t *testing.T) {
 
-	setup(t, "TestMissingFileArtifact")
-	defer teardown(t)
+	defer setup(t, "TestMissingFileArtifact")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -284,8 +278,7 @@ func TestMissingFileArtifact(t *testing.T) {
 // Task payload specifies a directory artifact which doesn't exist on worker
 func TestMissingDirectoryArtifact(t *testing.T) {
 
-	setup(t, "TestMissingDirectoryArtifact")
-	defer teardown(t)
+	defer setup(t, "TestMissingDirectoryArtifact")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -312,8 +305,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 // Task payload specifies a file artifact which is actually a directory on worker
 func TestFileArtifactIsDirectory(t *testing.T) {
 
-	setup(t, "TestFileArtifactIsDirectory")
-	defer teardown(t)
+	defer setup(t, "TestFileArtifactIsDirectory")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -340,8 +332,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 // TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
 func TestDefaultArtifactExpiry(t *testing.T) {
 
-	setup(t, "TestDefaultArtifactExpiry")
-	defer teardown(t)
+	defer setup(t, "TestDefaultArtifactExpiry")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -367,8 +358,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 // Task payload specifies a directory artifact which is a regular file on worker
 func TestDirectoryArtifactIsFile(t *testing.T) {
 
-	setup(t, "TestDirectoryArtifactIsFile")
-	defer teardown(t)
+	defer setup(t, "TestDirectoryArtifactIsFile")()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -395,8 +385,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestMissingArtifactFailsTest(t *testing.T) {
 
-	setup(t, "TestMissingArtifactFailsTest")
-	defer teardown(t)
+	defer setup(t, "TestMissingArtifactFailsTest")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -420,13 +409,11 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-	ensureResolution(t, taskID, "failed", "failed")
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 func TestProtectedArtifactsReplaced(t *testing.T) {
-	setup(t, "TestProtectedArtifactsReplaced")
-	defer teardown(t)
+	defer setup(t, "TestProtectedArtifactsReplaced")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -488,16 +475,14 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-
 	// Chain of trust is not allowed when running as current user
 	// since signing key cannot be secured
 	if config.RunTasksAsCurrentUser {
-		expectChainOfTrustKeyNotSecureMessage(t, taskID)
+		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
 		return
 	}
 
-	ensureResolution(t, taskID, "completed", "completed")
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -540,8 +525,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 }
 
 func TestPublicDirectoryArtifact(t *testing.T) {
-	setup(t, "TestPublicDirectoryArtifact")
-	defer teardown(t)
+	defer setup(t, "TestPublicDirectoryArtifact")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -567,9 +551,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "completed", "completed")
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -594,8 +576,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 }
 
 func TestConflictingFileArtifactsInPayload(t *testing.T) {
-	setup(t, "TestConflictingFileArtifactsInPayload")
-	defer teardown(t)
+	defer setup(t, "TestConflictingFileArtifactsInPayload")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -629,9 +610,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "exception", "malformed-payload")
+	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -656,8 +635,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 }
 
 func TestFileArtifactTwiceInPayload(t *testing.T) {
-	setup(t, "TestFileArtifactTwiceInPayload")
-	defer teardown(t)
+	defer setup(t, "TestFileArtifactTwiceInPayload")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -690,9 +668,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "completed", "completed")
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -717,8 +693,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 }
 
 func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
-	setup(t, "TestArtifactIncludedAsFileAndDirectoryInPayload")
-	defer teardown(t)
+	defer setup(t, "TestArtifactIncludedAsFileAndDirectoryInPayload")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -751,9 +726,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "completed", "completed")
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
 
@@ -779,8 +752,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 
 func TestUpload(t *testing.T) {
 
-	setup(t, "TestUpload")
-	defer teardown(t)
+	defer setup(t, "TestUpload")()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -819,14 +791,14 @@ func TestUpload(t *testing.T) {
 	}
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-
 	// Chain of trust is not allowed when running as current user
 	// since signing key cannot be secured
 	if config.RunTasksAsCurrentUser {
-		expectChainOfTrustKeyNotSecureMessage(t, taskID)
+		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
 		return
 	}
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	// some required substrings - not all, just a selection
 	expectedArtifacts := ExpectedArtifacts{
@@ -973,8 +945,8 @@ func TestUpload(t *testing.T) {
 	if cotCert.Environment.InstanceType != "p3.enormous" {
 		t.Fatalf("Expected instanceType to be \"p3.enormous\" but was %v", cotCert.Environment.InstanceType)
 	}
-	if cotCert.Environment.Region != "outer-space" {
-		t.Fatalf("Expected region to be \"outer-space\" but was %v", cotCert.Environment.Region)
+	if cotCert.Environment.Region != "test-worker-group" {
+		t.Fatalf("Expected region to be \"test-worker-group\" but was %v", cotCert.Environment.Region)
 	}
 
 	// Check artifact list in CoT includes the names (not paths) of all
@@ -994,14 +966,11 @@ func TestUpload(t *testing.T) {
 			}
 		}
 	}
-
-	ensureResolution(t, taskID, "completed", "completed")
 }
 
 func TestFileArtifactHasNoExpiry(t *testing.T) {
 
-	setup(t, "TestFileArtifactHasNoExpiry")
-	defer teardown(t)
+	defer setup(t, "TestFileArtifactHasNoExpiry")()
 
 	payload := GenericWorkerPayload{
 		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
@@ -1023,8 +992,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-	ensureResolution(t, taskID, "completed", "completed")
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	// check artifact expiry matches task expiry
 	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {
@@ -1045,8 +1013,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
-	setup(t, "TestDirectoryArtifactHasNoExpiry")
-	defer teardown(t)
+	defer setup(t, "TestDirectoryArtifactHasNoExpiry")()
 
 	payload := GenericWorkerPayload{
 		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
@@ -1068,8 +1035,7 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
 	td := testTask(t)
 
-	taskID := scheduleAndExecute(t, td, payload)
-	ensureResolution(t, taskID, "completed", "completed")
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	// check artifact expiry matches task expiry
 	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {

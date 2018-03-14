@@ -7,8 +7,7 @@ import (
 )
 
 func TestTaskclusterProxy(t *testing.T) {
-	setup(t, "TestTaskclusterProxy")
-	defer teardown(t)
+	defer setup(t, "TestTaskclusterProxy")()
 	payload := GenericWorkerPayload{
 		Command: append(
 			append(
@@ -43,12 +42,10 @@ func TestTaskclusterProxy(t *testing.T) {
 	reclaimOftenMux.Lock()
 	reclaimEvery5Seconds = true
 	reclaimOftenMux.Unlock()
-	taskID := scheduleAndExecute(t, td, payload)
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	reclaimOftenMux.Lock()
 	reclaimEvery5Seconds = false
 	reclaimOftenMux.Unlock()
-
-	ensureResolution(t, taskID, "completed", "completed")
 
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {

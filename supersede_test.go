@@ -6,15 +6,18 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestSupersede(t *testing.T) {
-	setup(t, "TestSupersede")
-	defer teardown(t)
+	defer setup(t, "TestSupersede")()
 
 	command := helloGoodbye()
 
 	taskIDs := make([]string, 3)
+	// the same as taskIDs, but in the reverse order
+	reversedTaskIDs := make([]string, len(taskIDs))
+
 	for i := 0; i < len(taskIDs); i++ {
 		payload := GenericWorkerPayload{
 			Command:       command,
@@ -24,13 +27,10 @@ func TestSupersede(t *testing.T) {
 		td := testTask(t)
 
 		taskIDs[i] = scheduleTask(t, td, payload)
+		reversedTaskIDs[len(taskIDs)-1-i] = taskIDs[i]
 	}
 	serviceResponse := SupersedesServiceResponse{
-		TaskIDs: taskIDs,
-	}
-
-	s := http.Server{
-		Addr: ":52856",
+		TaskIDs: reversedTaskIDs,
 	}
 
 	serviceResponseBody, err := json.Marshal(serviceResponse)
@@ -38,20 +38,31 @@ func TestSupersede(t *testing.T) {
 		t.Fatalf("Could not marshal service response body into json: %v", err)
 	}
 
-	http.HandleFunc("/TestSupersede", func(res http.ResponseWriter, req *http.Request) {
+	// Create custom *http.ServeMux rather than using http.DefaultServeMux, so
+	// registered handler functions won't interfere with future tests that also
+	// use http.DefaultServeMux.
+	supersedeHandler := http.NewServeMux()
+	supersedeHandler.HandleFunc("/TestSupersede", func(res http.ResponseWriter, req *http.Request) {
 		_, err := res.Write(serviceResponseBody)
 		if err != nil {
 			t.Fatalf("Mock supersede service could not write http response: %v", err)
 		}
 	})
 
+	s := http.Server{
+		Addr:           "localhost:52856",
+		Handler:        supersedeHandler,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+
 	go s.ListenAndServe()
 	defer s.Shutdown(context.Background())
 
-	for i, taskID := range taskIDs {
+	for _, taskID := range taskIDs {
 		t.Logf("Executing task %v", taskID)
-		execute(t)
-		if i == 0 {
+		if taskID == reversedTaskIDs[0] {
 			ensureResolution(t, taskID, "completed", "completed")
 		} else {
 			ensureResolution(t, taskID, "exception", "superseded")
@@ -62,7 +73,7 @@ func TestSupersede(t *testing.T) {
 				t.Fatalf("Error unmarshaling public/superseded-by.json into json: %v", err)
 			}
 			expectedData := map[string]interface{}{
-				"taskId": taskIDs[0],
+				"taskId": reversedTaskIDs[0],
 			}
 			if !reflect.DeepEqual(actualData, expectedData) {
 				t.Fatalf("public/superseded-by.json has unexpected content in task %v.\nActual: %#v\nExpected: %#v", taskID, actualData, expectedData)
@@ -72,8 +83,7 @@ func TestSupersede(t *testing.T) {
 }
 
 func TestEmptySupersedeList(t *testing.T) {
-	setup(t, "TestSupersede")
-	defer teardown(t)
+	defer setup(t, "TestSupersede")()
 
 	payload := GenericWorkerPayload{
 		Command:       helloGoodbye(),
@@ -81,8 +91,6 @@ func TestEmptySupersedeList(t *testing.T) {
 		SupersederURL: "http://localhost:52856/TestEmptySupersedeList",
 	}
 	td := testTask(t)
-
-	taskID := scheduleTask(t, td, payload)
 
 	s := http.Server{
 		Addr: ":52856",
@@ -103,7 +111,5 @@ func TestEmptySupersedeList(t *testing.T) {
 	go s.ListenAndServe()
 	defer s.Shutdown(context.Background())
 
-	t.Logf("Executing task %v", taskID)
-	execute(t)
-	ensureResolution(t, taskID, "completed", "completed")
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }

@@ -13,29 +13,25 @@ import (
 
 // Test failure should resolve as "failed"
 func TestFailureResolvesAsFailure(t *testing.T) {
-	setup(t, "TestFailureResolvesAsFailure")
-	defer teardown(t)
+	defer setup(t, "TestFailureResolvesAsFailure")()
 	payload := GenericWorkerPayload{
 		Command:    failCommand(),
 		MaxRunTime: 10,
 	}
 	td := testTask(t)
-	taskID := scheduleAndExecute(t, td, payload)
 
-	ensureResolution(t, taskID, "failed", "failed")
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 func TestAbortAfterMaxRunTime(t *testing.T) {
-	setup(t, "TestAbortAfterMaxRunTime")
-	defer teardown(t)
+	defer setup(t, "TestAbortAfterMaxRunTime")()
 	payload := GenericWorkerPayload{
 		Command:    sleep(4),
 		MaxRunTime: 3,
 	}
 	td := testTask(t)
-	taskID := scheduleAndExecute(t, td, payload)
 
-	ensureResolution(t, taskID, "failed", "failed")
+	taskID := submitAndAssert(t, td, payload, "failed", "failed")
 	// check uploaded log mentions abortion
 	// note: we do this rather than local log, to check also log got uploaded
 	// as failure path requires that task is resolved before logs are uploaded
@@ -62,8 +58,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 }
 
 func TestIdleWithoutCrash(t *testing.T) {
-	setup(t, "TestIdleWithoutCrash")
-	defer teardown(t)
+	defer setup(t, "TestIdleWithoutCrash")()
 	if config.ClientID == "" || config.AccessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
