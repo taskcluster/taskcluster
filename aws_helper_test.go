@@ -145,10 +145,13 @@ func (m *MockAWSProvisionedEnvironment) Secrets(t *testing.T) interface{} {
 			"disableReboots":  true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
-			"downloadsDir":                   filepath.Join(cwd, "downloads"),
-			"idleTimeoutSecs":                60,
-			"livelogSecret":                  "I have to confess, when me and my friends sort of used to run through the fields of wheat, um, the farmers weren't too pleased about that.",
-			"numberOfTasksToRun":             1,
+			"downloadsDir":       filepath.Join(cwd, "downloads"),
+			"idleTimeoutSecs":    60,
+			"livelogSecret":      "I have to confess, when me and my friends sort of used to run through the fields of wheat, um, the farmers weren't too pleased about that.",
+			"numberOfTasksToRun": 1,
+			// should be enough for tests, and travis-ci.org CI environments
+			// don't have a lot of free disk
+			"requiredDiskSpaceMegabytes":     16,
 			"sentryProject":                  "generic-worker-tests",
 			"shutdownMachineOnIdle":          false,
 			"shutdownMachineOnInternalError": false,

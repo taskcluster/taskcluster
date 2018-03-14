@@ -118,7 +118,9 @@ func setup(t *testing.T, testName string) (teardown func()) {
 		ProvisionerID:      "test-provisioner",
 		PublicIP:           net.ParseIP("12.34.56.78"),
 		Region:             "test-worker-group",
-		RequiredDiskSpaceMegabytes:     1024,
+		// should be enough for tests, and travis-ci.org CI environments don't
+		// have a lot of free disk
+		RequiredDiskSpaceMegabytes:     16,
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_GENERATE_USERS") == "",
 		SentryProject:                  "generic-worker-tests",
