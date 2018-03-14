@@ -84,7 +84,6 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run:
 
 ```
-$ generic-worker --help
 generic-worker
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -225,6 +224,9 @@ and reports back results to the queue.
                                             [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          provisionerBaseUrl                The base URL for API calls to the provisioner in
+                                            order to determine if there is a new deploymentId.
+                                            [default: ]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
@@ -235,10 +237,14 @@ and reports back results to the queue.
                                             [default: 10240]
           runAfterUserCreation              A string, that if non-empty, will be treated as a
                                             command to be executed as the newly generated task
-                                            user, each time a task user is created. This is a
-                                            way to provide generic user initialisation logic
-                                            that should apply to all generated users (and thus
-                                            all tasks).
+                                            user, after the user has been created, the machine
+                                            has rebooted and the user has logged in, but before
+                                            a task is run as that user. This is a way to
+                                            provide generic user initialisation logic that
+                                            should apply to all generated users (and thus all
+                                            tasks) and be run as the task user itself. This
+                                            option does *not* support running a command as
+                                            Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. Useful if not an
                                             administrator, e.g. when running tests. Should not
@@ -267,6 +273,11 @@ and reports back results to the queue.
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server
                                             [default: taskcluster-worker.net]
+          taskclusterProxyExecutable        Filepath of taskcluster-proxy executable to use; see
+                                            https://github.com/taskcluster/taskcluster-proxy
+                                            [default: taskcluster-proxy]
+          taskclusterProxyPort              Port number for taskcluster-proxy HTTP requests.
+                                            [default: 80]
           tasksDir                          The location where task directories should be
                                             created on the worker. [default: /Users]
           workerGroup                       Typically this would be an aws region - an
@@ -305,6 +316,8 @@ and reports back results to the queue.
            this worker environment is no longer up-to-date. Typcially workers should
            terminate.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
+    72     The worker is running on spot infrastructure in AWS EC2 and has been served a
+           spot termination notice, and therefore has shut down.
 ```
 
 # Start the generic worker
