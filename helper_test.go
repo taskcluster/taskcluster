@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -35,50 +36,99 @@ type PayloadArtifact struct {
 
 var (
 	inAnHour       tcclient.Time
-	testdataDir    string
 	globalTestName string
 	myQueue        *queue.Queue
+	testdataDir    = filepath.Join(cwd, "testdata")
 )
 
-func setup(t *testing.T, testName string) {
-	// some basic setup...
-	testdataDir = filepath.Join(cwd, "testdata")
+func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 
+	testDir := filepath.Join(testdataDir, testName)
+
+	for _, dir := range []string{
+		filepath.Join(cwd, "downloads"),
+		filepath.Join(cwd, "caches"),
+		testDir,
+	} {
+		// even though we know parent directory exists, use MkdirAll instead of
+		// Mkdir since we don't want to fail if child directory already exists
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			t.Fatalf("Could not create directory %v", dir)
+		}
+	}
+
+	// Needed for tests that don't call RunWorker()
+	// but test methods/functions directly
+	taskContext = &TaskContext{
+		TaskDir: testdataDir,
+	}
+
+	// useful for expiry dates of tasks
+	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
+	globalTestName = testName
+
+	myQueue = NewQueue(t)
+
+	return func() {
+		// note for tests that don't submit a task, they will have
+		// taskContext.TasksDir set to the testdata subfolder, and we don't
+		// want to delete that, which is why we delete the TasksDir
+		err := os.RemoveAll(testDir)
+		if err != nil {
+			t.Fatalf("Not able to clean up after test: %v", err)
+		}
+		taskContext = nil
+		globalTestName = ""
+		myQueue = nil
+		config = nil
+	}
+}
+
+func setup(t *testing.T, testName string) (teardown func()) {
+	teardown = setupEnvironment(t, testName)
 	// configure the worker
+	testDir := filepath.Join(testdataDir, testName)
 	config = &gwconfig.Config{
-		AccessToken:                    os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		// Need common caches directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
 		CachesDir:                      filepath.Join(cwd, "caches"),
 		Certificate:                    os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		CheckForNewDeploymentEverySecs: 0,
 		CleanUpTaskDirs:                false,
 		ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		DeploymentID:                   "",
-		DownloadsDir:                   filepath.Join(cwd, "downloads"),
-		IdleTimeoutSecs:                60,
-		InstanceID:                     "test-instance-id",
-		InstanceType:                   "p3.enormous",
-		LiveLogCertificate:             "",
-		LiveLogExecutable:              "livelog",
-		LiveLogGETPort:                 30582,
-		LiveLogKey:                     "",
-		LiveLogPUTPort:                 43264,
-		LiveLogSecret:                  "xyz",
-		NumberOfTasksToRun:             1,
-		PrivateIP:                      net.ParseIP("87.65.43.21"),
-		ProvisionerID:                  "test-provisioner",
-		PublicIP:                       net.ParseIP("12.34.56.78"),
-		RefreshUrlsPrematurelySecs:     310,
-		Region: "outer-space",
+		DisableReboots:                 true,
+		// Need common downloads directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		DownloadsDir:               filepath.Join(cwd, "downloads"),
+		IdleTimeoutSecs:            60,
+		InstanceID:                 "test-instance-id",
+		InstanceType:               "p3.enormous",
+		LiveLogCertificate:         "",
+		LiveLogExecutable:          "livelog",
+		LiveLogGETPort:             30582,
+		LiveLogKey:                 "",
+		LiveLogPUTPort:             43264,
+		LiveLogSecret:              "xyz",
+		NumberOfTasksToRun:         1,
+		PrivateIP:                  net.ParseIP("87.65.43.21"),
+		ProvisionerID:              "test-provisioner",
+		PublicIP:                   net.ParseIP("12.34.56.78"),
+		RefreshUrlsPrematurelySecs: 310,
+		Region: "test-worker-group",
 		RequiredDiskSpaceMegabytes:     1024,
-		RunTasksAsCurrentUser:          true,
+		RunAfterUserCreation:           "",
+		RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_GENERATE_USERS") == "",
 		SentryProject:                  "generic-worker-tests",
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,
-		SigningKeyLocation:             filepath.Join("testdata", "private-opengpg-key"),
+		SigningKeyLocation:             filepath.Join(testdataDir, "private-opengpg-key"),
 		Subdomain:                      "taskcluster-worker.net",
 		TaskclusterProxyExecutable:     "taskcluster-proxy",
 		TaskclusterProxyPort:           34569,
-		TasksDir:                       filepath.Join(testdataDir, testName),
+		TasksDir:                       testDir,
 		WorkerGroup:                    "test-worker-group",
 		WorkerID:                       "test-worker-id",
 		WorkerType:                     slugid.Nice(),
@@ -104,46 +154,16 @@ func setup(t *testing.T, testName string) {
 			},
 		},
 	}
-
-	if os.Getenv("GW_TESTS_GENERATE_USERS") != "" {
-		config.RunTasksAsCurrentUser = false
-	}
-
-	// Needed for tests that don't call RunWorker()
-	// but test methods/functions directly
-	taskContext = &TaskContext{
-		TaskDir: testdataDir,
-	}
-
-	// useful for expiry dates of tasks
-	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
-	globalTestName = testName
-
-	myQueue = NewQueue(t)
-}
-
-func teardown(t *testing.T) {
-	// note for tests that don't submit a task, they will have
-	// taskContext.TasksDir set to the testdata subfolder, and we don't
-	// want to delete that, which is why we delete the TasksDir
-	err := os.RemoveAll(config.TasksDir)
-	if err != nil {
-		t.Fatalf("Not able to clean up after test: %v", err)
-	}
+	return teardown
 }
 
 func NewQueue(t *testing.T) (myQueue *queue.Queue) {
 	// check we have all the env vars we need to run this test
-	if config.ClientID == "" || config.AccessToken == "" {
+	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" || os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
-	creds := &tcclient.Credentials{
-		ClientID:    config.ClientID,
-		AccessToken: config.AccessToken,
-		Certificate: config.Certificate,
-	}
 	var err error
-	myQueue, err = queue.New(creds)
+	myQueue, err = queue.New(nil)
 	if err != nil {
 		t.Fatalf("Invalid credentials: %v", err)
 	}
@@ -178,26 +198,23 @@ func scheduleTask(t *testing.T, td *queue.TaskDefinitionRequest, payload Generic
 	if err != nil {
 		t.Fatalf("Could not submit task: %v", err)
 	}
+	t.Logf("Scheduled task %v", taskID)
 
 	return
 }
 
-func execute(t *testing.T) {
+func execute(t *testing.T, expectedExitCode ExitCode) {
 	err := UpdateTasksResolvedFile(0)
 	if err != nil {
 		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
 	}
 	exitCode := RunWorker()
 
-	if exitCode != TASKS_COMPLETE {
-		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, TASKS_COMPLETE)
+	if exitCode != expectedExitCode {
+		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, expectedExitCode)
+	} else {
+		t.Logf("Worker exited with exit code %v as required.", exitCode)
 	}
-}
-
-func scheduleAndExecute(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
-	taskID = scheduleTask(t, td, payload)
-	execute(t)
-	return
 }
 
 func testTask(t *testing.T) *queue.TaskDefinitionRequest {
@@ -336,17 +353,26 @@ func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *
 }
 
 func ensureResolution(t *testing.T, taskID, state, reason string) {
+	execute(t, TASKS_COMPLETE)
 	status, err := myQueue.Status(taskID)
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
 	}
-	if status.Status.State != state || status.Status.Runs[0].ReasonResolved != reason {
-		t.Fatalf("Expected task %v to resolve as '%v/%v' but resolved as '%v/%v'", taskID, state, reason, status.Status.State, status.Status.Runs[0].ReasonResolved)
+	if status.Status.Runs[0].State != state || status.Status.Runs[0].ReasonResolved != reason {
+		t.Fatalf("Expected task %v to resolve as '%v/%v' but resolved as '%v/%v'", taskID, state, reason, status.Status.Runs[0].State, status.Status.Runs[0].ReasonResolved)
+	} else {
+		t.Logf("Task %v resolved as %v/%v as required.", taskID, status.Status.Runs[0].State, status.Status.Runs[0].ReasonResolved)
 	}
 }
 
-func expectChainOfTrustKeyNotSecureMessage(t *testing.T, taskID string) {
-	ensureResolution(t, taskID, "exception", "malformed-payload")
+func submitAndAssert(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload, state, reason string) (taskID string) {
+	taskID = scheduleTask(t, td, payload)
+	ensureResolution(t, taskID, state, reason)
+	return taskID
+}
+
+func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
@@ -360,4 +386,23 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, taskID string) {
 
 	expectedArtifacts.Validate(t, taskID, 0)
 	return
+}
+
+func checkSHA256OfFile(t *testing.T, path string, SHA256 string) {
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatalf("Could not open file %v: %v", path, err)
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		t.Fatalf("Error reading from file %v: %v", path, err)
+	}
+	actualSHA256 := fmt.Sprintf("%x", h.Sum(nil))
+	if actualSHA256 != SHA256 {
+		t.Fatalf("Expected SHA256 of %v to be %v but was %v", path, SHA256, actualSHA256)
+	} else {
+		t.Logf("SHA256 of %v correct (%v = %v)", path, SHA256, actualSHA256)
+	}
 }

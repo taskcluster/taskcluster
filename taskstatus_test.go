@@ -10,8 +10,7 @@ import (
 
 // Makes sure that if a running task gets cancelled externally, the worker does not shut down
 func TestResolveResolvedTask(t *testing.T) {
-	setup(t, "TestResolveResolvedTask")
-	defer teardown(t)
+	defer setup(t, "TestResolveResolvedTask")()
 	payload := GenericWorkerPayload{
 		Command:    goRun("resolvetask.go"),
 		MaxRunTime: 60,
@@ -58,7 +57,5 @@ func TestResolveResolvedTask(t *testing.T) {
 		}
 	}
 
-	taskID := scheduleAndExecute(t, td, payload)
-
-	ensureResolution(t, taskID, "exception", "canceled")
+	_ = submitAndAssert(t, td, payload, "exception", "canceled")
 }
