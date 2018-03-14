@@ -1,6 +1,7 @@
 package gwconfig
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 
@@ -11,45 +12,47 @@ type (
 
 	// Generic Worker config
 	Config struct {
-		AccessToken                    string                 `json:"accessToken,omitempty"`
-		CachesDir                      string                 `json:"cachesDir,omitempty"`
-		Certificate                    string                 `json:"certificate,omitempty"`
-		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs,omitempty"`
+		AccessToken                    string                 `json:"accessToken"`
+		AvailabilityZone               string                 `json:"availabilityZone"`
+		CachesDir                      string                 `json:"cachesDir"`
+		Certificate                    string                 `json:"certificate"`
+		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
-		ClientID                       string                 `json:"clientId,omitempty"`
-		DeploymentID                   string                 `json:"deploymentId,omitempty"`
+		ClientID                       string                 `json:"clientId"`
+		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
-		DownloadsDir                   string                 `json:"downloadsDir,omitempty"`
-		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs,omitempty"`
-		InstanceID                     string                 `json:"instanceId,omitempty"`
-		InstanceType                   string                 `json:"instanceType,omitempty"`
-		LiveLogCertificate             string                 `json:"livelogCertificate,omitempty"`
-		LiveLogExecutable              string                 `json:"livelogExecutable,omitempty"`
-		LiveLogGETPort                 uint16                 `json:"livelogGETPort,omitempty"`
-		LiveLogKey                     string                 `json:"livelogKey,omitempty"`
-		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort,omitempty"`
-		LiveLogSecret                  string                 `json:"livelogSecret,omitempty"`
-		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun,omitempty"`
-		SentryProject                  string                 `json:"sentryProject,omitempty"`
-		PrivateIP                      net.IP                 `json:"privateIP,omitempty"`
-		ProvisionerID                  string                 `json:"provisionerId,omitempty"`
-		PublicIP                       net.IP                 `json:"publicIP,omitempty"`
-		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs,omitempty"`
-		Region                         string                 `json:"region,omitempty"`
-		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes,omitempty"`
-		RunAfterUserCreation           string                 `json:"runAfterUserCreation,omitempty"`
+		DownloadsDir                   string                 `json:"downloadsDir"`
+		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
+		InstanceID                     string                 `json:"instanceId"`
+		InstanceType                   string                 `json:"instanceType"`
+		LiveLogCertificate             string                 `json:"livelogCertificate"`
+		LiveLogExecutable              string                 `json:"livelogExecutable"`
+		LiveLogGETPort                 uint16                 `json:"livelogGETPort"`
+		LiveLogKey                     string                 `json:"livelogKey"`
+		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
+		LiveLogSecret                  string                 `json:"livelogSecret"`
+		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
+		PrivateIP                      net.IP                 `json:"privateIP"`
+		ProvisionerID                  string                 `json:"provisionerId"`
+		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
+		PublicIP                       net.IP                 `json:"publicIP"`
+		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs"`
+		Region                         string                 `json:"region"`
+		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
+		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
-		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
+		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
-		SigningKeyLocation             string                 `json:"signingKeyLocation,omitempty"`
-		Subdomain                      string                 `json:"subdomain,omitempty"`
-		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable,omitempty"`
-		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort,omitempty"`
-		TasksDir                       string                 `json:"tasksDir,omitempty"`
-		WorkerGroup                    string                 `json:"workerGroup,omitempty"`
-		WorkerID                       string                 `json:"workerId,omitempty"`
-		WorkerType                     string                 `json:"workerType,omitempty"`
-		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata,omitempty"`
+		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
+		SigningKeyLocation             string                 `json:"signingKeyLocation"`
+		Subdomain                      string                 `json:"subdomain"`
+		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable"`
+		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort"`
+		TasksDir                       string                 `json:"tasksDir"`
+		WorkerGroup                    string                 `json:"workerGroup"`
+		WorkerID                       string                 `json:"workerId"`
+		WorkerType                     string                 `json:"workerType"`
+		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 	}
 )
 
@@ -57,4 +60,15 @@ type (
 func (c *Config) Persist(file string) error {
 	log.Print("Creating file " + file + "...")
 	return fileutil.WriteToFileAsJSON(c, file)
+}
+
+func (c *Config) String() string {
+	cCopy := *c
+	cCopy.AccessToken = "*************"
+	cCopy.LiveLogSecret = "*************"
+	json, err := json.MarshalIndent(&cCopy, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(json)
 }

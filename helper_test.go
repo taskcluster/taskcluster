@@ -90,7 +90,8 @@ func setup(t *testing.T, testName string) (teardown func()) {
 	// configure the worker
 	testDir := filepath.Join(testdataDir, testName)
 	config = &gwconfig.Config{
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		AccessToken:      os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		AvailabilityZone: "outer-space",
 		// Need common caches directory across tests, since files
 		// directory-caches.json and file-caches.json are not per-test.
 		CachesDir:                      filepath.Join(cwd, "caches"),
@@ -353,7 +354,11 @@ func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *
 }
 
 func ensureResolution(t *testing.T, taskID, state, reason string) {
-	execute(t, TASKS_COMPLETE)
+	if state == "exception" && reason == "worker-shutdown" {
+		execute(t, WORKER_SHUTDOWN)
+	} else {
+		execute(t, TASKS_COMPLETE)
+	}
 	status, err := myQueue.Status(taskID)
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
