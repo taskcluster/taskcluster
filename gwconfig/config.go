@@ -33,10 +33,9 @@ type (
 		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
-		ProvisionerID                  string                 `json:"provisionerId"`
 		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
+		ProvisionerID                  string                 `json:"provisionerId"`
 		PublicIP                       net.IP                 `json:"publicIP"`
-		RefreshUrlsPrematurelySecs     uint                   `json:"refreshURLsPrematurelySecs"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`

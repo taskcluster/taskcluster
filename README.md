@@ -169,6 +169,7 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
+          availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The location where task caches should be stored on
                                             the worker. [default: C:\generic-worker\caches]
           certificate                       Taskcluster certificate, when using temporary
@@ -211,25 +212,28 @@ and reports back results to the queue.
                                             the idle state" - i.e. continue running
                                             indefinitely. See also shutdownMachineOnIdle.
                                             [default: 0]
+          instanceID                        The EC2 instance ID of the worker.
+          instanceType                      The EC2 instance Type of the worker.
           livelogCertificate                SSL certificate to be used by livelog for hosting
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
                                             https://github.com/taskcluster/livelog
                                             [default: livelog]
+          livelogGETPort                    Port number for livelog HTTP GET requests.
+                                            [default: 60023]
           livelogKey                        SSL key to be used by livelog for hosting logs
                                             over https. If not set, http will be used.
           livelogPUTPort                    Port number for livelog HTTP PUT requests.
                                             [default: 60022]
-          livelogGETPort                    Port number for livelog HTTP GET requests.
-                                            [default: 60023]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
+          privateIP                         The private IP of the worker, used by chain of trust.
           provisionerBaseUrl                The base URL for API calls to the provisioner in
                                             order to determine if there is a new deploymentId.
-                                            [default: ]
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
+          region                            The EC2 region of the worker.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -257,6 +261,11 @@ and reports back results to the queue.
                                             posses this scope, no crash reports will be sent.
                                             Similarly, if this property is not specified or
                                             is the empty string, no reports will be sent.
+          shutdownMachineOnIdle             If true, when the worker is deemed to have been
+                                            idle for enough time (see idleTimeoutSecs) the
+                                            worker will issue an OS shutdown command. If false,
+                                            the worker process will simply terminate, but the
+                                            machine will not be shut down. [default: false]
           shutdownMachineOnInternalError    If true, if the worker encounters an unrecoverable
                                             error (such as not being able to write to a
                                             required file) it will shutdown the host
@@ -264,11 +273,6 @@ and reports back results to the queue.
                                             for machines running in production, such as on AWS
                                             EC2 spot instances. Use with caution!
                                             [default: false]
-          shutdownMachineOnIdle             If true, when the worker is deemed to have been
-                                            idle for enough time (see idleTimeoutSecs) the
-                                            worker will issue an OS shutdown command. If false,
-                                            the worker process will simply terminate, but the
-                                            machine will not be shut down. [default: false]
           subdomain                         Subdomain to use in stateless dns name for live
                                             logs; see
                                             https://github.com/taskcluster/stateless-dns-server

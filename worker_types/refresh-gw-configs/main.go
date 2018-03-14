@@ -84,7 +84,6 @@ func main() {
 			NumberOfTasksToRun:             0,
 			SentryProject:                  "generic-worker",
 			ProvisionerID:                  "",
-			RefreshUrlsPrematurelySecs:     3,
 			RequiredDiskSpaceMegabytes:     3,
 			RunAfterUserCreation:           "",
 			RunTasksAsCurrentUser:          true,
