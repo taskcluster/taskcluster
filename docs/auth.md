@@ -157,8 +157,14 @@ auth.azureTableSAS(account, table, level)
 ```
 
 ```js
-// auth.azureBlobSAS :: (account -> container -> level) -> Promise Result
-auth.azureBlobSAS(account, container, level)
+// auth.azureContainers :: (account -> [options]) -> Promise Result
+auth.azureContainers(account)
+auth.azureContainers(account, options)
+```
+
+```js
+// auth.azureContainerSAS :: (account -> container -> level) -> Promise Result
+auth.azureContainerSAS(account, container, level)
 ```
 
 ```js

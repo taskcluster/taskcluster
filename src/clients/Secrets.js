@@ -9,9 +9,9 @@ export default class Secrets extends Client {
       exchangePrefix: '',
       ...options
     });
-    this.set.entry = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',scopes:[['secrets:set:<name>']],input:true}; // eslint-disable-line
-    this.remove.entry = {type:'function',method:'delete',route:'/secret/<name>',query:[],args:['name'],name:'remove',stability:'stable',scopes:[['secrets:set:<name>']]}; // eslint-disable-line
-    this.get.entry = {type:'function',method:'get',route:'/secret/<name>',query:[],args:['name'],name:'get',stability:'stable',scopes:[['secrets:get:<name>']],output:true}; // eslint-disable-line
+    this.set.entry = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',scopes:'secrets:set:<name>',input:true}; // eslint-disable-line
+    this.remove.entry = {type:'function',method:'delete',route:'/secret/<name>',query:[],args:['name'],name:'remove',stability:'stable',scopes:'secrets:set:<name>'}; // eslint-disable-line
+    this.get.entry = {type:'function',method:'get',route:'/secret/<name>',query:[],args:['name'],name:'get',stability:'stable',scopes:'secrets:get:<name>',output:true}; // eslint-disable-line
     this.list.entry = {type:'function',method:'get',route:'/secrets',query:['continuationToken','limit'],args:[],name:'list',stability:'stable',output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }

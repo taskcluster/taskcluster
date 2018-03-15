@@ -3,7 +3,7 @@
 ##
 
 The Login service serves as the interface between external authentication
-systems and TaskCluster credentials.
+systems and Taskcluster credentials.
 
 ## Login Client
 

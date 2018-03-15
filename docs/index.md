@@ -112,13 +112,25 @@ index.findTask(indexPath)
 ```
 
 ```js
-// index.listNamespaces :: (namespace -> payload) -> Promise Result
-index.listNamespaces(namespace, payload)
+// index.listNamespaces :: (namespace -> [options]) -> Promise Result
+index.listNamespaces(namespace)
+index.listNamespaces(namespace, options)
 ```
 
 ```js
-// index.listTasks :: (namespace -> payload) -> Promise Result
-index.listTasks(namespace, payload)
+// index.listNamespacesPost :: (namespace -> payload) -> Promise Result
+index.listNamespacesPost(namespace, payload)
+```
+
+```js
+// index.listTasks :: (namespace -> [options]) -> Promise Result
+index.listTasks(namespace)
+index.listTasks(namespace, options)
+```
+
+```js
+// index.listTasksPost :: (namespace -> payload) -> Promise Result
+index.listTasksPost(namespace, payload)
 ```
 
 ```js
