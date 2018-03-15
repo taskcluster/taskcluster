@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-client-web",
-  "version": "5.2.1",
+  "version": "6.0.0",
   "main": "lib/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
