@@ -2,28 +2,26 @@ const fs = require('fs');
 const Listr = require('listr');
 const stringify = require('json-stable-stringify');
 const {BuildService} = require('./service');
-const {BuildSpec} = require('../formats/build-spec');
-const {Release} = require('../formats/release');
+const {ClusterSpec} = require('../formats/cluster-spec');
+const config = require('typed-env-config');
 
 class Build {
-  constructor(specFile, releaseFile) {
-    this.specFile = specFile;
-    this.releaseFile = releaseFile;
+  constructor(input, output) {
+    this.input = input;
+    this.output = output;
 
     // TODO: make this customizable (but stable, so caching works)
     this.workDir = '/tmp/taskcluster-installer-build';
 
-    // the BuildSpec and Release are available at these properties while
-    // running
     this.spec = null;
-    this.release = null;
+    this.cfg = null;
   }
 
   _servicesTask() {
     return {
       title: 'Services',
       task: () => new Listr(
-        this.spec.services.map(service => {
+        this.spec.build.services.map(service => {
           const steps = new BuildService(this, service.name);
           return steps.task();
         }),
@@ -33,8 +31,14 @@ class Build {
   }
 
   async run() {
-    this.spec = await BuildSpec.fromDirectory(this.specFile);
-    this.release = Release.empty();
+    this.spec = new ClusterSpec(this.input);
+    this.cfg = config({
+      files: [
+        'build-config.yml',
+        'user-build-config.yml',
+      ],
+      env:      process.env,
+    });
 
     // TODO: if --no-cache, blow this away (noting it may contain root-owned stuff)
     if (!fs.existsSync(this.workDir)) {
@@ -46,12 +50,12 @@ class Build {
     ], {concurrent: true});
 
     await build.run();
-    this.release.write(this.releaseFile);
+    this.spec.write(this.output);
   }
 }
 
-const main = async (specFile, releaseFile) => {
-  const build = new Build(specFile, releaseFile);
+const main = async (input, output) => {
+  const build = new Build(input, output);
   await build.run();
 };
 

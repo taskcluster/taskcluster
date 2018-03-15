@@ -1,0 +1,7 @@
+---
+services:
+- name: ping
+  # note: this is a relative reference, which isn't a great idea as it means the
+  # build may include a different version in different runs.  Ideally this would
+  # be either a specific rev or a release version
+  source: https://github.com/djmitche/taskcluster-ping#master

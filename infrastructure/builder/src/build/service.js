@@ -21,13 +21,11 @@ const DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'd
 
 class BuildService {
   constructor(build, serviceName) {
-    this.build = build;
     this.serviceName = serviceName;
 
-    this.serviceSpec = _.find(build.spec.services, {name: serviceName});
-    this.serviceRelease = {name: serviceName};
-    build.release.services.push(this.serviceRelease);
+    this.cfg = build.cfg;
 
+    this.serviceSpec = _.find(build.spec.build.services, {name: serviceName});
     this.workDir = path.join(build.workDir, `service-${this.serviceName}`);
     if (!fs.existsSync(this.workDir)) {
       fs.mkdirSync(this.workDir);
@@ -129,16 +127,17 @@ class BuildService {
   }
 
   /**
-   * Set up for the build process.  This must fill out serviceRelease, and set
-   * ctx.skip if there is no need to actually build the service.
+   * Set up for the build process.  This must fill out the
+   * serviceSpec.dockerImage, and set ctx.skip if there is no need to actually
+   * build the service.
    */
   async setup(ctx) {
     const [source, ref] = this.serviceSpec.source.split('#');
     const head = (await this.git.listRemote([source, ref])).split(/\s+/)[0];
-    const tag = `${this.build.spec.docker.repositoryPrefix}${this.serviceName}:${head}`;
+    const tag = `${this.cfg.docker.repositoryPrefix}${this.serviceName}:${head}`;
 
-    this.serviceRelease.source = `${source}#${head}`;
-    this.serviceRelease.dockerImage = tag;
+    this.serviceSpec.exactSource = `${source}#${head}`;
+    this.serviceSpec.dockerImage = tag;
 
     // set up to skip other tasks if this tag already exists locally
     const dockerImages = await this.docker.listImages();
@@ -261,7 +260,7 @@ class BuildService {
     const log = path.join(this.workDir, 'build.log');
     let context = await this.docker.buildImage(
       tar.pack(path.join(this.workDir, 'docker')),
-      {t: this.serviceRelease.dockerImage});
+      {t: this.serviceSpec.dockerImage});
     context.pipe(fs.createWriteStream(log));
     return new Observable(observer => {
       const onFinished = (err, output) => {

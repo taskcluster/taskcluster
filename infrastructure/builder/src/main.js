@@ -2,9 +2,9 @@ const program = require('commander');
 const {version} = require('../package.json');
 
 program.version(version);
-program.command('build <build-spec> <release-file>')
-  .action((buildSpec, releaseFile) => {
-    require('./build')(buildSpec, releaseFile).then(
+program.command('build <input-cluster-spec> <output-cluster-spec>')
+  .action((input, output) => {
+    require('./build')(input, output).then(
       () => {},
       err => {
         console.error(err);
@@ -12,9 +12,10 @@ program.command('build <build-spec> <release-file>')
       });
   });
 
-program.command('deploy')
-  .action((buildSpec) => {
-    require('./deploy')().then(
+program.command('deploy <input-cluster-spec> <k8s-output>')
+  .option('--infra-info <infra-info>', 'JSON file with info about the infrastructure')
+  .action((input, output, options) => {
+    require('./deploy')(input, output, options.infraInfo).then(
       () => {},
       err => {
         console.error(err);

@@ -1,0 +1,4 @@
+---
+defaults:
+  docker:
+    repositoryPrefix: djmitche/taskcluster-

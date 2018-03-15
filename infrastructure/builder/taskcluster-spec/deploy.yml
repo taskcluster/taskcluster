@@ -1,0 +1,65 @@
+---
+resources:
+- name: ping-web-deployment
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: ping
+  spec:
+    $let:
+      service: {$eval: "builtService('ping')"}
+    in:
+      selector:
+        matchLabels:
+          app: taskcluster
+          tc-service: ping
+          tc-proc: web
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: taskcluster
+            tc-service: ping
+            tc-proc: web
+        spec:
+          containers:
+          - name: ping
+            image: {$eval: "service.dockerImage"}
+            args: [web]
+            resources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+            env:
+            - name: DEBUG
+              value: '*'
+            - name: PUBLIC_URL
+              value: 'https://taskcluster.example.com/ping/'
+            - name: PORT
+              value: '80'
+            - name: NODE_ENV
+              value: 'production'
+            - name: FORCE_SSL    # TODO
+              value: 'false'
+            - name: TRUST_PROXY  # TODO
+              value: 'false'
+            ports:
+            - containerPort: 80
+
+- name: ping-web-service
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: ping
+  spec:
+    $let:
+      service: {$eval: "builtService('ping')"}
+    in:
+      selector:
+        app: taskcluster
+        tc-service: ping
+        tc-proc: web
+      ports:
+      - protocol: TCP
+        port: 80
+        targetPort: 80
