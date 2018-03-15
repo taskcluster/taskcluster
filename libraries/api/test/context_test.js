@@ -13,6 +13,7 @@ suite('API (context)', function() {
     var api = new subject({
       title:        'Test Api',
       description:  'Another test api',
+      context:      ['myProp'],
       name:         'test',
     });
 
@@ -84,7 +85,9 @@ suite('API (context)', function() {
         },
       });
     } catch (err) {
-      return; // expected error
+      if (/Context must have declared property: 'prop2'/.test(err)) {
+        return; //expected error
+      }
     }
     assert(false, 'Expected an error!');
   });
@@ -110,5 +113,34 @@ suite('API (context)', function() {
         prop2: 'value2',
       },
     });
+  });
+
+  test('Context entry should be known', async () => {
+    //Create test api
+    var api = new subject({
+      title:        'Test Api',
+      description:  'Another test api',
+      context:      [],
+      name:         'test',
+    });
+
+    var value = slugid.v4();
+    let validate = await validator({
+      folder:         path.join(__dirname, 'schemas'),
+      baseUrl:        'http://localhost:4321/',
+    });
+    try {
+      api.router({
+        validator: validate,
+        context: {
+          prop3: 'value3',
+        },
+      });
+    } catch (err) {
+      if (/Context has unexpected property: prop3/.test(err)) {
+        return; //expected error
+      }
+    }
+    assert(false, 'Expected an error!');
   });
 });
