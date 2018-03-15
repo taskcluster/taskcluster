@@ -38,7 +38,7 @@ type Credentials struct {
 }
 
 var (
-	RegExpClientID    *regexp.Regexp = regexp.MustCompile(`^[A-Za-z0-9@/:.+|_-]+$`)
+	RegExpClientID    *regexp.Regexp = regexp.MustCompile(`^[A-Za-z0-9!@/:.+|_-]+$`)
 	RegExpAccessToken *regexp.Regexp = regexp.MustCompile(`^[a-zA-Z0-9_-]{22,66}$`)
 )
 
