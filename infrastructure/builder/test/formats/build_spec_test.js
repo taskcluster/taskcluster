@@ -7,7 +7,7 @@ const assume = require('assume');
 const {BuildSpec, VERSION} = require('../../src/formats/build-spec');
 
 const VALID_BUILD_SPEC = [
-  'version: 1',
+  'version: 0',
   'docker:',
   '  repositoryPrefix: testing/taskcluster-',
   'services:',
@@ -34,7 +34,7 @@ suite('BuildSpec', function() {
   test('valid build spec', function() {
     const specDir = makeBuildSpec(VALID_BUILD_SPEC);
     const bs = BuildSpec.fromDirectory(specDir);
-    assume(bs.version).to.equal(1);
+    assume(bs.version).to.equal(0);
     assume(bs.docker.repositoryPrefix).to.equal('testing/taskcluster-');
   });
 

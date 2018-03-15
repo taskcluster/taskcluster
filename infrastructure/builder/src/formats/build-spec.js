@@ -2,7 +2,7 @@ const yaml = require('js-yaml');
 const path = require('path');
 const fs = require('fs');
 
-const VERSION = 1;
+const VERSION = 0;
 exports.VERSION = VERSION;
 
 class BuildSpec {
