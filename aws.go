@@ -11,6 +11,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -305,6 +306,18 @@ func handleWorkerShutdown(abort func()) func() {
 				continue
 			}
 			defer resp.Body.Close()
+			// Currently not all spot requests are getting captured, let's dump
+			// output it response status code is not 404, to see if we can work
+			// out what is going on...
+			if resp.StatusCode != 404 {
+				bytes, err := httputil.DumpResponse(resp, true)
+				if err != nil {
+					log.Printf("Could not read termination-time http response: %v", err)
+				} else {
+					log.Printf("\n\nSpot request has MAYBE been issued??? Decide for yourself!\n\n")
+					log.Print(string(bytes) + "\n\n")
+				}
+			}
 			if resp.StatusCode == 200 {
 				abort()
 				break
