@@ -823,6 +823,11 @@ API.prototype.router = function(options) {
       'Context must have declared property: \'' + property + '\'');
   });
 
+  Object.keys(options.context).forEach(property => {
+    assert(this._options.context.indexOf(property) !== -1,
+      `Context has unexpected property: ${property}`);
+  });
+
   // Create caching authentication strategy if possible
   if (options.clientLoader || options.credentials) {
     throw new Error('options.clientLoader and options.credentials are no longer ' +
