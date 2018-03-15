@@ -367,7 +367,7 @@ to `api.setup` are:
 
  * `inputLimit` - maximum input size, defaulting to`"10mb"`
  * `allowedCORSOrigin` - Allowed CORS origin, or null to disable CORS; defaults to `"*"`
- * `context` - Object to be provided as `this` in handlers.  This must have all properties
+ * `context` - Object to be provided as `this` in handlers.  This must have exactly the properties
    specified in `context` when the API was declared.  The purpose of this parameter is to
    provide uesful application-specific objects such as Azure table objects or
    other API clients to the API methods.
