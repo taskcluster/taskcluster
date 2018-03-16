@@ -314,11 +314,13 @@ func handleWorkerShutdown(abort func()) func() {
 				if err != nil {
 					log.Printf("Could not read termination-time http response: %v", err)
 				} else {
-					log.Printf("\n\nSpot request has MAYBE been issued??? Decide for yourself!\n\n")
+					log.Print("\n\nSpot request has MAYBE been issued??? Decide for yourself!\n\n")
 					log.Print(string(bytes) + "\n\n")
 				}
+				log.Printf("resp.StatusCode = %v", resp.StatusCode)
 			}
 			if resp.StatusCode == 200 {
+				log.Print("WARNING: ABORTING task since an imminent spot termination notice has been received!")
 				abort()
 				break
 			}
