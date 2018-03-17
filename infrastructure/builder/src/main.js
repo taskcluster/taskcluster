@@ -3,8 +3,9 @@ const {version} = require('../package.json');
 
 program.version(version);
 program.command('build <input-cluster-spec> <output-cluster-spec>')
-  .action((input, output) => {
-    require('./build')(input, output).then(
+  .option('-p, --push', 'Push images to docker hub')
+  .action((input, output, options) => {
+    require('./build')(input, output, options).then(
       () => {},
       err => {
         console.error(err);

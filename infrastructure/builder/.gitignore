@@ -1,4 +1,5 @@
-user-config.yml
+user-build-config.yml
+user-deploy-config.yml
 /logs
 node_modules/
 yarn-error.log
