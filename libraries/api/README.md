@@ -454,3 +454,13 @@ if (!module.parent) {
 
 Consult the source of some of the existing TaskCluster services direcly for
 more fully-worked examples.
+
+# Development
+
+To hack on this library, you can begin by cloning the library and running `yarn` to install its dependencies.
+Then run `yarn test` to run the test suite.
+It should pass, although some tests will be skipped.
+If you are not modifing functionality tested by the skipped tests you're ready to get started: write some tests for the new functionality, then implement it!
+If you are modifying something requiring credentials, copy `user-config-example.yml` to `user-config.yml` and fill in the necessary credentials based on the comments in that file.
+
+The taskcluster team has a series of [best practices](https://docs.taskcluster.net/manual/devel/best-practices) which may help guide you in modifying the source code and making a pull request.
