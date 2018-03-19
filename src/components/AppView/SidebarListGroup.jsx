@@ -11,23 +11,23 @@ import SidebarListItem from './SidebarListItem';
 @withStyles(theme => ({
   listGroup: {
     '& > a': {
-      paddingLeft: theme.spacing.triple
-    }
-  }
+      paddingLeft: theme.spacing.triple,
+    },
+  },
 }))
 export default class SidebarListGroup extends Component {
   static propTypes = {
     children: arrayOf(node).isRequired,
     title: string.isRequired,
-    icon: node
+    icon: node,
   };
 
   static defaultProps = {
-    icon: null
+    icon: null,
   };
 
   state = {
-    open: false
+    open: false,
   };
 
   handleClick = e => {

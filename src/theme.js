@@ -1,6 +1,4 @@
 import { createMuiTheme } from 'material-ui/styles';
-import grey from 'material-ui/colors/grey';
-import cyan from 'material-ui/colors/cyan';
 import red from 'material-ui/colors/red';
 
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
@@ -11,22 +9,24 @@ export default createMuiTheme({
   palette: {
     type: 'dark',
     primary: {
-      ...grey
+      background: '#12202c',
+      main: '#1b2a39',
     },
     secondary: {
-      main: cyan[900]
+      main: '#0e1923',
     },
     error: {
-      ...red
+      ...red,
     },
     text: {
-      primary: '#fff',
+      primary: 'rgba(255, 255, 255, 0.9)',
       secondary: 'rgba(255, 255, 255, 0.7)',
       disabled: 'rgba(255, 255, 255, 0.5)',
       hint: 'rgba(255, 255, 255, 0.5)',
       icon: 'rgba(255, 255, 255, 0.5)',
-      active: 'rgba(255, 255, 255, 0.12)'
-    }
+      active: 'rgba(255, 255, 255, 0.12)',
+      inactive: 'rgba(255, 255, 255, 0.3)',
+    },
   },
   typography: {
     ...Roboto400,
@@ -40,13 +40,20 @@ export default createMuiTheme({
     body2: Roboto500,
     body1: Roboto400,
     caption: Roboto400,
-    button: Roboto500
+    button: Roboto500,
   },
   spacing: {
     unit: 8,
     double: 16,
     triple: 24,
-    quad: 32
+    quad: 32,
   },
-  drawerWidth: 240
+  drawerWidth: 240,
+  overrides: {
+    MuiPaper: {
+      root: {
+        backgroundColor: '#1b2a39',
+      },
+    },
+  },
 });

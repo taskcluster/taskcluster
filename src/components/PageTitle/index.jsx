@@ -4,7 +4,7 @@ import Helmet, { title } from 'react-helmet';
 
 export default class PageTitle extends PureComponent {
   static propTypes = {
-    children: string.isRequired
+    children: string.isRequired,
   };
 
   render() {

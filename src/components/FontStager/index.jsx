@@ -15,11 +15,11 @@ export default class FontStager extends Component {
                 className: 'font-stage-secondary',
                 families: [
                   { family: 'Roboto300', options: { weight: 300 } },
-                  { family: 'Roboto500', options: { weight: 500 } }
-                ]
-              }
-            ]
-          }
+                  { family: 'Roboto500', options: { weight: 500 } },
+                ],
+              },
+            ],
+          },
         ]}
       />
     );

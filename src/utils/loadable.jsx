@@ -16,15 +16,15 @@ import { CircularProgress } from 'material-ui/Progress';
     overflowX: 'auto',
     [theme.breakpoints.up('sm')]: {
       height: 'calc(100% - 64px)',
-      marginTop: 64
-    }
+      marginTop: 64,
+    },
   },
   spinner: {
-    color: theme.palette.primary[50]
+    color: theme.palette.primary[50],
   },
   errorIcon: {
-    fontSize: 48
-  }
+    fontSize: 48,
+  },
 }))
 class Loading extends PureComponent {
   content() {
@@ -37,7 +37,7 @@ class Loading extends PureComponent {
         <CircularProgress
           size={50}
           classes={{
-            circleIndeterminate: classes.spinner
+            circleIndeterminate: classes.spinner,
           }}
         />
       );
@@ -56,5 +56,5 @@ class Loading extends PureComponent {
 export default loader =>
   Loadable({
     loader,
-    loading: Loading
+    loading: Loading,
   });

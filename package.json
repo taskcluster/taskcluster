@@ -15,8 +15,8 @@
   "dependencies": {
     "classnames": "^2.2.5",
     "error-stack-parser": "^2.0.1",
-    "material-ui": "^1.0.0-beta.37",
-    "mdi-react": "^2.1.19",
+    "material-ui": "1.0.0-beta.38",
+    "mdi-react": "^3.0.0",
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -34,6 +34,6 @@
     "husky": "^0.14.3",
     "lint-staged": "^7.0.0",
     "neutrino": "^8.1.2",
-    "neutrino-preset-mozilla-frontend-infra": "^1.1.0"
+    "neutrino-preset-mozilla-frontend-infra": "^2.0.2"
   }
 }

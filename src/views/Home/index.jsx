@@ -7,7 +7,7 @@ import AppView from '../../components/AppView';
 export default class Home extends Component {
   render() {
     return (
-      <AppView>
+      <AppView elevated={false}>
         <Typography variant="display1">Home</Typography>
       </AppView>
     );

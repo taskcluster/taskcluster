@@ -4,7 +4,7 @@ import { withStyles } from 'material-ui/styles';
 import Typography from 'material-ui/Typography';
 import ExpansionPanel, {
   ExpansionPanelSummary,
-  ExpansionPanelDetails
+  ExpansionPanelDetails,
 } from 'material-ui/ExpansionPanel';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ErrorBox from './ErrorBox';
@@ -13,15 +13,15 @@ import ErrorBox from './ErrorBox';
   panel: {
     color: theme.palette.error.contrastText,
     backgroundColor: theme.palette.error.main,
-    borderColor: theme.palette.error.light
+    borderColor: theme.palette.error.light,
   },
   disabled: {
-    opacity: 1
+    opacity: 1,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
-    fontWeight: theme.typography.fontWeightRegular
-  }
+    fontWeight: theme.typography.fontWeightRegular,
+  },
 }))
 /**
  * Render an error in a panel. Will be expandable display stack traces
@@ -30,7 +30,7 @@ import ErrorBox from './ErrorBox';
 export default class ErrorPanel extends Component {
   static propTypes = {
     /** Error to display */
-    error: oneOfType([string, instanceOf(Error)]).isRequired
+    error: oneOfType([string, instanceOf(Error)]).isRequired,
   };
 
   render() {

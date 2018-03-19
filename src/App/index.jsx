@@ -23,7 +23,7 @@ const NotFound = loadable(() =>
 @hot(module)
 export default class App extends Component {
   state = {
-    error: null
+    error: null,
   };
 
   componentDidCatch(error) {

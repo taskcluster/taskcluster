@@ -25,20 +25,23 @@ import SidebarList from './SidebarList';
       overflow: 'hidden',
       position: 'relative',
       display: 'flex',
-      width: '100vw'
+      width: '100vw',
     },
     appBar: {
       position: 'fixed',
       backgroundColor: theme.palette.secondary.main,
       zIndex: theme.zIndex.drawer + 1,
       [theme.breakpoints.up('md')]: {
-        width: `calc(100% - ${theme.drawerWidth}px)`
-      }
+        width: `calc(100% - ${theme.drawerWidth}px)`,
+      },
+    },
+    appBarTitle: {
+      fontFamily: 'Roboto300',
     },
     navIconHide: {
       [theme.breakpoints.up('md')]: {
-        display: 'none'
-      }
+        display: 'none',
+      },
     },
     toolbar: {
       ...theme.mixins.toolbar,
@@ -46,51 +49,52 @@ import SidebarList from './SidebarList';
       display: 'flex',
       flexGrow: 1,
       flexDirection: 'row',
-      alignItems: 'center'
+      alignItems: 'center',
     },
     drawerPaper: {
       color: theme.palette.secondary.contrastText,
       width: theme.drawerWidth,
       [theme.breakpoints.up('md')]: {
-        position: 'fixed'
-      }
+        position: 'fixed',
+      },
+      borderRight: 0,
     },
     title: {
+      textDecoration: 'none',
       color: theme.palette.common.white,
-      textDecoration: 'none'
     },
     content: {
       flexGrow: 1,
-      padding: theme.spacing.triple,
+      backgroundColor: theme.palette.primary.background,
       paddingBottom: theme.spacing.unit * 12,
       overflowY: 'auto',
-      height: 'calc(100% - 56px)',
+      minHeight: 'calc(100vh - 56px)',
       marginTop: 56,
       [theme.breakpoints.up('sm')]: {
-        height: 'calc(100% - 64px)',
-        marginTop: 64
+        minHeight: 'calc(100vh - 64px)',
+        marginTop: 64,
       },
       [theme.breakpoints.up('md')]: {
         marginLeft: theme.drawerWidth,
-        width: `calc(100% - ${theme.drawerWidth}px)`
-      }
-    }
+        width: `calc(100% - ${theme.drawerWidth}px)`,
+      },
+    },
   }),
   { withTheme: true }
 )
 export default class AppView extends Component {
   static propTypes = {
     children: node.isRequired,
-    title: string
+    title: string,
   };
 
   static defaultProps = {
-    title: ''
+    title: '',
   };
 
   state = {
     mobileOpen: false,
-    error: null
+    error: null,
   };
 
   componentDidCatch(error) {
@@ -142,7 +146,7 @@ export default class AppView extends Component {
               className={classes.navIconHide}>
               <MenuIcon />
             </IconButton>
-            <Typography variant="title" noWrap className={classes.title}>
+            <Typography variant="title" noWrap className={classes.appBarTitle}>
               {title}
             </Typography>
           </Toolbar>
@@ -154,10 +158,10 @@ export default class AppView extends Component {
             open={mobileOpen}
             onClose={this.handleDrawerToggle}
             classes={{
-              paper: classes.drawerPaper
+              paper: classes.drawerPaper,
             }}
             ModalProps={{
-              keepMounted: true
+              keepMounted: true,
             }}>
             {drawer}
           </Drawer>
@@ -166,8 +170,11 @@ export default class AppView extends Component {
           <Drawer
             variant="permanent"
             open
+            PaperProps={{
+              elevation: 2,
+            }}
             classes={{
-              paper: classes.drawerPaper
+              paper: classes.drawerPaper,
             }}>
             {drawer}
           </Drawer>

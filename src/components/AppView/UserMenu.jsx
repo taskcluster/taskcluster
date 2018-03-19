@@ -8,12 +8,12 @@ import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 
 @withStyles(theme => ({
   avatar: {
-    backgroundColor: theme.palette.secondary.main
-  }
+    backgroundColor: theme.palette.secondary.main,
+  },
 }))
 export default class UserMenu extends Component {
   state = {
-    anchorEl: null
+    anchorEl: null,
   };
 
   handleMenuClick = e => this.setState({ anchorEl: e.currentTarget });
