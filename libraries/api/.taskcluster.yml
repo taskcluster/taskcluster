@@ -60,3 +60,6 @@ tasks:
       description: "Upload documentation for this project"
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
+
+# There are no secrets here, so any pull request should be able to run the tasks..
+allowPullRequests: public
