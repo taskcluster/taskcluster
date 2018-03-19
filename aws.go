@@ -14,6 +14,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -321,6 +322,7 @@ func handleWorkerShutdown(abort func()) func() {
 			}
 			if resp.StatusCode == 200 {
 				log.Print("WARNING: ABORTING task since an imminent spot termination notice has been received!")
+				debug.PrintStack()
 				abort()
 				break
 			}
