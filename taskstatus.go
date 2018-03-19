@@ -175,9 +175,11 @@ func (tsm *TaskStatusManager) TakenUntil() tcclient.Time {
 }
 
 func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
+	fmt.Println("Inside Abort in taskstatus")
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
+			fmt.Println("Inside funcy")
 			task.kill()
 			tsm.abortException = cee
 			return nil

@@ -1280,6 +1280,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	// additional retries left.
 	if configureForAws {
 		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
+			fmt.Println("Inside abort function")
 			task.StatusManager.Abort(
 				&CommandExecutionError{
 					Cause:      fmt.Errorf("AWS has issued a spot termination - need to abort task"),
@@ -1287,6 +1288,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 					TaskStatus: aborted,
 				},
 			)
+			fmt.Println("Managed to abort")
 		})
 		defer stopHandlingWorkerShutdown()
 	}

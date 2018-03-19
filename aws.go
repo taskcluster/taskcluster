@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,7 +15,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"path/filepath"
-	"runtime/debug"
+	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -322,8 +323,16 @@ func handleWorkerShutdown(abort func()) func() {
 			}
 			if resp.StatusCode == 200 {
 				log.Print("WARNING: ABORTING task since an imminent spot termination notice has been received!")
-				debug.PrintStack()
+				pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
+				fmt.Println("")
+				pprof.Lookup("heap").WriteTo(os.Stdout, 1)
+				fmt.Println("")
+				pprof.Lookup("threadcreate").WriteTo(os.Stdout, 1)
+				fmt.Println("")
+				pprof.Lookup("block").WriteTo(os.Stdout, 1)
+				fmt.Println("")
 				abort()
+				fmt.Println("Finished ABORT")
 				break
 			}
 		}
