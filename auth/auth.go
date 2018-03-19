@@ -54,12 +54,20 @@
 //
 // First create an Auth object:
 //
-//  myAuth := auth.New(&tcclient.Credentials{ClientID: "myClientID", AccessToken: "myAccessToken"})
+//  myAuth, err := auth.New(nil)
+//
+// handling any errors...
+//
+//  if err != nil {
+//  	// handle error...
+//  }
 //
 // and then call one or more of myAuth's methods, e.g.:
 //
 //  data, err := myAuth.ListClients(.....)
+//
 // handling any errors...
+//
 //  if err != nil {
 //  	// handle error...
 //  }
@@ -68,7 +76,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 12 Mar 2018 at 21:22:00 UTC. The code was generated
+// Mon, 19 Mar 2018 at 14:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 

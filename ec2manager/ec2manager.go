@@ -16,12 +16,20 @@
 //
 // First create an EC2Manager object:
 //
-//  eC2Manager := ec2manager.New(&tcclient.Credentials{ClientID: "myClientID", AccessToken: "myAccessToken"})
+//  eC2Manager, err := ec2manager.New(nil)
+//
+// handling any errors...
+//
+//  if err != nil {
+//  	// handle error...
+//  }
 //
 // and then call one or more of eC2Manager's methods, e.g.:
 //
 //  data, err := eC2Manager.ListWorkerTypes(.....)
+//
 // handling any errors...
+//
 //  if err != nil {
 //  	// handle error...
 //  }
@@ -30,7 +38,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/ec2-manager/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 12 Mar 2018 at 21:22:00 UTC. The code was generated
+// Mon, 19 Mar 2018 at 14:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package ec2manager
 
