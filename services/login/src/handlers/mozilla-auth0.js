@@ -220,8 +220,8 @@ class Handler {
     const mozGroupPrefix = 'mozilliansorg_';
     const hrisGroupPrefix = 'hris_';
     const groups = Array.from([
-      ...(profile.groups || []),
-      ...((profile.app_metadata || {}).groups || []),
+      ...profile.groups || [],
+      ...(profile.app_metadata || {}).groups || [],
     ]);
 
     // Non-prefixed groups are what is known as Mozilla LDAP groups. Groups prefixed by a provider
