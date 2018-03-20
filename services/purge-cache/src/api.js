@@ -30,6 +30,7 @@ let api = new API({
     'This document describes the API end-point for publishing the pulse',
     'message. This is mainly intended to be used by tools.',
   ].join('\n'),
+  name:'purge-cache',
 });
 
 // Export API
