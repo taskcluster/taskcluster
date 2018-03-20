@@ -220,7 +220,7 @@ class Handler {
     const mozGroupPrefix = 'mozilliansorg_';
     const hrisGroupPrefix = 'hris_';
     const groups = Array.from([
-      ...profile.groups,
+      ...(profile.groups || []),
       ...((profile.app_metadata || {}).groups || []),
     ]);
 
