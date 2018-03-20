@@ -117,6 +117,25 @@ let load = loader({
       process.exit(0);
     },
   },
+
+  // utility function to show Auth0 profile
+  'show-auth0-profile': {
+    requires: ['cfg', 'handlers'],
+    setup: async ({cfg, handlers}) => {
+      let userId = process.argv[3];
+      if (!userId) {
+        console.error('Specify an userId address on the command line');
+        process.exit(1);
+        return;
+      }
+
+      const handler = handlers['mozilla-auth0'];
+
+      console.log(await handler.profileFromUserId(userId));
+      process.exit(0);
+    },
+  },
+
 }, ['profile', 'process']);
 
 if (!module.parent) {
