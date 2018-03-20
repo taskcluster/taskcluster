@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.9.4
+  - "1.10"
 
 env:
   - "CGO_ENABLED=0 GIMME_OS=linux GIMME_ARCH=386"
