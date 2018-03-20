@@ -24,10 +24,12 @@ class User {
       .join('|');
   }
 
-  addRole(role) {
+  addRole(...roles) {
     assert(this._identity !== undefined);
-    if (this.roles.indexOf(role) === -1) {
-      this.roles.push(role);
+    for (const role of roles) {
+      if (!this.roles.includes(role)) {
+        this.roles.push(role);
+      }
     }
   }
 
