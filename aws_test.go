@@ -36,7 +36,7 @@ func TestNoShutdown(t *testing.T) {
 	}
 	td := testTask(t)
 
-	_ = submitAndAssert(t, td, payload, "exception", "deadline-exceeded")
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 func TestAWSWorkerTypeMetadata(t *testing.T) {
