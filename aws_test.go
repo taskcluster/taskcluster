@@ -14,8 +14,8 @@ func TestWorkerShutdown(t *testing.T) {
 	}
 	defer m.Setup(t)()
 	payload := GenericWorkerPayload{
-		Command:    sleep(8),
-		MaxRunTime: 60,
+		Command:    sleep(10),
+		MaxRunTime: 8,
 	}
 	td := testTask(t)
 
@@ -31,12 +31,12 @@ func TestNoShutdown(t *testing.T) {
 	}
 	defer m.Setup(t)()
 	payload := GenericWorkerPayload{
-		Command:    sleep(8),
-		MaxRunTime: 60,
+		Command:    sleep(10),
+		MaxRunTime: 8,
 	}
 	td := testTask(t)
 
-	_ = submitAndAssert(t, td, payload, "completed", "completed")
+	_ = submitAndAssert(t, td, payload, "exception", "deadline-exceeded")
 }
 
 func TestAWSWorkerTypeMetadata(t *testing.T) {
