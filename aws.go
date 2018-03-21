@@ -6,16 +6,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"path/filepath"
-	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -308,31 +305,8 @@ func handleWorkerShutdown(abort func()) func() {
 				continue
 			}
 			defer resp.Body.Close()
-			// Currently not all spot requests are getting captured, let's dump
-			// output it response status code is not 404, to see if we can work
-			// out what is going on...
-			if resp.StatusCode != 404 {
-				bytes, err := httputil.DumpResponse(resp, true)
-				if err != nil {
-					log.Printf("Could not read termination-time http response: %v", err)
-				} else {
-					log.Print("\n\nSpot request has MAYBE been issued??? Decide for yourself!\n\n")
-					log.Print(string(bytes) + "\n\n")
-				}
-				log.Printf("resp.StatusCode = %v", resp.StatusCode)
-			}
 			if resp.StatusCode == 200 {
-				log.Print("WARNING: ABORTING task since an imminent spot termination notice has been received!")
-				pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
-				fmt.Println("")
-				pprof.Lookup("heap").WriteTo(os.Stdout, 1)
-				fmt.Println("")
-				pprof.Lookup("threadcreate").WriteTo(os.Stdout, 1)
-				fmt.Println("")
-				pprof.Lookup("block").WriteTo(os.Stdout, 1)
-				fmt.Println("")
 				abort()
-				fmt.Println("Finished ABORT")
 				break
 			}
 		}
