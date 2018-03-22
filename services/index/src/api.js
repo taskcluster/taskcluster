@@ -111,7 +111,8 @@ var api = new API({
     'good idea to document task index hierarchies, as these make up extension',
     'points in their own.',
   ].join('\n'),
-  name:               'index', 
+  name:               'index',
+  context:            ['queue', 'validator', 'IndexedTask', 'Namespace'],
   schemaPrefix:       'http://schemas.taskcluster.net/index/v1/',
   params: {
     namespace:        helpers.namespaceFormat,
