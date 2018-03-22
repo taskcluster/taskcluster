@@ -242,7 +242,8 @@
     "supersederUrl": {
       "title": "URL of the a service that can indicate tasks superseding this one; the current taskId will be appended as a query argument `taskId`.  The service should return an object with a `supersedes` key containing a list of taskIds, including the supplied taskId.  The tasks should be ordered such that each task supersedes all tasks appearing earlier in the list.  See [superseding](https://docs.Taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.",
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "pattern": "^https?://[\\x20-\\x7e]*$"
     },
     "features": {
       "title": "Feature flags",
