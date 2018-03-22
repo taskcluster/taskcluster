@@ -17,8 +17,7 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 		panic(fmt.Errorf("SERIOUS BUG: Could not get login info of task user to check it can't read chain of trust private key - %v", err))
 	}
 	TenSecondDeadline := time.Now().Add(time.Second * 10)
-	commandLine := `cmd.exe /c type "` + config.SigningKeyLocation + `"`
-	c, err := process.NewCommand(loginInfo, nil, &commandLine, &cwd, nil, TenSecondDeadline)
+	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.SigningKeyLocation}, cwd, nil, loginInfo, TenSecondDeadline)
 	if err != nil {
 		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key - %v", err))
 	}
