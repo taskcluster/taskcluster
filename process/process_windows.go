@@ -1,10 +1,12 @@
 package process
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"log"
-	"os"
+	"os/exec"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/taskcluster/generic-worker/runtime"
@@ -12,197 +14,163 @@ import (
 	"github.com/taskcluster/runlib/win32"
 )
 
-type Verdict int
-
-const (
-	SUCCESS               = Verdict(0)
-	FAIL                  = Verdict(1)
-	CRASH                 = Verdict(2)
-	TIME_LIMIT_EXCEEDED   = Verdict(3)
-	MEMORY_LIMIT_EXCEEDED = Verdict(4)
-	MAX_RUNTIME_EXCEEDED  = Verdict(5)
-	SECURITY_VIOLATION    = Verdict(6)
-)
-
-func (v Verdict) String() string {
-	switch v {
-	case SUCCESS:
-		return "SUCCEEDED"
-	case FAIL:
-		return "FAILED"
-	case CRASH:
-		return "CRASHED"
-	case TIME_LIMIT_EXCEEDED:
-		return "TIME_LIMIT_EXCEEDED"
-	case MEMORY_LIMIT_EXCEEDED:
-		return "MEMORY_LIMIT_EXCEEDED"
-	case MAX_RUNTIME_EXCEEDED:
-		return "MAX_RUNTIME_EXCEEDED"
-	case SECURITY_VIOLATION:
-		return "SECURITY_VIOLATION"
-	}
-	return "FAILED"
-}
-
-func GetVerdict(r *Result) Verdict {
-	switch {
-	case r.SuccessCode == 0 && r.ExitCode == 0:
-		return SUCCESS
-	case r.SuccessCode == 0 && r.ExitCode != 0:
-		return FAIL
-	case r.SuccessCode&(subprocess.EF_PROCESS_LIMIT_HIT|subprocess.EF_PROCESS_LIMIT_HIT_POST) != 0:
-		return SECURITY_VIOLATION
-	case r.SuccessCode&(subprocess.EF_INACTIVE|subprocess.EF_TIME_LIMIT_HARD) != 0:
-		return MAX_RUNTIME_EXCEEDED
-	case r.SuccessCode&(subprocess.EF_TIME_LIMIT_HIT|subprocess.EF_TIME_LIMIT_HIT_POST) != 0:
-		return TIME_LIMIT_EXCEEDED
-	case r.SuccessCode&(subprocess.EF_MEMORY_LIMIT_HIT|subprocess.EF_MEMORY_LIMIT_HIT_POST) != 0:
-		return MEMORY_LIMIT_EXCEEDED
-	default:
-		return CRASH
-	}
-}
-
 type Command struct {
-	*subprocess.Subprocess
-	Deadline time.Time
+	mutex sync.RWMutex
+	*exec.Cmd
+	Context    context.Context
+	CancelFunc context.CancelFunc
 }
 
 type Result struct {
-	*subprocess.SubprocessResult
 	SystemError error
-}
-
-type LogonSession struct {
-	User      *runtime.OSUser
-	LoginInfo *subprocess.LoginInfo
+	ExitError   *exec.ExitError
+	Duration    time.Duration
+	Aborted     bool
+	KernelTime  time.Duration
+	UserTime    time.Duration
 }
 
 func (r *Result) Succeeded() bool {
-	return GetVerdict(r) == SUCCESS
+	return r.SystemError == nil && r.ExitError == nil
 }
 
 func (r *Result) Failed() bool {
-	return r.SystemError == nil && GetVerdict(r) != SUCCESS
-}
-
-func (r *Result) FailureCause() error {
-	return fmt.Errorf("%v\n\nExit code: %v", r.Error, r.ExitCode)
-}
-
-func (r *Result) Crashed() bool {
-	return r.SystemError != nil
+	return (r.SystemError == nil && r.ExitError != nil) || r.Aborted
 }
 
 func (r *Result) CrashCause() error {
 	return r.SystemError
 }
 
-func (r *Result) String() string {
-	if r.SystemError != nil {
-		return fmt.Sprintf(`WORKER CRASH!!
-%v`, r.SystemError)
-	}
-	if r.SubprocessResult != nil {
-		return fmt.Sprintf(`   Exit Code: %v
-Success Code: 0x%X
-   User Time: %v
- Kernel Time: %v
-   Wall Time: %v
- Peak Memory: %v
-      Result: %v`, r.ExitCode, r.SuccessCode, r.UserTime, r.KernelTime, r.WallTime, r.PeakMemory, GetVerdict(r))
-	}
-	return fmt.Sprintf("Worker in unknown state: %#v", r)
+func (r *Result) FailureCause() *exec.ExitError {
+	return r.ExitError
 }
 
-func (c *Command) String() string {
-	return *c.Cmd.CommandLine
+func (r *Result) Crashed() bool {
+	return r.SystemError != nil && !r.Aborted
+}
+
+func NewCommand(commandLine []string, workingDirectory string, env []string, loginInfo *subprocess.LoginInfo, deadline time.Time) (*Command, error) {
+	var cancel context.CancelFunc
+	var ctx context.Context
+	if deadline.IsZero() {
+		ctx = context.Background()
+		cancel = func() {}
+	} else {
+		ctx, cancel = context.WithDeadline(context.Background(), deadline)
+	}
+	cmd := exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
+	cmd.Env = env
+	cmd.Dir = workingDirectory
+	isWindows8OrGreater := win32.IsWindows8OrGreater()
+	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
+	if !isWindows8OrGreater {
+		creationFlags |= win32.CREATE_BREAKAWAY_FROM_JOB
+	}
+	if loginInfo != nil && loginInfo.HUser != 0 {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Token:         syscall.Token(loginInfo.HUser),
+			CreationFlags: creationFlags,
+		}
+	}
+	return &Command{
+		Context:    ctx,
+		CancelFunc: cancel,
+		Cmd:        cmd,
+	}, nil
+}
+
+// Returns the exit code, or
+//  -1 if the process has not exited
+//  -2 if the process crashed
+//  -3 it could not be established what happened
+//  -4 if process was aborted
+func (r *Result) ExitCode() int {
+	if r.Aborted {
+		return -4
+	}
+	if r.SystemError != nil {
+		return -2
+	}
+	if r.ExitError == nil {
+		return 0
+	}
+	if status, ok := r.ExitError.Sys().(syscall.WaitStatus); ok {
+		return status.ExitStatus() // -1 if not exited
+	}
+	return -3
 }
 
 func (c *Command) Execute() (r *Result) {
-	if !c.Deadline.IsZero() {
-		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		c.HardTimeLimit = c.Deadline.Round(0).Sub(time.Now())
-		if c.HardTimeLimit < 0 {
-			log.Printf("WARNING: Deadline %v exceeded before command %v has been executed!", c.Deadline, c)
-			// this is a hack to simulate a failure
-			return &Result{
-				SubprocessResult: &subprocess.SubprocessResult{
-					SuccessCode: 0,
-					ExitCode:    1,
-				},
-				SystemError: nil,
-			}
+	defer c.CancelFunc()
+	r = &Result{}
+	started := time.Now()
+	c.mutex.Lock()
+	err := c.Start()
+	c.mutex.Unlock()
+	if err != nil {
+		r.SystemError = err
+		return
+	}
+	err = c.Wait()
+	finished := time.Now()
+	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+	r.Duration = finished.Round(0).Sub(started)
+	r.Aborted = (c.Context.Err() != nil)
+	r.UserTime = c.ProcessState.UserTime()
+	r.KernelTime = c.ProcessState.SystemTime()
+	if err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			r.ExitError = exiterr
+		} else {
+			r.SystemError = err
 		}
 	}
-	result, err := c.Subprocess.Execute()
-	defer win32.CloseHandle(c.Subprocess.Login.HUser)
-	return &Result{
-		SubprocessResult: result,
-		SystemError:      err,
-	}
+	return
 }
 
-func NewCommand(loginInfo *subprocess.LoginInfo, applicationName *string, commandLine *string, workingDirectory *string, env *[]string, deadline time.Time) (*Command, error) {
-	if deadline.IsZero() {
-		log.Print("No deadline!")
-	} else {
-		log.Printf("Deadline: %v", deadline)
-	}
-	command := &Command{
-		Subprocess: &subprocess.Subprocess{
-			TimeQuantum: time.Second / 4,
-			Cmd: &subprocess.CommandLine{
-				ApplicationName: applicationName,
-				CommandLine:     commandLine,
-				Parameters:      nil, // unused on windows
-			},
-			CurrentDirectory:    workingDirectory,
-			TimeLimit:           0,
-			HardTimeLimit:       0,
-			MemoryLimit:         0,
-			CheckIdleness:       false,
-			RestrictUi:          false,
-			ProcessAffinityMask: 0,
-			NoJob:               true,
-			Environment:         env,
-			StdIn: &subprocess.Redirect{
-				Mode: subprocess.REDIRECT_NONE,
-			},
-			StdOut:        nil,
-			StdErr:        nil,
-			JoinStdOutErr: true,
-			Options: &subprocess.PlatformOptions{
-				Desktop: `winsta0\default`,
-			},
-			Login: loginInfo,
-		},
-		Deadline: deadline,
-	}
-	log.Printf("Created command: %v to run from folder %v", *commandLine, *workingDirectory)
-	return command, nil
+func (c *Command) String() string {
+	return fmt.Sprintf("%q", c.Args)
 }
 
-// For now, I don't see a simple way to terminate the process outside of the
-// subprocess library.  However, we can set a time limit, so the only thing we
-// can't do is kill a process in response to cancelling of a task. That wasn't
-// implemented before, so we haven't lost anything, over the old
-// implementation. However, at some point, we should find a way to kill the
-// process for when we want to cancel tasks.
-func (c *Command) Kill() error {
-	return nil
+func (r *Result) String() string {
+	return fmt.Sprintf(""+
+		"   Exit Code: %v\n"+
+		"   User Time: %v\n"+
+		" Kernel Time: %v\n"+
+		"   Wall Time: %v\n"+
+		"      Result: %v",
+		r.ExitCode(),
+		r.UserTime,
+		r.KernelTime,
+		r.Duration,
+		r.Verdict(),
+	)
+}
+
+func (r *Result) Verdict() string {
+	switch {
+	case r.Aborted:
+		return "ABORTED"
+	case r.ExitError == nil:
+		return "SUCCEEDED"
+	default:
+		return "FAILED"
+	}
 }
 
 func (c *Command) DirectOutput(writer io.Writer) {
-	r, w, err := os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-	c.StdOut = &subprocess.Redirect{
-		Mode: subprocess.REDIRECT_PIPE,
-		Pipe: w,
-	}
-	go func() {
-		io.Copy(writer, r)
-	}()
+	c.Stdout = writer
+	c.Stderr = writer
+}
+
+func (c *Command) Kill() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	return c.Process.Kill()
+}
+
+type LogonSession struct {
+	User      *runtime.OSUser
+	LoginInfo *subprocess.LoginInfo
 }
