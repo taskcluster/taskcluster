@@ -51,6 +51,13 @@ func (r *Result) Crashed() bool {
 }
 
 func NewCommand(commandLine []string, workingDirectory string, env []string, loginInfo *subprocess.LoginInfo, deadline time.Time) (*Command, error) {
+	if loginInfo != nil && loginInfo.HUser != 0 {
+		environment, err := win32.CreateEnvironment(&env, loginInfo.HUser)
+		if err != nil {
+			return nil, err
+		}
+		env = *environment
+	}
 	var cancel context.CancelFunc
 	var ctx context.Context
 	if deadline.IsZero() {
