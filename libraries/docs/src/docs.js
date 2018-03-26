@@ -7,6 +7,7 @@ let recursiveReadSync = require('recursive-readdir-sync');
 let zlib = require('zlib');
 let rootdir = require('app-root-dir');
 let aws = require('aws-sdk');
+
 let client = require('taskcluster-client');
 let S3UploadStream = require('s3-upload-stream');
 let debug = require('debug')('taskcluster-lib-docs');
@@ -164,9 +165,13 @@ async function downloader(options) {
     credentials: options.credentials,
   });
 
-  let creds = await auth.awsS3Credentials('read-only', options.bucket, options.project + '/');
-
-  let s3 = new aws.S3(creds.credentials);
+  let s3;
+  if (options._s3) {
+    s3 = options._s3;
+  } else {
+    let creds = await auth.awsS3Credentials('read-only', options.bucket, options.project + '/');
+    s3 = new aws.S3(creds.credentials);
+  }
 
   let readStream = s3.getObject({
     Bucket: options.bucket,
