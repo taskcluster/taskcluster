@@ -14,8 +14,10 @@ test:
   pulse:
     username:           "..."
     password:           "..."
+
   # to enable the test-staging script, set these to valid TC credentials with
   # `auth:create-client:garbage/*` and `auth:delete-client:garbage/*`.
+  # NOTE: you do not need this to run the unit tests!
   checkStaging:
     credentials:
       clientId:         "..."
