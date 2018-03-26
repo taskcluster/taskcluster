@@ -19,6 +19,7 @@ let api = new API({
     'service credential or a one-time signing key.',
   ].join('\n'),
   name:          'secrets',
+  context: ['cfg', 'entity'],
 });
 
 // Export API
