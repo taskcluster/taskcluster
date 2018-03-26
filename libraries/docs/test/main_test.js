@@ -5,11 +5,13 @@ const _ = require('lodash');
 const tar = require('tar-stream');
 const rootdir = require('app-root-dir');
 const zlib = require('zlib');
+const path = require('path');
 const validator = require('taskcluster-lib-validate');
 const config = require('typed-env-config');
 const API = require('taskcluster-lib-api');
 const Exchanges = require('pulse-publisher');
 const mockS3UploadStream = require('./mockS3UploadStream');
+const awsMock = require('mock-aws-s3');
 
 async function getObjectsInStream(inStream) {
   let output = {};
@@ -204,12 +206,16 @@ suite('downloader', function() {
   let credentials = cfg.taskcluster.credentials;
 
   const downloadTest = async function(mock) {
+    let _s3 = null;
+
     if (mock) {
       // See https://bugzilla.mozilla.org/show_bug.cgi?id=1443019
-      this.skip();
-    }
+      credentials = {clientId: 'fake', accessToken: 'fake'};
 
-    if (!credentials.clientId) {
+      awsMock.config.basePath = path.join(__dirname, '..', 'test', 'bucket');
+      _s3 = awsMock.S3(credentials);
+
+    } else if (!credentials.clientId) {
       this.skip();
     }
 
@@ -217,6 +223,7 @@ suite('downloader', function() {
       project: 'docs-testing',
       bucket: cfg.bucket,
       credentials,
+      _s3,
     });
 
     let files = await getObjectsInStream(stream);
