@@ -31,6 +31,7 @@ var api = new API({
     'for more information.',
   ].join('\n'),
   name: 'hooks',
+  context: ['Hook', 'taskcreator'],
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
 
