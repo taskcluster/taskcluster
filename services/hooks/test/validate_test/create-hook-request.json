@@ -5,7 +5,6 @@
         "description": "todo",
         "owner": "nobody@example.com"
     },
-    "deadline": "1 day",
     "task":
     {
         "provisionerId": "aws-provisioner-v1",
