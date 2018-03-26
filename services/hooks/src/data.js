@@ -19,6 +19,9 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
+    // timings for the task (in fromNow format, e.g., "1 day")
+    deadline:           Entity.types.String,
+    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -41,6 +44,9 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
+    // timings for the task (in fromNow format, e.g., "1 day")
+    deadline:           Entity.types.String,
+    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -71,6 +77,9 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
+    // timings for the task (in fromNow format, e.g., "1 day")
+    deadline:           Entity.types.String,
+    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -99,6 +108,9 @@ var Hook = Entity.configure({
     task:               Entity.types.JSON,
     // pulse bindings (TODO; empty for now)
     bindings:           Entity.types.JSON,
+    // timings for the task (in fromNow format, e.g., "1 day")
+    deadline:           Entity.types.String,
+    expires:            Entity.types.String,
     // schedule for this task (see schemas/schedule.yml)
     schedule:           Entity.types.JSON,
     // access token used to trigger this task via webhook
@@ -118,32 +130,6 @@ var Hook = Entity.configure({
     item.triggerSchema = {type: 'object', properties: {}, additionalProperties: false};
     return item;
   },
-}).configure({
-  version:              5,
-  signEntities:         true,
-  properties:           {
-    hookGroupId:        Entity.types.String,
-    hookId:             Entity.types.String,
-    metadata:           Entity.types.JSON,
-    // task template
-    task:               Entity.types.JSON,
-    // pulse bindings (TODO; empty for now)
-    bindings:           Entity.types.JSON,
-    // schedule for this task (see schemas/schedule.yml)
-    schedule:           Entity.types.JSON,
-    // access token used to trigger this task via webhook
-    triggerToken:       Entity.types.EncryptedText,
-    // the taskId that will be used next time this hook is scheduled;
-    // this allows scheduling to be idempotent
-    nextTaskId:         Entity.types.EncryptedText,
-    // next date at which this task is scheduled to run
-    nextScheduledDate:  Entity.types.Date,
-  },
-  migrate: function(item) {
-    delete item.task.expires;
-    delete item.task.deadline;
-    return item;
-  },
 });
 
 /** Return promise for hook definition */
@@ -154,6 +140,8 @@ Hook.prototype.definition = function() {
     metadata:     _.cloneDeep(this.metadata),
     task:         _.cloneDeep(this.task),
     schedule:     _.cloneDeep(this.schedule),
+    deadline:     this.deadline,
+    expires:      this.expires,
     triggerSchema:this.triggerSchema,
   });
 };
