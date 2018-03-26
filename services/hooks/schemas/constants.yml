@@ -14,22 +14,6 @@ routing:
   type:         "string"
   maxLength:    128
 
-# Deadline of task
-deadline:
-  title:        "Deadline"
-  description: >
-      Use of this field is deprecated; use `deadline: {$fromNow: ..}` in the task template instead.
-  type:         "string"
-  default:      "1 day"
-
-# Expiration of task
-expires:
-  title:        "Expiration"
-  description: >
-      Use of this field is deprecated; use `expires: {$fromNow: ..}` in the task template instead.
-  type:         "string"
-  default:      "3 months"
-
 # Hook metadata
 metadata:
   type: "object"
