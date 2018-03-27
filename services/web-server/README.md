@@ -1,8 +1,8 @@
-# Taskcluster GraphQL Server
+# Taskcluster GraphQL Gateway
 
-An intermediary server between a GraphQL client and the Taskcluster REST APIs.
-Helps offload API genericism and client refreshing to the service instead of
-putting that logic on the client consumer.
+An intermediary gateway between a GraphQL client and the Taskcluster REST APIs.
+Helps make Taskcluster API communication consisitent and offloads client refreshing
+to the gateway instead of putting that logic on the client consumer.
 
 Supports the queries, mutations, and subscriptions of Taskcluster APIs used
 by web applications.

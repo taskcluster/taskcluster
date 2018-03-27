@@ -1,34 +1,36 @@
 {
-  "name": "taskcluster-graphql-server",
-  "version": "1.0.0",
+  "name": "taskcluster-web-server",
+  "version": "0.0.0-private",
+  "private": true,
   "main": "build/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "scripts": {
     "build": "neutrino build --require dotenv/config",
     "start": "neutrino start --require dotenv/config",
-    "lint": "neutrino lint"
+    "lint": "neutrino lint --require dotenv/config"
   },
   "devDependencies": {
-    "@neutrinojs/airbnb-base": "^8.1.1",
-    "@neutrinojs/node": "^8.1.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-prettier": "^2.6.0",
-    "neutrino": "^8.1.1",
-    "prettier": "^1.10.2",
+    "neutrino": "^8.1.2",
+    "neutrino-preset-mozilla-frontend-infra": "^3.0.1",
     "raw-loader": "^0.5.1"
   },
   "dependencies": {
-    "@eliperelman/graphql-yoga": "^1.1.0",
     "amqp-match": "^0.0.0",
+    "apollo-server-express": "^1.3.2",
+    "body-parser-graphql": "^1.0.0",
     "compression": "^1.7.2",
+    "cors": "^2.8.4",
     "dataloader": "^1.4.0",
     "deepmerge": "^2.0.1",
     "dotenv": "^5.0.0",
+    "express": "^4.16.3",
     "express-jwt": "^5.3.0",
+    "graphql": "^0.13.2",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
+    "graphql-playground-middleware-express": "^1.5.7",
+    "graphql-tools": "^2.23.1",
     "graphql-type-json": "^0.2.0",
     "graphql-validation-complexity": "^0.2.2",
     "immutable": "^3.8.2",
@@ -37,6 +39,7 @@
     "node-fetch": "^2.0.0",
     "sift": "^5.1.0",
     "source-map-support": "^0.5.3",
+    "subscriptions-transport-ws": "^0.9.6",
     "taskcluster-client": "^3.2.1"
   }
 }
