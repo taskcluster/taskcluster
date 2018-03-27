@@ -9,7 +9,7 @@ A simple library to allow all of our libraries and services to update their own 
 Requirements
 ------------
 
-This is tested on and should run on any of node `{7, 8}`.
+This is tested on and should run on Node 8 and higher.
 
 Operation
 ---------
