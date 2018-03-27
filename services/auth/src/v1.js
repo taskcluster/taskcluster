@@ -109,6 +109,9 @@ var api = new API({
 
     // A tc-lib-monitor for use beyond the lib-api level
     'monitor',
+
+    // The webhooktunnel config (with properties `secret` and `proxyUrl`)
+    'webhooktunnel',
   ],
 });
 
