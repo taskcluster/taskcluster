@@ -6,10 +6,6 @@
 
 A simple library to allow all of our libraries and services to update their own documentation automatically upon publish or deploy.
 
-Changelog
----------
-View the changelog on the [releases page](https://github.com/taskcluster/taskcluster-lib-docs/releases).
-
 Requirements
 ------------
 
