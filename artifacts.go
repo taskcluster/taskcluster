@@ -8,8 +8,10 @@ import (
 	"io/ioutil"
 	"log"
 	"mime"
+	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -464,8 +466,16 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 					// assume a problem with the request == worker bug
 					panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
 				}
+			case *url.Error:
+				switch subCause := rootCause.Err.(type) {
+				case *net.OpError:
+					log.Printf("Got *net.OpError - probably got no network at the moment: %#v", *subCause)
+					return nil
+				default:
+					panic(fmt.Errorf("WORKER EXCEPTION due to unexpected *url.Error when requesting url from queue to upload artifact to: %#v", subCause))
+				}
 			default:
-				panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", rootCause))
+				panic(fmt.Errorf("WORKER EXCEPTION due to *tcclient.APICallException error when requesting url from queue to upload artifact to. Root cause: %#v", rootCause))
 			}
 		default:
 			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
