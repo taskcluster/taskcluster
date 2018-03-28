@@ -43,7 +43,21 @@ type CallSummary struct {
 }
 
 func (cs *CallSummary) String() string {
-	return fmt.Sprintf("\nCALL SUMMARY\n============\n%s %s\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.HTTPRequest.Method, cs.HTTPRequest.URL, cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
+	s := "\nCALL SUMMARY\n============\n"
+	if req := cs.HTTPRequest; req != nil {
+		s += fmt.Sprintf("Method: %v\n", req.Method)
+		if req.URL != nil {
+			s += fmt.Sprintf("URL: %v", req.URL)
+		}
+		s += fmt.Sprintf("Request Headers:\n%#v\n", req.Header)
+	}
+	s += fmt.Sprintf("Request Body:\n%v\n", cs.HTTPRequestBody)
+	if resp := cs.HTTPResponse; resp != nil {
+		s += fmt.Sprintf("Response Headers:\n%#v\n", cs.HTTPResponse.Header)
+	}
+	s += fmt.Sprintf("Response Body:\n%v\n", cs.HTTPResponseBody)
+	s += fmt.Sprintf("Attempts: %v", cs.Attempts)
+	return s
 }
 
 type APICall struct {
