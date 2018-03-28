@@ -47,7 +47,7 @@ func (cs *CallSummary) String() string {
 	if req := cs.HTTPRequest; req != nil {
 		s += fmt.Sprintf("Method: %v\n", req.Method)
 		if req.URL != nil {
-			s += fmt.Sprintf("URL: %v", req.URL)
+			s += fmt.Sprintf("URL: %v\n", req.URL)
 		}
 		s += fmt.Sprintf("Request Headers:\n%#v\n", req.Header)
 	}
