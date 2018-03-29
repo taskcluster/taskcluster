@@ -782,6 +782,9 @@ API.prototype.declare = function(options, handler) {
   if (options.output && options.output !== 'blob') {
     options.output = this._options.schemaPrefix + options.output;
   }
+  if (this._entries.filter(entry => entry.route == options.route && entry.method == options.method).length > 0) {
+    throw new Error('Identical route and method declaration.');
+  }
   this._entries.push(options);
 };
 
