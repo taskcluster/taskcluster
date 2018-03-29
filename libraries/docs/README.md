@@ -4,7 +4,9 @@
 [![npm](https://img.shields.io/npm/v/taskcluster-lib-docs.svg?maxAge=2592000)](https://www.npmjs.com/package/taskcluster-lib-docs)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
-A simple library to allow all of our libraries and services to update their own documentation automatically upon publish or deploy.
+A simple library to support generation of metadata for Taskcluster libraries, services, and applications.
+
+Metadata includes documentation and API references and schemas.
 
 Requirements
 ------------
@@ -13,6 +15,22 @@ This is tested on and should run on Node 8 and higher.
 
 Operation
 ---------
+
+**NOTE** this library is in transition between the "old way" and the "new way" as part of Taskcluster's redeployability efforts.
+For the moment, both are fully supported.
+
+## The New Way
+
+The library provides an easy way for services, libraries, and tools to support a command that writes their metadata to disk.
+This command is used as part of the Taskcluster build process to gather and distribute the metadata across the release.
+
+For microservices, which use `taskcluster-lib-loader` and already have a mechanism for running components, this just entails adding a `writeDocs` loader component and connecting that as a service entrypoint (e.g., with a Procfile).
+The build process will invoke this with `DOCS_OUTPUT_DIR` set to the directory that should be populated.
+
+For libraries, applications, and non-Javascript applications, the build process extracts the documentation directly from the repository (using this library).
+No API reference or schemas are included in this mode.
+
+## The Old Way
 
 The library works by creating a tarball full of documentation when the
 production service starts up.  The tarball contains a mixture of documentation
@@ -23,15 +41,15 @@ The [taskcluster-docs](https://github.com/taskcluster/taskcluster-docs) project
 then downloads those tarballs and incorporates the results into the
 documentation page.
 
-Documentation Tarball Format
-----------------------------
+Documentation Format
+--------------------
 
 The format for the tarball that is uploaded to s3 is [documented here](https://github.com/taskcluster/taskcluster-lib-docs/blob/master/docs/format.md).
 
-Usage in Services
------------------
+Usage
+-----
 
-**Do not forget to add the scopes before pushing your service to production! `[auth:aws-s3:read-write:taskcluster-raw-docs/<project>/]`**
+**[Old Way Only] Do not forget to add the scopes before pushing your service to production! `[auth:aws-s3:read-write:taskcluster-raw-docs/<project>/]`**
 
 This library should be included as a component in a [Taskcluster Component Loader](https://github.com/taskcluster/taskcluster-lib-loader)
 setup so that it is called upon a service starting in Heroku or as a post-publish step in a library. Options and defaults are listed
@@ -40,6 +58,11 @@ below.
 This will automatically take any markdown files in a top-level `docs/` directory and turn them into rendered pages on the docs site.
 A top-level `README.md` will be uploaded automatically.
 In addition, any schemas and references can be passed in, and they'll be turned into documentation as well.
+
+## New Way
+
+The loader component need not be loaded in a running service.
+Instead, configure a `writeDocs` component as shown in the example below.
 
 Example
 -------
@@ -86,8 +109,13 @@ let load = loader({
     }),
   },
 
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  },
+
   // the server component should depend on `docs` so that it is loaded, but
-  // doesn't actually do anything withe value
+  // doesn't actually do anything withe value (only for the old way)
   server: {
     requires: ['docs'],
     setup: ({docs}) => {
@@ -95,6 +123,12 @@ let load = loader({
     },
   },
 }, ['profile', 'process']);
+```
+
+Then, add a `write-docs` option to the service Procfile:
+
+```
+write-docs: node src/main writeDocs
 ```
 
 Options and Defaults
@@ -144,7 +178,7 @@ The following are the options that can be passed to the publisher function in th
     references: [],
 
     // Whether or not the generated documentation should be uploaded to s3.  Generally services will only
-    // upload in production.
+    // upload in production.  This must be false for the new way.
     publish: process.env.NODE_ENV == 'production',
 
     // A set of aws credentials that allows you to use this library directly. Must contain both 'accessKeyId'

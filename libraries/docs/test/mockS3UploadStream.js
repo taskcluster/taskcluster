@@ -4,28 +4,28 @@
 
 const Writable = require('stream').Writable;
 
-function MockClient(client) {
-  if (this instanceof MockClient === false) {
-    return new MockClient(client);
+class MockS3UploadStream {
+  constructor(client) {
+    this.uploads = [];
+  }
+
+  upload(obj) {
+    let stream = new Writable();
+
+    stream._write = function(chunk, encoding, done) {
+      stream.emit('part', 'Fake upload for testing purposes is in progress');
+      if (!chunk) {
+        stream.emit('error', 'Nothing is being piped in the stream');
+      }
+      done();
+    };
+
+    stream.end = function(chunk, encoding, done) {
+      stream.emit('uploaded', 'Fake upload for testing purposes is done');
+    };
+
+    return stream;
   }
 }
 
-MockClient.prototype.upload = function(obj) {
-  let stream = new Writable();
-
-  stream._write = function(chunk, encoding, done) {
-    stream.emit('part', 'Fake upload for testing purposes is in progress');
-    if (!chunk) {
-      stream.emit('error', 'Nothing is being piped in the stream');
-    }
-    done();
-  };
-
-  stream.end = function(chunk, encoding, done) {
-    stream.emit('uploaded', 'Fake upload for testing purposes is done');
-  };
-
-  return stream;
-};
-
-module.exports = MockClient;
+module.exports = MockS3UploadStream;
