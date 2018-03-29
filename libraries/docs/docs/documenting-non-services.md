@@ -2,6 +2,9 @@
 title: Documenting Non-Services
 ---
 
+**NOTE** this page describes the "old way" only.
+In the new way, taskcluster-installer uses this library directly.
+
 For projects that aren't in JS, or can't publish on deploy (such as libraries), you can push documentation manually using `upload-project-docs`:
 
 ```sh
