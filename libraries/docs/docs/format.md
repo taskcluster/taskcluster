@@ -1,11 +1,8 @@
 ---
-title: Documentation Tarball Format
-description: The specification of how the docs upload must be structured.
+title: Documentation Metadata Format
 ---
 
-# Taskcluster Docs Tarball Format
-
-A taskcluster-lib-docs tarball has the following contents:
+A taskcluster-lib-docs output metadata has the following format:
 
 ```
 .
@@ -31,8 +28,12 @@ The `metadata.json` file should contain the following:
 {
   "version": 1,
   "tier": "core",
-  "menuIndex": 10
+  "menuIndex": 10,
+  "project": "projectName"
 }
 ```
 
 Where `version` is locked to `1`, `tier` must be one of the allowed tiers, and `menuIndex` is an integer that reorders this document in the menu on the docs site (lower is earlier).
+
+In the "old way", the library uploads a tarball containing this data to S3 directly.
+In the "new way", the library writes this data structure out to a specified location on the local filesystem.

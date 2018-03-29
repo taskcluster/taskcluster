@@ -12,7 +12,8 @@
     "test": "mocha .test/*_test.js"
   },
   "bin": {
-    "upload-project-docs": "lib/upload-project-docs.js"
+    "upload-project-docs": "lib/upload-project-docs.js",
+    "write-project-docs": "lib/write-project-docs.js"
   },
   "files": [
     "lib"
@@ -41,10 +42,12 @@
     "mocha": "^4.0.1",
     "mock-aws-s3": "^2.6.0",
     "pulse-publisher": "^2.0.0",
+    "rimraf": "^2.6.2",
+    "rmp": "^0.0.0",
     "source-map-support": "^0.5.0",
     "taskcluster-lib-api": "^3.2.3",
     "taskcluster-lib-validate": "^3.0.1",
     "typed-env-config": "^1.1.0"
   },
-  "main": "./lib/docs.js"
+  "main": "./lib/index.js"
 }

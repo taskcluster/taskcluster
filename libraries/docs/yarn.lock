@@ -580,7 +580,7 @@ babel-runtime@^6.0.0, babel-runtime@^6.11.6, babel-runtime@^6.18.0, babel-runtim
     core-js "^2.4.0"
     regenerator-runtime "^0.10.0"
 
-babel-runtime@^6.26.0, babel-runtime@^6.9.2:
+babel-runtime@^6.23.0, babel-runtime@^6.26.0, babel-runtime@^6.9.2:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   dependencies:
@@ -2162,6 +2162,12 @@ rimraf@^2.4.3:
 rimraf@~2.2.0:
   version "2.2.8"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.2.8.tgz#e439be2aaee327321952730f99a8929e4fc50582"
+
+rmp@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/rmp/-/rmp-0.0.0.tgz#7658b51f88c970e48f6b3e8d1cf80d4ee86beeca"
+  dependencies:
+    babel-runtime "^6.23.0"
 
 run-async@^2.2.0:
   version "2.3.0"

@@ -8,15 +8,17 @@ const main = async () => {
     return process.env[v];
   };
 
-  await docs.documenter({
+  let doc = await docs.documenter({
     // use the taskclusterProxy if running in a task
     authBaseUrl: process.env.TASK_ID ? 'http://taskcluster/auth/v1' : undefined,
     project: env('DOCS_PROJECT'),
     tier: env('DOCS_TIER'),
     docsFolder: env('DOCS_FOLDER'),
     readme: env('DOCS_README'),
-    publish: true,
+    publish: false,
   });
+
+  await doc.write();
 };
 
 if (!module.parent) {
@@ -26,3 +28,4 @@ if (!module.parent) {
     process.exit(1);
   });
 }
+
