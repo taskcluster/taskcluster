@@ -1,6 +1,7 @@
 const assert = require('assert');
 const {documenter, downloader} = require('../');
 const debug = require('debug')('test');
+const fs = require('fs');
 const _ = require('lodash');
 const tar = require('tar-stream');
 const rootdir = require('app-root-dir');
@@ -12,6 +13,8 @@ const API = require('taskcluster-lib-api');
 const Exchanges = require('pulse-publisher');
 const mockS3UploadStream = require('./mockS3UploadStream');
 const awsMock = require('mock-aws-s3');
+const rimraf = require('rimraf');
+const tmp = require('tmp');
 
 async function getObjectsInStream(inStream) {
   let output = {};
@@ -108,14 +111,7 @@ suite('documenter', () => {
       schemas: validate.schemas,
       tier,
     });
-    assert.ok(doc.tgz);
-  });
-
-  test('tarball is empty but exists', function() {
-    let doc = documenter({
-      tier,
-    });
-    assert.equal(doc.tgz, null);
+    assert.ok(await doc._tarballStream());
   });
 
   test('tarball contains docs and metadata', async function() {
@@ -127,7 +123,7 @@ suite('documenter', () => {
       'docs/example.md',
       'docs/nested/nested-example.md',
     ];
-    return assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, await doc._tarballStream());
   });
 
   test('tarball contains schemas and metadata', async function() {
@@ -141,7 +137,7 @@ suite('documenter', () => {
       'docs/documenting-non-services.md',
       'docs/format.md',
     ];
-    return assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, await doc._tarballStream());
   });
 
   test('tarball contains references and metadata', async function() {
@@ -155,7 +151,7 @@ suite('documenter', () => {
       'docs/documenting-non-services.md',
       'docs/format.md',
     ];
-    return assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, await doc._tarballStream());
   });
 
   test('tarball contains only metadata', async function() {
@@ -166,7 +162,27 @@ suite('documenter', () => {
       'docs/documenting-non-services.md',
       'docs/format.md',
     ];
-    return assertInTarball(shoulds, doc.tgz);
+    return assertInTarball(shoulds, await doc._tarballStream());
+  });
+
+  test('write() writes a directory', async function() {
+    let doc = await documenter({
+      docsFolder: './test/docs',
+      tier,
+    });
+    let shoulds = [
+      'docs/example.md',
+      'docs/nested/nested-example.md',
+    ];
+    const tmpdir = tmp.dirSync({unsafeCleanup: true});
+    const docsDir = path.join(tmpdir.name, 'docs_output_dir');
+    try {
+      await doc.write({docsDir});
+      shoulds.forEach(name =>
+        assert(fs.existsSync(path.join(docsDir, name)), `${name} should exist`));
+    } finally {
+      tmpdir.removeCallback();
+    }
   });
 
   const publishTest = async function(mock) {
@@ -190,7 +206,6 @@ suite('documenter', () => {
     }
 
     const doc = await documenter(options);
-    assert.ok(doc.tgz);
   };
 
   test('test publish tarball (real)', function() {
