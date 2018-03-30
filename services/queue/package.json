@@ -26,7 +26,7 @@
     "request-ip": "^2.0.2",
     "slugid": "^1.1.0",
     "taskcluster-client": "^3.1.1",
-    "taskcluster-lib-api": "^7.0.1",
+    "taskcluster-lib-api": "8.0.0",
     "taskcluster-lib-app": "^3.0.0",
     "taskcluster-lib-docs": "^4.1.1",
     "taskcluster-lib-loader": "^2.0.0",
