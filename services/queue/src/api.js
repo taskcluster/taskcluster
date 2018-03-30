@@ -140,6 +140,11 @@ var api = new API({
     'workerInfo',         // Instance of WorkerInfo
     's3Controller',       // Instance of remotely-signed-s3.Controller
     's3Runner',           // Instance of remotely-signed-s3.Runner
+    'cloudMirrorHost',    // Hostname of the cloud-mirror service
+    'artifactRegion',     // Region where artifacts are stored (no cloud-mirror)
+    'blobRegion',         // Region where blobs are stored (no cloud-mirror)
+    'publicBlobBucket',   // Bucket containing public blobs
+    'privateBlobBucket',  // Bucket containing private blobs
   ],
 });
 
