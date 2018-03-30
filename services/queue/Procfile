@@ -7,7 +7,7 @@ expireTask:             node src/main expire-tasks
 expireTaskGroups:       node src/main expire-task-groups
 expireTaskGroupMembers: node src/main expire-task-group-members
 expireTaskGroupSizes:   node src/main expire-task-group-sizes
-expireTaskDependency    node src/main expire-task-dependency
-expireTaskRequirement   node src/main expire-task-requirement
+expireTaskDependency:   node src/main expire-task-dependency
+expireTaskRequirement:  node src/main expire-task-requirement
 expireQueues:           node src/main expire-queues
 expireWorkerInfo:       node src/main expire-worker-info
