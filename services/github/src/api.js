@@ -171,7 +171,7 @@ let api = new API({
   ].join('\n'),
   name: 'github',
   schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
-  context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv'],
+  context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
