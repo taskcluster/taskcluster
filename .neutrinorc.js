@@ -1,52 +1,47 @@
 module.exports = {
   use: [
-    ['neutrino-preset-mozilla-frontend-infra', {
-      react: {
-        html: {
-          title: process.env.APPLICATION_NAME
+    ['neutrino-preset-mozilla-frontend-infra/react', {
+      html: {
+        title: process.env.APPLICATION_NAME
+      },
+      devServer: {
+        port: process.env.PORT || 9000,
+        historyApiFallback: { disableDotRule: true },
+        proxy: {
+          '/graphql': {
+            target: 'http://localhost:3050',
+          },
+          '/subscription': {
+            ws: true,
+            changeOrigin: true,
+            target: 'http://localhost:3050',
+          },
         },
-        devServer: {
-          port: +process.env.PORT || 9000,
-          historyApiFallback: { disableDotRule: true }
-        }
-      }
+      },
     }],
-    ['@neutrinojs/env', ['NODE_ENV', 'APPLICATION_NAME']],
+    ['@neutrinojs/env', [
+      'NODE_ENV',
+      'APPLICATION_NAME',
+      'AUTH0_DOMAIN',
+      'AUTH0_CLIENT_ID',
+      'AUTH0_REDIRECT_URI',
+      'AUTH0_RESPONSE_TYPE',
+      'AUTH0_SCOPE',
+    ]],
     (neutrino) => {
+      if (process.env.NODE_ENV === 'development') {
+        neutrino.config.devtool('cheap-module-source-map');
+      }
+
       neutrino.config.output.publicPath('/');
-
-      // Hacks to replace react-hot-loader with latest version (v4)
-      neutrino.config
-        .entry('index')
-          .batch(index => {
-            const values = index
-              .values()
-              .filter(value => !value.includes('react-hot-loader'));
-
-            index
-              .clear()
-              .merge(values);
-          });
-
       neutrino.config.module
-        .rule('compile')
-          .use('babel')
-            .tap(options => {
-              options.plugins.forEach((plugin, index) => {
-
-                if (Array.isArray(plugin)) {
-                  if (plugin[0].includes('react-hot-loader')) {
-                    plugin[0] = require.resolve('react-hot-loader/babel');
-                  }
-                } else {
-                  if (plugin.includes('react-hot-loader')) {
-                    options.plugins[index] = require.resolve('react-hot-loader/babel');
-                  }
-                }
-              });
-
-          return options;
-        });
+        .rule('graphql')
+          .test(/\.graphql$/)
+          .include
+            .add(neutrino.options.source)
+            .end()
+          .use('gql-loader')
+            .loader(require.resolve('graphql-tag/loader'));
     }
   ]
 };

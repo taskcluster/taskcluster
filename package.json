@@ -1,25 +1,34 @@
 {
   "name": "taskcluster-web",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "private": true,
+  "license": "MPL-2.0",
   "scripts": {
     "build": "neutrino build --require dotenv/config",
     "start": "neutrino start --require dotenv/config",
     "lint": "neutrino lint",
-    "precommit": "lint-staged"
-  },
-  "lint-staged": {
-    "*.{js,jsx}": "yarn lint"
+    "precommit": "neutrino stage"
   },
   "dependencies": {
+    "apollo-cache-inmemory": "^1.1.11",
+    "apollo-cache-persist": "^0.1.1",
+    "apollo-client": "^2.2.7",
+    "apollo-link": "^1.2.1",
+    "apollo-link-context": "^1.0.7",
+    "apollo-link-error": "^1.0.7",
+    "apollo-link-http": "^1.5.3",
+    "auth0-js": "^9.3.3",
     "classnames": "^2.2.5",
     "error-stack-parser": "^2.0.1",
-    "material-ui": "1.0.0-beta.38",
+    "graphql": "^0.13.2",
+    "localforage": "^1.6.0",
+    "material-ui": "1.0.0-beta.40",
     "mdi-react": "^3.0.0",
     "prop-types": "^15.6.1",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react": "^16.3.0",
+    "react-apollo": "^2.0.4",
+    "react-auth0-components": "^1.0.0",
+    "react-dom": "^16.3.0",
     "react-fout-stager": "^2.0.1",
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^4.0.0",
@@ -31,9 +40,8 @@
   "devDependencies": {
     "@neutrinojs/env": "^8.1.2",
     "dotenv": "^5.0.1",
-    "husky": "^0.14.3",
-    "lint-staged": "^7.0.0",
+    "graphql-tag": "^2.8.0",
     "neutrino": "^8.1.2",
-    "neutrino-preset-mozilla-frontend-infra": "^2.0.2"
+    "neutrino-preset-mozilla-frontend-infra": "^4.1.0"
   }
 }

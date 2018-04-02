@@ -8,8 +8,8 @@ const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
 export default createMuiTheme({
   palette: {
     type: 'dark',
+    background: '#12202c',
     primary: {
-      background: '#12202c',
       main: '#1b2a39',
     },
     secondary: {
@@ -53,6 +53,11 @@ export default createMuiTheme({
     MuiPaper: {
       root: {
         backgroundColor: '#1b2a39',
+      },
+    },
+    MuiCircularProgress: {
+      colorPrimary: {
+        color: 'white',
       },
     },
   },

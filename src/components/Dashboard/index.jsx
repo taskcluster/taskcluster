@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { node, string } from 'prop-types';
+import { bool, func, node, shape, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { withStyles } from 'material-ui/styles';
@@ -37,6 +37,7 @@ import SidebarList from './SidebarList';
     },
     appBarTitle: {
       fontFamily: 'Roboto300',
+      flex: 1,
     },
     navIconHide: {
       [theme.breakpoints.up('md')]: {
@@ -63,10 +64,15 @@ import SidebarList from './SidebarList';
       textDecoration: 'none',
       color: theme.palette.common.white,
     },
+    contentPadding: {
+      paddingTop: theme.spacing.triple,
+      paddingLeft: theme.spacing.triple,
+      paddingRight: theme.spacing.triple,
+      paddingBottom: theme.spacing.triple * 4,
+    },
     content: {
       flexGrow: 1,
-      backgroundColor: theme.palette.primary.background,
-      paddingBottom: theme.spacing.unit * 12,
+      backgroundColor: theme.palette.background,
       overflowY: 'auto',
       minHeight: 'calc(100vh - 56px)',
       marginTop: 56,
@@ -82,14 +88,27 @@ import SidebarList from './SidebarList';
   }),
   { withTheme: true }
 )
-export default class AppView extends Component {
+export default class Dashboard extends Component {
   static propTypes = {
     children: node.isRequired,
+    onSignIn: func.isRequired,
+    onSignOut: func.isRequired,
     title: string,
+    disablePadding: bool,
+    user: shape({
+      name: string,
+      nickname: string,
+      picture: string,
+      sub: string,
+    }),
+    search: node,
   };
 
   static defaultProps = {
     title: '',
+    user: null,
+    disablePadding: false,
+    search: null,
   };
 
   state = {
@@ -106,7 +125,19 @@ export default class AppView extends Component {
   };
 
   render() {
-    const { classes, className, children, theme, title, ...props } = this.props;
+    const {
+      classes,
+      className,
+      children,
+      disablePadding,
+      theme,
+      title,
+      user,
+      onSignIn,
+      onSignOut,
+      search,
+      ...props
+    } = this.props;
     const { error, mobileOpen } = this.state;
     const drawer = (
       <div>
@@ -128,7 +159,7 @@ export default class AppView extends Component {
           </Typography>
         </div>
         <Divider />
-        <UserMenu />
+        <UserMenu user={user} onSignIn={onSignIn} onSignOut={onSignOut} />
         <Divider />
         <SidebarList />
       </div>
@@ -149,6 +180,7 @@ export default class AppView extends Component {
             <Typography variant="title" noWrap className={classes.appBarTitle}>
               {title}
             </Typography>
+            {search}
           </Toolbar>
         </AppBar>
         <Hidden mdUp>
@@ -179,7 +211,15 @@ export default class AppView extends Component {
             {drawer}
           </Drawer>
         </Hidden>
-        <main className={classNames(classes.content, className)} {...props}>
+        <main
+          className={classNames(
+            classes.content,
+            {
+              [classes.contentPadding]: !disablePadding,
+            },
+            className
+          )}
+          {...props}>
           {error ? <ErrorPanel error={error} /> : children}
         </main>
       </div>

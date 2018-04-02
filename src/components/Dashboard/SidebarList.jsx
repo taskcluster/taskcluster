@@ -25,42 +25,18 @@ export default class SidebarList extends Component {
   render() {
     return (
       <List disablePadding>
-        <SidebarListGroup
-          to="/docs"
-          title="Documentation"
-          icon={<LibraryIcon />}>
-          <SidebarListItem to="/docs/tutorial" icon={<HumanIcon />}>
-            Tutorial
-          </SidebarListItem>
-          <SidebarListItem
-            to="/docs/references"
-            icon={<BookOpenPageVariantIcon />}>
-            References
-          </SidebarListItem>
-          <SidebarListItem
-            to="/docs/resources"
-            icon={<HelpCircleOutlineIcon />}>
-            Resources
-          </SidebarListItem>
-          <SidebarListItem to="/docs/people" icon={<AccountMultipleIcon />}>
-            People
-          </SidebarListItem>
-        </SidebarListGroup>
-
-        <SidebarListGroup
-          to="/tasks"
-          title="Tasks"
-          icon={<HexagonMultipleIcon />}>
-          <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
-            Create task
-          </SidebarListItem>
-          <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
-            Task Groups
-          </SidebarListItem>
-          <SidebarListItem to="/tasks/index" icon={<FileTreeIcon />}>
-            Task Index
-          </SidebarListItem>
-        </SidebarListGroup>
+        <SidebarListItem to="/tasks" icon={<HexagonMultipleIcon />}>
+          View Task
+        </SidebarListItem>
+        <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
+          Create task
+        </SidebarListItem>
+        <SidebarListItem to="/tasks/groups" icon={<GroupIcon />}>
+          Task Groups
+        </SidebarListItem>
+        <SidebarListItem to="/tasks/index" icon={<FileTreeIcon />}>
+          Task Index
+        </SidebarListItem>
 
         <SidebarListGroup
           to="/auth"
@@ -99,6 +75,28 @@ export default class SidebarList extends Component {
         <SidebarListItem to="/pulse-messages" icon={<PulseIcon />}>
           Pulse Messages
         </SidebarListItem>
+
+        <SidebarListGroup
+          to="/docs"
+          title="Documentation"
+          icon={<LibraryIcon />}>
+          <SidebarListItem to="/docs/tutorial" icon={<HumanIcon />}>
+            Tutorial
+          </SidebarListItem>
+          <SidebarListItem
+            to="/docs/references"
+            icon={<BookOpenPageVariantIcon />}>
+            References
+          </SidebarListItem>
+          <SidebarListItem
+            to="/docs/resources"
+            icon={<HelpCircleOutlineIcon />}>
+            Resources
+          </SidebarListItem>
+          <SidebarListItem to="/docs/people" icon={<AccountMultipleIcon />}>
+            People
+          </SidebarListItem>
+        </SidebarListGroup>
       </List>
     );
   }
