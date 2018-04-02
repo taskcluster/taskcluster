@@ -29,7 +29,8 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
 
     def cleanup():
         if implicit:
-            session.close()
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(session.close())
 
     try:
         while True:
@@ -100,7 +101,7 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
             return resp
     finally:
         if implicit:
-            session.close()
+            await session.close()
 
 
 async def putFile(filename, url, contentType, session=None):
