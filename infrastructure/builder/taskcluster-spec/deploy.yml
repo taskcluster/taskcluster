@@ -63,3 +63,53 @@ resources:
       - protocol: TCP
         port: 80
         targetPort: 80
+
+- name: tools-web-deployment
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: tools
+  spec:
+    $let:
+      service: {$eval: "builtService('tools')"}
+    in:
+      selector:
+        matchLabels:
+          app: taskcluster
+          tc-service: tools
+          tc-proc: web
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: taskcluster
+            tc-service: tools
+            tc-proc: web
+        spec:
+          containers:
+          - name: tools
+            image: {$eval: "service.dockerImage"}
+            resources:
+              requests:
+                cpu: 10m
+                memory: 100Mi
+            ports:
+            - containerPort: 80
+
+- name: tools-web-service
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: tools
+  spec:
+    $let:
+      service: {$eval: "builtService('tools')"}
+    in:
+      selector:
+        app: taskcluster
+        tc-service: tools
+        tc-proc: web
+      ports:
+      - protocol: TCP
+        port: 80
+        targetPort: 80

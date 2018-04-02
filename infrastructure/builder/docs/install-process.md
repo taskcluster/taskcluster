@@ -23,6 +23,20 @@ Note that builds are not deterministic.
 Two builds of exactly the same source may produce artifacts with different hashes.
 In practice, the results are similar enough that this is not an issue.
 
+## Usage
+
+To build a release:
+
+```
+./taskcluster-installer build --push --base-dir /tmp/base-dir taskcluster-spec/ release.json
+```
+
+Omit `--push` to skip pushing to a Docker registry (e.g., for local testing).
+For best results, the `--base-dir` option should be on fast, large storage.
+
+The build process attempts to skip steps that need not be performed, so re-running the build process is often quite fast.
+The `--no-cache` option will destroy any cached state and start from scratch.
+
 # Deploy
 
 The deploy phase takes several inputs:

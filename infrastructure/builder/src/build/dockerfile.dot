@@ -1,7 +1,0 @@
-FROM {{=it.buildImage}}
-
-COPY app /app
-ENV HOME=/app
-
-ADD entrypoint /entrypoint
-ENTRYPOINT ["/entrypoint"]

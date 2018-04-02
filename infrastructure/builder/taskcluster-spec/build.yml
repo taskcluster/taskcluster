@@ -1,7 +1,228 @@
 ---
-services:
+repositories:
+
+# services
+
 - name: ping
+  kind: service
   # note: this is a relative reference, which isn't a great idea as it means the
   # build may include a different version in different runs.  Ideally this would
   # be either a specific rev or a release version
   source: https://github.com/djmitche/taskcluster-ping#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: auth
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-auth#master
+  docs: false  # TODO
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: queue
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-queue#master
+  docs: false  # TODO
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: tools
+  kind: service
+  docs:
+    tier: integrations
+  service:
+    buildtype: tools-ui
+    node: 8
+  source: https://github.com/taskcluster/taskcluster-tools#redeploy
+
+# docs/metadata sources that are not compiled into the final product
+
+# operations
+- name: statsum
+  kind: other
+  docs:
+    tier: operations
+  source: https://github.com/taskcluster/statsum#master
+
+- name: taskcluster-installer
+  kind: other
+  docs:
+    tier: operations
+  source: https://github.com/taskcluster/taskcluster-installer#master
+
+# workers
+- name: docker-worker
+  kind: other
+  docs:
+    tier: workers
+  source: https://github.com/taskcluster/docker-worker#master
+
+- name: generic-worker
+  kind: other
+  docs:
+    tier: workers
+  source: https://github.com/taskcluster/generic-worker#master
+
+- name: taskcluster-worker
+  kind: other
+  docs:
+    tier: workers
+  source: https://github.com/taskcluster/taskcluster-worker#master
+
+# libraries
+- name: azure-blob-storage
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/azure-blob-storage#master
+
+- name: azure-entities
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/azure-entities#master
+
+- name: docker-exec-websocket-server
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/docker-exec-websocket-server#master
+
+- name: fast-azure-storage
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/fast-azure-storage#master
+
+- name: go-schematypes
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/go-schematypes#master
+
+- name: json-e
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/json-e#master
+
+- name: pulse-publisher
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/pulse-publisher#master
+
+- name: taskcluster-cli
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-cli#master
+
+- name: taskcluster-client
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-client#master
+
+- name: taskcluster-client-go
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-client-go#master
+
+- name: taskcluster-client-java
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-client-java#master
+
+- name: taskcluster-client-web
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-client-web#master
+
+- name: taskcluster-client.py
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-client.py#master
+
+- name: taskcluster-lib-api
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-api#master
+
+- name: taskcluster-lib-app
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-app#master
+
+- name: taskcluster-lib-docs
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-docs#master
+
+- name: taskcluster-lib-iterate
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-iterate#master
+
+- name: taskcluster-lib-loader
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-loader#master
+
+- name: taskcluster-lib-log
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-log#master
+
+- name: taskcluster-lib-monitor
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-monitor#master
+
+- name: taskcluster-lib-scopes
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-scopes#master
+
+- name: taskcluster-lib-testing
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-testing#master
+
+- name: taskcluster-lib-validate
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-validate#master
+
+- name: typed-env-config
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/typed-env-config#master
+
+- name: ws-shell
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/ws-shell#master

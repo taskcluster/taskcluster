@@ -34,11 +34,11 @@ class Deploy {
   _renderResources() {
     const contextFunctions = {
       builtService: name => {
-        const service = _.find(this.spec.build.services, {name});
-        if (!service) {
+        const repository = _.find(this.spec.build.repositories, {name});
+        if (!repository || !repository.service) {
           throw new Error(`builtService: unkonwn service ${name}`);
         }
-        return service;
+        return repository.service;
       },
     };
 

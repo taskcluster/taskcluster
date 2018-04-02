@@ -1,9 +1,20 @@
 const _ = require('lodash');
+const util = require('util');
 const fs = require('fs');
+const path = require('path');
 const config = require('typed-env-config');
-const {serviceTasks} = require('./service');
+const rimraf = util.promisify(require('rimraf'));
+const mkdirp = util.promisify(require('mkdirp'));
 const {ClusterSpec} = require('../formats/cluster-spec');
 const {TaskGraph} = require('console-taskgraph');
+const {gitClone} = require('./utils');
+const git = require('simple-git/promise');
+const generateRepoTasks = require('./repo');
+
+const _kindTaskGenerators = {
+  service: require('./service'),
+  other: require('./other'),
+};
 
 class Build {
   constructor(input, output, cmdOptions) {
@@ -11,14 +22,10 @@ class Build {
     this.output = output;
     this.cmdOptions = cmdOptions;
 
-    // TODO: make this customizable (but stable, so caching works)
-    this.baseDir = '/tmp/taskcluster-installer-build';
+    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-installer-build';
 
     this.spec = null;
     this.cfg = null;
-  }
-
-  _servicesTasks() {
   }
 
   async run() {
@@ -31,26 +38,47 @@ class Build {
       env:      process.env,
     });
 
-    // TODO: if --no-cache, blow this away (noting it may contain root-owned stuff)
-    if (!fs.existsSync(this.baseDir)) {
-      fs.mkdirSync(this.baseDir);
+    if (this.cmdOptions.noCache) {
+      await rimraf(this.baseDir);
     }
+    await mkdirp(this.baseDir);
 
-    const taskgraph = new TaskGraph(
-      _.flatten(this.spec.build.services.map(
-        service => serviceTasks({
-          baseDir: this.baseDir,
-          spec: this.spec,
-          cfg: this.cfg,
-          name: service.name,
-          cmdOptions: this.cmdOptions,
-        }))));
+    let tasks = [];
+
+    this.spec.build.repositories.forEach(repo => {
+      generateRepoTasks({
+        tasks,
+        baseDir: this.baseDir,
+        spec: this.spec,
+        cfg: this.cfg,
+        name: repo.name,
+        cmdOptions: this.cmdOptions,
+      });
+
+      const kindTaskGenerator = _kindTaskGenerators[repo.kind];
+      if (!kindTaskGenerator) {
+        throw new Error(`Unknown kind ${repo.kind} for repository ${repo.name}`);
+      }
+
+      kindTaskGenerator({
+        tasks,
+        baseDir: this.baseDir,
+        spec: this.spec,
+        cfg: this.cfg,
+        name: repo.name,
+        cmdOptions: this.cmdOptions,
+      });
+    });
+
+    const taskgraph = new TaskGraph(tasks);
     const context = await taskgraph.run();
 
     // fill in the cluster spec with the results of the build
-    this.spec.build.services.forEach(service => {
-      service.dockerImage = context[`service-${service.name}-docker-image`];
-      service.exactSource = context[`service-${service.name}-exact-source`];
+    this.spec.build.repositories.forEach(repo => {
+      repo.exactSource = context[`repo-${repo.name}-exact-source`];
+      if (repo.kind === 'service') {
+        repo.service.dockerImage = context[`service-${repo.name}-docker-image`];
+      }
     });
 
     // and write it back out

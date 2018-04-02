@@ -1,420 +1,59 @@
 const _ = require('lodash');
 const util = require('util');
-const os = require('os');
+const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const {PassThrough} = require('stream');
 const split = require('split');
-const {spawn} = require('child_process'); 
 const rimraf = util.promisify(require('rimraf'));
+const mkdirp = util.promisify(require('mkdirp'));
 const git = require('simple-git/promise');
-const Docker = require('dockerode');
 const doT = require('dot');
 const {quote} = require('shell-quote');
-const Observable = require('zen-observable');
-const tar = require('tar-fs');
 const yaml = require('js-yaml');
-const got = require('got');
+const tar = require('tar-fs');
+const tarStream = require('tar-stream');
+const copy = require('recursive-copy');
+const {gitClone, dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
+  dockerPush, dirStamped, stampDir} = require('./utils');
 
 doT.templateSettings.strip = false;
 const ENTRYPOINT_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'entrypoint.dot')));
-const DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'dockerfile.dot')));
+const HEROKU_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'heroku-dockerfile.dot')));
+const TOOLS_UI_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'tools-ui-dockerfile.dot')));
 
-const serviceTasks = ({baseDir, spec, cfg, name, cmdOptions}) => {
-  const service = _.find(spec.build.services, {name});
+const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
+  const repository = _.find(spec.build.repositories, {name});
   const workDir = path.join(baseDir, `service-${name}`);
-  const appDir = path.join(workDir, 'app');
-  const buildpackDir = path.join(workDir, 'buildpack');
+  if (!fs.existsSync(workDir)) {
+    fs.mkdirSync(workDir);
+  }
 
-  const tasks = [];
-  let docker, dockerRunOpts;
+  switch (repository.service.buildtype) {
+    case 'heroku-buildpack':
+      herokuBuildpackTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+      break;
 
-  const cleanup = async () => {
-    await Promise.all([
-      'app',
-      'buildpack',
-      'slug',
-      'docker',
-      // cache is left in place
-    ].map(dir => rimraf(path.join(workDir, dir))));
-  };
+    case 'tools-ui':
+      toolsUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+      break;
 
-  const gitClone = async ({dir, url, sha, utils}) => {
-    const [source, ref] = url.split('#');
-
-    utils.status({message: `Cloning ${source}`});
-    // TODO: update if already exists, and remove from clean step
-    if (!fs.existsSync(path.join(workDir, dir))) {
-      await git(workDir).clone(source, dir, ['--depth=1', `-b${ref || 'master'}`]);
-    }
-    // TODO: if sha is specified, reset to it
-  };
-
-  const dockerRun = async ({logfile, command, image, utils}) => {
-    const output = new PassThrough();
-    if (logfile) {
-      output.pipe(fs.createWriteStream(path.join(workDir, logfile)));
-    }
-
-    const runPromise = docker.run(
-      image,
-      command,
-      output,
-      dockerRunOpts,
-    );
-
-    await utils.waitFor(output);
-    await utils.waitFor(runPromise);
-  };
-
-  const dockerPull = async ({image, utils}) => {
-    utils.status({message: `docker pull ${image}`});
-    const dockerStream = await new Promise(
-      (resolve, reject) => docker.pull(image, (err, stream) => err ? reject(err) : resolve(stream)));
-
-    await utils.waitFor(new Observable(observer => {
-      let downloading = {}, extracting = {}, totals = {};
-      docker.modem.followProgress(dockerStream,
-        err => err ? observer.error(err) : observer.complete(),
-        update => {
-          // The format of this stream appears undocumented, but we can fake it based on observations..
-          // general messages seem to lack progressDetail
-          if (!update.progressDetail) {
-            return;
-          }
-
-          let progressed = false;
-          if (update.status === 'Waiting') {
-            totals[update.id] = 104857600; // a guess: 100MB
-            progressed = true;
-          } else if (update.status === 'Downloading') {
-            downloading[update.id] = update.progressDetail.current;
-            totals[update.id] = update.progressDetail.total;
-            progressed = true;
-          } else if (update.status === 'Extracting') {
-            extracting[update.id] = update.progressDetail.current;
-            totals[update.id] = update.progressDetail.total;
-            progressed = true;
-          }
-
-          if (progressed) {
-            // calculate overall progress by assuming that every image must be
-            // downloaded and extracted, and that those both take the same amount
-            // of time per byte.
-            total = _.sum(Object.values(totals)) * 2;
-            current = _.sum(Object.values(downloading)) + _.sum(Object.values(extracting));
-            utils.status({progress: current * 100 / total});
-          }
-        });
-    }));
-  };
-
-  const dockerBuild = async ({logfile, tag, dir, utils}) => {
-    utils.status({progress: 0, message: 'Packing build tarball'});
-    const tarball = tar.pack(dir);
-
-    utils.status({progress: 0, message: `Building ${tag}`});
-    const buildStream = await docker.buildImage(tarball, {t: tag});
-    if (logfile) {
-      const log = path.join(workDir, logfile);
-      buildStream.pipe(fs.createWriteStream(log));
-    }
-
-    await utils.waitFor(new Observable(observer => {
-      docker.modem.followProgress(buildStream,
-        err => err ? observer.error(err) : observer.complete(),
-        update => {
-          if (!update.stream) {
-            return;
-          }
-          observer.next(update.stream);
-          const parts = /^Step (\d+)\/(\d+)/.exec(update.stream);
-          if (parts) {
-            utils.status({progress: 100 * parseInt(parts[1], 10) / (parseInt(parts[2], 10) + 1)});
-          }
-        });
-    }));
-  };
-
-  const dockerRegistryCheck = async ({tag}) => {
-    const [repo, imagetag] = tag.split(/:/);
-    try {
-      // Acces the registry API directly to see if this tag already exists, and do not push if so.
-      // TODO: this won't work with custom registries!
-      const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, {json: true});
-      if (res.body && _.includes(res.body.map(l => l.name), imagetag)) {
-        return true;
-      }
-    } catch (err) {
-      if (err.statusCode !== 404) {
-        throw err;
-      }
-    }
-
-    return false;
-  };
-
-  const dockerPush = async ({tag, logfile, utils}) => {
-    await utils.waitFor(new Observable(observer => {
-      const push = spawn('docker', ['push', tag]);
-      push.on('error', err => observer.error(err));
-      if (logfile) {
-        const log = path.join(workDir, logfile);
-        const logStream = fs.createWriteStream(log);
-        push.stdout.pipe(logStream);
-        push.stderr.pipe(logStream);
-      }
-      push.stdout.pipe(split(/\r?\n/, null, {trailing: false})).on('data', d => observer.next(d.toString()));
-      push.stderr.pipe(split(/\r?\n/, null, {trailing: false})).on('data', d => observer.next(d.toString()));
-      push.on('exit', (code, signal) => {
-        if (code !== 0) {
-          observer.error(new Error(`push failed! check ${logfile} for reason`));
-        } else {
-          observer.complete();
-        }
-      });
-    }));
-  };
-
-  const writeEntrypointScript = () => {
-    const procfilePath = path.join(appDir, 'Procfile');
-    if (!fs.existsSync(procfilePath)) {
-      throw new Error(`Service ${name} has no Procfile`);
-    }
-    const Procfile = fs.readFileSync(procfilePath).toString();
-    const procs = Procfile.split('\n').map(line => {
-      if (!line || line.startsWith('#')) {
-        return null;
-      }
-      const parts = /^([^:]+):?\s+(.*)$/.exec(line.trim());
-      if (!parts) {
-        throw new Error(`unexpected line in Procfile: ${line}`);
-      }
-      return {name: parts[1], command: quote([parts[2]])};
-    }).filter(l => l !== null);
-    const entrypoint = ENTRYPOINT_TEMPLATE({procs});
-    fs.writeFileSync(path.join(workDir, 'entrypoint'), entrypoint, {mode: 0o777});
-  };
-
-  tasks.push({
-    title: `Service ${name} - Preflight`,
-    requires: [],
-    provides: [
-      `service-${name}-docker-image`, // docker image tag
-      `service-${name}-exact-source`, // exact source URL
-      `service-${name}-image-exists`, // true if the image already exists
-      `service-${name}-image-on-registry`, // true if the image already exists
-    ],
-    run: async (requirements, utils) => {
-      utils.step({title: 'Clean'});
-      await cleanup();
-
-      utils.step({title: 'Set Up'});
-
-      if (!fs.existsSync(workDir)) {
-        fs.mkdirSync(workDir);
-      }
-
-      ['cache', 'env', 'slug', 'docker'].forEach(dir => {
-        if (!fs.existsSync(path.join(workDir, dir))) {
-          fs.mkdirSync(path.join(workDir, dir));
-        }
-      });
-
-      docker = new Docker();
-      // when running a docker container, always remove the container when finished, 
-      // mount the workdir at /workdir, and run as the current (non-container) user
-      // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
-      // to define names for those uid/gid, too.
-      const {uid, gid} = os.userInfo();
-      fs.writeFileSync(path.join(workDir, 'passwd'),
-        `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`);
-      fs.writeFileSync(path.join(workDir, 'group'),
-        `root:x:0:\nbuilder:x:${gid}:\n`);
-      dockerRunOpts = {
-        AutoRemove: true,
-        User: `${uid}:${gid}`,
-        Binds: [
-          `${workDir}/passwd:/etc/passwd:ro`,
-          `${workDir}/group:/etc/group:ro`,
-          `${workDir}:/workdir`,
-        ],
-      };
-
-      utils.step({title: 'Check for Existing Image'});
-
-      const [source, ref] = service.source.split('#');
-      const head = (await git(workDir).listRemote([source, ref])).split(/\s+/)[0];
-      const tag = `${cfg.docker.repositoryPrefix}${name}:${head}`;
-
-      // set up to skip other tasks if this tag already exists locally
-      const dockerImages = await docker.listImages();
-      // TODO: need docker image sha, if it exists (or set it later)
-      const dockerImageExists = dockerImages.some(image => image.RepoTags.indexOf(tag) !== -1);
-
-      utils.step({title: 'Check for Existing Image on Registry'});
-
-      // check whether it's on the registry, too
-      const onRegistry = await dockerRegistryCheck({tag});
-
-      return {
-        [`service-${name}-docker-image`]: tag,
-        [`service-${name}-exact-source`]: `${source}#${head}`,
-        [`service-${name}-image-exists`]: dockerImageExists,
-        [`service-${name}-image-on-registry`]: onRegistry,
-      };
-    },
-  });
-
-  tasks.push({
-    title: `Service ${name} - Compile`,
-    requires: [
-      `service-${name}-docker-image`,
-      `service-${name}-image-exists`,
-      `service-${name}-image-on-registry`,
-      `service-${name}-exact-source`,
-    ],
-    provides: [
-      `service-${name}-built-app-dir`,
-    ],
-    run: async (requirements, utils) => {
-      const provides = {
-        [`service-${name}-built-app-dir`]: appDir,
-      };
-
-      // bail out early if we can skip this..
-      if (requirements[`service-${name}-image-exists`] || requirements[`service-${name}-image-on-registry`]) {
-        // TODO: need to get app dir from that image..
-        return utils.skip(provides);
-      }
-
-      utils.step({title: 'Check out Service Repo'});
-
-      await gitClone({
-        dir: 'app',
-        url: service.source,
-        utils,
-      });
-
-      utils.step({title: 'Read Build Config'});
-
-      // default buildConfig
-      buildConfig = {
-        buildType: 'heroku-buildpack',
-        stack: 'heroku-16',
-        buildpack: 'https://github.com/heroku/heroku-buildpack-nodejs',
-      };
-
-      const buildConfigFile = path.join(appDir, '.build-config.yml');
-      if (fs.existsSync(buildConfigFile)) {
-        const config = yaml.safeLoad(buildConfigFile);
-        Object.assign(buildConfig, config);
-      }
-
-      utils.step({title: 'Check out Buildpack Repo'});
-
-      await gitClone({
-        dir: 'buildpack',
-        url: buildConfig.buildpack,
-        utils,
-      });
-
-      utils.step({title: 'Pull Stack Image'});
-
-      stackImage = `heroku/${buildConfig.stack.replace('-', ':')}`;
-      await dockerPull({image: stackImage, utils});
-
-      utils.step({title: 'Pull Build Image'});
-
-      buildImage = `heroku/${buildConfig.stack.replace('-', ':')}-build`;
-      await dockerPull({image: buildImage, utils});
-
-      utils.step({title: 'Buildpack Detect'});
-
-      await dockerRun({
-        image: buildImage,
-        command: ['workdir/buildpack/bin/detect', '/workdir/app'],
-        logfile: 'detect.log',
-        utils,
-      });
-
-      utils.step({title: 'Buildpack Compile'});
-
-      await dockerRun({
-        image: buildImage,
-        command: ['workdir/buildpack/bin/compile', '/workdir/app', '/workdir/cache', '/workdir/env'],
-        logfile: 'compile.log',
-        utils,
-      });
-
-      return provides;
-    },
-  });
-
-  tasks.push({
-    title: `Service ${name} - Build Image`,
-    requires: [
-      `service-${name}-docker-image`,
-      `service-${name}-image-exists`,
-      `service-${name}-image-on-registry`,
-      `service-${name}-exact-source`,
-      `service-${name}-built-app-dir`,
-    ],
-    provides: [
-      `service-${name}-image-built`,
-    ],
-    run: async (requirements, utils) => {
-      const provides = {
-        [`service-${name}-image-built`]: true,
-      };
-
-      // bail out early if we can skip this..
-      if (requirements[`service-${name}-image-exists`] || requirements[`service-${name}-image-on-registry`]) {
-        return utils.skip(provides);
-      }
-
-      utils.step({title: 'Create Entrypoint Script'});
-
-      writeEntrypointScript();
-
-      utils.step({title: 'Build Final Image'});
-
-      // TODO: omit git dir, but not node_modules
-      // TODO: no need to rename, just include in tarball
-      fs.renameSync(appDir, path.join(workDir, 'docker', 'app'));
-      fs.renameSync(path.join(workDir, 'entrypoint'), path.join(workDir, 'docker', 'entrypoint'));
-
-      const dockerfile = DOCKERFILE_TEMPLATE({buildImage});
-      fs.writeFileSync(path.join(workDir, 'docker', 'Dockerfile'), dockerfile);
-
-      await dockerBuild({
-        dir: path.join(workDir, 'docker'),
-        logfile: 'docker-build.log',
-        tag: requirements[`service-${name}-docker-image`],
-        utils,
-      });
-
-      return provides;
-    },
-  });
+    default:
+      throw new Error(`Unknown buildtype ${repository.service.buildtype}`);
+  }
 
   tasks.push({
     title: `Service ${name} - Push Image`,
     requires: [
       `service-${name}-docker-image`,
-      `service-${name}-image-built`,
-      `service-${name}-image-exists`,
       `service-${name}-image-on-registry`,
     ],
     provides: [
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`service-${name}-docker-image`];
-      const provides = {
-      };
 
       if (!cmdOptions.push) {
-        return utils.skip(provides);
+        return utils.skip({});
       }
 
       if (requirements[`service-${name}-image-on-registry`]) {
@@ -422,16 +61,447 @@ const serviceTasks = ({baseDir, spec, cfg, name, cmdOptions}) => {
       }
 
       await dockerPush({
-        logfile: 'docker-push.log',
+        logfile: `${workDir}/docker-push.log`,
         tag,
         utils,
+        baseDir,
+      });
+
+      return provides;
+    },
+  });
+};
+
+// add a task to tasks only if it isn't already there
+const ensureTask = (tasks, task) => {
+  if (!_.find(tasks, {title: task.title})) {
+    tasks.push(task);
+  }
+};
+
+// ensure a docker image is present (setting `docker-image-${image}`)
+const ensureDockerImage = (tasks, baseDir, image) => {
+  ensureTask(tasks, {
+    title: `Pull Docker Image ${image}`,
+    requires: [],
+    provides: [
+      `docker-image-${image}`,
+    ],
+    run: async (requirements, utils) => {
+      const images = await dockerImages({baseDir});
+      const exists = (await dockerImages({baseDir}))
+        .some(i => i.RepoTags && i.RepoTags.indexOf(image) !== -1);
+      if (exists) {
+        return utils.skip({
+          [`docker-image-${image}`]: image,
+        });
+      }
+
+      await dockerPull({image, utils, baseDir});
+      return {
+        [`docker-image-${image}`]: image,
+      };
+    },
+  });
+};
+
+const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
+  const stackImage = `heroku/${repository.service.stack.replace('-', ':')}`;
+  const buildImage = `heroku/${repository.service.stack.replace('-', ':')}-build`;
+  const buildpackUrl = repository.service.buildpack;
+  const buildpackName = buildpackUrl.startsWith('https://github.com/heroku/') ?
+    buildpackUrl.split('/')[4] : buildpackUrl.replace('/', '_');
+
+  ensureDockerImage(tasks, baseDir, stackImage);
+  ensureDockerImage(tasks, baseDir, buildImage);
+
+  ensureTask(tasks, {
+    title: `Clone ${buildpackName}`,
+    requires: [],
+    provides: [
+      `repo-${buildpackName}-dir`,
+    ],
+    run: async (requirements, utils) => {
+      const repoDir = path.join(baseDir, `repo-${buildpackName}-dir`);
+      const provides = {
+        [`repo-${buildpackName}-dir`]: repoDir,
+      };
+
+      const {exactRev, changed} = await gitClone({
+        dir: repoDir,
+        url: buildpackUrl,
+        utils,
+      });
+
+      if (changed) {
+        return provides;
+      } else {
+        return utils.skip(provides);
+      }
+    },
+  });
+
+  tasks.push({
+    title: `Service ${name} - Compile`,
+    requires: [
+      `repo-${name}-dir`,
+      `repo-${name}-exact-source`,
+      `docker-image-${buildImage}`,
+      `repo-${buildpackName}-dir`,
+    ],
+    provides: [
+      `service-${name}-built-app-dir`,
+    ],
+    run: async (requirements, utils) => {
+      const repoDir = requirements[`repo-${name}-dir`];
+      const appDir = path.join(workDir, 'app');
+      const bpDir = requirements[`repo-${buildpackName}-dir`];
+      const provides = {
+        [`service-${name}-built-app-dir`]: appDir,
+      };
+
+      // if we've already built this appDir with this revision, we're done.
+      if (dirStamped({dir: appDir, sources: requirements[`repo-${name}-exact-source`]})) {
+        return utils.skip(provides);
+      } else {
+        await rimraf(appDir);
+      }
+
+      utils.step({title: 'Copy Source Repository'});
+      await copy(repoDir, appDir, {filter: ['**/*', '!.git'], dot: true});
+
+      utils.step({title: 'Buildpack Detect'});
+
+      await dockerRun({
+        image: buildImage,
+        command: ['/buildpack/bin/detect', '/app'],
+        binds: [
+          `${bpDir}:/buildpack`,
+          `${appDir}:/app`,
+        ],
+        logfile: `${workDir}/detect.log`,
+        utils,
+        baseDir,
+      });
+
+      utils.step({title: 'Buildpack Compile'});
+
+      const envDir = path.join(workDir, 'env');
+      const cacheDir = path.join(workDir, 'cache');
+      if (fs.existsSync(envDir)) {
+        await rimraf(envDir);
+      }
+      [envDir, cacheDir].forEach(dir => {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir);
+        }
+      });
+
+      await dockerRun({
+        image: buildImage,
+        command: ['/buildpack/bin/compile', '/app', '/cache', '/env'],
+        binds: [
+          `${bpDir}:/buildpack`,
+          `${appDir}:/app`,
+          `${envDir}:/env`,
+          `${cacheDir}:/cache`,
+        ],
+        logfile: `${workDir}/compile.log`,
+        utils,
+        baseDir,
+      });
+
+      utils.step({title: 'Create Entrypoint Script'});
+
+      const procfilePath = path.join(appDir, 'Procfile');
+      if (!fs.existsSync(procfilePath)) {
+        throw new Error(`Service ${name} has no Procfile`);
+      }
+      const Procfile = fs.readFileSync(procfilePath).toString();
+      const procs = Procfile.split('\n').map(line => {
+        if (!line || line.startsWith('#')) {
+          return null;
+        }
+        const parts = /^([^:]+):?\s+(.*)$/.exec(line.trim());
+        if (!parts) {
+          throw new Error(`unexpected line in Procfile: ${line}`);
+        }
+        return {name: parts[1], command: quote([parts[2]])};
+      }).filter(l => l !== null);
+      const entrypoint = ENTRYPOINT_TEMPLATE({procs});
+      fs.writeFileSync(path.join(appDir, 'entrypoint'), entrypoint, {mode: 0o777});
+
+      stampDir({dir: appDir, sources: requirements[`repo-${name}-exact-source`]});
+      return provides;
+    },
+  });
+
+  tasks.push({
+    title: `Service ${name} - Build Image`,
+    requires: [
+      `repo-${name}-exact-source`,
+      `service-${name}-built-app-dir`,
+      `docker-image-${stackImage}`,
+    ],
+    provides: [
+      `service-${name}-docker-image`, // docker image tag
+      `service-${name}-image-on-registry`, // true if the image already exists on registry
+    ],
+    run: async (requirements, utils) => {
+      const appDir = requirements[`service-${name}-built-app-dir`];
+      const headRef = requirements[`repo-${name}-exact-source`].split('#')[1];
+      const tag = `${cfg.docker.repositoryPrefix}${name}:${headRef}`;
+
+      utils.step({title: 'Check for Existing Images'});
+
+      const imageLocal = (await dockerImages({baseDir}))
+        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
+      const imageOnRegistry = await dockerRegistryCheck({tag});
+
+      const provides = {
+        [`service-${name}-docker-image`]: tag,
+        [`service-${name}-image-on-registry`]: imageOnRegistry,
+      };
+
+      // bail out if we can, pulling the image if it's only available remotely
+      if (!imageLocal && imageOnRegistry) {
+        await dockerPull({image: tag, utils, baseDir});
+        return utils.skip(provides);
+      } else if (imageLocal) {
+        return utils.skip(provides);
+      }
+
+      // build a tarfile containing the app directory and Dockerfile
+      utils.step({title: 'Create Docker-Build Tarball'});
+
+      const dockerfile = HEROKU_DOCKERFILE_TEMPLATE({stackImage});
+      fs.writeFileSync(path.join(workDir, 'Dockerfile'), dockerfile);
+
+      const appGitDir = path.join(appDir, '.git');
+      const tarball = tar.pack(workDir, {
+        entries: ['app', 'Dockerfile'],
+        ignore: fulname => name.startsWith(appGitDir),
+      });
+
+      await dockerBuild({
+        tarball,
+        logfile: `${workDir}/docker-build.log`,
+        tag,
+        utils,
+        baseDir,
       });
 
       return provides;
     },
   });
 
-  return tasks;
+  if (repository.docs === 'generated') {
+    tasks.push({
+      title: `Service ${name} - Generate Docs`,
+      requires: [
+        `repo-${name}-exact-source`,
+        `service-${name}-built-app-dir`,
+        `docker-image-${stackImage}`,
+      ],
+      provides: [
+        `docs-${name}-dir`,
+      ],
+      run: async (requirements, utils) => {
+        const appDir = requirements[`service-${name}-built-app-dir`];
+        // note that docs directory paths must have this form (${basedir}/docs is
+        // mounted in docker images)
+        const docsDir = path.join(baseDir, 'docs', name);
+        const provides = {
+          [`docs-${name}-dir`]: docsDir,
+        };
+
+        // if we've already built this docsDir with this revision, we're done.
+        if (dirStamped({dir: docsDir, sources: requirements[`repo-${name}-exact-source`]})) {
+          return utils.skip(provides);
+        }
+        await rimraf(docsDir);
+        await mkdirp(path.dirname(docsDir));
+
+        await dockerRun({
+          image: stackImage,
+          command: ['/app/entrypoint', 'write-docs'],
+          env: [`DOCS_OUTPUT_DIR=/basedir/docs/${name}`],
+          logfile: `${workDir}/generate-docs.log`,
+          utils,
+          binds: [
+            `${appDir}:/app`,
+            `${baseDir}:/basedir`,
+          ],
+          baseDir,
+        });
+
+        stampDir({dir: docsDir, sources: requirements[`repo-${name}-exact-source`]});
+        return provides;
+      },
+    });
+  }
 };
 
-exports.serviceTasks = serviceTasks;
+const toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
+  const docNames = spec.build.repositories.filter(repo => repo.docs).map(repo => repo.name);
+
+  const nodeImage = `node:${repository.service.node}`;
+  ensureDockerImage(tasks, baseDir, nodeImage);
+
+  tasks.push({
+    title: `Service ${name} - Build`,
+    requires: [
+      `docker-image-${nodeImage}`,
+      `repo-${name}-exact-source`,
+      `repo-${name}-dir`,
+      ...docNames.map(name => `docs-${name}-dir`),
+      ...docNames.map(name => `repo-${name}-exact-source`),
+    ],
+    provides: [
+      `service-${name}-built-app-dir`,
+      `service-${name}-build-dir`, // result of `yarn build`
+    ],
+    run: async (requirements, utils) => {
+      const repoDir = requirements[`repo-${name}-dir`];
+      const appDir = path.join(workDir, 'app');
+      const cacheDir = path.join(workDir, 'cache');
+      const buildDir = path.join(appDir, 'build');
+      const sources = [name, ...docNames].map(name => requirements[`repo-${name}-exact-source`]);
+      const provides = {
+        [`service-${name}-built-app-dir`]: appDir,
+        [`service-${name}-build-dir`]: buildDir,
+      };
+
+      if (dirStamped({dir: appDir, sources})) {
+        return utils.skip(provides);
+      }
+      await rimraf(appDir);
+      await mkdirp(cacheDir);
+
+      utils.step({title: 'Copy Repository'});
+
+      // copy from the repo (omitting .git as it's not needed)
+      await copy(repoDir, appDir, {filter: ['**/*', '!.git'], dot: true});
+      assert(fs.existsSync(appDir));
+
+      utils.step({title: 'Copy Docs'});
+
+      // copy each docs directory to the appropriate place
+      // in the tools source tree
+      for (let docName of docNames) {
+        utils.status({message: docName});
+
+        const src = requirements[`docs-${docName}-dir`];
+        const tier = JSON.parse(fs.readFileSync(path.join(src, 'metadata.json'))).tier;
+        const dst = path.join(appDir, 'src', 'docs', 'reference', tier, docName);
+
+        await mkdirp(path.dirname(dst));
+        await copy(src, dst, {dot: true});
+      }
+
+      utils.step({title: 'Install Dependencies'});
+
+      await dockerRun({
+        image: nodeImage,
+        workingDir: '/app',
+        env: ['YARN_CACHE_FOLDER=/cache'],
+        command: ['yarn'],
+        logfile: `${workDir}/yarn.log`,
+        utils,
+        binds: [
+          `${appDir}:/app`,
+          `${cacheDir}:/cache`,
+        ],
+        baseDir,
+      });
+
+      utils.step({title: 'Build'});
+      utils.status({message: '(this takes several minutes, with no additional output -- be patient)'});
+
+      await dockerRun({
+        image: nodeImage,
+        workingDir: '/app',
+        command: ['yarn', 'build'],
+        logfile: `${workDir}/yarn-build.log`,
+        utils,
+        binds: [
+          `${appDir}:/app`,
+        ],
+        baseDir,
+      });
+
+      stampDir({dir: appDir, sources});
+      return provides;
+    },
+  });
+
+  tasks.push({
+    title: `Service ${name} - Build Image`,
+    requires: [
+      `repo-${name}-exact-source`,
+      `service-${name}-build-dir`,
+    ],
+    provides: [
+      `service-${name}-docker-image`, // docker image tag
+      `service-${name}-image-on-registry`, // true if the image already exists on registry
+    ],
+    run: async (requirements, utils) => {
+      const buildDir = requirements[`service-${name}-build-dir`];
+      const headRef = requirements[`repo-${name}-exact-source`].split('#')[1];
+      const tag = `${cfg.docker.repositoryPrefix}${name}:${headRef}`;
+
+      utils.step({title: 'Check for Existing Images'});
+
+      const imageLocal = (await dockerImages({baseDir}))
+        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
+      const imageOnRegistry = await dockerRegistryCheck({tag});
+
+      const provides = {
+        [`service-${name}-docker-image`]: tag,
+        [`service-${name}-image-on-registry`]: imageOnRegistry,
+      };
+
+      // bail out if we can, pulling the image if it's only available remotely
+      if (!imageLocal && imageOnRegistry) {
+        await dockerPull({image: tag, utils, baseDir});
+        return utils.skip(provides);
+      } else if (imageLocal) {
+        return utils.skip(provides);
+      }
+
+      // build a tarfile containing the build directory, Dockerfile, and ancillary files
+      utils.step({title: 'Create Docker-Build Tarball'});
+
+      const dockerfile = TOOLS_UI_DOCKERFILE_TEMPLATE({});
+
+      const tarball = tar.pack(buildDir, {
+        finalize: false,
+        map: header => {
+          header.name = `build/${header.name}`;
+          return header;
+        },
+        finish: pack => {
+          pack.entry({name: 'Dockerfile'},
+            TOOLS_UI_DOCKERFILE_TEMPLATE({}));
+          // TODO: maybe this file should be in the build spec???
+          pack.entry({name: 'nginx-site.conf'},
+            fs.readFileSync(path.join(__dirname, 'tools-ui-nginx-site.conf')));
+          pack.finalize();
+        },
+      });
+
+      await dockerBuild({
+        tarball,
+        logfile: `${workDir}/docker-build.log`,
+        tag,
+        utils,
+        baseDir,
+      });
+
+      return provides;
+    },
+  });
+
+};
+
+module.exports = generateServiceTasks;
