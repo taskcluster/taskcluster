@@ -54,7 +54,7 @@ load();
 
 server.listen(port, () => {
   /* eslint-disable no-console */
-  console.log(`\n\nTaskcluster GraphQL gateway running on port ${port}.`);
+  console.log(`\n\nWeb server running on port ${port}.`);
   console.log(
     `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
     http://localhost:${port}/playground\n`

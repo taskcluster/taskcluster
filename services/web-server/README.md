@@ -1,11 +1,13 @@
-# Taskcluster GraphQL Gateway
+# Taskcluster Web Server
 
-An intermediary gateway between a GraphQL client and the Taskcluster REST APIs.
-Helps make Taskcluster API communication consisitent and offloads client refreshing
-to the gateway instead of putting that logic on the client consumer.
+A web server for supporting the taskcluster-web UI repository. Serves as a
+GraphQL gateway to the Taskcluster REST APIs, and should eventually support and
+improve user preferences and authentication flows.
+Helps make Taskcluster API communication consistent and offloads client refreshing
+to the gateway instead of putting extra logic on the web consumer.
 
 Supports the queries, mutations, and subscriptions of Taskcluster APIs used
-by web applications.
+by the web application.
 
 ## Environment variables
 
@@ -43,13 +45,13 @@ service, which launches on the `PORT` set in `.env`.
 You should see the following message in the console, for example, using port 3050:
 
 ```bash
-Taskcluster GraphQL server running on port 3050.
+Web server running on port 3050.
 
 Open the interactive GraphQL Playground, schema explorer and docs in your browser at:
     http://localhost:3050
 ```
 
-To pass credentials to the service from the GraphQL Playground, click the "HTTP Headers"
+To pass credentials to the server from the GraphQL Playground, click the "HTTP Headers"
 section, and paste a JSON object with a key of "Authorization" with a value of
 "Bearer YOUR_ACCESS_TOKEN", such as:
 
@@ -60,13 +62,6 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 ```
 
 <img src="https://cldup.com/XDpBc-qY5Q.png" alt="authorization header" height="75%" width="75%" />
-
-_Tip: you can get a copy of your Taskcluster Tools auth0 token by running the following
-in the devtools console:_
-
-```js
-copy(JSON.parse(localStorage.getItem('userSession')).accessToken)
-```
 
 ## Sample Queries
 
@@ -204,9 +199,3 @@ Variables:
 ## Data Flow Diagram
 
 ![data flow](https://cldup.com/e3lrkf28ab.png)
-
-
-## Apollo Engine
-
-You can enable tracing and caching to the Apollo Engine service by setting the
-`APOLLO_ENGINE_KEY` environment variable.
