@@ -1,8 +1,6 @@
 Defaults:
   app:
-    authorizers:
-      - ldap
-      - mozillians
+    # credentials used for the service (uploading docs, etc.)
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
@@ -12,21 +10,13 @@ Defaults:
       startOffset:    '- 15 min'
       # Set the credential to expire after 3 days
       expiry:         '3 days'
-      # Credentials to issuing temporary credentials should have scopes:
-      # - assume:mozillians-user:*
-      # - assume:mozillians-group:*
-      # - assume:mozilla-user:*
-      # - assume:mozilla-group:*
+      # Credentials to temporary credentials; these should have all of the roles that
+      # the service might hand out.  It's OK for these to be the same as app.credentials.
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
     authBaseUrl:      https://auth.taskcluster.net/v1
     publishMetaData:  !env:bool PUBLISH_METADATA
-  raven:
-    # This can be grabbed from the settings of the sentry project
-    # and is a string that looks like:
-    # https://<pubkey>:<privkey>@app.getsentry.com/<port>
-    sentryDSN:                 !env SENTRY_DSN
   aws:
     # Credentials with access to artifact buckets and
     # references/schemas.taskcluster.net if you wish to publish meta-data
@@ -34,22 +24,6 @@ Defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           us-west-2
     apiVersion:       2014-01-01
-  mozillians:
-    # NOTE: this API key needs to have the "Mozillians" level in order to access
-    # non-public profiles; see https://bugzilla.mozilla.org/show_bug.cgi?id=1259059
-    apiKey:         !env MOZILLIANS_API_KEY
-    allowedGroups:  !env:list MOZILLIANS_ALLOWED_GROUPS
-  ldap:
-    url:            !env LDAP_URL
-    cert:           !env LDAP_CERTIFICATE
-    key:            !env LDAP_KEY
-    user:           !env LDAP_USER
-    password:       !env LDAP_PASSWORD
-    allowedGroups:  all
-  auth0:
-    domain:         !env AUTH0_DOMAIN
-    clientId:       !env AUTH0_CLIENT_ID
-    clientSecret:   !env AUTH0_CLIENT_SECRET
   server:
     port:       !env:number PORT
     forceSSL:   !env:flag FORCE_SSL
@@ -74,16 +48,11 @@ Profiles:
         credentials:
           clientId:     'dummy'
           accessToken:  'lol no secret here'
-    mozillians:
-      allowedGroups: ['taskcluster-users']
     server:
       port: 60174
       publicUrl: http://localhost:60174
       env: development
       forceSSL: false
-    ldap:
-      url: ldaps://example.com
-      allowedGroups: all
   ngrok:
     handlers:
       test:
@@ -95,10 +64,6 @@ Profiles:
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
-    mozillians:
-      allowedGroups: ['taskcluster-users']
-    ldap:
-      allowedGroups:  all
     server:
       port: 60174
       publicUrl: https://taskcluster-login.ngrok.io
