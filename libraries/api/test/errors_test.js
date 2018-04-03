@@ -65,15 +65,15 @@ suite('api/errors', function() {
       let response = JSON.parse(res.response.text);
       response.message = response.message.replace(response.requestInfo.time, '<nowish>');
       response.requestInfo.time = '<nowish>';
-      assert(_.isEqual(response, {
+      assert.deepEqual(response, {
         code: 'TooManyFoos',
         message: [
           'You can only have 3 foos.  These foos already exist:',
-          '[',
+          '\\[',
           '  1,',
           '  2,',
           '  3',
-          ']',
+          '\\]',
           '----',
           'method:     toomanyfoos',
           'errorCode:  TooManyFoos',
@@ -86,7 +86,7 @@ suite('api/errors', function() {
           payload: {foos: [4, 5]},
           time: '<nowish>',
         },
-      }));
+      });
     });
   });
 
