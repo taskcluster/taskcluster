@@ -8,6 +8,7 @@ let api = new API({
     'listens for tasks with associated notifications and handles requests to',
     'send emails and post pulse messages.',
   ].join('\n'),
+  name: 'notify',
   schemaPrefix: 'http://schemas.taskcluster.net/notify/v1/',
   context: [
     'notifier',
