@@ -12,6 +12,8 @@ tasks:
         env: true
         events:
           - push
+        excludeBranches:
+          - foobar
 
     payload:
       image: "ubuntu:latest"
