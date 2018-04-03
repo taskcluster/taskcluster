@@ -147,7 +147,7 @@ suite('intree config', () => {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Excluded (on branch)',
-    configPath + 'taskcluster.single.yml',
+    configPath + 'taskcluster.exclude.yml',
     {
       payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
     },
@@ -156,16 +156,25 @@ suite('intree config', () => {
     });
 
   buildConfigTest(
-    'Push Event, Single Task Config, Branch Exclude is overriden by Include',
-    configPath + 'taskcluster.single.yml',
+    'Pull Request Event, Single Task Config, Branch Excluded (on branch)',
+    configPath + 'taskcluster.pull_with_exclude.yml',
+    {
+      payload:    buildMessage({details: {'event.type': 'pull_request.opened', 'event.base.repo.branch': 'master'}}),
+    },
+    {
+    },
+    1);
+
+  buildConfigTest(
+    'Push Event, Single Task Config, Branch Exclude and Include errors',
+    configPath + 'taskcluster.exclude-error.yml',
     {
       payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
     },
     {
-      'tasks[0].task.extra.github.events': ['push'],
-      'metadata.owner': 'test@test.com',
-      scopes: ['assume:repo:github.com/testorg/testrepo:branch:master'],
-    });
+    },
+    0,
+    'should-error');
 
   buildConfigTest(
     'Star Pull Config',
