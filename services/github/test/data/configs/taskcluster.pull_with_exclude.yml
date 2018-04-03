@@ -11,14 +11,16 @@ tasks:
       github:
         env: true
         events:
+          - pull_request.*
           - push
-
+        excludeBranches:
+          - master
     payload:
       image: "ubuntu:latest"
       command:
         - test
     metadata:
-      name: "name"
+      name: "PR Task"
       description: "description"
       owner: "test@test.com"
       source: "http://mrrrgn.com"

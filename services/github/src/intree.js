@@ -128,15 +128,33 @@ module.exports.setup = function(cfg) {
           return false;
         }
 
+        let event = payload.details['event.type'];
         let events = task.task.extra.github.events;
-        let branches = task.task.extra.github.branches;
         let branch = payload.details['event.base.repo.branch'];
+        let includeBranches = task.task.extra.github.branches;
         let excludeBranches = task.task.extra.github.excludeBranches;
 
-        return _.some(events, ev => payload.details['event.type'].startsWith(_.trimEnd(ev, '*'))) &&
-          (!(branches || excludeBranches) || 
-            branches && _.includes(branches, branch) || excludeBranches && !_.includes(excludeBranches, branch) ||
-            payload.details['event.type']==='tag');
+        if (includeBranches && excludeBranches) {
+          throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
+        }
+
+        return _.some(events, ev => {
+          if (!event.startsWith(_.trimEnd(ev, '*'))) {
+            return false;
+          }
+
+          if (event !== 'push') {
+            return true;
+          }
+
+          if (includeBranches) {
+            return _.includes(includeBranches, branch);
+          } else if (excludeBranches) {
+            return !_.includes(excludeBranches, branch);
+          } else {
+            return true;
+          }
+        });
       });
 
       // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
