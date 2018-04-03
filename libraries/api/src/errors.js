@@ -61,7 +61,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
       message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
         let value = details.hasOwnProperty(key) ? details[key] : text;
         if (typeof value !== 'string') {
-          return JSON.stringify(value, null, 2);
+          value = JSON.stringify(value, null, 2);
         }
         // escape the substituted value, so that the markdown rendering cannot be abused
         value = escapeMarkdown(value);
