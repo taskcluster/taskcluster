@@ -24,13 +24,6 @@ MAX_DELAY = 30
 
 log = logging.getLogger(__name__)
 
-try:
-    # Do not require pgpy for all tasks
-    import pgpy
-except ImportError:
-    pgpy = None
-    log.debug("Encryption disabled. Install pgpy to enable.")
-
 # Regular expression matching: X days Y hours Z minutes
 # todo: support hr, wk, yr
 r = re.compile(''.join([
@@ -310,67 +303,12 @@ def putFile(filename, url, contentType):
         })
 
 
-def _messageForEncryptedEnvVar(taskId, startTime, endTime, name, value):
-    return {
-        "messageVersion": "1",
-        "taskId": taskId,
-        "startTime": startTime,
-        "endTime": endTime,
-        "name": name,
-        "value": value
-    }
-
-
 def encryptEnvVar(taskId, startTime, endTime, name, value, keyFile):
-    message = toStr(json.dumps(_messageForEncryptedEnvVar(
-        taskId, startTime, endTime, name, value)))
-    return base64.b64encode(_encrypt(message, keyFile))
-
-
-def _encrypt(message, keyFile):
-    """Encrypt and base64 encode message.
-
-    :type message: str or unicode
-    :type keyFile: str or unicode
-    :return: base64 representation of binary (unarmoured) encrypted message
-    """
-    if not pgpy:
-        raise RuntimeError("Install `pgpy' to use encryption")
-    key, _ = pgpy.PGPKey.from_file(keyFile)
-    msg = pgpy.PGPMessage.new(message)
-    encrypted = key.encrypt(msg)
-    if six.PY2:
-        encrypted_bytes = encrypted.__bytes__()
-    else:
-        encrypted_bytes = bytes(encrypted)
-    return encrypted_bytes
+    raise Exception("Encrypted environment variables are no longer supported")
 
 
 def decryptMessage(message, privateKey):
-    """Decrypt base64-encoded message
-    :param message: base64-encode message
-    :param privateKey: path to private key
-    :return: decrypted message dictionary
-    """
-    decodedMessage = base64.b64decode(message)
-    return json.loads(_decrypt(decodedMessage, privateKey))
-
-
-def _decrypt(blob, privateKey):
-    """
-    :param blob: encrypted binary string
-    :param privateKey: path to private key
-    :return: decrypted text
-
-    """
-    if not pgpy:
-        raise RuntimeError("Install `pgpy' to use encryption")
-    key, _ = pgpy.PGPKey.from_file(privateKey)
-    msg = pgpy.PGPMessage()
-    msg.parse(blob)
-    decrypted = key.decrypt(msg)
-    message = decrypted.message
-    return message
+    raise Exception("Decryption is no longer supported")
 
 
 def isExpired(certificate):

@@ -19,7 +19,6 @@ tests_require = [
     'flake8==2.5.0',
     'psutil==2.1.3',
     'hypothesis==3.6.1',
-    'pgpy>=0.4.0,<0.5',
     'tox==2.3.2',
     'coverage==4.1b2',
     'python-dateutil==2.6.0',
