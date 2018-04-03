@@ -316,12 +316,13 @@ only for very specific conditions that the API library detects):
 
 In any case, the `messagePattern` and details are combined to produce an error
 message.  Strings surrounded by `{{..}}` in `messagepattern` are used as keys
-into `details`, with the result being JSON-encoded.  For example:
+into `details`, with the result being JSON-encoded if it is not a simple
+string.  For example:
 
 ```js
 res.reportError(
   'TooManyFoos',
-  'You can only have 3 foos.  These foos already exist:\n{{foos}}',
+  'You can only have 3 foos.  These foos already exist:\n```\n{{foos}}\n```',
   {foos: foomanager.foos(request.fooId)});
 ```
 
@@ -332,11 +333,13 @@ The resulting HTTP response will have a JSON body containing (whitespace adjuste
   "message": [
     'You can only have 3 foos.',
     'These foos already exist:',
+    '```',
     '[',
     '  1,',
     '  2,',
     '  3',
     ']',
+    '```,
     '----',
     'method:     toomanyfoos',
     'errorCode:  TooManyFoos',
@@ -351,6 +354,9 @@ The resulting HTTP response will have a JSON body containing (whitespace adjuste
   },
 }
 ```
+
+Note that substituted values are escaped to avoid unexpected interpretation as
+markdown.
 
 The request payload is provided in `requestInfo`, so there is no need to
 reproduce its contents within the error message.
