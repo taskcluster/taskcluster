@@ -35,7 +35,7 @@ while ! yarn install --frozen-lockfile; do
 done
 
 # Initialize video and sound loopback modules
-sudo modprobe v4l2loopback
+sudo modprobe --force-vermagic v4l2loopback
 sudo modprobe snd-aloop
 # Create dependency file
 sudo depmod

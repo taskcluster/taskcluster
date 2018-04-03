@@ -27,7 +27,7 @@ sudo usermod -a -G docker $user
 }
 
 sudo apt-get install -y software-properties-common
-sudo apt-add-repository ppa:taskcluster/ppa
+sudo apt-add-repository -y ppa:taskcluster/ppa
 
 # Add docker gpg key and update sources
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
