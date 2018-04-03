@@ -546,11 +546,15 @@ var remoteAuthentication = function(options, entry) {
             '',
             'You have the scopes:',
             '',
+            '```',
             '{{scopes}}',
+            '```',
             '',
             'This request requires you to satisfy this scope expression:',
             '',
+            '```',
             '{{required}}',
+            '```',
           ].join('\n');
           err.details = {
             scopes: result.scopes,
