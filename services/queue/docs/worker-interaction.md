@@ -11,7 +11,7 @@ successfully claimed, executed and resolved. Obviously, there is a few corner
 cases when dealing with internal errors, invalid payloads and early worker
 termination, sections here outline how to handle all these cases.
 
-![Common queue-worker interaction](queue-worker-interaction.svg)
+![Common queue-worker interaction](./queue-worker-interaction.svg)
 
 
 ## Claiming Pending Tasks
