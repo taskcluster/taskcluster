@@ -538,6 +538,9 @@ The caller's scopes must satisfy the new role's scopes.
 If there already exists a role with the same `roleId` this operation
 will fail. Use `updateRole` to modify an existing role.
 
+Creation of a role that will generate an infinite expansion will result
+in an error response.
+
 
 
 Takes the following arguments:
@@ -562,6 +565,9 @@ Update an existing role.
 
 The caller's scopes must satisfy all of the new scopes being added, but
 need not satisfy all of the client's existing scopes.
+
+An update of a role that will generate an infinite expansion will result
+in an error response.
 
 
 
@@ -599,6 +605,25 @@ auth.deleteRole(roleId='value') # -> None
 # Async call
 await asyncAuth.deleteRole(roleId) # -> None
 await asyncAuth.deleteRole(roleId='value') # -> None
+```
+
+#### Expand Scopes
+Return an expanded copy of the given scopeset, with scopes implied by any
+roles included.
+
+This call uses the GET method with an HTTP body.  It remains only for
+backward compatibility.
+
+
+Required [input schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+
+```python
+# Sync calls
+auth.expandScopesGet(payload) # -> result`
+# Async call
+await asyncAuth.expandScopesGet(payload) # -> result
 ```
 
 #### Expand Scopes
@@ -778,7 +803,27 @@ await asyncAuth.azureTableSAS(account, table, level) # -> result
 await asyncAuth.azureTableSAS(account='value', table='value', level='value') # -> result
 ```
 
-#### Get Shared-Access-Signature for Azure Blob
+#### List containers in an Account Managed by Auth
+Retrieve a list of all containers in an account.
+
+
+
+Takes the following arguments:
+
+  * `account`
+
+Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#)
+
+```python
+# Sync calls
+auth.azureContainers(account) # -> result`
+auth.azureContainers(account='value') # -> result
+# Async call
+await asyncAuth.azureContainers(account) # -> result
+await asyncAuth.azureContainers(account='value') # -> result
+```
+
+#### Get Shared-Access-Signature for Azure Container
 Get a shared access signature (SAS) string for use with a specific Azure
 Blob Storage container.
 
@@ -794,15 +839,15 @@ Takes the following arguments:
   * `container`
   * `level`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#)
+Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-container-response.json#)
 
 ```python
 # Sync calls
-auth.azureBlobSAS(account, container, level) # -> result`
-auth.azureBlobSAS(account='value', container='value', level='value') # -> result
+auth.azureContainerSAS(account, container, level) # -> result`
+auth.azureContainerSAS(account='value', container='value', level='value') # -> result
 # Async call
-await asyncAuth.azureBlobSAS(account, container, level) # -> result
-await asyncAuth.azureBlobSAS(account='value', container='value', level='value') # -> result
+await asyncAuth.azureContainerSAS(account, container, level) # -> result
+await asyncAuth.azureContainerSAS(account='value', container='value', level='value') # -> result
 ```
 
 #### Get DSN for Sentry Project
@@ -1423,6 +1468,379 @@ Exchanges from the provisioner... more docs later
 
 
 
+### Methods in `taskcluster.EC2Manager`
+```python
+import asyncio # Only for async 
+// Create EC2Manager client instance
+import taskcluster
+import taskcluster.async
+
+eC2Manager = taskcluster.EC2Manager(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.async.createSession(loop=loop)
+asyncEC2Manager = taskcluster.async.EC2Manager(options, session=session)
+```
+A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service
+#### See the list of worker types which are known to be managed
+This method is only for debugging the ec2-manager
+
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#)
+
+```python
+# Sync calls
+eC2Manager.listWorkerTypes() # -> result`
+# Async call
+await asyncEC2Manager.listWorkerTypes() # -> result
+```
+
+#### Run an instance
+Request an instance of a worker type
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [input schema](http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#)
+
+```python
+# Sync calls
+eC2Manager.runInstance(workerType, payload) # -> None`
+eC2Manager.runInstance(payload, workerType='value') # -> None
+# Async call
+await asyncEC2Manager.runInstance(workerType, payload) # -> None
+await asyncEC2Manager.runInstance(payload, workerType='value') # -> None
+```
+
+#### Terminate all resources from a worker type
+Terminate all instances for this worker type
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+```python
+# Sync calls
+eC2Manager.terminateWorkerType(workerType) # -> None`
+eC2Manager.terminateWorkerType(workerType='value') # -> None
+# Async call
+await asyncEC2Manager.terminateWorkerType(workerType) # -> None
+await asyncEC2Manager.terminateWorkerType(workerType='value') # -> None
+```
+
+#### Look up the resource stats for a workerType
+Return an object which has a generic state description. This only contains counts of instances
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#)
+
+```python
+# Sync calls
+eC2Manager.workerTypeStats(workerType) # -> result`
+eC2Manager.workerTypeStats(workerType='value') # -> result
+# Async call
+await asyncEC2Manager.workerTypeStats(workerType) # -> result
+await asyncEC2Manager.workerTypeStats(workerType='value') # -> result
+```
+
+#### Look up the resource health for a workerType
+Return a view of the health of a given worker type
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/health.json#)
+
+```python
+# Sync calls
+eC2Manager.workerTypeHealth(workerType) # -> result`
+eC2Manager.workerTypeHealth(workerType='value') # -> result
+# Async call
+await asyncEC2Manager.workerTypeHealth(workerType) # -> result
+await asyncEC2Manager.workerTypeHealth(workerType='value') # -> result
+```
+
+#### Look up the most recent errors of a workerType
+Return a list of the most recent errors encountered by a worker type
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/errors.json#)
+
+```python
+# Sync calls
+eC2Manager.workerTypeErrors(workerType) # -> result`
+eC2Manager.workerTypeErrors(workerType='value') # -> result
+# Async call
+await asyncEC2Manager.workerTypeErrors(workerType) # -> result
+await asyncEC2Manager.workerTypeErrors(workerType='value') # -> result
+```
+
+#### Look up the resource state for a workerType
+Return state information for a given worker type
+
+
+
+Takes the following arguments:
+
+  * `workerType`
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#)
+
+```python
+# Sync calls
+eC2Manager.workerTypeState(workerType) # -> result`
+eC2Manager.workerTypeState(workerType='value') # -> result
+# Async call
+await asyncEC2Manager.workerTypeState(workerType) # -> result
+await asyncEC2Manager.workerTypeState(workerType='value') # -> result
+```
+
+#### Ensure a KeyPair for a given worker type exists
+Idempotently ensure that a keypair of a given name exists
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+Required [input schema](http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#)
+
+```python
+# Sync calls
+eC2Manager.ensureKeyPair(name, payload) # -> None`
+eC2Manager.ensureKeyPair(payload, name='value') # -> None
+# Async call
+await asyncEC2Manager.ensureKeyPair(name, payload) # -> None
+await asyncEC2Manager.ensureKeyPair(payload, name='value') # -> None
+```
+
+#### Ensure a KeyPair for a given worker type does not exist
+Ensure that a keypair of a given name does not exist.
+
+
+
+Takes the following arguments:
+
+  * `name`
+
+```python
+# Sync calls
+eC2Manager.removeKeyPair(name) # -> None`
+eC2Manager.removeKeyPair(name='value') # -> None
+# Async call
+await asyncEC2Manager.removeKeyPair(name) # -> None
+await asyncEC2Manager.removeKeyPair(name='value') # -> None
+```
+
+#### Terminate an instance
+Terminate an instance in a specified region
+
+
+
+Takes the following arguments:
+
+  * `region`
+  * `instanceId`
+
+```python
+# Sync calls
+eC2Manager.terminateInstance(region, instanceId) # -> None`
+eC2Manager.terminateInstance(region='value', instanceId='value') # -> None
+# Async call
+await asyncEC2Manager.terminateInstance(region, instanceId) # -> None
+await asyncEC2Manager.terminateInstance(region='value', instanceId='value') # -> None
+```
+
+#### Request prices for EC2
+Return a list of possible prices for EC2
+
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/prices.json#)
+
+```python
+# Sync calls
+eC2Manager.getPrices() # -> result`
+# Async call
+await asyncEC2Manager.getPrices() # -> result
+```
+
+#### Request prices for EC2
+Return a list of possible prices for EC2
+
+
+Required [input schema](http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#)
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/prices.json#)
+
+```python
+# Sync calls
+eC2Manager.getSpecificPrices(payload) # -> result`
+# Async call
+await asyncEC2Manager.getSpecificPrices(payload) # -> result
+```
+
+#### Get EC2 account health metrics
+Give some basic stats on the health of our EC2 account
+
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/health.json#)
+
+```python
+# Sync calls
+eC2Manager.getHealth() # -> result`
+# Async call
+await asyncEC2Manager.getHealth() # -> result
+```
+
+#### Look up the most recent errors in the provisioner across all worker types
+Return a list of recent errors encountered
+
+
+Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/errors.json#)
+
+```python
+# Sync calls
+eC2Manager.getRecentErrors() # -> result`
+# Async call
+await asyncEC2Manager.getRecentErrors() # -> result
+```
+
+#### See the list of regions managed by this ec2-manager
+This method is only for debugging the ec2-manager
+
+
+```python
+# Sync calls
+eC2Manager.regions() # -> None`
+# Async call
+await asyncEC2Manager.regions() # -> None
+```
+
+#### See the list of AMIs and their usage
+List AMIs and their usage by returning a list of objects in the form:
+{
+region: string
+  volumetype: string
+  lastused: timestamp
+}
+
+
+```python
+# Sync calls
+eC2Manager.amiUsage() # -> None`
+# Async call
+await asyncEC2Manager.amiUsage() # -> None
+```
+
+#### See the current EBS volume usage list
+Lists current EBS volume usage by returning a list of objects
+that are uniquely defined by {region, volumetype, state} in the form:
+{
+region: string,
+  volumetype: string,
+  state: string,
+  totalcount: integer,
+  totalgb: integer,
+  touched: timestamp (last time that information was updated),
+}
+
+
+```python
+# Sync calls
+eC2Manager.ebsUsage() # -> None`
+# Async call
+await asyncEC2Manager.ebsUsage() # -> None
+```
+
+#### Statistics on the Database client pool
+This method is only for debugging the ec2-manager
+
+
+```python
+# Sync calls
+eC2Manager.dbpoolStats() # -> None`
+# Async call
+await asyncEC2Manager.dbpoolStats() # -> None
+```
+
+#### List out the entire internal state
+This method is only for debugging the ec2-manager
+
+
+```python
+# Sync calls
+eC2Manager.allState() # -> None`
+# Async call
+await asyncEC2Manager.allState() # -> None
+```
+
+#### Statistics on the sqs queues
+This method is only for debugging the ec2-manager
+
+
+```python
+# Sync calls
+eC2Manager.sqsStats() # -> None`
+# Async call
+await asyncEC2Manager.sqsStats() # -> None
+```
+
+#### Purge the SQS queues
+This method is only for debugging the ec2-manager
+
+
+```python
+# Sync calls
+eC2Manager.purgeQueues() # -> None`
+# Async call
+await asyncEC2Manager.purgeQueues() # -> None
+```
+
+#### API Reference
+Generate an API reference for this service
+
+
+```python
+# Sync calls
+eC2Manager.apiReference() # -> None`
+# Async call
+await asyncEC2Manager.apiReference() # -> None
+```
+
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+eC2Manager.ping() # -> None`
+# Async call
+await asyncEC2Manager.ping() # -> None
+```
+
+
+
+
 ### Methods in `taskcluster.Github`
 ```python
 import asyncio # Only for async 
@@ -1663,6 +2081,10 @@ be created.  Each schedule is in a simple cron format, per
 https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 1 * * *']` -- daily at 1:00 UTC
  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
+
+The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
+https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+for more information.
 #### List hook groups
 This endpoint will return a list of all hook groups with at least one hook.
 
@@ -1837,6 +2259,10 @@ await asyncHooks.removeHook(hookGroupId='value', hookId='value') # -> None
 #### Trigger a hook
 This endpoint will trigger the creation of a task from a hook definition.
 
+The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+provided as the `payload` property of the JSON-e context used to render the
+task template.
+
 
 
 Takes the following arguments:
@@ -1844,7 +2270,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-payload.json)
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-context.json)
 
 Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
 
@@ -1904,6 +2330,10 @@ await asyncHooks.resetTriggerToken(hookGroupId='value', hookId='value') # -> res
 #### Trigger a hook with a token
 This endpoint triggers a defined hook with a valid token.
 
+The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+provided as the `payload` property of the JSON-e context used to render the
+task template.
+
 
 
 Takes the following arguments:
@@ -1912,7 +2342,7 @@ Takes the following arguments:
   * `hookId`
   * `token`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-payload.json)
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-context.json)
 
 Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
 
@@ -2081,17 +2511,72 @@ Takes the following arguments:
 
   * `namespace`
 
+Required [output schema](http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#)
+
+```python
+# Sync calls
+index.listNamespaces(namespace) # -> result`
+index.listNamespaces(namespace='value') # -> result
+# Async call
+await asyncIndex.listNamespaces(namespace) # -> result
+await asyncIndex.listNamespaces(namespace='value') # -> result
+```
+
+#### List Namespaces
+List the namespaces immediately under a given namespace.
+
+This endpoint
+lists up to 1000 namespaces. If more namespaces are present, a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
 Required [input schema](http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#)
 
 Required [output schema](http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#)
 
 ```python
 # Sync calls
-index.listNamespaces(namespace, payload) # -> result`
-index.listNamespaces(payload, namespace='value') # -> result
+index.listNamespacesPost(namespace, payload) # -> result`
+index.listNamespacesPost(payload, namespace='value') # -> result
 # Async call
-await asyncIndex.listNamespaces(namespace, payload) # -> result
-await asyncIndex.listNamespaces(payload, namespace='value') # -> result
+await asyncIndex.listNamespacesPost(namespace, payload) # -> result
+await asyncIndex.listNamespacesPost(payload, namespace='value') # -> result
+```
+
+#### List Tasks
+List the tasks immediately under a given namespace.
+
+This endpoint
+lists up to 1000 tasks. If more tasks are present, a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, the payload should be an empty JSON
+object.
+
+**Remark**, this end-point is designed for humans browsing for tasks, not
+services, as that makes little sense.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [output schema](http://schemas.taskcluster.net/index/v1/list-tasks-response.json#)
+
+```python
+# Sync calls
+index.listTasks(namespace) # -> result`
+index.listTasks(namespace='value') # -> result
+# Async call
+await asyncIndex.listTasks(namespace) # -> result
+await asyncIndex.listTasks(namespace='value') # -> result
 ```
 
 #### List Tasks
@@ -2118,11 +2603,11 @@ Required [output schema](http://schemas.taskcluster.net/index/v1/list-tasks-resp
 
 ```python
 # Sync calls
-index.listTasks(namespace, payload) # -> result`
-index.listTasks(payload, namespace='value') # -> result
+index.listTasksPost(namespace, payload) # -> result`
+index.listTasksPost(payload, namespace='value') # -> result
 # Async call
-await asyncIndex.listTasks(namespace, payload) # -> result
-await asyncIndex.listTasks(payload, namespace='value') # -> result
+await asyncIndex.listTasksPost(namespace, payload) # -> result
+await asyncIndex.listTasksPost(payload, namespace='value') # -> result
 ```
 
 #### Insert Task into Index
@@ -2212,8 +2697,8 @@ session = taskcluster.async.createSession(loop=loop)
 asyncLogin = taskcluster.async.Login(options, session=session)
 ```
 The Login service serves as the interface between external authentication
-systems and TaskCluster credentials.
-#### Get TaskCluster credentials given a suitable `access_token`
+systems and Taskcluster credentials.
+#### Get Taskcluster credentials given a suitable `access_token`
 Given an OIDC `access_token` from a trusted OpenID provider, return a
 set of Taskcluster credentials for use on behalf of the identified
 user.
@@ -2346,120 +2831,6 @@ This endpoint is used to check that the service is up.
 notify.ping() # -> None`
 # Async call
 await asyncNotify.ping() # -> None
-```
-
-
-
-
-### Methods in `taskcluster.Pulse`
-```python
-import asyncio # Only for async 
-// Create Pulse client instance
-import taskcluster
-import taskcluster.async
-
-pulse = taskcluster.Pulse(options)
-# Below only for async instances, assume already in coroutine
-loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncPulse = taskcluster.async.Pulse(options, session=session)
-```
-The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
-manages pulse credentials for taskcluster users.
-
-A service to manage Pulse credentials for anything using
-Taskcluster credentials. This allows for self-service pulse
-access and greater control within the Taskcluster project.
-#### Rabbit Overview
-Get an overview of the Rabbit cluster.
-
-
-Required [output schema](http://schemas.taskcluster.net/pulse/v1/rabbit-overview.json)
-
-```python
-# Sync calls
-pulse.overview() # -> result`
-# Async call
-await asyncPulse.overview() # -> result
-```
-
-#### List Namespaces
-List the namespaces managed by this service.
-
-This will list up to 1000 namespaces. If more namespaces are present a
-`continuationToken` will be returned, which can be given in the next
-request. For the initial request, do not provide continuation.
-
-
-Required [output schema](http://schemas.taskcluster.net/pulse/v1/list-namespaces-response.json)
-
-```python
-# Sync calls
-pulse.listNamespaces() # -> result`
-# Async call
-await asyncPulse.listNamespaces() # -> result
-```
-
-#### Get a namespace
-Get public information about a single namespace. This is the same information
-as returned by `listNamespaces`.
-
-
-
-Takes the following arguments:
-
-  * `namespace`
-
-Required [output schema](http://schemas.taskcluster.net/pulse/v1/namespace.json)
-
-```python
-# Sync calls
-pulse.namespace(namespace) # -> result`
-pulse.namespace(namespace='value') # -> result
-# Async call
-await asyncPulse.namespace(namespace) # -> result
-await asyncPulse.namespace(namespace='value') # -> result
-```
-
-#### Claim a namespace
-Claim a namespace, returning a username and password with access to that
-namespace good for a short time.  Clients should call this endpoint again
-at the re-claim time given in the response, as the password will be rotated
-soon after that time.  The namespace will expire, and any associated queues
-and exchanges will be deleted, at the given expiration time.
-
-The `expires` and `contact` properties can be updated at any time in a reclaim
-operation.
-
-
-
-Takes the following arguments:
-
-  * `namespace`
-
-Required [input schema](http://schemas.taskcluster.net/pulse/v1/namespace-request.json)
-
-Required [output schema](http://schemas.taskcluster.net/pulse/v1/namespace-response.json)
-
-```python
-# Sync calls
-pulse.claimNamespace(namespace, payload) # -> result`
-pulse.claimNamespace(payload, namespace='value') # -> result
-# Async call
-await asyncPulse.claimNamespace(namespace, payload) # -> result
-await asyncPulse.claimNamespace(payload, namespace='value') # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-pulse.ping() # -> None`
-# Async call
-await asyncPulse.ping() # -> None
 ```
 
 
