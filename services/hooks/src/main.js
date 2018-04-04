@@ -48,6 +48,7 @@ var load = loader({
     setup: ({cfg}) => {
       return validator({
         prefix:  'hooks/v1/',
+        publish:          cfg.app.publishMetaData,
         aws:     cfg.aws.validator,
       });
     },
@@ -99,6 +100,11 @@ var load = loader({
         },
       ],
     }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   server: {
