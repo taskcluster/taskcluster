@@ -82,6 +82,11 @@ let load = loader({
     }),
   },
 
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  },
+
   app: {
     requires: ['cfg', 'docs', 'router'],
     setup: ({cfg, docs, router}) => {
