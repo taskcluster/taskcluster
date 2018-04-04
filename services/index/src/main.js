@@ -46,6 +46,7 @@ var load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => validator({
       prefix: 'index/v1/',
+      publish:          cfg.app.publishMetaData,
       aws:    cfg.aws,
     }),
   },
@@ -78,6 +79,7 @@ var load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
+      publish:          cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
@@ -85,6 +87,11 @@ var load = loader({
         },
       ],
     }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   api: {
