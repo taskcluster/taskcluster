@@ -47,6 +47,7 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => validator({
       prefix:       'queue/v1/',
+      publish:       cfg.app.publishMetaData,
       aws:           cfg.aws,
     }),
   },
@@ -69,6 +70,7 @@ let load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'platform',
       schemas: validator.schemas,
+      publish: cfg.app.publishMetaData,
       references: [{
         name: 'api',
         reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
@@ -80,6 +82,11 @@ let load = loader({
         }),
       }],
     }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   // Create artifact bucket instances
