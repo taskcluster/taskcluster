@@ -232,6 +232,9 @@ class Auth(BaseClient):
         If there already exists a role with the same `roleId` this operation
         will fail. Use `updateRole` to modify an existing role.
 
+        Creation of a role that will generate an infinite expansion will result
+        in an error response.
+
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/create-role-request.json#``
 
         This method gives output: ``http://schemas.taskcluster.net/auth/v1/get-role-response.json#``
@@ -249,6 +252,9 @@ class Auth(BaseClient):
 
         The caller's scopes must satisfy all of the new scopes being added, but
         need not satisfy all of the client's existing scopes.
+
+        An update of a role that will generate an infinite expansion will result
+        in an error response.
 
         This method takes input: ``http://schemas.taskcluster.net/auth/v1/create-role-request.json#``
 
@@ -270,6 +276,25 @@ class Auth(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["deleteRole"], *args, **kwargs)
+
+    def expandScopesGet(self, *args, **kwargs):
+        """
+        Expand Scopes
+
+        Return an expanded copy of the given scopeset, with scopes implied by any
+        roles included.
+
+        This call uses the GET method with an HTTP body.  It remains only for
+        backward compatibility.
+
+        This method takes input: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
+
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/scopeset.json#``
+
+        This method is ``deprecated``
+        """
+
+        return self._makeApiCall(self.funcinfo["expandScopesGet"], *args, **kwargs)
 
     def expandScopes(self, *args, **kwargs):
         """
@@ -423,9 +448,22 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["azureTableSAS"], *args, **kwargs)
 
-    def azureBlobSAS(self, *args, **kwargs):
+    def azureContainers(self, *args, **kwargs):
         """
-        Get Shared-Access-Signature for Azure Blob
+        List containers in an Account Managed by Auth
+
+        Retrieve a list of all containers in an account.
+
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#``
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["azureContainers"], *args, **kwargs)
+
+    def azureContainerSAS(self, *args, **kwargs):
+        """
+        Get Shared-Access-Signature for Azure Container
 
         Get a shared access signature (SAS) string for use with a specific Azure
         Blob Storage container.
@@ -434,12 +472,12 @@ class Auth(BaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         container if it doesn't already exist.
 
-        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#``
+        This method gives output: ``http://schemas.taskcluster.net/auth/v1/azure-container-response.json#``
 
         This method is ``stable``
         """
 
-        return self._makeApiCall(self.funcinfo["azureBlobSAS"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["azureContainerSAS"], *args, **kwargs)
 
     def sentryDSN(self, *args, **kwargs):
         """
@@ -600,12 +638,21 @@ class Auth(BaseClient):
             'route': '/azure/accounts',
             'stability': 'stable',
         },
-        "azureBlobSAS": {
+        "azureContainerSAS": {
             'args': ['account', 'container', 'level'],
             'method': 'get',
-            'name': 'azureBlobSAS',
-            'output': 'http://schemas.taskcluster.net/auth/v1/azure-blob-response.json#',
+            'name': 'azureContainerSAS',
+            'output': 'http://schemas.taskcluster.net/auth/v1/azure-container-response.json#',
             'route': '/azure/<account>/containers/<container>/<level>',
+            'stability': 'stable',
+        },
+        "azureContainers": {
+            'args': ['account'],
+            'method': 'get',
+            'name': 'azureContainers',
+            'output': 'http://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#',
+            'query': ['continuationToken'],
+            'route': '/azure/<account>/containers',
             'stability': 'stable',
         },
         "azureTableSAS": {
@@ -692,11 +739,20 @@ class Auth(BaseClient):
         "expandScopes": {
             'args': [],
             'input': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
-            'method': 'get',
+            'method': 'post',
             'name': 'expandScopes',
             'output': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
             'route': '/scopes/expand',
             'stability': 'stable',
+        },
+        "expandScopesGet": {
+            'args': [],
+            'input': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
+            'method': 'get',
+            'name': 'expandScopesGet',
+            'output': 'http://schemas.taskcluster.net/auth/v1/scopeset.json#',
+            'route': '/scopes/expand',
+            'stability': 'deprecated',
         },
         "listClients": {
             'args': [],

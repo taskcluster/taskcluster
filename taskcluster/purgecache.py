@@ -35,7 +35,7 @@ class PurgeCache(BaseClient):
 
         This method takes input: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#``
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["purgeCache"], *args, **kwargs)
@@ -52,7 +52,7 @@ class PurgeCache(BaseClient):
 
         This method gives output: ``http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#``
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["allPurgeRequests"], *args, **kwargs)
@@ -67,7 +67,7 @@ class PurgeCache(BaseClient):
 
         This method gives output: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#``
 
-        This method is ``experimental``
+        This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["purgeRequests"], *args, **kwargs)
@@ -92,7 +92,7 @@ class PurgeCache(BaseClient):
             'output': 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/purge-cache/list',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "ping": {
             'args': [],
@@ -107,7 +107,7 @@ class PurgeCache(BaseClient):
             'method': 'post',
             'name': 'purgeCache',
             'route': '/purge-cache/<provisionerId>/<workerType>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
         "purgeRequests": {
             'args': ['provisionerId', 'workerType'],
@@ -116,7 +116,7 @@ class PurgeCache(BaseClient):
             'output': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#',
             'query': ['since'],
             'route': '/purge-cache/<provisionerId>/<workerType>',
-            'stability': 'experimental',
+            'stability': 'stable',
         },
     }
 

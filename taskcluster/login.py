@@ -14,7 +14,7 @@ _defaultConfig = config
 class Login(BaseClient):
     """
     The Login service serves as the interface between external authentication
-    systems and TaskCluster credentials.
+    systems and Taskcluster credentials.
     """
 
     classOptions = {
@@ -23,7 +23,7 @@ class Login(BaseClient):
 
     def oidcCredentials(self, *args, **kwargs):
         """
-        Get TaskCluster credentials given a suitable `access_token`
+        Get Taskcluster credentials given a suitable `access_token`
 
         Given an OIDC `access_token` from a trusted OpenID provider, return a
         set of Taskcluster credentials for use on behalf of the identified

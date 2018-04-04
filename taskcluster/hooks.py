@@ -28,6 +28,10 @@ class Hooks(BaseClient):
     https://www.npmjs.com/package/cron-parser.  For example:
      * `['0 0 1 * * *']` -- daily at 1:00 UTC
      * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
+
+    The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
+    https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+    for more information.
     """
 
     classOptions = {
@@ -156,7 +160,11 @@ class Hooks(BaseClient):
 
         This endpoint will trigger the creation of a task from a hook definition.
 
-        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-payload.json``
+        The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+        provided as the `payload` property of the JSON-e context used to render the
+        task template.
+
+        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-context.json``
 
         This method gives output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
 
@@ -199,7 +207,11 @@ class Hooks(BaseClient):
 
         This endpoint triggers a defined hook with a valid token.
 
-        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-payload.json``
+        The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
+        provided as the `payload` property of the JSON-e context used to render the
+        task template.
+
+        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-context.json``
 
         This method gives output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
 
@@ -302,7 +314,7 @@ class Hooks(BaseClient):
         },
         "triggerHook": {
             'args': ['hookGroupId', 'hookId'],
-            'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json',
+            'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json',
             'method': 'post',
             'name': 'triggerHook',
             'output': 'http://schemas.taskcluster.net/hooks/v1/task-status.json',
@@ -311,7 +323,7 @@ class Hooks(BaseClient):
         },
         "triggerHookWithToken": {
             'args': ['hookGroupId', 'hookId', 'token'],
-            'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-payload.json',
+            'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json',
             'method': 'post',
             'name': 'triggerHookWithToken',
             'output': 'http://schemas.taskcluster.net/hooks/v1/task-status.json',
