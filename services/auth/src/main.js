@@ -99,6 +99,7 @@ let load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => Validate({
       prefix:  'auth/v1/',
+      publish:  cfg.app.publishMetaData,
       aws:      cfg.aws,
       bucket:   cfg.app.buckets.schemas,
     }),
@@ -111,6 +112,7 @@ let load = Loader({
       tier: 'platform',
       schemas: validator.schemas,
       bucket: cfg.app.buckets.docs,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
@@ -124,6 +126,11 @@ let load = Loader({
         },
       ],
     }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   publisher: {
