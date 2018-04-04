@@ -3,11 +3,9 @@ repositories:
 
 # services
 
+# microservices
 - name: ping
   kind: service
-  # note: this is a relative reference, which isn't a great idea as it means the
-  # build may include a different version in different runs.  Ideally this would
-  # be either a specific rev or a release version
   source: https://github.com/djmitche/taskcluster-ping#master
   docs: generated
   service:
@@ -18,7 +16,7 @@ repositories:
 - name: auth
   kind: service
   source: https://github.com/taskcluster/taskcluster-auth#master
-  docs: false  # TODO
+  docs: generated
   service:
     buildtype: heroku-buildpack
     stack: heroku-16
@@ -27,12 +25,76 @@ repositories:
 - name: queue
   kind: service
   source: https://github.com/taskcluster/taskcluster-queue#master
-  docs: false  # TODO
+  docs: generated
   service:
     buildtype: heroku-buildpack
     stack: heroku-16
     buildpack: https://github.com/heroku/heroku-buildpack-nodejs
 
+- name: purge-cache
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-purge-cache#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: github
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-github#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: login
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-login#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: pulse
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-pulse#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: hooks
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-hooks#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: secrets
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-secrets#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+- name: notify
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-notify#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
+# tools
 - name: tools
   kind: service
   docs:

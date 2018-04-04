@@ -325,7 +325,11 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
         await dockerRun({
           image: stackImage,
           command: ['/app/entrypoint', 'write-docs'],
-          env: [`DOCS_OUTPUT_DIR=/basedir/docs/${name}`],
+          env: [
+            `DOCS_OUTPUT_DIR=/basedir/docs/${name}`,
+            'NODE_ENV=production',
+            'PUBLISH_METADATA=false', // this defaults to true otherwise..
+          ],
           logfile: `${workDir}/generate-docs.log`,
           utils,
           binds: [

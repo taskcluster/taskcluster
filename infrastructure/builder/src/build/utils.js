@@ -68,10 +68,10 @@ exports.gitClone = async ({dir, url, sha, utils}) => {
     return {exactRev: existingRev, changed: false};
   }
 
-  await git(dir).fetch([remote, ref]);
+  await git(dir).fetch([repo, ref]);
   await git(dir).reset(['--hard', 'FETCH_HEAD']);
 
-  const exactRev = (await git(repoDir).revparse(['HEAD'])).split(/\s+/)[0];
+  const exactRev = (await git(dir).revparse(['HEAD'])).split(/\s+/)[0];
   return {exactRev, changed: true};
 };
 
