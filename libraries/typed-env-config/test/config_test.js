@@ -64,6 +64,7 @@ suite('config', function() {
       setflag:    true,
       soTrue:     true,
       unTrue:     false,
+      notThere:   undefined,
       json:       {test: 42},
       list:       ['abc', 'def', 'qouted string', ''],
     });
@@ -117,6 +118,7 @@ suite('config', function() {
       setflag:    true,
       soTrue:     true,
       unTrue:     false,
+      notThere:   undefined,
       json:       {test: 42},
       list:       ['abc', 'def', 'qouted string', ''],
     });
@@ -146,6 +148,7 @@ suite('config', function() {
       setflag:    true,
       soTrue:     true,
       unTrue:     false,
+      notThere:   undefined,
       json:       {test: 42},
       list:       ['abc', 'def', 'qouted string', ''],
     });
