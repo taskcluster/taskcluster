@@ -6,5 +6,6 @@ defaults:
   setflag:    !env:flag      ENV_DEFINED
   soTrue:     !env:bool      ENV_TRUE
   unTrue:     !env:bool      ENV_FALSE
+  notThere:   !env:bool      ENV_NOT_SET
   json:       !env:json      ENV_JSON
   list:       !env:list      ENV_LIST
