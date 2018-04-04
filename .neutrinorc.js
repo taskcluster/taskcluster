@@ -18,6 +18,13 @@ module.exports = {
           },
         },
       },
+      eslint: {
+        rules: {
+          // This has been set in the latest Airbnb preset, but has not been
+          // released yet.
+          'react/no-did-mount-set-state': 'off',
+        }
+      }
     }],
     ['@neutrinojs/env', [
       'NODE_ENV',

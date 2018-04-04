@@ -85,6 +85,10 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
+"@material-ui/lab@^1.0.0-alpha.0":
+  version "1.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@material-ui/lab/-/lab-1.0.0-alpha.0.tgz#6815d124d2c159cae39d81b42073b65dfdc467a3"
+
 "@neutrinojs/airbnb-base@^8.1.2":
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/@neutrinojs/airbnb-base/-/airbnb-base-8.2.1.tgz#63cb11321e562b8ef792ef95455a517552c34003"
@@ -2879,7 +2883,7 @@ data-urls@^1.0.0:
     whatwg-mimetype "^2.0.0"
     whatwg-url "^6.4.0"
 
-date-fns@^1.27.2:
+date-fns@^1.27.2, date-fns@^1.29.0:
   version "1.29.0"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.29.0.tgz#12e609cdcb935127311d04d33334e2960a2a54e6"
 
@@ -5251,7 +5255,7 @@ ipaddr.js@1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/ipaddr.js/-/ipaddr.js-1.6.0.tgz#e3fa357b773da619f26e95f049d055c72796f86b"
 
-is-absolute-url@^2.0.0:
+is-absolute-url@^2.0.0, is-absolute-url@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-absolute-url/-/is-absolute-url-2.1.0.tgz#50530dfb84fcc9aa7dbe7852e83a37b93b9f2aa6"
 
@@ -6482,7 +6486,7 @@ markdown-table@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/markdown-table/-/markdown-table-1.1.1.tgz#4b3dd3a133d1518b8ef0dbc709bf2a1b4824bc8c"
 
-markdown-to-jsx@^6.5.2:
+markdown-to-jsx@^6.5.2, markdown-to-jsx@^6.6.1:
   version "6.6.1"
   resolved "https://registry.yarnpkg.com/markdown-to-jsx/-/markdown-to-jsx-6.6.1.tgz#858b37f8a92526b1f3407593ff77c95927720bef"
   dependencies:
@@ -8095,8 +8099,8 @@ react-docgen@^3.0.0-beta9:
     recast "^0.12.6"
 
 react-dom@^16.3.0:
-  version "16.3.0"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.3.0.tgz#b318e52184188ecb5c3e81117420cca40618643e"
+  version "16.3.1"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.3.1.tgz#6a3c90a4fb62f915bdbcf6204422d93a7d4ca573"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
@@ -8313,8 +8317,8 @@ react-transition-group@^2.2.1:
     warning "^3.0.0"
 
 react@^16.3.0:
-  version "16.3.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.3.0.tgz#fc5a01c68f91e9b38e92cf83f7b795ebdca8ddff"
+  version "16.3.1"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.3.1.tgz#4a2da433d471251c69b6033ada30e2ed1202cfd8"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"

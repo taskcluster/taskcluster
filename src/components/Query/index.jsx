@@ -19,8 +19,8 @@ export default class Query extends Component {
     const { classes, children, ...props } = this.props;
 
     return (
-      <ApolloQuery {...props}>
-        {({ loading, error, data }) => {
+      <ApolloQuery errorPolicy="all" {...props}>
+        {({ loading, error, ...props }) => {
           if (loading) {
             return (
               <div className={classes.spinner}>
@@ -31,7 +31,7 @@ export default class Query extends Component {
             return <ErrorPanel error={error} />;
           }
 
-          return children({ data });
+          return children(props);
         }}
       </ApolloQuery>
     );

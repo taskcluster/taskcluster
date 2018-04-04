@@ -12,7 +12,7 @@ import ErrorBox from './ErrorBox';
 @withStyles(theme => ({
   panel: {
     color: theme.palette.error.contrastText,
-    backgroundColor: theme.palette.error.main,
+    backgroundColor: theme.palette.error.dark,
     borderColor: theme.palette.error.light,
   },
   disabled: {

@@ -1,9 +1,53 @@
 query Task($taskId: ID!) {
   task(taskId: $taskId) {
+    taskId
+    retries
+    created
+    deadline
+    expires
+    priority
+    provisionerId
+    workerType
+    schedulerId
+    tags
+    requires
+    scopes
+    routes
+    payload
+    extra
+
     metadata {
       name
       description
       owner
+      source
+    }
+
+    status {
+      state
+      retriesLeft
+      runs {
+        runId
+        state
+        reasonCreated
+        reasonResolved
+        scheduled
+        started
+        resolved
+        workerGroup
+        workerId
+        takenUntil
+      }
+    }
+
+    dependentTasks {
+      taskId
+      status {
+        state
+      }
+      metadata {
+        name
+      }
     }
   }
 }

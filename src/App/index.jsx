@@ -33,7 +33,19 @@ import routes from './routes';
       transitionDelay: 'background-color 5000s, color 5000s',
     },
     '.mdi-icon': {
-      fill: 'white',
+      fill: theme.palette.common.white,
+    },
+    '[disabled] .mdi-icon': {
+      fill: theme.palette.primary.light,
+    },
+    a: {
+      color: theme.palette.primary.contrastText,
+    },
+    pre: {
+      overflowX: 'auto',
+    },
+    'pre, :not(pre) > code': {
+      ...theme.mixins.highlight,
     },
   },
 })
