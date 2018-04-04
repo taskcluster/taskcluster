@@ -6,6 +6,9 @@ defaults:
     cachePurgeExpirationDelay:   '- 1 hour'
     cacheTime:                   10
 
+    # Publish references and schemas
+    publishMetaData:          !env:bool PUBLISH_METADATA
+
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                      'https://purge-cache.taskcluster.net'

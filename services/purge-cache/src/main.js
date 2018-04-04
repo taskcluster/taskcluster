@@ -21,7 +21,8 @@ let load = loader({
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => validate({
-      prefix:  'purge-cache/v1/',
+      prefix:   'purge-cache/v1/',
+      publish:  cfg.app.publishMetaData,
       aws:      cfg.aws,
     }),
   },
@@ -70,7 +71,7 @@ let load = loader({
         exchangePrefix:     cfg.app.exchangePrefix,
         validator:          validator,
         referencePrefix:    'purge-cache/v1/exchanges.json',
-        publish:            process.env.NODE_ENV === 'production',
+        publish:            cfg.app.publishMetaData,
         aws:                cfg.aws,
         monitor:            monitor.prefix('publisher'),
       }),
@@ -81,7 +82,7 @@ let load = loader({
     setup: ({cfg, monitor, validator, publisher, CachePurge}) => api.setup({
       context:          {cfg, publisher, CachePurge, cachePurgeCache: {}},
       validator:        validator,
-      publish:          process.env.NODE_ENV === 'production',
+      publish:          cfg.app.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       aws:              cfg.aws,
       referencePrefix:  'purge-cache/v1/api.json',
@@ -114,6 +115,11 @@ let load = loader({
         },
       ],
     }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   server: {
