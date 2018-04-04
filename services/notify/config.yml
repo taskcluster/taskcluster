@@ -5,6 +5,7 @@ defaults:
     exchangePrefix:               v1/
     listenerQueueName:            !env LISTENER_QUEUE_NAME
     routePrefix:                  notify
+    publishMetaData:              !env:bool PUBLISH_METADATA
 
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1
