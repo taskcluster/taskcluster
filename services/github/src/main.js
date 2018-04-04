@@ -37,6 +37,7 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => validator({
       prefix: 'github/v1/',
+      publish: cfg.app.publishMetaData,
       aws: cfg.aws,
     }),
   },
@@ -52,6 +53,7 @@ let load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'integrations',
       schemas: validator.schemas,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
@@ -64,6 +66,11 @@ let load = loader({
     }),
   },
 
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  },
+
   publisher: {
     requires: ['cfg', 'monitor', 'validator'],
     setup: async ({cfg, monitor, validator}) => exchanges.setup({
@@ -71,7 +78,7 @@ let load = loader({
       exchangePrefix:     cfg.app.exchangePrefix,
       validator:          validator,
       referencePrefix:    'github/v1/exchanges.json',
-      publish:            process.env.NODE_ENV === 'production',
+      publish: cfg.app.publishMetaData,
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
     }),
@@ -122,7 +129,7 @@ let load = loader({
     setup: ({cfg, monitor, validator, github, publisher, Builds, OwnersDirectory, ajv}) => api.setup({
       context:          {publisher, cfg, github, Builds, OwnersDirectory, monitor: monitor.prefix('api-context'), ajv},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      publish:          process.env.NODE_ENV === 'production',
+      publish: cfg.app.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'github/v1/api.json',
       aws:              cfg.aws,

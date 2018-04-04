@@ -6,6 +6,7 @@ defaults:
     statusQueue: null
     buildTableName: 'TaskclusterGithubBuilds'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
+    publishMetaData: !env:bool PUBLISH_METADATA
     name: 'taskcluster-github'
     statusContext: 'Taskcluster'
     botName: !env BOT_USERNAME
