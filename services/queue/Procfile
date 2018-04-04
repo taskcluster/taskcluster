@@ -1,4 +1,5 @@
 web:                    node src/main server
+write-docs:             node src/main writeDocs
 claimReaper:            node src/main claim-reaper
 deadlineReaper:         node src/main deadline-reaper
 dependencyResolver:     node src/main dependency-resolver
