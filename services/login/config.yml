@@ -39,6 +39,7 @@ Profiles:
         clientId:       !env AUTH0_CLIENT_ID
         clientSecret:   !env AUTH0_CLIENT_SECRET
     server:
+    publicUrl:                    'https://login.taskcluster.net'
       forceSSL: true
   test:
     handlers:
