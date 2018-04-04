@@ -34,6 +34,7 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => validator({
       prefix: 'notify/v1/',
+      publish: cfg.app.publishMetaData,
       aws: cfg.aws,
     }),
   },
@@ -45,11 +46,13 @@ let load = loader({
       credentials:      cfg.pulse,
     }),
   },
+
   docs: {
     requires: ['cfg', 'validator', 'reference'],
     setup: ({cfg, validator, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
+      publish: cfg.app.publishMetaData,
       schemas: validator.schemas,
       references: [
         {
@@ -63,6 +66,11 @@ let load = loader({
     }),
   },
 
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  },
+
   publisher: {
     requires: ['cfg', 'validator', 'monitor'],
     setup: ({cfg, validator, monitor}) => exchanges.setup({
@@ -70,7 +78,7 @@ let load = loader({
       exchangePrefix:     cfg.app.exchangePrefix,
       validator:          validator,
       referencePrefix:    'notify/v1/exchanges.json',
-      publish:            process.env.NODE_ENV === 'production',
+      publish:            cfg.app.publishMetaData,
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
     }),
@@ -133,7 +141,7 @@ let load = loader({
     setup: ({cfg, monitor, validator, notifier}) => v1.setup({
       context:          {notifier},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      publish:          process.env.NODE_ENV === 'production',
+      publish:          cfg.app.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'notify/v1/api.json',
       aws:              cfg.aws,

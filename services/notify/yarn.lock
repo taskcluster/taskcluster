@@ -3484,15 +3484,16 @@ taskcluster-lib-app@^3.0.0:
     morgan-debug "^2.0.0"
     promise "^8.0.1"
 
-taskcluster-lib-docs@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-docs/-/taskcluster-lib-docs-4.1.1.tgz#768a392404a55238e011863318a65c04f13f91e1"
+taskcluster-lib-docs@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-docs/-/taskcluster-lib-docs-4.2.1.tgz#0b12fadb72ab751fac3588573a763430935ac2fb"
   dependencies:
     app-root-dir "^1.0.2"
     aws-sdk "^2.147.0"
     babel-runtime "^6.26.0"
     debug "^3.1.0"
     lodash "^4.13.1"
+    mkdirp "^0.5.1"
     mz "^2.7.0"
     promise "^8.0.1"
     recursive-readdir-sync "^1.0.6"
