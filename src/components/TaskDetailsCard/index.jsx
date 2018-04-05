@@ -23,7 +23,7 @@ import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import DateDistance from '../DateDistance';
 import Label from '../Label';
 import Code from '../Code';
-import { labels } from '../../utils';
+import labels from '../../utils/labels';
 
 @withStyles(theme => ({
   headline: {
@@ -131,12 +131,9 @@ export default class TaskDetailsCard extends Component {
                 target={isExternal ? '_blank' : null}
                 rel={isExternal ? 'noopener noreferrer' : null}>
                 <ListItemText
+                  classes={{ secondary: classes.sourceHeadline }}
                   primary="Source"
-                  secondary={
-                    <span className={classes.sourceHeadline}>
-                      {task.metadata.source}
-                    </span>
-                  }
+                  secondary={task.metadata.source}
                 />
                 {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
               </ListItem>

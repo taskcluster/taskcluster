@@ -8,6 +8,7 @@ import green from 'material-ui/colors/green';
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
 const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
 const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
+const TEN_PERCENT_WHITE = fade('#fff', 0.1);
 
 export default createMuiTheme({
   palette: {
@@ -65,8 +66,8 @@ export default createMuiTheme({
   mixins: {
     highlight: {
       fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-      backgroundColor: fade('#fff', 0.1),
-      border: `1px solid ${fade('#fff', 0.1)}`,
+      backgroundColor: TEN_PERCENT_WHITE,
+      border: `1px solid ${TEN_PERCENT_WHITE}`,
       borderRadius: 2,
       paddingLeft: 4,
       paddingRight: 4,
@@ -86,6 +87,11 @@ export default createMuiTheme({
     MuiMobileStepper: {
       dotActive: {
         backgroundColor: 'white',
+      },
+    },
+    MuiTableCell: {
+      root: {
+        borderBottom: `1px solid ${TEN_PERCENT_WHITE}`,
       },
     },
   },

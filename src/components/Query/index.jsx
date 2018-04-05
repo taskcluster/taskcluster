@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { func } from 'prop-types';
-import { Query as ApolloQuery } from 'react-apollo';
 import { withStyles } from 'material-ui/styles';
 import Spinner from '../Spinner';
 import ErrorPanel from '../ErrorPanel';
@@ -16,24 +15,18 @@ export default class Query extends Component {
   };
 
   render() {
-    const { classes, children, ...props } = this.props;
+    const { classes, children, loading, error } = this.props;
 
-    return (
-      <ApolloQuery errorPolicy="all" {...props}>
-        {({ loading, error, ...props }) => {
-          if (loading) {
-            return (
-              <div className={classes.spinner}>
-                <Spinner />
-              </div>
-            );
-          } else if (error) {
-            return <ErrorPanel error={error} />;
-          }
+    if (loading) {
+      return (
+        <div className={classes.spinner}>
+          <Spinner />
+        </div>
+      );
+    } else if (error) {
+      return <ErrorPanel error={error} />;
+    }
 
-          return children(props);
-        }}
-      </ApolloQuery>
-    );
+    return children();
   }
 }

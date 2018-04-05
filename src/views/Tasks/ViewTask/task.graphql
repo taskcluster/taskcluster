@@ -1,4 +1,6 @@
-query Task($taskId: ID!) {
+#import "../../../fragments/artifacts.graphql"
+
+query Task($taskId: ID!, $artifactsConnection: PageConnection) {
   task(taskId: $taskId) {
     taskId
     retries
@@ -27,6 +29,7 @@ query Task($taskId: ID!) {
       state
       retriesLeft
       runs {
+        taskId
         runId
         state
         reasonCreated
@@ -37,6 +40,10 @@ query Task($taskId: ID!) {
         workerGroup
         workerId
         takenUntil
+
+        artifacts(connection: $artifactsConnection) {
+          ...Artifacts
+        }
       }
     }
 

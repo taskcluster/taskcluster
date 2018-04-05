@@ -25,6 +25,7 @@
     "auth0-js": "^9.3.3",
     "classnames": "^2.2.5",
     "date-fns": "^1.29.0",
+    "dot-prop-immutable": "^1.4.0",
     "error-stack-parser": "^2.0.1",
     "graphql": "^0.13.2",
     "highlight.js": "^9.12.0",

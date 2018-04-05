@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/prefer-default-export
-export const labels = {
+export default {
   RUNNING: 'info',
   PENDING: 'default',
   SCHEDULED: 'default',
