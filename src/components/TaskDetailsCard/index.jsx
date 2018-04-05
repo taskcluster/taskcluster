@@ -21,9 +21,9 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import DateDistance from '../DateDistance';
-import Label from '../Label';
 import Code from '../Code';
-import labels from '../../utils/labels';
+import Label from '../Label';
+import StatusLabel from '../StatusLabel';
 
 @withStyles(theme => ({
   headline: {
@@ -150,11 +150,7 @@ export default class TaskDetailsCard extends Component {
               <ListItem>
                 <ListItemText
                   primary="State"
-                  secondary={
-                    <Label mini status={labels[task.status.state]}>
-                      {task.status.state}
-                    </Label>
-                  }
+                  secondary={<StatusLabel state={task.status.state} />}
                 />
               </ListItem>
               <ListItem>
@@ -236,9 +232,7 @@ export default class TaskDetailsCard extends Component {
                         component={Link}
                         to={`/tasks/${task.taskId}`}
                         key={task.taskId}>
-                        <Label mini status={labels[task.status.state]}>
-                          {task.status.state}
-                        </Label>
+                        <StatusLabel state={task.status.state} />
                         <ListItemText primary={task.metadata.name} />
                         <LinkIcon />
                       </ListItem>

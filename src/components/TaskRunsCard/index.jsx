@@ -33,9 +33,8 @@ import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import DateDistance from '../DateDistance';
-import Label from '../Label';
 import Spinner from '../Spinner';
-import labels from '../../utils/labels';
+import StatusLabel from '../StatusLabel';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 
 const DOTS_VARIANT_LIMIT = 5;
@@ -248,21 +247,13 @@ export default class TaskRunsCard extends Component {
               <ListItem>
                 <ListItemText
                   primary="State"
-                  secondary={
-                    <Label mini status={labels[run.state]}>
-                      {run.state}
-                    </Label>
-                  }
+                  secondary={<StatusLabel state={run.state} />}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Reason Created"
-                  secondary={
-                    <Label mini status={labels[run.reasonCreated]}>
-                      {run.reasonCreated}
-                    </Label>
-                  }
+                  secondary={<StatusLabel state={run.reasonCreated} />}
                 />
               </ListItem>
               <ListItem button className={classes.listItemButton}>
@@ -303,9 +294,7 @@ export default class TaskRunsCard extends Component {
                   primary="Reason Resolved"
                   secondary={
                     run.reasonResolved ? (
-                      <Label mini status={labels[run.reasonResolved]}>
-                        {run.reasonResolved}
-                      </Label>
+                      <StatusLabel state={run.reasonResolved} />
                     ) : (
                       <em>n/a</em>
                     )
