@@ -79,6 +79,11 @@ export default createMuiTheme({
         backgroundColor: '#1b2a39',
       },
     },
+    MuiButton: {
+      sizeSmall: {
+        minWidth: 36,
+      },
+    },
     MuiCircularProgress: {
       colorPrimary: {
         color: 'white',

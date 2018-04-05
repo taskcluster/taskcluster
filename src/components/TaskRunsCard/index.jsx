@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { string } from 'prop-types';
@@ -8,13 +8,7 @@ import Card, { CardContent } from 'material-ui/Card';
 import Collapse from 'material-ui/transitions/Collapse';
 import MobileStepper from 'material-ui/MobileStepper';
 import List, { ListItem, ListItemText } from 'material-ui/List';
-import Table, {
-  TableBody,
-  TableCell,
-  TableFooter,
-  TablePagination,
-  TableRow,
-} from 'material-ui/Table';
+import { TableCell, TableRow } from 'material-ui/Table';
 import Typography from 'material-ui/Typography';
 import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
@@ -25,8 +19,9 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
-import Spinner from '../Spinner';
+import Label from '../Label';
 import StatusLabel from '../StatusLabel';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import { runs } from '../../utils/prop-types';
@@ -73,8 +68,8 @@ const DOTS_VARIANT_LIMIT = 5;
   linkCell: {
     textAlign: 'right',
   },
-  artifactsLoading: {
-    textAlign: 'right',
+  logButton: {
+    marginRight: theme.spacing.unit,
   },
 }))
 export default class TaskRunsCard extends Component {
@@ -85,44 +80,28 @@ export default class TaskRunsCard extends Component {
   };
 
   static getDerivedStateFromProps({ runs }) {
-    const currentRunId = runs.length - 1;
-    const run = runs[currentRunId];
-    const { pageInfo } = run.artifacts;
-
-    if (pageInfo.hasNextPage && pageInfo.hasPreviousPage) {
-      return {
-        currentRunId,
-        count: ARTIFACTS_PAGE_SIZE * 3,
-        page: 1,
-      };
-    } else if (pageInfo.hasNextPage) {
-      return {
-        currentRunId,
-        count: ARTIFACTS_PAGE_SIZE * 2,
-        page: 0,
-      };
-    } else if (pageInfo.hasPreviousPage) {
-      return {
-        currentRunId,
-        count: ARTIFACTS_PAGE_SIZE * 2,
-        page: 1,
-      };
-    }
-
     return {
-      currentRunId,
-      count: ARTIFACTS_PAGE_SIZE,
-      page: 0,
+      currentRunId: runs.length - 1,
     };
   }
 
   state = {
-    artifactsLoading: false,
     currentRunId: 0,
-    count: 0,
-    page: 0,
     showArtifacts: false,
   };
+
+  createSortedArtifactsConnection(artifacts) {
+    return {
+      ...artifacts,
+      edges: [...artifacts.edges].sort((a, b) => {
+        if (a.node.isPublicLog === b.node.isPublicLog) {
+          return 0;
+        }
+
+        return a.node.isPublicLog ? -1 : 1;
+      }),
+    };
+  }
 
   handleToggleArtifacts = () => {
     this.setState({ showArtifacts: !this.state.showArtifacts });
@@ -136,71 +115,91 @@ export default class TaskRunsCard extends Component {
     this.setState({ currentRunId: this.state.currentRunId - 1 });
   };
 
-  handlePageChange = (e, nextPage) => {
-    const { runs, onArtifactsPageChange } = this.props;
-    const { page, currentRunId } = this.state;
-    const { pageInfo } = runs[currentRunId].artifacts;
+  handlePageChange = ({ cursor, previousCursor }) => {
+    const { onArtifactsPageChange } = this.props;
+    const { currentRunId } = this.state;
 
-    this.setState({ artifactsLoading: true }, async () => {
-      await onArtifactsPageChange({
-        cursor: nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor,
-        previousCursor: pageInfo.cursor,
-        runId: currentRunId,
-      });
-      this.setState({ artifactsLoading: false });
+    return onArtifactsPageChange({
+      cursor,
+      previousCursor,
+      runId: currentRunId,
     });
   };
 
-  handleArtifactClick = (e, artifact) => {
-    const { runs, history } = this.props;
-    const { currentRunId } = this.state;
-    const run = runs[currentRunId];
-
-    if (artifact.isPublicLog) {
-      history.push(
-        `/tasks/${run.taskId}/runs/${currentRunId}/${encodeURIComponent(
-          artifact.url
-        )}`
-      );
-    } else {
-      const tab = window.open();
-
-      tab.opener = null;
-      tab.location = artifact.url;
+  handleArtifactClick = artifact => {
+    if (!artifact.url) {
+      return null;
     }
+
+    return () => {
+      const { runs, history } = this.props;
+      const { currentRunId } = this.state;
+      const run = runs[currentRunId];
+
+      if (artifact.isPublicLog) {
+        history.push(
+          `/tasks/${run.taskId}/runs/${currentRunId}/${encodeURIComponent(
+            artifact.url
+          )}`
+        );
+      } else {
+        const tab = window.open();
+
+        tab.opener = null;
+        tab.location = artifact.url;
+      }
+    };
   };
 
-  renderArtifactIcon(artifact) {
-    if (artifact.isPublicLog) {
-      return <LockOpenOutlineIcon />;
-    } else if (artifact.url) {
-      return <LockIcon />;
-    }
+  renderArtifactsTable() {
+    const { classes, runs } = this.props;
+    const { currentRunId } = this.state;
+    const run = runs[currentRunId];
+    const artifacts = this.createSortedArtifactsConnection(run.artifacts);
 
-    return null;
-  }
-
-  renderArtifactLinkIcon(artifact) {
-    if (artifact.isPublicLog) {
-      return <LinkIcon size={16} />;
-    } else if (artifact.url) {
-      return <OpenInNewIcon size={16} />;
-    }
-
-    return null;
+    return (
+      <ConnectionDataTable
+        connection={artifacts}
+        pageSize={ARTIFACTS_PAGE_SIZE}
+        columnsSize={3}
+        onPageChange={this.handlePageChange}
+        renderRow={({ node: artifact }) => (
+          <TableRow
+            key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
+            className={classNames(classes.listItemButton, {
+              [classes.pointer]: !!artifact.url,
+            })}
+            onClick={this.handleArtifactClick(artifact)}
+            hover={!!artifact.url}>
+            <TableCell>
+              {artifact.isPublicLog && <LockOpenOutlineIcon />}
+              {!artifact.isPublicLog && artifact.url && <LockIcon />}
+            </TableCell>
+            <TableCell>
+              <Fragment>
+                {artifact.isPublicLog && (
+                  <Label status="info" mini className={classes.logButton}>
+                    LOG
+                  </Label>
+                )}
+                {artifact.name}
+              </Fragment>
+            </TableCell>
+            <TableCell className={classes.linkCell}>
+              {artifact.isPublicLog && <LinkIcon size={16} />}
+              {!artifact.isPublicLog &&
+                artifact.url && <OpenInNewIcon size={16} />}
+            </TableCell>
+          </TableRow>
+        )}
+      />
+    );
   }
 
   render() {
     const { classes, runs, provisionerId, workerType } = this.props;
-    const {
-      currentRunId,
-      showArtifacts,
-      count,
-      page,
-      artifactsLoading,
-    } = this.state;
+    const { currentRunId, showArtifacts } = this.state;
     const run = runs[currentRunId];
-    const artifacts = run.artifacts.edges;
 
     return (
       <Card raised>
@@ -304,62 +303,7 @@ export default class TaskRunsCard extends Component {
               <Collapse in={showArtifacts} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   <ListItem component="div" disableGutters>
-                    <Table>
-                      <TableBody>
-                        {artifacts.length !== 0 ? (
-                          artifacts.map(({ node: artifact }) => (
-                            <TableRow
-                              key={`run-artifact-${run.taskId}-${run.runId}-${
-                                artifact.name
-                              }`}
-                              className={classNames(classes.listItemButton, {
-                                [classes.pointer]: !!artifact.url,
-                              })}
-                              onClick={
-                                artifact.url
-                                  ? e => this.handleArtifactClick(e, artifact)
-                                  : null
-                              }
-                              hover={!!artifact.url}>
-                              <TableCell>
-                                {this.renderArtifactIcon(artifact)}
-                              </TableCell>
-                              <TableCell>{artifact.name}</TableCell>
-                              <TableCell className={classes.linkCell}>
-                                {this.renderArtifactLinkIcon(artifact)}
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        ) : (
-                          <TableRow>
-                            <TableCell colSpan={3}>
-                              <em>No artifacts for this page.</em>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                      <TableFooter>
-                        <TableRow>
-                          {artifactsLoading ? (
-                            <TableCell
-                              colSpan={3}
-                              className={classes.artifactsLoading}>
-                              <Spinner size={24} />
-                            </TableCell>
-                          ) : (
-                            <TablePagination
-                              colSpan={3}
-                              count={count}
-                              labelDisplayedRows={Function.prototype}
-                              rowsPerPage={ARTIFACTS_PAGE_SIZE}
-                              rowsPerPageOptions={[ARTIFACTS_PAGE_SIZE]}
-                              page={page}
-                              onChangePage={this.handlePageChange}
-                            />
-                          )}
-                        </TableRow>
-                      </TableFooter>
-                    </Table>
+                    {this.renderArtifactsTable()}
                   </ListItem>
                 </List>
               </Collapse>
