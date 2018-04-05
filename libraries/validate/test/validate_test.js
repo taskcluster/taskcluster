@@ -122,4 +122,12 @@ suite('Valid Schema Tests', () => {
     assert(_.includes(_.keys(schemas), 'default-schema.json'));
   });
 
+  test('message specifies unwanted additional property', () => {
+    let error = validate(
+      {value: 42, unwanted_value: 1729},
+      'http://localhost:1203/default-schema');
+    debug(error);
+    assert.notEqual(error, null);
+    assert(error.includes('data should NOT have additional properties: "unwanted_value"'));
+  });
 });
