@@ -50,16 +50,26 @@ export default {
 
       return loaders.status.load(parent.taskId);
     },
+    dependentTasks(parent, args, { loaders }) {
+      if (parent.dependentTasks) {
+        return parent.dependentTasks;
+      }
+
+      return loaders.tasks.load(parent.dependencies);
+    },
   },
   Query: {
     task(parent, { taskId }, { loaders }) {
       return loaders.task.load(taskId);
     },
+    tasks(parent, { taskIds }, { loaders }) {
+      return loaders.tasks.load(taskIds);
+    },
     indexedTask(parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);
     },
-    tasks(parent, { taskGroupId, connection }, { loaders }) {
-      return loaders.tasks.load({ taskGroupId, connection });
+    taskGroup(parent, { taskGroupId, connection }, { loaders }) {
+      return loaders.taskGroup.load({ taskGroupId, connection });
     },
   },
   Mutation: {

@@ -85,7 +85,10 @@ type Task {
 
   # List of dependent tasks. These must either be _completed_ or _resolved_
   # before this task is scheduled. See `requires` for semantics.
-  dependencies: [String]!
+  dependencies: [ID]!
+
+  # Query the dependent tasks of this task via its dependencies' task IDs.
+  dependentTasks: [Task]!
 
   # The task's relation to its dependencies. This property specifies the
   # semantics of the `task.dependencies` property. If `ALL_COMPLETED` is given
@@ -341,6 +344,9 @@ extend type Query {
   # Will be empty if no task exists for the given path.
   indexedTask(indexPath: String!): IndexedTask
 
+  # Query multiple tasks by task ID.
+  tasks(taskIds: [ID]!): [Task]
+
   # List tasks sharing the same `taskGroupId`.
   # As a task group may contain an unbounded number of tasks,
   # this may return cursors to page through tasks. To continue listing tasks,
@@ -349,7 +355,7 @@ extend type Query {
   # It **may return less**, even if more tasks are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  tasks(taskGroupId: ID!, connection: PageConnection, filter: JSON): TasksConnection
+  taskGroup(taskGroupId: ID!, connection: PageConnection, filter: JSON): TasksConnection
 }
 
 extend type Mutation {

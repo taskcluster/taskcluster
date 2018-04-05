@@ -13,10 +13,23 @@ export default ({ queue, index }) => {
       })
     )
   );
+  const tasks = new DataLoader(taskIdLists =>
+    Promise.all(
+      taskIdLists.map(async taskIds =>
+        Promise.all(
+          taskIds.map(async taskId => {
+            const task = await queue.task(taskId);
+
+            return new Task(taskId, null, task);
+          })
+        )
+      )
+    )
+  );
   const indexedTask = new DataLoader(indexPaths =>
     Promise.all(indexPaths.map(indexPath => index.findTask(indexPath)))
   );
-  const tasks = new ConnectionLoader(
+  const taskGroup = new ConnectionLoader(
     async ({ taskGroupId, options, filter }) => {
       const raw = await queue.listTaskGroup(taskGroupId, options);
       const tasks = filter ? sift(filter, raw.tasks) : raw.tasks;
@@ -32,7 +45,8 @@ export default ({ queue, index }) => {
 
   return {
     task,
-    indexedTask,
     tasks,
+    indexedTask,
+    taskGroup,
   };
 };

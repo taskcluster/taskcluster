@@ -23,6 +23,9 @@ type Artifact {
   # to fetch this artifact metadata, otherwise a public URL will be generated,
   # or not available for private artifacts.
   url: String
+
+  # Is true when this artifact is a public log, otherwise false.
+  isPublicLog: Boolean!
 }
 
 enum ArtifactStorageType {

@@ -89,5 +89,5 @@ type TaskRun {
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  artifacts(taskId: ID = taskId, runId: Int = runId, filter: JSON): ArtifactsConnection
+  artifacts(taskId: ID = taskId, runId: Int = runId, connection: PageConnection, filter: JSON): ArtifactsConnection
 }

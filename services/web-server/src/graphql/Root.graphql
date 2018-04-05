@@ -6,14 +6,15 @@ scalar JSON
 type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
-  startCursor: String
-  endCursor: String
+  cursor: String
+  previousCursor: String
+  nextCursor: String
 }
 
 input PageConnection {
   limit: Int
-  startCursor: String
-  endCursor: String
+  previousCursor: String
+  cursor: String
 }
 
 # Every new edge implementation needs to declare its Node type here :(

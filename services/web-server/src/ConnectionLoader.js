@@ -1,6 +1,7 @@
 import DataLoader from 'dataloader';
 
 const LIMIT = 100;
+const FIRST = '$$FIRST$$';
 
 export default class ConnectionLoader {
   constructor(singleConnectionHandler) {
@@ -11,9 +12,10 @@ export default class ConnectionLoader {
             connection && connection.limit
               ? connection.limit > LIMIT ? LIMIT : connection.limit
               : LIMIT;
-          const continuationToken = connection
-            ? connection.startCursor || connection.endCursor
-            : null;
+          const continuationToken =
+            connection && connection.cursor !== FIRST
+              ? connection.cursor
+              : null;
           const options = continuationToken
             ? { limit, continuationToken }
             : { limit };
@@ -21,7 +23,10 @@ export default class ConnectionLoader {
             ? await singleConnectionHandler({ ...props, connection, options })
             : await singleConnectionHandler({ ...props, options });
 
-          return this.createPageConnection(result, options);
+          return this.createPageConnection(result, {
+            ...connection,
+            ...options,
+          });
         })
       )
     );
@@ -30,19 +35,20 @@ export default class ConnectionLoader {
   createPageConnection({ continuationToken, items, ...props }, options) {
     const pageInfo = {
       hasNextPage: !!continuationToken,
-      hasPreviousPage: !!options.continuationToken,
+      hasPreviousPage: !!options.cursor && options.cursor !== FIRST,
+      cursor: options.continuationToken || FIRST,
     };
 
     if (pageInfo.hasPreviousPage) {
-      pageInfo.startCursor = options.continuationToken;
+      pageInfo.previousCursor = options.previousCursor;
     }
 
     if (pageInfo.hasNextPage) {
-      pageInfo.endCursor = continuationToken;
+      pageInfo.nextCursor = continuationToken;
     }
 
     const edges = items.map(item => ({
-      cursor: pageInfo.hasNextPage ? pageInfo.endCursor : null,
+      cursor: options.continuationToken,
       node: item,
     }));
 

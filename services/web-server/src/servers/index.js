@@ -30,8 +30,6 @@ export default ({ server, schema, context, https }) => {
     bodyParser.graphql(),
     graphql({
       schema,
-      tracing: true,
-      cacheControl: true,
       context,
     })
   );

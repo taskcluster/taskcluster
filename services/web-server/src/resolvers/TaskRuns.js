@@ -31,6 +31,7 @@ export default {
       return loaders.artifacts.load({
         taskId: parent.taskId,
         runId: parent.runId,
+        connection: args.connection,
         filter: args.filter,
       });
     },
