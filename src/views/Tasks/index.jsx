@@ -7,6 +7,9 @@ import loadable from '../../utils/loadable';
 const ViewTask = loadable(() =>
   import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
 );
+const CreateTask = loadable(() =>
+  import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
+);
 const TaskGroup = loadable(() =>
   import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
 );
@@ -30,6 +33,11 @@ export default class Task extends Component {
           path={`${path}/index`}
           {...props}
           component={TaskIndex}
+        />
+        <RouteWithProps
+          path={`${path}/create`}
+          {...props}
+          component={CreateTask}
         />
         <RouteWithProps
           path={`${path}/:taskId?`}
