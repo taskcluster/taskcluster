@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { bool, func, node, shape, string } from 'prop-types';
+import { bool, func, node, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { withStyles } from 'material-ui/styles';
@@ -15,6 +15,7 @@ import PageTitle from '../PageTitle';
 import ErrorPanel from '../ErrorPanel';
 import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
+import { user } from '../../utils/prop-types';
 
 @withStyles(
   theme => ({
@@ -95,13 +96,8 @@ export default class Dashboard extends Component {
     onSignOut: func.isRequired,
     title: string,
     disablePadding: bool,
-    user: shape({
-      name: string,
-      nickname: string,
-      picture: string,
-      sub: string,
-    }),
     search: node,
+    user,
   };
 
   static defaultProps = {

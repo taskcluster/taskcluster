@@ -1,10 +1,11 @@
 import { Component, Fragment } from 'react';
-import { func, shape, string } from 'prop-types';
+import { func } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import List, { ListItem, ListItemText } from 'material-ui/List';
 import Avatar from 'material-ui/Avatar';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+import { user } from '../../utils/prop-types';
 
 @withStyles(theme => ({
   avatar: {
@@ -20,12 +21,7 @@ export default class UserMenu extends Component {
   static propTypes = {
     onSignIn: func.isRequired,
     onSignOut: func.isRequired,
-    user: shape({
-      name: string,
-      nickname: string,
-      picture: string,
-      sub: string,
-    }),
+    user,
   };
 
   static defaultProps = {

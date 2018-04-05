@@ -1,14 +1,7 @@
 import { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import {
-  arrayOf,
-  bool,
-  instanceOf,
-  oneOfType,
-  shape,
-  string,
-} from 'prop-types';
+import { string } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import Card, { CardContent } from 'material-ui/Card';
@@ -36,6 +29,7 @@ import DateDistance from '../DateDistance';
 import Spinner from '../Spinner';
 import StatusLabel from '../StatusLabel';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
+import { runs } from '../../utils/prop-types';
 
 const DOTS_VARIANT_LIMIT = 5;
 
@@ -85,35 +79,7 @@ const DOTS_VARIANT_LIMIT = 5;
 }))
 export default class TaskRunsCard extends Component {
   static propTypes = {
-    runs: arrayOf(
-      shape({
-        taskId: string,
-        state: string,
-        reasonCreated: string,
-        scheduled: oneOfType([string, instanceOf(Date)]),
-        started: oneOfType([string, instanceOf(Date)]),
-        workerGroup: string,
-        workerId: string,
-        takenUntil: oneOfType([string, instanceOf(Date)]),
-        artifacts: shape({
-          pageInfo: shape({
-            hasNextPage: bool,
-            hasPreviousPage: bool,
-            cursor: string,
-            previousCursor: string,
-            nextCursor: string,
-          }),
-          edges: arrayOf(
-            shape({
-              name: string,
-              contentType: string,
-              url: string,
-              isPublicLog: bool,
-            })
-          ),
-        }),
-      })
-    ).isRequired,
+    runs: runs.isRequired,
     workerType: string.isRequired,
     provisionerId: string.isRequired,
   };

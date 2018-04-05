@@ -1,15 +1,5 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  arrayOf,
-  instanceOf,
-  number,
-  object,
-  oneOf,
-  oneOfType,
-  shape,
-  string,
-} from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Card, { CardContent } from 'material-ui/Card';
 import Collapse from 'material-ui/transitions/Collapse';
@@ -24,6 +14,7 @@ import DateDistance from '../DateDistance';
 import Code from '../Code';
 import Label from '../Label';
 import StatusLabel from '../StatusLabel';
+import { task } from '../../utils/prop-types';
 
 @withStyles(theme => ({
   headline: {
@@ -59,39 +50,7 @@ import StatusLabel from '../StatusLabel';
 }))
 export default class TaskDetailsCard extends Component {
   static propTypes = {
-    task: shape({
-      metadata: shape({
-        name: string,
-        description: string,
-        owner: string,
-        source: string,
-      }),
-      status: shape({
-        state: oneOf([
-          'RUNNING',
-          'PENDING',
-          'UNSCHEDULED',
-          'COMPLETED',
-          'FAILED',
-          'EXCEPTION',
-        ]),
-        retriesLeft: number,
-      }),
-      retries: number,
-      created: oneOfType([string, instanceOf(Date)]),
-      deadline: oneOfType([string, instanceOf(Date)]),
-      expires: oneOfType([string, instanceOf(Date)]),
-      priority: string,
-      provisionerId: string,
-      workerType: string,
-      schedulerId: string,
-      dependencies: arrayOf(string),
-      tags: object, // eslint-disable-line
-      scopes: arrayOf(string),
-      routes: arrayOf(string),
-      payload: object, // eslint-disable-line
-      extra: object, // eslint-disable-line
-    }).isRequired,
+    task: task.isRequired,
   };
 
   state = {

@@ -1,11 +1,11 @@
 import { Component } from 'react';
-import { instanceOf, oneOfType, string } from 'prop-types';
 import { distanceInWords, distanceInWordsToNow } from 'date-fns';
+import { date } from '../../utils/prop-types';
 
 export default class DateDistance extends Component {
   static propTypes = {
-    from: oneOfType([string, instanceOf(Date)]).isRequired,
-    offset: oneOfType([string, instanceOf(Date)]),
+    from: date.isRequired,
+    offset: date,
   };
 
   static defaultProps = {
