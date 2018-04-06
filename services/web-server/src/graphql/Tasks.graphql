@@ -87,9 +87,6 @@ type Task {
   # before this task is scheduled. See `requires` for semantics.
   dependencies: [ID]!
 
-  # Query the dependent tasks of this task via its dependencies' task IDs.
-  dependentTasks: [Task]!
-
   # The task's relation to its dependencies. This property specifies the
   # semantics of the `task.dependencies` property. If `ALL_COMPLETED` is given
   # the task will be scheduled when all dependencies are resolved _completed_
@@ -339,6 +336,9 @@ extend type Query {
   # If an optional property is not specified the queue
   # may provide a default value.
   task(taskId: ID!): Task
+
+  # Query the dependent tasks of this task via its dependencies' task IDs.
+  dependentTasks(taskId: ID!): [Task]
 
   # Find a task by index path, returning the highest-ranked task with that path.
   # Will be empty if no task exists for the given path.

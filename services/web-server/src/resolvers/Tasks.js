@@ -50,20 +50,18 @@ export default {
 
       return loaders.status.load(parent.taskId);
     },
-    dependentTasks(parent, args, { loaders }) {
-      if (parent.dependentTasks) {
-        return parent.dependentTasks;
-      }
-
-      return loaders.tasks.load(parent.dependencies);
-    },
   },
   Query: {
     task(parent, { taskId }, { loaders }) {
       return loaders.task.load(taskId);
     },
     tasks(parent, { taskIds }, { loaders }) {
-      return loaders.tasks.load(taskIds);
+      return loaders.task.loadMany(taskIds);
+    },
+    async dependentTasks(parent, args, { loaders }) {
+      const task = await loaders.task.load(args.taskId);
+
+      return loaders.task.loadMany(task.dependencies);
     },
     indexedTask(parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);

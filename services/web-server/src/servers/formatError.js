@@ -20,6 +20,21 @@ export default error => {
         data.requestId = originalError.requestId;
       }
     }
+  } else if (error.originalError && error.originalError.body) {
+    if (error.originalError.message) {
+      [data.message] = error.message.split('---');
+    }
+
+    data.code = error.originalError.body.code;
+    data.requestInfo = error.originalError.body.requestInfo;
+    data.statusCode = error.originalError.statusCode;
+
+    if (data.requestInfo.method === 'task') {
+      data.message = data.message.replace(
+        data.requestInfo.params.taskId,
+        `\`${data.requestInfo.params.taskId}\``
+      );
+    }
   }
 
   return data;
