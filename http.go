@@ -213,6 +213,10 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 	callSummary, err := client.Request(rawPayload, method, route, query)
 	callSummary.HTTPRequestObject = payload
 	if err != nil {
+		// If context failed during this request, then we should just return that error
+		if client.Context != nil && client.Context.Err() != nil {
+			return result, callSummary, client.Context.Err()
+		}
 		return result,
 			callSummary,
 			&APICallException{
