@@ -31,6 +31,15 @@ repositories:
     stack: heroku-16
     buildpack: https://github.com/heroku/heroku-buildpack-nodejs
 
+- name: index
+  kind: service
+  source: https://github.com/taskcluster/taskcluster-index#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
+
 - name: purge-cache
   kind: service
   source: https://github.com/taskcluster/taskcluster-purge-cache#master
