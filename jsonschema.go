@@ -259,7 +259,8 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(topLevel bool, extraPackages 
 			// map[string]<additionalProperties definition>.
 			subComment, subType := ap.Properties.typeDefinition(true, extraPackages, rawMessageTypes)
 			typ = "map[string]" + subType
-			comment += subComment
+			// subComment contains leading newline char (\n) so remove it
+			comment += subComment[1:]
 		} else {
 			// Either *arbitrarily structured* additional properties are
 			// allowed, or the additional properties are of a fixed form, but
