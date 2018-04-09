@@ -1,11 +1,17 @@
-# Identifier pattern, min and max length, these limitations are applied to
-# all common identifiers. It's not personal, it's just that without these
-# limitation, the identifiers won't be useful as routing keys in RabbitMQ
-# topic exchanges. Specifically, the length limitation and the fact that
-# identifiers can't contain dots `.` is critical.
 identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1
 identifier-max-length:  22
+
+hookGroupId:
+  type:                 string
+  minLength:            1
+  maxLength:            64
+  pattern:              "^([a-zA-Z0-9-_]*)$"
+hookId:
+  type:                 string
+  minLength:            1
+  maxLength:            64
+  pattern:              "^([a-zA-Z0-9-_]*)$"
 
 # Task-specific routing key
 routing:
