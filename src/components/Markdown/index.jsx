@@ -1,20 +1,29 @@
 import { Component } from 'react';
-import MarkdownToJSX from 'markdown-to-jsx';
+import classNames from 'classnames';
+import parser from 'markdown-it';
+import linkAttributes from 'markdown-it-link-attributes';
+import highlighter from 'markdown-it-highlightjs';
 import { withStyles } from 'material-ui/styles';
 import 'highlight.js/styles/atom-one-dark.css';
-import AnchorOrLink from './AnchorOrLink';
 
-const options = {
-  overrides: {
-    a: AnchorOrLink,
+const markdown = parser({ linkify: true });
+
+markdown.use(highlighter);
+markdown.use(linkAttributes, {
+  attrs: {
+    target: '_blank',
+    rel: 'noopener noreferrer',
   },
-};
+});
 
 @withStyles(theme => ({
   root: {
     fontFamily: theme.typography.fontFamily,
     fontSize: 16,
     color: theme.palette.text.primary,
+    '& > p': {
+      margin: 0,
+    },
     '& .anchor-link': {
       marginTop: -theme.spacing.unit * 12, // Offset for the anchor.
       position: 'absolute',
@@ -181,12 +190,18 @@ const options = {
 }))
 export default class Markdown extends Component {
   render() {
+    const { classes, children, className, ...props } = this.props;
+
+    /* eslint-disable react/no-danger */
     return (
-      <MarkdownToJSX
-        className={this.props.classes.root}
-        options={options}
-        {...this.props}
+      <span
+        className={classNames(classes.root, className)}
+        dangerouslySetInnerHTML={{
+          __html: markdown.renderInline(children),
+        }}
+        {...props}
       />
     );
+    /* eslint-enable react/no-danger */
   }
 }

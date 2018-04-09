@@ -5,7 +5,6 @@ import storage from 'localforage';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
 import { from } from 'apollo-link';
-import { onError } from 'apollo-link-error';
 import { HttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
@@ -73,11 +72,6 @@ export default class App extends Component {
             : null),
         },
       })),
-      onError(({ networkError }) => {
-        if (networkError.response.status === 401) {
-          this.handleSignOut();
-        }
-      }),
       new HttpLink(),
     ]),
   });

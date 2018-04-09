@@ -1,4 +1,5 @@
 import { Component, Fragment } from 'react';
+import { arrayOf, shape, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withStyles } from 'material-ui/styles';
 import Card, { CardContent } from 'material-ui/Card';
@@ -51,6 +52,17 @@ import { task } from '../../utils/prop-types';
 export default class TaskDetailsCard extends Component {
   static propTypes = {
     task: task.isRequired,
+    dependentTasks: arrayOf(
+      shape({
+        taskId: string,
+        status: shape({
+          state: string,
+        }),
+        metadata: shape({
+          name: string,
+        }),
+      })
+    ),
   };
 
   state = {
@@ -67,7 +79,7 @@ export default class TaskDetailsCard extends Component {
   };
 
   render() {
-    const { classes, task } = this.props;
+    const { classes, task, dependentTasks } = this.props;
     const { showPayload, showExtra } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const tags = Object.entries(task.tags);
@@ -178,7 +190,7 @@ export default class TaskDetailsCard extends Component {
                   }
                 />
               </ListItem>
-              {task.dependentTasks.length ? (
+              {dependentTasks && dependentTasks.length ? (
                 <Fragment>
                   <ListItem>
                     <ListItemText primary="Dependencies" />

@@ -1,7 +1,7 @@
 import { Component, Fragment } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { string } from 'prop-types';
+import { number, string } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import Card, { CardContent } from 'material-ui/Card';
@@ -77,16 +77,10 @@ export default class TaskRunsCard extends Component {
     runs: runs.isRequired,
     workerType: string.isRequired,
     provisionerId: string.isRequired,
+    selectedRunId: number.isRequired,
   };
 
-  static getDerivedStateFromProps({ runs }) {
-    return {
-      currentRunId: runs.length - 1,
-    };
-  }
-
   state = {
-    currentRunId: 0,
     showArtifacts: false,
   };
 
@@ -103,58 +97,57 @@ export default class TaskRunsCard extends Component {
     };
   }
 
+  getCurrentRun() {
+    return this.props.runs[this.props.selectedRunId];
+  }
+
   handleToggleArtifacts = () => {
     this.setState({ showArtifacts: !this.state.showArtifacts });
   };
 
   handleNext = () => {
-    this.setState({ currentRunId: this.state.currentRunId + 1 });
+    const { history } = this.props;
+    const { taskId, runId } = this.getCurrentRun();
+
+    history.push(`/tasks/${taskId}/runs/${runId + 1}`);
   };
 
   handlePrevious = () => {
-    this.setState({ currentRunId: this.state.currentRunId - 1 });
+    const { history } = this.props;
+    const { taskId, runId } = this.getCurrentRun();
+
+    history.push(`/tasks/${taskId}/runs/${runId - 1}`);
   };
 
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const { onArtifactsPageChange } = this.props;
-    const { currentRunId } = this.state;
-
-    return onArtifactsPageChange({
-      cursor,
-      previousCursor,
-      runId: currentRunId,
-    });
-  };
-
-  handleArtifactClick = artifact => {
-    if (!artifact.url) {
+  handleArtifactClick = ({ url, isPublicLog }) => {
+    if (!url) {
       return null;
     }
 
     return () => {
-      const { runs, history } = this.props;
-      const { currentRunId } = this.state;
-      const run = runs[currentRunId];
+      const { history } = this.props;
+      const { taskId, runId, state } = this.getCurrentRun();
 
-      if (artifact.isPublicLog) {
-        history.push(
-          `/tasks/${run.taskId}/runs/${currentRunId}/${encodeURIComponent(
-            artifact.url
-          )}`
-        );
+      if (isPublicLog) {
+        const live = state === 'PENDING' || state === 'RUNNING';
+        const encoded = encodeURIComponent(url);
+        const path = live
+          ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
+          : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+
+        history.push(path);
       } else {
-        const tab = window.open();
-
-        tab.opener = null;
-        tab.location = artifact.url;
+        Object.assign(window.open(), {
+          opener: null,
+          location: url,
+        });
       }
     };
   };
 
   renderArtifactsTable() {
-    const { classes, runs } = this.props;
-    const { currentRunId } = this.state;
-    const run = runs[currentRunId];
+    const { classes, onArtifactsPageChange } = this.props;
+    const run = this.getCurrentRun();
     const artifacts = this.createSortedArtifactsConnection(run.artifacts);
 
     return (
@@ -162,7 +155,7 @@ export default class TaskRunsCard extends Component {
         connection={artifacts}
         pageSize={ARTIFACTS_PAGE_SIZE}
         columnsSize={3}
-        onPageChange={this.handlePageChange}
+        onPageChange={onArtifactsPageChange}
         renderRow={({ node: artifact }) => (
           <TableRow
             key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
@@ -197,9 +190,15 @@ export default class TaskRunsCard extends Component {
   }
 
   render() {
-    const { classes, runs, provisionerId, workerType } = this.props;
-    const { currentRunId, showArtifacts } = this.state;
-    const run = runs[currentRunId];
+    const {
+      classes,
+      runs,
+      selectedRunId,
+      provisionerId,
+      workerType,
+    } = this.props;
+    const { showArtifacts } = this.state;
+    const run = this.getCurrentRun();
 
     return (
       <Card raised>
@@ -314,13 +313,13 @@ export default class TaskRunsCard extends Component {
               variant={runs.length > DOTS_VARIANT_LIMIT ? 'progress' : 'dots'}
               position="static"
               steps={runs.length}
-              activeStep={currentRunId}
+              activeStep={selectedRunId}
               className={classes.root}
               nextButton={
                 <Button
                   size="small"
                   onClick={this.handleNext}
-                  disabled={currentRunId === runs.length - 1}>
+                  disabled={selectedRunId === runs.length - 1}>
                   Next
                   <ChevronRightIcon />
                 </Button>
@@ -329,7 +328,7 @@ export default class TaskRunsCard extends Component {
                 <Button
                   size="small"
                   onClick={this.handlePrevious}
-                  disabled={currentRunId === 0}>
+                  disabled={selectedRunId === 0}>
                   <ChevronLeftIcon />
                   Previous
                 </Button>

@@ -8,7 +8,6 @@ import CardContent from 'material-ui/Card/CardContent';
   redbox: {
     width: '100%',
     color: 'white',
-    zIndex: 2147483647,
     textAlign: 'left',
     fontSize: 16,
     lineHeight: 1.2,

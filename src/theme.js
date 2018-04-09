@@ -18,16 +18,22 @@ export default createMuiTheme({
       main: '#1b2a39',
     },
     secondary: {
-      main: '#0e1923',
+      main: '#4177a5',
     },
     error: {
       ...red,
     },
     success: {
       ...green,
+      main: green[500],
+      dark: green[800],
     },
     warning: {
       ...amber,
+      light: amber[200],
+      main: amber[500],
+      dark: amber[700],
+      contrastText: 'rgba(0, 0, 0, 0.87)',
     },
     info: {
       ...blue,

@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from 'material-ui/styles';
+import Chip from 'material-ui/Chip';
 import Divider from 'material-ui/Divider';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
@@ -10,7 +11,8 @@ import Dashboard from '../../../components/Dashboard';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
 import TaskRunsCard from '../../../components/TaskRunsCard';
 import TaskSearch from '../../../components/TaskSearch';
-import Query from '../../../components/Query';
+import Spinner from '../../../components/Spinner';
+import ErrorPanel from '../../../components/ErrorPanel';
 import Markdown from '../../../components/Markdown';
 import { ARTIFACTS_PAGE_SIZE } from '../../../utils/constants';
 import taskQuery from './task.graphql';
@@ -25,15 +27,13 @@ import pageArtifactsQuery from './pageArtifacts.graphql';
     margin: `${theme.spacing.triple}px 0`,
   },
   owner: {
-    textAlign: 'right',
-    [theme.breakpoints.down('xs')]: {
-      textAlign: 'left',
-    },
+    marginTop: theme.spacing.unit,
   },
 }))
 @graphql(taskQuery, {
   skip: props => !props.match.params.taskId,
   options: props => ({
+    errorPolicy: 'all',
     variables: {
       taskId: props.match.params.taskId,
       artifactsConnection: {
@@ -44,17 +44,24 @@ import pageArtifactsQuery from './pageArtifacts.graphql';
 })
 export default class ViewTask extends Component {
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.match.params.taskId !== prevState.taskSearch) {
-      return {
-        taskSearch: nextProps.match.params.taskId || '',
-      };
-    }
-
-    return null;
+    return {
+      taskSearch:
+        nextProps.match.params.taskId !== prevState.taskSearch
+          ? nextProps.match.params.taskId || ''
+          : prevState.taskSearch,
+      showError: !!nextProps.data.error,
+    };
   }
 
   state = {
     taskSearch: '',
+    showError: false,
+  };
+
+  handleHideError = () => {
+    this.setState({
+      showError: false,
+    });
   };
 
   handleTaskSearchChange = e => {
@@ -66,8 +73,9 @@ export default class ViewTask extends Component {
     this.props.history.push(`/tasks/${this.state.taskSearch}`);
   };
 
-  handleArtifactsPageChange = ({ cursor, previousCursor, runId }) => {
-    const { task, fetchMore } = this.props.data;
+  handleArtifactsPageChange = ({ cursor, previousCursor }) => {
+    const { match, data: { task, fetchMore } } = this.props;
+    const runId = match.params.runId || 0;
 
     return fetchMore({
       query: pageArtifactsQuery,
@@ -101,56 +109,17 @@ export default class ViewTask extends Component {
     });
   };
 
-  renderTask() {
-    const { classes, data: { task, loading, error } } = this.props;
-
-    return (
-      <Query loading={loading} error={error}>
-        {() => (
-          <Fragment>
-            <Typography variant="headline" className={classes.title}>
-              {task.metadata.name}
-            </Typography>
-            <Grid container spacing={16}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subheading">
-                  <Markdown>{task.metadata.description}</Markdown>
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6} className={classes.owner}>
-                <Typography variant="subheading">
-                  <small>Owned by: </small>
-                  <code>{task.metadata.owner}</code>
-                </Typography>
-              </Grid>
-            </Grid>
-            <Divider className={classes.divider} />
-            <Grid container spacing={24}>
-              <Grid item xs={12} md={6}>
-                <TaskDetailsCard task={task} />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TaskRunsCard
-                  runs={task.status.runs}
-                  workerType={task.workerType}
-                  provisionerId={task.provisionerId}
-                  onArtifactsPageChange={this.handleArtifactsPageChange}
-                />
-              </Grid>
-            </Grid>
-          </Fragment>
-        )}
-      </Query>
-    );
-  }
-
   render() {
-    const { match, user, onSignIn, onSignOut } = this.props;
-    const { taskSearch } = this.state;
-    const { taskId } = match.params;
+    const {
+      classes,
+      user,
+      onSignIn,
+      onSignOut,
+      data: { loading, error, task, dependentTasks },
+      match,
+    } = this.props;
+    const { taskSearch, showError } = this.state;
 
-    // TODO: If there isn't a selected task, fill with recent task cards
     return (
       <Dashboard
         user={user}
@@ -163,8 +132,54 @@ export default class ViewTask extends Component {
             onSubmit={this.handleTaskSearchSubmit}
           />
         }>
-        {taskId && this.renderTask()}
-        {!taskId && <span>Enter a task ID in the search box</span>}
+        {loading && <Spinner loading />}
+        {error &&
+          error.graphQLErrors &&
+          showError && (
+            <ErrorPanel
+              onClose={this.handleHideError}
+              error={error.graphQLErrors[0].message}
+              warning={!!task}
+            />
+          )}
+        {task && (
+          <Fragment>
+            <Typography variant="headline" className={classes.title}>
+              {task.metadata.name}
+            </Typography>
+            <Typography variant="subheading">
+              <Markdown>{task.metadata.description}</Markdown>
+            </Typography>
+            <Chip
+              className={classes.owner}
+              label={
+                <Fragment>
+                  owned by:&nbsp;&nbsp;<em>{task.metadata.owner}</em>
+                </Fragment>
+              }
+            />
+            <Divider className={classes.divider} />
+            <Grid container spacing={24}>
+              <Grid item xs={12} md={6}>
+                <TaskDetailsCard task={task} dependentTasks={dependentTasks} />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TaskRunsCard
+                  selectedRunId={
+                    match.params.runId
+                      ? parseInt(match.params.runId, 10)
+                      : task.status.runs.length - 1
+                  }
+                  runs={task.status.runs}
+                  workerType={task.workerType}
+                  provisionerId={task.provisionerId}
+                  onArtifactsPageChange={this.handleArtifactsPageChange}
+                />
+              </Grid>
+            </Grid>
+          </Fragment>
+        )}
       </Dashboard>
     );
   }

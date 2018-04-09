@@ -30,7 +30,7 @@ import { user } from '../../utils/prop-types';
     },
     appBar: {
       position: 'fixed',
-      backgroundColor: theme.palette.secondary.main,
+      backgroundColor: theme.palette.secondary.dark,
       zIndex: theme.zIndex.drawer + 1,
       [theme.breakpoints.up('md')]: {
         width: `calc(100% - ${theme.drawerWidth}px)`,

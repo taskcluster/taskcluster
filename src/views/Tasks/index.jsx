@@ -4,8 +4,17 @@ import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
 import loadable from '../../utils/loadable';
 
+const NoTask = loadable(() =>
+  import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask')
+);
 const ViewTask = loadable(() =>
   import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
+);
+const TaskLog = loadable(() =>
+  import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
+);
+const LiveTaskLog = loadable(() =>
+  import(/* webpackChunkName: 'Tasks.LiveTaskLog' */ './LiveTaskLog')
 );
 const CreateTask = loadable(() =>
   import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
@@ -40,10 +49,26 @@ export default class Task extends Component {
           component={CreateTask}
         />
         <RouteWithProps
-          path={`${path}/:taskId?`}
+          path={`${path}/:taskId/runs/:runId/logs/live/:logUrl`}
+          {...props}
+          component={LiveTaskLog}
+        />
+        <RouteWithProps
+          path={`${path}/:taskId/runs/:runId/logs/:logUrl`}
+          {...props}
+          component={TaskLog}
+        />
+        <RouteWithProps
+          path={`${path}/:taskId/runs/:runId`}
           {...props}
           component={ViewTask}
         />
+        <RouteWithProps
+          path={`${path}/:taskId`}
+          {...props}
+          component={ViewTask}
+        />
+        <RouteWithProps path={path} {...props} component={NoTask} />
       </Switch>
     );
   }

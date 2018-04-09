@@ -14,7 +14,7 @@ import MagnifyIcon from 'mdi-react/MagnifyIcon';
     },
     '& $input': {
       transition: theme.transitions.create('width'),
-      width: 250,
+      width: 180,
       '&:focus': {
         width: 300,
       },

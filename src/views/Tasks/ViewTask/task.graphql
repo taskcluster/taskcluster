@@ -46,15 +46,15 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection) {
         }
       }
     }
+  }
 
-    dependentTasks {
-      taskId
-      status {
-        state
-      }
-      metadata {
-        name
-      }
+  dependentTasks(taskId: $taskId) {
+    taskId
+    status {
+      state
+    }
+    metadata {
+      name
     }
   }
 }
