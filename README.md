@@ -64,7 +64,7 @@ import (
 
 // *********************************************************
 // These type definitions are copied from:
-// https://github.com/taskcluster/generic-worker/blob/49698e74d33e2f45f3dc4e95f118fce2d85d0a37/generated_windows.go#L40-L202
+// https://github.com/taskcluster/generic-worker/blob/ec86473df8dba68631a50af98e5af7d44d7e1717/generated_windows.go#L40-L201
 // *********************************************************
 
 type (
@@ -147,7 +147,6 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
-
 		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
