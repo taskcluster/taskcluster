@@ -4,14 +4,8 @@ description: |
   Definition of a hook that can create tasks at defined times.
 type:                       object
 properties:
-  hookGroupId:
-    type:                 string
-    minLength:            {$const: identifier-min-length}
-    maxLength:            {$const: identifier-max-length}
-    pattern:              {$const: identifier-pattern}
-  hookId:
-    type:                 string
-    maxLength:            255
+  hookGroupId:            {$const: hookGroupId}
+  hookId:                 {$const: hookId}
   metadata:               {$const: metadata}
   schedule:
     # It would be prettier with:
