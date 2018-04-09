@@ -95,7 +95,7 @@ class ChainOfTrust {
     });
 
     let signedChainOfTrust = await openpgp.sign({
-      data: JSON.stringify(certificate),
+      data: JSON.stringify(certificate, null, 2),
       privateKeys: this.key
     });
 
