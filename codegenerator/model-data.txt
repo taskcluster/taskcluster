@@ -1,4 +1,4 @@
-Generated: 1521469310
+Generated: 1523308926
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -6062,7 +6062,7 @@ properties:
       PROPERTY_NAME: hookGroupId
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookGroupId
       TYPE_NAME: HookGroupID
-      maxLength: 22
+      maxLength: 64
       minLength: 1
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
@@ -6071,7 +6071,9 @@ properties:
       PROPERTY_NAME: hookId
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookId
       TYPE_NAME: HookID
-      maxLength: 255
+      maxLength: 64
+      minLength: 1
+      pattern: ^([a-zA-Z0-9-_]*)$
       type: string
     metadata:
       IS_REQUIRED: true
