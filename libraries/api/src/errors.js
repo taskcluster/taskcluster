@@ -1,7 +1,6 @@
 let uuid = require('uuid');
 let debug = require('debug')('api:errors');
 let _ = require('lodash');
-let escapeMarkdown = require('escape-markdown');
 
 const ERROR_CODES = {
   MalformedPayload:         400,  // Only for JSON.parse() errors
@@ -63,15 +62,13 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
         if (typeof value !== 'string') {
           value = JSON.stringify(value, null, 2);
         }
-        // escape the substituted value, so that the markdown rendering cannot be abused
-        value = escapeMarkdown(value);
         return value;
       }) + [
-          '\n----',
-          'method:     ' + method,
-          'errorCode:  ' + code,
-          'statusCode: ' + status,
-          'time:       ' + requestInfo.time,
+          '\n\n---\n',
+          '* method:     ' + method,
+          '* errorCode:  ' + code,
+          '* statusCode: ' + status,
+          '* time:       ' + requestInfo.time,
         ].join('\n');
       res.status(status).json({code, message, requestInfo});
     };
