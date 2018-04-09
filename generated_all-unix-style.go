@@ -111,7 +111,6 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
-
 		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
