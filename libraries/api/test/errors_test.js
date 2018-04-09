@@ -34,7 +34,7 @@ suite('api/errors', function() {
       assert(res.status === 400);
       let response = JSON.parse(res.response.text);
       assert(response.code === 'InputError');
-      assert(/Testing Error\n----\n/.test(response.message));
+      assert(/Testing Error\n\n---\n\n/.test(response.message));
       delete response.requestInfo['time'];
       assert(_.isEqual(response.requestInfo, {
         method: 'InputError',
@@ -69,16 +69,18 @@ suite('api/errors', function() {
         code: 'TooManyFoos',
         message: [
           'You can only have 3 foos.  These foos already exist:',
-          '\\[',
+          '[',
           '  1,',
           '  2,',
           '  3',
-          '\\]',
-          '----',
-          'method:     toomanyfoos',
-          'errorCode:  TooManyFoos',
-          'statusCode: 472',
-          'time:       <nowish>',
+          ']',
+          '',
+          '---',
+          '',
+          '* method:     toomanyfoos',
+          '* errorCode:  TooManyFoos',
+          '* statusCode: 472',
+          '* time:       <nowish>',
         ].join('\n'),
         requestInfo: {
           method: 'toomanyfoos',
