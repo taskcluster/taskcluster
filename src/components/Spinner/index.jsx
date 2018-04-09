@@ -1,5 +1,6 @@
 import { PureComponent } from 'react';
 import { bool } from 'prop-types';
+import classNames from 'classnames';
 import { withStyles } from 'material-ui/styles';
 import CircularProgress from 'material-ui/Progress/CircularProgress';
 
@@ -18,11 +19,13 @@ export default class Spinner extends PureComponent {
   };
 
   render() {
-    const { loading, classes, ...props } = this.props;
-    const progress = <CircularProgress color="primary" {...props} />;
+    const { loading, classes, className, ...props } = this.props;
+    const progress = (
+      <CircularProgress color="primary" className={className} {...props} />
+    );
 
     return loading ? (
-      <div className={classes.center}>{progress}</div>
+      <div className={classNames(classes.center, className)}>{progress}</div>
     ) : (
       progress
     );

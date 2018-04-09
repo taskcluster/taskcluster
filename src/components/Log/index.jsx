@@ -8,10 +8,9 @@ import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import Tooltip from 'material-ui/Tooltip';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
-import Spinner from '../Spinner';
 import GoToLineButton from './GoToLineButton';
+import Loading from './Loading';
 
-const Loading = () => <Spinner loading />;
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
 
