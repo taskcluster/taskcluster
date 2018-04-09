@@ -1534,7 +1534,6 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    {}
-
 		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
@@ -1737,7 +1736,6 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-
 		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
