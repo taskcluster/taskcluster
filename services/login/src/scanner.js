@@ -2,6 +2,7 @@ const taskcluster = require('taskcluster-client');
 const scopeUtils = require('taskcluster-lib-scopes');
 const {CLIENT_ID_PATTERN} = require('./utils');
 const Debug = require('debug');
+const _ = require('lodash');
 
 const debug = Debug('scanner');
 
@@ -20,7 +21,8 @@ async function scanner(cfg, handlers) {
 
   const scan = async h => {
     const handler = handlers[h];
-    const clients = await auth.listClients({prefix: `${handler.identityProviderId}/`});
+    const clientResponse = await auth.listClients({prefix: `${handler.identityProviderId}/`});
+    const clients = _.get(clientResponse, 'clients', clientResponse);
 
     // iterate through the clients, constructing a new User as necessary, comparing
     // the client's scopes to the User's scopes and disabling where necessary.
