@@ -205,6 +205,7 @@ api.declare({
   route:          '/namespaces/:namespace?',
   name:           'listNamespacesPost',
   stability:      'deprecated',
+  noPublish:      true,
   input:          'list-namespaces-request.json#',
   output:         'list-namespaces-response.json#',
   title:          'List Namespaces',
@@ -236,7 +237,7 @@ api.declare({
 
 /** List tasks in namespace */
 api.declare({
-  method:         'post',
+  method:         'get',
   route:          '/tasks/:namespace?',
   query: {
     continuationToken: /./,
@@ -282,20 +283,12 @@ api.declare({
   route:          '/tasks/:namespace?',
   name:           'listTasksPost',
   stability:      'deprecated',
+  noPublish:      true,
   input:          'list-tasks-request.json#',
   output:         'list-tasks-response.json#',
   title:          'List Tasks',
   description: [
-    'List the tasks immediately under a given namespace.',
-    '',
-    'This endpoint',
-    'lists up to 1000 tasks. If more tasks are present, a',
-    '`continuationToken` will be returned, which can be given in the next',
-    'request. For the initial request, the payload should be an empty JSON',
-    'object.',
-    '',
-    '**Remark**, this end-point is designed for humans browsing for tasks, not',
-    'services, as that makes little sense.',
+    '(a version of listTasks with POST for backward compatibility; do not use)',
   ].join('\n'),
 }, function(req, res) {
   var that       = this;

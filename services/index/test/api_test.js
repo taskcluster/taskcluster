@@ -49,33 +49,91 @@ suite('API', () => {
     assert(false, 'This shouldn\'t have worked');
   });
 
-  test('list top-level namespaces', async function() {
-    let result = await helper.index.listNamespaces('', {});
-    result.namespaces.forEach(function(ns) {
-      assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-    });
-  });
+  suite('listing things', function() {
 
-  test('list top-level namespaces (without auth)', async function() {
-    var index = new helper.Index();
-    let result = await index.listNamespaces('', {});
-    result.namespaces.forEach(function(ns) {
-      assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-    });
-  });
+    suiteSetup(async function() {
+      const paths = [
+        'abc', 'abc.def', 'abc.def2',
+        'bbc',
+        'bbc.def',
+        'cbc',
+        'cbc.def',
+        'dbc.def2',
+      ];
+      const taskId = slugid.v4();
+      const expires = expiry.toJSON();
 
-  test('list top-level tasks', async function() {
-    let result = await helper.index.listTasks('', {});
-    result.tasks.forEach(function(task) {
-      assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      for (let path of paths) {
+        await helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires});
+      }
     });
-  });
 
-  test('list top-level tasks (without auth)', async function() {
-    var index = new helper.Index();
-    let result = await index.listTasks('', {});
-    result.tasks.forEach(function(task) {
-      assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+    test('list top-level namespaces', async function() {
+      let result = await helper.index.listNamespaces('', {});
+      result.namespaces.forEach(function(ns) {
+        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
+    });
+
+    test('list top-level namespaces with continuation', async function() {
+      let opts = {limit: 1};
+      let results = [];
+
+      while (1) {
+        let result = await helper.index.listNamespaces('', {});
+        results = results.concat(result.namespaces);
+        if (!result.continuationToken) {
+          break;
+        }
+        opts.continuationToken = result.continuationToken;
+      }
+
+      assert.equal(results.length, 6);
+      results.forEach(function(ns) {
+        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
+    });
+
+    test('list top-level namespaces (without auth)', async function() {
+      var index = new helper.Index();
+      let result = await index.listNamespaces('', {});
+      result.namespaces.forEach(function(ns) {
+        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
+    });
+
+    test('list top-level tasks', async function() {
+      let result = await helper.index.listTasks('', {});
+      result.tasks.forEach(function(task) {
+        assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
+    });
+
+    test('list top-level tasks with continuation', async function() {
+      let opts = {limit: 1};
+      let results = [];
+
+      while (1) {
+        let result = await helper.index.listTasks('', opts);
+        results = results.concat(result.tasks);
+        if (!result.continuationToken) {
+          break;
+        }
+        opts.continuationToken = result.continuationToken;
+      }
+
+      assert.equal(results.length, 3);
+      results.forEach(function(task) {
+        assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
+    });
+
+    test('list top-level tasks (without auth)', async function() {
+      var index = new helper.Index();
+      let result = await index.listTasks('', {});
+      result.tasks.forEach(function(task) {
+        assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
     });
   });
 

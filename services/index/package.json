@@ -17,7 +17,7 @@
     "debug": "^3.1.0",
     "lodash": "^4.11.1",
     "taskcluster-client": "^3.1.0",
-    "taskcluster-lib-api": "8.0.0",
+    "taskcluster-lib-api": "8.1.1",
     "taskcluster-lib-app": "^2.0.3",
     "taskcluster-lib-docs": "^4.2.1",
     "taskcluster-lib-loader": "^2.0.0",
