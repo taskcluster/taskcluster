@@ -1,4 +1,11 @@
 export default {
+  Worker: {
+    latestTasks(parent, args, { loaders }) {
+      return loaders.task.loadMany(
+        parent.recentTasks.map(({ taskId }) => taskId)
+      );
+    },
+  },
   Query: {
     worker(
       parent,
