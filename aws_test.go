@@ -14,8 +14,8 @@ func TestWorkerShutdown(t *testing.T) {
 	}
 	defer m.Setup(t)()
 	payload := GenericWorkerPayload{
-		Command:    sleep(10),
-		MaxRunTime: 8,
+		Command:    sleep(20),
+		MaxRunTime: 15,
 	}
 	td := testTask(t)
 
