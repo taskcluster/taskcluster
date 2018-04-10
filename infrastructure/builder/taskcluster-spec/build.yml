@@ -94,6 +94,16 @@ repositories:
     stack: heroku-16
     buildpack: https://github.com/heroku/heroku-buildpack-nodejs
 
+# docs
+- name: docs
+  kind: service
+  docs:
+    tier: integrations
+  service:
+    buildtype: docs
+    node: 9
+  source: https://github.com/taskcluster/taskcluster-docs#master
+
 # tools
 - name: tools
   kind: service
