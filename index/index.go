@@ -129,7 +129,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 9 Apr 2018 at 21:22:00 UTC. The code was generated
+// Tue, 10 Apr 2018 at 17:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package index
 
@@ -216,23 +216,6 @@ func (myIndex *Index) ListNamespaces(namespace, continuationToken, limit string)
 	return responseObject.(*ListNamespacesResponse), err
 }
 
-// Stability: *** DEPRECATED ***
-//
-// List the namespaces immediately under a given namespace.
-//
-// This endpoint
-// lists up to 1000 namespaces. If more namespaces are present, a
-// `continuationToken` will be returned, which can be given in the next
-// request. For the initial request, the payload should be an empty JSON
-// object.
-//
-// See https://docs.taskcluster.net/reference/core/index/api-docs#listNamespacesPost
-func (myIndex *Index) ListNamespacesPost(namespace string, payload *ListNamespacesRequest) (*ListNamespacesResponse, error) {
-	cd := tcclient.Client(*myIndex)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), nil)
-	return responseObject.(*ListNamespacesResponse), err
-}
-
 // List the tasks immediately under a given namespace.
 //
 // This endpoint
@@ -254,27 +237,7 @@ func (myIndex *Index) ListTasks(namespace, continuationToken, limit string) (*Li
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*myIndex)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), v)
-	return responseObject.(*ListTasksResponse), err
-}
-
-// Stability: *** DEPRECATED ***
-//
-// List the tasks immediately under a given namespace.
-//
-// This endpoint
-// lists up to 1000 tasks. If more tasks are present, a
-// `continuationToken` will be returned, which can be given in the next
-// request. For the initial request, the payload should be an empty JSON
-// object.
-//
-// **Remark**, this end-point is designed for humans browsing for tasks, not
-// services, as that makes little sense.
-//
-// See https://docs.taskcluster.net/reference/core/index/api-docs#listTasksPost
-func (myIndex *Index) ListTasksPost(namespace string, payload *ListTasksRequest) (*ListTasksResponse, error) {
-	cd := tcclient.Client(*myIndex)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), v)
 	return responseObject.(*ListTasksResponse), err
 }
 

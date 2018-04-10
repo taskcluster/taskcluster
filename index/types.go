@@ -86,29 +86,6 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	// Request to list namespaces within a given namespace.
-	//
-	// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#
-	ListNamespacesRequest struct {
-
-		// A continuation token previously returned in a response to this list
-		// request. This property is optional and should not be provided for first
-		// requests.
-		//
-		// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/continuationToken
-		ContinuationToken string `json:"continuationToken,omitempty"`
-
-		// Maximum number of results per page. If there are more results than this
-		// a continuation token will be return.
-		//
-		// Default:    1000
-		// Mininum:    1
-		// Maximum:    1000
-		//
-		// See http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#/properties/limit
-		Limit int64 `json:"limit,omitempty"`
-	}
-
 	// Response from a request to list namespaces within a given namespace.
 	//
 	// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#
@@ -145,29 +122,6 @@ type (
 			// See http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#/properties/namespaces/items/properties/namespace
 			Namespace string `json:"namespace"`
 		} `json:"namespaces"`
-	}
-
-	// Request to list tasks within a given namespace.
-	//
-	// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#
-	ListTasksRequest struct {
-
-		// A continuation token previously returned in a response to this list
-		// request. This property is optional and should not be provided for first
-		// requests.
-		//
-		// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/continuationToken
-		ContinuationToken string `json:"continuationToken,omitempty"`
-
-		// Maximum number of results per page. If there are more results than this
-		// a continuation token will be return.
-		//
-		// Default:    1000
-		// Mininum:    1
-		// Maximum:    1000
-		//
-		// See http://schemas.taskcluster.net/index/v1/list-tasks-request.json#/properties/limit
-		Limit int64 `json:"limit,omitempty"`
 	}
 
 	// Representation of an indexed task.
