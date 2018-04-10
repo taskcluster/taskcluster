@@ -284,7 +284,6 @@ api.declare({
   name:           'listTasksPost',
   stability:      'deprecated',
   noPublish:      true,
-  input:          'list-tasks-request.json#',
   output:         'list-tasks-response.json#',
   title:          'List Tasks',
   description: [
