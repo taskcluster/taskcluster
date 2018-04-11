@@ -14,33 +14,33 @@ Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/tas
 This library provides the following packages to interface with Taskcluster:
 
 ### HTTP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisioner
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/ec2manager
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/github
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/hooks
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/index
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/login
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/notify
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/secrets
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcawsprovisioner
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcec2manager
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcgithub
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tchooks
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcindex
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tclogin
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcnotify
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcpurgecache
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueue
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcsecrets
 
 ### AMQP APIs
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/authevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisionerevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/githubevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecacheevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/treeherderevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauthevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcawsprovisionerevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcgithubevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcpurgecacheevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueueevents
+* http://godoc.org/github.com/taskcluster/taskcluster-client-go/tctreeherderevents
 
 ## Example programs
 
 To get you started quickly, I have also included some example programs that use both the http services and the amqp services:
 
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--Scopes) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to query the expiry and expanded scopes of a given clientId.
-* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--UpdateClient) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents#example-package--TaskclusterSniffer) demonstrates the use of the [queueevents](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcauth) package to update an existing clientId with a new description and expiry.
+* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](http://godoc.org/github.com/taskcluster/taskcluster-client-go/tcqueueevents) package to listen in on Task Cluster tasks being defined and executed.
 
 ## Calling API End-Points
 
@@ -59,7 +59,7 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 // *********************************************************
@@ -248,7 +248,7 @@ func mustCompileToRawMessage(data interface{}) *json.RawMessage {
 }
 
 func main() {
-	myQueue, err := queue.New(nil)
+	myQueue, err := tcqueue.New(nil)
 	fatalOnError(err)
 	taskID := slugid.Nice()
 	created := time.Now()
@@ -279,7 +279,7 @@ func main() {
 
 	payloadJSON := mustCompileToRawMessage(payload)
 
-	taskDef := &queue.TaskDefinitionRequest{
+	taskDef := &tcqueue.TaskDefinitionRequest{
 		Created:      tcclient.Time(created),
 		Deadline:     tcclient.Time(created.Add(time.Hour * 3)),
 		Dependencies: []string{},
@@ -342,7 +342,7 @@ import (
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 const (
@@ -377,7 +377,7 @@ func main() {
 	tempCreds.AuthorizedScopes = []string{
 		"queue:get-artifact:private/build/*",
 	}
-	queueClient, err := queue.New(tempCreds)
+	queueClient, err := tcqueue.New(tempCreds)
 	if err != nil {
 		// bug in code
 		log.Fatalf("SERIOUS BUG! Could not create client from generated temporary credentials: %v", err)

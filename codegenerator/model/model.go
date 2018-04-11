@@ -212,7 +212,7 @@ func formatSourceAndSave(sourceFile string, sourceCode []byte) {
 func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 	downloadedTime = downloaded
 	for i := range apiDefs {
-		apiDefs[i].PackageName = strings.ToLower(apiDefs[i].Name)
+		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Name)
 		// Used throughout docs, and also methods that use the class, we need a
 		// variable name to be used when referencing the go type. It should not
 		// clash with either the package name or the go type of the principle

@@ -10,8 +10,8 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/jsontest"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/index"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcindex"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 // This is a silly test that looks for the latest mozilla-inbound linux64 debug
@@ -24,8 +24,8 @@ import (
 // Note, no credentials are needed, so this can be run even on travis-ci.org,
 // for example.
 func TestFindLatestLinux64DebugBuild(t *testing.T) {
-	Index := index.NewNoAuth()
-	Queue := queue.NewNoAuth()
+	Index := tcindex.New(nil)
+	Queue := tcqueue.New(nil)
 	itr, err := Index.FindTask("gecko.v2.mozilla-inbound.latest.firefox.linux64-debug")
 	if err != nil {
 		t.Fatalf("%v\n", err)
@@ -70,10 +70,7 @@ func permaCreds(t *testing.T) *tcclient.Credentials {
 // Tests whether it is possible to define a task against the production Queue.
 func TestDefineTask(t *testing.T) {
 	permaCreds := permaCreds(t)
-	myQueue, err := queue.New(permaCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	myQueue := tcqueue.New(permaCreds)
 
 	taskID := slugid.Nice()
 	taskGroupID := slugid.Nice()
@@ -81,7 +78,7 @@ func TestDefineTask(t *testing.T) {
 	deadline := created.AddDate(0, 0, 1)
 	expires := deadline
 
-	td := &queue.TaskDefinitionRequest{
+	td := &tcqueue.TaskDefinitionRequest{
 		Created:  tcclient.Time(created),
 		Deadline: tcclient.Time(deadline),
 		Expires:  tcclient.Time(expires),
@@ -115,8 +112,8 @@ func TestDefineTask(t *testing.T) {
 	}
 
 	cd := tcclient.Client(*myQueue)
-	resp, cs, err := (&cd).APICall(td, "POST", "/task/"+url.QueryEscape(taskID)+"/define", new(queue.TaskStatusResponse), nil)
-	tsr := resp.(*queue.TaskStatusResponse)
+	resp, cs, err := (&cd).APICall(td, "POST", "/task/"+url.QueryEscape(taskID)+"/define", new(tcqueue.TaskStatusResponse), nil)
+	tsr := resp.(*tcqueue.TaskStatusResponse)
 
 	//////////////////////////////////
 	// And now validate results.... //
@@ -128,7 +125,7 @@ func TestDefineTask(t *testing.T) {
 
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskID)
 
-	if provisionerID := cs.HTTPRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
+	if provisionerID := cs.HTTPRequestObject.(*tcqueue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
 		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerID)
 	}
 	if schedulerID := tsr.Status.SchedulerID; schedulerID != "go-test-test-scheduler" {
@@ -209,10 +206,7 @@ func TestDefineTask(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
-	myQueue, err = queue.New(tempCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	myQueue = tcqueue.New(tempCreds)
 	_, err = myQueue.CancelTask(taskID)
 	if err != nil {
 		t.Fatalf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
