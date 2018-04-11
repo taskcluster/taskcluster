@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -20,9 +19,9 @@ import (
 
 // Credentials represents the set of credentials required to access protected Taskcluster HTTP APIs.
 type Credentials struct {
-	// ClientID must conform to ^[A-Za-z0-9@/:.+|_-]+$
+	// ClientID
 	ClientID string `json:"clientId"`
-	// AccessToken must conform to ^[a-zA-Z0-9_-]{22,66}$
+	// AccessToken
 	AccessToken string `json:"accessToken"`
 	// Certificate used only for temporary credentials
 	Certificate string `json:"certificate"`
@@ -36,11 +35,6 @@ type Credentials struct {
 	// See https://docs.taskcluster.net/manual/apis/authorized-scopes
 	AuthorizedScopes []string `json:"authorizedScopes"`
 }
-
-var (
-	RegExpClientID    *regexp.Regexp = regexp.MustCompile(`^[A-Za-z0-9!@/:.+|_-]+$`)
-	RegExpAccessToken *regexp.Regexp = regexp.MustCompile(`^[a-zA-Z0-9_-]{22,66}$`)
-)
 
 func (creds *Credentials) String() string {
 	return fmt.Sprintf(
@@ -207,40 +201,6 @@ func (creds *Credentials) Cert() (cert *Certificate, err error) {
 	return
 }
 
-// Validate performs a sanity check of the given certificate and returns an
-// error if it is able to determine that the certificate is not malformed,
-// expired, or for any other reason invalid. Note, it does not perform any
-// network transactions against any live services, it only performs sanity
-// checks that can be executed locally. If cert is nil, an error is returned.
-func (cert *Certificate) Validate() error {
-	if cert == nil {
-		return fmt.Errorf("nil certificate does not pass certificate validation")
-	}
-	if cert.Version != 1 {
-		return fmt.Errorf("Certificate version not 1: %v", cert.Version)
-	}
-	now := time.Now().UnixNano() / 1e6
-	// See https://github.com/taskcluster/taskcluster-auth/pull/117/files
-	// A five minute tolerance is allowed. This is important, if we receive
-	// credentials from a different machine.
-	if cert.Start > now+5*60*1000 {
-		return fmt.Errorf("Certificate validity starts more than five minutes in the future (now = %v; start = %v)", now, cert.Start)
-	}
-	if cert.Expiry < now-5*60*1000 {
-		return fmt.Errorf("Certificate expired more than five minutes ago (now = %v; expiry = %v)", now, cert.Expiry)
-	}
-	if durationMillis := cert.Expiry - cert.Start; durationMillis > 31*24*60*60*1000 {
-		return fmt.Errorf("Certificate is valid for more than 31 days (%v milliseconds)", durationMillis)
-	}
-	if len(cert.Seed) != 44 {
-		return fmt.Errorf("Certificate seed not 44 bytes: '%v'", cert.Seed)
-	}
-	if _, err := base64.StdEncoding.DecodeString(cert.Signature); err != nil {
-		return fmt.Errorf("Certificate signature is not valid base64 content: %v", err)
-	}
-	return nil
-}
-
 // CredentialsFromEnvVars creates and returns Taskcluster credentials
 // initialised from the values of environment variables:
 //  TASKCLUSTER_CLIENT_ID
@@ -254,32 +214,4 @@ func CredentialsFromEnvVars() *Credentials {
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
-}
-
-// Validate performs local lexical validation of creds to ensure the
-// credentials are syntactically valid and returns a non-nil error if they are
-// not. No authentication is performed, so a call to Validate with invalid
-// credentials that are syntactically valid will not return an error.
-func (creds *Credentials) Validate() error {
-	if creds == nil {
-		return fmt.Errorf("Nil credentials are not valid")
-	}
-	// Special case: see https://docs.taskcluster.net/reference/platform/taskcluster-auth/references/api#testAuthenticate
-	if creds.ClientID == "tester" && creds.AccessToken == "no-secret" {
-		return nil
-	}
-	if !RegExpClientID.MatchString(creds.ClientID) {
-		return fmt.Errorf("Client ID %v does not match regular expression %v", creds.ClientID, RegExpAccessToken)
-	}
-	if !RegExpAccessToken.MatchString(creds.AccessToken) {
-		return fmt.Errorf("Access Token does not match regular expression %v", RegExpAccessToken)
-	}
-	cert, err := creds.Cert()
-	if err != nil {
-		return fmt.Errorf("Certificate for client ID %v is invalid: %v", creds.ClientID, err)
-	}
-	if cert != nil {
-		return cert.Validate()
-	}
-	return nil
 }

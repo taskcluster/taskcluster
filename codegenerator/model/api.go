@@ -80,13 +80,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// First create " + text.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
 	comment += "//\n"
-	comment += "//  " + exampleVarName + ", err := " + api.apiDef.PackageName + ".New(nil)\n"
-	comment += "//\n"
-	comment += "// handling any errors...\n"
-	comment += "//\n"
-	comment += "//  if err != nil {\n"
-	comment += "//  	// handle error...\n"
-	comment += "//  }\n"
+	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(nil)\n"
 	comment += "//\n"
 	comment += "// and then call one or more of " + exampleVarName + "'s methods, e.g.:\n"
 	comment += "//\n"
@@ -128,7 +122,7 @@ const (
 type ` + api.apiDef.Name + ` tcclient.Client
 
 // New returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client, configured to run against production. Pass in
-// nil to load credentials from TASKCLUSTER_* environment variables. The
+// nil to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
 `
@@ -147,20 +141,8 @@ type ` + api.apiDef.Name + ` tcclient.Client
 
 	commentedSection := [][]string{
 		{
-			"//  " + exampleVarName + ", err := " + api.apiDef.PackageName + ".New(nil)",
-			"// credentials loaded from TASKCLUSTER_* env vars",
-		},
-		{
-			"//  if err != nil {",
-			"",
-		},
-		{
-			"//      // handle malformed credentials...",
-			"",
-		},
-		{
-			"//  }",
-			"",
+			"//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(nil)",
+			"// client without authentication",
 		},
 		{
 			"//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"",
@@ -188,30 +170,31 @@ type ` + api.apiDef.Name + ` tcclient.Client
 
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
-	content += "//  }\n"
-	content += "//\n"
-	content += "// If authentication is not required, use NewNoAuth() instead.\n"
-	content += "func New(credentials *tcclient.Credentials) (*" + api.apiDef.Name + ", error) {\n"
-	content += "\tif credentials == nil {\n"
-	content += "\t\tcredentials = tcclient.CredentialsFromEnvVars()\n"
-	content += "\t}\n"
-	content += "\terr := credentials.Validate()\n"
-	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.Client{\n"
-	content += "\t\tCredentials: credentials,\n"
-	content += "\t\tBaseURL: DefaultBaseURL,\n"
-	content += "\t\tAuthenticate: true,\n"
-	content += "\t})\n"
-	content += "\treturn &" + exampleVarName + ", err\n"
-	content += "}\n"
-	content += "\n"
-	content += `// NewNoAuth returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *` + api.apiDef.Name + ` {
-	` + exampleVarName + ` := ` + api.apiDef.Name + `(tcclient.Client{
-		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &` + exampleVarName + `
+	content += "//  }"
+	content += `
+func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
+	return &` + api.apiDef.Name + `{
+		Credentials: credentials,
+		BaseURL: DefaultBaseURL,
+		Authenticate: credentials != nil,
+	}
+}
+
+// NewFromEnv returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client with credentials taken from the environment variables:
+//
+//  TASKCLUSTER_CLIENT_ID
+//  TASKCLUSTER_ACCESS_TOKEN
+//  TASKCLUSTER_CERTIFICATE
+//
+// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// authentication will be disabled.
+func NewFromEnv(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
+	c := tcclient.CredentialsFromEnvVars()
+	return &` + api.apiDef.Name + `{
+		Credentials: c,
+		BaseURL: DefaultBaseURL,
+		Authenticate: c.ClientID != "",
+	}
 }
 
 `
