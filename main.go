@@ -986,11 +986,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	if ae := task.StatusManager.AbortException(); ae != nil {
 		return ae
 	}
-	if result.Succeeded() {
-		task.Infof("%v", result)
-	} else {
-		task.Errorf("%v", result)
-	}
+	task.Infof("%v", result)
 
 	switch {
 	case result.Failed():
