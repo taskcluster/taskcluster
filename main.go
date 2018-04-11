@@ -10,7 +10,7 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 var (
@@ -136,11 +136,11 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	if arguments["--task-id"] != nil {
 		taskID := arguments["--task-id"].(string)
 		log.Printf("taskId: '%v'", taskID)
-		myQueue := queue.NewNoAuth()
+		queue := tcqueue.New(nil)
 
 		// Fetch the task to get the scopes we should be using...
-		var task *queue.TaskDefinitionResponse
-		task, err = myQueue.Task(taskID)
+		var task *tcqueue.TaskDefinitionResponse
+		task, err = queue.Task(taskID)
 		if err != nil {
 			err = fmt.Errorf("Could not fetch taskcluster task '%s' : %s", taskID, err)
 			return
