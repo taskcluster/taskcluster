@@ -8,6 +8,7 @@ import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import Tooltip from 'material-ui/Tooltip';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
 
@@ -59,6 +60,7 @@ export default class Log extends Component {
     actions: oneOfType([node, arrayOf(node)]),
     GoToLineButtonProps: object,
     FollowLogButtonProps: object,
+    RawLogButtonProps: object,
   };
 
   static defaultProps = {
@@ -66,6 +68,7 @@ export default class Log extends Component {
     actions: null,
     GoToLineButtonProps: null,
     FollowLogButton: null,
+    RawLogButtonProps: null,
   };
 
   state = {
@@ -163,10 +166,26 @@ export default class Log extends Component {
       actions,
       GoToLineButtonProps,
       FollowLogButtonProps,
+      RawLogButtonProps,
       ...props
     } = this.props;
     const highlight = this.getHighlightFromHash();
     const scrollToLine = this.getScrollToLine();
+    const rawLogButton = (
+      <Tooltip placement="left" title="Raw log">
+        <Button
+          component="a"
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="fab"
+          mini
+          color="secondary"
+          {...RawLogButtonProps}>
+          <OpenInNewIcon />
+        </Button>
+      </Tooltip>
+    );
 
     if (!stream) {
       return (
@@ -183,6 +202,7 @@ export default class Log extends Component {
             loadingComponent={Loading}
             {...props}
           />
+          {rawLogButton}
           <GoToLineButton
             className={classes.lineNumberButton}
             onLineNumberChange={this.handleLineNumberChange}
@@ -213,13 +233,14 @@ export default class Log extends Component {
               loadingComponent={Loading}
               {...props}
             />
+            {rawLogButton}
             <GoToLineButton
               className={classes.lineNumberButton}
               onLineNumberChange={this.handleLineNumberChange}
               {...GoToLineButtonProps}
             />
             <Tooltip
-              placement="left"
+              placement="bottom"
               title={follow ? 'Unfollow log' : 'Follow log'}>
               <Button
                 variant="fab"

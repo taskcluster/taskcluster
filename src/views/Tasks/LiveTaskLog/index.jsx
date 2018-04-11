@@ -25,6 +25,11 @@ import Log from '../../../components/Log';
     right: theme.spacing.unit * 16,
     top: theme.spacing.triple,
   },
+  rawLogButton: {
+    position: 'absolute',
+    right: theme.spacing.unit * 22,
+    top: theme.spacing.triple,
+  },
 }))
 export default class LiveTaskLog extends Component {
   render() {
@@ -42,6 +47,7 @@ export default class LiveTaskLog extends Component {
           stream
           GoToLineButtonProps={{ className: classes.goToLineButton }}
           FollowLogButtonProps={{ className: classes.followButton }}
+          RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
             <Tooltip placement="bottom" title="View task">
               <Button

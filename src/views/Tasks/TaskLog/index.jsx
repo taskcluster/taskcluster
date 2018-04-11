@@ -20,6 +20,11 @@ import Log from '../../../components/Log';
     right: theme.spacing.unit * 10,
     top: theme.spacing.triple,
   },
+  rawLogButton: {
+    position: 'absolute',
+    right: theme.spacing.unit * 16,
+    top: theme.spacing.triple,
+  },
 }))
 export default class TaskLog extends Component {
   render() {
@@ -36,6 +41,7 @@ export default class TaskLog extends Component {
           url={url}
           stream={false}
           GoToLineButtonProps={{ className: classes.miniFab }}
+          RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
             <Tooltip placement="bottom" title="View task">
               <Button
