@@ -72,9 +72,10 @@ func main() {
 	arguments, err := docopt.Parse(usage, nil, true, version, false, true)
 	exitOnFail(err)
 	job := &jsonschema2go.Job{
-		Package:     arguments["-o"].(string),
-		ExportTypes: true,
-		URLs:        parseStandardIn(),
+		Package:              arguments["-o"].(string),
+		ExportTypes:          true,
+		URLs:                 parseStandardIn(),
+		DisableNestedStructs: true,
 	}
 	result, err := job.Execute()
 	if err != nil {
