@@ -196,7 +196,7 @@ export default class TaskDetailsCard extends Component {
                     <ListItemText primary="Dependencies" />
                   </ListItem>
                   <List dense disablePadding>
-                    {task.dependentTasks.map(task => (
+                    {dependentTasks.map(task => (
                       <ListItem
                         button
                         className={classes.listItemButton}

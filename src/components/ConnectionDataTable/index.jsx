@@ -28,48 +28,51 @@ export default class ConnectionDataTable extends Component {
     onPageChange: func.isRequired,
   };
 
+  pages = new Map();
   state = {
     loading: false,
   };
 
   handlePageChange = (e, nextPage) => {
     const { connection, onPageChange } = this.props;
-    const { page } = this.getPaginationMetadata();
-    const { pageInfo } = connection;
+    const { page, pageInfo } = this.pages.get(connection.pageInfo.cursor);
+    const cursor =
+      nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor;
+    const previousCursor =
+      nextPage > page
+        ? pageInfo.cursor
+        : this.pages.get(pageInfo.previousCursor).previousCursor;
 
     this.setState({ loading: true }, async () => {
-      await onPageChange({
-        cursor: nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor,
-        previousCursor: pageInfo.cursor,
-      });
+      await onPageChange({ cursor, previousCursor });
       this.setState({ loading: false });
     });
   };
 
   getPaginationMetadata() {
     const { connection, pageSize } = this.props;
-    const { pageInfo } = connection;
 
-    if (pageInfo.hasNextPage && pageInfo.hasPreviousPage) {
+    if (!this.pages.has(connection.pageInfo.cursor)) {
+      this.pages.set(connection.pageInfo.cursor, {
+        page: this.pages.size,
+        pageInfo: connection.pageInfo,
+      });
+    }
+
+    const { page, pageInfo } = this.pages.get(connection.pageInfo.cursor);
+
+    if (page === this.pages.size - 1) {
       return {
-        count: pageSize * 3,
-        page: 1,
-      };
-    } else if (pageInfo.hasNextPage) {
-      return {
-        count: pageSize * 2,
-        page: 0,
-      };
-    } else if (pageInfo.hasPreviousPage) {
-      return {
-        count: pageSize * 2,
-        page: 1,
+        page,
+        count: pageInfo.hasNextPage
+          ? (this.pages.size + 1) * pageSize
+          : this.pages.size * pageSize,
       };
     }
 
     return {
-      count: pageSize,
-      page: 0,
+      page,
+      count: this.pages.size * pageSize,
     };
   }
 

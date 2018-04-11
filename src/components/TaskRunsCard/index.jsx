@@ -299,7 +299,7 @@ export default class TaskRunsCard extends Component {
                 <ListItemText primary="Artifacts" />
                 {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
-              <Collapse in={showArtifacts} timeout="auto" unmountOnExit>
+              <Collapse in={showArtifacts} timeout="auto">
                 <List component="div" disablePadding>
                   <ListItem component="div" disableGutters>
                     {this.renderArtifactsTable()}
