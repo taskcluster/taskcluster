@@ -15,6 +15,6 @@ suite('webhooktunnel', () => {
 
     assert(decoded !== null);
     assert(decoded.tid === tunnelId);
-    assert(decoded.sub === 'root');
+    assert(decoded.sub === 'static/taskcluster/root');
   });
 });

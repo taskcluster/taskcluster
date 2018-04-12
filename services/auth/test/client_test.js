@@ -15,8 +15,8 @@ suite('api (client)', function() {
     });
   } else {
     const cleanup = async () => {
-      // Delete all clients and roles
-      await helper.Client.scan({}, {handler: c => c.clientId === 'root' ? null : c.remove()});
+      // Delete all non-static clients and roles
+      await helper.Client.scan({}, {handler: c => c.clientId.startsWith('static/') ? null : c.remove()});
       await helper.Roles.modify((roles) => roles.splice(0));
     };
     setup(cleanup);
@@ -28,12 +28,12 @@ suite('api (client)', function() {
   });
 
   test('auth.client (root credentials)', async () => {
-    await helper.auth.client('root');
+    await helper.auth.client('static/taskcluster/root');
   });
 
   test('auth.client (no credentials)', async () => {
-    await helper.auth.client('root');
-    await (new helper.Auth()).client('root');
+    await helper.auth.client('static/taskcluster/root');
+    await (new helper.Auth()).client('static/taskcluster/root');
   });
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
   test('auth.deleteClient (non-existent)', async () => {
@@ -49,7 +49,7 @@ suite('api (client)', function() {
 
   test('auth.deleteClient (invalid root credentials)', async () => {
     await (new helper.Auth({
-      clientId:     'root',
+      clientId:     'static/taskcluster/root',
       accessToken:  'wrong',
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
@@ -403,8 +403,8 @@ suite('api (client)', function() {
     let auth = new helper.Auth({
       baseUrl:          helper.baseUrl,
       credentials: {
-        clientId:       'root',
-        accessToken:    helper.cfg.app.rootAccessToken,
+        clientId:       'static/taskcluster/root',
+        accessToken:    helper.rootAccessToken,
       },
       authorizedScopes: ['myapi:a', 'myapi:b'],
     });
@@ -419,8 +419,8 @@ suite('api (client)', function() {
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi:x', 'myapi:y'],
         credentials:  {
-          clientId:       'root',
-          accessToken:    helper.cfg.app.rootAccessToken,
+          clientId:       'static/taskcluster/root',
+          accessToken:    helper.rootAccessToken,
         },
       }),
     });
@@ -435,8 +435,8 @@ suite('api (client)', function() {
         expiry:       taskcluster.fromNow('10 min'),
         scopes:       ['myapi:x', 'myapi:y'],
         credentials:  {
-          clientId:       'root',
-          accessToken:    helper.cfg.app.rootAccessToken,
+          clientId:       'static/taskcluster/root',
+          accessToken:    helper.rootAccessToken,
         },
       }),
       authorizedScopes: ['myapi:x'],

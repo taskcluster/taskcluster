@@ -101,7 +101,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   var rootCredentials = {
-    clientId: 'root',
+    clientId: 'static/taskcluster/root',
     accessToken: helper.rootAccessToken,
   };
 

@@ -159,10 +159,8 @@ let load = Loader({
       // Set up the Azure tables
       await Client.ensureTable();
 
-      // set up the root access token if necessary
-      if (cfg.app.rootAccessToken) {
-        await Client.ensureRootClient(cfg.app.rootAccessToken);
-      }
+      // set up the static clients
+      await Client.syncStaticClients(cfg.app.staticClients || []);
 
       // Load everything for resolver
       await resolver.setup({
