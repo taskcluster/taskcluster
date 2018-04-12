@@ -14,7 +14,7 @@ import (
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/auth"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
 	"github.com/taskcluster/webhooktunnel/whclient"
 )
 
@@ -206,7 +206,7 @@ func makeConfigurer(clientID, accessToken, certificate string) func() (whclient.
 			AccessToken: accessToken,
 			Certificate: certificate,
 		}
-		myAuth := auth.New(creds)
+		myAuth := tcauth.New(creds)
 		whtResponse, err := myAuth.WebhooktunnelToken()
 		if err != nil {
 			return whclient.Config{}, err
