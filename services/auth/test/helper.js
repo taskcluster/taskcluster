@@ -28,7 +28,7 @@ helper.containerName = `auth-test-${uuid.v4()}`;
 
 helper.cfg = cfg;
 helper.testaccount = _.keys(cfg.app.azureAccounts)[0];
-helper.rootAccessToken = cfg.app.rootAccessToken;
+helper.rootAccessToken = '-test-access-token-';
 
 helper.hasPulseCredentials = function() {
   return cfg.pulse.hasOwnProperty('password') && cfg.pulse.password;
@@ -104,8 +104,8 @@ mocha.before(async () => {
       helper.auth = new helper.Auth({
         baseUrl:          helper.baseUrl,
         credentials: {
-          clientId:       'root',
-          accessToken:    cfg.app.rootAccessToken,
+          clientId:       'static/taskcluster/root',
+          accessToken:    helper.rootAccessToken,
         },
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
@@ -121,7 +121,7 @@ mocha.before(async () => {
       client:     testClient,
     } = await testserver({
       authBaseUrl: helper.baseUrl,
-      rootAccessToken: cfg.app.rootAccessToken,
+      rootAccessToken: helper.rootAccessToken,
     });
 
     testServer = testServer_;

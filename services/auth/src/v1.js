@@ -61,7 +61,7 @@ var api = new API({
     'Taskcluster credentials to grant access to a third-party service used',
     'by many Taskcluster components.',
   ].join('\n'),
-  name:         'auth', 
+  name:         'auth',
   schemaPrefix: 'http://schemas.taskcluster.net/auth/v1/',
   params: {
     // Patterns for auth
@@ -210,6 +210,15 @@ api.declare({
   let input     = req.body;
   let scopes    = input.scopes || [];
 
+  // Forbid changes to static clients
+  if (clientId.startsWith('static/')) {
+    return res.reportError('InputError',
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'configured clients. Contact your administrator to change static clients.',
+      {clientId},
+    );
+  }
+
   // Check scopes
   await req.authorize({clientId, scopes});
 
@@ -291,6 +300,15 @@ api.declare({
   let clientId  = req.params.clientId;
   let input     = req.body;
 
+  // Forbid changes to static clients
+  if (clientId.startsWith('static/')) {
+    return res.reportError('InputError',
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'configured clients. Contact your administrator to change static clients.',
+      {clientId},
+    );
+  }
+
   // Check scopes
   await req.authorize({clientId});
 
@@ -343,6 +361,15 @@ api.declare({
 }, async function(req, res) {
   let clientId  = req.params.clientId;
   let input     = req.body;
+
+  // Forbid changes to static clients
+  if (clientId.startsWith('static/')) {
+    return res.reportError('InputError',
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'configured clients. Contact your administrator to change static clients.',
+      {clientId},
+    );
+  }
 
   // Load client
   let client = await this.Client.load({clientId}, true);
@@ -397,6 +424,15 @@ api.declare({
 }, async function(req, res) {
   let clientId  = req.params.clientId;
 
+  // Forbid changes to static clients
+  if (clientId.startsWith('static/')) {
+    return res.reportError('InputError',
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'configured clients. Contact your administrator to change static clients.',
+      {clientId},
+    );
+  }
+
   // Check scopes
   await req.authorize({clientId});
 
@@ -439,6 +475,15 @@ api.declare({
 }, async function(req, res) {
   let clientId  = req.params.clientId;
 
+  // Forbid changes to static clients
+  if (clientId.startsWith('static/')) {
+    return res.reportError('InputError',
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'configured clients. Contact your administrator to change static clients.',
+      {clientId},
+    );
+  }
+
   // Check scopes
   await req.authorize({clientId});
 
@@ -476,6 +521,15 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   let clientId  = req.params.clientId;
+
+  // Forbid changes to static clients
+  if (clientId.startsWith('static/')) {
+    return res.reportError('InputError',
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'configured clients. Contact your administrator to change static clients.',
+      {clientId},
+    );
+  }
 
   // Check scopes
   await req.authorize({clientId});
