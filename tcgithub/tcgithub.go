@@ -82,7 +82,7 @@ func New(credentials *tcclient.Credentials) *Github {
 //
 // If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
 // authentication will be disabled.
-func NewFromEnv(credentials *tcclient.Credentials) *Github {
+func NewFromEnv() *Github {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Github{
 		Credentials:  c,

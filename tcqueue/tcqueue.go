@@ -83,7 +83,7 @@ func New(credentials *tcclient.Credentials) *Queue {
 //
 // If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
 // authentication will be disabled.
-func NewFromEnv(credentials *tcclient.Credentials) *Queue {
+func NewFromEnv() *Queue {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Queue{
 		Credentials:  c,

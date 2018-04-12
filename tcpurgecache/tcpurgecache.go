@@ -79,7 +79,7 @@ func New(credentials *tcclient.Credentials) *PurgeCache {
 //
 // If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
 // authentication will be disabled.
-func NewFromEnv(credentials *tcclient.Credentials) *PurgeCache {
+func NewFromEnv() *PurgeCache {
 	c := tcclient.CredentialsFromEnvVars()
 	return &PurgeCache{
 		Credentials:  c,

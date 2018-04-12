@@ -81,7 +81,7 @@ func New(credentials *tcclient.Credentials) *Secrets {
 //
 // If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
 // authentication will be disabled.
-func NewFromEnv(credentials *tcclient.Credentials) *Secrets {
+func NewFromEnv() *Secrets {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Secrets{
 		Credentials:  c,

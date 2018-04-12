@@ -101,7 +101,7 @@ func New(credentials *tcclient.Credentials) *AwsProvisioner {
 //
 // If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
 // authentication will be disabled.
-func NewFromEnv(credentials *tcclient.Credentials) *AwsProvisioner {
+func NewFromEnv() *AwsProvisioner {
 	c := tcclient.CredentialsFromEnvVars()
 	return &AwsProvisioner{
 		Credentials:  c,
