@@ -76,7 +76,8 @@ suite('queue/QueueService', function() {
     });
   });
 
-  test('putClaimMessage, pollClaimQueue', async () => {
+  // skipped intermittent - https://bugzilla.mozilla.org/show_bug.cgi?id=1453514
+  test.skip('putClaimMessage, pollClaimQueue', async () => {
     var taskId      = slugid.v4();
     var takenUntil  = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
