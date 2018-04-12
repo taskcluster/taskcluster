@@ -2029,7 +2029,7 @@ api.declare({
   const provisioner = await this.Provisioner.load({
     provisionerId,
     expires: Entity.op.greaterThan(new Date()),
-  });
+  }, true);
 
   if (!provisioner) {
     return res.reportError('ResourceNotFound',
@@ -2071,34 +2071,21 @@ api.declare({
 }, async function(req, res) {
   const provisionerId = req.params.provisionerId;
   const {stability, description, expires, actions} = req.body;
-  let result;
-
-  const prov = await this.Provisioner.load({provisionerId}, true);
 
   await req.authorize({
     provisionerId,
     properties: Object.keys(req.body),
   });
 
-  if (prov) {
-    result =  await prov.modify((entity) => {
-      entity.stability = stability || entity.stability;
-      entity.description = description || entity.description;
-      entity.actions = actions || entity.actions;
-      entity.expires = new Date(expires || entity.expires);
-    });
-  } else {
-    result = await this.Provisioner.create({
-      provisionerId,
-      expires: new Date(expires || taskcluster.fromNow('5 days')),
-      lastDateActive: new Date(),
-      description: description || '',
-      stability: stability || 'experimental',
-      actions: actions || [],
-    });
-  }
+  const provisioner = await this.workerInfo.upsertProvisioner({
+    provisionerId,
+    stability,
+    description,
+    expires,
+    actions,
+  });
 
-  return res.reply(result.json());
+  return res.reply(provisioner.json());
 });
 
 /** Count pending tasks for workerType */
@@ -2205,8 +2192,7 @@ api.declare({
     );
   }
 
-  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker-type') : [];
-
+  const actions = provisioner.actions.filter(action => action.context === 'worker-type');
   return res.reply(Object.assign({}, wType.json(), {actions}));
 });
 
@@ -2237,9 +2223,6 @@ api.declare({
 }, async function(req, res) {
   const {provisionerId, workerType} = req.params;
   const {stability, description, expires} = req.body;
-  let result;
-
-  const wType = await this.WorkerType.load({provisionerId, workerType}, true);
 
   await req.authorize({
     provisionerId,
@@ -2247,27 +2230,19 @@ api.declare({
     properties: Object.keys(req.body),
   });
 
-  if (wType) {
-    result = await wType.modify((entity) => {
-      entity.stability = stability || entity.stability;
-      entity.description = description || entity.description;
-      entity.expires = new Date(expires || entity.expires);
-    });
-  } else {
-    result = await this.WorkerType.create({
+  const [wType, provisioner] = await Promise.all([
+    this.workerInfo.upsertWorkerType({
       provisionerId,
       workerType,
-      expires: new Date(expires || taskcluster.fromNow('5 days')),
-      lastDateActive: new Date(),
-      description: description || '',
-      stability: stability || 'experimental',
-    });
-  }
+      stability,
+      description,
+      expires,
+    }),
+    this.workerInfo.upsertProvisioner({provisionerId}),
+  ]);
 
-  const prov = await this.Provisioner.load({provisionerId}, true);
-  const actions = prov ? prov.actions.filter(action => action.context === 'worker-type') : [];
-
-  return res.reply(Object.assign({}, result.json(), {actions}));
+  const actions = provisioner.actions.filter(action => action.context === 'worker-type');
+  return res.reply(Object.assign({}, wType.json(), {actions}));
 });
 
 /** List all active workerGroup/workerId of a workerType */
@@ -2355,18 +2330,19 @@ api.declare({
 }, async function(req, res) {
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
 
-  const [worker, provisioner] = await Promise.all([
-    await this.Worker.load({
+  const [worker, wType, provisioner] = await Promise.all([
+    this.Worker.load({
       provisionerId,
       workerType,
       workerGroup,
       workerId,
       expires: Entity.op.greaterThan(new Date()),
     }, true),
-    await this.Provisioner.load({provisionerId}, true),
+    this.WorkerType.load({provisionerId, workerType}, true),
+    this.Provisioner.load({provisionerId}, true),
   ]);
 
-  if (!worker || !provisioner) {
+  if (!worker || !wType || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
       'worker-type {{workerType}} and provisionerId {{provisionerId}} not found. ' +
@@ -2379,8 +2355,7 @@ api.declare({
     );
   }
 
-  const actions = provisioner ? provisioner.actions.filter(action => action.context === 'worker') : [];
-
+  const actions = provisioner.actions.filter(action => action.context === 'worker');
   return res.reply(Object.assign({}, worker.json(), {actions}));
 });
 
@@ -2403,7 +2378,10 @@ api.declare({
   let result;
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
   const {quarantineUntil} = req.body;
-  const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
+  const [worker, provisioner] = await Promise.all([
+    this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true),
+    this.Provisioner.load({provisionerId}, true),
+  ]);
 
   if (worker) {
     try {
@@ -2415,9 +2393,7 @@ api.declare({
     }
   }
 
-  const prov = await this.Provisioner.load({provisionerId}, true);
-  const actions = prov ? prov.actions.filter(action => action.context === 'worker') : [];
-
+  const actions = provisioner.actions.filter(action => action.context === 'worker');
   return res.reply(Object.assign({}, result.json(), {actions}));
 });
 
@@ -2446,9 +2422,6 @@ api.declare({
 }, async function(req, res) {
   const {provisionerId, workerType, workerGroup, workerId} = req.params;
   const {expires} = req.body;
-  let result;
-
-  const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
 
   await req.authorize({
     provisionerId,
@@ -2458,29 +2431,12 @@ api.declare({
     properties: Object.keys(req.body),
   });
 
-  if (worker) {
-    try {
-      result = await worker.modify((entity) => {
-        entity.expires = new Date(expires || entity.expires);
-      });
-    } catch (err) {
-      throw err;
-    }
-  } else {
-    result = await this.Worker.create({
-      provisionerId,
-      workerType,
-      workerGroup,
-      workerId,
-      recentTasks: [],
-      expires: new Date(expires || taskcluster.fromNow('1 day')),
-      quarantineUntil: new Date(),
-      firstClaim: new Date(),
-    });
-  }
+  const [worker, wType, provisioner] = await Promise.all([
+    this.workerInfo.upsertWorker({provisionerId, workerType, workerGroup, workerId, expires}),
+    this.workerInfo.upsertWorkerType({provisionerId, workerType}),
+    this.workerInfo.upsertProvisioner({provisionerId}),
+  ]);
 
-  const prov = await this.Provisioner.load({provisionerId}, true);
-  const actions = prov ? prov.actions.filter(action => action.context === 'worker') : [];
-
-  return res.reply(Object.assign({}, result.json(), {actions}));
+  const actions = provisioner.actions.filter(action => action.context === 'worker');
+  return res.reply(Object.assign({}, worker.json(), {actions}));
 });
