@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/auth"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
 )
 
-var myAuth *auth.Auth
+var myAuth *tcauth.Auth
 
 func init() {
-	myAuth = auth.New(
+	myAuth = tcauth.New(
 		&tcclient.Credentials{
 			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
