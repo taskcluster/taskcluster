@@ -8,7 +8,7 @@ package scopes
 import (
 	"strings"
 
-	"github.com/taskcluster/taskcluster-client-go/auth"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
 )
 
 type (
@@ -49,9 +49,9 @@ type (
 
 // Note, this is trivially implemented by *Auth in
 // github.com/taskcluster/taskcluster-client-go/auth package, so typically
-// auth.New(nil) will satisfy this interface.
+// tcauth.New(nil) will satisfy this interface.
 type ScopeExpander interface {
-	ExpandScopes(*auth.SetOfScopes) (*auth.SetOfScopes, error)
+	ExpandScopes(*tcauth.SetOfScopes) (*tcauth.SetOfScopes, error)
 }
 
 // Returns `true` if the given scopes satisfy the required scopes.
@@ -106,7 +106,7 @@ func (given Given) Expand(scopeExpander ScopeExpander) (expanded Given, err erro
 	return
 
 hasAssume:
-	scopes := &auth.SetOfScopes{
+	scopes := &tcauth.SetOfScopes{
 		Scopes: given,
 	}
 	s, err := scopeExpander.ExpandScopes(scopes)
