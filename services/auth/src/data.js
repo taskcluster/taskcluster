@@ -105,39 +105,87 @@ Client.prototype.json = function(resolver) {
 };
 
 /**
- * Ensure root client exists and has the given accessToken.
+ * Ensure static clients exist and remove all clients prefixed 'static/', if not
+ * in the clients given here.
  *
- * Should only be called if the app is configured with a rootAccessToken.
- * Otherwise, app should assume whatever is in the table storage is the
- * root access token, and that appropriate role is attached.
+ * Each client is given by an object:
+ *         {clientId, accessToken, description, scopes}
+ * , where description will be amended with a section explaining that this
+ * client is static and can't be modified at runtime.
  */
-Client.ensureRootClient = function(accessToken) {
-  assert(typeof accessToken === 'string',
-    'Expected accessToken to be a string');
-  // Create client resolving conflicts by overwriting
-  return this.create({
-    clientId:         'root',
-    description:      'Automatically created `root` client with star scopes ' +
-                      'for bootstrapping API access',
-    accessToken:      accessToken,
-    expires:          taskcluster.fromNow('24 hours'),
-    details: {
-      created:        new Date().toJSON(),
-      lastModified:   new Date().toJSON(),
-      lastDateUsed:   new Date().toJSON(),
-      lastRotated:    new Date().toJSON(),
-      deleteOnExpiration: false,
-    },
-    scopes:           ['*'],
-    disabled:         0,
-  }, true);
+Client.syncStaticClients = async function(clients = []) {
+  // Validate input for sanity (we hardly need perfect validation here...)
+  assert(clients instanceof Array, 'Expected clients to be am array');
+  for (const client of clients) {
+    assert(typeof client.clientId === 'string', 'expected clientId to be a string');
+    assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
+    assert(typeof client.description === 'string', 'expected description to be a string');
+    assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
+    assert(client.clientId.startsWith('static/'), 'static clients must have clientId = "static/..."');
+    assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
+  }
+
+  // description suffix to use for all static clients
+  const descriptionSuffix = [
+    '\n---\n',
+    'This is a **static client** inserted into this taskcluster deployment',
+    'through static configuration. To modify this client you must contact the',
+    'administrator who deploys this taskcluster instance.',
+  ].join('\n');
+
+  // Scan table to remove/modify entries that are out of date
+  const done = []; // list of clientIds we've already synchronized
+  await this.scan({}, {handler: async (client) => {
+    // Ignore clients that don't start with static/
+    if (!client.clientId.startsWith('static/')) {
+      return;
+    }
+
+    // Find target we should modify the client match
+    const target = clients.find(c => c.clientId === client.clientId);
+    // If client doesn't exist we delete it
+    if (!target) {
+      return client.remove(true, true);
+    }
+
+    // Ensure that client looks the way it should
+    await client.modify(client => {
+      client.accessToken = target.accessToken;
+      client.scopes = target.scopes;
+      client.description = target.description + descriptionSuffix;
+    });
+
+    // note that we've sync'ed this clientId
+    done.push(client.clientId);
+  }});
+
+  // Find clients that we haven't seen yet
+  const newClients = clients.filter(c => !done.includes(c.clientId));
+
+  // Create new clients
+  await Promise.all(newClients.map(target => {
+    return this.create({
+      clientId:     target.clientId,
+      description:  target.description + descriptionSuffix,
+      accessToken:  target.accessToken,
+      expires:      taskcluster.fromNow('1000 year'),
+      scopes:       target.scopes,
+      disabled:     0,
+      details: {
+        created:      new Date().toJSON(),
+        lastModified: new Date().toJSON(),
+        lastDateUsed: new Date().toJSON(),
+        lastRotated:  new Date().toJSON(),
+        deleteOnExpiration: false,
+      },
+    }, true);
+  }));
 };
 
 /**
  * Delete all clients that expired before `now`, unless
  * details.deleteOnExpiration is false.
  */
-
 Client.purgeExpired = async function(now = new Date()) {
   var count = 0;
   var expired = await this.scan({
