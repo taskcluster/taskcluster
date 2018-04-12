@@ -26,9 +26,9 @@ import (
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/auth"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -43,9 +43,9 @@ var (
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext *TaskContext = &TaskContext{}
-	// Queue is the object we will use for accessing queue api. See
+	// queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
-	Queue      *queue.Queue
+	queue      *tcqueue.Queue
 	config     *gwconfig.Config
 	configFile string
 	Features   []Feature
@@ -590,17 +590,9 @@ func RunWorker() (exitCode ExitCode) {
 		Certificate: config.Certificate,
 	}
 	// Queue is the object we will use for accessing queue api
-	Queue, err = queue.New(creds)
-	if err != nil {
-		log.Print("Invalid taskcluster credentials!!!")
-		panic(err)
-	}
-	Provisioner, err = awsprovisioner.New(creds)
-	if err != nil {
-		log.Print("Invalid taskcluster credentials!!!")
-		panic(err)
-	}
-	Provisioner.BaseURL = config.ProvisionerBaseURL
+	queue = tcqueue.New(creds)
+	provisioner = tcawsprovisioner.New(creds)
+	provisioner.BaseURL = config.ProvisionerBaseURL
 
 	err = initialiseFeatures()
 	if err != nil {
@@ -645,7 +637,7 @@ func RunWorker() (exitCode ExitCode) {
 
 		task := ClaimWork()
 
-		// make sure at least 5 seconds pass between queue.claimWork API calls
+		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
 		wait5Seconds := time.NewTimer(time.Second * 5)
 
 		if task != nil {
@@ -722,7 +714,7 @@ func RunWorker() (exitCode ExitCode) {
 
 // ClaimWork queries the Queue to find a task.
 func ClaimWork() *TaskRun {
-	req := &queue.ClaimWorkRequest{
+	req := &tcqueue.ClaimWorkRequest{
 		Tasks:       1,
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
@@ -731,7 +723,7 @@ func ClaimWork() *TaskRun {
 	// Store local clock time when claiming, rather than queue's claim time, to
 	// avoid problems with clock skew.
 	localClaimTime := time.Now()
-	resp, err := Queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
+	resp, err := queue.ClaimWork(config.ProvisionerID, config.WorkerType, req)
 	if err != nil {
 		log.Printf("Could not claim work. %v", err)
 		return nil
@@ -750,23 +742,20 @@ func ClaimWork() *TaskRun {
 	default:
 		log.Print("Task found")
 		taskResponse := resp.Tasks[0]
-		taskQueue, err := queue.New(
+		taskQueue := tcqueue.New(
 			&tcclient.Credentials{
 				ClientID:    taskResponse.Credentials.ClientID,
 				AccessToken: taskResponse.Credentials.AccessToken,
 				Certificate: taskResponse.Credentials.Certificate,
 			},
 		)
-		if err != nil {
-			panic(fmt.Sprintf("SERIOUS BUG: invalid credentials from queue for task %v: %v", taskResponse.Status.TaskID, err))
-		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
 			Status:            claimed,
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,
-			TaskClaimResponse: queue.TaskClaimResponse(taskResponse),
+			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
 			Artifacts:         map[string]Artifact{},
 			featureArtifacts: map[string]string{
 				logName: "Native Log",
@@ -783,8 +772,8 @@ func (task *TaskRun) setReclaimTimer() {
 	// ----------------
 	// When the worker has claimed a task, it's said to have a claim to a given
 	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil`
-	// property in the _task status structure_ returned from `queue.claimTask`
-	// and `queue.reclaimTask`. A worker must call `queue.reclaimTask` before
+	// property in the _task status structure_ returned from `tcqueue.ClaimTask`
+	// and `tcqueue.ReclaimTask`. A worker must call `tcqueue.ReclaimTask` before
 	// the claim denoted in `takenUntil` expires. It's recommended that this
 	// attempted a few minutes prior to expiration, to allow for clock drift.
 
@@ -852,7 +841,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		// If the task payload is malformed or invalid, keep in mind that the
 		// queue doesn't validate the contents of the `task.payload` property,
 		// the worker may resolve the current run by reporting an exception.
-		// When reporting an exception, using `queue.reportException` the
+		// When reporting an exception, using `tcqueue.ReportException` the
 		// worker should give a `reason`. If the worker is unable execute the
 		// task specific payload/code/logic, it should report exception with
 		// the reason `malformed-payload`.
@@ -860,7 +849,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		// This can also be used if an external resource that is referenced in
 		// a declarative nature doesn't exist. Generally, it should be used if
 		// we can be certain that another run of the task will have the same
-		// result. This differs from `queue.reportFailed` in the sense that we
+		// result. This differs from `tcqueue.ReportFailed` in the sense that we
 		// report a failure if the task specific code failed.
 		//
 		// Most tasks includes a lot of declarative steps, such as poll a
@@ -1180,7 +1169,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			log.Printf("Creating task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, auth.NewNoAuth())
+			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, tcauth.New(nil))
 			if scopeValidationErr != nil {
 				// presumably we couldn't expand assume:* scopes due to auth
 				// service unavailability

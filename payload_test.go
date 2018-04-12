@@ -9,14 +9,14 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
 
 func taskWithPayload(payload string) *TaskRun {
 	return &TaskRun{
 		TaskID: slugid.Nice(),
-		Definition: queue.TaskDefinitionResponse{
+		Definition: tcqueue.TaskDefinitionResponse{
 			Payload: json.RawMessage(payload),
 		},
 		logWriter: &bytes.Buffer{},

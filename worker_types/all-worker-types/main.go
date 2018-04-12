@@ -9,15 +9,11 @@ import (
 
 	"github.com/taskcluster/taskcluster-base-go/jsontest"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 )
 
 func main() {
-	prov, err := awsprovisioner.New(nil)
-	if err != nil {
-		panic(err)
-	}
-
+	prov := tcawsprovisioner.NewFromEnv()
 	allWorkerTypes, err := prov.ListWorkerTypes()
 	if err != nil {
 		panic(err)

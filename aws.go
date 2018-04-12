@@ -18,14 +18,14 @@ import (
 
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/httpbackoff"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 )
 
 var (
 	// not a const, because in testing we swap this out
 	EC2MetadataBaseURL = "http://169.254.169.254/latest"
 	// for querying deploymentId
-	Provisioner *awsprovisioner.AwsProvisioner
+	provisioner *tcawsprovisioner.AwsProvisioner
 )
 
 func queryUserData() (*UserData, error) {
@@ -194,7 +194,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.Region = userData.Region
 	c.ProvisionerBaseURL = userData.ProvisionerBaseURL
 
-	awsprov := awsprovisioner.AwsProvisioner{
+	awsprov := tcawsprovisioner.AwsProvisioner{
 		Authenticate: false,
 		BaseURL:      userData.ProvisionerBaseURL,
 	}
@@ -266,7 +266,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 
 func deploymentIDUpdated() bool {
 	log.Print("Checking if there is a new deploymentId...")
-	wtr, err := Provisioner.WorkerType(config.WorkerType)
+	wtr, err := provisioner.WorkerType(config.WorkerType)
 	if err != nil {
 		// can't reach provisioner - let's assume the best, and just return
 		log.Printf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)

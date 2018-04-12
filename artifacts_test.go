@@ -15,7 +15,7 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 var (
@@ -42,7 +42,7 @@ func validateArtifacts(
 				Type        string        `json:"type"`
 			}{},
 		},
-		Definition: queue.TaskDefinitionResponse{
+		Definition: tcqueue.TaskDefinitionResponse{
 			Expires: inAnHour,
 		},
 	}
@@ -484,7 +484,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
-	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)
@@ -553,7 +553,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
-	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)
@@ -612,7 +612,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
-	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)
@@ -670,7 +670,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
-	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)
@@ -728,7 +728,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
-	artifacts, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	artifacts, err := testQueue.ListArtifacts(taskID, "0", "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)
@@ -900,7 +900,7 @@ func TestUpload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot marshal task into json - %#v\n%v", cotCert.Task, err)
 	}
-	cotCertTaskRequest := &queue.TaskDefinitionRequest{}
+	cotCertTaskRequest := &tcqueue.TaskDefinitionRequest{}
 	err = json.Unmarshal(b, cotCertTaskRequest)
 	if err != nil {
 		t.Fatalf("Cannot unmarshal json into task request - %#v\n%v", string(b), err)
@@ -994,7 +994,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	// check artifact expiry matches task expiry
-	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	lar, err := testQueue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {
 		t.Fatalf("Error listing artifacts of task %v: %v", taskID, err)
 	}
@@ -1037,7 +1037,7 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 	// check artifact expiry matches task expiry
-	lar, err := myQueue.ListArtifacts(taskID, "0", "", "")
+	lar, err := testQueue.ListArtifacts(taskID, "0", "", "")
 	if err != nil {
 		t.Fatalf("Error listing artifacts of task %v: %v", taskID, err)
 	}

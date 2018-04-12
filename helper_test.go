@@ -23,7 +23,7 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 type PayloadArtifact struct {
@@ -37,7 +37,7 @@ type PayloadArtifact struct {
 var (
 	inAnHour       tcclient.Time
 	globalTestName string
-	myQueue        *queue.Queue
+	testQueue      *tcqueue.Queue
 	testdataDir    = filepath.Join(cwd, "testdata")
 )
 
@@ -68,7 +68,7 @@ func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
 	globalTestName = testName
 
-	myQueue = NewQueue(t)
+	testQueue = NewQueue(t)
 
 	return func() {
 		// note for tests that don't submit a task, they will have
@@ -80,7 +80,7 @@ func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 		}
 		taskContext = nil
 		globalTestName = ""
-		myQueue = nil
+		testQueue = nil
 		config = nil
 	}
 }
@@ -159,20 +159,15 @@ func setup(t *testing.T, testName string) (teardown func()) {
 	return teardown
 }
 
-func NewQueue(t *testing.T) (myQueue *queue.Queue) {
+func NewQueue(t *testing.T) *tcqueue.Queue {
 	// check we have all the env vars we need to run this test
 	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" || os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
-	var err error
-	myQueue, err = queue.New(nil)
-	if err != nil {
-		t.Fatalf("Invalid credentials: %v", err)
-	}
-	return
+	return tcqueue.NewFromEnv()
 }
 
-func scheduleTask(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
+func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
 	taskID = slugid.Nice()
 
 	b, err := json.Marshal(&payload)
@@ -196,7 +191,7 @@ func scheduleTask(t *testing.T, td *queue.TaskDefinitionRequest, payload Generic
 	td.Payload = payloadJSON
 
 	// submit task
-	_, err = myQueue.CreateTask(taskID, td)
+	_, err = testQueue.CreateTask(taskID, td)
 	if err != nil {
 		t.Fatalf("Could not submit task: %v", err)
 	}
@@ -219,7 +214,7 @@ func execute(t *testing.T, expectedExitCode ExitCode) {
 	}
 }
 
-func testTask(t *testing.T) *queue.TaskDefinitionRequest {
+func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 	created := time.Now().UTC()
 	// reset nanoseconds
 	created = created.Add(time.Nanosecond * time.Duration(created.Nanosecond()*-1))
@@ -227,7 +222,7 @@ func testTask(t *testing.T) *queue.TaskDefinitionRequest {
 	deadline := created.Add(15 * time.Minute)
 	// expiry in two weeks, in case we need test results
 	expires := created.AddDate(0, 0, 14)
-	return &queue.TaskDefinitionRequest{
+	return &tcqueue.TaskDefinitionRequest{
 		Created:      tcclient.Time(created),
 		Deadline:     tcclient.Time(deadline),
 		Expires:      tcclient.Time(expires),
@@ -284,7 +279,7 @@ type ExpectedArtifacts map[string]ArtifactTraits
 
 func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string, run int) {
 
-	artifacts, err := myQueue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
+	artifacts, err := testQueue.ListArtifacts(taskID, strconv.Itoa(run), "", "")
 
 	if err != nil {
 		t.Fatalf("Error listing artifacts: %v", err)
@@ -330,7 +325,7 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 }
 
 func getArtifactContent(t *testing.T, taskID string, artifact string) ([]byte, *http.Response, *http.Response, *url.URL) {
-	url, err := myQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
+	url, err := testQueue.GetLatestArtifact_SignedURL(taskID, artifact, 10*time.Minute)
 	if err != nil {
 		t.Fatalf("Error trying to fetch artifacts from Amazon...\n%s", err)
 	}
@@ -360,7 +355,7 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 	} else {
 		execute(t, TASKS_COMPLETE)
 	}
-	status, err := myQueue.Status(taskID)
+	status, err := testQueue.Status(taskID)
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
 	}
@@ -371,13 +366,13 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 	}
 }
 
-func submitAndAssert(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload, state, reason string) (taskID string) {
+func submitAndAssert(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload, state, reason string) (taskID string) {
 	taskID = scheduleTask(t, td, payload)
 	ensureResolution(t, taskID, state, reason)
 	return taskID
 }
 
-func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *queue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
 	taskID := submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	expectedArtifacts := ExpectedArtifacts{
