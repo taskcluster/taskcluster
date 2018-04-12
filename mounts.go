@@ -20,7 +20,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/purgecache"
+	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 )
 
 var (
@@ -36,7 +36,7 @@ var (
 	directoryCaches CacheMap
 	// service to call to see if any caches need to be purged. See
 	// https://docs.taskcluster.net/reference/core/purge-cache
-	pc *purgecache.PurgeCache
+	pc *tcpurgecache.PurgeCache
 	// we track this in order to reduce number of results we get back from
 	// purge cache service
 	lastQueriedPurgeCacheService time.Time
@@ -148,7 +148,7 @@ func (feature *MountsFeature) Initialise() error {
 	// if err != nil {
 	// 	return fmt.Errorf("Could not empty downloads dir %v when initialising mounts feature - error: %v", config.DownloadsDir, err)
 	// }
-	pc = purgecache.NewNoAuth()
+	pc = tcpurgecache.New(nil)
 	return nil
 }
 
@@ -590,7 +590,7 @@ func (c Content) Unmarshal(fsContent FSContent) (FSContent, error) {
 func (ac *ArtifactContent) Download() (string, error) {
 	basename := slugid.Nice()
 	file := filepath.Join(config.DownloadsDir, basename)
-	signedURL, err := Queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
+	signedURL, err := queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
 	if err != nil {
 		return "", err
 	}

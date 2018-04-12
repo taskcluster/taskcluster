@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 )
 
 const (
@@ -16,10 +16,7 @@ const (
 )
 
 func main() {
-	prov, err := awsprovisioner.New(nil)
-	if err != nil {
-		panic(err)
-	}
+	prov := tcawsprovisioner.NewFromEnv()
 	workerTypes, err := prov.ListWorkerTypes()
 	if err != nil {
 		panic(err)
@@ -74,7 +71,7 @@ func main() {
 				panic(err)
 			}
 
-			var req awsprovisioner.CreateWorkerTypeRequest
+			var req tcawsprovisioner.CreateWorkerTypeRequest
 			err = json.Unmarshal(allBytes, &req)
 			if err != nil {
 				panic(err)

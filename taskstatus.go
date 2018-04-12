@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 // Enumerate task status to aid life-cycle decision making
@@ -43,7 +43,7 @@ type TaskStatusManager struct {
 	sync.Mutex
 	task       *TaskRun
 	takenUntil tcclient.Time
-	status     queue.TaskStatusStructure
+	status     tcqueue.TaskStatusStructure
 	// callback functions to call when status changes
 	statusChangeListeners map[*TaskStatusChangeListener]bool
 	abortException        *CommandExecutionError
@@ -70,7 +70,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 	return tsm.updateStatus(
 		errored,
 		func(task *TaskRun) error {
-			ter := queue.TaskExceptionRequest{Reason: string(reason)}
+			ter := tcqueue.TaskExceptionRequest{Reason: string(reason)}
 			tsr, err := task.Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
 			if err != nil {
 				log.Printf("Not able to report exception for task %v:", task.TaskID)
@@ -144,7 +144,7 @@ func (tsm *TaskStatusManager) Reclaim() error {
 
 			task.TaskReclaimResponse = *tcrsp
 			// Don't need a mutex here, since tsm.updateStatus is already mutex-protected
-			task.Queue, err = queue.New(&tcclient.Credentials{
+			task.Queue = tcqueue.New(&tcclient.Credentials{
 				ClientID:    tcrsp.Credentials.ClientID,
 				AccessToken: tcrsp.Credentials.AccessToken,
 				Certificate: tcrsp.Credentials.Certificate,
@@ -220,7 +220,7 @@ func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 	// no scopes required for this endpoint, so can use global Queue object
 	// this is also useful if tsm.task.Queue == nil (which can happen if claim
 	// failed because task is claimed by another worker)
-	tsr, err := Queue.Status(tsm.task.TaskID)
+	tsr, err := queue.Status(tsm.task.TaskID)
 	if err != nil {
 		tsm.task.Status = unknown
 		return

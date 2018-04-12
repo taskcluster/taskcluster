@@ -4,16 +4,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 func main() {
-	myQueue, err := queue.New(nil)
-	if err != nil {
-		log.Fatalf("Invalid taskcluster credentials in environment variables: %v", err)
-	}
+	queue := tcqueue.NewFromEnv()
 	taskID := os.Getenv("TASK_ID")
-	_, err = myQueue.CancelTask(taskID)
+	_, err := queue.CancelTask(taskID)
 	if err != nil {
 		log.Fatalf("Failed to cancel task: %v", err)
 	}

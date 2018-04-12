@@ -16,25 +16,22 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/taskcluster/taskcluster-client-go/secrets"
+	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
 )
 
-var mySecrets *secrets.Secrets
+var secrets *tcsecrets.Secrets
 
 const secretsPrefix = "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/"
 
 func main() {
 	var err error
-	mySecrets, err = secrets.New(nil)
-	if err != nil {
-		log.Fatalf("Invalid credentials: %v", err)
-	}
-	s, err := mySecrets.List("", "")
+	secrets = tcsecrets.NewFromEnv()
+	s, err := secrets.List("", "")
 	if err != nil {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
 	if len(s.Secrets) == 0 {
-		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", mySecrets.Credentials.ClientID)
+		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"secrets:get:project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/*\")", secrets.Credentials.ClientID)
 	}
 	var wg sync.WaitGroup
 	workerTypeBuffers := []*bytes.Buffer{}
@@ -78,7 +75,7 @@ func shouldInclude(workerType string) bool {
 func fetchWorkerType(workerType, name string, out *bytes.Buffer) {
 	out.WriteString(fmt.Sprintf("\nWorker type: %v\n", workerType))
 	out.WriteString(strings.Repeat("=", len(workerType)+13) + "\n")
-	secret, err := mySecrets.Get(name)
+	secret, err := secrets.Get(name)
 	if err != nil {
 		out.WriteString(fmt.Sprintf("Could not read secret %v: '%v'\n", name, err))
 		return

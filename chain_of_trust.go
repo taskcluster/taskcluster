@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/openpgp/packet"
 
 	"github.com/taskcluster/taskcluster-base-go/scopes"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 const (
@@ -45,14 +45,14 @@ type CoTEnvironment struct {
 }
 
 type ChainOfTrustData struct {
-	Version     int                          `json:"chainOfTrustVersion"`
-	Artifacts   map[string]ArtifactHash      `json:"artifacts"`
-	Task        queue.TaskDefinitionResponse `json:"task"`
-	TaskID      string                       `json:"taskId"`
-	RunID       uint                         `json:"runId"`
-	WorkerGroup string                       `json:"workerGroup"`
-	WorkerID    string                       `json:"workerId"`
-	Environment CoTEnvironment               `json:"environment"`
+	Version     int                            `json:"chainOfTrustVersion"`
+	Artifacts   map[string]ArtifactHash        `json:"artifacts"`
+	Task        tcqueue.TaskDefinitionResponse `json:"task"`
+	TaskID      string                         `json:"taskId"`
+	RunID       uint                           `json:"runId"`
+	WorkerGroup string                         `json:"workerGroup"`
+	WorkerID    string                         `json:"workerId"`
+	Environment CoTEnvironment                 `json:"environment"`
 }
 
 type ChainOfTrustTaskFeature struct {

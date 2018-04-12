@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 )
 
 type AWSSecrets struct {
@@ -28,11 +28,7 @@ type OCCManifest struct {
 }
 
 func main() {
-	prov, err := awsprovisioner.New(nil)
-	if err != nil {
-		panic(err)
-	}
-
+	prov := tcawsprovisioner.NewFromEnv()
 	allWorkerTypes, err := prov.ListWorkerTypes()
 	if err != nil {
 		panic(err)

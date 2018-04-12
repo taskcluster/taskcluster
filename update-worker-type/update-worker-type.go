@@ -14,8 +14,8 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/awsprovisioner"
-	"github.com/taskcluster/taskcluster-client-go/secrets"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
 )
 
 func gitRevision(dir string) string {
@@ -46,10 +46,7 @@ func main() {
 	workerType := filepath.Base(absFile)
 	secretName := "project/taskcluster/aws-provisioner-v1/worker-types/ssh-keys/" + workerType
 
-	awsProv, err := awsprovisioner.New(nil)
-	if err != nil {
-		log.Fatalf("Invalid credentials: %v", err)
-	}
+	awsProv := tcawsprovisioner.NewFromEnv()
 	cdv := tcclient.Client(*awsProv)
 	cd := &cdv
 
@@ -125,19 +122,16 @@ func main() {
 		log.Printf("WARNING: not updating all AMIs for worker type %v - only %v of %v", workerType, newAMICount, len(regions))
 	}
 
-	mySecrets, err := secrets.New(nil)
-	if err != nil {
-		log.Fatalf("Invalid credentials: %v", err)
-	}
+	secrets := tcsecrets.NewFromEnv()
 
 	secBytes, err := json.Marshal(sshSecret)
 	if err != nil {
 		log.Fatalf("Could not convert secret %#v to json: %v", sshSecret, err)
 	}
 
-	err = mySecrets.Set(
+	err = secrets.Set(
 		secretName,
-		&secrets.Secret{
+		&tcsecrets.Secret{
 			Expires: tcclient.Time(time.Now().AddDate(1, 0, 0)),
 			Secret:  json.RawMessage(secBytes),
 		},
@@ -145,7 +139,7 @@ func main() {
 	if err != nil {
 		log.Printf("Problem publishing new secrets: %v", err)
 	}
-	s, err := mySecrets.Get(secretName)
+	s, err := secrets.Get(secretName)
 	if err != nil {
 		log.Fatalf("Error retrieving secret: %v", err)
 	}

@@ -7,19 +7,19 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/process"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 type (
 
 	// TaskId and RunId are taken from the json encoding of
 	TaskRun struct {
-		TaskID              string                       `json:"taskId"`
-		RunID               uint                         `json:"runId"`
-		TaskClaimResponse   queue.TaskClaimResponse      `json:"-"`
-		TaskReclaimResponse queue.TaskReclaimResponse    `json:"-"`
-		Definition          queue.TaskDefinitionResponse `json:"-"`
-		Payload             GenericWorkerPayload         `json:"-"`
+		TaskID              string                         `json:"taskId"`
+		RunID               uint                           `json:"runId"`
+		TaskClaimResponse   tcqueue.TaskClaimResponse      `json:"-"`
+		TaskReclaimResponse tcqueue.TaskReclaimResponse    `json:"-"`
+		Definition          tcqueue.TaskDefinitionResponse `json:"-"`
+		Payload             GenericWorkerPayload           `json:"-"`
 		// Artifacts is a map from artifact name to artifact
 		Artifacts map[string]Artifact `json:"-"`
 		Status    TaskStatus          `json:"-"`
@@ -29,7 +29,7 @@ type (
 		logWriter          io.Writer
 		reclaimTimer       *time.Timer
 		maxRunTimeDeadline time.Time
-		Queue              *queue.Queue       `json:"-"`
+		Queue              *tcqueue.Queue     `json:"-"`
 		StatusManager      *TaskStatusManager `json:"-"`
 		LocalClaimTime     time.Time          `json:"-"`
 		// This is a map of artifact names to internal feature names for

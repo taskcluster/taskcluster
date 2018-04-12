@@ -20,7 +20,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/queue"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 var (
@@ -82,7 +82,7 @@ func (artifact *RedirectArtifact) ProcessResponse(response interface{}, task *Ta
 }
 
 func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
-	return &queue.RedirectArtifactRequest{
+	return &tcqueue.RedirectArtifactRequest{
 		ContentType: redirectArtifact.ContentType,
 		Expires:     redirectArtifact.Expires,
 		StorageType: "reference",
@@ -91,7 +91,7 @@ func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
 }
 
 func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
-	return new(queue.RedirectArtifactResponse)
+	return new(tcqueue.RedirectArtifactResponse)
 }
 
 func (artifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
@@ -101,7 +101,7 @@ func (artifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskR
 }
 
 func (errArtifact *ErrorArtifact) RequestObject() interface{} {
-	return &queue.ErrorArtifactRequest{
+	return &tcqueue.ErrorArtifactRequest{
 		Expires:     errArtifact.Expires,
 		Message:     errArtifact.Message,
 		Reason:      errArtifact.Reason,
@@ -110,7 +110,7 @@ func (errArtifact *ErrorArtifact) RequestObject() interface{} {
 }
 
 func (errArtifact *ErrorArtifact) ResponseObject() interface{} {
-	return new(queue.ErrorArtifactResponse)
+	return new(tcqueue.ErrorArtifactResponse)
 }
 
 func (errArtifact *ErrorArtifact) String() string {
@@ -182,7 +182,7 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 }
 
 func (artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
-	response := resp.(*queue.S3ArtifactResponse)
+	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	artifact.ChooseContentEncoding()
 	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", artifact.Name, artifact.Path, artifact.ContentEncoding, artifact.ContentType, artifact.Expires)
@@ -249,7 +249,7 @@ func (artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (er
 }
 
 func (s3Artifact *S3Artifact) RequestObject() interface{} {
-	return &queue.S3ArtifactRequest{
+	return &tcqueue.S3ArtifactRequest{
 		ContentType: s3Artifact.ContentType,
 		Expires:     s3Artifact.Expires,
 		StorageType: "s3",
@@ -257,7 +257,7 @@ func (s3Artifact *S3Artifact) RequestObject() interface{} {
 }
 
 func (s3Artifact *S3Artifact) ResponseObject() interface{} {
-	return new(queue.S3ArtifactResponse)
+	return new(tcqueue.S3ArtifactResponse)
 }
 
 func (s3Artifact *S3Artifact) String() string {
@@ -428,7 +428,7 @@ func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
 	if err != nil {
 		panic(err)
 	}
-	par := queue.PostArtifactRequest(json.RawMessage(payload))
+	par := tcqueue.PostArtifactRequest(json.RawMessage(payload))
 	parsp, err := task.Queue.CreateArtifact(
 		task.TaskID,
 		strconv.Itoa(int(task.RunID)),

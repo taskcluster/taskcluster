@@ -35,7 +35,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	// check uploaded log mentions abortion
 	// note: we do this rather than local log, to check also log got uploaded
 	// as failure path requires that task is resolved before logs are uploaded
-	url, err := myQueue.GetLatestArtifact_SignedURL(taskID, "public/logs/live_backing.log", 10*time.Minute)
+	url, err := testQueue.GetLatestArtifact_SignedURL(taskID, "public/logs/live_backing.log", 10*time.Minute)
 	if err != nil {
 		t.Fatalf("Cannot retrieve url for live_backing.log: %v", err)
 	}

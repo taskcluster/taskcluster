@@ -13,10 +13,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/taskcluster/taskcluster-client-go/secrets"
+	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
 )
 
-var mySecrets *secrets.Secrets
+var secrets *tcsecrets.Secrets
 
 const secretsPrefix = "repo:github.com/mozilla-releng/OpenCloudConfig:"
 
@@ -78,16 +78,13 @@ func RelOpsPassword(region string, instance *ec2.Instance, s RelOpsWorkerTypeSec
 
 func main() {
 	var err error
-	mySecrets, err = secrets.New(nil)
-	if err != nil {
-		log.Fatalf("Invalid credentials in environment variables: '%v'", err)
-	}
-	s, err := mySecrets.List("", "")
+	secrets = tcsecrets.NewFromEnv()
+	s, err := secrets.List("", "")
 	if err != nil {
 		log.Fatalf("Could not read secrets: '%v'", err)
 	}
 	if len(s.Secrets) == 0 {
-		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"%v*\")", mySecrets.Credentials.ClientID, secretsPrefix)
+		log.Fatalf("Taskcluster secrets service returned zero secrets, but auth did not fail, so it seems your client (%v) does not have scopes\nfor getting existing secrets (recommended: \"%v*\")", secrets.Credentials.ClientID, secretsPrefix)
 	}
 	var wg sync.WaitGroup
 	workerTypeBuffers := []*bytes.Buffer{}
@@ -131,7 +128,7 @@ func shouldInclude(workerType string) bool {
 func fetchWorkerType(workerType, name string, out *bytes.Buffer) {
 	out.WriteString(fmt.Sprintf("\nWorker type: %v\n", workerType))
 	out.WriteString(strings.Repeat("=", len(workerType)+13) + "\n")
-	secret, err := mySecrets.Get(name)
+	secret, err := secrets.Get(name)
 	if err != nil {
 		out.WriteString(fmt.Sprintf("Could not read secret %v: '%v'\n", name, err))
 		return
