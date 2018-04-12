@@ -190,6 +190,83 @@ class WorkerInfo {
       ].slice(-RECENT_TASKS_LIMIT);
     });
   }
+
+  async upsertProvisioner({provisionerId, stability, description, actions, expires}) {
+    const provisioner = await this.Provisioner.load({provisionerId}, true);
+    let result;
+
+    if (provisioner) {
+      result = await provisioner.modify((entity) => {
+        entity.stability = stability || entity.stability;
+        entity.description = description || entity.description;
+        entity.actions = actions || entity.actions;
+        entity.expires = new Date(expires || entity.expires);
+      });
+    } else {
+      result = await this.Provisioner.create({
+        provisionerId,
+        expires: new Date(expires || taskcluster.fromNow('5 days')),
+        lastDateActive: new Date(),
+        description: description || '',
+        stability: stability || 'experimental',
+        actions: actions || [],
+      });
+    }
+
+    return result;
+  }
+
+  async upsertWorkerType({provisionerId, workerType, stability, description, expires}) {
+    const wType = await this.WorkerType.load({provisionerId, workerType}, true);
+    let result;
+
+    if (wType) {
+      result = await wType.modify((entity) => {
+        entity.stability = stability || entity.stability;
+        entity.description = description || entity.description;
+        entity.expires = new Date(expires || entity.expires);
+      });
+    } else {
+      result = await this.WorkerType.create({
+        provisionerId,
+        workerType,
+        expires: new Date(expires || taskcluster.fromNow('5 days')),
+        lastDateActive: new Date(),
+        description: description || '',
+        stability: stability || 'experimental',
+      });
+    }
+
+    return result;
+  }
+
+  async upsertWorker({provisionerId, workerType, workerGroup, workerId, expires}) {
+    const worker = await this.Worker.load({provisionerId, workerType, workerGroup, workerId}, true);
+    let result;
+
+    if (worker) {
+      try {
+        result = await worker.modify((entity) => {
+          entity.expires = new Date(expires || entity.expires);
+        });
+      } catch (err) {
+        throw err;
+      }
+    } else {
+      result = await this.Worker.create({
+        provisionerId,
+        workerType,
+        workerGroup,
+        workerId,
+        recentTasks: [],
+        expires: new Date(expires || taskcluster.fromNow('1 day')),
+        quarantineUntil: new Date(),
+        firstClaim: new Date(),
+      });
+    }
+
+    return result;
+  }
 }
 
 module.exports = WorkerInfo;
