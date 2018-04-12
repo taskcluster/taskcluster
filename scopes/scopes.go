@@ -48,7 +48,7 @@ type (
 )
 
 // Note, this is trivially implemented by *Auth in
-// github.com/taskcluster/taskcluster-client-go/auth package, so typically
+// github.com/taskcluster/taskcluster-client-go/tcauth package, so typically
 // tcauth.New(nil) will satisfy this interface.
 type ScopeExpander interface {
 	ExpandScopes(*tcauth.SetOfScopes) (*tcauth.SetOfScopes, error)
