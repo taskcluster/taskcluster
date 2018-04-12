@@ -110,10 +110,6 @@ var api = new API({
     runId:            RUN_ID_PATTERN,
     name:             /^[\x20-\x7e]+$/, // Artifact names must be printable ASCII
   },
-  errorCodes: {
-    // TODO: Remove this when upgrading to new taskcluster-lib-api
-    InputError:       400,  // Any hand coded validation errors
-  },
   context: [
     'Task',               // data.Task instance
     'Artifact',           // data.Artifact instance
