@@ -53,7 +53,6 @@ func (feature *RDPFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 }
 
 func (l *RDPTask) RequiredScopes() scopes.Required {
-	// let's not require any scopes, as I see no reason to control access to this feature
 	return scopes.Required{
 		{
 			"generic-worker:allow-rdp:" + l.task.Definition.ProvisionerID + "/" + l.task.Definition.WorkerType,
