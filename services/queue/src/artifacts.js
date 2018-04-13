@@ -440,7 +440,7 @@ api.declare({
       break;
     case 's3':
       // Reply with signed S3 URL
-      var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+      var expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
       var bucket = null;
       if (artifact.details.bucket === this.publicBucket.bucket) {
         bucket = this.publicBucket;
@@ -452,7 +452,7 @@ api.declare({
       var putUrl = await bucket.createPutUrl(
         artifact.details.prefix, {
           contentType:      artifact.contentType,
-          expires:          30 * 60 + 10, // Add 10 sec for clock drift
+          expires:          45 * 60 + 10, // Add 10 sec for clock drift
         },
       );
       return res.reply({
