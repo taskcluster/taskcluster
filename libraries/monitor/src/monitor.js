@@ -21,6 +21,12 @@ class Monitor {
       tags = level;
       level = 'error';
     }
+
+    if (!this._opts.enable) {
+      console.log('reportError - level: %s, tags: %j\n', level, tags, err);
+      return;
+    }
+
     this._sentry = this._sentry.then(async (sentry) => {
       if (!sentry.expires || Date.parse(sentry.expires) <= Date.now()) {
         let sentryInfo = await this._sentryDSN(this._opts.project);
@@ -77,16 +83,20 @@ class Monitor {
   }
 
   count(key, val) {
-    this._statsum.count(key, val || 1);
+    if (this._statsum) {
+      this._statsum.count(key, val || 1);
+    }
   }
 
   measure(key, val) {
-    this._statsum.measure(key, val);
+    if (this._statsum) {
+      this._statsum.measure(key, val);
+    }
   }
 
   async flush() {
     await Promise.all([
-      this._statsum.flush(),
+      this._statsum && this._statsum.flush(),
       this._auditlog.flush(),
     ]);
   }
@@ -97,7 +107,7 @@ class Monitor {
     return new Monitor(
       this._sentryDSN,
       this._sentry,
-      this._statsum.prefix(prefix),
+      this._statsum && this._statsum.prefix(prefix),
       this._auditlog,
       newopts
     );
