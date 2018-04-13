@@ -103,7 +103,7 @@ func (self *StreamHandle) WriteTo(target io.Writer) (n int64, err error) {
 	// processing begins...
 	if self.stream.Ended || self.Offset >= self.Stop {
 		log.Printf(
-			"Ending stream | ended: %v | offset: %d | stop: %s",
+			"Ending stream | ended: %v | offset: %d | stop: %v",
 			self.Offset, self.Stop, self.stream.Ended,
 		)
 		return int64(self.Offset), nil
