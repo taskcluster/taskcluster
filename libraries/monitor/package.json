@@ -9,7 +9,7 @@
     "lint": "eslint src/*.js test/*.js",
     "prepublish": "yarn compile",
     "pretest": "yarn lint && yarn compile",
-    "test": "mocha .test/*_test.js"
+    "test": "mocha --exit .test/*_test.js"
   },
   "files": [
     "lib"
@@ -33,6 +33,7 @@
     "aws-sdk-mock": "^1.7.0",
     "babel-compile": "^2.0.0",
     "babel-preset-taskcluster": "^3.0.0",
+    "capture-console": "^1.0.1",
     "eslint-config-taskcluster": "^3.0.0",
     "mocha": "4.0.1",
     "mock-aws-s3": "^2.6.0",
