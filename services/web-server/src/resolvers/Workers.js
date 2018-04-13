@@ -1,4 +1,11 @@
 export default {
+  LatestTask: {
+    async run(parent, args, { loaders }) {
+      const status = await loaders.status.load(parent.taskId);
+
+      return status.runs[parent.runId];
+    },
+  },
   Worker: {
     latestTasks(parent, args, { loaders }) {
       return loaders.task.loadMany(
