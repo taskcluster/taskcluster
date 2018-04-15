@@ -7,6 +7,9 @@ let Statsum = require('statsum');
 let MockMonitor = require('./mockmonitor');
 let Monitor = require('./monitor');
 let auditlogs = require('./auditlogs');
+let rootdir = require('app-root-dir');
+let fs = require('fs');
+let path = require('path');
 
 /**
  * Create a new monitor, given options:
@@ -30,6 +33,8 @@ let auditlogs = require('./auditlogs');
  *   // s3 creds directly for now
  *   aws: {credentials: {accessKeyId, secretAccessKey}},
  *   logName: '', // name of audit log
+ *   gitVersion: undefined, // git version (for correlating errors); or..
+ *   gitVersionFile: '.git-version', // file containing git version (relative to app root)
  * }
  */
 async function monitor(options) {
@@ -44,6 +49,7 @@ async function monitor(options) {
     enable: true,
     logName: null,
     aws: null,
+    gitVersionFile: '.git-version',
   });
   assert(options.authBaseUrl || options.credentials || options.statsumToken && options.sentryDSN ||
          options.mock || !options.enable,
@@ -95,6 +101,18 @@ async function monitor(options) {
     auditlog = new auditlogs.NoopLog();
   }
   await auditlog.setup();
+
+  // read gitVersionFile, if gitVersion is not set
+  let gitVersion;
+  if (!options.gitVersion) {
+    let gitVersionFile = path.resolve(rootdir.get(), options.gitVersionFile);
+    try {
+      options.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
+    } catch (err) {
+      // ignore error - we just get no gitVersion
+    }
+  }
+  delete options.gitVersionFile;
 
   let m = new Monitor(sentryDSN, null, statsum, auditlog, options);
 
