@@ -19,6 +19,7 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-monitor.git"
   },
   "dependencies": {
+    "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.30.0",
     "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
