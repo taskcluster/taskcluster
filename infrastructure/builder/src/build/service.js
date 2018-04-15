@@ -164,6 +164,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
       const provides = {
         [`service-${name}-built-app-dir`]: appDir,
       };
+      const revision = requirements[`repo-${name}-exact-source`].split('#')[1];
 
       // if we've already built this appDir with this revision, we're done.
       if (dirStamped({dir: appDir, sources: requirements[`repo-${name}-exact-source`]})) {
@@ -210,6 +211,10 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
           `${appDir}:/app`,
           `${envDir}:/env`,
           `${cacheDir}:/cache`,
+        ],
+        env: [
+          `STACK=${repository.service.stack}`,
+          `SOURCE_VERSION=${revision}`,
         ],
         logfile: `${workDir}/compile.log`,
         utils,
