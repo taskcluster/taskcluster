@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-monitor",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Make it easy to hook up monitoring and metrics for taskcluster services.",
   "license": "MPL-2.0",
