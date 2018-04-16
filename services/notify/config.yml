@@ -13,7 +13,10 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
 
-  server:
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
+  server :
     port:             !env:number PORT
     publicUrl:        !env PUBLIC_URL
     env:              !env NODE_ENV
@@ -62,6 +65,8 @@ test:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
+  monitoring:
+    enable: false
   server:
     publicUrl:        http://localhost:60401
     port:             60401
