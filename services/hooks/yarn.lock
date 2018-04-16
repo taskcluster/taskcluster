@@ -2397,10 +2397,11 @@ taskcluster-lib-loader@2.0.0:
     promise "^8.0.1"
     topo-sort "^1.0.0"
 
-taskcluster-lib-monitor@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-monitor/-/taskcluster-lib-monitor-5.2.0.tgz#9d621f5799f075f294135b98da71db7a390b7823"
+taskcluster-lib-monitor@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-monitor/-/taskcluster-lib-monitor-5.3.0.tgz#2785423f6199cd36948460ce366f9702373088cb"
   dependencies:
+    app-root-dir "^1.0.2"
     aws-sdk "^2.30.0"
     babel-runtime "^6.26.0"
     bluebird "^3.5.1"
