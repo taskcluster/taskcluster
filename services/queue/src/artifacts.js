@@ -496,25 +496,12 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
     return res.reportError('ResourceNotFound', 'Artifact not found', {});
   }
 
-  // Some downloading utilities need to know the artifact's storage type to be
-  // able to handle their downloads most correctly.  We're going to set this
-  // field on all artifact responses so that the downloading utilities can use
-  // slightly different logic for each artifact type
-  res.set('x-taskcluster-artifact-storage-type', artifact.storageType);
-
   if (artifact.storageType === 'blob') {
     // Most of the time, the same base options are used.
     let getOpts = {
       bucket: artifact.details.bucket,
       key: artifact.details.key,
     };
-
-    res.set('x-taskcluster-location-content-sha256', artifact.details.contentSha256);
-    res.set('x-taskcluster-location-content-length', artifact.details.contentLength);
-    res.set('x-taskcluster-location-transfer-sha256', artifact.details.transferSha256);
-    res.set('x-taskcluster-location-transfer-length', artifact.details.transferLength);
-    res.set('x-taskcluster-location-content-encoding', artifact.details.contentEncoding || 'identity');
-    res.set('x-taskcluster-location-content-type', artifact.details.contentType);
 
     // TODO: We should consider doing a HEAD on all resources and verifying that
     // the ETag they have matches the one that we received when creating the artifact.
@@ -543,33 +530,15 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
     var bucket = artifact.details.bucket;
 
     if (bucket === this.publicBucket.bucket) {
-
-      // We have some headers to skip the Cache (cloud-mirror) and to skip the
-      // CDN (cloudfront) for those requests which require it
       let skipCacheHeader = (req.headers['x-taskcluster-skip-cache'] || '').toLowerCase();
-      let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
-      
-      let skipCache = false;
-      if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
-        skipCache = true;
-      }
-
-      let skipCDN = false;
-      if (skipCDNHeader === 'true' || skipCDNHeader === '1') {
-        skipCDN = true;
-      }
-
-      // When we're getting a request from the region we're serving artifacts
-      // from, we want to skip both CDN and Cache always
-      if (region && this.artifactRegion === region) {
-        skipCDN = true;
-        skipCache = true;
-      }
-
-      if (skipCache && skipCDN) {
+      if (!region) {
+        debug('artifact from CDN for ip: %s', req.headers['x-forwarded-for']);
+        url = this.publicBucket.createGetUrl(prefix);
+      } else if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
+        // Skip cache and go to cloud-front
+        url = this.publicBucket.createGetUrl(prefix);
+      } else if (this.artifactRegion === region) {
         url = this.publicBucket.createGetUrl(prefix, true);
-      } else if (skipCache || !region) {
-        url = this.publicBucket.createGetUrl(prefix, false);
       } else {
         var canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
         // We need to build our url path appropriately.  Note that we URL
@@ -588,6 +557,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
           host: this.cloudMirrorHost,
           pathname: cloudMirrorPath,
         });
+
       }
     } else if (bucket === this.privateBucket.bucket) {
       url = await this.privateBucket.createSignedGetUrl(prefix, {
@@ -805,67 +775,7 @@ api.declare({
     '**API Clients**, this method will redirect you to the artifact, if it is',
     'stored externally. Either way, the response may not be JSON. So API',
     'client users might want to generate a signed URL for this end-point and',
-    'use that URL with an HTTP client that can handle responses correctly.',
-    '',
-    '**Downloading artifacts**',
-    'There are some special considerations for those http clients which download',
-    'artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1',
-    'compliant client, but has extra features to ensure the download is valid.',
-    'It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),',
-    'taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with',
-    'artifacts.',
-    '',
-    'In order to download an artifact the following must be done:',
-    '',
-    '1. Obtain queue url.  Building a signed url with a taskcluster client is',
-    'recommended',
-    '1. Make a GET request which does not follow redirects',
-    '1. In all cases, if specified, the',
-    'x-taskcluster-location-{content,transfer}-{sha256,length} values must be',
-    'validated to be equal to the Content-Length and Sha256 checksum of the',
-    'final artifact downloaded. as well as any intermediate redirects',
-    '1. If this response is a 500-series error, retry using an exponential',
-    'backoff.  No more than 5 retries should be attempted',
-    '1. If this response is a 400-series error, treat it appropriately for',
-    'your context.  This might be an error in responding to this request or',
-    'an Error storage type body.  This request should not be retried.',
-    '1. If this response is a 200-series response, the response body is the artifact.',
-    'If the x-taskcluster-location-{content,transfer}-{sha256,length} and',
-    'x-taskcluster-location-content-encoding are specified, they should match',
-    'this response body',
-    '1. If the response type is a 300-series redirect, the artifact will be at the',
-    'location specified by the `Location` header.  There are multiple artifact storage',
-    'types which use a 300-series redirect.',
-    '1. For all redirects followed, the user must verify that the content-sha256, content-length,',
-    'transfer-sha256, transfer-length and content-encoding match every further request.  The final',
-    'artifact must also be validated against the values specified in the original queue response',
-    '1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`',
-    'must not occur',
-    '1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not',
-    'have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length',
-    'must be treated as an error',
-    '',
-    '**Headers**',
-    'The following important headers are set on the response to this method:',
-    '',
-    '* location: the url of the artifact if a redirect is to be performed',
-    '* x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error',
-    '',
-    'The following important headers are set on responses to this method for Blob artifacts',
-    '',
-    '* x-taskcluster-location-content-sha256: the SHA256 of the artifact',
-    '*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})',
-    '* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding',
-    'is undone',
-    '* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact',
-    '*before* any content-encoding is undone.  This is the SHA256 of what is sent over',
-    'the wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})',
-    '* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding',
-    'is undone',
-    '* x-taskcluster-location-content-encoding: the content-encoding used.  It will either',
-    'be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact',
-    'was created and no content-negotiation occurs',
-    '* x-taskcluster-location-content-type: the content-type of the artifact',
+    'use that URL with a normal HTTP client.',
     '',
     '**Caching**, artifacts may be cached in data centers closer to the',
     'workers in-order to reduce bandwidth costs. This can lead to longer',

@@ -79,7 +79,6 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
  */
 Bucket.prototype.createGetUrl = function(prefix, forceS3 = false) {
   assert(prefix, 'prefix must be given');
-  prefix = encodeURIComponent(prefix);
   if (this.bucketCDN && !forceS3) {
     return `${this.bucketCDN}/${prefix}`;
   }
@@ -98,7 +97,6 @@ Bucket.prototype.createSignedGetUrl = function(prefix, options) {
   assert(prefix,                'prefix must be given');
   assert(options,               'options must be given');
   assert(options.expires,       'expires must be given');
-  prefix = encodeURIComponent(prefix);
   return new Promise((accept, reject) => {
     this.s3.getSignedUrl('getObject', {
       Key:          prefix,
