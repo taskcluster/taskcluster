@@ -38,6 +38,7 @@ suite('Artifacts', function() {
       res = err.response;
     }
     assume(res.statusCode).equals(303);
+    debug(`redirect ${url} --> ${res.headers.location}`);
     return request.get(res.headers.location);
   };
 
@@ -462,7 +463,7 @@ suite('Artifacts', function() {
     });
   });
 
-  test('Post S3 artifact', async () => {
+  test('Post Public S3 artifact', async () => {
     var taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -492,6 +493,16 @@ suite('Artifacts', function() {
 
     debug('### Download Artifact (runId: 0)');
     var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json',
+    );
+    debug('Fetching artifact from: %s', url);
+    res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: 'Hello World'});
+
+    debug('### Download Artifact Signed URL (runId: 0)');
+    var url = helper.queue.buildSignedUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -585,6 +596,16 @@ suite('Artifacts', function() {
 
     debug('### Download Artifact (runId: 0)');
     var url = helper.queue.buildUrl(
+      helper.queue.getArtifact,
+      taskId, 0, 'public/s3.json',
+    );
+    debug('Fetching artifact from: %s', url);
+    res = await getWith303Redirect(url);
+    assume(res.ok).is.ok();
+    assume(res.body).to.be.eql({message: 'Hello World'});
+
+    debug('### Download Artifact Signed URL (runId: 0)');
+    var url = helper.queue.buildSignedUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
