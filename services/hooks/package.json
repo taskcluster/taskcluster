@@ -29,7 +29,7 @@
     "taskcluster-lib-app": "3.0.0",
     "taskcluster-lib-docs": "^4.2.1",
     "taskcluster-lib-loader": "2.0.0",
-    "taskcluster-lib-monitor": "^5.2.0",
+    "taskcluster-lib-monitor": "^5.3.0",
     "taskcluster-lib-validate": "^3.0.1",
     "typed-env-config": "^1.1.1"
   },
