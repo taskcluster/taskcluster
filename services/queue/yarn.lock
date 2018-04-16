@@ -2048,9 +2048,9 @@ regenerator-runtime@^0.11.0:
   version "0.11.1"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
 
-remotely-signed-s3@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/remotely-signed-s3/-/remotely-signed-s3-3.1.0.tgz#afc522e2189fd60073761851475a802569a16dba"
+remotely-signed-s3@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/remotely-signed-s3/-/remotely-signed-s3-3.2.0.tgz#d15de4293c571b6bd4e8cd5e09eb9bd0fcf3b66b"
   dependencies:
     aws4 "^1.6.0"
     babel-runtime "^6.23.0"
