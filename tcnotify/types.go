@@ -10,6 +10,10 @@ import (
 type (
 	// Request to post a message on IRC.
 	//
+	// One of:
+	//   * Var
+	//   * Var1
+	//
 	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#
 	PostIRCMessageRequest struct {
 

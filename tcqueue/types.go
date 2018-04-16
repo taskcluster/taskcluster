@@ -882,11 +882,25 @@ type (
 
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
 	//
+	// One of:
+	//   * BlobArtifactRequest
+	//   * S3ArtifactRequest
+	//   * AzureArtifactRequest
+	//   * RedirectArtifactRequest
+	//   * ErrorArtifactRequest
+	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
 	PostArtifactRequest json.RawMessage
 
 	// Response to a request for posting an artifact.
 	// Note that the `storageType` property is referenced in the request as well.
+	//
+	// One of:
+	//   * BlobArtifactResponse
+	//   * S3ArtifactResponse
+	//   * AzureArtifactResponse
+	//   * RedirectArtifactResponse
+	//   * ErrorArtifactResponse
 	//
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
 	PostArtifactResponse json.RawMessage

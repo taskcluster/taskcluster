@@ -446,6 +446,10 @@ type (
 		// Host for which the request came in, this is typically the `Host` header
 		// excluding the port if any.
 		//
+		// Any of:
+		//   * Var2
+		//   * Var3
+		//
 		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host
 		Host string `json:"host"`
 
@@ -501,6 +505,10 @@ type (
 	}
 
 	// Response from a request to authenticate a hawk request.
+	//
+	// One of:
+	//   * AuthenticationSuccessfulResponse
+	//   * AuthenticationFailedResponse
 	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
 	HawkSignatureAuthenticationResponse json.RawMessage

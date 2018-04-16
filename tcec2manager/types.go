@@ -134,6 +134,11 @@ type (
 		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
 		Key string `json:"key,omitempty"`
 
+		// One of:
+		//   * Var
+		//   * Var1
+		//   * Var2
+		//
 		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
 		Restriction json.RawMessage `json:"restriction,omitempty"`
 	}

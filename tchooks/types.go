@@ -258,6 +258,11 @@ type (
 		// Information about the last time this hook fired.  This property is only present
 		// if the hook has fired at least once.
 		//
+		// One of:
+		//   * SuccessfulFire
+		//   * FailedFire
+		//   * NoFire
+		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire
 		LastFire json.RawMessage `json:"lastFire"`
 

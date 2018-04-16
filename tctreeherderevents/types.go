@@ -321,6 +321,11 @@ type (
 			URL string `json:"url"`
 		} `json:"logs,omitempty"`
 
+		// One of:
+		//   * HGPush
+		//   * HGPushLegacy
+		//   * GithubPullRequest
+		//
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin
 		Origin json.RawMessage `json:"origin"`
 
