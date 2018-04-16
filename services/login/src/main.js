@@ -31,7 +31,8 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: 'taskcluster-login',
+      project: cfg.monitoring.project || 'taskcluster-login',
+      enable: cfg.monitoring.enable,
       credentials: cfg.app.credentials,
       mock: profile !== 'production',
       process,
