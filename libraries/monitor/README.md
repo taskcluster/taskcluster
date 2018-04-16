@@ -57,6 +57,9 @@ The available options are:
     usage of the process will be reported on an interval. Note: This can also be
     turned on by monitor.resources(...) later if wanted.  That allows for
     gracefully stopping as well.
+ * `statsumToken` - a function that will return a Statsum token (`async (project) => {token, expires, baseUrl}`); the default value uses `credentials` to fetch a token from the Auth service.
+ * `sentryDSN` - a function that will return a Sentry DSN (`async (project) => {dsn: {secret: '...'}, expires}`); the default value uses `credentials` to fetch a DSN from the Auth service.
+ * `sentryOptions`:options given to the [raven.Client constructor](https://docs.sentry.io/clients/node/config/)
  * `mock` - If true, the monitoring object will be a fake that stores data for testing but does not report it (for testing).
  * `enable` - If false, the monitoring object will only report to the console (but not store data; for deployments without monitoring)
  * `aws` - If provided, these should be of the form `{credentials: {accessKeyId: '...', secretAccessKey: '...'}, region: '...'}`
