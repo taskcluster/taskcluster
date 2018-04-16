@@ -318,6 +318,24 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 	if maximum := jsonSubSchema.Maximum; maximum != nil {
 		metadata += "// Maximum:    " + strconv.Itoa(*maximum) + "\n"
 	}
+	if allOf := jsonSubSchema.AllOf; allOf != nil {
+		metadata += "// All of:\n"
+		for _, o := range allOf.Items {
+			metadata += "//   * " + o.TypeName + "\n"
+		}
+	}
+	if anyOf := jsonSubSchema.AnyOf; anyOf != nil {
+		metadata += "// Any of:\n"
+		for _, o := range anyOf.Items {
+			metadata += "//   * " + o.TypeName + "\n"
+		}
+	}
+	if oneOf := jsonSubSchema.OneOf; oneOf != nil {
+		metadata += "// One of:\n"
+		for _, o := range oneOf.Items {
+			metadata += "//   * " + o.TypeName + "\n"
+		}
+	}
 	// Here we check if metadata was specified, and only create new
 	// paragraph (`//\n`) if something was.
 	if len(metadata) > 0 {
