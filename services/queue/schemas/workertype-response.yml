@@ -12,7 +12,7 @@ properties:
     pattern:      {$const: identifier-pattern}
   workerType:
     type:         string
-    title:        "WorkerType name"
+    title:        "Worker-type Name"
     description: |
       WorkerType name.
     minLength:    {$const: identifier-min-length}
@@ -48,6 +48,7 @@ properties:
     type:         string
     format:       date-time
   actions:
+    title:        "Worker-type Actions"
     type:         array
     items:
       type:       object
@@ -65,7 +66,8 @@ properties:
             Appropriate title for any sort of Modal prompt.
         context:
           title:  "Context"
-          description: {$const: action-context-description}
+          description: |
+            Only actions with the context `worker-type` are included.
           type:   string
           enum:   ["worker-type"]
         url:

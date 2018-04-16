@@ -83,6 +83,7 @@ properties:
     type:         string
     format:       date-time
   actions:
+    title:        "Worker Actions"
     type:         array
     items:
       type:       object
@@ -100,7 +101,8 @@ properties:
             Appropriate title for any sort of Modal prompt.
         context:
           title:  "Context"
-          description: {$const: action-context-description}
+          description: |
+            Only actions with the context `worker` are included.
           type:   string
           enum:   ["worker"]
         url:
