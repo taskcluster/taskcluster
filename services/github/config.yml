@@ -35,6 +35,10 @@ defaults:
   azure:
     account: !env AZURE_ACCOUNT_NAME
 
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
+
   server:
     publicUrl: 'https://github.taskcluster.net'
     port: !env:number PORT
@@ -107,6 +111,9 @@ test:
 
   azure:
     account: 'inMemory'
+
+  monitoring:
+    enable: false
 
   server:
     publicUrl: 'http://localhost:60415'
