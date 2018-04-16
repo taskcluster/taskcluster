@@ -8,6 +8,28 @@ import (
 )
 
 type (
+	// Optional link that can be added as a button to the email.
+	//
+	// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
+	Link struct {
+
+		// Where the link should point to.
+		//
+		// Min length: 1
+		// Max length: 1024
+		//
+		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/href
+		Href string `json:"href"`
+
+		// Text to display on link.
+		//
+		// Min length: 1
+		// Max length: 40
+		//
+		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/text
+		Text string `json:"text"`
+	}
+
 	// Request to post a message on IRC.
 	//
 	// One of:
@@ -87,24 +109,7 @@ type (
 		// Optional link that can be added as a button to the email.
 		//
 		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
-		Link struct {
-
-			// Where the link should point to.
-			//
-			// Min length: 1
-			// Max length: 1024
-			//
-			// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/href
-			Href string `json:"href"`
-
-			// Text to display on link.
-			//
-			// Min length: 1
-			// Max length: 40
-			//
-			// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/text
-			Text string `json:"text"`
-		} `json:"link,omitempty"`
+		Link Link `json:"link,omitempty"`
 
 		// Reply-to e-mail (this property is optional)
 		//

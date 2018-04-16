@@ -7,6 +7,45 @@ import (
 )
 
 type (
+	// Information about the artifact that was created
+	//
+	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
+	ArtifactCreated1 struct {
+
+		// Mimetype for the artifact that was created.
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/contentType
+		ContentType string `json:"contentType"`
+
+		// Date and time after which the artifact created will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/expires
+		Expires tcclient.Time `json:"expires"`
+
+		// Name of the artifact that was created, this is useful if you want to
+		// attempt to fetch the artifact. But keep in mind that just because an
+		// artifact is created doesn't mean that it's immediately available.
+		//
+		// Max length: 1024
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/name
+		Name string `json:"name"`
+
+		// This is the `storageType` for the request that was used to create the
+		// artifact.
+		//
+		// Possible values:
+		//   * "blob"
+		//   * "reference"
+		//   * "error"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/storageType
+		StorageType string `json:"storageType"`
+	}
+
 	// Message reporting a new artifact has been created for a given task.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#
@@ -15,41 +54,7 @@ type (
 		// Information about the artifact that was created
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
-		Artifact struct {
-
-			// Mimetype for the artifact that was created.
-			//
-			// Max length: 255
-			//
-			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/contentType
-			ContentType string `json:"contentType"`
-
-			// Date and time after which the artifact created will be automatically
-			// deleted by the queue.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/expires
-			Expires tcclient.Time `json:"expires"`
-
-			// Name of the artifact that was created, this is useful if you want to
-			// attempt to fetch the artifact. But keep in mind that just because an
-			// artifact is created doesn't mean that it's immediately available.
-			//
-			// Max length: 1024
-			//
-			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/name
-			Name string `json:"name"`
-
-			// This is the `storageType` for the request that was used to create the
-			// artifact.
-			//
-			// Possible values:
-			//   * "blob"
-			//   * "reference"
-			//   * "error"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact/properties/storageType
-			StorageType string `json:"storageType"`
-		} `json:"artifact"`
+		Artifact ArtifactCreated1 `json:"artifact"`
 
 		// Id of the run on which artifact was created.
 		//
@@ -89,6 +94,117 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/workerId
 		WorkerID string `json:"workerId"`
+	}
+
+	// JSON object with information about a run
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items
+	RunInformation struct {
+
+		// Reason for the creation of this run,
+		// **more reasons may be added in the future**.
+		//
+		// Possible values:
+		//   * "scheduled"
+		//   * "retry"
+		//   * "task-retry"
+		//   * "rerun"
+		//   * "exception"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
+		ReasonCreated string `json:"reasonCreated"`
+
+		// Reason that run was resolved, this is mainly
+		// useful for runs resolved as `exception`.
+		// Note, **more reasons may be added in the future**, also this
+		// property is only available after the run is resolved. Some of these
+		// reasons, notably `intermittent-task`, `worker-shutdown`, and
+		// `claim-expired`, will trigger an automatic retry of the task.
+		//
+		// Possible values:
+		//   * "completed"
+		//   * "failed"
+		//   * "deadline-exceeded"
+		//   * "canceled"
+		//   * "superseded"
+		//   * "claim-expired"
+		//   * "worker-shutdown"
+		//   * "malformed-payload"
+		//   * "resource-unavailable"
+		//   * "internal-error"
+		//   * "intermittent-task"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
+		ReasonResolved string `json:"reasonResolved,omitempty"`
+
+		// Date-time at which this run was resolved, ie. when the run changed
+		// state from `running` to either `completed`, `failed` or `exception`.
+		// This property is only present after the run as been resolved.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
+		Resolved tcclient.Time `json:"resolved,omitempty"`
+
+		// Id of this task run, `run-id`s always starts from `0`
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
+		RunID int64 `json:"runId"`
+
+		// Date-time at which this run was scheduled, ie. when the run was
+		// created in state `pending`.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
+		Scheduled tcclient.Time `json:"scheduled"`
+
+		// Date-time at which this run was claimed, ie. when the run changed
+		// state from `pending` to `running`. This property is only present
+		// after the run has been claimed.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
+		Started tcclient.Time `json:"started,omitempty"`
+
+		// State of this run
+		//
+		// Possible values:
+		//   * "pending"
+		//   * "running"
+		//   * "completed"
+		//   * "failed"
+		//   * "exception"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state
+		State string `json:"state"`
+
+		// Time at which the run expires and is resolved as `failed`, if the
+		// run isn't reclaimed. Note, only present after the run has been
+		// claimed.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
+		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+
+		// Identifier for group that worker who executes this run is a part of,
+		// this identifier is mainly used for efficient routing.
+		// Note, this property is only present after the run is claimed.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
+		WorkerGroup string `json:"workerGroup,omitempty"`
+
+		// Identifier for worker evaluating this run within given
+		// `workerGroup`. Note, this property is only available after the run
+		// has been claimed.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
+		WorkerID string `json:"workerId,omitempty"`
 	}
 
 	// Message reporting that a task has complete successfully.
@@ -388,113 +504,7 @@ type (
 		// List of runs, ordered so that index `i` has `runId == i`
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs
-		Runs []struct {
-
-			// Reason for the creation of this run,
-			// **more reasons may be added in the future**.
-			//
-			// Possible values:
-			//   * "scheduled"
-			//   * "retry"
-			//   * "task-retry"
-			//   * "rerun"
-			//   * "exception"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
-			ReasonCreated string `json:"reasonCreated"`
-
-			// Reason that run was resolved, this is mainly
-			// useful for runs resolved as `exception`.
-			// Note, **more reasons may be added in the future**, also this
-			// property is only available after the run is resolved. Some of these
-			// reasons, notably `intermittent-task`, `worker-shutdown`, and
-			// `claim-expired`, will trigger an automatic retry of the task.
-			//
-			// Possible values:
-			//   * "completed"
-			//   * "failed"
-			//   * "deadline-exceeded"
-			//   * "canceled"
-			//   * "superseded"
-			//   * "claim-expired"
-			//   * "worker-shutdown"
-			//   * "malformed-payload"
-			//   * "resource-unavailable"
-			//   * "internal-error"
-			//   * "intermittent-task"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
-			ReasonResolved string `json:"reasonResolved,omitempty"`
-
-			// Date-time at which this run was resolved, ie. when the run changed
-			// state from `running` to either `completed`, `failed` or `exception`.
-			// This property is only present after the run as been resolved.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
-			Resolved tcclient.Time `json:"resolved,omitempty"`
-
-			// Id of this task run, `run-id`s always starts from `0`
-			//
-			// Mininum:    0
-			// Maximum:    1000
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
-			RunID int64 `json:"runId"`
-
-			// Date-time at which this run was scheduled, ie. when the run was
-			// created in state `pending`.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
-			Scheduled tcclient.Time `json:"scheduled"`
-
-			// Date-time at which this run was claimed, ie. when the run changed
-			// state from `pending` to `running`. This property is only present
-			// after the run has been claimed.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
-			Started tcclient.Time `json:"started,omitempty"`
-
-			// State of this run
-			//
-			// Possible values:
-			//   * "pending"
-			//   * "running"
-			//   * "completed"
-			//   * "failed"
-			//   * "exception"
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state
-			State string `json:"state"`
-
-			// Time at which the run expires and is resolved as `failed`, if the
-			// run isn't reclaimed. Note, only present after the run has been
-			// claimed.
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
-			TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
-
-			// Identifier for group that worker who executes this run is a part of,
-			// this identifier is mainly used for efficient routing.
-			// Note, this property is only present after the run is claimed.
-			//
-			// Syntax:     ^([a-zA-Z0-9-_]*)$
-			// Min length: 1
-			// Max length: 22
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
-			WorkerGroup string `json:"workerGroup,omitempty"`
-
-			// Identifier for worker evaluating this run within given
-			// `workerGroup`. Note, this property is only available after the run
-			// has been claimed.
-			//
-			// Syntax:     ^([a-zA-Z0-9-_]*)$
-			// Min length: 1
-			// Max length: 22
-			//
-			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
-			WorkerID string `json:"workerId,omitempty"`
-		} `json:"runs"`
+		Runs []RunInformation `json:"runs"`
 
 		// Identifier for the scheduler that _defined_ this task.
 		//

@@ -231,10 +231,11 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 
 		fmt.Printf("Generating go types for %s\n", apiDefs[i].PackageName)
 		job := &jsonschema2go.Job{
-			Package:           apiDefs[i].PackageName,
-			URLs:              apiDefs[i].schemaURLs,
-			ExportTypes:       true,
-			TypeNameBlacklist: apiDefs[i].members,
+			Package:              apiDefs[i].PackageName,
+			URLs:                 apiDefs[i].schemaURLs,
+			ExportTypes:          true,
+			TypeNameBlacklist:    apiDefs[i].members,
+			DisableNestedStructs: true,
 		}
 		result, err := job.Execute()
 		exitOnFail(err)

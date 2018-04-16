@@ -18,25 +18,7 @@ type (
 		// Temporary STS credentials for use when operating on S3
 		//
 		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials
-		Credentials struct {
-
-			// Access key identifier that identifies the temporary security
-			// credentials.
-			//
-			// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/accessKeyId
-			AccessKeyID string `json:"accessKeyId"`
-
-			// Secret access key used to sign requests
-			//
-			// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/secretAccessKey
-			SecretAccessKey string `json:"secretAccessKey"`
-
-			// A token that must passed with request to use the temporary
-			// security credentials.
-			//
-			// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/sessionToken
-			SessionToken string `json:"sessionToken"`
-		} `json:"credentials"`
+		Credentials TemporarySecurityCredentials `json:"credentials"`
 
 		// Date and time of when the temporary credentials expires.
 		//
@@ -313,6 +295,29 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	// Access credentials and urls for the Sentry project.
+	// Credentials will expire in 24-48 hours, you should refresh them within
+	// 24 hours.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn
+	Dsn struct {
+
+		// Access credential and URL for public error reports.
+		// These credentials can be used for up-to 24 hours.
+		// This is for use in client-side applications only.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/public
+		Public string `json:"public"`
+
+		// Access credential and URL for private error reports.
+		// These credentials can be used for up-to 24 hours.
+		// This is for use in serser-side applications and should **not** be
+		// leaked.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/secret
+		Secret string `json:"secret"`
+	}
+
 	// Get all details about a client, useful for tools modifying a client
 	//
 	// See http://schemas.taskcluster.net/auth/v1/get-client-response.json#
@@ -533,23 +538,7 @@ type (
 		// 24 hours.
 		//
 		// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn
-		Dsn struct {
-
-			// Access credential and URL for public error reports.
-			// These credentials can be used for up-to 24 hours.
-			// This is for use in client-side applications only.
-			//
-			// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/public
-			Public string `json:"public"`
-
-			// Access credential and URL for private error reports.
-			// These credentials can be used for up-to 24 hours.
-			// This is for use in serser-side applications and should **not** be
-			// leaked.
-			//
-			// See http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#/properties/dsn/properties/secret
-			Secret string `json:"secret"`
-		} `json:"dsn"`
+		Dsn Dsn `json:"dsn"`
 
 		// Expiration time for the credentials. The credentials should not be used
 		// after this time. They might not be revoked immediately, but will be at
@@ -599,6 +588,29 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#/properties/token
 		Token string `json:"token"`
+	}
+
+	// Temporary STS credentials for use when operating on S3
+	//
+	// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials
+	TemporarySecurityCredentials struct {
+
+		// Access key identifier that identifies the temporary security
+		// credentials.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/accessKeyId
+		AccessKeyID string `json:"accessKeyId"`
+
+		// Secret access key used to sign requests
+		//
+		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/secretAccessKey
+		SecretAccessKey string `json:"secretAccessKey"`
+
+		// A token that must passed with request to use the temporary
+		// security credentials.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#/properties/credentials/properties/sessionToken
+		SessionToken string `json:"sessionToken"`
 	}
 
 	// Details on how the test request should be authenticated.
