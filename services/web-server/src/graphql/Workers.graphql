@@ -76,7 +76,7 @@ type WorkersConnection implements Connection {
 
 extend type Query {
   worker(provisionerId: ID!, workerType: String!, workerGroup: String!, workerId: ID!): Worker
-  workers(provisionerId: ID!, workerType: String! connection: PageConnection, filter: JSON): WorkersCompactConnection
+  workers(provisionerId: ID!, workerType: String! connection: PageConnection, filter: JSON, isQuarantined: Boolean): WorkersCompactConnection
 }
 
 extend type Mutation {

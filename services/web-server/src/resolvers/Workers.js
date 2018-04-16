@@ -28,12 +28,13 @@ export default {
     },
     workers(
       parent,
-      { provisionerId, workerType, connection, filter },
+      { provisionerId, workerType, isQuarantined, connection, filter },
       { loaders }
     ) {
       return loaders.workers.load({
         provisionerId,
         workerType,
+        isQuarantined,
         connection,
         filter,
       });

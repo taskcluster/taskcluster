@@ -13,8 +13,14 @@ export default ({ queue }) => {
     )
   );
   const workers = new ConnectionLoader(
-    async ({ provisionerId, workerType, options, filter }) => {
-      const raw = await queue.listWorkers(provisionerId, workerType, options);
+    async ({ provisionerId, workerType, options, filter, isQuarantined }) => {
+      const raw = await queue.listWorkers(
+        provisionerId,
+        workerType,
+        typeof isQuarantined === 'boolean'
+          ? { ...options, quarantined: isQuarantined }
+          : options
+      );
       const workers = filter ? sift(filter, raw.workers) : raw.workers;
 
       return {
