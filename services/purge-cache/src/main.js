@@ -29,7 +29,8 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: 'purge-cache',
+      project: cfg.monitoring.project || 'tc-purge-cache',
+      enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
       process,

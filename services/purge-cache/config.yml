@@ -9,6 +9,10 @@ defaults:
     # Publish references and schemas
     publishMetaData:          !env:bool PUBLISH_METADATA
 
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
+
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                      'https://purge-cache.taskcluster.net'
@@ -68,6 +72,10 @@ production:
 test:
   app:
     cachePurgeExpirationDelay:   '7 days'
+
+  monitoring:
+    enable: false
+
   server:
     publicUrl:                    'http://localhost:60415'
     port:                         60415
