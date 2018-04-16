@@ -31,9 +31,10 @@ class Monitor {
       if (!sentry.expires || Date.parse(sentry.expires) <= Date.now()) {
         let sentryInfo = await this._sentryDSN(this._opts.project);
         return {
-          client: new raven.Client(sentryInfo.dsn.secret, {
-            release: this._opts.gitVersion,
-          }),
+          client: new raven.Client(sentryInfo.dsn.secret, _.defaults(
+            {}, this._opts.sentryOptions, {
+              release: this._opts.gitVersion,
+            })),
           expires: sentryInfo.expires,
         };
       }
