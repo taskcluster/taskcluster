@@ -104,6 +104,10 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
 
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
+
   server:
     port:             !env:number PORT
     publicUrl:        !env PUBLIC_URL
@@ -208,6 +212,8 @@ test:
     credentials:
       clientId:       test-server
       accessToken:    none
+  monitoring:
+    enable: false
   server:
     publicUrl:        http://localhost:60401
     port:             60401
@@ -234,6 +240,8 @@ load-test:
     deadlineQueue:                'load-test-deadline-queue'
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
+  monitoring:
+    enable: false
   server:
     publicUrl:        https://tc-queue-load-test.herokuapp.com
     env:              development
