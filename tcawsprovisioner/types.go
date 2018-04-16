@@ -579,7 +579,7 @@ type (
 	ListWorkerTypeSummariesResponse []WorkerTypeSummary
 
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
-	ListWorkerTypes1 []string
+	ListWorkerTypes []string
 
 	// Region configuration
 	//

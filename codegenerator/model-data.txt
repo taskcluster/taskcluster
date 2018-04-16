@@ -1,4 +1,4 @@
-Generated: 1523890865
+Generated: 1523896531
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -5374,7 +5374,7 @@ http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.jso
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
-TYPE_NAME: ListWorkerTypes1
+TYPE_NAME: ListWorkerTypes
 id: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
 items:
   IS_REQUIRED: false
@@ -5838,7 +5838,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/github/v1/build-list.json#
-TYPE_NAME: Builds1
+TYPE_NAME: Builds
 additionalProperties:
   Boolean: false
   Properties: null
@@ -6178,7 +6178,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/github/v1/create-comment.json#
-TYPE_NAME: CreateComment1
+TYPE_NAME: CreateComment
 additionalProperties:
   Boolean: false
   Properties: null
@@ -6212,7 +6212,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/github/v1/create-status.json#
-TYPE_NAME: CreateStatus1
+TYPE_NAME: CreateStatus
 additionalProperties:
   Boolean: false
   Properties: null
@@ -6281,7 +6281,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/github/v1/repository.json#
-TYPE_NAME: Repository1
+TYPE_NAME: Repository
 additionalProperties:
   Boolean: false
   Properties: null

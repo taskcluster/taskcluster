@@ -13,7 +13,7 @@ type (
 	// A paginated list of builds
 	//
 	// See http://schemas.taskcluster.net/github/v1/build-list.json#
-	Builds1 struct {
+	Builds struct {
 
 		// A simple list of builds.
 		//
@@ -102,7 +102,7 @@ type (
 	// Full specification on [GitHub docs](https://developer.github.com/v3/issues/comments/#create-a-comment)
 	//
 	// See http://schemas.taskcluster.net/github/v1/create-comment.json#
-	CreateComment1 struct {
+	CreateComment struct {
 
 		// The contents of the comment.
 		//
@@ -114,7 +114,7 @@ type (
 	// Full specification on [GitHub docs](https://developer.github.com/v3/repos/statuses/#create-a-status)
 	//
 	// See http://schemas.taskcluster.net/github/v1/create-status.json#
-	CreateStatus1 struct {
+	CreateStatus struct {
 
 		// A string label to differentiate this status from the status of other systems.
 		//
@@ -146,7 +146,7 @@ type (
 	// Any Taskcluster-specific Github repository information.
 	//
 	// See http://schemas.taskcluster.net/github/v1/repository.json#
-	Repository1 struct {
+	Repository struct {
 
 		// True if integration is installed, False otherwise.
 		//

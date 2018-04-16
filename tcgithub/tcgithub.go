@@ -40,7 +40,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 16 Apr 2018 at 15:01:00 UTC. The code was generated
+// Mon, 16 Apr 2018 at 16:35:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcgithub
 
@@ -110,7 +110,7 @@ func (github *Github) GithubWebHookConsumer() error {
 // fields.
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#builds
-func (github *Github) Builds(continuationToken, limit, organization, repository, sha string) (*Builds1, error) {
+func (github *Github) Builds(continuationToken, limit, organization, repository, sha string) (*Builds, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
@@ -128,8 +128,8 @@ func (github *Github) Builds(continuationToken, limit, organization, repository,
 		v.Add("sha", sha)
 	}
 	cd := tcclient.Client(*github)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(Builds1), v)
-	return responseObject.(*Builds1), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/builds", new(Builds), v)
+	return responseObject.(*Builds), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -150,10 +150,10 @@ func (github *Github) Badge(owner, repo, branch string) error {
 // useful within Taskcluster related services.
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#repository
-func (github *Github) Repository(owner, repo string) (*Repository1, error) {
+func (github *Github) Repository(owner, repo string) (*Repository, error) {
 	cd := tcclient.Client(*github)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(Repository1), nil)
-	return responseObject.(*Repository1), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(Repository), nil)
+	return responseObject.(*Repository), err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -182,7 +182,7 @@ func (github *Github) Latest(owner, repo, branch string) error {
 //   github:create-status:<owner>/<repo>
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#createStatus
-func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatus1) error {
+func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatus) error {
 	cd := tcclient.Client(*github)
 	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/statuses/"+url.QueryEscape(sha), nil, nil)
 	return err
@@ -196,7 +196,7 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 //   github:create-comment:<owner>/<repo>
 //
 // See https://docs.taskcluster.net/reference/core/github/api-docs#createComment
-func (github *Github) CreateComment(owner, repo, number string, payload *CreateComment1) error {
+func (github *Github) CreateComment(owner, repo, number string, payload *CreateComment) error {
 	cd := tcclient.Client(*github)
 	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
 	return err
