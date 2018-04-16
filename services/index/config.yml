@@ -21,6 +21,10 @@ defaults:
     # taskcluster.fromNow, notice this should be negative!
     expirationDelay:              '-1 day'
 
+  monitoring:
+    project:                    !env MONITORING_PROJECT
+    enable:                     !env:bool MONITORING_ENABLE
+
   # Server configuration
   server:
     # Public URL from which the server can be accessed (used for persona)
@@ -91,6 +95,8 @@ test:
     namespaceTableName:           'DummyTestNamespaces'
     azureAccount:                 'inMemory'
 
+  monitoring:
+    enable: false
   server:
     publicUrl:                    'http://localhost:60020'
     port:                         60020

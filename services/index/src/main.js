@@ -66,7 +66,8 @@ var load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: 'taskcluster-index',
+      project: cfg.monitoring.project || 'taskcluster-index',
+      enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
       process,
