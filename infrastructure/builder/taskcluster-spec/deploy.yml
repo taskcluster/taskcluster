@@ -43,6 +43,8 @@ resources:
               value: 'false'
             - name: TRUST_PROXY  # TODO
               value: 'false'
+            - name: MONITORING_ENABLE
+              value: 'false'
             ports:
             - containerPort: 80
 
