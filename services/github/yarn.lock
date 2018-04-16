@@ -2992,6 +2992,22 @@ taskcluster-lib-validate@^3.0.1:
     url-join "^2.0.2"
     walk "^2.3.9"
 
+taskcluster-lib-validate@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-3.1.0.tgz#da73c5b908dcdc682b5c8b7d5c88112b57d4a316"
+  dependencies:
+    ajv "^5.3.0"
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.142.0"
+    babel-runtime "^6.26.0"
+    debug "^3.1.0"
+    js-yaml "^3.10.0"
+    lodash "^4.5.1"
+    promise "^8.0.1"
+    rimraf "^2.6.2"
+    url-join "^2.0.2"
+    walk "^2.3.9"
+
 text-encoding@^0.6.4:
   version "0.6.4"
   resolved "https://registry.yarnpkg.com/text-encoding/-/text-encoding-0.6.4.tgz#e399a982257a276dae428bb92845cb71bdc26d19"
