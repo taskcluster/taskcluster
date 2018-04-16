@@ -24,6 +24,9 @@ Defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           us-west-2
     apiVersion:       2014-01-01
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
   server:
     port:       !env:number PORT
     forceSSL:   !env:flag FORCE_SSL
@@ -49,6 +52,8 @@ Profiles:
         credentials:
           clientId:     'dummy'
           accessToken:  'lol no secret here'
+    monitoring:
+      enable: false
     server:
       port: 60174
       publicUrl: http://localhost:60174
@@ -65,6 +70,8 @@ Profiles:
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
+    monitoring:
+      enable: false
     server:
       port: 60174
       publicUrl: https://taskcluster-login.ngrok.io
