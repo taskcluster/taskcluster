@@ -39,12 +39,19 @@ func (api *API) String() string {
 
 func (api *API) postPopulate(apiDef *APIDefinition) {
 
+	// reserved package members
+	api.apiDef.members = map[string]bool{
+		api.apiDef.Name: true,
+		"New":           true,
+		"NewFromEnv":    true,
+	}
+
 	// make sure each entry defined for this API has a unique generated method name
-	api.apiDef.members = make(map[string]bool)
+	methods := map[string]bool{}
 
 	for i := range api.Entries {
 		api.Entries[i].Parent = api
-		api.Entries[i].MethodName = text.GoIdentifierFrom(api.Entries[i].Name, true, api.apiDef.members)
+		api.Entries[i].MethodName = text.GoIdentifierFrom(api.Entries[i].Name, true, methods)
 		api.Entries[i].postPopulate(apiDef)
 	}
 }
