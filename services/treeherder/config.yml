@@ -23,18 +23,14 @@ defaults:
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
     region:           'us-west-2'
     apiVersion:       '2014-01-01'
-  monitor:
-    # Component name is restricted to 22 characters.
-    component: 'tc-treeherder-staging'
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
+
 staging:
   pulse:
     queueName: taskcluster-treeherder-staging
-  monitor:
-    component: 'tc-treeherder-staging'
+
 production:
   pulse:
     queueName: taskcluster-treeherder
-  monitor:
-    component: 'tc-treeherder'
-
-
