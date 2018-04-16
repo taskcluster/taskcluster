@@ -9,8 +9,15 @@ import CircularProgress from 'material-ui/Progress/CircularProgress';
     textAlign: 'center',
   },
 })
+/**
+ * Render an indeterminate spinning indicator.
+ */
 export default class Spinner extends PureComponent {
   static propTypes = {
+    /**
+     * Set to `true` to render the spinner with its own
+     * block-centered container.
+     */
     loading: bool,
   };
 

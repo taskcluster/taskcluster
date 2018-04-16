@@ -3,9 +3,18 @@ import { bool, string } from 'prop-types';
 import Label from '../Label';
 import labels from '../../utils/labels';
 
+/**
+ * A label color-coded based on known statuses from GraphQL responses.
+ */
 export default class StatusLabel extends Component {
   static propTypes = {
+    /**
+     * A GraphQL status/state string.
+     */
     state: string.isRequired,
+    /**
+     * Render the label using dense styling.
+     */
     mini: bool,
   };
 

@@ -1,5 +1,35 @@
+const { join } = require('path');
+
+require('babel-register')({
+  plugins: [
+    [require.resolve('babel-plugin-transform-es2015-modules-commonjs'), {
+      useBuiltIns: true
+    }],
+    require.resolve('babel-plugin-transform-object-rest-spread'),
+  ],
+  cache: false,
+});
+
+const theme = require('./src/theme').default;
+
 module.exports = {
   use: [
+    ['neutrino-preset-mozilla-frontend-infra/styleguide', {
+      components: 'src/components/**/index.jsx',
+      theme: theme.styleguide,
+      styles: {
+        StyleGuide: theme.styleguide.StyleGuide,
+      },
+      editorConfig: {
+        theme: 'material',
+      },
+      showUsage: true,
+      skipComponentsWithoutExample: false,
+      styleguideComponents: {
+        Wrapper: join(__dirname, 'src/styleguide/ThemeWrapper.jsx'),
+        StyleGuideRenderer: join(__dirname, 'src/styleguide/StyleGuideRenderer.jsx'),
+      },
+    }],
     ['neutrino-preset-mozilla-frontend-infra/react', {
       html: {
         title: process.env.APPLICATION_NAME

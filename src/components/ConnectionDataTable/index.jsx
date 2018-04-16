@@ -16,15 +16,38 @@ import { pageInfo } from '../../utils/prop-types';
     textAlign: 'right',
   },
 })
+/**
+ * A paginated table that operates on a GraphQL PageConnection.
+ */
 export default class ConnectionDataTable extends Component {
   static propTypes = {
+    /**
+     * A GraphQL PageConnection instance.
+     */
     connection: shape({
       edges: array,
       pageInfo,
     }).isRequired,
+    /**
+     * The maximum number of records to display per page.
+     */
     pageSize: number.isRequired,
+    /**
+     * The number of columns the table contains.
+     */
     columnsSize: number.isRequired,
+    /**
+     * A function to execute for each row to render in the table.
+     * Will be passed a single edge from the connection. The function
+     * should return the JSX necessary to render the given edge row.
+     */
     renderRow: func.isRequired,
+    /**
+     * A function to execute when paging. Will receive a single argument
+     * which is an object in the form of `{ cursor, previousCursor }`. This
+     * can be used to query the next/previous set in a page connection. Should
+     * return a Promise which waits for the next page connection.
+     */
     onPageChange: func.isRequired,
   };
 

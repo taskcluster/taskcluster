@@ -9,16 +9,18 @@ const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
 const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
 const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
 const TEN_PERCENT_WHITE = fade('#fff', 0.1);
-
-export default createMuiTheme({
+const BACKGROUND = '#12202c';
+const PRIMARY = '#1b2a39';
+const SECONDARY = '#4177a5';
+const theme = createMuiTheme({
   palette: {
     type: 'dark',
-    background: '#12202c',
+    background: BACKGROUND,
     primary: {
-      main: '#1b2a39',
+      main: PRIMARY,
     },
     secondary: {
-      main: '#4177a5',
+      main: SECONDARY,
     },
     error: {
       ...red,
@@ -82,7 +84,7 @@ export default createMuiTheme({
   overrides: {
     MuiPaper: {
       root: {
-        backgroundColor: '#1b2a39',
+        backgroundColor: PRIMARY,
       },
     },
     MuiButton: {
@@ -107,3 +109,35 @@ export default createMuiTheme({
     },
   },
 });
+
+export default {
+  ...theme,
+  styleguide: {
+    StyleGuide: {
+      root: {
+        overflowY: 'scroll',
+        minHeight: '100vh',
+        backgroundColor: BACKGROUND,
+      },
+    },
+    fontFamily: {
+      base: theme.typography.fontFamily,
+    },
+    fontSize: {
+      base: theme.typography.fontSize - 1,
+      text: theme.typography.fontSize,
+      small: theme.typography.fontSize - 2,
+    },
+    color: {
+      base: theme.palette.text.primary,
+      link: theme.palette.text.primary,
+      linkHover: theme.palette.text.primary,
+      border: theme.palette.divider,
+      baseBackground: BACKGROUND,
+      sidebarBackground: theme.palette.primary.main,
+      codeBackground: theme.palette.primary.main,
+    },
+    sidebarWidth: theme.drawerWidth,
+    maxWidth: '100vw',
+  },
+};

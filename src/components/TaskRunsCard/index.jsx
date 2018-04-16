@@ -1,7 +1,7 @@
 import { Component, Fragment } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { number, string } from 'prop-types';
+import { func, number, string } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import Card, { CardContent } from 'material-ui/Card';
@@ -72,12 +72,33 @@ const DOTS_VARIANT_LIMIT = 5;
     marginRight: theme.spacing.unit,
   },
 }))
+/**
+ * Render a paginated card layout for the runs of a GraphQL task response.
+ */
 export default class TaskRunsCard extends Component {
   static propTypes = {
+    /**
+     * A collection of runs for a GraphQL task.
+     */
     runs: runs.isRequired,
+    /**
+     * The worker type associated with the runs' task.
+     */
     workerType: string.isRequired,
+    /**
+     * The provisioner ID associated with the runs' task.
+     */
     provisionerId: string.isRequired,
+    /**
+     * The current selected run index to display in the card. Paging through
+     * runs will trigger a history change, for which the `selectedRunId` can be
+     * updated.
+     */
     selectedRunId: number.isRequired,
+    /**
+     * Execute a function to load new artifacts when paging through them.
+     */
+    onArtifactsPageChange: func.isRequired,
   };
 
   state = {

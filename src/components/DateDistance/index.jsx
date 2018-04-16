@@ -2,14 +2,26 @@ import { Component } from 'react';
 import { distanceInWords, distanceInWordsToNow } from 'date-fns';
 import { date } from '../../utils/prop-types';
 
+/**
+ * Display a human-readable relative string between a date and now.
+ * Optionally also show a relative distance between that date and an
+ * additional offset date.
+ */
 export default class DateDistance extends Component {
   static propTypes = {
+    /**
+     * The origin date for which to render a relative string from now.
+     */
     from: date.isRequired,
+    /**
+     * An optional date for which to also show a relative string between `from`
+     * and `offset`.
+     */
     offset: date,
   };
 
   static defaultProps = {
-    to: null,
+    offset: null,
   };
 
   render() {

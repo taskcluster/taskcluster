@@ -2,6 +2,10 @@ import { Component } from 'react';
 import FoutStager from 'react-fout-stager';
 import './index.css';
 
+/**
+ * Responsible for loading the application typefaces progressively
+ * using FOUT stage techniques.
+ */
 export default class FontStager extends Component {
   render() {
     return (

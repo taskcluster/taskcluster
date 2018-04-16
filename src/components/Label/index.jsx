@@ -38,11 +38,18 @@ import Button from 'material-ui/Button';
  */
 export default class Label extends Component {
   static propTypes = {
-    /** Content to render within the label */
+    /**
+     * Content to render within the label.
+     */
     children: node.isRequired,
-    /** An intent-driven color indicator */
+    /**
+     * An intent-driven color indicator.
+     */
     status: oneOf(['error', 'success', 'warning', 'default', 'info'])
       .isRequired,
+    /**
+     * Show label using dense styling.
+     */
     mini: bool,
   };
 

@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { string } from 'prop-types';
 import classNames from 'classnames';
 import parser from 'markdown-it';
 import linkAttributes from 'markdown-it-link-attributes';
@@ -188,7 +189,17 @@ markdown.use(linkAttributes, {
     },
   },
 }))
+/**
+ * Render children as syntax-highlighted monospace code.
+ */
 export default class Markdown extends Component {
+  static propTypes = {
+    /**
+     * The content to render as Markdown.
+     */
+    children: string.isRequired,
+  };
+
   render() {
     const { classes, children, className, ...props } = this.props;
 
@@ -197,7 +208,7 @@ export default class Markdown extends Component {
       <span
         className={classNames(classes.root, className)}
         dangerouslySetInnerHTML={{
-          __html: markdown.renderInline(children),
+          __html: markdown.render(children),
         }}
         {...props}
       />

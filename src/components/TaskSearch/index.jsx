@@ -52,11 +52,26 @@ import MagnifyIcon from 'mdi-react/MagnifyIcon';
     },
   },
 }))
+/**
+ * An app-bar compatible controlled search field for entering task IDs.
+ */
 export default class TaskSearch extends Component {
   static propTypes = {
+    /**
+     * The search field value.
+     */
     value: string.isRequired,
+    /**
+     * A function to execute when the search field value changes.
+     */
     onChange: func.isRequired,
+    /**
+     * A function to execute when the search form has been submitted.
+     */
     onSubmit: func.isRequired,
+    /**
+     * Set to `true` to enable spell-check on the search field.
+     */
     spellCheck: bool,
   };
 

@@ -89,14 +89,39 @@ import { user } from '../../utils/prop-types';
   }),
   { withTheme: true }
 )
+/**
+ * Render the layout for application-based views.
+ */
 export default class Dashboard extends Component {
   static propTypes = {
+    /**
+     * The content to render within the main view body.
+     */
     children: node.isRequired,
+    /**
+     * A function to execute to trigger the sign in flow.
+     */
     onSignIn: func.isRequired,
+    /**
+     * A function to execute to trigger the sign out flow.
+     */
     onSignOut: func.isRequired,
+    /**
+     * An optional title to display in the title bar and app bar.
+     */
     title: string,
+    /**
+     * Disable padding of the main content. Useful for expanding content to the
+     * full bounds of the content area.
+     */
     disablePadding: bool,
+    /**
+     * Render elements in the app bar for searching purposes.
+     */
     search: node,
+    /**
+     * The current user instance.
+     */
     user,
   };
 

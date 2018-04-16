@@ -53,13 +53,35 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
     },
   },
 }))
+/**
+ * Render a lazy-loading log viewer.
+ */
 export default class Log extends Component {
   static propTypes = {
+    /**
+     * The remote URL for which to lazily render log text.
+     */
     url: string.isRequired,
+    /**
+     * Specify `true` if the `url` is returning a partial progressive text
+     * stream. Specify `false` if the `url` is a complete file.
+     */
     stream: bool,
+    /**
+     * Render additional buttons in the actions area.
+     */
     actions: oneOfType([node, arrayOf(node)]),
+    /**
+     * Specify props for the "Go to line" floating action button.
+     */
     GoToLineButtonProps: object,
+    /**
+     * Specify props for the "Follow log" floating action button.
+     */
     FollowLogButtonProps: object,
+    /**
+     * Specify props for the "Raw log" floating action button.
+     */
     RawLogButtonProps: object,
   };
 

@@ -15,8 +15,15 @@ const IS_TOUCH = 'ontouchstart' in document.documentElement;
     right: theme.spacing.triple,
   },
 }))
+/**
+ * Render a dynamically expanding set of floating action buttons.
+ */
 export default class SpeedDial extends Component {
   static propTypes = {
+    /**
+     * A set of `SpeedDialAction`s which will be rendered upon interaction
+     * with the base `SpeedDial` floating action button.
+     */
     children: oneOfType([arrayOf(node), node]),
   };
 

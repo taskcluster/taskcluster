@@ -23,9 +23,18 @@ import ErrorPanel from '../ErrorPanel';
     minHeight: '100vh',
   },
 }))
-export default class Dashboard extends Component {
+/**
+ * Render the layout for plain/non-application-based views.
+ */
+export default class Landing extends Component {
   static propTypes = {
+    /**
+     * The content to render within the main view body.
+     */
     children: node.isRequired,
+    /**
+     * An optional title to display in the title bar.
+     */
     title: string,
   };
 

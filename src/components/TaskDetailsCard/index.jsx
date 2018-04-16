@@ -49,9 +49,18 @@ import { task } from '../../utils/prop-types';
     fontSize: theme.typography.body2.fontSize,
   },
 }))
+/**
+ * Render information in a card layout about a task.
+ */
 export default class TaskDetailsCard extends Component {
   static propTypes = {
+    /**
+     * A GraphQL task response.
+     */
     task: task.isRequired,
+    /**
+     * A collection of GraphQL task responses associated with the given task.
+     */
     dependentTasks: arrayOf(
       shape({
         taskId: string,

@@ -11,9 +11,18 @@ const validLanguage = (props, propName) => {
   }
 };
 
+/**
+ * Render children as syntax-highlighted monospace code.
+ */
 export default class Code extends Component {
   static propTypes = {
+    /**
+     * The content to render as syntax highlighted.
+     */
     children: string.isRequired,
+    /**
+     * A highlight.js language identifier.
+     */
     language: validLanguage,
   };
 
