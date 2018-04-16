@@ -3,31 +3,12 @@
 package tcgithub
 
 import (
-	"encoding/json"
-	"errors"
-
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type (
-	// A paginated list of builds
-	//
-	// See http://schemas.taskcluster.net/github/v1/build-list.json#
-	Builds struct {
-
-		// A simple list of builds.
-		//
-		// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds
-		Builds []BuildsEntry `json:"builds"`
-
-		// Passed back from Azure to allow us to page through long result sets.
-		//
-		// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/continuationToken
-		ContinuationToken string `json:"continuationToken,omitempty"`
-	}
-
 	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items
-	BuildsEntry struct {
+	Build struct {
 
 		// The initial creation time of the build. This is when it became pending.
 		//
@@ -37,8 +18,8 @@ type (
 		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 		//
 		// One of:
-		//   * Var
-		//   * Var1
+		//   * GithubGUID
+		//   * UnknownGithubGUID
 		//
 		// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId
 		EventID string `json:"eventId"`
@@ -98,11 +79,27 @@ type (
 		Updated tcclient.Time `json:"updated"`
 	}
 
+	// A paginated list of builds
+	//
+	// See http://schemas.taskcluster.net/github/v1/build-list.json#
+	BuildsResponse struct {
+
+		// A simple list of builds.
+		//
+		// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds
+		Builds []Build `json:"builds"`
+
+		// Passed back from Azure to allow us to page through long result sets.
+		//
+		// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
 	// Write a new comment on a GitHub Issue or Pull Request.
 	// Full specification on [GitHub docs](https://developer.github.com/v3/issues/comments/#create-a-comment)
 	//
 	// See http://schemas.taskcluster.net/github/v1/create-comment.json#
-	CreateComment struct {
+	CreateCommentRequest struct {
 
 		// The contents of the comment.
 		//
@@ -114,7 +111,7 @@ type (
 	// Full specification on [GitHub docs](https://developer.github.com/v3/repos/statuses/#create-a-status)
 	//
 	// See http://schemas.taskcluster.net/github/v1/create-status.json#
-	CreateStatus struct {
+	CreateStatusRequest struct {
 
 		// A string label to differentiate this status from the status of other systems.
 		//
@@ -143,10 +140,15 @@ type (
 		Target_URL string `json:"target_url,omitempty"`
 	}
 
+	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+	//
+	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]
+	GithubGUID string
+
 	// Any Taskcluster-specific Github repository information.
 	//
 	// See http://schemas.taskcluster.net/github/v1/repository.json#
-	Repository struct {
+	RepositoryResponse struct {
 
 		// True if integration is installed, False otherwise.
 		//
@@ -154,45 +156,9 @@ type (
 		Installed bool `json:"installed"`
 	}
 
-	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
-	//
-	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]
-	Var json.RawMessage
-
-	// Syntax:     Unknown
+	// Possible values:
+	//   * "Unknown"
 	//
 	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[1]
-	Var1 json.RawMessage
+	UnknownGithubGUID string
 )
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var is of type json.RawMessage...
-func (this *Var) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Var: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var1 is of type json.RawMessage...
-func (this *Var1) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var1) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Var1: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
