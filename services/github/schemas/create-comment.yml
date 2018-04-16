@@ -1,5 +1,5 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:        "Create comment"
+title:        "Create Comment Request"
 description: |
   Write a new comment on a GitHub Issue or Pull Request.
   Full specification on [GitHub docs](https://developer.github.com/v3/issues/comments/#create-a-comment)

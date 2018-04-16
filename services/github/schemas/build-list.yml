@@ -1,5 +1,5 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:        "Builds"
+title:        "Builds Response"
 description: |
   A paginated list of builds
 type:         object
@@ -12,6 +12,7 @@ properties:
     description: |
       A simple list of builds.
     items:
+      title: Build
       type: object
       properties:
         organization:
@@ -48,7 +49,11 @@ properties:
             The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
           oneOf:
             - pattern: {$const: github-guid-pattern}
-            - pattern: 'Unknown'
+              type: string
+              title: Github GUID
+            - enum: [Unknown]
+              type: string
+              title: Unknown Github GUID
         created:
           type: string
           format: date-time
