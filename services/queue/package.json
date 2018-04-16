@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-revision",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js",
     "pretest": "yarn lint"
@@ -30,7 +31,7 @@
     "taskcluster-lib-app": "^3.0.0",
     "taskcluster-lib-docs": "^4.2.1",
     "taskcluster-lib-loader": "^2.0.0",
-    "taskcluster-lib-monitor": "^4.0.0",
+    "taskcluster-lib-monitor": "^5.4.0",
     "taskcluster-lib-validate": "^3.0.3",
     "thirty-two": "^1.0.2",
     "typed-env-config": "^2.0.0",
