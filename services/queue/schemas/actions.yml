@@ -1,0 +1,55 @@
+$schema:            http://json-schema.org/draft-06/schema#
+title:              "Actions"
+description: |
+  See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
+type:         array
+items:
+  type:       object
+  title:      Actions
+  description: {$const: action-description}
+  properties:
+    name:
+      title:  "Name"
+      description: |
+        Short names for things like logging/error messages.
+      type: string
+    title:
+      title:  "Title"
+      description: |
+        Appropriate title for any sort of Modal prompt.
+    context:
+      title:  "Context"
+      description: |
+        Actions have a "context" that is one of provisioner, worker-type, or worker, indicating
+        which it applies to. `context` is used by the front-end to know where to display the action.
+
+        | `context`   | Page displayed        |
+        |-------------|-----------------------|
+        | provisioner | Provisioner Explorer  |
+        | worker-type | Workers Explorer      |
+        | worker      | Worker Explorer       |
+      type:   string
+      enum:   ["provisioner", "worker-type", "worker"]
+    url:
+      title:  "URL"
+      description: {$const: action-url-description}
+      type:   string
+    method:
+      title:  "Method"
+      description: |
+        Method to indicate the desired action to be performed for a given resource.
+      type:   string
+      enum:   ["POST", "PUT", "DELETE", "PATCH"]
+    description:
+      title:  "Description"
+      description: |
+        Description of the provisioner.
+      type:   string
+  additionalProperties: false
+  required:
+    - name
+    - title
+    - context
+    - url
+    - method
+    - description
