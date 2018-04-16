@@ -6,3 +6,4 @@ npm-debug.log
 .test/
 lib/
 user-config.yml
+yarn-error.log
