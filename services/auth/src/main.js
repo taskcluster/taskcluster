@@ -37,7 +37,8 @@ let load = Loader({
     requires: ['cfg', 'sentryManager', 'profile', 'process'],
     setup: ({cfg, sentryManager, profile, process}) => {
       return Monitor({
-        project: 'taskcluster-auth',
+        project: cfg.monitoring.project || 'taskcluster-auth',
+        enable: cfg.monitoring.enable,
         process,
         mock: profile === 'test',
         aws: {credentials: _.pick(cfg.aws, ['accessKeyId', 'secretAccessKey']), region: cfg.aws.region},

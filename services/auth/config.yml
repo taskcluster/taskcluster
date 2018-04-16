@@ -75,6 +75,10 @@ defaults:
     # Name of a kinesis firehose stream to write audit logs to
     auditLog:                   !env AUDIT_LOG
 
+  monitoring:
+    project:                    !env MONITORING_PROJECT
+    enable:                     !env:bool MONITORING_ENABLE
+
   server:
     # Public URL from which the server can be accessed (used for persona)
     publicUrl:                https://auth.taskcluster.net
@@ -149,6 +153,8 @@ test:
     webhooktunnel:
       secret:                   'test-secret'
       proxyUrl:                 'ws://tcproxy.dev'
+  monitoring:
+    enable: false
   # Test bucket for STS credentials
   test:
     testBucket:               !env TEST_BUCKET
