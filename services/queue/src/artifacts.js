@@ -709,9 +709,10 @@ api.declare({
         tags: {taskId, runId, name},
       });
     } else {
-      let url = await this.s3Controller.generateGetUrl({
+      let url = await this.s3Controller.generateUrl({
         bucket: artifact.details.bucket,
         key: artifact.details.key,
+        method: 'HEAD',
         signed: !isPublic,
       });
 
@@ -728,7 +729,14 @@ api.declare({
       });
 
       if (headRes.headers['x-amz-meta-content-sha256'] !== artifact.details.contentSha256) {
-        throw new Error('S3 object does not have correct Content-Sha256 metadata');
+        let msg = [
+          'Expected S3 object to have SHA256 of ',
+          artifact.details.contentSha256,
+          ' but found it to have ',
+          headRes.headers['x-amz-meta-content-sha256'] || 'no value',
+          '',
+        ].join('"');
+        throw new Error(msg);
       }
 
       etag = input.etags[0];
