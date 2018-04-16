@@ -24,7 +24,8 @@ var load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: 'taskcluster-secrets',
+      project: cfg.monitoring.project || 'taskcluster-secrets',
+      enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile !== 'production',
       process,
