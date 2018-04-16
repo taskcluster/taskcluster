@@ -61,6 +61,8 @@ The available options are:
  * `enable` - If false, the monitoring object will only report to the console (but not store data; for deployments without monitoring)
  * `aws` - If provided, these should be of the form `{credentials: {accessKeyId: '...', secretAccessKey: '...'}, region: '...'}`
  * `logName` - If provided, this should be the name of a AWS Firehose deliveryStream that can be written to with the aws creds
+ * `gitVersion` -  git version (for correlating errors); or..
+ * `gitVersionFile` -  file containing git version (relative to app root)
 
 ### Measuring and Counting Things
 
