@@ -235,6 +235,81 @@ suite('Artifacts', function() {
 
     });
 
+    test('S3 single part private artifact fetched with signed url', async () => {
+      let taskId = slugid.v4();
+      
+      debug('### Creating task');
+      await helper.queue.createTask(taskId, taskDef);
+
+      debug('### Claiming task');
+      await helper.queue.claimTask(taskId, 0, {
+        workerGroup:    'my-worker-group',
+        workerId:       'my-worker',
+      });
+
+      let uploadInfo = await client.prepareUpload({
+        filename: bigfilename,
+        forceSP: true,
+      });
+
+      let name = 'signed-url.dat';
+
+      let response = await helper.queue.createArtifact(taskId, 0, name, {
+        storageType: 'blob',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
+        contentLength: uploadInfo.size,
+        contentSha256: uploadInfo.sha256,
+      });
+
+      assume(response).has.property('storageType', 'blob');
+      assume(response).has.property('requests');
+      assume(response.requests).to.be.instanceof(Array);
+      assume(response.requests).to.have.lengthOf(1);
+      // Probably overkill because the schema should catch this but not the
+      // worst idea
+      assume(response.requests[0]).to.have.property('url');
+      assume(response.requests[0]).to.have.property('method');
+      assume(response.requests[0]).to.have.property('headers');
+
+      let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
+
+      response = await helper.queue.completeArtifact(taskId, 0, name, {
+        etags: uploadOutcome.etags, 
+      });
+
+      let secondResponse = await helper.queue.completeArtifact(taskId, 0, name, {
+        etags: uploadOutcome.etags, 
+      });
+      assume(response).deeply.equals(secondResponse);
+
+      let artifactUrl = helper.queue.buildSignedUrl(
+        helper.queue.getArtifact,
+        taskId, 0, name,
+      );
+      debug('Fetching artifact from: %s', artifactUrl);
+      let artifact = await getWithoutRedirecting(artifactUrl);
+
+      assume(artifact.headers).has.property('location');
+
+      let actualUrl = artifact.headers.location;
+
+      let parsed = urllib.parse(actualUrl);
+
+      // NOTE THAT THIS IS USING 'garbage2' and not 'garbage'
+      assume(parsed).has.property('host', 'test-bucket-for-any-garbage2.s3-us-west-2.amazonaws.com');
+      assume(parsed).has.property('pathname', `/${taskId}/0/${name}`);
+
+      let query = qs.parse(parsed.query);
+
+      for (let val of ['Expires', 'Date', 'Algorithm', 'Credential', 'SignedHeaders', 'Signature']) {
+        assume(query).has.property('X-Amz-' + val);
+      }
+
+      await verifyDownload(artifact.headers.location, bigfilehash, bigfilesize);
+
+    });
+
     test('S3 multi part complete flow', async () => {
       let name = 'public/multipart.dat';
       let taskId = slugid.v4();
