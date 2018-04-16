@@ -28,7 +28,11 @@ let path = require('path');
  *   },
  *   // If credentials aren't given, you must supply:
  *   statsumToken: async (project) => {token, expires, baseUrl}
- *   sentryDNS: async (project) => {dsn: {secret: '...'}, expires}
+ *
+ *   sentryDSN: async (project) => {dsn: {secret: '...'}, expires}
+ *   sentryOptions: {}, // options given to raven.Client constructor
+ *   // see https://docs.sentry.io/clients/node/config/
+ *
  *   // If you'd like to use the logging bits, you'll need to provide
  *   // s3 creds directly for now
  *   aws: {credentials: {accessKeyId, secretAccessKey}},
@@ -49,6 +53,7 @@ async function monitor(options) {
     enable: true,
     logName: null,
     aws: null,
+    sentryOptions: {},
     gitVersionFile: '.git-version',
   });
   assert(options.authBaseUrl || options.credentials || options.statsumToken && options.sentryDSN ||
