@@ -136,23 +136,35 @@ dependency-relation:
 
 # Description of actions. They are defined on the provisioner
 action-description: |
-  Actions are defined on the provisioner and they are performed via a request using the `url` and `method`.
-  Depending on the `context`, the `url` will be filled with parameters. In addition, `context` is
-  used by the front-end to know where to display the action. For example, `context=worker`
-  will display the action on the worker explorer.
+  Actions provide a generic mechanism to expose additional features of a
+  provisioner, worker type, or worker to Taskcluster clients.
 
-  _Note: The request will be signed with the user's Taskcluster credentials._
+  An action is comprised of metadata describing the feature it exposes,
+  together with a webhook for triggering it.
 
-# Description of the action context
-action-context-description: |
-  Actions have a "context" that is one of provisioner, worker-type,
-  or worker, indicating which it applies to. `context` is used by the front-end to know where to display the action.
+  The Taskcluster tools site, for example, retrieves actions when displaying
+  provisioners, worker types and workers. It presents the provisioner/worker
+  type/worker specific actions to the user. When the user triggers an action,
+  the web client takes the registered webhook, substitutes parameters into the
+  URL (see `url`), signs the requests with the Taskcluster credentials of the
+  user operating the web interface, and issues the HTTP request.
 
-  | `context`   | Page displayed        |
-  |-------------|-----------------------|
-  | provisioner | Provisioner Explorer  |
-  | worker-type | Workers Explorer      |
-  | worker      | Worker Explorer       |
+  The level to which the action relates (provisioner, worker type, worker) is
+  called the action context. All actions, regardless of the action contexts,
+  are registered against the provisioner when calling
+  `queue.declareProvisioner`.
+
+  The action context is used by the web client to determine where in the web
+  interface to present the action to the user as follows:
+
+  | `context`   | Tool where action is displayed |
+  |-------------|--------------------------------|
+  | provisioner | Provisioner Explorer           |
+  | worker-type | Workers Explorer               |
+  | worker      | Worker Explorer                |
+
+  See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+  for more information.
 
 # Description of the url property in an action.
 action-url-description: |
