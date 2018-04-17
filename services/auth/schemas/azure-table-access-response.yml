@@ -1,5 +1,5 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:                      "Azure Table Shared-Access-Signature Response"
+title:                      "Azure Table Shared-Access-Signature"
 description: |
   Response to a request for an Shared-Access-Signature to access and Azure
   Table Storage table.
