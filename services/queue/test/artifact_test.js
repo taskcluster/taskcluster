@@ -253,7 +253,7 @@ suite('Artifacts', function() {
         forceSP: true,
       });
 
-      let name = 'signed-url.dat';
+      let name = 'signed/data+name.dat';
 
       let response = await helper.queue.createArtifact(taskId, 0, name, {
         storageType: 'blob',
@@ -299,7 +299,8 @@ suite('Artifacts', function() {
 
       // NOTE THAT THIS IS USING 'garbage2' and not 'garbage'
       assume(parsed).has.property('host', 'test-bucket-for-any-garbage2.s3-us-west-2.amazonaws.com');
-      assume(parsed).has.property('pathname', `/${taskId}/0/${name}`);
+      // We're expecting non-/ chars to be encoded
+      assume(parsed).has.property('pathname', `/${taskId}/0/${encodeURIComponent(name).replace(/%2[Ff]/, '/')}`);
 
       let query = qs.parse(parsed.query);
 
