@@ -52,7 +52,7 @@ properties:
     type:         array
     items:
       type:       object
-      title:      Actions
+      title:      "Worker-type Action"
       description: {$const: action-description}
       properties:
         name:
