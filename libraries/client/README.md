@@ -257,6 +257,36 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
  * `awsProvisioner.backendStatus() : result`
  * `awsProvisioner.ping() : void`
 
+### Methods in `taskcluster.EC2Manager`
+```js
+// Create EC2Manager client instance with default baseUrl:
+//  - localhost:5555/v1
+var eC2Manager = new taskcluster.EC2Manager(options);
+```
+ * `eC2Manager.listWorkerTypes() : result`
+ * `eC2Manager.runInstance(workerType, payload) : void`
+ * `eC2Manager.terminateWorkerType(workerType) : void`
+ * `eC2Manager.workerTypeStats(workerType) : result`
+ * `eC2Manager.workerTypeHealth(workerType) : result`
+ * `eC2Manager.workerTypeErrors(workerType) : result`
+ * `eC2Manager.workerTypeState(workerType) : result`
+ * `eC2Manager.ensureKeyPair(name, payload) : void`
+ * `eC2Manager.removeKeyPair(name) : void`
+ * `eC2Manager.terminateInstance(region, instanceId) : void`
+ * `eC2Manager.getPrices() : result`
+ * `eC2Manager.getSpecificPrices(payload) : result`
+ * `eC2Manager.getHealth() : result`
+ * `eC2Manager.getRecentErrors() : result`
+ * `eC2Manager.regions() : void`
+ * `eC2Manager.amiUsage() : void`
+ * `eC2Manager.ebsUsage() : void`
+ * `eC2Manager.dbpoolStats() : void`
+ * `eC2Manager.allState() : void`
+ * `eC2Manager.sqsStats() : void`
+ * `eC2Manager.purgeQueues() : void`
+ * `eC2Manager.apiReference() : void`
+ * `eC2Manager.ping() : void`
+
 ### Methods in `taskcluster.Github`
 ```js
 // Create Github client instance with default baseUrl:
@@ -299,8 +329,8 @@ var hooks = new taskcluster.Hooks(options);
 var index = new taskcluster.Index(options);
 ```
  * `index.findTask(indexPath) : result`
- * `index.listNamespaces(namespace, payload) : result`
- * `index.listTasks(namespace, payload) : result`
+ * `index.listNamespaces(namespace, [options]) : result`
+ * `index.listTasks(namespace, [options]) : result`
  * `index.insertTask(namespace, payload) : result`
  * `index.findArtifactFromTask(indexPath, name) : void`
  * `index.ping() : void`
@@ -324,18 +354,6 @@ var notify = new taskcluster.Notify(options);
  * `notify.pulse(payload) : void`
  * `notify.irc(payload) : void`
  * `notify.ping() : void`
-
-### Methods in `taskcluster.Pulse`
-```js
-// Create Pulse client instance with default baseUrl:
-//  - https://pulse.taskcluster.net/v1
-var pulse = new taskcluster.Pulse(options);
-```
- * `pulse.overview() : result`
- * `pulse.listNamespaces([options]) : result`
- * `pulse.namespace(namespace) : result`
- * `pulse.claimNamespace(namespace, payload) : result`
- * `pulse.ping() : void`
 
 ### Methods in `taskcluster.PurgeCache`
 ```js
