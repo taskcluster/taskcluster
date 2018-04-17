@@ -5,7 +5,7 @@ description: |
 type:         array
 items:
   type:       object
-  title:      Actions
+  title:      "Action"
   description: {$const: action-description}
   properties:
     name:
