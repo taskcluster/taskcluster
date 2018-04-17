@@ -603,33 +603,33 @@ func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, jo
 }
 
 func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
-	// setSourceURL(string) should always called before postPopulate(*Job), so
-	// we can rely on it being already set
+
+	// Since setSourceURL(string) must be called before postPopulate(*Job), we
+	// can rely on subSchema.SourceURL being already set.
 	job.result.SchemaSet.all[subSchema.SourceURL] = subSchema
-	err = subSchema.postPopulateIfNotNil(subSchema.Definitions, job, "/definitions")
-	if err != nil {
-		return err
+
+	// If this subschema has Items (anyOf, oneOf, allOf) then we should "copy
+	// down" properties from this schema into them, since they inherit the
+	// values in this schema if they don't override them.
+	subSchema.AllOf.MergeIn(subSchema, map[string]bool{"AllOf": true, "ID": true})
+	subSchema.AnyOf.MergeIn(subSchema, map[string]bool{"AnyOf": true, "ID": true})
+	subSchema.OneOf.MergeIn(subSchema, map[string]bool{"OneOf": true, "ID": true})
+
+	// Call postPopulate on sub items of this schema...
+	for subPath, subItem := range map[string]canPopulate{
+		"/definitions": subSchema.Definitions,
+		"/allOf":       subSchema.AllOf,
+		"/anyOf":       subSchema.AnyOf,
+		"/oneOf":       subSchema.OneOf,
+		"/items":       subSchema.Items,
+		"/properties":  subSchema.Properties,
+	} {
+		err = subSchema.postPopulateIfNotNil(subItem, job, subPath)
+		if err != nil {
+			return err
+		}
 	}
-	err = subSchema.postPopulateIfNotNil(subSchema.AllOf, job, "/allOf")
-	if err != nil {
-		return err
-	}
-	err = subSchema.postPopulateIfNotNil(subSchema.AnyOf, job, "/anyOf")
-	if err != nil {
-		return err
-	}
-	err = subSchema.postPopulateIfNotNil(subSchema.OneOf, job, "/oneOf")
-	if err != nil {
-		return err
-	}
-	err = subSchema.postPopulateIfNotNil(subSchema.Items, job, "/items")
-	if err != nil {
-		return err
-	}
-	err = subSchema.postPopulateIfNotNil(subSchema.Properties, job, "/properties")
-	if err != nil {
-		return err
-	}
+
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
@@ -641,7 +641,8 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 			}
 		}
 	}
-	// Find and tag subschema properties that are in required list
+
+	// Mark subschema properties that are in required list as being required (IsRequired property)
 	for _, req := range subSchema.Required {
 		if subSchema.Properties != nil {
 			if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
@@ -651,10 +652,62 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 			}
 		}
 	}
+
+	// If this subschema is an object, and nested structs are disabled, then add it to the top level types
 	if job.DisableNestedStructs && subSchema.Items != nil && subSchema.Items.Properties != nil {
 		job.add(subSchema.Items)
 	}
+
 	return nil
+}
+
+// MergeIn copies attributes from subSchema into the subschemas in items.Items
+// when they are not currently set.
+func (items *Items) MergeIn(subSchema *JsonSubSchema, skipFields StringSet) {
+	if items == nil || len(items.Items) == 0 {
+		// nothing to do
+		return
+	}
+	p := reflect.ValueOf(subSchema).Elem()
+	// loop through all struct fields of Jsonsubschema
+	for i := 0; i < p.NumField(); i++ {
+		// don't copy fields that are blacklisted, or that aren't pointers
+		if skipFields[p.Type().Field(i).Name] || p.Field(i).Kind() != reflect.Ptr {
+			continue
+		}
+		// loop through all items (e.g. the list of oneOf schemas)
+		for _, item := range items.Items {
+			c := reflect.ValueOf(item).Elem()
+			// only replace destination value if it is currently nil
+			if destination, source := c.Field(i), p.Field(i); destination.IsNil() {
+
+				// To copy the pointer, we would just:
+				//   destination.Set(source)
+				// However, we want to make copies of the entries, rather than
+				// copy the pointers, so that future modifications of a copied
+				// subschema won't update the source schema. Note: this is only
+				// a top-level copy, not a deep copy, but is better than nothing.
+
+				// dereference the pointer to get the value
+				targetValue := reflect.Indirect(source)
+				if targetValue.IsValid() {
+					// create a new value to store it
+					newValue := reflect.New(targetValue.Type()).Elem()
+					// copy the value into the new value
+					newValue.Set(targetValue)
+					// create a new pointer to point to the new value
+					newPointer := reflect.New(targetValue.Addr().Type()).Elem()
+					// set that pointer to the address of the new value
+					newPointer.Set(newValue.Addr())
+					// copy the new pointer to the destination
+					destination.Set(newPointer)
+				}
+			}
+			// If we wanted to "move" instead of "copy", we could reset source
+			// to nil with:
+			//   source.Set(reflect.Zero(source.Type()))
+		}
+	}
 }
 
 func (subSchema *JsonSubSchema) setSourceURL(url string) {
