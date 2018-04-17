@@ -1,5 +1,5 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:    "Azure Blob Shared-Access-Signature Response"
+title:    "Azure Blob Shared-Access-Signature"
 description: |
   Response to a request for an Shared-Access-Signature to access an Azure
   Blob Storage container.
