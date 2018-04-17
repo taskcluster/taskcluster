@@ -43,9 +43,10 @@ properties:
       **Note,** order of querystring elements is important.
   host:
     type:                 string
-    anyOf:
-      - format:           hostname
-      - format:           ipv4
+    # IPv4 addresses conform to `hostname` format according to jsonschema, so
+    # we do not need to specify both `hostname` and `ipv4` formats.
+    format:               hostname
+    title:                Hostname or IPv4
     description: |
       Host for which the request came in, this is typically the `Host` header
       excluding the port if any.
