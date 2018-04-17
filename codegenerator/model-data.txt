@@ -1,4 +1,4 @@
-Generated: 1523972937
+Generated: 1523979268
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -12110,7 +12110,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-TYPE_NAME: Actions3
+TYPE_NAME: Actions
 description: |
   See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
 id: http://schemas.taskcluster.net/queue/v1/actions.json#
@@ -12118,7 +12118,7 @@ items:
   IS_REQUIRED: false
   PROPERTY_NAME: ' entry'
   SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-  TYPE_NAME: Actions4
+  TYPE_NAME: Action1
   additionalProperties:
     Boolean: false
     Properties: null
@@ -12254,7 +12254,7 @@ items:
   - url
   - method
   - description
-  title: Actions
+  title: Action
   type: object
 title: Actions
 type: array
@@ -12265,7 +12265,7 @@ http://schemas.taskcluster.net/queue/v1/actions.json#/items
 IS_REQUIRED: false
 PROPERTY_NAME: ' entry'
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-TYPE_NAME: Actions4
+TYPE_NAME: Action1
 additionalProperties:
   Boolean: false
   Properties: null
@@ -12401,7 +12401,7 @@ required:
 - url
 - method
 - description
-title: Actions
+title: Action
 type: object
 
 
@@ -16876,7 +16876,7 @@ properties:
                 IS_REQUIRED: false
                 PROPERTY_NAME: ""
                 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-                TYPE_NAME: Actions3
+                TYPE_NAME: Actions
                 description: |
                   See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
                 id: http://schemas.taskcluster.net/queue/v1/actions.json#
@@ -16884,7 +16884,7 @@ properties:
                   IS_REQUIRED: false
                   PROPERTY_NAME: ' entry'
                   SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-                  TYPE_NAME: Actions4
+                  TYPE_NAME: Action1
                   additionalProperties:
                     Boolean: false
                     Properties: null
@@ -17020,7 +17020,7 @@ properties:
                   - url
                   - method
                   - description
-                  title: Actions
+                  title: Action
                   type: object
                 title: Actions
                 type: array
@@ -17137,7 +17137,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-        TYPE_NAME: Actions3
+        TYPE_NAME: Actions
         description: |
           See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
         id: http://schemas.taskcluster.net/queue/v1/actions.json#
@@ -17145,7 +17145,7 @@ properties:
           IS_REQUIRED: false
           PROPERTY_NAME: ' entry'
           SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-          TYPE_NAME: Actions4
+          TYPE_NAME: Action1
           additionalProperties:
             Boolean: false
             Properties: null
@@ -17281,7 +17281,7 @@ properties:
           - url
           - method
           - description
-          title: Actions
+          title: Action
           type: object
         title: Actions
         type: array
@@ -21676,7 +21676,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-        TYPE_NAME: Actions3
+        TYPE_NAME: Actions
         description: |
           See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
         id: http://schemas.taskcluster.net/queue/v1/actions.json#
@@ -21684,7 +21684,7 @@ properties:
           IS_REQUIRED: false
           PROPERTY_NAME: ' entry'
           SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-          TYPE_NAME: Actions4
+          TYPE_NAME: Action1
           additionalProperties:
             Boolean: false
             Properties: null
@@ -21820,7 +21820,7 @@ properties:
           - url
           - method
           - description
-          title: Actions
+          title: Action
           type: object
         title: Actions
         type: array
@@ -25155,7 +25155,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-        TYPE_NAME: Actions3
+        TYPE_NAME: Actions
         description: |
           See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
         id: http://schemas.taskcluster.net/queue/v1/actions.json#
@@ -25163,7 +25163,7 @@ properties:
           IS_REQUIRED: false
           PROPERTY_NAME: ' entry'
           SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-          TYPE_NAME: Actions4
+          TYPE_NAME: Action1
           additionalProperties:
             Boolean: false
             Properties: null
@@ -25299,7 +25299,7 @@ properties:
           - url
           - method
           - description
-          title: Actions
+          title: Action
           type: object
         title: Actions
         type: array
@@ -25484,7 +25484,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: actions entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items
-        TYPE_NAME: Actions2
+        TYPE_NAME: WorkerAction
         additionalProperties:
           Boolean: false
           Properties: null
@@ -25611,7 +25611,7 @@ properties:
         - url
         - method
         - description
-        title: Actions
+        title: Worker Action
         type: object
       title: Worker Actions
       type: array
@@ -25776,7 +25776,7 @@ http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions
 IS_REQUIRED: false
 PROPERTY_NAME: actions entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items
-TYPE_NAME: Actions2
+TYPE_NAME: WorkerAction
 additionalProperties:
   Boolean: false
   Properties: null
@@ -25903,7 +25903,7 @@ required:
 - url
 - method
 - description
-title: Actions
+title: Worker Action
 type: object
 
 
@@ -25983,7 +25983,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: actions entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items
-        TYPE_NAME: Actions1
+        TYPE_NAME: WorkerTypeAction
         additionalProperties:
           Boolean: false
           Properties: null
@@ -26110,7 +26110,7 @@ properties:
         - url
         - method
         - description
-        title: Actions
+        title: Worker-type Action
         type: object
       title: Worker-type Actions
       type: array
@@ -26210,7 +26210,7 @@ http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/act
 IS_REQUIRED: false
 PROPERTY_NAME: actions entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items
-TYPE_NAME: Actions1
+TYPE_NAME: WorkerTypeAction
 additionalProperties:
   Boolean: false
   Properties: null
@@ -26337,7 +26337,7 @@ required:
 - url
 - method
 - description
-title: Actions
+title: Worker-type Action
 type: object
 
 

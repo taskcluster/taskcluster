@@ -40,177 +40,8 @@ type (
 	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
 	// for more information.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items
-	Actions1 struct {
-
-		// Only actions with the context `worker-type` are included.
-		//
-		// Possible values:
-		//   * "worker-type"
-		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/context
-		Context string `json:"context"`
-
-		// Description of the provisioner.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/description
-		Description string `json:"description"`
-
-		// Method to indicate the desired action to be performed for a given resource.
-		//
-		// Possible values:
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "PATCH"
-		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/method
-		Method string `json:"method"`
-
-		// Short names for things like logging/error messages.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/name
-		Name string `json:"name"`
-
-		// Appropriate title for any sort of Modal prompt.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/title
-		Title json.RawMessage `json:"title"`
-
-		// When an action is triggered, a request is made using the `url` and `method`.
-		// Depending on the `context`, the following parameters will be substituted in the url:
-		//
-		// | `context`   | Path parameters                                          |
-		// |-------------|----------------------------------------------------------|
-		// | provisioner | <provisionerId>                                          |
-		// | worker-type | <provisionerId>, <workerType>                            |
-		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-		//
-		// _Note: The request needs to be signed with the user's Taskcluster credentials._
-		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/url
-		URL string `json:"url"`
-	}
-
-	// Actions provide a generic mechanism to expose additional features of a
-	// provisioner, worker type, or worker to Taskcluster clients.
-	//
-	// An action is comprised of metadata describing the feature it exposes,
-	// together with a webhook for triggering it.
-	//
-	// The Taskcluster tools site, for example, retrieves actions when displaying
-	// provisioners, worker types and workers. It presents the provisioner/worker
-	// type/worker specific actions to the user. When the user triggers an action,
-	// the web client takes the registered webhook, substitutes parameters into the
-	// URL (see `url`), signs the requests with the Taskcluster credentials of the
-	// user operating the web interface, and issues the HTTP request.
-	//
-	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
-	//
-	// The action context is used by the web client to determine where in the web
-	// interface to present the action to the user as follows:
-	//
-	// | `context`   | Tool where action is displayed |
-	// |-------------|--------------------------------|
-	// | provisioner | Provisioner Explorer           |
-	// | worker-type | Workers Explorer               |
-	// | worker      | Worker Explorer                |
-	//
-	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
-	// for more information.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items
-	Actions2 struct {
-
-		// Only actions with the context `worker` are included.
-		//
-		// Possible values:
-		//   * "worker"
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/context
-		Context string `json:"context"`
-
-		// Description of the provisioner.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description
-		Description string `json:"description"`
-
-		// Method to indicate the desired action to be performed for a given resource.
-		//
-		// Possible values:
-		//   * "POST"
-		//   * "PUT"
-		//   * "DELETE"
-		//   * "PATCH"
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/method
-		Method string `json:"method"`
-
-		// Short names for things like logging/error messages.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name
-		Name string `json:"name"`
-
-		// Appropriate title for any sort of Modal prompt.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/title
-		Title json.RawMessage `json:"title"`
-
-		// When an action is triggered, a request is made using the `url` and `method`.
-		// Depending on the `context`, the following parameters will be substituted in the url:
-		//
-		// | `context`   | Path parameters                                          |
-		// |-------------|----------------------------------------------------------|
-		// | provisioner | <provisionerId>                                          |
-		// | worker-type | <provisionerId>, <workerType>                            |
-		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-		//
-		// _Note: The request needs to be signed with the user's Taskcluster credentials._
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url
-		URL string `json:"url"`
-	}
-
-	// See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/actions.json#
-	Actions3 []Actions4
-
-	// Actions provide a generic mechanism to expose additional features of a
-	// provisioner, worker type, or worker to Taskcluster clients.
-	//
-	// An action is comprised of metadata describing the feature it exposes,
-	// together with a webhook for triggering it.
-	//
-	// The Taskcluster tools site, for example, retrieves actions when displaying
-	// provisioners, worker types and workers. It presents the provisioner/worker
-	// type/worker specific actions to the user. When the user triggers an action,
-	// the web client takes the registered webhook, substitutes parameters into the
-	// URL (see `url`), signs the requests with the Taskcluster credentials of the
-	// user operating the web interface, and issues the HTTP request.
-	//
-	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
-	//
-	// The action context is used by the web client to determine where in the web
-	// interface to present the action to the user as follows:
-	//
-	// | `context`   | Tool where action is displayed |
-	// |-------------|--------------------------------|
-	// | provisioner | Provisioner Explorer           |
-	// | worker-type | Workers Explorer               |
-	// | worker      | Worker Explorer                |
-	//
-	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
-	// for more information.
-	//
 	// See http://schemas.taskcluster.net/queue/v1/actions.json#/items
-	Actions4 struct {
+	Action1 struct {
 
 		// Actions have a "context" that is one of provisioner, worker-type, or worker, indicating
 		// which it applies to. `context` is used by the front-end to know where to display the action.
@@ -269,6 +100,11 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/url
 		URL string `json:"url"`
 	}
+
+	// See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/actions.json#
+	Actions []Action1
 
 	// Information about an artifact for the given `taskId` and `runId`.
 	//
@@ -1078,7 +914,7 @@ type (
 	ProvisionerInformation struct {
 
 		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/actions
-		Actions Actions3 `json:"actions"`
+		Actions Actions `json:"actions"`
 
 		// Description of the provisioner.
 		//
@@ -1123,7 +959,7 @@ type (
 	ProvisionerRequest struct {
 
 		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/actions
-		Actions Actions3 `json:"actions,omitempty"`
+		Actions Actions `json:"actions,omitempty"`
 
 		// Description of the provisioner.
 		//
@@ -1156,7 +992,7 @@ type (
 	ProvisionerResponse struct {
 
 		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/actions
-		Actions Actions3 `json:"actions"`
+		Actions Actions `json:"actions"`
 
 		// Description of the provisioner.
 		//
@@ -2287,6 +2123,88 @@ type (
 		WorkerID string `json:"workerId"`
 	}
 
+	// Actions provide a generic mechanism to expose additional features of a
+	// provisioner, worker type, or worker to Taskcluster clients.
+	//
+	// An action is comprised of metadata describing the feature it exposes,
+	// together with a webhook for triggering it.
+	//
+	// The Taskcluster tools site, for example, retrieves actions when displaying
+	// provisioners, worker types and workers. It presents the provisioner/worker
+	// type/worker specific actions to the user. When the user triggers an action,
+	// the web client takes the registered webhook, substitutes parameters into the
+	// URL (see `url`), signs the requests with the Taskcluster credentials of the
+	// user operating the web interface, and issues the HTTP request.
+	//
+	// The level to which the action relates (provisioner, worker type, worker) is
+	// called the action context. All actions, regardless of the action contexts,
+	// are registered against the provisioner when calling
+	// `queue.declareProvisioner`.
+	//
+	// The action context is used by the web client to determine where in the web
+	// interface to present the action to the user as follows:
+	//
+	// | `context`   | Tool where action is displayed |
+	// |-------------|--------------------------------|
+	// | provisioner | Provisioner Explorer           |
+	// | worker-type | Workers Explorer               |
+	// | worker      | Worker Explorer                |
+	//
+	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+	// for more information.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items
+	WorkerAction struct {
+
+		// Only actions with the context `worker` are included.
+		//
+		// Possible values:
+		//   * "worker"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/context
+		Context string `json:"context"`
+
+		// Description of the provisioner.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description
+		Description string `json:"description"`
+
+		// Method to indicate the desired action to be performed for a given resource.
+		//
+		// Possible values:
+		//   * "POST"
+		//   * "PUT"
+		//   * "DELETE"
+		//   * "PATCH"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/method
+		Method string `json:"method"`
+
+		// Short names for things like logging/error messages.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name
+		Name string `json:"name"`
+
+		// Appropriate title for any sort of Modal prompt.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/title
+		Title json.RawMessage `json:"title"`
+
+		// When an action is triggered, a request is made using the `url` and `method`.
+		// Depending on the `context`, the following parameters will be substituted in the url:
+		//
+		// | `context`   | Path parameters                                          |
+		// |-------------|----------------------------------------------------------|
+		// | provisioner | <provisionerId>                                          |
+		// | worker-type | <provisionerId>, <workerType>                            |
+		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
+		//
+		// _Note: The request needs to be signed with the user's Taskcluster credentials._
+		//
+		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url
+		URL string `json:"url"`
+	}
+
 	// Request to update a worker.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#
@@ -2305,7 +2223,7 @@ type (
 	WorkerResponse struct {
 
 		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions
-		Actions []Actions2 `json:"actions"`
+		Actions []WorkerAction `json:"actions"`
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
@@ -2368,6 +2286,88 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
+	// Actions provide a generic mechanism to expose additional features of a
+	// provisioner, worker type, or worker to Taskcluster clients.
+	//
+	// An action is comprised of metadata describing the feature it exposes,
+	// together with a webhook for triggering it.
+	//
+	// The Taskcluster tools site, for example, retrieves actions when displaying
+	// provisioners, worker types and workers. It presents the provisioner/worker
+	// type/worker specific actions to the user. When the user triggers an action,
+	// the web client takes the registered webhook, substitutes parameters into the
+	// URL (see `url`), signs the requests with the Taskcluster credentials of the
+	// user operating the web interface, and issues the HTTP request.
+	//
+	// The level to which the action relates (provisioner, worker type, worker) is
+	// called the action context. All actions, regardless of the action contexts,
+	// are registered against the provisioner when calling
+	// `queue.declareProvisioner`.
+	//
+	// The action context is used by the web client to determine where in the web
+	// interface to present the action to the user as follows:
+	//
+	// | `context`   | Tool where action is displayed |
+	// |-------------|--------------------------------|
+	// | provisioner | Provisioner Explorer           |
+	// | worker-type | Workers Explorer               |
+	// | worker      | Worker Explorer                |
+	//
+	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+	// for more information.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items
+	WorkerTypeAction struct {
+
+		// Only actions with the context `worker-type` are included.
+		//
+		// Possible values:
+		//   * "worker-type"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/context
+		Context string `json:"context"`
+
+		// Description of the provisioner.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/description
+		Description string `json:"description"`
+
+		// Method to indicate the desired action to be performed for a given resource.
+		//
+		// Possible values:
+		//   * "POST"
+		//   * "PUT"
+		//   * "DELETE"
+		//   * "PATCH"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/method
+		Method string `json:"method"`
+
+		// Short names for things like logging/error messages.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/name
+		Name string `json:"name"`
+
+		// Appropriate title for any sort of Modal prompt.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/title
+		Title json.RawMessage `json:"title"`
+
+		// When an action is triggered, a request is made using the `url` and `method`.
+		// Depending on the `context`, the following parameters will be substituted in the url:
+		//
+		// | `context`   | Path parameters                                          |
+		// |-------------|----------------------------------------------------------|
+		// | provisioner | <provisionerId>                                          |
+		// | worker-type | <provisionerId>, <workerType>                            |
+		// | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
+		//
+		// _Note: The request needs to be signed with the user's Taskcluster credentials._
+		//
+		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/url
+		URL string `json:"url"`
+	}
+
 	// Request to update a worker-type.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
@@ -2404,7 +2404,7 @@ type (
 	WorkerTypeResponse struct {
 
 		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions
-		Actions []Actions1 `json:"actions"`
+		Actions []WorkerTypeAction `json:"actions"`
 
 		// Description of the worker-type.
 		//
