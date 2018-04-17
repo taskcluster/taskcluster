@@ -1,33 +1,44 @@
 $schema:            http://json-schema.org/draft-06/schema#
 title:              "Post IRC Message Request"
-description: |
-  Request to post a message on IRC.
-type:               object
-properties:
-  channel:
-    type:           string
-    pattern:        "^[#&][^ ,\\u0007]{1,199}$"
-    description: |
-      Channel to post the message in. Please note that you **must** supply
-      either `user` or `channel`, you cannot supply both.
-  user:
-    type:           string
-    pattern:        "^[A-Za-z\\[\\]\\\\~_\\^{|}][A-Za-z0-9\\-\\[\\]\\\\~_\\^{|}]{0,254}$"
-    maxLength:      255
-    minLength:      1
-    description: |
-      User to post the message to. Please note that you **must** supply
-      either `user` or `channel`, you cannot supply both.
+definitions:
   message:
+    title:          IRC Message Text
     type:           string
     minLength:      1
     maxLength:      510
     description: |
       IRC message to send as plain text.
-maxProperties: 2
-additionalProperties: false
-required:
-  - message
+description: |
+  Request to post a message on IRC.
 oneOf:
-  - required: [channel]
-  - required: [user]
+  - type:           object
+    title:          Channel Message
+    properties:
+      channel:
+        title:      Channel Name
+        type:       string
+        pattern:    "^[#&][^ ,\\u0007]{1,199}$"
+        minLength:  1
+        description: |
+          Channel to post the message in.
+      message:      {$ref: "#/definitions/message"}
+    additionalProperties: false
+    required:
+      - channel
+      - message
+  - type:           object
+    title:          Private Message
+    properties:
+      user:
+        title:      IRC Handle
+        type:       string
+        pattern:    "^[A-Za-z\\[\\]\\\\~_\\^{|}][A-Za-z0-9\\-\\[\\]\\\\~_\\^{|}]{0,254}$"
+        maxLength:  255
+        minLength:  1
+        description: |
+          User to post the message to.
+      message:      {$ref: "#/definitions/message"}
+    additionalProperties: false
+    required:
+      - user
+      - message
