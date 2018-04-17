@@ -94,20 +94,17 @@ exports.insertTask = insertTask;
 *    Table:            // Table on which query is to be executed  
 * }
 */
-var listTableEntries = function({query, limit, continuation, key, Table}, callback) {
-  return Table.query(query, {
-    limit,
-    continuation,
-  }).then(function(data) {
-    var retval = {};
-    retval[key] = data.entries.map(function(entry) {
-      return entry.json();
-    });
-    if (data.continuation) {
-      retval.continuationToken = data.continuation;
-    }
-    return callback(null, retval);
+
+var listTableEntries = async function({query, limit, continuation, key, Table}) {
+  let data = await Table.query(query, {limit, continuation});
+  let retval = {};
+
+  retval[key] = data.entries.map(function(entry) {
+    return entry.json();
   });
+
+  retval.continuationToken = data.continuation || undefined;
+  return retval;
 };
 
 // Export listTableEntries

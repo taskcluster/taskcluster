@@ -80,7 +80,7 @@ suite('API', () => {
       let results = [];
 
       while (1) {
-        let result = await helper.index.listNamespaces('', {});
+        let result = await helper.index.listNamespaces('', opts);
         results = results.concat(result.namespaces);
         if (!result.continuationToken) {
           break;
