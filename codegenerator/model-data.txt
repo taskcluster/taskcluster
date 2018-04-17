@@ -1,4 +1,4 @@
-Generated: 1523902961
+Generated: 1523971352
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10295,75 +10295,144 @@ IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#
 TYPE_NAME: PostIRCMessageRequest
-additionalProperties:
-  Boolean: false
-  Properties: null
+definitions:
+  MemberNames:
+    message: Message
+  Properties:
+    message:
+      IS_REQUIRED: false
+      PROPERTY_NAME: message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+      TYPE_NAME: IRCMessageText
+      description: |
+        IRC message to send as plain text.
+      maxLength: 510
+      minLength: 1
+      title: IRC Message Text
+      type: string
+  SortedPropertyNames:
+  - message
+  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions
 description: |
   Request to post a message on IRC.
 id: http://schemas.taskcluster.net/notify/v1/irc-request.json#
-maxProperties: 2
 oneOf:
   Items:
   - IS_REQUIRED: false
     PROPERTY_NAME: ""
     SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
-    TYPE_NAME: Var
+    TYPE_NAME: ChannelMessage
+    additionalProperties:
+      Boolean: false
+      Properties: null
+    properties:
+      MemberNames:
+        channel: Channel
+        message: Message
+      Properties:
+        channel:
+          IS_REQUIRED: true
+          PROPERTY_NAME: channel
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+          TYPE_NAME: ChannelName
+          description: |
+            Channel to post the message in.
+          minLength: 1
+          pattern: ^[#&][^ ,\u0007]{1,199}$
+          title: Channel Name
+          type: string
+        message:
+          $ref: '#/definitions/message'
+          IS_REQUIRED: true
+          PROPERTY_NAME: message
+          REF_SUBSCHEMA:
+            IS_REQUIRED: false
+            PROPERTY_NAME: message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+            TYPE_NAME: IRCMessageText
+            description: |
+              IRC message to send as plain text.
+            maxLength: 510
+            minLength: 1
+            title: IRC Message Text
+            type: string
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/message
+          TYPE_NAME: Message
+      SortedPropertyNames:
+      - channel
+      - message
+      SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties
     required:
     - channel
+    - message
+    title: Channel Message
+    type: object
   - IS_REQUIRED: false
     PROPERTY_NAME: ""
     SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
-    TYPE_NAME: Var1
+    TYPE_NAME: PrivateMessage
+    additionalProperties:
+      Boolean: false
+      Properties: null
+    properties:
+      MemberNames:
+        message: Message
+        user: User
+      Properties:
+        message:
+          $ref: '#/definitions/message'
+          IS_REQUIRED: true
+          PROPERTY_NAME: message
+          REF_SUBSCHEMA:
+            IS_REQUIRED: false
+            PROPERTY_NAME: message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+            TYPE_NAME: IRCMessageText
+            description: |
+              IRC message to send as plain text.
+            maxLength: 510
+            minLength: 1
+            title: IRC Message Text
+            type: string
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/message
+          TYPE_NAME: Message
+        user:
+          IS_REQUIRED: true
+          PROPERTY_NAME: user
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/user
+          TYPE_NAME: IRCHandle
+          description: |
+            User to post the message to.
+          maxLength: 255
+          minLength: 1
+          pattern: ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+          title: IRC Handle
+          type: string
+      SortedPropertyNames:
+      - message
+      - user
+      SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties
     required:
     - user
+    - message
+    title: Private Message
+    type: object
   SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf
-properties:
-  MemberNames:
-    channel: Channel
-    message: Message
-    user: User
-  Properties:
-    channel:
-      IS_REQUIRED: false
-      PROPERTY_NAME: channel
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/channel
-      TYPE_NAME: Channel
-      description: |
-        Channel to post the message in. Please note that you **must** supply
-        either `user` or `channel`, you cannot supply both.
-      pattern: ^[#&][^ ,\u0007]{1,199}$
-      type: string
-    message:
-      IS_REQUIRED: true
-      PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/message
-      TYPE_NAME: Message
-      description: |
-        IRC message to send as plain text.
-      maxLength: 510
-      minLength: 1
-      type: string
-    user:
-      IS_REQUIRED: false
-      PROPERTY_NAME: user
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/user
-      TYPE_NAME: User
-      description: |
-        User to post the message to. Please note that you **must** supply
-        either `user` or `channel`, you cannot supply both.
-      maxLength: 255
-      minLength: 1
-      pattern: ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
-      type: string
-  SortedPropertyNames:
-  - channel
-  - message
-  - user
-  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties
-required:
-- message
 title: Post IRC Message Request
-type: object
+
+
+http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+==============================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: message
+SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+TYPE_NAME: IRCMessageText
+description: |
+  IRC message to send as plain text.
+maxLength: 510
+minLength: 1
+title: IRC Message Text
+type: string
 
 
 http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
@@ -10371,9 +10440,52 @@ http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
-TYPE_NAME: Var
+TYPE_NAME: ChannelMessage
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    channel: Channel
+    message: Message
+  Properties:
+    channel:
+      IS_REQUIRED: true
+      PROPERTY_NAME: channel
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+      TYPE_NAME: ChannelName
+      description: |
+        Channel to post the message in.
+      minLength: 1
+      pattern: ^[#&][^ ,\u0007]{1,199}$
+      title: Channel Name
+      type: string
+    message:
+      $ref: '#/definitions/message'
+      IS_REQUIRED: true
+      PROPERTY_NAME: message
+      REF_SUBSCHEMA:
+        IS_REQUIRED: false
+        PROPERTY_NAME: message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+        TYPE_NAME: IRCMessageText
+        description: |
+          IRC message to send as plain text.
+        maxLength: 510
+        minLength: 1
+        title: IRC Message Text
+        type: string
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/message
+      TYPE_NAME: Message
+  SortedPropertyNames:
+  - channel
+  - message
+  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties
 required:
 - channel
+- message
+title: Channel Message
+type: object
 
 
 http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
@@ -10381,9 +10493,53 @@ http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
-TYPE_NAME: Var1
+TYPE_NAME: PrivateMessage
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    message: Message
+    user: User
+  Properties:
+    message:
+      $ref: '#/definitions/message'
+      IS_REQUIRED: true
+      PROPERTY_NAME: message
+      REF_SUBSCHEMA:
+        IS_REQUIRED: false
+        PROPERTY_NAME: message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+        TYPE_NAME: IRCMessageText
+        description: |
+          IRC message to send as plain text.
+        maxLength: 510
+        minLength: 1
+        title: IRC Message Text
+        type: string
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/message
+      TYPE_NAME: Message
+    user:
+      IS_REQUIRED: true
+      PROPERTY_NAME: user
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/user
+      TYPE_NAME: IRCHandle
+      description: |
+        User to post the message to.
+      maxLength: 255
+      minLength: 1
+      pattern: ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+      title: IRC Handle
+      type: string
+  SortedPropertyNames:
+  - message
+  - user
+  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties
 required:
 - user
+- message
+title: Private Message
+type: object
 
 
 http://schemas.taskcluster.net/notify/v1/pulse-request.json#

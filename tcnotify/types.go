@@ -8,6 +8,29 @@ import (
 )
 
 type (
+	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
+	ChannelMessage struct {
+
+		// Channel to post the message in.
+		//
+		// Syntax:     ^[#&][^ ,\u0007]{1,199}$
+		// Min length: 1
+		//
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+		Channel string `json:"channel"`
+
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/message
+		Message IRCMessageText `json:"message"`
+	}
+
+	// IRC message to send as plain text.
+	//
+	// Min length: 1
+	// Max length: 510
+	//
+	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+	IRCMessageText string
+
 	// Optional link that can be added as a button to the email.
 	//
 	// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
@@ -33,38 +56,11 @@ type (
 	// Request to post a message on IRC.
 	//
 	// One of:
-	//   * Var
-	//   * Var1
+	//   * ChannelMessage
+	//   * PrivateMessage
 	//
 	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#
-	PostIRCMessageRequest struct {
-
-		// Channel to post the message in. Please note that you **must** supply
-		// either `user` or `channel`, you cannot supply both.
-		//
-		// Syntax:     ^[#&][^ ,\u0007]{1,199}$
-		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/channel
-		Channel string `json:"channel,omitempty"`
-
-		// IRC message to send as plain text.
-		//
-		// Min length: 1
-		// Max length: 510
-		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/message
-		Message string `json:"message"`
-
-		// User to post the message to. Please note that you **must** supply
-		// either `user` or `channel`, you cannot supply both.
-		//
-		// Syntax:     ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
-		// Min length: 1
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/properties/user
-		User string `json:"user,omitempty"`
-	}
+	PostIRCMessageRequest json.RawMessage
 
 	// Request to post a message on pulse.
 	//
@@ -84,6 +80,22 @@ type (
 		//
 		// See http://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/routingKey
 		RoutingKey string `json:"routingKey"`
+	}
+
+	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
+	PrivateMessage struct {
+
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/message
+		Message IRCMessageText `json:"message"`
+
+		// User to post the message to.
+		//
+		// Syntax:     ^[A-Za-z\[\]\\~_\^{|}][A-Za-z0-9\-\[\]\\~_\^{|}]{0,254}$
+		// Min length: 1
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/user
+		User string `json:"user"`
 	}
 
 	// Request to send an email
@@ -135,41 +147,19 @@ type (
 		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/template
 		Template string `json:"template,omitempty"`
 	}
-
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
-	Var json.RawMessage
-
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
-	Var1 json.RawMessage
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var is of type json.RawMessage...
-func (this *Var) MarshalJSON() ([]byte, error) {
+// PostIRCMessageRequest is of type json.RawMessage...
+func (this *PostIRCMessageRequest) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var) UnmarshalJSON(data []byte) error {
+func (this *PostIRCMessageRequest) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("Var: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var1 is of type json.RawMessage...
-func (this *Var1) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var1) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Var1: UnmarshalJSON on nil pointer")
+		return errors.New("PostIRCMessageRequest: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
