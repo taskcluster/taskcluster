@@ -26,6 +26,8 @@ type (
 		Expires tcclient.Time `json:"expires"`
 	}
 
+	// Response from a request to authenticate a hawk request.
+	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[1]
 	AuthenticationFailedResponse struct {
 
@@ -43,6 +45,8 @@ type (
 		Status string `json:"status"`
 	}
 
+	// Response from a request to authenticate a hawk request.
+	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]
 	AuthenticationSuccessfulResponse struct {
 
@@ -691,11 +695,17 @@ type (
 		Sas string `json:"sas"`
 	}
 
+	// Host for which the request came in, this is typically the `Host` header
+	// excluding the port if any.
+	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
-	Var2 json.RawMessage
+	Var2 string
 
+	// Host for which the request came in, this is typically the `Host` header
+	// excluding the port if any.
+	//
 	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
-	Var3 json.RawMessage
+	Var3 string
 
 	// Token for connecting a worker to webhooktunnel proxy
 	//
@@ -730,38 +740,6 @@ func (this *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
 func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("HawkSignatureAuthenticationResponse: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var2 is of type json.RawMessage...
-func (this *Var2) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var2) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Var2: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Var3 is of type json.RawMessage...
-func (this *Var3) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Var3) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Var3: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

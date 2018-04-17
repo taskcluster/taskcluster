@@ -140,6 +140,8 @@ type (
 		Target_URL string `json:"target_url,omitempty"`
 	}
 
+	// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+	//
 	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 	//
 	// See http://schemas.taskcluster.net/github/v1/build-list.json#/properties/builds/items/properties/eventId/oneOf[0]
@@ -156,6 +158,8 @@ type (
 		Installed bool `json:"installed"`
 	}
 
+	// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
+	//
 	// Possible values:
 	//   * "Unknown"
 	//
