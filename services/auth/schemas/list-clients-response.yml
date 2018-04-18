@@ -2,6 +2,19 @@ $schema:  http://json-schema.org/draft-06/schema#
 title:                      "List Client Response"
 description: |
   List of clients
-type:                       array
-items:
-  $ref: 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+type: object
+properties:
+  clients:
+    type: array
+    items:
+      $ref: 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+  continuationToken:
+    title:                "Continuation Token"
+    type:                 string
+    description: |
+      A continuation token is returned if there are more results than listed
+      here. You can optionally provide the token in the request payload to
+      load the additional results.
+additionalProperties: false
+required:
+  - clients

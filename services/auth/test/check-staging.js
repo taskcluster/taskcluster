@@ -90,7 +90,7 @@ suite('taskcluster-auth-staging check', function() {
         payload: '{}',
       }).field;
     console.log(data.authorization);
-
+    
     let res = await auth.authenticateHawk(data);
     assume(res.status).to.equal('auth-success');
     assume(res.hash).to.equal('XtNvx1FqrUYVOLlne3l2WzcyRfj9QeC6YtmhMKKFMGY='); // hash of '{}'
