@@ -1,4 +1,4 @@
-Generated: 1523979268
+Generated: 1524032518
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -12499,7 +12499,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: tasks entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items
-        TYPE_NAME: TasksEntry
+        TYPE_NAME: TaskClaim
         additionalProperties:
           Boolean: false
           Properties: null
@@ -12514,73 +12514,82 @@ properties:
             workerId: WorkerID
           Properties:
             credentials:
+              $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
               IS_REQUIRED: true
               PROPERTY_NAME: credentials
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
-              TYPE_NAME: Credentials
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Temporary credentials granting `task.scopes` and the scope:
-                `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-                the task, upload artifacts and report task resolution.
+              REF_SUBSCHEMA:
+                $schema: http://json-schema.org/draft-06/schema#
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+                TYPE_NAME: TaskCredentials
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                description: |
+                  Temporary credentials granting `task.scopes` and the scope:
+                  `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+                  the task, upload artifacts and report task resolution.
 
-                The temporary credentials are set to expire after `takenUntil`. They
-                won't expire exactly at `takenUntil` but shortly after, hence, requests
-                coming close `takenUntil` won't have problems even if there is a little
-                clock drift.
+                  The temporary credentials are set to expire after `takenUntil`. They
+                  won't expire exactly at `takenUntil` but shortly after, hence, requests
+                  coming close `takenUntil` won't have problems even if there is a little
+                  clock drift.
 
-                Workers should use these credentials when making requests on behalf of
-                a task. This includes requests to create artifacts, reclaiming the task
-                reporting the task `completed`, `failed` or `exception`.
+                  Workers should use these credentials when making requests on behalf of
+                  a task. This includes requests to create artifacts, reclaiming the task
+                  reporting the task `completed`, `failed` or `exception`.
 
-                Note, a new set of temporary credentials is issued when the worker
-                reclaims the task.
-              properties:
-                MemberNames:
-                  accessToken: AccessToken
-                  certificate: Certificate
-                  clientId: ClientID
-                Properties:
-                  accessToken:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: accessToken
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/accessToken
-                    TYPE_NAME: AccessToken
-                    description: |
-                      The `accessToken` for the temporary credentials.
-                    minLength: 1
-                    type: string
-                  certificate:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: certificate
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/certificate
-                    TYPE_NAME: Certificate
-                    description: |
-                      The `certificate` for the temporary credentials, these are required
-                      for the temporary credentials to work.
-                    minLength: 1
-                    type: string
-                  clientId:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: clientId
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/clientId
-                    TYPE_NAME: ClientID
-                    description: |
-                      The `clientId` for the temporary credentials.
-                    minLength: 1
-                    type: string
-                SortedPropertyNames:
+                  Note, a new set of temporary credentials is issued when the worker
+                  reclaims the task.
+                id: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+                properties:
+                  MemberNames:
+                    accessToken: AccessToken
+                    certificate: Certificate
+                    clientId: ClientID
+                  Properties:
+                    accessToken:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: accessToken
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
+                      TYPE_NAME: AccessToken
+                      description: |
+                        The `accessToken` for the temporary credentials.
+                      minLength: 1
+                      type: string
+                    certificate:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: certificate
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
+                      TYPE_NAME: Certificate
+                      description: |
+                        The `certificate` for the temporary credentials, these are required
+                        for the temporary credentials to work.
+                      minLength: 1
+                      type: string
+                    clientId:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: clientId
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
+                      TYPE_NAME: ClientID
+                      description: |
+                        The `clientId` for the temporary credentials.
+                      minLength: 1
+                      type: string
+                  SortedPropertyNames:
+                  - accessToken
+                  - certificate
+                  - clientId
+                  SourceURL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties
+                required:
+                - clientId
                 - accessToken
                 - certificate
-                - clientId
-                SourceURL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties
-              required:
-              - clientId
-              - accessToken
-              - certificate
-              type: object
+                title: Task Credentials
+                type: object
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
+              TYPE_NAME: Credentials
             runId:
               IS_REQUIRED: true
               PROPERTY_NAME: runId
@@ -13077,83 +13086,91 @@ properties:
                       title: Extra Data
                       type: object
                     metadata:
+                      $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                       IS_REQUIRED: true
                       PROPERTY_NAME: metadata
-                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-                      TYPE_NAME: MetaData
-                      additionalProperties:
-                        Boolean: false
-                        Properties: null
-                      description: |
-                        Required task metadata
-                      properties:
-                        MemberNames:
-                          description: Description
-                          name: Name
-                          owner: Owner
-                          source: Source
-                        Properties:
-                          description:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: description
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                            TYPE_NAME: Description
-                            description: |
-                              Human readable description of the task, please **explain** what the
-                              task does. A few lines of documentation is not going to hurt you.
-                            maxLength: 32768
-                            title: Description
-                            type: string
-                          name:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: name
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                            TYPE_NAME: Name
-                            description: |
-                              Human readable name of task, used to very briefly given an idea about
-                              what the task does.
-                            maxLength: 255
-                            title: Name
-                            type: string
-                          owner:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: owner
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                            TYPE_NAME: Owner
-                            description: |
-                              E-mail of person who caused this task, e.g. the person who did
-                              `hg push`. The person we should contact to ask why this task is here.
-                            format: email
-                            maxLength: 255
-                            title: Owner
-                            type: string
-                          source:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: source
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                            TYPE_NAME: Source
-                            description: |
-                              Link to source of this task, should specify a file, revision and
-                              repository. This should be place someone can go an do a git/hg blame
-                              to who came up with recipe for this task.
-                            format: uri
-                            maxLength: 4096
-                            pattern: ^https?://
-                            title: Source
-                            type: string
-                        SortedPropertyNames:
-                        - description
+                      REF_SUBSCHEMA:
+                        $schema: http://json-schema.org/draft-06/schema#
+                        IS_REQUIRED: false
+                        PROPERTY_NAME: ""
+                        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                        TYPE_NAME: TaskMetadata
+                        additionalProperties:
+                          Boolean: false
+                          Properties: null
+                        description: |
+                          Required task metadata
+                        id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                        properties:
+                          MemberNames:
+                            description: Description
+                            name: Name
+                            owner: Owner
+                            source: Source
+                          Properties:
+                            description:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: description
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                              TYPE_NAME: Description
+                              description: |
+                                Human readable description of the task, please **explain** what the
+                                task does. A few lines of documentation is not going to hurt you.
+                              maxLength: 32768
+                              title: Description
+                              type: string
+                            name:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: name
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                              TYPE_NAME: Name
+                              description: |
+                                Human readable name of task, used to very briefly given an idea about
+                                what the task does.
+                              maxLength: 255
+                              title: Name
+                              type: string
+                            owner:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: owner
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                              TYPE_NAME: Owner
+                              description: |
+                                E-mail of person who caused this task, e.g. the person who did
+                                `hg push`. The person we should contact to ask why this task is here.
+                              format: email
+                              maxLength: 255
+                              title: Owner
+                              type: string
+                            source:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: source
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                              TYPE_NAME: Source
+                              description: |
+                                Link to source of this task, should specify a file, revision and
+                                repository. This should be place someone can go an do a git/hg blame
+                                to who came up with recipe for this task.
+                              format: uri
+                              maxLength: 4096
+                              pattern: ^https?://
+                              title: Source
+                              type: string
+                          SortedPropertyNames:
+                          - description
+                          - name
+                          - owner
+                          - source
+                          SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                        required:
                         - name
+                        - description
                         - owner
                         - source
-                        SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-                      required:
-                      - name
-                      - description
-                      - owner
-                      - source
-                      title: Meta-data
-                      type: object
+                        title: Task Metadata
+                        type: object
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+                      TYPE_NAME: Metadata
                     payload:
                       IS_REQUIRED: true
                       PROPERTY_NAME: payload
@@ -13309,9 +13326,9 @@ properties:
                           type: string
                       description: |
                         Arbitrary key-value tags (only strings limited to 4k). These can be used
-                        to attach informal meta-data to a task. Use this for informal tags that
+                        to attach informal metadata to a task. Use this for informal tags that
                         tasks can be classified by. You can also think of strings here as
-                        candidates for formal meta-data. Something like
+                        candidates for formal metadata. Something like
                         `purpose: 'build' || 'test'` is a good example.
                       title: Tags
                       type: object
@@ -13419,6 +13436,7 @@ properties:
         - takenUntil
         - task
         - credentials
+        title: Task Claim
         type: object
       type: array
   SortedPropertyNames:
@@ -13435,7 +13453,7 @@ http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tas
 IS_REQUIRED: false
 PROPERTY_NAME: tasks entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items
-TYPE_NAME: TasksEntry
+TYPE_NAME: TaskClaim
 additionalProperties:
   Boolean: false
   Properties: null
@@ -13450,73 +13468,82 @@ properties:
     workerId: WorkerID
   Properties:
     credentials:
+      $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       IS_REQUIRED: true
       PROPERTY_NAME: credentials
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
-      TYPE_NAME: Credentials
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      description: |
-        Temporary credentials granting `task.scopes` and the scope:
-        `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-        the task, upload artifacts and report task resolution.
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+        TYPE_NAME: TaskCredentials
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          Temporary credentials granting `task.scopes` and the scope:
+          `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+          the task, upload artifacts and report task resolution.
 
-        The temporary credentials are set to expire after `takenUntil`. They
-        won't expire exactly at `takenUntil` but shortly after, hence, requests
-        coming close `takenUntil` won't have problems even if there is a little
-        clock drift.
+          The temporary credentials are set to expire after `takenUntil`. They
+          won't expire exactly at `takenUntil` but shortly after, hence, requests
+          coming close `takenUntil` won't have problems even if there is a little
+          clock drift.
 
-        Workers should use these credentials when making requests on behalf of
-        a task. This includes requests to create artifacts, reclaiming the task
-        reporting the task `completed`, `failed` or `exception`.
+          Workers should use these credentials when making requests on behalf of
+          a task. This includes requests to create artifacts, reclaiming the task
+          reporting the task `completed`, `failed` or `exception`.
 
-        Note, a new set of temporary credentials is issued when the worker
-        reclaims the task.
-      properties:
-        MemberNames:
-          accessToken: AccessToken
-          certificate: Certificate
-          clientId: ClientID
-        Properties:
-          accessToken:
-            IS_REQUIRED: true
-            PROPERTY_NAME: accessToken
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/accessToken
-            TYPE_NAME: AccessToken
-            description: |
-              The `accessToken` for the temporary credentials.
-            minLength: 1
-            type: string
-          certificate:
-            IS_REQUIRED: true
-            PROPERTY_NAME: certificate
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/certificate
-            TYPE_NAME: Certificate
-            description: |
-              The `certificate` for the temporary credentials, these are required
-              for the temporary credentials to work.
-            minLength: 1
-            type: string
-          clientId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: clientId
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/clientId
-            TYPE_NAME: ClientID
-            description: |
-              The `clientId` for the temporary credentials.
-            minLength: 1
-            type: string
-        SortedPropertyNames:
+          Note, a new set of temporary credentials is issued when the worker
+          reclaims the task.
+        id: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+        properties:
+          MemberNames:
+            accessToken: AccessToken
+            certificate: Certificate
+            clientId: ClientID
+          Properties:
+            accessToken:
+              IS_REQUIRED: true
+              PROPERTY_NAME: accessToken
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
+              TYPE_NAME: AccessToken
+              description: |
+                The `accessToken` for the temporary credentials.
+              minLength: 1
+              type: string
+            certificate:
+              IS_REQUIRED: true
+              PROPERTY_NAME: certificate
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
+              TYPE_NAME: Certificate
+              description: |
+                The `certificate` for the temporary credentials, these are required
+                for the temporary credentials to work.
+              minLength: 1
+              type: string
+            clientId:
+              IS_REQUIRED: true
+              PROPERTY_NAME: clientId
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
+              TYPE_NAME: ClientID
+              description: |
+                The `clientId` for the temporary credentials.
+              minLength: 1
+              type: string
+          SortedPropertyNames:
+          - accessToken
+          - certificate
+          - clientId
+          SourceURL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties
+        required:
+        - clientId
         - accessToken
         - certificate
-        - clientId
-        SourceURL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties
-      required:
-      - clientId
-      - accessToken
-      - certificate
-      type: object
+        title: Task Credentials
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
+      TYPE_NAME: Credentials
     runId:
       IS_REQUIRED: true
       PROPERTY_NAME: runId
@@ -14013,83 +14040,91 @@ properties:
               title: Extra Data
               type: object
             metadata:
+              $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-              TYPE_NAME: MetaData
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Required task metadata
-              properties:
-                MemberNames:
-                  description: Description
-                  name: Name
-                  owner: Owner
-                  source: Source
-                Properties:
-                  description:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: description
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                    TYPE_NAME: Description
-                    description: |
-                      Human readable description of the task, please **explain** what the
-                      task does. A few lines of documentation is not going to hurt you.
-                    maxLength: 32768
-                    title: Description
-                    type: string
-                  name:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: name
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                    TYPE_NAME: Name
-                    description: |
-                      Human readable name of task, used to very briefly given an idea about
-                      what the task does.
-                    maxLength: 255
-                    title: Name
-                    type: string
-                  owner:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: owner
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                    TYPE_NAME: Owner
-                    description: |
-                      E-mail of person who caused this task, e.g. the person who did
-                      `hg push`. The person we should contact to ask why this task is here.
-                    format: email
-                    maxLength: 255
-                    title: Owner
-                    type: string
-                  source:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: source
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                    TYPE_NAME: Source
-                    description: |
-                      Link to source of this task, should specify a file, revision and
-                      repository. This should be place someone can go an do a git/hg blame
-                      to who came up with recipe for this task.
-                    format: uri
-                    maxLength: 4096
-                    pattern: ^https?://
-                    title: Source
-                    type: string
-                SortedPropertyNames:
-                - description
+              REF_SUBSCHEMA:
+                $schema: http://json-schema.org/draft-06/schema#
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                TYPE_NAME: TaskMetadata
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                description: |
+                  Required task metadata
+                id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                properties:
+                  MemberNames:
+                    description: Description
+                    name: Name
+                    owner: Owner
+                    source: Source
+                  Properties:
+                    description:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: description
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                      TYPE_NAME: Description
+                      description: |
+                        Human readable description of the task, please **explain** what the
+                        task does. A few lines of documentation is not going to hurt you.
+                      maxLength: 32768
+                      title: Description
+                      type: string
+                    name:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: name
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                      TYPE_NAME: Name
+                      description: |
+                        Human readable name of task, used to very briefly given an idea about
+                        what the task does.
+                      maxLength: 255
+                      title: Name
+                      type: string
+                    owner:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: owner
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                      TYPE_NAME: Owner
+                      description: |
+                        E-mail of person who caused this task, e.g. the person who did
+                        `hg push`. The person we should contact to ask why this task is here.
+                      format: email
+                      maxLength: 255
+                      title: Owner
+                      type: string
+                    source:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: source
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                      TYPE_NAME: Source
+                      description: |
+                        Link to source of this task, should specify a file, revision and
+                        repository. This should be place someone can go an do a git/hg blame
+                        to who came up with recipe for this task.
+                      format: uri
+                      maxLength: 4096
+                      pattern: ^https?://
+                      title: Source
+                      type: string
+                  SortedPropertyNames:
+                  - description
+                  - name
+                  - owner
+                  - source
+                  SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                required:
                 - name
+                - description
                 - owner
                 - source
-                SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-              required:
-              - name
-              - description
-              - owner
-              - source
-              title: Meta-data
-              type: object
+                title: Task Metadata
+                type: object
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+              TYPE_NAME: Metadata
             payload:
               IS_REQUIRED: true
               PROPERTY_NAME: payload
@@ -14245,9 +14280,9 @@ properties:
                   type: string
               description: |
                 Arbitrary key-value tags (only strings limited to 4k). These can be used
-                to attach informal meta-data to a task. Use this for informal tags that
+                to attach informal metadata to a task. Use this for informal tags that
                 tasks can be classified by. You can also think of strings here as
-                candidates for formal meta-data. Something like
+                candidates for formal metadata. Something like
                 `purpose: 'build' || 'test'` is a good example.
               title: Tags
               type: object
@@ -14355,77 +14390,7 @@ required:
 - takenUntil
 - task
 - credentials
-type: object
-
-
-http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
-===============================================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: credentials
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
-TYPE_NAME: Credentials
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  Temporary credentials granting `task.scopes` and the scope:
-  `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-  the task, upload artifacts and report task resolution.
-
-  The temporary credentials are set to expire after `takenUntil`. They
-  won't expire exactly at `takenUntil` but shortly after, hence, requests
-  coming close `takenUntil` won't have problems even if there is a little
-  clock drift.
-
-  Workers should use these credentials when making requests on behalf of
-  a task. This includes requests to create artifacts, reclaiming the task
-  reporting the task `completed`, `failed` or `exception`.
-
-  Note, a new set of temporary credentials is issued when the worker
-  reclaims the task.
-properties:
-  MemberNames:
-    accessToken: AccessToken
-    certificate: Certificate
-    clientId: ClientID
-  Properties:
-    accessToken:
-      IS_REQUIRED: true
-      PROPERTY_NAME: accessToken
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/accessToken
-      TYPE_NAME: AccessToken
-      description: |
-        The `accessToken` for the temporary credentials.
-      minLength: 1
-      type: string
-    certificate:
-      IS_REQUIRED: true
-      PROPERTY_NAME: certificate
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/certificate
-      TYPE_NAME: Certificate
-      description: |
-        The `certificate` for the temporary credentials, these are required
-        for the temporary credentials to work.
-      minLength: 1
-      type: string
-    clientId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: clientId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/clientId
-      TYPE_NAME: ClientID
-      description: |
-        The `clientId` for the temporary credentials.
-      minLength: 1
-      type: string
-  SortedPropertyNames:
-  - accessToken
-  - certificate
-  - clientId
-  SourceURL: http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties
-required:
-- clientId
-- accessToken
-- certificate
+title: Task Claim
 type: object
 
 
@@ -14540,83 +14505,91 @@ properties:
       title: Extra Data
       type: object
     metadata:
+      $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
-      TYPE_NAME: MetaData1
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      description: |
-        Required task metadata
-      properties:
-        MemberNames:
-          description: Description
-          name: Name
-          owner: Owner
-          source: Source
-        Properties:
-          description:
-            IS_REQUIRED: true
-            PROPERTY_NAME: description
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
-            TYPE_NAME: Description
-            description: |
-              Human readable description of the task, please **explain** what the
-              task does. A few lines of documentation is not going to hurt you.
-            maxLength: 32768
-            title: Description
-            type: string
-          name:
-            IS_REQUIRED: true
-            PROPERTY_NAME: name
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
-            TYPE_NAME: Name
-            description: |
-              Human readable name of task, used to very briefly given an idea about
-              what the task does.
-            maxLength: 255
-            title: Name
-            type: string
-          owner:
-            IS_REQUIRED: true
-            PROPERTY_NAME: owner
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
-            TYPE_NAME: Owner
-            description: |
-              E-mail of person who caused this task, e.g. the person who did
-              `hg push`. The person we should contact to ask why this task is here.
-            format: email
-            maxLength: 255
-            title: Owner
-            type: string
-          source:
-            IS_REQUIRED: true
-            PROPERTY_NAME: source
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
-            TYPE_NAME: Source
-            description: |
-              Link to source of this task, should specify a file, revision and
-              repository. This should be place someone can go an do a git/hg blame
-              to who came up with recipe for this task.
-            format: uri
-            maxLength: 4096
-            pattern: ^https?://
-            title: Source
-            type: string
-        SortedPropertyNames:
-        - description
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+        TYPE_NAME: TaskMetadata
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          Required task metadata
+        id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+        properties:
+          MemberNames:
+            description: Description
+            name: Name
+            owner: Owner
+            source: Source
+          Properties:
+            description:
+              IS_REQUIRED: true
+              PROPERTY_NAME: description
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+              TYPE_NAME: Description
+              description: |
+                Human readable description of the task, please **explain** what the
+                task does. A few lines of documentation is not going to hurt you.
+              maxLength: 32768
+              title: Description
+              type: string
+            name:
+              IS_REQUIRED: true
+              PROPERTY_NAME: name
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+              TYPE_NAME: Name
+              description: |
+                Human readable name of task, used to very briefly given an idea about
+                what the task does.
+              maxLength: 255
+              title: Name
+              type: string
+            owner:
+              IS_REQUIRED: true
+              PROPERTY_NAME: owner
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+              TYPE_NAME: Owner
+              description: |
+                E-mail of person who caused this task, e.g. the person who did
+                `hg push`. The person we should contact to ask why this task is here.
+              format: email
+              maxLength: 255
+              title: Owner
+              type: string
+            source:
+              IS_REQUIRED: true
+              PROPERTY_NAME: source
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+              TYPE_NAME: Source
+              description: |
+                Link to source of this task, should specify a file, revision and
+                repository. This should be place someone can go an do a git/hg blame
+                to who came up with recipe for this task.
+              format: uri
+              maxLength: 4096
+              pattern: ^https?://
+              title: Source
+              type: string
+          SortedPropertyNames:
+          - description
+          - name
+          - owner
+          - source
+          SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+        required:
         - name
+        - description
         - owner
         - source
-        SourceURL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties
-      required:
-      - name
-      - description
-      - owner
-      - source
-      title: Meta-data
-      type: object
+        title: Task Metadata
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
+      TYPE_NAME: Metadata
     payload:
       IS_REQUIRED: true
       PROPERTY_NAME: payload
@@ -14787,9 +14760,9 @@ properties:
       default: {}
       description: |
         Arbitrary key-value tags (only strings limited to 4k). These can be used
-        to attach informal meta-data to a task. Use this for informal tags that
+        to attach informal metadata to a task. Use this for informal tags that
         tasks can be classified by. You can also think of strings here as
-        candidates for formal meta-data. Something like
+        candidates for formal metadata. Something like
         `purpose: 'build' || 'test'` is a good example.
       title: Tags
       type: object
@@ -14845,87 +14818,6 @@ required:
 - payload
 - metadata
 title: Task Definition Request
-type: object
-
-
-http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
-=====================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: metadata
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
-TYPE_NAME: MetaData1
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  Required task metadata
-properties:
-  MemberNames:
-    description: Description
-    name: Name
-    owner: Owner
-    source: Source
-  Properties:
-    description:
-      IS_REQUIRED: true
-      PROPERTY_NAME: description
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
-      TYPE_NAME: Description
-      description: |
-        Human readable description of the task, please **explain** what the
-        task does. A few lines of documentation is not going to hurt you.
-      maxLength: 32768
-      title: Description
-      type: string
-    name:
-      IS_REQUIRED: true
-      PROPERTY_NAME: name
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
-      TYPE_NAME: Name
-      description: |
-        Human readable name of task, used to very briefly given an idea about
-        what the task does.
-      maxLength: 255
-      title: Name
-      type: string
-    owner:
-      IS_REQUIRED: true
-      PROPERTY_NAME: owner
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
-      TYPE_NAME: Owner
-      description: |
-        E-mail of person who caused this task, e.g. the person who did
-        `hg push`. The person we should contact to ask why this task is here.
-      format: email
-      maxLength: 255
-      title: Owner
-      type: string
-    source:
-      IS_REQUIRED: true
-      PROPERTY_NAME: source
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
-      TYPE_NAME: Source
-      description: |
-        Link to source of this task, should specify a file, revision and
-        repository. This should be place someone can go an do a git/hg blame
-        to who came up with recipe for this task.
-      format: uri
-      maxLength: 4096
-      pattern: ^https?://
-      title: Source
-      type: string
-  SortedPropertyNames:
-  - description
-  - name
-  - owner
-  - source
-  SourceURL: http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties
-required:
-- name
-- description
-- owner
-- source
-title: Meta-data
 type: object
 
 
@@ -15682,83 +15574,91 @@ properties:
                       title: Extra Data
                       type: object
                     metadata:
+                      $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                       IS_REQUIRED: true
                       PROPERTY_NAME: metadata
-                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-                      TYPE_NAME: MetaData
-                      additionalProperties:
-                        Boolean: false
-                        Properties: null
-                      description: |
-                        Required task metadata
-                      properties:
-                        MemberNames:
-                          description: Description
-                          name: Name
-                          owner: Owner
-                          source: Source
-                        Properties:
-                          description:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: description
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                            TYPE_NAME: Description
-                            description: |
-                              Human readable description of the task, please **explain** what the
-                              task does. A few lines of documentation is not going to hurt you.
-                            maxLength: 32768
-                            title: Description
-                            type: string
-                          name:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: name
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                            TYPE_NAME: Name
-                            description: |
-                              Human readable name of task, used to very briefly given an idea about
-                              what the task does.
-                            maxLength: 255
-                            title: Name
-                            type: string
-                          owner:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: owner
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                            TYPE_NAME: Owner
-                            description: |
-                              E-mail of person who caused this task, e.g. the person who did
-                              `hg push`. The person we should contact to ask why this task is here.
-                            format: email
-                            maxLength: 255
-                            title: Owner
-                            type: string
-                          source:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: source
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                            TYPE_NAME: Source
-                            description: |
-                              Link to source of this task, should specify a file, revision and
-                              repository. This should be place someone can go an do a git/hg blame
-                              to who came up with recipe for this task.
-                            format: uri
-                            maxLength: 4096
-                            pattern: ^https?://
-                            title: Source
-                            type: string
-                        SortedPropertyNames:
-                        - description
+                      REF_SUBSCHEMA:
+                        $schema: http://json-schema.org/draft-06/schema#
+                        IS_REQUIRED: false
+                        PROPERTY_NAME: ""
+                        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                        TYPE_NAME: TaskMetadata
+                        additionalProperties:
+                          Boolean: false
+                          Properties: null
+                        description: |
+                          Required task metadata
+                        id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                        properties:
+                          MemberNames:
+                            description: Description
+                            name: Name
+                            owner: Owner
+                            source: Source
+                          Properties:
+                            description:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: description
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                              TYPE_NAME: Description
+                              description: |
+                                Human readable description of the task, please **explain** what the
+                                task does. A few lines of documentation is not going to hurt you.
+                              maxLength: 32768
+                              title: Description
+                              type: string
+                            name:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: name
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                              TYPE_NAME: Name
+                              description: |
+                                Human readable name of task, used to very briefly given an idea about
+                                what the task does.
+                              maxLength: 255
+                              title: Name
+                              type: string
+                            owner:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: owner
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                              TYPE_NAME: Owner
+                              description: |
+                                E-mail of person who caused this task, e.g. the person who did
+                                `hg push`. The person we should contact to ask why this task is here.
+                              format: email
+                              maxLength: 255
+                              title: Owner
+                              type: string
+                            source:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: source
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                              TYPE_NAME: Source
+                              description: |
+                                Link to source of this task, should specify a file, revision and
+                                repository. This should be place someone can go an do a git/hg blame
+                                to who came up with recipe for this task.
+                              format: uri
+                              maxLength: 4096
+                              pattern: ^https?://
+                              title: Source
+                              type: string
+                          SortedPropertyNames:
+                          - description
+                          - name
+                          - owner
+                          - source
+                          SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                        required:
                         - name
+                        - description
                         - owner
                         - source
-                        SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-                      required:
-                      - name
-                      - description
-                      - owner
-                      - source
-                      title: Meta-data
-                      type: object
+                        title: Task Metadata
+                        type: object
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+                      TYPE_NAME: Metadata
                     payload:
                       IS_REQUIRED: true
                       PROPERTY_NAME: payload
@@ -15914,9 +15814,9 @@ properties:
                           type: string
                       description: |
                         Arbitrary key-value tags (only strings limited to 4k). These can be used
-                        to attach informal meta-data to a task. Use this for informal tags that
+                        to attach informal metadata to a task. Use this for informal tags that
                         tasks can be classified by. You can also think of strings here as
-                        candidates for formal meta-data. Something like
+                        candidates for formal metadata. Something like
                         `purpose: 'build' || 'test'` is a good example.
                       title: Tags
                       type: object
@@ -16500,83 +16400,91 @@ properties:
               title: Extra Data
               type: object
             metadata:
+              $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-              TYPE_NAME: MetaData
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Required task metadata
-              properties:
-                MemberNames:
-                  description: Description
-                  name: Name
-                  owner: Owner
-                  source: Source
-                Properties:
-                  description:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: description
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                    TYPE_NAME: Description
-                    description: |
-                      Human readable description of the task, please **explain** what the
-                      task does. A few lines of documentation is not going to hurt you.
-                    maxLength: 32768
-                    title: Description
-                    type: string
-                  name:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: name
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                    TYPE_NAME: Name
-                    description: |
-                      Human readable name of task, used to very briefly given an idea about
-                      what the task does.
-                    maxLength: 255
-                    title: Name
-                    type: string
-                  owner:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: owner
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                    TYPE_NAME: Owner
-                    description: |
-                      E-mail of person who caused this task, e.g. the person who did
-                      `hg push`. The person we should contact to ask why this task is here.
-                    format: email
-                    maxLength: 255
-                    title: Owner
-                    type: string
-                  source:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: source
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                    TYPE_NAME: Source
-                    description: |
-                      Link to source of this task, should specify a file, revision and
-                      repository. This should be place someone can go an do a git/hg blame
-                      to who came up with recipe for this task.
-                    format: uri
-                    maxLength: 4096
-                    pattern: ^https?://
-                    title: Source
-                    type: string
-                SortedPropertyNames:
-                - description
+              REF_SUBSCHEMA:
+                $schema: http://json-schema.org/draft-06/schema#
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                TYPE_NAME: TaskMetadata
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                description: |
+                  Required task metadata
+                id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                properties:
+                  MemberNames:
+                    description: Description
+                    name: Name
+                    owner: Owner
+                    source: Source
+                  Properties:
+                    description:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: description
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                      TYPE_NAME: Description
+                      description: |
+                        Human readable description of the task, please **explain** what the
+                        task does. A few lines of documentation is not going to hurt you.
+                      maxLength: 32768
+                      title: Description
+                      type: string
+                    name:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: name
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                      TYPE_NAME: Name
+                      description: |
+                        Human readable name of task, used to very briefly given an idea about
+                        what the task does.
+                      maxLength: 255
+                      title: Name
+                      type: string
+                    owner:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: owner
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                      TYPE_NAME: Owner
+                      description: |
+                        E-mail of person who caused this task, e.g. the person who did
+                        `hg push`. The person we should contact to ask why this task is here.
+                      format: email
+                      maxLength: 255
+                      title: Owner
+                      type: string
+                    source:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: source
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                      TYPE_NAME: Source
+                      description: |
+                        Link to source of this task, should specify a file, revision and
+                        repository. This should be place someone can go an do a git/hg blame
+                        to who came up with recipe for this task.
+                      format: uri
+                      maxLength: 4096
+                      pattern: ^https?://
+                      title: Source
+                      type: string
+                  SortedPropertyNames:
+                  - description
+                  - name
+                  - owner
+                  - source
+                  SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                required:
                 - name
+                - description
                 - owner
                 - source
-                SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-              required:
-              - name
-              - description
-              - owner
-              - source
-              title: Meta-data
-              type: object
+                title: Task Metadata
+                type: object
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+              TYPE_NAME: Metadata
             payload:
               IS_REQUIRED: true
               PROPERTY_NAME: payload
@@ -16732,9 +16640,9 @@ properties:
                   type: string
               description: |
                 Arbitrary key-value tags (only strings limited to 4k). These can be used
-                to attach informal meta-data to a task. Use this for informal tags that
+                to attach informal metadata to a task. Use this for informal tags that
                 tasks can be classified by. You can also think of strings here as
-                candidates for formal meta-data. Something like
+                candidates for formal metadata. Something like
                 `purpose: 'build' || 'test'` is a good example.
               title: Tags
               type: object
@@ -17904,83 +17812,91 @@ properties:
                       title: Extra Data
                       type: object
                     metadata:
+                      $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                       IS_REQUIRED: true
                       PROPERTY_NAME: metadata
-                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-                      TYPE_NAME: MetaData
-                      additionalProperties:
-                        Boolean: false
-                        Properties: null
-                      description: |
-                        Required task metadata
-                      properties:
-                        MemberNames:
-                          description: Description
-                          name: Name
-                          owner: Owner
-                          source: Source
-                        Properties:
-                          description:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: description
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                            TYPE_NAME: Description
-                            description: |
-                              Human readable description of the task, please **explain** what the
-                              task does. A few lines of documentation is not going to hurt you.
-                            maxLength: 32768
-                            title: Description
-                            type: string
-                          name:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: name
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                            TYPE_NAME: Name
-                            description: |
-                              Human readable name of task, used to very briefly given an idea about
-                              what the task does.
-                            maxLength: 255
-                            title: Name
-                            type: string
-                          owner:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: owner
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                            TYPE_NAME: Owner
-                            description: |
-                              E-mail of person who caused this task, e.g. the person who did
-                              `hg push`. The person we should contact to ask why this task is here.
-                            format: email
-                            maxLength: 255
-                            title: Owner
-                            type: string
-                          source:
-                            IS_REQUIRED: true
-                            PROPERTY_NAME: source
-                            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                            TYPE_NAME: Source
-                            description: |
-                              Link to source of this task, should specify a file, revision and
-                              repository. This should be place someone can go an do a git/hg blame
-                              to who came up with recipe for this task.
-                            format: uri
-                            maxLength: 4096
-                            pattern: ^https?://
-                            title: Source
-                            type: string
-                        SortedPropertyNames:
-                        - description
+                      REF_SUBSCHEMA:
+                        $schema: http://json-schema.org/draft-06/schema#
+                        IS_REQUIRED: false
+                        PROPERTY_NAME: ""
+                        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                        TYPE_NAME: TaskMetadata
+                        additionalProperties:
+                          Boolean: false
+                          Properties: null
+                        description: |
+                          Required task metadata
+                        id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                        properties:
+                          MemberNames:
+                            description: Description
+                            name: Name
+                            owner: Owner
+                            source: Source
+                          Properties:
+                            description:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: description
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                              TYPE_NAME: Description
+                              description: |
+                                Human readable description of the task, please **explain** what the
+                                task does. A few lines of documentation is not going to hurt you.
+                              maxLength: 32768
+                              title: Description
+                              type: string
+                            name:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: name
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                              TYPE_NAME: Name
+                              description: |
+                                Human readable name of task, used to very briefly given an idea about
+                                what the task does.
+                              maxLength: 255
+                              title: Name
+                              type: string
+                            owner:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: owner
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                              TYPE_NAME: Owner
+                              description: |
+                                E-mail of person who caused this task, e.g. the person who did
+                                `hg push`. The person we should contact to ask why this task is here.
+                              format: email
+                              maxLength: 255
+                              title: Owner
+                              type: string
+                            source:
+                              IS_REQUIRED: true
+                              PROPERTY_NAME: source
+                              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                              TYPE_NAME: Source
+                              description: |
+                                Link to source of this task, should specify a file, revision and
+                                repository. This should be place someone can go an do a git/hg blame
+                                to who came up with recipe for this task.
+                              format: uri
+                              maxLength: 4096
+                              pattern: ^https?://
+                              title: Source
+                              type: string
+                          SortedPropertyNames:
+                          - description
+                          - name
+                          - owner
+                          - source
+                          SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                        required:
                         - name
+                        - description
                         - owner
                         - source
-                        SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-                      required:
-                      - name
-                      - description
-                      - owner
-                      - source
-                      title: Meta-data
-                      type: object
+                        title: Task Metadata
+                        type: object
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+                      TYPE_NAME: Metadata
                     payload:
                       IS_REQUIRED: true
                       PROPERTY_NAME: payload
@@ -18136,9 +18052,9 @@ properties:
                           type: string
                       description: |
                         Arbitrary key-value tags (only strings limited to 4k). These can be used
-                        to attach informal meta-data to a task. Use this for informal tags that
+                        to attach informal metadata to a task. Use this for informal tags that
                         tasks can be classified by. You can also think of strings here as
-                        candidates for formal meta-data. Something like
+                        candidates for formal metadata. Something like
                         `purpose: 'build' || 'test'` is a good example.
                       title: Tags
                       type: object
@@ -18722,83 +18638,91 @@ properties:
               title: Extra Data
               type: object
             metadata:
+              $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-              TYPE_NAME: MetaData
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Required task metadata
-              properties:
-                MemberNames:
-                  description: Description
-                  name: Name
-                  owner: Owner
-                  source: Source
-                Properties:
-                  description:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: description
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                    TYPE_NAME: Description
-                    description: |
-                      Human readable description of the task, please **explain** what the
-                      task does. A few lines of documentation is not going to hurt you.
-                    maxLength: 32768
-                    title: Description
-                    type: string
-                  name:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: name
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                    TYPE_NAME: Name
-                    description: |
-                      Human readable name of task, used to very briefly given an idea about
-                      what the task does.
-                    maxLength: 255
-                    title: Name
-                    type: string
-                  owner:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: owner
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                    TYPE_NAME: Owner
-                    description: |
-                      E-mail of person who caused this task, e.g. the person who did
-                      `hg push`. The person we should contact to ask why this task is here.
-                    format: email
-                    maxLength: 255
-                    title: Owner
-                    type: string
-                  source:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: source
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                    TYPE_NAME: Source
-                    description: |
-                      Link to source of this task, should specify a file, revision and
-                      repository. This should be place someone can go an do a git/hg blame
-                      to who came up with recipe for this task.
-                    format: uri
-                    maxLength: 4096
-                    pattern: ^https?://
-                    title: Source
-                    type: string
-                SortedPropertyNames:
-                - description
+              REF_SUBSCHEMA:
+                $schema: http://json-schema.org/draft-06/schema#
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                TYPE_NAME: TaskMetadata
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                description: |
+                  Required task metadata
+                id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                properties:
+                  MemberNames:
+                    description: Description
+                    name: Name
+                    owner: Owner
+                    source: Source
+                  Properties:
+                    description:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: description
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                      TYPE_NAME: Description
+                      description: |
+                        Human readable description of the task, please **explain** what the
+                        task does. A few lines of documentation is not going to hurt you.
+                      maxLength: 32768
+                      title: Description
+                      type: string
+                    name:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: name
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                      TYPE_NAME: Name
+                      description: |
+                        Human readable name of task, used to very briefly given an idea about
+                        what the task does.
+                      maxLength: 255
+                      title: Name
+                      type: string
+                    owner:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: owner
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                      TYPE_NAME: Owner
+                      description: |
+                        E-mail of person who caused this task, e.g. the person who did
+                        `hg push`. The person we should contact to ask why this task is here.
+                      format: email
+                      maxLength: 255
+                      title: Owner
+                      type: string
+                    source:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: source
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                      TYPE_NAME: Source
+                      description: |
+                        Link to source of this task, should specify a file, revision and
+                        repository. This should be place someone can go an do a git/hg blame
+                        to who came up with recipe for this task.
+                      format: uri
+                      maxLength: 4096
+                      pattern: ^https?://
+                      title: Source
+                      type: string
+                  SortedPropertyNames:
+                  - description
+                  - name
+                  - owner
+                  - source
+                  SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                required:
                 - name
+                - description
                 - owner
                 - source
-                SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-              required:
-              - name
-              - description
-              - owner
-              - source
-              title: Meta-data
-              type: object
+                title: Task Metadata
+                type: object
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+              TYPE_NAME: Metadata
             payload:
               IS_REQUIRED: true
               PROPERTY_NAME: payload
@@ -18954,9 +18878,9 @@ properties:
                   type: string
               description: |
                 Arbitrary key-value tags (only strings limited to 4k). These can be used
-                to attach informal meta-data to a task. Use this for informal tags that
+                to attach informal metadata to a task. Use this for informal tags that
                 tasks can be classified by. You can also think of strings here as
-                candidates for formal meta-data. Something like
+                candidates for formal metadata. Something like
                 `purpose: 'build' || 'test'` is a good example.
               title: Tags
               type: object
@@ -19080,7 +19004,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: workers entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items
-        TYPE_NAME: WorkersEntry
+        TYPE_NAME: Worker
         additionalProperties:
           Boolean: false
           Properties: null
@@ -19103,52 +19027,63 @@ properties:
               title: First task claimed
               type: string
             latestTask:
+              $ref: http://schemas.taskcluster.net/queue/v1/task-run.json#
               IS_REQUIRED: false
               PROPERTY_NAME: latestTask
+              REF_SUBSCHEMA:
+                $schema: http://json-schema.org/draft-06/schema#
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
+                TYPE_NAME: TaskRun
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                description: |
+                  A run of a task.
+                id: http://schemas.taskcluster.net/queue/v1/task-run.json#
+                properties:
+                  MemberNames:
+                    runId: RunID
+                    taskId: TaskID
+                  Properties:
+                    runId:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: runId
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
+                      TYPE_NAME: RunIdentifier
+                      description: |
+                        Id of this task run, `run-id`s always starts from `0`
+                      maximum: 1000
+                      minimum: 0
+                      title: Run Identifier
+                      type: integer
+                    taskId:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: taskId
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
+                      TYPE_NAME: TaskIdentifier
+                      description: |
+                        Unique task identifier, this is UUID encoded as
+                        [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                        stripped of `=` padding.
+                      pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+                      title: Task Identifier
+                      type: string
+                  SortedPropertyNames:
+                  - runId
+                  - taskId
+                  SourceURL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties
+                required:
+                - taskId
+                - runId
+                title: Task Run
+                type: object
               SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
               TYPE_NAME: MostRecentTask
-              additionalProperties:
-                Boolean: false
-                Properties: null
               description: |
                 The most recent claimed task
-              properties:
-                MemberNames:
-                  runId: RunID
-                  taskId: TaskID
-                Properties:
-                  runId:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: runId
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-                    TYPE_NAME: RunIdentifier
-                    description: |
-                      Id of this task run, `run-id`s always starts from `0`
-                    maximum: 1000
-                    minimum: 0
-                    title: Run Identifier
-                    type: integer
-                  taskId:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: taskId
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId
-                    TYPE_NAME: TaskIdentifier
-                    description: |
-                      Unique task identifier, this is UUID encoded as
-                      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-                      stripped of `=` padding.
-                    pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-                    title: Task Identifier
-                    type: string
-                SortedPropertyNames:
-                - runId
-                - taskId
-                SourceURL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties
-              required:
-              - taskId
-              - runId
               title: Most Recent Task
-              type: object
             quarantineUntil:
               IS_REQUIRED: false
               PROPERTY_NAME: quarantineUntil
@@ -19195,6 +19130,7 @@ properties:
         - workerGroup
         - workerId
         - firstClaim
+        title: Worker
         type: object
       title: Workers from a WorkerType
       type: array
@@ -19213,7 +19149,7 @@ http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/w
 IS_REQUIRED: false
 PROPERTY_NAME: workers entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items
-TYPE_NAME: WorkersEntry
+TYPE_NAME: Worker
 additionalProperties:
   Boolean: false
   Properties: null
@@ -19236,52 +19172,63 @@ properties:
       title: First task claimed
       type: string
     latestTask:
+      $ref: http://schemas.taskcluster.net/queue/v1/task-run.json#
       IS_REQUIRED: false
       PROPERTY_NAME: latestTask
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
+        TYPE_NAME: TaskRun
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          A run of a task.
+        id: http://schemas.taskcluster.net/queue/v1/task-run.json#
+        properties:
+          MemberNames:
+            runId: RunID
+            taskId: TaskID
+          Properties:
+            runId:
+              IS_REQUIRED: true
+              PROPERTY_NAME: runId
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
+              TYPE_NAME: RunIdentifier
+              description: |
+                Id of this task run, `run-id`s always starts from `0`
+              maximum: 1000
+              minimum: 0
+              title: Run Identifier
+              type: integer
+            taskId:
+              IS_REQUIRED: true
+              PROPERTY_NAME: taskId
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
+              TYPE_NAME: TaskIdentifier
+              description: |
+                Unique task identifier, this is UUID encoded as
+                [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                stripped of `=` padding.
+              pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+              title: Task Identifier
+              type: string
+          SortedPropertyNames:
+          - runId
+          - taskId
+          SourceURL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties
+        required:
+        - taskId
+        - runId
+        title: Task Run
+        type: object
       SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
       TYPE_NAME: MostRecentTask
-      additionalProperties:
-        Boolean: false
-        Properties: null
       description: |
         The most recent claimed task
-      properties:
-        MemberNames:
-          runId: RunID
-          taskId: TaskID
-        Properties:
-          runId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: runId
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-            TYPE_NAME: RunIdentifier
-            description: |
-              Id of this task run, `run-id`s always starts from `0`
-            maximum: 1000
-            minimum: 0
-            title: Run Identifier
-            type: integer
-          taskId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: taskId
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId
-            TYPE_NAME: TaskIdentifier
-            description: |
-              Unique task identifier, this is UUID encoded as
-              [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-              stripped of `=` padding.
-            pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-            title: Task Identifier
-            type: string
-        SortedPropertyNames:
-        - runId
-        - taskId
-        SourceURL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties
-      required:
-      - taskId
-      - runId
       title: Most Recent Task
-      type: object
     quarantineUntil:
       IS_REQUIRED: false
       PROPERTY_NAME: quarantineUntil
@@ -19328,56 +19275,7 @@ required:
 - workerGroup
 - workerId
 - firstClaim
-type: object
-
-
-http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
-==================================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: latestTask
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
-TYPE_NAME: MostRecentTask
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  The most recent claimed task
-properties:
-  MemberNames:
-    runId: RunID
-    taskId: TaskID
-  Properties:
-    runId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: runId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-      TYPE_NAME: RunIdentifier
-      description: |
-        Id of this task run, `run-id`s always starts from `0`
-      maximum: 1000
-      minimum: 0
-      title: Run Identifier
-      type: integer
-    taskId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: taskId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId
-      TYPE_NAME: TaskIdentifier
-      description: |
-        Unique task identifier, this is UUID encoded as
-        [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-        stripped of `=` padding.
-      pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-      title: Task Identifier
-      type: string
-  SortedPropertyNames:
-  - runId
-  - taskId
-  SourceURL: http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties
-required:
-- taskId
-- runId
-title: Most Recent Task
+title: Worker
 type: object
 
 
@@ -19425,7 +19323,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: workerTypes entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items
-        TYPE_NAME: WorkerTypesEntry
+        TYPE_NAME: WorkerType
         additionalProperties:
           Boolean: false
           Properties: null
@@ -19514,6 +19412,7 @@ properties:
           - stability
           - workerType
           SourceURL: http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties
+        title: Worker Type
         type: object
       title: WorkerTypes from the Provisioner
       type: array
@@ -19532,7 +19431,7 @@ http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properti
 IS_REQUIRED: false
 PROPERTY_NAME: workerTypes entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items
-TYPE_NAME: WorkerTypesEntry
+TYPE_NAME: WorkerType
 additionalProperties:
   Boolean: false
   Properties: null
@@ -19621,6 +19520,7 @@ properties:
   - stability
   - workerType
   SourceURL: http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties
+title: Worker Type
 type: object
 
 
@@ -19651,7 +19551,7 @@ properties:
       TYPE_NAME: NumberOfPendingTasks
       description: |
         An approximate number of pending tasks for the given `provisionerId` and
-        `workerType`. This is based on Azure Queue Storage meta-data API, thus,
+        `workerType`. This is based on Azure Queue Storage metadata API, thus,
         number of reported here may be higher than actual number of pending tasks.
         But there cannot be more pending tasks reported here. Ie. this is an
         **upper-bound** on the number of pending tasks.
@@ -20007,7 +19907,7 @@ oneOf:
             IS_REQUIRED: false
             PROPERTY_NAME: parts entry
             SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items
-            TYPE_NAME: PartsEntry
+            TYPE_NAME: MultipartPart
             additionalProperties:
               Boolean: false
               Properties: null
@@ -20042,6 +19942,7 @@ oneOf:
               - sha256
               - size
               SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties
+            title: Multipart Part
             type: object
           minLength: 1
           type: array
@@ -20488,7 +20389,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: parts entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items
-        TYPE_NAME: PartsEntry
+        TYPE_NAME: MultipartPart
         additionalProperties:
           Boolean: false
           Properties: null
@@ -20523,6 +20424,7 @@ properties:
           - sha256
           - size
           SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties
+        title: Multipart Part
         type: object
       minLength: 1
       type: array
@@ -20583,7 +20485,7 @@ http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/pro
 IS_REQUIRED: false
 PROPERTY_NAME: parts entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items
-TYPE_NAME: PartsEntry
+TYPE_NAME: MultipartPart
 additionalProperties:
   Boolean: false
   Properties: null
@@ -20618,6 +20520,7 @@ properties:
   - sha256
   - size
   SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties
+title: Multipart Part
 type: object
 
 
@@ -20967,7 +20870,10 @@ oneOf:
             IS_REQUIRED: false
             PROPERTY_NAME: requests entry
             SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
-            TYPE_NAME: RequestsEntry
+            TYPE_NAME: HTTPRequest
+            additionalProperties:
+              Boolean: false
+              Properties: null
             properties:
               MemberNames:
                 headers: Headers
@@ -20975,7 +20881,7 @@ oneOf:
                 url: URL
               Properties:
                 headers:
-                  IS_REQUIRED: false
+                  IS_REQUIRED: true
                   PROPERTY_NAME: headers
                   SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
                   TYPE_NAME: Headers
@@ -20990,7 +20896,7 @@ oneOf:
                   description: Headers of request
                   type: object
                 method:
-                  IS_REQUIRED: false
+                  IS_REQUIRED: true
                   PROPERTY_NAME: method
                   SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
                   TYPE_NAME: Method
@@ -21005,7 +20911,7 @@ oneOf:
                   - PATCH
                   type: string
                 url:
-                  IS_REQUIRED: false
+                  IS_REQUIRED: true
                   PROPERTY_NAME: url
                   SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
                   TYPE_NAME: URL
@@ -21016,6 +20922,11 @@ oneOf:
               - method
               - url
               SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties
+            required:
+            - url
+            - method
+            - headers
+            title: HTTP Request
             type: object
           type: array
         storageType:
@@ -21290,7 +21201,10 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: requests entry
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
-        TYPE_NAME: RequestsEntry
+        TYPE_NAME: HTTPRequest
+        additionalProperties:
+          Boolean: false
+          Properties: null
         properties:
           MemberNames:
             headers: Headers
@@ -21298,7 +21212,7 @@ properties:
             url: URL
           Properties:
             headers:
-              IS_REQUIRED: false
+              IS_REQUIRED: true
               PROPERTY_NAME: headers
               SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
               TYPE_NAME: Headers
@@ -21313,7 +21227,7 @@ properties:
               description: Headers of request
               type: object
             method:
-              IS_REQUIRED: false
+              IS_REQUIRED: true
               PROPERTY_NAME: method
               SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
               TYPE_NAME: Method
@@ -21328,7 +21242,7 @@ properties:
               - PATCH
               type: string
             url:
-              IS_REQUIRED: false
+              IS_REQUIRED: true
               PROPERTY_NAME: url
               SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
               TYPE_NAME: URL
@@ -21339,6 +21253,11 @@ properties:
           - method
           - url
           SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties
+        required:
+        - url
+        - method
+        - headers
+        title: HTTP Request
         type: object
       type: array
     storageType:
@@ -21368,7 +21287,10 @@ http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/pr
 IS_REQUIRED: false
 PROPERTY_NAME: requests entry
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
-TYPE_NAME: RequestsEntry
+TYPE_NAME: HTTPRequest
+additionalProperties:
+  Boolean: false
+  Properties: null
 properties:
   MemberNames:
     headers: Headers
@@ -21376,7 +21298,7 @@ properties:
     url: URL
   Properties:
     headers:
-      IS_REQUIRED: false
+      IS_REQUIRED: true
       PROPERTY_NAME: headers
       SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
       TYPE_NAME: Headers
@@ -21391,7 +21313,7 @@ properties:
       description: Headers of request
       type: object
     method:
-      IS_REQUIRED: false
+      IS_REQUIRED: true
       PROPERTY_NAME: method
       SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
       TYPE_NAME: Method
@@ -21406,7 +21328,7 @@ properties:
       - PATCH
       type: string
     url:
-      IS_REQUIRED: false
+      IS_REQUIRED: true
       PROPERTY_NAME: url
       SOURCE_URL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
       TYPE_NAME: URL
@@ -21417,6 +21339,11 @@ properties:
   - method
   - url
   SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties
+required:
+- url
+- method
+- headers
+title: HTTP Request
 type: object
 
 
@@ -22055,73 +21982,82 @@ properties:
     workerId: WorkerID
   Properties:
     credentials:
+      $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       IS_REQUIRED: true
       PROPERTY_NAME: credentials
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials
-      TYPE_NAME: Credentials1
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      description: |
-        Temporary credentials granting `task.scopes` and the scope:
-        `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-        the task, upload artifacts and report task resolution.
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+        TYPE_NAME: TaskCredentials
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          Temporary credentials granting `task.scopes` and the scope:
+          `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+          the task, upload artifacts and report task resolution.
 
-        The temporary credentials are set to expire after `takenUntil`. They
-        won't expire exactly at `takenUntil` but shortly after, hence, requests
-        coming close `takenUntil` won't have problems even if there is a little
-        clock drift.
+          The temporary credentials are set to expire after `takenUntil`. They
+          won't expire exactly at `takenUntil` but shortly after, hence, requests
+          coming close `takenUntil` won't have problems even if there is a little
+          clock drift.
 
-        Workers should use these credentials when making requests on behalf of
-        a task. This includes requests to create artifacts, reclaiming the task
-        reporting the task `completed`, `failed` or `exception`.
+          Workers should use these credentials when making requests on behalf of
+          a task. This includes requests to create artifacts, reclaiming the task
+          reporting the task `completed`, `failed` or `exception`.
 
-        Note, a new set of temporary credentials is issued when the worker
-        reclaims the task.
-      properties:
-        MemberNames:
-          accessToken: AccessToken
-          certificate: Certificate
-          clientId: ClientID
-        Properties:
-          accessToken:
-            IS_REQUIRED: true
-            PROPERTY_NAME: accessToken
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/accessToken
-            TYPE_NAME: AccessToken
-            description: |
-              The `accessToken` for the temporary credentials.
-            minLength: 1
-            type: string
-          certificate:
-            IS_REQUIRED: true
-            PROPERTY_NAME: certificate
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/certificate
-            TYPE_NAME: Certificate
-            description: |
-              The `certificate` for the temporary credentials, these are required
-              for the temporary credentials to work.
-            minLength: 1
-            type: string
-          clientId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: clientId
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/clientId
-            TYPE_NAME: ClientID
-            description: |
-              The `clientId` for the temporary credentials.
-            minLength: 1
-            type: string
-        SortedPropertyNames:
+          Note, a new set of temporary credentials is issued when the worker
+          reclaims the task.
+        id: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+        properties:
+          MemberNames:
+            accessToken: AccessToken
+            certificate: Certificate
+            clientId: ClientID
+          Properties:
+            accessToken:
+              IS_REQUIRED: true
+              PROPERTY_NAME: accessToken
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
+              TYPE_NAME: AccessToken
+              description: |
+                The `accessToken` for the temporary credentials.
+              minLength: 1
+              type: string
+            certificate:
+              IS_REQUIRED: true
+              PROPERTY_NAME: certificate
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
+              TYPE_NAME: Certificate
+              description: |
+                The `certificate` for the temporary credentials, these are required
+                for the temporary credentials to work.
+              minLength: 1
+              type: string
+            clientId:
+              IS_REQUIRED: true
+              PROPERTY_NAME: clientId
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
+              TYPE_NAME: ClientID
+              description: |
+                The `clientId` for the temporary credentials.
+              minLength: 1
+              type: string
+          SortedPropertyNames:
+          - accessToken
+          - certificate
+          - clientId
+          SourceURL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties
+        required:
+        - clientId
         - accessToken
         - certificate
-        - clientId
-        SourceURL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties
-      required:
-      - clientId
-      - accessToken
-      - certificate
-      type: object
+        title: Task Credentials
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials
+      TYPE_NAME: Credentials
     runId:
       IS_REQUIRED: true
       PROPERTY_NAME: runId
@@ -22618,83 +22554,91 @@ properties:
               title: Extra Data
               type: object
             metadata:
+              $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-              TYPE_NAME: MetaData
-              additionalProperties:
-                Boolean: false
-                Properties: null
-              description: |
-                Required task metadata
-              properties:
-                MemberNames:
-                  description: Description
-                  name: Name
-                  owner: Owner
-                  source: Source
-                Properties:
-                  description:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: description
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-                    TYPE_NAME: Description
-                    description: |
-                      Human readable description of the task, please **explain** what the
-                      task does. A few lines of documentation is not going to hurt you.
-                    maxLength: 32768
-                    title: Description
-                    type: string
-                  name:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: name
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-                    TYPE_NAME: Name
-                    description: |
-                      Human readable name of task, used to very briefly given an idea about
-                      what the task does.
-                    maxLength: 255
-                    title: Name
-                    type: string
-                  owner:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: owner
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-                    TYPE_NAME: Owner
-                    description: |
-                      E-mail of person who caused this task, e.g. the person who did
-                      `hg push`. The person we should contact to ask why this task is here.
-                    format: email
-                    maxLength: 255
-                    title: Owner
-                    type: string
-                  source:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: source
-                    SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-                    TYPE_NAME: Source
-                    description: |
-                      Link to source of this task, should specify a file, revision and
-                      repository. This should be place someone can go an do a git/hg blame
-                      to who came up with recipe for this task.
-                    format: uri
-                    maxLength: 4096
-                    pattern: ^https?://
-                    title: Source
-                    type: string
-                SortedPropertyNames:
-                - description
+              REF_SUBSCHEMA:
+                $schema: http://json-schema.org/draft-06/schema#
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                TYPE_NAME: TaskMetadata
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                description: |
+                  Required task metadata
+                id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+                properties:
+                  MemberNames:
+                    description: Description
+                    name: Name
+                    owner: Owner
+                    source: Source
+                  Properties:
+                    description:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: description
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+                      TYPE_NAME: Description
+                      description: |
+                        Human readable description of the task, please **explain** what the
+                        task does. A few lines of documentation is not going to hurt you.
+                      maxLength: 32768
+                      title: Description
+                      type: string
+                    name:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: name
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+                      TYPE_NAME: Name
+                      description: |
+                        Human readable name of task, used to very briefly given an idea about
+                        what the task does.
+                      maxLength: 255
+                      title: Name
+                      type: string
+                    owner:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: owner
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+                      TYPE_NAME: Owner
+                      description: |
+                        E-mail of person who caused this task, e.g. the person who did
+                        `hg push`. The person we should contact to ask why this task is here.
+                      format: email
+                      maxLength: 255
+                      title: Owner
+                      type: string
+                    source:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: source
+                      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+                      TYPE_NAME: Source
+                      description: |
+                        Link to source of this task, should specify a file, revision and
+                        repository. This should be place someone can go an do a git/hg blame
+                        to who came up with recipe for this task.
+                      format: uri
+                      maxLength: 4096
+                      pattern: ^https?://
+                      title: Source
+                      type: string
+                  SortedPropertyNames:
+                  - description
+                  - name
+                  - owner
+                  - source
+                  SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+                required:
                 - name
+                - description
                 - owner
                 - source
-                SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-              required:
-              - name
-              - description
-              - owner
-              - source
-              title: Meta-data
-              type: object
+                title: Task Metadata
+                type: object
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+              TYPE_NAME: Metadata
             payload:
               IS_REQUIRED: true
               PROPERTY_NAME: payload
@@ -22850,9 +22794,9 @@ properties:
                   type: string
               description: |
                 Arbitrary key-value tags (only strings limited to 4k). These can be used
-                to attach informal meta-data to a task. Use this for informal tags that
+                to attach informal metadata to a task. Use this for informal tags that
                 tasks can be classified by. You can also think of strings here as
-                candidates for formal meta-data. Something like
+                candidates for formal metadata. Something like
                 `purpose: 'build' || 'test'` is a good example.
               title: Tags
               type: object
@@ -22964,12 +22908,13 @@ title: Task Claim Response
 type: object
 
 
-http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials
-========================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: credentials
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials
-TYPE_NAME: Credentials1
+http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+==============================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+TYPE_NAME: TaskCredentials
 additionalProperties:
   Boolean: false
   Properties: null
@@ -22989,6 +22934,7 @@ description: |
 
   Note, a new set of temporary credentials is issued when the worker
   reclaims the task.
+id: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
 properties:
   MemberNames:
     accessToken: AccessToken
@@ -22998,7 +22944,7 @@ properties:
     accessToken:
       IS_REQUIRED: true
       PROPERTY_NAME: accessToken
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/accessToken
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
       TYPE_NAME: AccessToken
       description: |
         The `accessToken` for the temporary credentials.
@@ -23007,7 +22953,7 @@ properties:
     certificate:
       IS_REQUIRED: true
       PROPERTY_NAME: certificate
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/certificate
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
       TYPE_NAME: Certificate
       description: |
         The `certificate` for the temporary credentials, these are required
@@ -23017,7 +22963,7 @@ properties:
     clientId:
       IS_REQUIRED: true
       PROPERTY_NAME: clientId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/clientId
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
       TYPE_NAME: ClientID
       description: |
         The `clientId` for the temporary credentials.
@@ -23027,11 +22973,12 @@ properties:
   - accessToken
   - certificate
   - clientId
-  SourceURL: http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties
+  SourceURL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties
 required:
 - clientId
 - accessToken
 - certificate
+title: Task Credentials
 type: object
 
 
@@ -23110,6 +23057,89 @@ title: Task Exception Request
 type: object
 
 
+http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+===========================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+TYPE_NAME: TaskMetadata
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Required task metadata
+id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+properties:
+  MemberNames:
+    description: Description
+    name: Name
+    owner: Owner
+    source: Source
+  Properties:
+    description:
+      IS_REQUIRED: true
+      PROPERTY_NAME: description
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+      TYPE_NAME: Description
+      description: |
+        Human readable description of the task, please **explain** what the
+        task does. A few lines of documentation is not going to hurt you.
+      maxLength: 32768
+      title: Description
+      type: string
+    name:
+      IS_REQUIRED: true
+      PROPERTY_NAME: name
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+      TYPE_NAME: Name
+      description: |
+        Human readable name of task, used to very briefly given an idea about
+        what the task does.
+      maxLength: 255
+      title: Name
+      type: string
+    owner:
+      IS_REQUIRED: true
+      PROPERTY_NAME: owner
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+      TYPE_NAME: Owner
+      description: |
+        E-mail of person who caused this task, e.g. the person who did
+        `hg push`. The person we should contact to ask why this task is here.
+      format: email
+      maxLength: 255
+      title: Owner
+      type: string
+    source:
+      IS_REQUIRED: true
+      PROPERTY_NAME: source
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+      TYPE_NAME: Source
+      description: |
+        Link to source of this task, should specify a file, revision and
+        repository. This should be place someone can go an do a git/hg blame
+        to who came up with recipe for this task.
+      format: uri
+      maxLength: 4096
+      pattern: ^https?://
+      title: Source
+      type: string
+  SortedPropertyNames:
+  - description
+  - name
+  - owner
+  - source
+  SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+required:
+- name
+- description
+- owner
+- source
+title: Task Metadata
+type: object
+
+
 http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
 ===================================================================
 $schema: http://json-schema.org/draft-06/schema#
@@ -23133,73 +23163,82 @@ properties:
     workerId: WorkerID
   Properties:
     credentials:
+      $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       IS_REQUIRED: true
       PROPERTY_NAME: credentials
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials
-      TYPE_NAME: Credentials2
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      description: |
-        Temporary credentials granting `task.scopes` and the scope:
-        `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-        the task, upload artifacts and report task resolution.
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+        TYPE_NAME: TaskCredentials
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          Temporary credentials granting `task.scopes` and the scope:
+          `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+          the task, upload artifacts and report task resolution.
 
-        The temporary credentials are set to expire after `takenUntil`. They
-        won't expire exactly at `takenUntil` but shortly after, hence, requests
-        coming close `takenUntil` won't have problems even if there is a little
-        clock drift.
+          The temporary credentials are set to expire after `takenUntil`. They
+          won't expire exactly at `takenUntil` but shortly after, hence, requests
+          coming close `takenUntil` won't have problems even if there is a little
+          clock drift.
 
-        Workers should use these credentials when making requests on behalf of
-        a task. This includes requests to create artifacts, reclaiming the task
-        reporting the task `completed`, `failed` or `exception`.
+          Workers should use these credentials when making requests on behalf of
+          a task. This includes requests to create artifacts, reclaiming the task
+          reporting the task `completed`, `failed` or `exception`.
 
-        Note, a new set of temporary credentials is issued when the worker
-        reclaims the task.
-      properties:
-        MemberNames:
-          accessToken: AccessToken
-          certificate: Certificate
-          clientId: ClientID
-        Properties:
-          accessToken:
-            IS_REQUIRED: true
-            PROPERTY_NAME: accessToken
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/accessToken
-            TYPE_NAME: AccessToken
-            description: |
-              The `accessToken` for the temporary credentials.
-            minLength: 1
-            type: string
-          certificate:
-            IS_REQUIRED: true
-            PROPERTY_NAME: certificate
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/certificate
-            TYPE_NAME: Certificate
-            description: |
-              The `certificate` for the temporary credentials, these are required
-              for the temporary credentials to work.
-            minLength: 1
-            type: string
-          clientId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: clientId
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/clientId
-            TYPE_NAME: ClientID
-            description: |
-              The `clientId` for the temporary credentials.
-            minLength: 1
-            type: string
-        SortedPropertyNames:
+          Note, a new set of temporary credentials is issued when the worker
+          reclaims the task.
+        id: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+        properties:
+          MemberNames:
+            accessToken: AccessToken
+            certificate: Certificate
+            clientId: ClientID
+          Properties:
+            accessToken:
+              IS_REQUIRED: true
+              PROPERTY_NAME: accessToken
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
+              TYPE_NAME: AccessToken
+              description: |
+                The `accessToken` for the temporary credentials.
+              minLength: 1
+              type: string
+            certificate:
+              IS_REQUIRED: true
+              PROPERTY_NAME: certificate
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
+              TYPE_NAME: Certificate
+              description: |
+                The `certificate` for the temporary credentials, these are required
+                for the temporary credentials to work.
+              minLength: 1
+              type: string
+            clientId:
+              IS_REQUIRED: true
+              PROPERTY_NAME: clientId
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
+              TYPE_NAME: ClientID
+              description: |
+                The `clientId` for the temporary credentials.
+              minLength: 1
+              type: string
+          SortedPropertyNames:
+          - accessToken
+          - certificate
+          - clientId
+          SourceURL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties
+        required:
+        - clientId
         - accessToken
         - certificate
-        - clientId
-        SourceURL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties
-      required:
-      - clientId
-      - accessToken
-      - certificate
-      type: object
+        title: Task Credentials
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials
+      TYPE_NAME: Credentials
     runId:
       IS_REQUIRED: true
       PROPERTY_NAME: runId
@@ -23624,74 +23663,55 @@ title: Task Reclaim Response
 type: object
 
 
-http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials
-==========================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: credentials
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials
-TYPE_NAME: Credentials2
+http://schemas.taskcluster.net/queue/v1/task-run.json#
+======================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
+TYPE_NAME: TaskRun
 additionalProperties:
   Boolean: false
   Properties: null
 description: |
-  Temporary credentials granting `task.scopes` and the scope:
-  `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-  the task, upload artifacts and report task resolution.
-
-  The temporary credentials are set to expire after `takenUntil`. They
-  won't expire exactly at `takenUntil` but shortly after, hence, requests
-  coming close `takenUntil` won't have problems even if there is a little
-  clock drift.
-
-  Workers should use these credentials when making requests on behalf of
-  a task. This includes requests to create artifacts, reclaiming the task
-  reporting the task `completed`, `failed` or `exception`.
-
-  Note, a new set of temporary credentials is issued when the worker
-  reclaims the task.
+  A run of a task.
+id: http://schemas.taskcluster.net/queue/v1/task-run.json#
 properties:
   MemberNames:
-    accessToken: AccessToken
-    certificate: Certificate
-    clientId: ClientID
+    runId: RunID
+    taskId: TaskID
   Properties:
-    accessToken:
+    runId:
       IS_REQUIRED: true
-      PROPERTY_NAME: accessToken
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/accessToken
-      TYPE_NAME: AccessToken
+      PROPERTY_NAME: runId
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
+      TYPE_NAME: RunIdentifier
       description: |
-        The `accessToken` for the temporary credentials.
-      minLength: 1
-      type: string
-    certificate:
+        Id of this task run, `run-id`s always starts from `0`
+      maximum: 1000
+      minimum: 0
+      title: Run Identifier
+      type: integer
+    taskId:
       IS_REQUIRED: true
-      PROPERTY_NAME: certificate
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/certificate
-      TYPE_NAME: Certificate
+      PROPERTY_NAME: taskId
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
+      TYPE_NAME: TaskIdentifier
       description: |
-        The `certificate` for the temporary credentials, these are required
-        for the temporary credentials to work.
-      minLength: 1
-      type: string
-    clientId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: clientId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/clientId
-      TYPE_NAME: ClientID
-      description: |
-        The `clientId` for the temporary credentials.
-      minLength: 1
+        Unique task identifier, this is UUID encoded as
+        [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+        stripped of `=` padding.
+      pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+      title: Task Identifier
       type: string
   SortedPropertyNames:
-  - accessToken
-  - certificate
-  - clientId
-  SourceURL: http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties
+  - runId
+  - taskId
+  SourceURL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties
 required:
-- clientId
-- accessToken
-- certificate
+- taskId
+- runId
+title: Task Run
 type: object
 
 
@@ -24742,83 +24762,91 @@ properties:
       title: Extra Data
       type: object
     metadata:
+      $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-      TYPE_NAME: MetaData
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      description: |
-        Required task metadata
-      properties:
-        MemberNames:
-          description: Description
-          name: Name
-          owner: Owner
-          source: Source
-        Properties:
-          description:
-            IS_REQUIRED: true
-            PROPERTY_NAME: description
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-            TYPE_NAME: Description
-            description: |
-              Human readable description of the task, please **explain** what the
-              task does. A few lines of documentation is not going to hurt you.
-            maxLength: 32768
-            title: Description
-            type: string
-          name:
-            IS_REQUIRED: true
-            PROPERTY_NAME: name
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-            TYPE_NAME: Name
-            description: |
-              Human readable name of task, used to very briefly given an idea about
-              what the task does.
-            maxLength: 255
-            title: Name
-            type: string
-          owner:
-            IS_REQUIRED: true
-            PROPERTY_NAME: owner
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-            TYPE_NAME: Owner
-            description: |
-              E-mail of person who caused this task, e.g. the person who did
-              `hg push`. The person we should contact to ask why this task is here.
-            format: email
-            maxLength: 255
-            title: Owner
-            type: string
-          source:
-            IS_REQUIRED: true
-            PROPERTY_NAME: source
-            SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-            TYPE_NAME: Source
-            description: |
-              Link to source of this task, should specify a file, revision and
-              repository. This should be place someone can go an do a git/hg blame
-              to who came up with recipe for this task.
-            format: uri
-            maxLength: 4096
-            pattern: ^https?://
-            title: Source
-            type: string
-        SortedPropertyNames:
-        - description
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+        TYPE_NAME: TaskMetadata
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          Required task metadata
+        id: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+        properties:
+          MemberNames:
+            description: Description
+            name: Name
+            owner: Owner
+            source: Source
+          Properties:
+            description:
+              IS_REQUIRED: true
+              PROPERTY_NAME: description
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+              TYPE_NAME: Description
+              description: |
+                Human readable description of the task, please **explain** what the
+                task does. A few lines of documentation is not going to hurt you.
+              maxLength: 32768
+              title: Description
+              type: string
+            name:
+              IS_REQUIRED: true
+              PROPERTY_NAME: name
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+              TYPE_NAME: Name
+              description: |
+                Human readable name of task, used to very briefly given an idea about
+                what the task does.
+              maxLength: 255
+              title: Name
+              type: string
+            owner:
+              IS_REQUIRED: true
+              PROPERTY_NAME: owner
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+              TYPE_NAME: Owner
+              description: |
+                E-mail of person who caused this task, e.g. the person who did
+                `hg push`. The person we should contact to ask why this task is here.
+              format: email
+              maxLength: 255
+              title: Owner
+              type: string
+            source:
+              IS_REQUIRED: true
+              PROPERTY_NAME: source
+              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+              TYPE_NAME: Source
+              description: |
+                Link to source of this task, should specify a file, revision and
+                repository. This should be place someone can go an do a git/hg blame
+                to who came up with recipe for this task.
+              format: uri
+              maxLength: 4096
+              pattern: ^https?://
+              title: Source
+              type: string
+          SortedPropertyNames:
+          - description
+          - name
+          - owner
+          - source
+          SourceURL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties
+        required:
         - name
+        - description
         - owner
         - source
-        SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-      required:
-      - name
-      - description
-      - owner
-      - source
-      title: Meta-data
-      type: object
+        title: Task Metadata
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
+      TYPE_NAME: Metadata
     payload:
       IS_REQUIRED: true
       PROPERTY_NAME: payload
@@ -24974,9 +25002,9 @@ properties:
           type: string
       description: |
         Arbitrary key-value tags (only strings limited to 4k). These can be used
-        to attach informal meta-data to a task. Use this for informal tags that
+        to attach informal metadata to a task. Use this for informal tags that
         tasks can be classified by. You can also think of strings here as
-        candidates for formal meta-data. Something like
+        candidates for formal metadata. Something like
         `purpose: 'build' || 'test'` is a good example.
       title: Tags
       type: object
@@ -25042,87 +25070,6 @@ required:
 - tags
 - extra
 title: Task Definition Response
-type: object
-
-
-http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-======================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: metadata
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-TYPE_NAME: MetaData
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  Required task metadata
-properties:
-  MemberNames:
-    description: Description
-    name: Name
-    owner: Owner
-    source: Source
-  Properties:
-    description:
-      IS_REQUIRED: true
-      PROPERTY_NAME: description
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-      TYPE_NAME: Description
-      description: |
-        Human readable description of the task, please **explain** what the
-        task does. A few lines of documentation is not going to hurt you.
-      maxLength: 32768
-      title: Description
-      type: string
-    name:
-      IS_REQUIRED: true
-      PROPERTY_NAME: name
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-      TYPE_NAME: Name
-      description: |
-        Human readable name of task, used to very briefly given an idea about
-        what the task does.
-      maxLength: 255
-      title: Name
-      type: string
-    owner:
-      IS_REQUIRED: true
-      PROPERTY_NAME: owner
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-      TYPE_NAME: Owner
-      description: |
-        E-mail of person who caused this task, e.g. the person who did
-        `hg push`. The person we should contact to ask why this task is here.
-      format: email
-      maxLength: 255
-      title: Owner
-      type: string
-    source:
-      IS_REQUIRED: true
-      PROPERTY_NAME: source
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-      TYPE_NAME: Source
-      description: |
-        Link to source of this task, should specify a file, revision and
-        repository. This should be place someone can go an do a git/hg blame
-        to who came up with recipe for this task.
-      format: uri
-      maxLength: 4096
-      pattern: ^https?://
-      title: Source
-      type: string
-  SortedPropertyNames:
-  - description
-  - name
-  - owner
-  - source
-  SourceURL: http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties
-required:
-- name
-- description
-- owner
-- source
-title: Meta-data
 type: object
 
 
@@ -25663,51 +25610,65 @@ properties:
       IS_REQUIRED: true
       PROPERTY_NAME: recentTasks
       SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks
-      TYPE_NAME: RecentTasks
+      TYPE_NAME: MostRecentTasks
       description: |
         List of 20 most recent tasks claimed by the worker.
       items:
+        $ref: http://schemas.taskcluster.net/queue/v1/task-run.json#
         IS_REQUIRED: false
         PROPERTY_NAME: recentTasks entry
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
+          TYPE_NAME: TaskRun
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            A run of a task.
+          id: http://schemas.taskcluster.net/queue/v1/task-run.json#
+          properties:
+            MemberNames:
+              runId: RunID
+              taskId: TaskID
+            Properties:
+              runId:
+                IS_REQUIRED: true
+                PROPERTY_NAME: runId
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
+                TYPE_NAME: RunIdentifier
+                description: |
+                  Id of this task run, `run-id`s always starts from `0`
+                maximum: 1000
+                minimum: 0
+                title: Run Identifier
+                type: integer
+              taskId:
+                IS_REQUIRED: true
+                PROPERTY_NAME: taskId
+                SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
+                TYPE_NAME: TaskIdentifier
+                description: |
+                  Unique task identifier, this is UUID encoded as
+                  [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                  stripped of `=` padding.
+                pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+                title: Task Identifier
+                type: string
+            SortedPropertyNames:
+            - runId
+            - taskId
+            SourceURL: http://schemas.taskcluster.net/queue/v1/task-run.json#/properties
+          required:
+          - taskId
+          - runId
+          title: Task Run
+          type: object
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items
         TYPE_NAME: RecentTasksEntry
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            runId: RunID
-            taskId: TaskID
-          Properties:
-            runId:
-              IS_REQUIRED: false
-              PROPERTY_NAME: runId
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId
-              TYPE_NAME: RunIdentifier
-              description: |
-                Id of this task run, `run-id`s always starts from `0`
-              maximum: 1000
-              minimum: 0
-              title: Run Identifier
-              type: integer
-            taskId:
-              IS_REQUIRED: false
-              PROPERTY_NAME: taskId
-              SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/taskId
-              TYPE_NAME: TaskIdentifier
-              description: |
-                Unique task identifier, this is UUID encoded as
-                [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-                stripped of `=` padding.
-              pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-              title: Task Identifier
-              type: string
-          SortedPropertyNames:
-          - runId
-          - taskId
-          SourceURL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties
-        type: object
-      title: Recent Tasks
+      title: Most Recent Tasks
       type: array
     workerGroup:
       IS_REQUIRED: true
@@ -25904,50 +25865,6 @@ required:
 - method
 - description
 title: Worker Action
-type: object
-
-
-http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items
-==========================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: recentTasks entry
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items
-TYPE_NAME: RecentTasksEntry
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    runId: RunID
-    taskId: TaskID
-  Properties:
-    runId:
-      IS_REQUIRED: false
-      PROPERTY_NAME: runId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId
-      TYPE_NAME: RunIdentifier
-      description: |
-        Id of this task run, `run-id`s always starts from `0`
-      maximum: 1000
-      minimum: 0
-      title: Run Identifier
-      type: integer
-    taskId:
-      IS_REQUIRED: false
-      PROPERTY_NAME: taskId
-      SOURCE_URL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/taskId
-      TYPE_NAME: TaskIdentifier
-      description: |
-        Unique task identifier, this is UUID encoded as
-        [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-        stripped of `=` padding.
-      pattern: ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-      title: Task Identifier
-      type: string
-  SortedPropertyNames:
-  - runId
-  - taskId
-  SourceURL: http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties
 type: object
 
 

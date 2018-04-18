@@ -291,7 +291,7 @@ type (
 		// Min length: 1
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts
-		Parts []PartsEntry `json:"parts,omitempty"`
+		Parts []MultipartPart `json:"parts,omitempty"`
 
 		// Artifact storage type, in this case `'blob'`
 		//
@@ -367,7 +367,7 @@ type (
 		// the worker should sleep a tiny bit before polling again.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks
-		Tasks []TasksEntry `json:"tasks"`
+		Tasks []TaskClaim `json:"tasks"`
 	}
 
 	// Complete an aritifact
@@ -389,7 +389,7 @@ type (
 	CountPendingTasksResponse struct {
 
 		// An approximate number of pending tasks for the given `provisionerId` and
-		// `workerType`. This is based on Azure Queue Storage meta-data API, thus,
+		// `workerType`. This is based on Azure Queue Storage metadata API, thus,
 		// number of reported here may be higher than actual number of pending tasks.
 		// But there cannot be more pending tasks reported here. Ie. this is an
 		// **upper-bound** on the number of pending tasks.
@@ -416,132 +416,6 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
-	}
-
-	// Temporary credentials granting `task.scopes` and the scope:
-	// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-	// the task, upload artifacts and report task resolution.
-	//
-	// The temporary credentials are set to expire after `takenUntil`. They
-	// won't expire exactly at `takenUntil` but shortly after, hence, requests
-	// coming close `takenUntil` won't have problems even if there is a little
-	// clock drift.
-	//
-	// Workers should use these credentials when making requests on behalf of
-	// a task. This includes requests to create artifacts, reclaiming the task
-	// reporting the task `completed`, `failed` or `exception`.
-	//
-	// Note, a new set of temporary credentials is issued when the worker
-	// reclaims the task.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
-	Credentials struct {
-
-		// The `accessToken` for the temporary credentials.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/accessToken
-		AccessToken string `json:"accessToken"`
-
-		// The `certificate` for the temporary credentials, these are required
-		// for the temporary credentials to work.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/certificate
-		Certificate string `json:"certificate"`
-
-		// The `clientId` for the temporary credentials.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials/properties/clientId
-		ClientID string `json:"clientId"`
-	}
-
-	// Temporary credentials granting `task.scopes` and the scope:
-	// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-	// the task, upload artifacts and report task resolution.
-	//
-	// The temporary credentials are set to expire after `takenUntil`. They
-	// won't expire exactly at `takenUntil` but shortly after, hence, requests
-	// coming close `takenUntil` won't have problems even if there is a little
-	// clock drift.
-	//
-	// Workers should use these credentials when making requests on behalf of
-	// a task. This includes requests to create artifacts, reclaiming the task
-	// reporting the task `completed`, `failed` or `exception`.
-	//
-	// Note, a new set of temporary credentials is issued when the worker
-	// reclaims the task.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials
-	Credentials1 struct {
-
-		// The `accessToken` for the temporary credentials.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/accessToken
-		AccessToken string `json:"accessToken"`
-
-		// The `certificate` for the temporary credentials, these are required
-		// for the temporary credentials to work.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/certificate
-		Certificate string `json:"certificate"`
-
-		// The `clientId` for the temporary credentials.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials/properties/clientId
-		ClientID string `json:"clientId"`
-	}
-
-	// Temporary credentials granting `task.scopes` and the scope:
-	// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-	// the task, upload artifacts and report task resolution.
-	//
-	// The temporary credentials are set to expire after `takenUntil`. They
-	// won't expire exactly at `takenUntil` but shortly after, hence, requests
-	// coming close `takenUntil` won't have problems even if there is a little
-	// clock drift.
-	//
-	// Workers should use these credentials when making requests on behalf of
-	// a task. This includes requests to create artifacts, reclaiming the task
-	// reporting the task `completed`, `failed` or `exception`.
-	//
-	// Note, a new set of temporary credentials is issued when the worker
-	// reclaims the task.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials
-	Credentials2 struct {
-
-		// The `accessToken` for the temporary credentials.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/accessToken
-		AccessToken string `json:"accessToken"`
-
-		// The `certificate` for the temporary credentials, these are required
-		// for the temporary credentials to work.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/certificate
-		Certificate string `json:"certificate"`
-
-		// The `clientId` for the temporary credentials.
-		//
-		// Min length: 1
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials/properties/clientId
-		ClientID string `json:"clientId"`
 	}
 
 	// Request the queue to reply `403` (forbidden) with `reason` and `message`
@@ -597,6 +471,34 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]/properties/storageType
 		StorageType string `json:"storageType"`
+	}
+
+	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
+	HTTPRequest struct {
+
+		// Headers of request
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
+		Headers map[string]string `json:"headers"`
+
+		// HTTP 1.1 method of request
+		//
+		// Possible values:
+		//   * "GET"
+		//   * "POST"
+		//   * "PUT"
+		//   * "DELETE"
+		//   * "OPTIONS"
+		//   * "HEAD"
+		//   * "PATCH"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
+		Method string `json:"method"`
+
+		// URL of request
+		//
+		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
+		URL string `json:"url"`
 	}
 
 	// List of artifacts for a given `taskId` and `runId`.
@@ -716,7 +618,7 @@ type (
 		// List of worker-types in this provisioner.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes
-		WorkerTypes []WorkerTypesEntry `json:"workerTypes"`
+		WorkerTypes []WorkerType `json:"workerTypes"`
 	}
 
 	// Response from a `listWorkers` request.
@@ -738,114 +640,11 @@ type (
 		// List of workers in this worker-type.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers
-		Workers []WorkersEntry `json:"workers"`
-	}
-
-	// Required task metadata
-	//
-	// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-	MetaData struct {
-
-		// Human readable description of the task, please **explain** what the
-		// task does. A few lines of documentation is not going to hurt you.
-		//
-		// Max length: 32768
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/description
-		Description string `json:"description"`
-
-		// Human readable name of task, used to very briefly given an idea about
-		// what the task does.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/name
-		Name string `json:"name"`
-
-		// E-mail of person who caused this task, e.g. the person who did
-		// `hg push`. The person we should contact to ask why this task is here.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/owner
-		Owner string `json:"owner"`
-
-		// Link to source of this task, should specify a file, revision and
-		// repository. This should be place someone can go an do a git/hg blame
-		// to who came up with recipe for this task.
-		//
-		// Syntax:     ^https?://
-		// Max length: 4096
-		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata/properties/source
-		Source string `json:"source"`
-	}
-
-	// Required task metadata
-	//
-	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
-	MetaData1 struct {
-
-		// Human readable description of the task, please **explain** what the
-		// task does. A few lines of documentation is not going to hurt you.
-		//
-		// Max length: 32768
-		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/description
-		Description string `json:"description"`
-
-		// Human readable name of task, used to very briefly given an idea about
-		// what the task does.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/name
-		Name string `json:"name"`
-
-		// E-mail of person who caused this task, e.g. the person who did
-		// `hg push`. The person we should contact to ask why this task is here.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/owner
-		Owner string `json:"owner"`
-
-		// Link to source of this task, should specify a file, revision and
-		// repository. This should be place someone can go an do a git/hg blame
-		// to who came up with recipe for this task.
-		//
-		// Syntax:     ^https?://
-		// Max length: 4096
-		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata/properties/source
-		Source string `json:"source"`
-	}
-
-	// The most recent claimed task
-	//
-	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
-	MostRecentTask struct {
-
-		// Id of this task run, `run-id`s always starts from `0`
-		//
-		// Mininum:    0
-		// Maximum:    1000
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-		RunID int64 `json:"runId"`
-
-		// Unique task identifier, this is UUID encoded as
-		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-		// stripped of `=` padding.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/taskId
-		TaskID string `json:"taskId"`
+		Workers []Worker `json:"workers"`
 	}
 
 	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items
-	PartsEntry struct {
+	MultipartPart struct {
 
 		// The sha256 hash of the part.
 		//
@@ -1047,27 +846,6 @@ type (
 		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items
-	RecentTasksEntry struct {
-
-		// Id of this task run, `run-id`s always starts from `0`
-		//
-		// Mininum:    0
-		// Maximum:    1000
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId
-		RunID int64 `json:"runId,omitempty"`
-
-		// Unique task identifier, this is UUID encoded as
-		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-		// stripped of `=` padding.
-		//
-		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/taskId
-		TaskID string `json:"taskId,omitempty"`
-	}
-
 	// Request the queue to redirect to a URL for a given artifact.
 	// This allows you to reference artifacts that aren't managed by the queue.
 	// The queue will still authenticate the request, so depending on the level
@@ -1125,40 +903,6 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
-
-	// Defined properties:
-	//
-	//  struct {
-	//
-	//  	// Headers of request
-	//  	//
-	//  	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
-	//  	Headers map[string]string `json:"headers,omitempty"`
-	//
-	//  	// HTTP 1.1 method of request
-	//  	//
-	//  	// Possible values:
-	//  	//   * "GET"
-	//  	//   * "POST"
-	//  	//   * "PUT"
-	//  	//   * "DELETE"
-	//  	//   * "OPTIONS"
-	//  	//   * "HEAD"
-	//  	//   * "PATCH"
-	//  	//
-	//  	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
-	//  	Method string `json:"method,omitempty"`
-	//
-	//  	// URL of request
-	//  	//
-	//  	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
-	//  	URL string `json:"url,omitempty"`
-	//  }
-	//
-	// Additional properties allowed
-	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
-	RequestsEntry json.RawMessage
 
 	// JSON object with information about a run
 	//
@@ -1383,6 +1127,51 @@ type (
 		SignedPollURL string `json:"signedPollUrl"`
 	}
 
+	// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items
+	TaskClaim struct {
+
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
+		Credentials TaskCredentials `json:"credentials"`
+
+		// `run-id` assigned to this run of the task
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		//
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId
+		RunID int64 `json:"runId"`
+
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/status
+		Status TaskStatusStructure `json:"status"`
+
+		// Time at which the run expires and is resolved as `exception`,
+		// with reason `claim-expired` if the run haven't been reclaimed.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/takenUntil
+		TakenUntil tcclient.Time `json:"takenUntil"`
+
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/task
+		Task TaskDefinitionResponse `json:"task"`
+
+		// Identifier for the worker-group within which this run started.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerGroup
+		WorkerGroup string `json:"workerGroup"`
+
+		// Identifier for the worker executing this run.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerId
+		WorkerID string `json:"workerId"`
+	}
+
 	// Request to claim (or reclaim) a task
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
@@ -1412,24 +1201,8 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 	TaskClaimResponse struct {
 
-		// Temporary credentials granting `task.scopes` and the scope:
-		// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-		// the task, upload artifacts and report task resolution.
-		//
-		// The temporary credentials are set to expire after `takenUntil`. They
-		// won't expire exactly at `takenUntil` but shortly after, hence, requests
-		// coming close `takenUntil` won't have problems even if there is a little
-		// clock drift.
-		//
-		// Workers should use these credentials when making requests on behalf of
-		// a task. This includes requests to create artifacts, reclaiming the task
-		// reporting the task `completed`, `failed` or `exception`.
-		//
-		// Note, a new set of temporary credentials is issued when the worker
-		// reclaims the task.
-		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/credentials
-		Credentials Credentials1 `json:"credentials"`
+		Credentials TaskCredentials `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
 		//
@@ -1468,6 +1241,48 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
+	}
+
+	// Temporary credentials granting `task.scopes` and the scope:
+	// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
+	// the task, upload artifacts and report task resolution.
+	//
+	// The temporary credentials are set to expire after `takenUntil`. They
+	// won't expire exactly at `takenUntil` but shortly after, hence, requests
+	// coming close `takenUntil` won't have problems even if there is a little
+	// clock drift.
+	//
+	// Workers should use these credentials when making requests on behalf of
+	// a task. This includes requests to create artifacts, reclaiming the task
+	// reporting the task `completed`, `failed` or `exception`.
+	//
+	// Note, a new set of temporary credentials is issued when the worker
+	// reclaims the task.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+	TaskCredentials struct {
+
+		// The `accessToken` for the temporary credentials.
+		//
+		// Min length: 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
+		AccessToken string `json:"accessToken"`
+
+		// The `certificate` for the temporary credentials, these are required
+		// for the temporary credentials to work.
+		//
+		// Min length: 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
+		Certificate string `json:"certificate"`
+
+		// The `clientId` for the temporary credentials.
+		//
+		// Min length: 1
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
+		ClientID string `json:"clientId"`
 	}
 
 	// Task Definition and task status structure.
@@ -1545,10 +1360,8 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 
-		// Required task metadata
-		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/metadata
-		Metadata MetaData1 `json:"metadata"`
+		Metadata TaskMetadata `json:"metadata"`
 
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
@@ -1649,9 +1462,9 @@ type (
 		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal meta-data to a task. Use this for informal tags that
+		// to attach informal metadata to a task. Use this for informal tags that
 		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal meta-data. Something like
+		// candidates for formal metadata. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    {}
@@ -1729,10 +1542,8 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
-		// Required task metadata
-		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/metadata
-		Metadata MetaData `json:"metadata"`
+		Metadata TaskMetadata `json:"metadata"`
 
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
@@ -1818,9 +1629,9 @@ type (
 		Scopes []string `json:"scopes"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
-		// to attach informal meta-data to a task. Use this for informal tags that
+		// to attach informal metadata to a task. Use this for informal tags that
 		// tasks can be classified by. You can also think of strings here as
-		// candidates for formal meta-data. Something like
+		// candidates for formal metadata. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		// Max length: 4096
 		//
@@ -1900,29 +1711,53 @@ type (
 		Reason string `json:"reason"`
 	}
 
+	// Required task metadata
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+	TaskMetadata struct {
+
+		// Human readable description of the task, please **explain** what the
+		// task does. A few lines of documentation is not going to hurt you.
+		//
+		// Max length: 32768
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+		Description string `json:"description"`
+
+		// Human readable name of task, used to very briefly given an idea about
+		// what the task does.
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+		Name string `json:"name"`
+
+		// E-mail of person who caused this task, e.g. the person who did
+		// `hg push`. The person we should contact to ask why this task is here.
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+		Owner string `json:"owner"`
+
+		// Link to source of this task, should specify a file, revision and
+		// repository. This should be place someone can go an do a git/hg blame
+		// to who came up with recipe for this task.
+		//
+		// Syntax:     ^https?://
+		// Max length: 4096
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+		Source string `json:"source"`
+	}
+
 	// Response to a successful task claim
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
 	TaskReclaimResponse struct {
 
-		// Temporary credentials granting `task.scopes` and the scope:
-		// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-		// the task, upload artifacts and report task resolution.
-		//
-		// The temporary credentials are set to expire after `takenUntil`. They
-		// won't expire exactly at `takenUntil` but shortly after, hence, requests
-		// coming close `takenUntil` won't have problems even if there is a little
-		// clock drift.
-		//
-		// Workers should use these credentials when making requests on behalf of
-		// a task. This includes requests to create artifacts, reclaiming the task
-		// reporting the task `completed`, `failed` or `exception`.
-		//
-		// Note, a new set of temporary credentials is issued when the worker
-		// reclaims the task.
-		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/credentials
-		Credentials Credentials2 `json:"credentials"`
+		Credentials TaskCredentials `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
 		//
@@ -1958,6 +1793,29 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
+	}
+
+	// A run of a task.
+	//
+	// See http://schemas.taskcluster.net/queue/v1/task-run.json#
+	TaskRun struct {
+
+		// Id of this task run, `run-id`s always starts from `0`
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
+		RunID int64 `json:"runId"`
+
+		// Unique task identifier, this is UUID encoded as
+		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+		// stripped of `=` padding.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
+		TaskID string `json:"taskId"`
 	}
 
 	// Response to a task status request
@@ -2062,64 +1920,43 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items
-	TasksEntry struct {
+	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items
+	Worker struct {
 
-		// Temporary credentials granting `task.scopes` and the scope:
-		// `queue:claim-task:<taskId>/<runId>` which allows the worker to reclaim
-		// the task, upload artifacts and report task resolution.
+		// Date of the first time this worker claimed a task.
 		//
-		// The temporary credentials are set to expire after `takenUntil`. They
-		// won't expire exactly at `takenUntil` but shortly after, hence, requests
-		// coming close `takenUntil` won't have problems even if there is a little
-		// clock drift.
-		//
-		// Workers should use these credentials when making requests on behalf of
-		// a task. This includes requests to create artifacts, reclaiming the task
-		// reporting the task `completed`, `failed` or `exception`.
-		//
-		// Note, a new set of temporary credentials is issued when the worker
-		// reclaims the task.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/credentials
-		Credentials Credentials `json:"credentials"`
+		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim
+		FirstClaim tcclient.Time `json:"firstClaim"`
 
-		// `run-id` assigned to this run of the task
+		// The most recent claimed task
 		//
-		// Mininum:    0
-		// Maximum:    1000
+		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
+		LatestTask TaskRun `json:"latestTask,omitempty"`
+
+		// Quarantining a worker allows the machine to remain alive but not accept jobs.
+		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
+		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
+		// somewhere in the past).
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId
-		RunID int64 `json:"runId"`
+		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/quarantineUntil
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/status
-		Status TaskStatusStructure `json:"status"`
-
-		// Time at which the run expires and is resolved as `exception`,
-		// with reason `claim-expired` if the run haven't been reclaimed.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/takenUntil
-		TakenUntil tcclient.Time `json:"takenUntil"`
-
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/task
-		Task TaskDefinitionResponse `json:"task"`
-
-		// Identifier for the worker-group within which this run started.
+		// Identifier for the worker group containing this worker.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerGroup
+		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
-		// Identifier for the worker executing this run.
+		// Identifier for this worker (unique within this worker group).
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerId
+		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
@@ -2254,7 +2091,7 @@ type (
 		// List of 20 most recent tasks claimed by the worker.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks
-		RecentTasks []RecentTasksEntry `json:"recentTasks"`
+		RecentTasks []TaskRun `json:"recentTasks"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -2284,6 +2121,55 @@ type (
 		//
 		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
+	}
+
+	// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items
+	WorkerType struct {
+
+		// Description of the worker-type.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/description
+		Description string `json:"description,omitempty"`
+
+		// Date and time after which the worker-type will be automatically
+		// deleted by the queue.
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires
+		Expires tcclient.Time `json:"expires,omitempty"`
+
+		// Date and time where the worker-type was last seen active
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/lastDateActive
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
+		ProvisionerID string `json:"provisionerId,omitempty"`
+
+		// This is the stability of the worker-type. Accepted values:
+		//  * `experimental`
+		//  * `stable`
+		//  * `deprecated`
+		//
+		// Possible values:
+		//   * "experimental"
+		//   * "stable"
+		//   * "deprecated"
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/stability
+		Stability string `json:"stability,omitempty"`
+
+		// WorkerType name.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/workerType
+		WorkerType string `json:"workerType,omitempty"`
 	}
 
 	// Actions provide a generic mechanism to expose additional features of a
@@ -2453,95 +2339,6 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
-
-	// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items
-	WorkerTypesEntry struct {
-
-		// Description of the worker-type.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/description
-		Description string `json:"description,omitempty"`
-
-		// Date and time after which the worker-type will be automatically
-		// deleted by the queue.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires
-		Expires tcclient.Time `json:"expires,omitempty"`
-
-		// Date and time where the worker-type was last seen active
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/lastDateActive
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
-
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
-		ProvisionerID string `json:"provisionerId,omitempty"`
-
-		// This is the stability of the worker-type. Accepted values:
-		//  * `experimental`
-		//  * `stable`
-		//  * `deprecated`
-		//
-		// Possible values:
-		//   * "experimental"
-		//   * "stable"
-		//   * "deprecated"
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/stability
-		Stability string `json:"stability,omitempty"`
-
-		// WorkerType name.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/workerType
-		WorkerType string `json:"workerType,omitempty"`
-	}
-
-	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items
-	WorkersEntry struct {
-
-		// Date of the first time this worker claimed a task.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim
-		FirstClaim tcclient.Time `json:"firstClaim"`
-
-		// The most recent claimed task
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask
-		LatestTask MostRecentTask `json:"latestTask,omitempty"`
-
-		// Quarantining a worker allows the machine to remain alive but not accept jobs.
-		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
-		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
-		// somewhere in the past).
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/quarantineUntil
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
-
-		// Identifier for the worker group containing this worker.
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerGroup
-		WorkerGroup string `json:"workerGroup"`
-
-		// Identifier for this worker (unique within this worker group).
-		//
-		// Syntax:     ^([a-zA-Z0-9-_]*)$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId
-		WorkerID string `json:"workerId"`
-	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
@@ -2587,22 +2384,6 @@ func (this *PostArtifactResponse) MarshalJSON() ([]byte, error) {
 func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
 	if this == nil {
 		return errors.New("PostArtifactResponse: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// RequestsEntry is of type json.RawMessage...
-func (this *RequestsEntry) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *RequestsEntry) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("RequestsEntry: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
