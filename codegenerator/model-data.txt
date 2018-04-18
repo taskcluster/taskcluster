@@ -1,4 +1,4 @@
-Generated: 1524082916
+Generated: 1524090150
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -52,7 +52,7 @@ Entry 0     =
     Entry Method      = 'get'
     Entry Route       = '/clients/'
     Entry Args        = '[]'
-    Entry Query        = '[prefix]'
+    Entry Query        = '[continuationToken limit prefix]'
     Entry Name        = 'listClients'
     Entry Stability   = 'stable'
     Entry Scopes      = ''
@@ -60,7 +60,14 @@ Entry 0     =
     Entry Output      = 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#'
     Entry Title       = 'List Clients'
     Entry Description = 'Get a list of all clients.  With `prefix`, only clients for which
-it is a prefix of the clientId are returned.'
+it is a prefix of the clientId are returned.
+
+By default this end-point will try to return up to 1000 clients in one
+request. But it **may return less, even none**.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `listClients` with the last `continuationToken` until you
+get a result without a `continuationToken`.'
 Entry 1     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -2091,192 +2098,223 @@ IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
 TYPE_NAME: ListClientResponse
+additionalProperties:
+  Boolean: false
+  Properties: null
 description: |
   List of clients
 id: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
-items:
-  $ref: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  REF_SUBSCHEMA:
-    $schema: http://json-schema.org/draft-06/schema#
-    IS_REQUIRED: false
-    PROPERTY_NAME: ""
-    SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
-    TYPE_NAME: GetClientResponse
-    additionalProperties:
-      Boolean: false
-      Properties: null
-    description: |
-      Get all details about a client, useful for tools modifying a client
-    id: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
-    properties:
-      MemberNames:
-        clientId: ClientID
-        created: Created
-        deleteOnExpiration: DeleteOnExpiration
-        description: Description
-        disabled: Disabled
-        expandedScopes: ExpandedScopes
-        expires: Expires
-        lastDateUsed: LastDateUsed
-        lastModified: LastModified
-        lastRotated: LastRotated
-        scopes: Scopes
-      Properties:
-        clientId:
-          IS_REQUIRED: true
-          PROPERTY_NAME: clientId
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/clientId
-          TYPE_NAME: ""
+properties:
+  MemberNames:
+    clients: Clients
+    continuationToken: ContinuationToken
+  Properties:
+    clients:
+      IS_REQUIRED: true
+      PROPERTY_NAME: clients
+      SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/properties/clients
+      TYPE_NAME: ""
+      items:
+        $ref: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
+          TYPE_NAME: GetClientResponse
+          additionalProperties:
+            Boolean: false
+            Properties: null
           description: |
-            ClientId of the client scopes is requested about
-          pattern: ^[A-Za-z0-9!@/:.+|_-]+$
-          type: string
-        created:
-          IS_REQUIRED: true
-          PROPERTY_NAME: created
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/created
-          TYPE_NAME: ""
-          description: |
-            Date and time when this client was created
-          format: date-time
-          type: string
-        deleteOnExpiration:
-          IS_REQUIRED: true
-          PROPERTY_NAME: deleteOnExpiration
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/deleteOnExpiration
-          TYPE_NAME: ""
-          description: |
-            If `true`, the service may delete this client after it has expired.  If
-            `false`, the client will remain after expiration, although it cannot be
-            used for authentication in that state.
-          type: boolean
-        description:
-          IS_REQUIRED: true
-          PROPERTY_NAME: description
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/description
-          TYPE_NAME: ""
-          description: |
-            Description of what these credentials are used for in markdown.
-            Should include who is the owner, point of contact.
-          maxLength: 10240
-          type: string
-        disabled:
-          IS_REQUIRED: true
-          PROPERTY_NAME: disabled
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/disabled
-          TYPE_NAME: ""
-          description: |
-            If true, this client is disabled and cannot be used.  This usually occurs when the
-            scopes available to the user owning the client no longer satisfy the client.
-          type: boolean
-        expandedScopes:
-          IS_REQUIRED: true
-          PROPERTY_NAME: expandedScopes
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes
-          TYPE_NAME: ""
-          description: |
-            List of scopes granted to this client by matching roles.  Scopes must be
-            composed of printable ASCII characters and spaces.
-          items:
-            IS_REQUIRED: false
-            PROPERTY_NAME: ""
-            SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes/items
-            TYPE_NAME: ""
-            description: |
-              Scope that client is granted by a role
-            pattern: ^[ -~]*$
-            type: string
-          type: array
-        expires:
-          IS_REQUIRED: true
-          PROPERTY_NAME: expires
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expires
-          TYPE_NAME: ""
-          description: |
-            Date and time where the clients access is set to expire
-          format: date-time
-          type: string
-        lastDateUsed:
-          IS_REQUIRED: true
-          PROPERTY_NAME: lastDateUsed
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastDateUsed
-          TYPE_NAME: ""
-          description: |
-            Date of last time this client was used. Will only be updated every 6 hours
-            or so this may be off by up-to 6 hours. But it still gives a solid hint
-            as to whether or not this client is in use.
-          format: date-time
-          type: string
-        lastModified:
-          IS_REQUIRED: true
-          PROPERTY_NAME: lastModified
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastModified
-          TYPE_NAME: ""
-          description: |
-            Date and time of last modification
-          format: date-time
-          type: string
-        lastRotated:
-          IS_REQUIRED: true
-          PROPERTY_NAME: lastRotated
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastRotated
-          TYPE_NAME: ""
-          description: |
-            Date and time of when the `accessToken` was reset last time.
-          format: date-time
-          type: string
-        scopes:
-          IS_REQUIRED: true
-          PROPERTY_NAME: scopes
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes
-          TYPE_NAME: ""
-          default: []
-          description: |
-            List of scopes the client has (unexpanded).  Scopes must be composed of
-            printable ASCII characters and spaces.
-          items:
-            IS_REQUIRED: false
-            PROPERTY_NAME: ""
-            SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes/items
-            TYPE_NAME: ""
-            description: Scope
-            pattern: ^[ -~]*$
-            type: string
-          type: array
-          uniqueItems: true
-      SortedPropertyNames:
-      - clientId
-      - created
-      - deleteOnExpiration
-      - description
-      - disabled
-      - expandedScopes
-      - expires
-      - lastDateUsed
-      - lastModified
-      - lastRotated
-      - scopes
-      SourceURL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties
-    required:
-    - clientId
-    - expires
-    - description
-    - created
-    - lastModified
-    - lastDateUsed
-    - lastRotated
-    - scopes
-    - expandedScopes
-    - disabled
-    - deleteOnExpiration
-    title: Get Client Response
-    type: object
-  SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/items
-  TYPE_NAME: Entry
+            Get all details about a client, useful for tools modifying a client
+          id: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
+          properties:
+            MemberNames:
+              clientId: ClientID
+              created: Created
+              deleteOnExpiration: DeleteOnExpiration
+              description: Description
+              disabled: Disabled
+              expandedScopes: ExpandedScopes
+              expires: Expires
+              lastDateUsed: LastDateUsed
+              lastModified: LastModified
+              lastRotated: LastRotated
+              scopes: Scopes
+            Properties:
+              clientId:
+                IS_REQUIRED: true
+                PROPERTY_NAME: clientId
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/clientId
+                TYPE_NAME: ""
+                description: |
+                  ClientId of the client scopes is requested about
+                pattern: ^[A-Za-z0-9!@/:.+|_-]+$
+                type: string
+              created:
+                IS_REQUIRED: true
+                PROPERTY_NAME: created
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/created
+                TYPE_NAME: ""
+                description: |
+                  Date and time when this client was created
+                format: date-time
+                type: string
+              deleteOnExpiration:
+                IS_REQUIRED: true
+                PROPERTY_NAME: deleteOnExpiration
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/deleteOnExpiration
+                TYPE_NAME: ""
+                description: |
+                  If `true`, the service may delete this client after it has expired.  If
+                  `false`, the client will remain after expiration, although it cannot be
+                  used for authentication in that state.
+                type: boolean
+              description:
+                IS_REQUIRED: true
+                PROPERTY_NAME: description
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/description
+                TYPE_NAME: ""
+                description: |
+                  Description of what these credentials are used for in markdown.
+                  Should include who is the owner, point of contact.
+                maxLength: 10240
+                type: string
+              disabled:
+                IS_REQUIRED: true
+                PROPERTY_NAME: disabled
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/disabled
+                TYPE_NAME: ""
+                description: |
+                  If true, this client is disabled and cannot be used.  This usually occurs when the
+                  scopes available to the user owning the client no longer satisfy the client.
+                type: boolean
+              expandedScopes:
+                IS_REQUIRED: true
+                PROPERTY_NAME: expandedScopes
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes
+                TYPE_NAME: ""
+                description: |
+                  List of scopes granted to this client by matching roles.  Scopes must be
+                  composed of printable ASCII characters and spaces.
+                items:
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes/items
+                  TYPE_NAME: ""
+                  description: |
+                    Scope that client is granted by a role
+                  pattern: ^[ -~]*$
+                  type: string
+                type: array
+              expires:
+                IS_REQUIRED: true
+                PROPERTY_NAME: expires
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expires
+                TYPE_NAME: ""
+                description: |
+                  Date and time where the clients access is set to expire
+                format: date-time
+                type: string
+              lastDateUsed:
+                IS_REQUIRED: true
+                PROPERTY_NAME: lastDateUsed
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastDateUsed
+                TYPE_NAME: ""
+                description: |
+                  Date of last time this client was used. Will only be updated every 6 hours
+                  or so this may be off by up-to 6 hours. But it still gives a solid hint
+                  as to whether or not this client is in use.
+                format: date-time
+                type: string
+              lastModified:
+                IS_REQUIRED: true
+                PROPERTY_NAME: lastModified
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastModified
+                TYPE_NAME: ""
+                description: |
+                  Date and time of last modification
+                format: date-time
+                type: string
+              lastRotated:
+                IS_REQUIRED: true
+                PROPERTY_NAME: lastRotated
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/lastRotated
+                TYPE_NAME: ""
+                description: |
+                  Date and time of when the `accessToken` was reset last time.
+                format: date-time
+                type: string
+              scopes:
+                IS_REQUIRED: true
+                PROPERTY_NAME: scopes
+                SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes
+                TYPE_NAME: ""
+                default: []
+                description: |
+                  List of scopes the client has (unexpanded).  Scopes must be composed of
+                  printable ASCII characters and spaces.
+                items:
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes/items
+                  TYPE_NAME: ""
+                  description: Scope
+                  pattern: ^[ -~]*$
+                  type: string
+                type: array
+                uniqueItems: true
+            SortedPropertyNames:
+            - clientId
+            - created
+            - deleteOnExpiration
+            - description
+            - disabled
+            - expandedScopes
+            - expires
+            - lastDateUsed
+            - lastModified
+            - lastRotated
+            - scopes
+            SourceURL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties
+          required:
+          - clientId
+          - expires
+          - description
+          - created
+          - lastModified
+          - lastDateUsed
+          - lastRotated
+          - scopes
+          - expandedScopes
+          - disabled
+          - deleteOnExpiration
+          title: Get Client Response
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/properties/clients/items
+        TYPE_NAME: ""
+      type: array
+    continuationToken:
+      IS_REQUIRED: false
+      PROPERTY_NAME: continuationToken
+      SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/properties/continuationToken
+      TYPE_NAME: ""
+      description: |
+        A continuation token is returned if there are more results than listed
+        here. You can optionally provide the token in the request payload to
+        load the additional results.
+      title: Continuation Token
+      type: string
+  SortedPropertyNames:
+  - clients
+  - continuationToken
+  SourceURL: http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/properties
+required:
+- clients
 title: List Client Response
-type: array
+type: object
 
 
 http://schemas.taskcluster.net/auth/v1/list-roles-response.json#
@@ -2406,7 +2444,7 @@ items:
     title: Get Role Response
     type: object
   SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-roles-response.json#/items
-  TYPE_NAME: Entry1
+  TYPE_NAME: Entry
 title: List Roles Response
 type: array
 

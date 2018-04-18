@@ -559,7 +559,18 @@ type (
 	// List of clients
 	//
 	// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#
-	ListClientResponse []GetClientResponse
+	ListClientResponse struct {
+
+		// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/properties/clients
+		Clients []GetClientResponse `json:"clients"`
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/list-clients-response.json#/properties/continuationToken
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
 
 	// List of roles
 	//

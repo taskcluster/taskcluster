@@ -70,7 +70,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 18 Apr 2018 at 20:21:00 UTC. The code was generated
+// Wed, 18 Apr 2018 at 22:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
 
@@ -125,9 +125,22 @@ func NewFromEnv() *Auth {
 // Get a list of all clients.  With `prefix`, only clients for which
 // it is a prefix of the clientId are returned.
 //
+// By default this end-point will try to return up to 1000 clients in one
+// request. But it **may return less, even none**.
+// It may also return a `continuationToken` even though there are no more
+// results. However, you can only be sure to have seen all results if you
+// keep calling `listClients` with the last `continuationToken` until you
+// get a result without a `continuationToken`.
+//
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#listClients
-func (auth *Auth) ListClients(prefix string) (*ListClientResponse, error) {
+func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListClientResponse, error) {
 	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
 	if prefix != "" {
 		v.Add("prefix", prefix)
 	}
