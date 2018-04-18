@@ -1,6 +1,7 @@
 const API = require('taskcluster-lib-api');
 const slugid = require('slugid');
 const _ = require('lodash');
+const Entity = require('azure-entities');
 
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/secrets/v1/';
 
@@ -130,7 +131,7 @@ api.declare({
   title:       'List Secrets',
   stability:   'stable',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   description: [
