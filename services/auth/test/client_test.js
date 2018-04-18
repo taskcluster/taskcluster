@@ -81,40 +81,84 @@ suite('api (client)', function() {
     await helper.auth.deleteClient(CLIENT_ID);
   });
 
-  test('auth.listClients', async () => {
-    let suffixes = ['/aa', '/bb', '/bb/1', '/bb/2'];
+  suite('auth.listClients', function() {
+    const suffixes = ['/aa', '/bb', '/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5'];
 
-    await Promise.all(suffixes.map(suffix =>
-      helper.auth.deleteClient(CLIENT_ID + suffix)
-    ));
+    setup(async function() {
+      await Promise.all(suffixes.map(suffix =>
+        helper.auth.createClient(CLIENT_ID + suffix, {
+          expires: taskcluster.fromNow('1 hour'),
+          description: 'test client',
+        })
+      ));
+    });
 
-    await Promise.all(suffixes.map(suffix =>
-      helper.auth.createClient(CLIENT_ID + suffix, {
-        expires: taskcluster.fromNow('1 hour'),
-        description: 'test client',
-      })
-    ));
+    const gotSuffixes = (result) =>
+      _.map(_.filter(result.clients, c => c.clientId.startsWith(CLIENT_ID)),
+        c => c.clientId.substr(CLIENT_ID.length)).sort();
 
-    let gotSuffixes = (result) =>
-      _.map(_.filter(result,
-        c => c.clientId.startsWith(CLIENT_ID)),
-      c => c.clientId.substr(CLIENT_ID.length)).sort();
+    test('all clients', async () => {
+      let clients = await helper.auth.listClients();
+      assume(gotSuffixes(clients)).to.deeply.equal(suffixes);
+    });
 
-    // get all clients
-    assume(gotSuffixes(await helper.auth.listClients())).to.deeply.equal(suffixes);
+    test('prefix filtering', async () => {
+      assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/bb'})))
+        .to.deeply.equal(['/bb', '/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5']);
+      assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/bb/'})))
+        .to.deeply.equal(['/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5']);
+      assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/c'})))
+        .to.deeply.equal([]);
+    });
 
-    // prefix filtering
-    assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/bb'})))
-      .to.deeply.equal(['/bb', '/bb/1', '/bb/2']);
-    assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/bb/'})))
-      .to.deeply.equal(['/bb/1', '/bb/2']);
-    assume(gotSuffixes(await helper.auth.listClients({prefix: CLIENT_ID + '/c'})))
-      .to.deeply.equal([]);
+    test('limit / continuationToken', async () => {
+      let clients = [];
+      let query = {limit: 1};
 
-    // clean up
-    await Promise.all(suffixes.map(suffix =>
-      helper.auth.deleteClient(CLIENT_ID + suffix)
-    ));
+      while (true) {
+        const result = await helper.auth.listClients(query);
+        assume(result.clients.length).to.be.lessThan(2);
+        query.continuationToken = result.continuationToken;
+        clients = clients.concat(result.clients);
+        if (!query.continuationToken) {
+          break;
+        }
+      }
+
+      assume(gotSuffixes({clients}))
+        .to.deeply.equal(['/aa', '/bb', '/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5']);
+    });
+
+    test('limit / continuationToken AND prefix filtering', async () => {
+      let clients = [];
+      let query = {
+        limit: 1,
+        prefix: CLIENT_ID + '/b',
+      };
+
+      // add a few more clients, to keep it interesting
+      const moreSuffixes = ['/ads', '/bbbl', '/bc/2', '/aaaa'];
+
+      await Promise.all(moreSuffixes.map(suffix =>
+        helper.auth.createClient(CLIENT_ID + suffix, {
+          expires: taskcluster.fromNow('1 hour'),
+          description: 'test client',
+        })
+      ));
+
+      while (true) {
+        const result = await helper.auth.listClients(query);
+        assume(result.clients.length).to.be.lessThan(2);
+        query.continuationToken = result.continuationToken;
+        clients = clients.concat(result.clients);
+        if (!query.continuationToken) {
+          break;
+        }
+      }
+
+      assume(gotSuffixes({clients}))
+        .to.deeply.equal(['/bb', '/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5', '/bbbl', '/bc/2']);
+    });
   });
 
   test('auth.createClient (with scopes)', async () => {
