@@ -25,7 +25,8 @@
 //
 //  pulse.Bind(
 //  	"*.*.*.*.*.*.gaia.#",
-//  	"exchange/taskcluster-queue/v1/task-defined")
+//  	"exchange/taskcluster-queue/v1/task-defined",
+//  )
 //
 // You can rather use:
 //

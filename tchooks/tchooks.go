@@ -50,7 +50,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 18 Apr 2018 at 15:21:00 UTC. The code was generated
+// Wed, 18 Apr 2018 at 16:12:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tchooks
 
