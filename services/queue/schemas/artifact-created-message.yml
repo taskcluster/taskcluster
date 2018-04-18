@@ -29,7 +29,7 @@ properties:
     maxLength:    {$const: "identifier-max-length"}
     pattern:      {$const: "identifier-pattern"}
   artifact:
-    title:        "Artifact Created"
+    title:        "Artifact"
     description: |
       Information about the artifact that was created
     type:         object
