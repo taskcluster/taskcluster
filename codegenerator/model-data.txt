@@ -1,4 +1,4 @@
-Generated: 1524049352
+Generated: 1524057761
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -10297,7 +10297,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
       TYPE_NAME: IRCMessageText
       description: |
         IRC message to send as plain text.
@@ -10328,7 +10328,7 @@ oneOf:
         message:
           IS_REQUIRED: false
           PROPERTY_NAME: message
-          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
           TYPE_NAME: IRCMessageText
           description: |
             IRC message to send as plain text.
@@ -10364,7 +10364,7 @@ oneOf:
           REF_SUBSCHEMA:
             IS_REQUIRED: false
             PROPERTY_NAME: message
-            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
             TYPE_NAME: IRCMessageText
             description: |
               IRC message to send as plain text.
@@ -10398,7 +10398,7 @@ oneOf:
         message:
           IS_REQUIRED: false
           PROPERTY_NAME: message
-          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
           TYPE_NAME: IRCMessageText
           description: |
             IRC message to send as plain text.
@@ -10423,7 +10423,7 @@ oneOf:
           REF_SUBSCHEMA:
             IS_REQUIRED: false
             PROPERTY_NAME: message
-            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
             TYPE_NAME: IRCMessageText
             description: |
               IRC message to send as plain text.
@@ -10458,20 +10458,6 @@ oneOf:
 title: Post IRC Message Request
 
 
-http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
-==============================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: message
-SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
-TYPE_NAME: IRCMessageText
-description: |
-  IRC message to send as plain text.
-maxLength: 510
-minLength: 1
-title: IRC Message Text
-type: string
-
-
 http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
 ===================================================================
 $schema: http://json-schema.org/draft-06/schema#
@@ -10489,7 +10475,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
       TYPE_NAME: IRCMessageText
       description: |
         IRC message to send as plain text.
@@ -10525,7 +10511,7 @@ properties:
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: message
-        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
         TYPE_NAME: IRCMessageText
         description: |
           IRC message to send as plain text.
@@ -10563,7 +10549,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
       TYPE_NAME: IRCMessageText
       description: |
         IRC message to send as plain text.
@@ -10588,7 +10574,7 @@ properties:
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: message
-        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
         TYPE_NAME: IRCMessageText
         description: |
           IRC message to send as plain text.
@@ -10619,6 +10605,20 @@ required:
 - message
 title: Private Message
 type: object
+
+
+http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+=======================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: message
+SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+TYPE_NAME: IRCMessageText
+description: |
+  IRC message to send as plain text.
+maxLength: 510
+minLength: 1
+title: IRC Message Text
+type: string
 
 
 http://schemas.taskcluster.net/notify/v1/pulse-request.json#
@@ -10769,70 +10769,82 @@ properties:
         sets.
       type: string
     requests:
+      $ref: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
       IS_REQUIRED: true
       PROPERTY_NAME: requests
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests
-      TYPE_NAME: ""
-      description: |
-        A simple list of purge-cache requests.
-      items:
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items
-        TYPE_NAME: Var
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            before: Before
-            cacheName: CacheName
-            provisionerId: ProvisionerID
-            workerType: WorkerType
-          Properties:
-            before:
-              IS_REQUIRED: true
-              PROPERTY_NAME: before
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/before
-              TYPE_NAME: ""
-              description: |
-                All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-              format: date-time
-              type: string
-            cacheName:
-              IS_REQUIRED: true
-              PROPERTY_NAME: cacheName
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/cacheName
-              TYPE_NAME: ""
-              description: Name of cache to purge.
-              type: string
-            provisionerId:
-              IS_REQUIRED: true
-              PROPERTY_NAME: provisionerId
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
-              TYPE_NAME: ""
-              description: ProvisionerId associated with the workerType.
-              type: string
-            workerType:
-              IS_REQUIRED: true
-              PROPERTY_NAME: workerType
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/workerType
-              TYPE_NAME: ""
-              description: Workertype cache exists on.
-              type: string
-          SortedPropertyNames:
-          - before
-          - cacheName
+        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+        TYPE_NAME: PurgeCacheRequests
+        description: |
+          A list of Purge Cache requests that the Purge Cache service has previously received.
+        id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+        items:
+          IS_REQUIRED: false
+          PROPERTY_NAME: ' entry'
+          SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+          TYPE_NAME: PurgeCacheRequestsEntry
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
+          properties:
+            MemberNames:
+              before: Before
+              cacheName: CacheName
+              provisionerId: ProvisionerID
+              workerType: WorkerType
+            Properties:
+              before:
+                IS_REQUIRED: true
+                PROPERTY_NAME: before
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
+                TYPE_NAME: ""
+                description: |
+                  All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+                format: date-time
+                type: string
+              cacheName:
+                IS_REQUIRED: true
+                PROPERTY_NAME: cacheName
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
+                TYPE_NAME: ""
+                description: Name of cache to purge.
+                type: string
+              provisionerId:
+                IS_REQUIRED: true
+                PROPERTY_NAME: provisionerId
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
+                TYPE_NAME: ""
+                description: ProvisionerId associated with the workerType.
+                type: string
+              workerType:
+                IS_REQUIRED: true
+                PROPERTY_NAME: workerType
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
+                TYPE_NAME: ""
+                description: Workertype cache exists on.
+                type: string
+            SortedPropertyNames:
+            - before
+            - cacheName
+            - provisionerId
+            - workerType
+            SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties
+          required:
           - provisionerId
           - workerType
-          SourceURL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties
-        required:
-        - provisionerId
-        - workerType
-        - cacheName
-        - before
-        type: object
-      type: array
+          - cacheName
+          - before
+          title: Purge Cache Requests Entry
+          type: object
+        title: Purge Cache Requests
+        type: array
+      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests
+      TYPE_NAME: ""
   SortedPropertyNames:
   - continuationToken
   - requests
@@ -10840,66 +10852,6 @@ properties:
 required:
 - requests
 title: Open All Purge Requests List
-type: object
-
-
-http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items
-==========================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items
-TYPE_NAME: Var
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    before: Before
-    cacheName: CacheName
-    provisionerId: ProvisionerID
-    workerType: WorkerType
-  Properties:
-    before:
-      IS_REQUIRED: true
-      PROPERTY_NAME: before
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/before
-      TYPE_NAME: ""
-      description: |
-        All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-      format: date-time
-      type: string
-    cacheName:
-      IS_REQUIRED: true
-      PROPERTY_NAME: cacheName
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/cacheName
-      TYPE_NAME: ""
-      description: Name of cache to purge.
-      type: string
-    provisionerId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: provisionerId
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
-      TYPE_NAME: ""
-      description: ProvisionerId associated with the workerType.
-      type: string
-    workerType:
-      IS_REQUIRED: true
-      PROPERTY_NAME: workerType
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/workerType
-      TYPE_NAME: ""
-      description: Workertype cache exists on.
-      type: string
-  SortedPropertyNames:
-  - before
-  - cacheName
-  - provisionerId
-  - workerType
-  SourceURL: http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties
-required:
-- provisionerId
-- workerType
-- cacheName
-- before
 type: object
 
 
@@ -10929,70 +10881,82 @@ properties:
       description: True if the cache has been used in this request.
       type: boolean
     requests:
+      $ref: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
       IS_REQUIRED: true
       PROPERTY_NAME: requests
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests
-      TYPE_NAME: ""
-      description: |
-        A simple list of purge-cache requests.
-      items:
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items
-        TYPE_NAME: Var1
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            before: Before
-            cacheName: CacheName
-            provisionerId: ProvisionerID
-            workerType: WorkerType
-          Properties:
-            before:
-              IS_REQUIRED: true
-              PROPERTY_NAME: before
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/before
-              TYPE_NAME: ""
-              description: |
-                All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-              format: date-time
-              type: string
-            cacheName:
-              IS_REQUIRED: true
-              PROPERTY_NAME: cacheName
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/cacheName
-              TYPE_NAME: ""
-              description: Name of cache to purge.
-              type: string
-            provisionerId:
-              IS_REQUIRED: true
-              PROPERTY_NAME: provisionerId
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
-              TYPE_NAME: ""
-              description: ProvisionerId associated with the workerType.
-              type: string
-            workerType:
-              IS_REQUIRED: true
-              PROPERTY_NAME: workerType
-              SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/workerType
-              TYPE_NAME: ""
-              description: Workertype cache exists on.
-              type: string
-          SortedPropertyNames:
-          - before
-          - cacheName
+        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+        TYPE_NAME: PurgeCacheRequests
+        description: |
+          A list of Purge Cache requests that the Purge Cache service has previously received.
+        id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+        items:
+          IS_REQUIRED: false
+          PROPERTY_NAME: ' entry'
+          SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+          TYPE_NAME: PurgeCacheRequestsEntry
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
+          properties:
+            MemberNames:
+              before: Before
+              cacheName: CacheName
+              provisionerId: ProvisionerID
+              workerType: WorkerType
+            Properties:
+              before:
+                IS_REQUIRED: true
+                PROPERTY_NAME: before
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
+                TYPE_NAME: ""
+                description: |
+                  All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+                format: date-time
+                type: string
+              cacheName:
+                IS_REQUIRED: true
+                PROPERTY_NAME: cacheName
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
+                TYPE_NAME: ""
+                description: Name of cache to purge.
+                type: string
+              provisionerId:
+                IS_REQUIRED: true
+                PROPERTY_NAME: provisionerId
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
+                TYPE_NAME: ""
+                description: ProvisionerId associated with the workerType.
+                type: string
+              workerType:
+                IS_REQUIRED: true
+                PROPERTY_NAME: workerType
+                SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
+                TYPE_NAME: ""
+                description: Workertype cache exists on.
+                type: string
+            SortedPropertyNames:
+            - before
+            - cacheName
+            - provisionerId
+            - workerType
+            SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties
+          required:
           - provisionerId
           - workerType
-          SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties
-        required:
-        - provisionerId
-        - workerType
-        - cacheName
-        - before
-        type: object
-      type: array
+          - cacheName
+          - before
+          title: Purge Cache Requests Entry
+          type: object
+        title: Purge Cache Requests
+        type: array
+      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests
+      TYPE_NAME: ""
   SortedPropertyNames:
   - cacheHit
   - requests
@@ -11001,66 +10965,6 @@ required:
 - requests
 - cacheHit
 title: Open Purge Request List
-type: object
-
-
-http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items
-======================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items
-TYPE_NAME: Var1
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    before: Before
-    cacheName: CacheName
-    provisionerId: ProvisionerID
-    workerType: WorkerType
-  Properties:
-    before:
-      IS_REQUIRED: true
-      PROPERTY_NAME: before
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/before
-      TYPE_NAME: ""
-      description: |
-        All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-      format: date-time
-      type: string
-    cacheName:
-      IS_REQUIRED: true
-      PROPERTY_NAME: cacheName
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/cacheName
-      TYPE_NAME: ""
-      description: Name of cache to purge.
-      type: string
-    provisionerId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: provisionerId
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
-      TYPE_NAME: ""
-      description: ProvisionerId associated with the workerType.
-      type: string
-    workerType:
-      IS_REQUIRED: true
-      PROPERTY_NAME: workerType
-      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/workerType
-      TYPE_NAME: ""
-      description: Workertype cache exists on.
-      type: string
-  SortedPropertyNames:
-  - before
-  - cacheName
-  - provisionerId
-  - workerType
-  SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties
-required:
-- provisionerId
-- workerType
-- cacheName
-- before
 type: object
 
 
@@ -11097,6 +11001,143 @@ properties:
 required:
 - cacheName
 title: Purge Cache Request
+type: object
+
+
+http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+========================================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+TYPE_NAME: PurgeCacheRequests
+description: |
+  A list of Purge Cache requests that the Purge Cache service has previously received.
+id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+items:
+  IS_REQUIRED: false
+  PROPERTY_NAME: ' entry'
+  SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+  TYPE_NAME: PurgeCacheRequestsEntry
+  additionalProperties:
+    Boolean: false
+    Properties: null
+  description: |
+    An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
+  properties:
+    MemberNames:
+      before: Before
+      cacheName: CacheName
+      provisionerId: ProvisionerID
+      workerType: WorkerType
+    Properties:
+      before:
+        IS_REQUIRED: true
+        PROPERTY_NAME: before
+        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
+        TYPE_NAME: ""
+        description: |
+          All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+        format: date-time
+        type: string
+      cacheName:
+        IS_REQUIRED: true
+        PROPERTY_NAME: cacheName
+        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
+        TYPE_NAME: ""
+        description: Name of cache to purge.
+        type: string
+      provisionerId:
+        IS_REQUIRED: true
+        PROPERTY_NAME: provisionerId
+        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
+        TYPE_NAME: ""
+        description: ProvisionerId associated with the workerType.
+        type: string
+      workerType:
+        IS_REQUIRED: true
+        PROPERTY_NAME: workerType
+        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
+        TYPE_NAME: ""
+        description: Workertype cache exists on.
+        type: string
+    SortedPropertyNames:
+    - before
+    - cacheName
+    - provisionerId
+    - workerType
+    SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties
+  required:
+  - provisionerId
+  - workerType
+  - cacheName
+  - before
+  title: Purge Cache Requests Entry
+  type: object
+title: Purge Cache Requests
+type: array
+
+
+http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+==============================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ' entry'
+SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+TYPE_NAME: PurgeCacheRequestsEntry
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
+properties:
+  MemberNames:
+    before: Before
+    cacheName: CacheName
+    provisionerId: ProvisionerID
+    workerType: WorkerType
+  Properties:
+    before:
+      IS_REQUIRED: true
+      PROPERTY_NAME: before
+      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
+      TYPE_NAME: ""
+      description: |
+        All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+      format: date-time
+      type: string
+    cacheName:
+      IS_REQUIRED: true
+      PROPERTY_NAME: cacheName
+      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
+      TYPE_NAME: ""
+      description: Name of cache to purge.
+      type: string
+    provisionerId:
+      IS_REQUIRED: true
+      PROPERTY_NAME: provisionerId
+      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
+      TYPE_NAME: ""
+      description: ProvisionerId associated with the workerType.
+      type: string
+    workerType:
+      IS_REQUIRED: true
+      PROPERTY_NAME: workerType
+      SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
+      TYPE_NAME: ""
+      description: Workertype cache exists on.
+      type: string
+  SortedPropertyNames:
+  - before
+  - cacheName
+  - provisionerId
+  - workerType
+  SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties
+required:
+- provisionerId
+- workerType
+- cacheName
+- before
+title: Purge Cache Requests Entry
 type: object
 
 

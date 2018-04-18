@@ -17,10 +17,8 @@ type (
 		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
-		// A simple list of purge-cache requests.
-		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests
-		Requests []Var `json:"requests"`
+		Requests PurgeCacheRequests `json:"requests"`
 	}
 
 	// A list of currently open purge-cache requests.
@@ -33,10 +31,8 @@ type (
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/cacheHit
 		CacheHit bool `json:"cacheHit"`
 
-		// A simple list of purge-cache requests.
-		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests
-		Requests []Var1 `json:"requests"`
+		Requests PurgeCacheRequests `json:"requests"`
 	}
 
 	// Request that a message be published to purge a specific cache.
@@ -52,51 +48,34 @@ type (
 		CacheName string `json:"cacheName"`
 	}
 
-	// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items
-	Var struct {
+	// A list of Purge Cache requests that the Purge Cache service has previously received.
+	//
+	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+	PurgeCacheRequests []PurgeCacheRequestsEntry
+
+	// An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
+	//
+	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+	PurgeCacheRequestsEntry struct {
 
 		// All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/before
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
 		Before tcclient.Time `json:"before"`
 
 		// Name of cache to purge.
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/cacheName
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
 		CacheName string `json:"cacheName"`
 
 		// ProvisionerId associated with the workerType.
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Workertype cache exists on.
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items/properties/workerType
-		WorkerType string `json:"workerType"`
-	}
-
-	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items
-	Var1 struct {
-
-		// All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/before
-		Before tcclient.Time `json:"before"`
-
-		// Name of cache to purge.
-		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/cacheName
-		CacheName string `json:"cacheName"`
-
-		// ProvisionerId associated with the workerType.
-		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/provisionerId
-		ProvisionerID string `json:"provisionerId"`
-
-		// Workertype cache exists on.
-		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items/properties/workerType
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )
