@@ -1,0 +1,31 @@
+$schema:  http://json-schema.org/draft-06/schema#
+type:         array
+title: "Purge Cache Requests"
+description: |
+  A list of Purge Cache requests that the Purge Cache service has previously received.
+items:
+  title: "Purge Cache Requests Entry"
+  description: |
+    An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
+  type: object
+  properties:
+    provisionerId:
+      type: string
+      description: ProvisionerId associated with the workerType.
+    workerType:
+      type: string
+      description: Workertype cache exists on.
+    cacheName:
+      type: string
+      description: Name of cache to purge.
+    before:
+      type: string
+      format: date-time
+      description: |
+        All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
+  additionalProperties: false
+  required:
+    - provisionerId
+    - workerType
+    - cacheName
+    - before

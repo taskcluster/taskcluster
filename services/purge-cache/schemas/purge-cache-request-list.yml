@@ -7,33 +7,7 @@ properties:
   cacheHit:
     type: boolean
     description: True if the cache has been used in this request.
-  requests:
-    type:         array
-    description: |
-      A simple list of purge-cache requests.
-    items:
-      type: object
-      properties:
-        provisionerId:
-          type: string
-          description: ProvisionerId associated with the workerType.
-        workerType:
-          type: string
-          description: Workertype cache exists on.
-        cacheName:
-          type: string
-          description: Name of cache to purge.
-        before:
-          type: string
-          format: date-time
-          description: |
-            All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-      additionalProperties: false
-      required:
-        - provisionerId
-        - workerType
-        - cacheName
-        - before
+  requests:   {$ref: "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#"}
 additionalProperties: false
 required:
   - requests
