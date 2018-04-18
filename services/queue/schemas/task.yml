@@ -144,57 +144,14 @@ properties:
       `docker-worker` requires keys like: `image`, `commands` and
       `features`. Refer to the documentation of `docker-worker` for details.
     type:           object
-  metadata:
-    title:          "Meta-data"
-    description: |
-      Required task metadata
-    type:           object
-    properties:
-      name:
-        title:          "Name"
-        description: |
-          Human readable name of task, used to very briefly given an idea about
-          what the task does.
-        type:           string
-        maxLength:      255
-      description:
-        title:          "Description"
-        description: |
-          Human readable description of the task, please **explain** what the
-          task does. A few lines of documentation is not going to hurt you.
-        type:           string
-        maxLength:      32768
-      owner:
-        title:          "Owner"
-        description: |
-          E-mail of person who caused this task, e.g. the person who did
-          `hg push`. The person we should contact to ask why this task is here.
-        type:           string
-        format:         email
-        maxLength:      255
-      source:
-        title:          "Source"
-        description: |
-          Link to source of this task, should specify a file, revision and
-          repository. This should be place someone can go an do a git/hg blame
-          to who came up with recipe for this task.
-        type:           string
-        format:         uri
-        pattern:        {$const: source-pattern}
-        maxLength:      4096
-    additionalProperties: false
-    required:
-      - name
-      - description
-      - owner
-      - source
+  metadata:         {$ref: "http://schemas.taskcluster.net/queue/v1/task-metadata.json#"}
   tags:
     title:            "Tags"
     description: |
       Arbitrary key-value tags (only strings limited to 4k). These can be used
-      to attach informal meta-data to a task. Use this for informal tags that
+      to attach informal metadata to a task. Use this for informal tags that
       tasks can be classified by. You can also think of strings here as
-      candidates for formal meta-data. Something like
+      candidates for formal metadata. Something like
       `purpose: 'build' || 'test'` is a good example.
     type:             object
     additionalProperties:
