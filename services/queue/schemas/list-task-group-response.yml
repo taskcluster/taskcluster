@@ -15,18 +15,7 @@ properties:
     title:          "Tasks from the Task-Group"
     description: |
       List of tasks in this task-group.
-    items:
-      type:         object
-      title:        "Task definition and status"
-      description: |
-        Task Definition and task status structure.
-      properties:
-        task:   {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
-        status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
-      additionalProperties: false
-      required:
-        - task
-        - status
+    items:          {$ref: "http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#"}
   continuationToken:
     type:             string
     title:            "Continuation Token"
