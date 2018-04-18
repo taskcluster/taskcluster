@@ -1,0 +1,25 @@
+$schema:              http://json-schema.org/draft-06/schema#
+title:                "Task Run"
+description: |
+  A run of a task.
+type:                 object
+additionalProperties: false
+properties:
+  taskId:
+    title:            "Task Identifier"
+    description: |
+      Unique task identifier, this is UUID encoded as
+      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+      stripped of `=` padding.
+    type:             string
+    pattern:          {$const: slugid-pattern}
+  runId:
+    title:            "Run Identifier"
+    description: |
+      Id of this task run, `run-id`s always starts from `0`
+    type:             integer
+    minimum:          {$const: min-run-id}
+    maximum:          {$const: max-run-id}
+required:
+  - taskId
+  - runId

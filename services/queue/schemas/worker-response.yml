@@ -37,29 +37,12 @@ properties:
     maxLength:    {$const: identifier-max-length}
     pattern:      {$const: identifier-pattern}
   recentTasks:
-    title:        "Recent Tasks"
+    title:        "Most Recent Tasks"
     description: |
       List of 20 most recent tasks claimed by the worker.
     type:         array
     items:
-      type:       object
-      additionalProperties: false
-      properties:
-        taskId:
-          title:            "Task Identifier"
-          description: |
-            Unique task identifier, this is UUID encoded as
-            [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-            stripped of `=` padding.
-          type:             string
-          pattern:          {$const: slugid-pattern}
-        runId:
-          title:            "Run Identifier"
-          description: |
-            Id of this task run, `run-id`s always starts from `0`
-          type:             integer
-          minimum:          {$const: min-run-id}
-          maximum:          {$const: max-run-id}
+      $ref:       "http://schemas.taskcluster.net/queue/v1/task-run.json#"
   expires:
     title:        "Worker Expiration"
     description: |

@@ -27,7 +27,7 @@ properties:
     title:          "Number of Pending Tasks"
     description: |
       An approximate number of pending tasks for the given `provisionerId` and
-      `workerType`. This is based on Azure Queue Storage meta-data API, thus,
+      `workerType`. This is based on Azure Queue Storage metadata API, thus,
       number of reported here may be higher than actual number of pending tasks.
       But there cannot be more pending tasks reported here. Ie. this is an
       **upper-bound** on the number of pending tasks.
