@@ -1,4 +1,4 @@
-Generated: 1524057761
+Generated: 1524064704
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7019,67 +7019,76 @@ properties:
       pattern: ^([a-zA-Z0-9-_]*)$
       type: string
     metadata:
+      $ref: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
-      TYPE_NAME: Metadata1
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      properties:
-        MemberNames:
-          description: Description
-          emailOnError: EmailOnError
-          name: Name
-          owner: Owner
-        Properties:
-          description:
-            IS_REQUIRED: true
-            PROPERTY_NAME: description
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/description
-            TYPE_NAME: ""
-            description: Long-form of the hook's purpose and behavior
-            maxLength: 32768
-            title: Description
-            type: string
-          emailOnError:
-            IS_REQUIRED: false
-            PROPERTY_NAME: emailOnError
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/emailOnError
-            TYPE_NAME: ""
-            default: true
-            description: Whether to email the owner on an error creating the task.
-            title: Email on error
-            type: boolean
-          name:
-            IS_REQUIRED: true
-            PROPERTY_NAME: name
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/name
-            TYPE_NAME: ""
-            description: Human readable name of the hook
-            maxLength: 255
-            title: Name
-            type: string
-          owner:
-            IS_REQUIRED: true
-            PROPERTY_NAME: owner
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner
-            TYPE_NAME: ""
-            description: Email of the person or group responsible for this hook.
-            maxLength: 255
-            title: Owner
-            type: string
-        SortedPropertyNames:
-        - description
-        - emailOnError
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+        TYPE_NAME: HookMetadata
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        id: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+        properties:
+          MemberNames:
+            description: Description
+            emailOnError: EmailOnError
+            name: Name
+            owner: Owner
+          Properties:
+            description:
+              IS_REQUIRED: true
+              PROPERTY_NAME: description
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/description
+              TYPE_NAME: ""
+              description: Long-form of the hook's purpose and behavior
+              maxLength: 32768
+              title: Description
+              type: string
+            emailOnError:
+              IS_REQUIRED: false
+              PROPERTY_NAME: emailOnError
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/emailOnError
+              TYPE_NAME: ""
+              default: true
+              description: Whether to email the owner on an error creating the task.
+              title: Email on error
+              type: boolean
+            name:
+              IS_REQUIRED: true
+              PROPERTY_NAME: name
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/name
+              TYPE_NAME: ""
+              description: Human readable name of the hook
+              maxLength: 255
+              title: Name
+              type: string
+            owner:
+              IS_REQUIRED: true
+              PROPERTY_NAME: owner
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/owner
+              TYPE_NAME: ""
+              description: Email of the person or group responsible for this hook.
+              maxLength: 255
+              title: Owner
+              type: string
+          SortedPropertyNames:
+          - description
+          - emailOnError
+          - name
+          - owner
+          SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties
+        required:
         - name
+        - description
         - owner
-        SourceURL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties
-      required:
-      - name
-      - description
-      - owner
-      type: object
+        title: Hook Metadata
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
+      TYPE_NAME: ""
     schedule:
       IS_REQUIRED: false
       PROPERTY_NAME: schedule
@@ -7138,71 +7147,6 @@ required:
 - metadata
 - task
 title: Hook creation request
-type: object
-
-
-http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
-=====================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: metadata
-SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
-TYPE_NAME: Metadata1
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    description: Description
-    emailOnError: EmailOnError
-    name: Name
-    owner: Owner
-  Properties:
-    description:
-      IS_REQUIRED: true
-      PROPERTY_NAME: description
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/description
-      TYPE_NAME: ""
-      description: Long-form of the hook's purpose and behavior
-      maxLength: 32768
-      title: Description
-      type: string
-    emailOnError:
-      IS_REQUIRED: false
-      PROPERTY_NAME: emailOnError
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/emailOnError
-      TYPE_NAME: ""
-      default: true
-      description: Whether to email the owner on an error creating the task.
-      title: Email on error
-      type: boolean
-    name:
-      IS_REQUIRED: true
-      PROPERTY_NAME: name
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/name
-      TYPE_NAME: ""
-      description: Human readable name of the hook
-      maxLength: 255
-      title: Name
-      type: string
-    owner:
-      IS_REQUIRED: true
-      PROPERTY_NAME: owner
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner
-      TYPE_NAME: ""
-      description: Email of the person or group responsible for this hook.
-      maxLength: 255
-      title: Owner
-      type: string
-  SortedPropertyNames:
-  - description
-  - emailOnError
-  - name
-  - owner
-  SourceURL: http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties
-required:
-- name
-- description
-- owner
 type: object
 
 
@@ -7267,67 +7211,76 @@ properties:
       maxLength: 255
       type: string
     metadata:
+      $ref: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
-      TYPE_NAME: Metadata
-      additionalProperties:
-        Boolean: false
-        Properties: null
-      properties:
-        MemberNames:
-          description: Description
-          emailOnError: EmailOnError
-          name: Name
-          owner: Owner
-        Properties:
-          description:
-            IS_REQUIRED: true
-            PROPERTY_NAME: description
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
-            TYPE_NAME: ""
-            description: Long-form of the hook's purpose and behavior
-            maxLength: 32768
-            title: Description
-            type: string
-          emailOnError:
-            IS_REQUIRED: false
-            PROPERTY_NAME: emailOnError
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
-            TYPE_NAME: ""
-            default: true
-            description: Whether to email the owner on an error creating the task.
-            title: Email on error
-            type: boolean
-          name:
-            IS_REQUIRED: true
-            PROPERTY_NAME: name
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
-            TYPE_NAME: ""
-            description: Human readable name of the hook
-            maxLength: 255
-            title: Name
-            type: string
-          owner:
-            IS_REQUIRED: true
-            PROPERTY_NAME: owner
-            SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
-            TYPE_NAME: ""
-            description: Email of the person or group responsible for this hook.
-            maxLength: 255
-            title: Owner
-            type: string
-        SortedPropertyNames:
-        - description
-        - emailOnError
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+        TYPE_NAME: HookMetadata
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        id: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+        properties:
+          MemberNames:
+            description: Description
+            emailOnError: EmailOnError
+            name: Name
+            owner: Owner
+          Properties:
+            description:
+              IS_REQUIRED: true
+              PROPERTY_NAME: description
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/description
+              TYPE_NAME: ""
+              description: Long-form of the hook's purpose and behavior
+              maxLength: 32768
+              title: Description
+              type: string
+            emailOnError:
+              IS_REQUIRED: false
+              PROPERTY_NAME: emailOnError
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/emailOnError
+              TYPE_NAME: ""
+              default: true
+              description: Whether to email the owner on an error creating the task.
+              title: Email on error
+              type: boolean
+            name:
+              IS_REQUIRED: true
+              PROPERTY_NAME: name
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/name
+              TYPE_NAME: ""
+              description: Human readable name of the hook
+              maxLength: 255
+              title: Name
+              type: string
+            owner:
+              IS_REQUIRED: true
+              PROPERTY_NAME: owner
+              SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/owner
+              TYPE_NAME: ""
+              description: Email of the person or group responsible for this hook.
+              maxLength: 255
+              title: Owner
+              type: string
+          SortedPropertyNames:
+          - description
+          - emailOnError
+          - name
+          - owner
+          SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties
+        required:
         - name
+        - description
         - owner
-        SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties
-      required:
-      - name
-      - description
-      - owner
-      type: object
+        title: Hook Metadata
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
+      TYPE_NAME: ""
     schedule:
       IS_REQUIRED: true
       PROPERTY_NAME: schedule
@@ -7338,7 +7291,7 @@ properties:
         If several patterns are specified, tasks will be created at any time
         specified by one or more patterns.  Note that tasks may not be created
         at exactly the time specified.
-                            {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+                            {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
     task:
       IS_REQUIRED: true
       PROPERTY_NAME: task
@@ -7379,15 +7332,17 @@ title: Hook definition
 type: object
 
 
-http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
-=================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: metadata
-SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
-TYPE_NAME: Metadata
+http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+===========================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+TYPE_NAME: HookMetadata
 additionalProperties:
   Boolean: false
   Properties: null
+id: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
 properties:
   MemberNames:
     description: Description
@@ -7398,7 +7353,7 @@ properties:
     description:
       IS_REQUIRED: true
       PROPERTY_NAME: description
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/description
       TYPE_NAME: ""
       description: Long-form of the hook's purpose and behavior
       maxLength: 32768
@@ -7407,7 +7362,7 @@ properties:
     emailOnError:
       IS_REQUIRED: false
       PROPERTY_NAME: emailOnError
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/emailOnError
       TYPE_NAME: ""
       default: true
       description: Whether to email the owner on an error creating the task.
@@ -7416,7 +7371,7 @@ properties:
     name:
       IS_REQUIRED: true
       PROPERTY_NAME: name
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/name
       TYPE_NAME: ""
       description: Human readable name of the hook
       maxLength: 255
@@ -7425,7 +7380,7 @@ properties:
     owner:
       IS_REQUIRED: true
       PROPERTY_NAME: owner
-      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
+      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/owner
       TYPE_NAME: ""
       description: Email of the person or group responsible for this hook.
       maxLength: 255
@@ -7436,11 +7391,12 @@ properties:
   - emailOnError
   - name
   - owner
-  SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties
+  SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties
 required:
 - name
 - description
 - owner
+title: Hook Metadata
 type: object
 
 
@@ -7474,7 +7430,7 @@ properties:
       format: date-time
       type: string
     schedule:
-      $ref: http://schemas.taskcluster.net/hooks/v1/schedule.json
+      $ref: http://schemas.taskcluster.net/hooks/v1/schedule.json#
       IS_REQUIRED: true
       PROPERTY_NAME: schedule
       REF_SUBSCHEMA:
@@ -7896,7 +7852,7 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#/properties/hooks
       TYPE_NAME: ""
       items:
-        $ref: http://schemas.taskcluster.net/hooks/v1/hook-definition.json
+        $ref: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         REF_SUBSCHEMA:
@@ -7959,69 +7915,78 @@ properties:
                 maxLength: 255
                 type: string
               metadata:
+                $ref: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: metadata
-                SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
-                TYPE_NAME: Metadata
-                additionalProperties:
-                  Boolean: false
-                  Properties: null
-                properties:
-                  MemberNames:
-                    description: Description
-                    emailOnError: EmailOnError
-                    name: Name
-                    owner: Owner
-                  Properties:
-                    description:
-                      IS_REQUIRED: true
-                      PROPERTY_NAME: description
-                      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
-                      TYPE_NAME: ""
-                      description: Long-form of the hook's purpose and behavior
-                      maxLength: 32768
-                      title: Description
-                      type: string
-                    emailOnError:
-                      IS_REQUIRED: false
-                      PROPERTY_NAME: emailOnError
-                      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
-                      TYPE_NAME: ""
-                      default: true
-                      description: Whether to email the owner on an error creating
-                        the task.
-                      title: Email on error
-                      type: boolean
-                    name:
-                      IS_REQUIRED: true
-                      PROPERTY_NAME: name
-                      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
-                      TYPE_NAME: ""
-                      description: Human readable name of the hook
-                      maxLength: 255
-                      title: Name
-                      type: string
-                    owner:
-                      IS_REQUIRED: true
-                      PROPERTY_NAME: owner
-                      SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
-                      TYPE_NAME: ""
-                      description: Email of the person or group responsible for this
-                        hook.
-                      maxLength: 255
-                      title: Owner
-                      type: string
-                  SortedPropertyNames:
-                  - description
-                  - emailOnError
+                REF_SUBSCHEMA:
+                  $schema: http://json-schema.org/draft-06/schema#
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+                  TYPE_NAME: HookMetadata
+                  additionalProperties:
+                    Boolean: false
+                    Properties: null
+                  id: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+                  properties:
+                    MemberNames:
+                      description: Description
+                      emailOnError: EmailOnError
+                      name: Name
+                      owner: Owner
+                    Properties:
+                      description:
+                        IS_REQUIRED: true
+                        PROPERTY_NAME: description
+                        SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/description
+                        TYPE_NAME: ""
+                        description: Long-form of the hook's purpose and behavior
+                        maxLength: 32768
+                        title: Description
+                        type: string
+                      emailOnError:
+                        IS_REQUIRED: false
+                        PROPERTY_NAME: emailOnError
+                        SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/emailOnError
+                        TYPE_NAME: ""
+                        default: true
+                        description: Whether to email the owner on an error creating
+                          the task.
+                        title: Email on error
+                        type: boolean
+                      name:
+                        IS_REQUIRED: true
+                        PROPERTY_NAME: name
+                        SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/name
+                        TYPE_NAME: ""
+                        description: Human readable name of the hook
+                        maxLength: 255
+                        title: Name
+                        type: string
+                      owner:
+                        IS_REQUIRED: true
+                        PROPERTY_NAME: owner
+                        SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/owner
+                        TYPE_NAME: ""
+                        description: Email of the person or group responsible for
+                          this hook.
+                        maxLength: 255
+                        title: Owner
+                        type: string
+                    SortedPropertyNames:
+                    - description
+                    - emailOnError
+                    - name
+                    - owner
+                    SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties
+                  required:
                   - name
+                  - description
                   - owner
-                  SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties
-                required:
-                - name
-                - description
-                - owner
-                type: object
+                  title: Hook Metadata
+                  type: object
+                SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
+                TYPE_NAME: ""
               schedule:
                 IS_REQUIRED: true
                 PROPERTY_NAME: schedule
@@ -8032,7 +7997,7 @@ properties:
                   If several patterns are specified, tasks will be created at any time
                   specified by one or more patterns.  Note that tasks may not be created
                   at exactly the time specified.
-                                      {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+                                      {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
               task:
                 IS_REQUIRED: true
                 PROPERTY_NAME: task

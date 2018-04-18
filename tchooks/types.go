@@ -69,7 +69,7 @@ type (
 		HookID string `json:"hookId,omitempty"`
 
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
-		Metadata Metadata1 `json:"metadata"`
+		Metadata HookMetadata `json:"metadata"`
 
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
@@ -132,13 +132,13 @@ type (
 		HookID string `json:"hookId"`
 
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
-		Metadata Metadata `json:"metadata"`
+		Metadata HookMetadata `json:"metadata"`
 
 		// Definition of the times at which a hook will result in creation of a task.
 		// If several patterns are specified, tasks will be created at any time
 		// specified by one or more patterns.  Note that tasks may not be created
 		// at exactly the time specified.
-		//                     {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+		//                     {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/schedule
 		Schedule json.RawMessage `json:"schedule"`
@@ -174,6 +174,38 @@ type (
 
 		// See http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json#/properties/hooks
 		Hooks []HookDefinition `json:"hooks"`
+	}
+
+	// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
+	HookMetadata struct {
+
+		// Long-form of the hook's purpose and behavior
+		//
+		// Max length: 32768
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/description
+		Description string `json:"description"`
+
+		// Whether to email the owner on an error creating the task.
+		//
+		// Default:    true
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/emailOnError
+		EmailOnError bool `json:"emailOnError,omitempty"`
+
+		// Human readable name of the hook
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/name
+		Name string `json:"name"`
+
+		// Email of the person or group responsible for this hook.
+		//
+		// Max length: 255
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#/properties/owner
+		Owner string `json:"owner"`
 	}
 
 	// A description of when a hook's task will be created, and the next scheduled time
@@ -214,70 +246,6 @@ type (
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/nextScheduledDate
 		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
-	}
-
-	// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
-	Metadata struct {
-
-		// Long-form of the hook's purpose and behavior
-		//
-		// Max length: 32768
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/description
-		Description string `json:"description"`
-
-		// Whether to email the owner on an error creating the task.
-		//
-		// Default:    true
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/emailOnError
-		EmailOnError bool `json:"emailOnError,omitempty"`
-
-		// Human readable name of the hook
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/name
-		Name string `json:"name"`
-
-		// Email of the person or group responsible for this hook.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata/properties/owner
-		Owner string `json:"owner"`
-	}
-
-	// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
-	Metadata1 struct {
-
-		// Long-form of the hook's purpose and behavior
-		//
-		// Max length: 32768
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/description
-		Description string `json:"description"`
-
-		// Whether to email the owner on an error creating the task.
-		//
-		// Default:    true
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/emailOnError
-		EmailOnError bool `json:"emailOnError,omitempty"`
-
-		// Human readable name of the hook
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/name
-		Name string `json:"name"`
-
-		// Email of the person or group responsible for this hook.
-		//
-		// Max length: 255
-		//
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata/properties/owner
-		Owner string `json:"owner"`
 	}
 
 	// Information about no firing of the hook (e.g., a new hook)
