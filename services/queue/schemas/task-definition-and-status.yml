@@ -1,0 +1,12 @@
+$schema:            http://json-schema.org/draft-06/schema#
+type:               object
+title:              "Task definition and status"
+description: |
+  Task Definition and task status structure.
+properties:
+  task:             {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
+  status:           {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+additionalProperties: false
+required:
+  - task
+  - status
