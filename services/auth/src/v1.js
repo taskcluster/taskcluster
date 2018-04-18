@@ -125,6 +125,8 @@ api.declare({
   route:      '/clients/',
   query: {
     prefix:  /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
   },
   name:       'listClients',
   input:      undefined,
@@ -134,22 +136,38 @@ api.declare({
   description: [
     'Get a list of all clients.  With `prefix`, only clients for which',
     'it is a prefix of the clientId are returned.',
+    '',
+    'By default this end-point will try to return up to 1000 clients in one',
+    'request. But it **may return less, even none**.',
+    'It may also return a `continuationToken` even though there are no more',
+    'results. However, you can only be sure to have seen all results if you',
+    'keep calling `listClients` with the last `continuationToken` until you',
+    'get a result without a `continuationToken`.',
   ].join('\n'),
 }, async function(req, res) {
   let prefix = req.query.prefix;
+  let continuationToken  = req.query.continuationToken || undefined;
+  let limit         = parseInt(req.query.limit || 1000, 10);
+  let Client = this.Client;
+  let resolver = this.resolver;
 
-  // Load all clients
-  // TODO: as we acquire more clients, perform the prefix filtering in Azure
-  let clients = [];
-  await this.Client.scan({}, {
-    handler: client => {
-      if (!prefix || client.clientId.startsWith(prefix)) {
-        clients.push(client.json(this.resolver));
-      }
-    },
+  let response = {clients: []};
+
+  let opts = {limit};
+  if (req.query.continuationToken) {
+    opts.continuation = req.query.continuationToken;
+  }
+  let data = await Client.scan({}, opts);
+  data.entries.forEach(client => {
+    if (!prefix || client.clientId.startsWith(prefix)) {
+      response.clients.push(client.json(resolver));
+    }
   });
+  if (data.continuation) {
+    response.continuationToken = data.continuation;
+  }
 
-  res.reply(clients);
+  res.reply(response);
 });
 
 /** Get client */
@@ -249,6 +267,7 @@ api.declare({
 
     // If stored client different or older than 15 min we return 409
     let created = new Date(client.details.created).getTime();
+
     if (client.description !== input.description ||
         client.expires.getTime() !== new Date(input.expires).getTime() ||
         !_.isEqual(client.scopes, scopes) ||
