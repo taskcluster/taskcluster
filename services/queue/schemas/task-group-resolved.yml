@@ -1,5 +1,5 @@
 $schema:            http://json-schema.org/draft-06/schema#
-title:              "Task Group Resolved"
+title:              "Task Group Resolved Message"
 description: |
   Message written once a task group has no tasks to be run. It is
   possible for a task group to later have another task added, in which
