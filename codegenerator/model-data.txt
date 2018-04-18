@@ -1,4 +1,4 @@
-Generated: 1524032518
+Generated: 1524046919
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -643,31 +643,12 @@ properties:
       IS_REQUIRED: true
       PROPERTY_NAME: host
       SOURCE_URL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host
-      TYPE_NAME: Host
-      anyOf:
-        Items:
-        - IS_REQUIRED: false
-          PROPERTY_NAME: ""
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
-          TYPE_NAME: Var2
-          description: |
-            Host for which the request came in, this is typically the `Host` header
-            excluding the port if any.
-          format: hostname
-          type: string
-        - IS_REQUIRED: false
-          PROPERTY_NAME: ""
-          SOURCE_URL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
-          TYPE_NAME: Var3
-          description: |
-            Host for which the request came in, this is typically the `Host` header
-            excluding the port if any.
-          format: ipv4
-          type: string
-        SourceURL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf
+      TYPE_NAME: HostnameOrIPv4
       description: |
         Host for which the request came in, this is typically the `Host` header
         excluding the port if any.
+      format: hostname
+      title: Hostname or IPv4
       type: string
     method:
       IS_REQUIRED: true
@@ -740,32 +721,6 @@ required:
 - port
 title: Hawk Signature Authentication Request
 type: object
-
-
-http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
-===============================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
-TYPE_NAME: Var2
-description: |
-  Host for which the request came in, this is typically the `Host` header
-  excluding the port if any.
-format: hostname
-type: string
-
-
-http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
-===============================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
-TYPE_NAME: Var3
-description: |
-  Host for which the request came in, this is typically the `Host` header
-  excluding the port if any.
-format: ipv4
-type: string
 
 
 http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#
@@ -1355,7 +1310,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/auth/v1/azure-container-response.json#
-TYPE_NAME: Var1
+TYPE_NAME: AzureBlobSharedAccessSignature
 additionalProperties:
   Boolean: false
   Properties: null
@@ -1394,7 +1349,7 @@ properties:
 required:
 - sas
 - expiry
-title: Azure Blob Shared-Access-Signature Response
+title: Azure Blob Shared-Access-Signature
 type: object
 
 
@@ -1404,7 +1359,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
-TYPE_NAME: Var
+TYPE_NAME: AzureTableSharedAccessSignature
 additionalProperties:
   Boolean: false
   Properties: null
@@ -1443,7 +1398,7 @@ properties:
 required:
 - sas
 - expiry
-title: Azure Table Shared-Access-Signature Response
+title: Azure Table Shared-Access-Signature
 type: object
 
 
@@ -10342,7 +10297,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       TYPE_NAME: IRCMessageText
       description: |
         IRC message to send as plain text.
@@ -10373,7 +10328,7 @@ oneOf:
         message:
           IS_REQUIRED: false
           PROPERTY_NAME: message
-          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
           TYPE_NAME: IRCMessageText
           description: |
             IRC message to send as plain text.
@@ -10409,7 +10364,7 @@ oneOf:
           REF_SUBSCHEMA:
             IS_REQUIRED: false
             PROPERTY_NAME: message
-            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
             TYPE_NAME: IRCMessageText
             description: |
               IRC message to send as plain text.
@@ -10443,7 +10398,7 @@ oneOf:
         message:
           IS_REQUIRED: false
           PROPERTY_NAME: message
-          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
           TYPE_NAME: IRCMessageText
           description: |
             IRC message to send as plain text.
@@ -10468,7 +10423,7 @@ oneOf:
           REF_SUBSCHEMA:
             IS_REQUIRED: false
             PROPERTY_NAME: message
-            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
             TYPE_NAME: IRCMessageText
             description: |
               IRC message to send as plain text.
@@ -10503,6 +10458,20 @@ oneOf:
 title: Post IRC Message Request
 
 
+http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+==============================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: message
+SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+TYPE_NAME: IRCMessageText
+description: |
+  IRC message to send as plain text.
+maxLength: 510
+minLength: 1
+title: IRC Message Text
+type: string
+
+
 http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
 ===================================================================
 $schema: http://json-schema.org/draft-06/schema#
@@ -10520,7 +10489,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       TYPE_NAME: IRCMessageText
       description: |
         IRC message to send as plain text.
@@ -10556,7 +10525,7 @@ properties:
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: message
-        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
         TYPE_NAME: IRCMessageText
         description: |
           IRC message to send as plain text.
@@ -10594,7 +10563,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       TYPE_NAME: IRCMessageText
       description: |
         IRC message to send as plain text.
@@ -10619,7 +10588,7 @@ properties:
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: message
-        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
         TYPE_NAME: IRCMessageText
         description: |
           IRC message to send as plain text.
@@ -10650,20 +10619,6 @@ required:
 - message
 title: Private Message
 type: object
-
-
-http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-=======================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: message
-SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-TYPE_NAME: IRCMessageText
-description: |
-  IRC message to send as plain text.
-maxLength: 510
-minLength: 1
-title: IRC Message Text
-type: string
 
 
 http://schemas.taskcluster.net/notify/v1/pulse-request.json#

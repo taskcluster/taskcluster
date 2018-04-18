@@ -70,7 +70,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Wed, 18 Apr 2018 at 06:21:00 UTC. The code was generated
+// Wed, 18 Apr 2018 at 10:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
 
@@ -529,10 +529,10 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 //     - auth:azure-table:read-write:<account>/<table>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
-func (auth *Auth) AzureTableSAS(account, table, level string) (*Var, error) {
+func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(Var), nil)
-	return responseObject.(*Var), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(AzureTableSharedAccessSignature), nil)
+	return responseObject.(*AzureTableSharedAccessSignature), err
 }
 
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.
@@ -594,10 +594,10 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 //     - auth:azure-container:read-write:<account>/<container>
 //
 // See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureContainerSAS
-func (auth *Auth) AzureContainerSAS(account, container, level string) (*Var1, error) {
+func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlobSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(Var1), nil)
-	return responseObject.(*Var1), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(AzureBlobSharedAccessSignature), nil)
+	return responseObject.(*AzureBlobSharedAccessSignature), err
 }
 
 // Returns a signed URL for AzureContainerSAS, valid for the specified duration.

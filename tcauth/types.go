@@ -103,6 +103,25 @@ type (
 		Status string `json:"status"`
 	}
 
+	// Response to a request for an Shared-Access-Signature to access an Azure
+	// Blob Storage container.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#
+	AzureBlobSharedAccessSignature struct {
+
+		// Date and time of when the Shared-Access-Signature expires.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#/properties/expiry
+		Expiry tcclient.Time `json:"expiry"`
+
+		// Shared-Access-Signature string. This is the querystring parameters to
+		// be appened after `?` or `&` depending on whether or not a querystring is
+		// already present in the URL.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#/properties/sas
+		Sas string `json:"sas"`
+	}
+
 	// A list of Azure accounts managed by taskcluster-auth
 	//
 	// See http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#
@@ -160,6 +179,25 @@ type (
 		//
 		// See http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties/tables
 		Tables []string `json:"tables"`
+	}
+
+	// Response to a request for an Shared-Access-Signature to access and Azure
+	// Table Storage table.
+	//
+	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
+	AzureTableSharedAccessSignature struct {
+
+		// Date and time of when the Shared-Access-Signature expires.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/expiry
+		Expiry tcclient.Time `json:"expiry"`
+
+		// Shared-Access-Signature string. This is the querystring parameters to
+		// be appened after `?` or `&` depending on whether or not a querystring is
+		// already present in the URL.
+		//
+		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas
+		Sas string `json:"sas"`
 	}
 
 	// Properties to create a client.
@@ -455,10 +493,6 @@ type (
 		// Host for which the request came in, this is typically the `Host` header
 		// excluding the port if any.
 		//
-		// Any of:
-		//   * Var2
-		//   * Var3
-		//
 		// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host
 		Host string `json:"host"`
 
@@ -656,56 +690,6 @@ type (
 		// See http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 	}
-
-	// Response to a request for an Shared-Access-Signature to access and Azure
-	// Table Storage table.
-	//
-	// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#
-	Var struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/expiry
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#/properties/sas
-		Sas string `json:"sas"`
-	}
-
-	// Response to a request for an Shared-Access-Signature to access an Azure
-	// Blob Storage container.
-	//
-	// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#
-	Var1 struct {
-
-		// Date and time of when the Shared-Access-Signature expires.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#/properties/expiry
-		Expiry tcclient.Time `json:"expiry"`
-
-		// Shared-Access-Signature string. This is the querystring parameters to
-		// be appened after `?` or `&` depending on whether or not a querystring is
-		// already present in the URL.
-		//
-		// See http://schemas.taskcluster.net/auth/v1/azure-container-response.json#/properties/sas
-		Sas string `json:"sas"`
-	}
-
-	// Host for which the request came in, this is typically the `Host` header
-	// excluding the port if any.
-	//
-	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[0]
-	Var2 string
-
-	// Host for which the request came in, this is typically the `Host` header
-	// excluding the port if any.
-	//
-	// See http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/host/anyOf[1]
-	Var3 string
 
 	// Token for connecting a worker to webhooktunnel proxy
 	//
