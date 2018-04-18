@@ -2,6 +2,7 @@ let _           = require('lodash');
 let debug       = require('debug')('purge-cache');
 let API         = require('taskcluster-lib-api');
 let taskcluster = require('taskcluster-client');
+let Entity      = require('azure-entities');
 
 // Common schema prefix
 let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/purge-cache/v1/';
@@ -93,7 +94,7 @@ api.declare({
   method:   'get',
   route:    '/purge-cache/list',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:     'allPurgeRequests',
