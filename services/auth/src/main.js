@@ -149,13 +149,20 @@ let load = Loader({
       }),
   },
 
+  connection: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      return new taskcluster.PulseConnection(cfg.pulse);
+    },
+  },
+
   api: {
     requires: [
       'cfg', 'Client', 'Roles', 'validator', 'publisher', 'resolver',
-      'sentryManager', 'monitor',
+      'sentryManager', 'monitor', 'connection',
     ],
     setup: async ({
-      cfg, Client, Roles, validator, publisher, resolver, sentryManager, monitor,
+      cfg, Client, Roles, validator, publisher, resolver, sentryManager, monitor, connection,
     }) => {
       // Set up the Azure tables
       await Client.ensureTable();
@@ -170,7 +177,7 @@ let load = Loader({
           credentials:      cfg.pulse,
           exchangePrefix:   cfg.app.exchangePrefix,
         }),
-        connection: new taskcluster.PulseConnection(cfg.pulse),
+        connection: connection,
       });
 
       let signatureValidator = signaturevalidator.createSignatureValidator({
