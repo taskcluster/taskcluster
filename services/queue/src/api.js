@@ -222,7 +222,7 @@ api.declare({
   method:     'get',
   route:      '/task-group/:taskGroupId/list',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:       'listTaskGroup',
@@ -307,7 +307,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/dependents',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:       'listDependentTasks',
@@ -1973,7 +1973,7 @@ api.declare({
   method:     'get',
   route:      '/provisioners',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:       'listProvisioners',
@@ -2127,7 +2127,7 @@ api.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId/worker-types',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:       'listWorkerTypes',
@@ -2250,7 +2250,7 @@ api.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
     quarantined: /^(true|false)$/,
   },

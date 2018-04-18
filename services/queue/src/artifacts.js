@@ -5,6 +5,7 @@ let API     = require('taskcluster-lib-api');
 let urllib  = require('url');
 let crypto  = require('crypto');
 let api     = require('./api');
+let Entity  = require('azure-entities');
 
 /** Post artifact */
 api.declare({
@@ -861,7 +862,7 @@ api.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:       'listArtifacts',
@@ -929,7 +930,7 @@ api.declare({
   route:      '/task/:taskId/artifacts',
   name:       'listLatestArtifacts',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   stability:  API.stability.experimental,
