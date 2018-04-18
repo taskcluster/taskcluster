@@ -10,6 +10,7 @@ properties:
       List of task claims, may be empty if no tasks was claimed, in which case
       the worker should sleep a tiny bit before polling again.
     items:
+      title:      "Task Claim"
       type:       object
       properties:
         status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
@@ -39,8 +40,8 @@ properties:
             with reason `claim-expired` if the run haven't been reclaimed.
           type:         string
           format:       date-time
-        task: {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
-        credentials:  {$const: task-credentials}
+        task:           {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
+        credentials:    {$ref: "http://schemas.taskcluster.net/queue/v1/task-credentials.json#"}
       additionalProperties: false
       required:
         - status

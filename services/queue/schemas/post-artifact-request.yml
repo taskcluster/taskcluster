@@ -86,6 +86,7 @@ oneOf:
         type: array
         minLength: 1
         items:
+          title: "Multipart Part"
           type: object
           additionalProperties: false
           properties:

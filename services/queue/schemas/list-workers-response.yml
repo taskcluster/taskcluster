@@ -10,6 +10,7 @@ properties:
     description: |
       List of workers in this worker-type.
     items:
+      title:        "Worker"
       type:         object
       properties:
         workerGroup:
@@ -45,27 +46,7 @@ properties:
           title:          "Most Recent Task"
           description: |
             The most recent claimed task
-          type:       object
-          properties:
-            taskId:
-              title:            "Task Identifier"
-              description: |
-                Unique task identifier, this is UUID encoded as
-                [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-                stripped of `=` padding.
-              type:             string
-              pattern:          {$const: slugid-pattern}
-            runId:
-              title:            "Run Identifier"
-              description: |
-                Id of this task run, `run-id`s always starts from `0`
-              type:             integer
-              minimum:          {$const: min-run-id}
-              maximum:          {$const: max-run-id}
-          required:
-            - taskId
-            - runId
-          additionalProperties: false
+          $ref:       "http://schemas.taskcluster.net/queue/v1/task-run.json#"
       additionalProperties: false
       required:
         - workerGroup
